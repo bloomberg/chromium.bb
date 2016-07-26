@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/histogram_internals_request_job.h"
@@ -102,6 +103,20 @@ std::string GetOriginHeaderValue(const net::URLRequest* request) {
   if (request->GetFullRequestHeaders(&headers))
     headers.GetHeader(net::HttpRequestHeaders::kOrigin, &result);
   return result;
+}
+
+// Copy data from source buffer into IO buffer destination.
+// TODO(groby): Very similar to URLRequestSimpleJob, unify at some point.
+void CopyData(const scoped_refptr<net::IOBuffer>& buf,
+              int buf_size,
+              const scoped_refptr<base::RefCountedMemory>& data,
+              int64_t data_offset) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455423 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455423 URLRequestChromeJob::CompleteRead memcpy"));
+  memcpy(buf->data(), data->front() + data_offset, buf_size);
 }
 
 }  // namespace
@@ -204,10 +219,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
   static void DelayStartForDevTools(
       const base::WeakPtr<URLRequestChromeJob>& job);
 
-  // Do the actual copy from data_ (the data we're serving) into |buf|.
-  // Separate from ReadRawData so we can handle async I/O. Returns the number of
-  // bytes read.
-  int CompleteRead(net::IOBuffer* buf, int buf_size);
+  // Post a task to copy |data_| to |buf_| on a worker thread, to avoid browser
+  // jank. (|data_| might be mem-mapped, so a memcpy can trigger file ops).
+  int PostReadTask(net::IOBuffer* buf, int buf_size);
 
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<base::RefCountedMemory> data_;
@@ -364,17 +378,22 @@ void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
 
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
-  if (bytes) {
-    data_ = bytes;
-    if (pending_buf_.get()) {
-      CHECK(pending_buf_->data());
-      int result = CompleteRead(pending_buf_.get(), pending_buf_size_);
-      pending_buf_ = NULL;
-      ReadRawDataComplete(result);
-    }
-  } else {
-    // The request failed.
+  DCHECK(!data_);
+
+  // A passed-in nullptr signals an error.
+  if (!bytes) {
     ReadRawDataComplete(net::ERR_FAILED);
+    return;
+  }
+
+  // All further requests will be satisfied from the passed-in data.
+  data_ = bytes;
+
+  if (pending_buf_) {
+    int result = PostReadTask(pending_buf_.get(), pending_buf_size_);
+    if (result != net::ERR_IO_PENDING)
+      ReadRawDataComplete(result);
+    pending_buf_ = nullptr;
   }
 }
 
@@ -383,32 +402,38 @@ base::WeakPtr<URLRequestChromeJob> URLRequestChromeJob::AsWeakPtr() {
 }
 
 int URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
+  DCHECK(!pending_buf_.get());
+
+  // If data isn't available yet, mark this as asynchronous.
   if (!data_.get()) {
-    DCHECK(!pending_buf_.get());
-    CHECK(buf->data());
     pending_buf_ = buf;
     pending_buf_size_ = buf_size;
     return net::ERR_IO_PENDING;
   }
 
-  // Otherwise, the data is available.
-  return CompleteRead(buf, buf_size);
+  return PostReadTask(buf, buf_size);
 }
 
-int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
+int URLRequestChromeJob::PostReadTask(net::IOBuffer* buf, int buf_size) {
+  DCHECK(buf);
+  DCHECK(data_);
+  CHECK(buf->data());
+
   int remaining = data_->size() - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
-  if (buf_size > 0) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455423 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455423 URLRequestChromeJob::CompleteRead memcpy"));
-    memcpy(buf->data(), data_->front() + data_offset_, buf_size);
-    data_offset_ += buf_size;
-  }
-  return buf_size;
+
+  if (buf_size == 0)
+    return 0;
+
+  base::WorkerPool::GetTaskRunner(false)->PostTaskAndReply(
+      FROM_HERE, base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
+                            data_offset_),
+      base::Bind(&URLRequestChromeJob::ReadRawDataComplete, AsWeakPtr(),
+                 buf_size));
+  data_offset_ += buf_size;
+
+  return net::ERR_IO_PENDING;
 }
 
 void URLRequestChromeJob::DelayStartForDevTools(
