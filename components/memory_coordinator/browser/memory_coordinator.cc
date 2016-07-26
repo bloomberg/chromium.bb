@@ -4,8 +4,6 @@
 
 #include "components/memory_coordinator/browser/memory_coordinator.h"
 
-#include "base/memory/memory_pressure_listener.h"
-
 namespace memory_coordinator {
 
 // The implementation of MemoryCoordinatorHandle. See memory_coordinator.mojom
@@ -34,22 +32,11 @@ class MemoryCoordinatorHandleImpl : public mojom::MemoryCoordinatorHandle {
 };
 
 MemoryCoordinator::MemoryCoordinator()
-    : pressure_level_dispatcher_(
+    : pressure_listener_(
           base::Bind(&MemoryCoordinator::OnMemoryPressure,
-                     base::Unretained(this))) {
-  auto* monitor = base::MemoryPressureMonitor::Get();
-  if (monitor) {
-    monitor->SetDispatchCallback(pressure_level_dispatcher_);
-  }
-}
+                     base::Unretained(this))) {}
 
-MemoryCoordinator::~MemoryCoordinator() {
-  auto* monitor = base::MemoryPressureMonitor::Get();
-  if (monitor) {
-    monitor->SetDispatchCallback(
-        base::Bind(&base::MemoryPressureListener::NotifyMemoryPressure));
-  }
-}
+MemoryCoordinator::~MemoryCoordinator() {}
 
 void MemoryCoordinator::CreateHandle(
     int render_process_id,
@@ -70,7 +57,7 @@ void MemoryCoordinator::OnConnectionError(int render_process_id) {
 }
 
 void MemoryCoordinator::OnMemoryPressure(
-    base::MemoryPressureMonitor::MemoryPressureLevel level) {
+    base::MemoryPressureListener::MemoryPressureLevel level) {
   // TODO(bashi): The current implementation just translates memory pressure
   // levels to memory coordinator states. The logic will be replaced with
   // the priority tracker.

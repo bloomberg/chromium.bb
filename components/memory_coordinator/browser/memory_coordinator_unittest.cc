@@ -19,8 +19,7 @@ class MockMemoryPressureMonitor : public base::MemoryPressureMonitor {
   ~MockMemoryPressureMonitor() override {}
 
   void Dispatch(MemoryPressureLevel level) {
-    DCHECK(!callback_.is_null());
-    callback_.Run(level);
+    base::MemoryPressureListener::NotifyMemoryPressure(level);
   }
 
   // MemoryPressureMonitor implementations:
@@ -28,12 +27,7 @@ class MockMemoryPressureMonitor : public base::MemoryPressureMonitor {
     return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
   }
 
-  void SetDispatchCallback(const DispatchCallback& callback) override {
-    callback_ = callback;
-  }
-
- private:
-  DispatchCallback callback_;
+  void SetDispatchCallback(const DispatchCallback& callback) override {}
 };
 
 class MockMemoryCoordinatorClient final : public MemoryCoordinatorClient {
@@ -52,11 +46,9 @@ public:
 
 class MemoryCoordinatorTest : public testing::Test {
  public:
-  MemoryCoordinatorTest() : message_loop_(new base::MessageLoop) {
-    // MemoryCoordinator needs to be initialized after an instance of
-    // MemoryPressureMonitor is created.
-    coordinator_.reset(new MemoryCoordinator);
-  }
+  MemoryCoordinatorTest()
+      : message_loop_(new base::MessageLoop),
+        coordinator_(new MemoryCoordinator) {}
 
   MockMemoryPressureMonitor& monitor() { return monitor_; }
   MemoryCoordinator& coordinator() { return *coordinator_.get(); }
