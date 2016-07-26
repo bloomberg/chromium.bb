@@ -325,8 +325,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // TODO(droger): Remove |_observerBridges| when all CRWWebControllerObservers
   // are converted to WebStateObservers.
   ScopedVector<web::WebControllerObserverBridge> _observerBridges;
-  // |windowId| that is saved when a page changes. Used to detect refreshes.
-  base::scoped_nsobject<NSString> _lastSeenWindowID;
   // YES if a user interaction has been registered at any time once the page has
   // loaded.
   BOOL _userInteractionRegistered;
@@ -1040,7 +1038,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         [[CRWJSInjectionReceiver alloc] initWithEvaluator:self]);
     _windowIDJSManager.reset([(CRWJSWindowIdManager*)[_jsInjectionReceiver
         instanceOfClass:[CRWJSWindowIdManager class]] retain]);
-    _lastSeenWindowID.reset();
     _webViewProxy.reset(
         [[CRWWebViewProxyImpl alloc] initWithWebController:self]);
     [[_webViewProxy scrollViewProxy] addObserver:self];
@@ -3204,7 +3201,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)resetDocumentSpecificState {
   _lastUserInteraction.reset();
   _clickInProgress = NO;
-  _lastSeenWindowID.reset([[_windowIDJSManager windowId] copy]);
 }
 
 - (void)didStartLoadingURL:(const GURL&)url updateHistory:(BOOL)updateHistory {
