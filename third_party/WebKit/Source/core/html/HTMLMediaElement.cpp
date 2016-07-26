@@ -1794,8 +1794,6 @@ void HTMLMediaElement::finishSeek()
     scheduleEvent(EventTypeNames::seeked);
 
     setDisplayMode(Video);
-
-    Platform::current()->recordAction(UserMetricsAction("Media_Seeked"));
 }
 
 HTMLMediaElement::ReadyState HTMLMediaElement::getReadyState() const
@@ -2104,7 +2102,6 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
         UserGestureIndicator::utilizeUserGesture();
         // We ask the helper to remove the gesture requirement for us, so that
         // it can record the reason.
-        Platform::current()->recordAction(UserMetricsAction("Media_Play_WithGesture"));
         m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByPlayMethod);
     }
 
@@ -2192,14 +2189,12 @@ void HTMLMediaElement::requestRemotePlayback()
 {
     DCHECK(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlayback();
-    Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback"));
 }
 
 void HTMLMediaElement::requestRemotePlaybackControl()
 {
     DCHECK(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlaybackControl();
-    Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback_Control"));
 }
 
 void HTMLMediaElement::closeMediaSource()
@@ -2265,8 +2260,6 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
         return;
     }
 
-    Platform::current()->recordAction(UserMetricsAction("Media_SetVolume"));
-
     m_volume = vol;
     updateVolume();
     scheduleEvent(EventTypeNames::volumechange);
@@ -2293,11 +2286,6 @@ void HTMLMediaElement::setMuted(bool muted)
     m_autoplayHelper->mutedChanged();
 
     updateVolume();
-
-    if (muted)
-        Platform::current()->recordAction(UserMetricsAction("Media_Playback_Mute_On"));
-    else
-        Platform::current()->recordAction(UserMetricsAction("Media_Playback_Mute_Off"));
 
     scheduleEvent(EventTypeNames::volumechange);
 
@@ -2908,7 +2896,6 @@ void HTMLMediaElement::timeChanged()
             }
             // Queue a task to fire a simple event named ended at the media element.
             scheduleEvent(EventTypeNames::ended);
-            Platform::current()->recordAction(UserMetricsAction("Media_Playback_Ended"));
         }
     }
     updatePlayState();
@@ -3134,8 +3121,6 @@ void HTMLMediaElement::updatePlayState()
             webMediaPlayer()->setRate(playbackRate());
             updateVolume();
             webMediaPlayer()->play();
-            Platform::current()->recordAction(
-                UserMetricsAction("Media_Playback_Started"));
             m_autoplayHelper->playbackStarted();
         }
 
@@ -3147,7 +3132,6 @@ void HTMLMediaElement::updatePlayState()
     } else { // Should not be playing right now
         if (isPlaying) {
             webMediaPlayer()->pause();
-            Platform::current()->recordAction(UserMetricsAction("Media_Paused"));
             m_autoplayHelper->playbackStopped();
         }
 

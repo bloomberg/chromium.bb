@@ -8571,34 +8571,43 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Media_Paused">
+<action name="Media_Paused" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
-  <description>Media playback was paused.</description>
+  <description>
+    Media playback was paused, either from script or controls.
+  </description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
 <action name="Media_Play_WithGesture">
   <owner>liberato@chromium.org</owner>
   <description>A call to play() with a user gesture succeeded.</description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
-<action name="Media_Playback_Ended">
+<action name="Media_Playback_Ended" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
   <description>Media playback reached the end.</description>
 </action>
 
-<action name="Media_Playback_Mute_Off">
+<action name="Media_Playback_Mute_Off" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
-  <description>Mute was turned off.</description>
+  <description>
+    Mute was turned off, either from script or controls.
+  </description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
-<action name="Media_Playback_Mute_On">
+<action name="Media_Playback_Mute_On" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
-  <description>Mute was turned on.</description>
+  <description>Mute was turned on, either from script or controls.</description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
-<action name="Media_Playback_Started">
+<action name="Media_Playback_Started" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
   <description>Media playback started due to any cause.</description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
 <action name="Media_RequestRemotePlayback">
@@ -8606,6 +8615,7 @@ should be able to be added at any place in this file.
   <description>
     User requested to transfer playback to a remote player, via 'cast' button.
   </description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
 <action name="Media_RequestRemotePlayback_Control">
@@ -8613,16 +8623,21 @@ should be able to be added at any place in this file.
   <description>
     User requested to control playback of a remote player, such as Chromecast.
   </description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
-<action name="Media_Seeked">
+<action name="Media_Seeked" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
-  <description>Seek to different time completed.</description>
+  <description>Seek originating from script or controls completed.</description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
-<action name="Media_SetVolume">
+<action name="Media_SetVolume" not_user_triggered="true">
   <owner>liberato@chromium.org</owner>
-  <description>Playback volume was changed.</description>
+  <description>
+    Playback volume was changed, either from script or controls.
+  </description>
+  <obsolete>No longer recorded.</obsolete>
 </action>
 
 <action name="Menu_Take_Screenshot">
