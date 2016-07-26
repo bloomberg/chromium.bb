@@ -10876,11 +10876,6 @@ var CrSearchFieldBehavior = {
     this.$.searchInput.blur();
   },
 
-  /** @private */
-  toggleShowingSearch_: function() {
-    this.showingSearch = !this.showingSearch;
-  },
-
   /** @return {boolean} */
   isSearchFocused: function() {
     return this.$.searchTerm.focused;
@@ -11653,7 +11648,23 @@ Polymer({
 
 var SearchField = Polymer({
   is: 'cr-search-field',
-  behaviors: [CrSearchFieldBehavior]
+
+  behaviors: [CrSearchFieldBehavior],
+
+  properties: {
+    value_: String,
+  },
+
+  /** @private */
+  clearSearch_: function() {
+    this.setValue('');
+    this.$.searchInput.focus();
+  },
+
+  /** @private */
+  toggleShowingSearch_: function() {
+    this.showingSearch = !this.showingSearch;
+  },
 });
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
