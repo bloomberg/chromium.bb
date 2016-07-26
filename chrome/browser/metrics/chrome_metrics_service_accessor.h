@@ -15,6 +15,7 @@
 
 class BrowserProcessImpl;
 class Profile;
+class ChromeMetricsServiceClient;
 
 namespace {
 class CrashesDOMHandler;
@@ -99,6 +100,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
   friend void SyzyASANRegisterExperiment(const char*, const char*);
+  friend class ChromeMetricsServiceClient;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

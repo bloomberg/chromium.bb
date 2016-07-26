@@ -13,6 +13,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,17 +61,14 @@ void SetMetricsReporting(bool to_update_pref,
                          const OnMetricsReportingCallbackType& callback_fn,
                          bool updated_pref) {
   metrics::MetricsService* metrics = g_browser_process->metrics_service();
-  if (metrics) {
-    if (updated_pref)
-      metrics->Start();
-    else
-      metrics->Stop();
-  }
 
 #if !defined(OS_ANDROID)
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, updated_pref);
 #endif  // !defined(OS_ANDROID)
+
+  // Uses the current state of whether reporting is enabled to enabled services.
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 
   // When a user opts in to the metrics reporting service, the previously
   // collected data should be cleared to ensure that nothing is reported before

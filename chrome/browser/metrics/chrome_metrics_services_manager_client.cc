@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
@@ -34,6 +35,9 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
 
 }  // namespace
 
+const base::Feature kMetricsReportingFeature{"MetricsReporting",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
     : public metrics::EnabledStateProvider {
  public:
@@ -42,6 +46,11 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
 
   bool IsConsentGiven() override {
     return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+  }
+
+  bool IsReportingEnabled() override {
+    return IsConsentGiven() &&
+           base::FeatureList::IsEnabled(kMetricsReportingFeature);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeEnabledStateProvider);

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -18,6 +19,11 @@ namespace metrics {
 class EnabledStateProvider;
 class MetricsStateManager;
 }
+
+// Metrics reporting feature. This feature, along with user consent, controls if
+// recording and reporting are enabled. If the feature is enabled, but no
+// consent is given, then there will be no recording or reporting.
+extern const base::Feature kMetricsReportingFeature;
 
 // Provides a //chrome-specific implementation of MetricsServicesManagerClient.
 class ChromeMetricsServicesManagerClient
