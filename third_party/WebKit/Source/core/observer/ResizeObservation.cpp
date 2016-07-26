@@ -4,17 +4,53 @@
 
 #include "core/observer/ResizeObservation.h"
 
-#include "core/dom/Element.h"
+#include "core/layout/LayoutBox.h"
 #include "core/observer/ResizeObserver.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {
 
 ResizeObservation::ResizeObservation(Element* target, ResizeObserver* observer)
     : m_target(target)
     , m_observer(observer)
+    , m_observationSize(0, 0)
 {
     DCHECK(m_target);
 }
+
+void ResizeObservation::setObservationSize(const LayoutSize& size)
+{
+    m_observationSize = size;
+}
+
+bool ResizeObservation::observationSizeOutOfSync() const
+{
+    return m_observationSize != ResizeObservation::getTargetSize(m_target);
+}
+
+size_t ResizeObservation::targetDepth()
+{
+    unsigned depth = 0;
+    for (Element* parent = m_target; parent; parent = parent->parentElement())
+        ++depth;
+    return depth;
+}
+
+LayoutSize ResizeObservation::getTargetSize(Element* target) // static
+{
+    if (target) {
+        if (target->isSVGElement() && toSVGElement(target)->isSVGGraphicsElement()) {
+            SVGGraphicsElement& svg = toSVGGraphicsElement(*target);
+            return LayoutSize(svg.getBBox().size());
+        }
+        LayoutBox* layout = target->layoutBox();
+        if (layout)
+            return layout->contentSize();
+    }
+    return LayoutSize();
+}
+
 
 DEFINE_TRACE(ResizeObservation)
 {

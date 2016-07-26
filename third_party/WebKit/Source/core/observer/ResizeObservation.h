@@ -15,18 +15,25 @@ class Element;
 class ResizeObserver;
 
 // ResizeObservation represents an element that is being observed.
-class ResizeObservation final : public GarbageCollected<ResizeObservation> {
+class CORE_EXPORT ResizeObservation final : public GarbageCollected<ResizeObservation> {
 public:
     ResizeObservation(Element* target, ResizeObserver*);
 
     Element* target() const { return m_target; }
+    size_t targetDepth();
+    void setObservationSize(const LayoutSize&);
+    // True if observationSize differs from target's current size.
+    bool observationSizeOutOfSync() const;
+
+    static LayoutSize getTargetSize(Element* target);
 
     DECLARE_TRACE();
 
 private:
     WeakMember<Element> m_target;
-
     Member<ResizeObserver> m_observer;
+    // Target size sent in last observation notification.
+    LayoutSize m_observationSize;
 };
 
 } // namespace blink
