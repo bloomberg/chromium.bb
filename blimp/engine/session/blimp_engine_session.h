@@ -14,6 +14,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/engine/feature/engine_settings_feature.h"
+#include "blimp/engine/feature/geolocation/engine_geolocation_feature.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/connection_error_observer.h"
 #include "content/public/browser/invalidate_type.h"
@@ -203,6 +204,9 @@ class BlimpEngineSession
   // Receives image data from the renderer and sends it to the client via
   // |blob_delegate_|.
   std::unique_ptr<BlobChannelSender> blob_channel_sender_;
+
+  // Handles all incoming and outgoing messages related to Geolocation.
+  EngineGeolocationFeature geolocation_feature_;
 
   // Container for connection manager, authentication handler, and
   // browser connection handler. The components run on the I/O thread, and

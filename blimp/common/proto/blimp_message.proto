@@ -27,6 +27,7 @@ import "blob_channel.proto";
 import "compositor.proto";
 import "ime.proto";
 import "input.proto";
+import "geolocation.proto";
 import "navigation.proto";
 import "render_widget.proto";
 import "protocol_control.proto";
@@ -63,6 +64,7 @@ message BlimpMessage {
     ImeMessage ime = 46;
     SettingsMessage settings = 47;
     BlobChannelMessage blob_channel = 48;
+    GeolocationMessage geolocation = 49;
   }
 }
 

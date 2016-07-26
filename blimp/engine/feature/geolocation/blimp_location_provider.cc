@@ -4,58 +4,66 @@
 
 #include "blimp/engine/feature/geolocation/blimp_location_provider.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/geoposition.h"
 
 namespace blimp {
 namespace engine {
 
-BlimpLocationProvider::BlimpLocationProvider() {}
+BlimpLocationProvider::BlimpLocationProvider(
+    base::WeakPtr<BlimpLocationProvider::Delegate> delegate)
+    : delegate_(delegate), is_started_(false) {}
 
 BlimpLocationProvider::~BlimpLocationProvider() {
-  StopProvider();
+  if (is_started_) {
+    StopProvider();
+  }
 }
 
 bool BlimpLocationProvider::StartProvider(bool high_accuracy) {
-  NOTIMPLEMENTED();
-  return true;
+  if (delegate_) {
+    if (high_accuracy) {
+      delegate_->RequestAccuracy(
+          GeolocationSetInterestLevelMessage::HIGH_ACCURACY);
+    } else {
+      delegate_->RequestAccuracy(
+          GeolocationSetInterestLevelMessage::LOW_ACCURACY);
+    }
+    is_started_ = true;
+  }
+  return is_started_;
 }
 
 void BlimpLocationProvider::StopProvider() {
+  DCHECK(is_started_);
+  if (delegate_) {
+    delegate_->RequestAccuracy(GeolocationSetInterestLevelMessage::NO_INTEREST);
+    is_started_ = false;
+  }
 }
 
 void BlimpLocationProvider::GetPosition(content::Geoposition* position) {
-  DCHECK(position);
-
-  *position = position_;
+  *position = cached_position_;
 }
 
 void BlimpLocationProvider::RequestRefresh() {
-  NOTIMPLEMENTED();
+  DCHECK(is_started_);
+  if (delegate_) {
+    delegate_->RequestRefresh();
+  }
 }
 
 void BlimpLocationProvider::OnPermissionGranted() {
   RequestRefresh();
-  NOTIMPLEMENTED();
-}
-
-void BlimpLocationProvider::NotifyCallback(
-    const content::Geoposition& position) {
-  DCHECK(!callback_.is_null());
-
-  callback_.Run(this, position);
-}
-
-void BlimpLocationProvider::OnLocationResponse(
-    const content::Geoposition& position) {
-  NotifyCallback(position);
-  NOTIMPLEMENTED();
 }
 
 void BlimpLocationProvider::SetUpdateCallback(
     const LocationProviderUpdateCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  callback_ = callback;
+  if (delegate_) {
+    delegate_->SetUpdateCallback(base::Bind(callback, base::Unretained(this)));
+  }
 }
 
 }  // namespace engine

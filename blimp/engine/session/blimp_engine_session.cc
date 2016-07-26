@@ -5,6 +5,7 @@
 #include "blimp/engine/session/blimp_engine_session.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -40,6 +41,8 @@
 #include "blimp/net/thread_pipe_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -238,6 +241,9 @@ BlimpEngineSession::BlimpEngineSession(
   blob_channel_sender_ = base::WrapUnique(
       new BlobChannelSenderImpl(base::WrapUnique(new InMemoryBlobCache),
                                 std::move(helium_blob_delegate)));
+
+  content::GeolocationProvider::SetGeolocationDelegate(
+      geolocation_feature_.CreateGeolocationDelegate());
 }
 
 BlimpEngineSession::~BlimpEngineSession() {
@@ -324,6 +330,9 @@ void BlimpEngineSession::RegisterFeatures() {
   render_widget_feature_.set_ime_message_sender(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
                                             &render_widget_feature_));
+  geolocation_feature_.set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kGeolocation,
+                                            &geolocation_feature_));
   blob_delegate_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
                                             blob_delegate_));

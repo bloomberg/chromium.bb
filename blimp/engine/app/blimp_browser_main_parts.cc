@@ -4,6 +4,8 @@
 
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -15,33 +17,12 @@
 #include "blimp/engine/session/blimp_engine_session.h"
 #include "blimp/net/blimp_connection.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/geolocation_delegate.h"
-#include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/main_function_params.h"
 #include "net/base/net_module.h"
 #include "net/log/net_log.h"
 
 namespace blimp {
 namespace engine {
-
-namespace {
-// A provider of services needed by Geolocation.
-class BlimpGeolocationDelegate : public content::GeolocationDelegate {
- public:
-  BlimpGeolocationDelegate() = default;
-
-  bool UseNetworkLocationProviders() final { return false; }
-
-  std::unique_ptr<content::LocationProvider> OverrideSystemLocationProvider()
-      final {
-    return base::WrapUnique(new BlimpLocationProvider());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlimpGeolocationDelegate);
-};
-
-}  // anonymous namespace
 
 BlimpBrowserMainParts::BlimpBrowserMainParts(
     const content::MainFunctionParams& parameters) {}
@@ -65,8 +46,6 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   settings_manager_.reset(new SettingsManager);
   std::unique_ptr<BlimpBrowserContext> browser_context(
       new BlimpBrowserContext(false, net_log_.get()));
-  content::GeolocationProvider::SetGeolocationDelegate(
-      new BlimpGeolocationDelegate());
   engine_session_.reset(
       new BlimpEngineSession(std::move(browser_context), net_log_.get(),
                              engine_config_.get(), settings_manager_.get()));

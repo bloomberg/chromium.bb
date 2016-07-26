@@ -266,6 +266,8 @@ source_set("feature") {
     "feature/engine_settings_feature.h",
     "feature/geolocation/blimp_location_provider.cc",
     "feature/geolocation/blimp_location_provider.h",
+    "feature/geolocation/engine_geolocation_feature.cc",
+    "feature/geolocation/engine_geolocation_feature.h",
   ]
 
   deps = [
@@ -372,11 +374,15 @@ source_set("test_support") {
   sources = [
     "app/test_content_main_delegate.cc",
     "app/test_content_main_delegate.h",
+    "feature/geolocation/mock_blimp_location_provider_delegate.cc",
+    "feature/geolocation/mock_blimp_location_provider_delegate.h",
   ]
 
   deps = [
     ":app",
+    ":feature",
     "//base",
+    "//testing/gmock",
   ]
 }
 
@@ -442,10 +448,13 @@ source_set("feature_unit_tests") {
   sources = [
     "feature/engine_render_widget_feature_unittest.cc",
     "feature/engine_settings_feature_unittest.cc",
+    "feature/geolocation/blimp_location_provider_unittest.cc",
+    "feature/geolocation/engine_geolocation_feature_unittest.cc",
   ]
 
   deps = [
     ":feature",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//blimp/common",

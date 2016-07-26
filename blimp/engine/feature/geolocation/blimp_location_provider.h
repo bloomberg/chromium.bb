@@ -5,6 +5,8 @@
 #ifndef BLIMP_ENGINE_FEATURE_GEOLOCATION_BLIMP_LOCATION_PROVIDER_H_
 #define BLIMP_ENGINE_FEATURE_GEOLOCATION_BLIMP_LOCATION_PROVIDER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "blimp/common/proto/geolocation.pb.h"
 #include "content/public/browser/location_provider.h"
 #include "content/public/common/geoposition.h"
 
@@ -14,7 +16,22 @@ namespace engine {
 // Location provider for Blimp using the device's provider over the network.
 class BlimpLocationProvider : public content::LocationProvider {
  public:
-  BlimpLocationProvider();
+  // A delegate that implements a subset of LocationProvider's functions.
+  class Delegate {
+   public:
+    using GeopositionReceivedCallback =
+        base::Callback<void(const content::Geoposition&)>;
+
+    virtual ~Delegate() {}
+
+    virtual void RequestAccuracy(
+        GeolocationSetInterestLevelMessage::Level level) = 0;
+    virtual void RequestRefresh() = 0;
+    virtual void SetUpdateCallback(
+        const GeopositionReceivedCallback& callback) = 0;
+  };
+
+  explicit BlimpLocationProvider(base::WeakPtr<Delegate> delegate);
   ~BlimpLocationProvider() override;
 
   // content::LocationProvider implementation.
@@ -23,16 +40,17 @@ class BlimpLocationProvider : public content::LocationProvider {
   void GetPosition(content::Geoposition* position) override;
   void RequestRefresh() override;
   void OnPermissionGranted() override;
-
- private:
-  void NotifyCallback(const content::Geoposition& position);
-  void OnLocationResponse(const content::Geoposition& position);
   void SetUpdateCallback(
       const LocationProviderUpdateCallback& callback) override;
 
-  LocationProviderUpdateCallback callback_;
+ private:
+  // This delegate handles a subset of the LocationProvider functionality.
+  base::WeakPtr<Delegate> delegate_;
 
-  content::Geoposition position_;
+  content::Geoposition cached_position_;
+
+  // True if a successful StartProvider call has occured.
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpLocationProvider);
 };
