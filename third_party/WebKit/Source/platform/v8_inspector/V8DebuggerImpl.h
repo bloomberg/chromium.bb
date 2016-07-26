@@ -132,7 +132,6 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    void logToConsole(v8::Local<v8::Context>, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) override;
     void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
     void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) override;

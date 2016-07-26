@@ -52,9 +52,6 @@ public:
     virtual unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
     virtual void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) = 0;
 
-    // TODO(dgozman): can we remove this method?
-    virtual void logToConsole(v8::Local<v8::Context>, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) = 0;
-
     // API methods.
     virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) = 0;
     virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;

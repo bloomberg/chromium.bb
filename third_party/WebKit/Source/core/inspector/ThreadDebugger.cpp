@@ -16,6 +16,7 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -184,11 +185,11 @@ static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     info.GetReturnValue().Set(info.Data());
 }
 
-void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, const char* description)
+static void createFunctionPropertyWithData(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, v8::Local<v8::Value> data, const char* description)
 {
     v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
     v8::Local<v8::Function> func;
-    if (!v8::Function::New(context, callback, v8::External::New(context->GetIsolate(), this), 0, v8::ConstructorBehavior::kThrow).ToLocal(&func))
+    if (!v8::Function::New(context, callback, data, 0, v8::ConstructorBehavior::kThrow).ToLocal(&func))
         return;
     func->SetName(funcName);
     v8::Local<v8::String> returnValue = v8String(context->GetIsolate(), description);
@@ -199,11 +200,20 @@ void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::
         return;
 }
 
+void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, const char* description)
+{
+    createFunctionPropertyWithData(context, object, name, callback, v8::External::New(context->GetIsolate(), this), description);
+}
+
 void ThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
-    createFunctionProperty(context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback, "function monitorEvents(object, [types]) { [Command Line API] }");
-    createFunctionProperty(context, object, "unmonitorEvents", ThreadDebugger::unmonitorEventsCallback, "function unmonitorEvents(object, [types]) { [Command Line API] }");
     createFunctionProperty(context, object, "getEventListeners", ThreadDebugger::getEventListenersCallback, "function getEventListeners(node) { [Command Line API] }");
+
+    v8::Local<v8::Value> functionValue;
+    bool success = V8ScriptRunner::compileAndRunInternalScript(v8String(m_isolate, "(function(e) { console.log(e.type, e); })"), m_isolate).ToLocal(&functionValue) && functionValue->IsFunction();
+    DCHECK(success);
+    createFunctionPropertyWithData(context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback, functionValue, "function monitorEvents(object, [types]) { [Command Line API] }");
+    createFunctionPropertyWithData(context, object, "unmonitorEvents", ThreadDebugger::unmonitorEventsCallback, functionValue, "function unmonitorEvents(object, [types]) { [Command Line API] }");
 }
 
 static Vector<String> normalizeEventTypes(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -241,25 +251,6 @@ static Vector<String> normalizeEventTypes(const v8::FunctionCallbackInfo<v8::Val
     return outputTypes;
 }
 
-void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1)
-        return;
-    ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
-    DCHECK(debugger);
-    Event* event = V8Event::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    if (!event)
-        return;
-    debugger->debugger()->logToConsole(info.GetIsolate()->GetCurrentContext(), v8String(info.GetIsolate(), event->type()), info[0]);
-}
-
-v8::Local<v8::Function> ThreadDebugger::eventLogFunction()
-{
-    if (m_eventLogFunction.IsEmpty())
-        m_eventLogFunction.Reset(m_isolate, v8::Function::New(m_isolate->GetCurrentContext(), logCallback, v8::External::New(m_isolate, this), 0, v8::ConstructorBehavior::kThrow).ToLocalChecked());
-    return m_eventLogFunction.Get(m_isolate);
-}
-
 static EventTarget* firstArgumentAsEventTarget(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -275,9 +266,7 @@ void ThreadDebugger::setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8:
     if (!eventTarget)
         return;
     Vector<String> types = normalizeEventTypes(info);
-    ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
-    DCHECK(debugger);
-    EventListener* eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), debugger->eventLogFunction(), false, enabled ? ListenerFindOrCreate : ListenerFindOnly);
+    EventListener* eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info.Data()), false, enabled ? ListenerFindOrCreate : ListenerFindOnly);
     if (!eventListener)
         return;
     for (size_t i = 0; i < types.size(); ++i) {

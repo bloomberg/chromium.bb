@@ -70,12 +70,9 @@ protected:
     std::unique_ptr<V8Debugger> m_debugger;
 
 private:
-    v8::Local<v8::Function> eventLogFunction();
-
     static void setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&, bool enabled);
     static void monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void logCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
@@ -84,7 +81,6 @@ private:
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
     std::unique_ptr<UserGestureIndicator> m_userGestureIndicator;
-    v8::Global<v8::Function> m_eventLogFunction;
 };
 
 } // namespace blink

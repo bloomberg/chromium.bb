@@ -1063,20 +1063,6 @@ void V8DebuggerImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2)
-{
-    int contextGroupId = getGroupId(context);
-    InspectedContext* inspectedContext = getContext(contextGroupId, contextId(context));
-    if (!inspectedContext)
-        return;
-    std::vector<v8::Local<v8::Value>> arguments;
-    if (!arg1.IsEmpty())
-        arguments.push_back(arg1);
-    if (!arg2.IsEmpty())
-        arguments.push_back(arg2);
-    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), ConsoleAPIType::kLog, arguments, captureStackTraceImpl(false), inspectedContext));
-}
-
 void V8DebuggerImpl::exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
