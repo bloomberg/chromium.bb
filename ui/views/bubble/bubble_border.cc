@@ -234,6 +234,12 @@ bool BubbleBorder::GetArrowPath(const gfx::Rect& view_bounds,
   return true;
 }
 
+void BubbleBorder::SetBorderInteriorThickness(int border_interior_thickness) {
+  images_->border_interior_thickness = border_interior_thickness;
+  if (!has_arrow(arrow_) || arrow_paint_type_ != PAINT_NORMAL)
+    images_->border_thickness = border_interior_thickness;
+}
+
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   gfx::Rect bounds(view.GetContentsBounds());
   bounds.Inset(-GetBorderThickness(), -GetBorderThickness());

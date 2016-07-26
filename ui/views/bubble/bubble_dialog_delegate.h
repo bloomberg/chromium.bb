@@ -113,6 +113,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Sets the bubble arrow paint type.
   void SetArrowPaintType(BubbleBorder::ArrowPaintType paint_type);
 
+  // Sets the bubble border interior thickness.
+  void SetBorderInteriorThickness(int thickness);
+
   // Call this method when the anchor bounds have changed to reposition the
   // bubble. The bubble is automatically repositioned when the anchor view
   // bounds change as a result of the widget's bounds changing.

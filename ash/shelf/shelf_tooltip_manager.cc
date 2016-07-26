@@ -27,21 +27,29 @@
 namespace ash {
 namespace {
 
-const int kTooltipTopBottomMargin = 3;
-const int kTooltipLeftRightMargin = 10;
 const int kTooltipAppearanceDelay = 1000;  // msec
-const int kTooltipMinHeight = 29 - 2 * kTooltipTopBottomMargin;
-const SkColor kTooltipTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
+
+// Tooltip layout constants.
+
+// Shelf item tooltip height.
+const int kTooltipHeight = 24;
 
 // The maximum width of the tooltip bubble.  Borrowed the value from
 // ash/tooltip/tooltip_controller.cc
 const int kTooltipMaxWidth = 250;
 
-// The offset for the tooltip bubble - making sure that the bubble is flush
-// with the shelf. The offset includes the arrow size in pixels as well as
-// the activation bar and other spacing elements.
-const int kArrowOffsetLeftRight = 11;
-const int kArrowOffsetTopBottom = 7;
+// Shelf item tooltip internal text margins.
+const int kTooltipTopBottomMargin = 4;
+const int kTooltipLeftRightMargin = 8;
+
+// The offset for the tooltip bubble - making sure that the bubble is spaced
+// with a fixed gap. The gap is accounted for by the transparent arrow in the
+// bubble and an additional 1px padding for the shelf item views.
+const int kArrowTopBottomOffset = 1;
+const int kArrowLeftRightOffset = 1;
+
+// Tooltip's border interior thickness that defines its minimum height.
+const int kBorderInteriorThickness = kTooltipHeight / 2;
 
 }  // namespace
 
@@ -53,8 +61,7 @@ class ShelfTooltipManager::ShelfTooltipBubble
                      views::BubbleBorder::Arrow arrow,
                      const base::string16& text)
       : views::BubbleDialogDelegateView(anchor, arrow) {
-    gfx::Insets insets =
-        gfx::Insets(kArrowOffsetTopBottom, kArrowOffsetLeftRight);
+    gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);
     // Adjust the anchor location for asymmetrical borders of shelf item.
     if (anchor->border())
       insets += anchor->border()->GetInsets();
@@ -64,7 +71,7 @@ class ShelfTooltipManager::ShelfTooltipBubble
     set_can_activate(false);
     set_accept_events(false);
     set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin));
-    set_shadow(views::BubbleBorder::SMALL_SHADOW);
+    set_shadow(views::BubbleBorder::NO_ASSETS);
     SetLayoutManager(new views::FillLayout());
     // The anchor may not have the widget in tests.
     if (anchor->GetWidget() && anchor->GetWidget()->GetNativeWindow()) {
@@ -74,15 +81,27 @@ class ShelfTooltipManager::ShelfTooltipBubble
     }
     views::Label* label = new views::Label(text);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(kTooltipTextColor);
+    ui::NativeTheme* theme = anchor->GetWidget()->GetNativeTheme();
+    label->SetEnabledColor(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText));
+    SkColor background_color =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
+    set_color(background_color);
+    label->SetBackgroundColor(background_color);
     AddChildView(label);
     views::BubbleDialogDelegateView::CreateBubble(this);
+    // The bubble border has its own background so the background created by the
+    // BubbleDialogDelegateView is redundant and would cause extra opacity.
+    set_background(nullptr);
+    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    SetBorderInteriorThickness(kBorderInteriorThickness);
   }
 
  private:
   // BubbleDialogDelegateView overrides:
   gfx::Size GetPreferredSize() const override {
     const gfx::Size size = BubbleDialogDelegateView::GetPreferredSize();
+    const int kTooltipMinHeight = kTooltipHeight - 2 * kTooltipTopBottomMargin;
     return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
                      std::max(size.height(), kTooltipMinHeight));
   }

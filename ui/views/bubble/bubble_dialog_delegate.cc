@@ -189,6 +189,11 @@ void BubbleDialogDelegateView::SetArrowPaintType(
   SizeToContents();
 }
 
+void BubbleDialogDelegateView::SetBorderInteriorThickness(int thickness) {
+  GetBubbleFrameView()->bubble_border()->SetBorderInteriorThickness(thickness);
+  SizeToContents();
+}
+
 void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }

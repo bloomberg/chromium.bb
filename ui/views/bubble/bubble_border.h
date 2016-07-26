@@ -205,6 +205,10 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // The returned path does not account for arrow stroke and shadow.
   bool GetArrowPath(const gfx::Rect& view_bounds, gfx::Path* path) const;
 
+  // Sets border thickness overriding the thickness set on |images_| creation.
+  // May only be invoked after |arrow_paint_type_| has been set.
+  void SetBorderInteriorThickness(int border_interior_thickness);
+
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
   gfx::Insets GetInsets() const override;
