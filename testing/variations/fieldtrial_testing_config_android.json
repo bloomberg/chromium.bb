@@ -88,9 +88,21 @@
     ],
     "DataReductionProxyServerExperiments": [
         {
-            "group_name": "TamperDetection_enabled",
+            "group_name": "Prefetch",
             "params": {
-                "exp": "ctd"
+                "exp": "prefetch"
+            }
+        },
+        {
+            "group_name": "Control1",
+            "params": {
+                "exp": "finch_control1"
+            }
+        },
+        {
+            "group_name": "Control2",
+            "params": {
+                "exp": "finch_control2"
             }
         }
     ],
