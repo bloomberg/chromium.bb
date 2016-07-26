@@ -12,6 +12,7 @@ CONSOLE MESSAGE: line 47: [object Map Iterator]
 CONSOLE MESSAGE: line 45: [object Set Iterator]
 CONSOLE MESSAGE: line 46: [object Set Iterator]
 CONSOLE MESSAGE: line 47: [object Set Iterator]
+CONSOLE MESSAGE: line 50: [object Object]
 Tests that console logging dumps proper messages.
 
 console-dir-es6.html:15 Object
@@ -102,4 +103,7 @@ console-dir-es6.html:47 SetIterator
     [[Entries]]: Array[1]
         0: Array[2]
         length: 1
+console-dir-es6.html:50 Object
+    a: ()
+    __proto__: Object
 

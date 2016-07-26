@@ -47,6 +47,8 @@ function onload()
         console.dir(c.entries());
     });
 
+    console.dir({ a: () => { /* function Incorrect() */ } });
+
     runTest();
 }
 
