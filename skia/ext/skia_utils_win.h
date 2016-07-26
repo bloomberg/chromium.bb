@@ -60,6 +60,9 @@ SK_API void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
 SK_API void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
                     const RECT& src_rect, const SkMatrix& transform);
 
+// Fills in a BITMAPINFOHEADER structure given the bitmap's size.
+SK_API void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
+
 SK_API HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
                              HANDLE shared_section = nullptr,
                              void** data = nullptr);

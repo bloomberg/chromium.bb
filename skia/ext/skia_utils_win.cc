@@ -23,6 +23,24 @@ static_assert(sizeof(RECT().right) == sizeof(SkIRect().fRight), "o7");
 static_assert(sizeof(RECT().bottom) == sizeof(SkIRect().fBottom), "o8");
 static_assert(sizeof(RECT) == sizeof(SkIRect), "o9");
 
+void CreateBitmapHeaderWithColorDepth(LONG width,
+                                      LONG height,
+                                      WORD color_depth,
+                                      BITMAPINFOHEADER* hdr) {
+  // These values are shared with gfx::PlatformDevice.
+  hdr->biSize = sizeof(BITMAPINFOHEADER);
+  hdr->biWidth = width;
+  hdr->biHeight = -height;  // Minus means top-down bitmap.
+  hdr->biPlanes = 1;
+  hdr->biBitCount = color_depth;
+  hdr->biCompression = BI_RGB;  // No compression.
+  hdr->biSizeImage = 0;
+  hdr->biXPelsPerMeter = 1;
+  hdr->biYPelsPerMeter = 1;
+  hdr->biClrUsed = 0;
+  hdr->biClrImportant = 0;
+}
+
 }  // namespace
 
 namespace skia {
@@ -148,6 +166,10 @@ void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
   LoadTransformToDC(source, transform);
 }
 
+void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
+   CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
+}
+
 HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
                       HANDLE shared_section, void** data) {
   // CreateDIBSection appears to get unhappy if we create an empty bitmap, so
@@ -158,18 +180,7 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
   }
 
   BITMAPINFOHEADER hdr = {0};
-  hdr.biSize = sizeof(BITMAPINFOHEADER);
-  hdr.biWidth = width;
-  hdr.biHeight = -height;  // minus means top-down bitmap
-  hdr.biPlanes = 1;
-  hdr.biBitCount = 32;
-  hdr.biCompression = BI_RGB;  // no compression
-  hdr.biSizeImage = 0;
-  hdr.biXPelsPerMeter = 1;
-  hdr.biYPelsPerMeter = 1;
-  hdr.biClrUsed = 0;
-  hdr.biClrImportant = 0;
-
+  CreateBitmapHeader(width, height, &hdr);
   HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
                                      0, data, shared_section, 0);
 
