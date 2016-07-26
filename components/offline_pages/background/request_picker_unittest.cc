@@ -27,6 +27,12 @@ const int64_t kRequestId2 = 42;
 const GURL kUrl2("http://nytimes.com");
 const ClientId kClientId2("bookmark", "5678");
 const bool kUserRequested = true;
+const int kAttemptCount = 1;
+
+// Constants for policy values - These settings represent the default values.
+const bool kPreferUntried = false;
+const bool kPreferEarlier = true;
+const bool kPreferRetryCount = true;
 }  // namespace
 
 class RequestPickerTest : public testing::Test {
@@ -45,6 +51,9 @@ class RequestPickerTest : public testing::Test {
   void RequestPicked(const SavePageRequest& request);
 
   void RequestQueueEmpty();
+
+  void QueueRequestsAndChooseOne(const SavePageRequest& request1,
+                                 const SavePageRequest& request2);
 
  protected:
   // The request queue is simple enough we will use a real queue with a memory
@@ -90,14 +99,12 @@ void RequestPickerTest::RequestQueueEmpty() {
   request_queue_empty_called_ = true;
 }
 
-TEST_F(RequestPickerTest, ChooseNextRequest) {
-  base::Time creation_time = base::Time::Now();
+// Test helper to queue the two given requests and then pick one of them per
+// configured policy.
+void RequestPickerTest::QueueRequestsAndChooseOne(
+    const SavePageRequest& request1, const SavePageRequest& request2) {
   DeviceConditions conditions;
-  SavePageRequest request1(
-      kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
-  SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
-  // Put some test requests on the Queue.
+  // Add test requests on the Queue.
   queue_->AddRequest(request1, base::Bind(&RequestPickerTest::AddRequestDone,
                                           base::Unretained(this)));
   queue_->AddRequest(request2, base::Bind(&RequestPickerTest::AddRequestDone,
@@ -106,6 +113,7 @@ TEST_F(RequestPickerTest, ChooseNextRequest) {
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();
 
+  // Call the method under test.
   picker_->ChooseNextRequest(
       base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
       base::Bind(&RequestPickerTest::RequestQueueEmpty, base::Unretained(this)),
@@ -115,9 +123,6 @@ TEST_F(RequestPickerTest, ChooseNextRequest) {
   // results from the Get operation, and for the picker to call the "picked"
   // callback.
   PumpLoop();
-
-  EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
 }
 
 TEST_F(RequestPickerTest, PickFromEmptyQueue) {
@@ -133,6 +138,114 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
   PumpLoop();
 
   EXPECT_TRUE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(
+      kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
+  SavePageRequest request2(
+      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
+  request2.set_attempt_count(kAttemptCount);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId1, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseEarlierRequest) {
+  // We need a custom policy object prefering recency to retry count.
+  policy_.reset(
+      new OfflinerPolicy(kPreferUntried, kPreferEarlier, !kPreferRetryCount));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+  request2.set_attempt_count(kAttemptCount);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId1, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
+  // We need a custom policy object preferring recency to retry count.
+  policy_.reset(
+      new OfflinerPolicy(kPreferUntried, kPreferEarlier, !kPreferRetryCount));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  request2.set_attempt_count(kAttemptCount);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
+  // We need a custom policy object preferring lower retry count.
+  policy_.reset(
+      new OfflinerPolicy(!kPreferUntried, kPreferEarlier, kPreferRetryCount));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  request2.set_attempt_count(kAttemptCount);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId1, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseLaterRequest) {
+  // We need a custom policy preferring recency over retry, and later requests.
+  policy_.reset(
+      new OfflinerPolicy(kPreferUntried, !kPreferEarlier, !kPreferRetryCount));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
 }
 
 }  // namespace offline_pages

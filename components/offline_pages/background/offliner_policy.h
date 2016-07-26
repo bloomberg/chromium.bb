@@ -18,7 +18,17 @@ namespace offline_pages {
 // RequestCoordinator, some to the RequestQueue, and some to the Offliner.
 class OfflinerPolicy {
  public:
-  OfflinerPolicy(){};
+  OfflinerPolicy()
+      : prefer_untried_requests_(false),
+        prefer_earlier_requests_(true),
+        retry_count_is_more_important_than_recency_(true) {}
+
+  OfflinerPolicy(bool prefer_untried,
+                 bool prefer_earlier,
+                 bool prefer_retry_count)
+      : prefer_untried_requests_(prefer_untried),
+        prefer_earlier_requests_(prefer_earlier),
+        retry_count_is_more_important_than_recency_(prefer_retry_count) {}
 
   // TODO(petewil): Numbers here are chosen arbitrarily, do the proper studies
   // to get good policy numbers.
@@ -26,14 +36,16 @@ class OfflinerPolicy {
   // TODO(petewil): Eventually this should get data from a finch experiment.
 
   // Returns true if we should prefer retrying lesser tried requests.
-  bool ShouldPreferUntriedRequests() { return false; }
+  bool ShouldPreferUntriedRequests() const { return prefer_untried_requests_; }
 
   // Returns true if we should prefer older requests of equal number of tries.
-  bool ShouldPreferEarlierRequests() { return true; }
+  bool ShouldPreferEarlierRequests() const { return prefer_earlier_requests_; }
 
   // Returns true if retry count is considered more important than recency in
   // picking which request to try next.
-  bool RetryCountIsMoreImportantThanRecency() { return true; }
+  bool RetryCountIsMoreImportantThanRecency() const {
+    return retry_count_is_more_important_than_recency_;
+  }
 
   // The max number of times we will retry a request.
   int GetMaxRetries() { return kMaxRetries; }
@@ -54,6 +66,11 @@ class OfflinerPolicy {
   int GetMinimumBatteryPercentageForNonUserRequestOfflining() {
     return kMinimumBatteryPercentageForNonUserRequestOfflining;
   }
+
+ private:
+  bool prefer_untried_requests_;
+  bool prefer_earlier_requests_;
+  bool retry_count_is_more_important_than_recency_;
 };
 }
 
