@@ -222,7 +222,6 @@ ContextState::ContextState(FeatureInfo* feature_info,
       ignore_cached_state(false),
       fbo_binding_for_scissor_workaround_dirty(false),
       framebuffer_srgb_(false),
-      max_vertex_attribs_(0),
       feature_info_(feature_info),
       error_state_(ErrorState::Create(error_state_client, logger)) {
   Initialize();

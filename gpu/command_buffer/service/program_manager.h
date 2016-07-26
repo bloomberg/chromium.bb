@@ -397,24 +397,18 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // See member declaration for details.
   // The data are only valid after a successful link.
   uint32_t fragment_output_type_mask() const {
-      return fragment_output_type_mask_;
+    return fragment_output_type_mask_;
   }
   uint32_t fragment_output_written_mask() const {
-      return fragment_output_written_mask_;
+    return fragment_output_written_mask_;
   }
 
   // The data are only valid after a successful link.
-  // Return 16 attributes' base types, in which the attribute
-  // specified by argument 'loc' located.
-  uint32_t vertex_input_base_type_mask(GLuint loc) const {
-      DCHECK(loc < max_vertex_attribs_);
-      return vertex_input_base_type_mask_[loc / 16];
+  const std::vector<uint32_t>& vertex_input_base_type_mask() const {
+    return vertex_input_base_type_mask_;
   }
-  // Return 16 attributes' type written masks, in which the
-  // attribute specified by argument 'loc' located.
-  uint32_t vertex_input_type_written_mask(GLuint loc) const {
-      DCHECK(loc < max_vertex_attribs_);
-      return vertex_input_type_written_mask_[loc / 16];
+  const std::vector<uint32_t>& vertex_input_active_mask() const {
+    return vertex_input_active_mask_;
   }
 
   // Update uniform block binding after a successful glUniformBlockBinding().
@@ -504,6 +498,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   const FeatureInfo& feature_info() const;
 
+  void ClearVertexInputMasks();
+
   ProgramManager* manager_;
 
   int use_count_;
@@ -581,14 +577,13 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // by an output variable, 0x00 if not.
   uint32_t fragment_output_written_mask_;
 
-  uint32_t max_vertex_attribs_;
   // Vertex input attrib base types: FLOAT, INT, or UINT.
   // Each base type is encoded into 2 bits, the lowest 2 bits for location 0,
-  // the highest 2 bits for location (max_vertex_attribs_ - 1).
+  // the highest 2 bits for location (max_vertex_attribs - 1).
   std::vector<uint32_t> vertex_input_base_type_mask_;
   // Same layout as above, 2 bits per location, 0x03 if a location is set
   // by vertexAttrib API, 0x00 if not.
-  std::vector<uint32_t> vertex_input_type_written_mask_;
+  std::vector<uint32_t> vertex_input_active_mask_;
 };
 
 // Tracks the Programs.

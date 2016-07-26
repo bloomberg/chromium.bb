@@ -310,6 +310,10 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       fragment_output_written_mask_(0u) {
   DCHECK(manager_);
   manager_->StartTracking(this);
+  uint32_t packed_size = (manager_->max_vertex_attribs() + 15) / 16;
+  vertex_input_base_type_mask_.resize(packed_size);
+  vertex_input_active_mask_.resize(packed_size);
+  ClearVertexInputMasks();
 }
 
 void Program::Reset() {
@@ -327,8 +331,14 @@ void Program::Reset() {
   attrib_location_to_index_map_.clear();
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
-  vertex_input_base_type_mask_.clear();
-  vertex_input_type_written_mask_.clear();
+  ClearVertexInputMasks();
+}
+
+void Program::ClearVertexInputMasks() {
+  for (uint32_t ii = 0; ii < vertex_input_base_type_mask_.size(); ++ii) {
+    vertex_input_base_type_mask_[ii] = 0u;
+    vertex_input_active_mask_[ii] = 0u;
+  }
 }
 
 void Program::UpdateFragmentOutputBaseTypes() {
@@ -370,27 +380,17 @@ void Program::UpdateFragmentOutputBaseTypes() {
 }
 
 void Program::UpdateVertexInputBaseTypes() {
-  max_vertex_attribs_ = manager_->max_vertex_attribs();
-  uint32_t packed_size = max_vertex_attribs_ / 16;
-  packed_size += (max_vertex_attribs_ % 16 == 0) ? 0 : 1;
-  vertex_input_base_type_mask_.resize(packed_size);
-  vertex_input_type_written_mask_.resize(packed_size);
-
-  for (uint32_t ii = 0; ii < packed_size; ++ii) {
-    vertex_input_type_written_mask_[ii] = 0u;
-    vertex_input_base_type_mask_[ii] = 0u;
-  }
-
+  ClearVertexInputMasks();
+  DCHECK_LE(attrib_infos_.size(), manager_->max_vertex_attribs());
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
-    DCHECK(ii < max_vertex_attribs_);
     const VertexAttrib& input = attrib_infos_[ii];
     if (ProgramManager::HasBuiltInPrefix(input.name)) {
       continue;
     }
     int shift_bits = (input.location % 16) * 2;
-      vertex_input_type_written_mask_[ii / 16] |= 0x3 << shift_bits;
-      vertex_input_base_type_mask_[ii / 16] |=
-          InputOutputTypeToBaseType(true, input.type) << shift_bits;
+    vertex_input_active_mask_[ii / 16] |= 0x3 << shift_bits;
+    vertex_input_base_type_mask_[ii / 16] |=
+        InputOutputTypeToBaseType(true, input.type) << shift_bits;
   }
 }
 
