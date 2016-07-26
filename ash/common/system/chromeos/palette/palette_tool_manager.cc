@@ -72,7 +72,7 @@ PaletteToolId PaletteToolManager::GetActiveTool(PaletteGroup group) {
 gfx::VectorIconId PaletteToolManager::GetActiveTrayIcon(PaletteToolId tool_id) {
   PaletteTool* tool = FindToolById(tool_id);
   if (!tool)
-    return gfx::VectorIconId::VECTOR_ICON_NONE;
+    return gfx::VectorIconId::PALETTE_TRAY_ICON_DEFAULT;
 
   return tool->GetActiveTrayIcon();
 }

@@ -19,6 +19,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
+#include "ash/common/system/chromeos/palette/palette_tray.h"
 #include "ash/common/system/chromeos/session/logout_button_tray.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
@@ -28,12 +29,13 @@ namespace ash {
 StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
                                    WmShelf* wm_shelf)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
-      overview_button_tray_(NULL),
-      system_tray_(NULL),
-      web_notification_tray_(NULL),
+      overview_button_tray_(nullptr),
+      system_tray_(nullptr),
+      web_notification_tray_(nullptr),
 #if defined(OS_CHROMEOS)
-      logout_button_tray_(NULL),
-      virtual_keyboard_tray_(NULL),
+      logout_button_tray_(nullptr),
+      palette_tray_(nullptr),
+      virtual_keyboard_tray_(nullptr),
       ime_menu_tray_(nullptr),
 #endif
       login_status_(LoginStatus::NOT_LOGGED_IN),
@@ -59,6 +61,7 @@ void StatusAreaWidget::CreateTrayViews() {
   AddWebNotificationTray();
 #if defined(OS_CHROMEOS)
   AddLogoutButtonTray();
+  AddPaletteTray();
   AddVirtualKeyboardTray();
   AddImeMenuTray();
 #endif
@@ -84,20 +87,20 @@ void StatusAreaWidget::Shutdown() {
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
   delete web_notification_tray_;
-  web_notification_tray_ = NULL;
+  web_notification_tray_ = nullptr;
   // Must be destroyed after |web_notification_tray_|.
   delete system_tray_;
-  system_tray_ = NULL;
+  system_tray_ = nullptr;
 #if defined(OS_CHROMEOS)
   delete ime_menu_tray_;
   ime_menu_tray_ = nullptr;
   delete virtual_keyboard_tray_;
-  virtual_keyboard_tray_ = NULL;
+  virtual_keyboard_tray_ = nullptr;
   delete logout_button_tray_;
-  logout_button_tray_ = NULL;
+  logout_button_tray_ = nullptr;
 #endif
   delete overview_button_tray_;
-  overview_button_tray_ = NULL;
+  overview_button_tray_ = nullptr;
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
@@ -130,6 +133,7 @@ void StatusAreaWidget::SchedulePaint() {
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
+  palette_tray_->SchedulePaint();
 #endif
   overview_button_tray_->SchedulePaint();
 }
@@ -168,6 +172,11 @@ void StatusAreaWidget::AddLogoutButtonTray() {
   status_area_widget_delegate_->AddTray(logout_button_tray_);
 }
 
+void StatusAreaWidget::AddPaletteTray() {
+  palette_tray_ = new PaletteTray(wm_shelf_);
+  status_area_widget_delegate_->AddTray(palette_tray_);
+}
+
 void StatusAreaWidget::AddVirtualKeyboardTray() {
   virtual_keyboard_tray_ = new VirtualKeyboardTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(virtual_keyboard_tray_);
@@ -197,6 +206,8 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     virtual_keyboard_tray_->SetShelfAlignment(alignment);
   if (ime_menu_tray_)
     ime_menu_tray_->SetShelfAlignment(alignment);
+  if (palette_tray_)
+    palette_tray_->SetShelfAlignment(alignment);
 #endif
   if (overview_button_tray_)
     overview_button_tray_->SetShelfAlignment(alignment);

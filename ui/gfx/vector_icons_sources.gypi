@@ -103,6 +103,8 @@
       'vector_icons/overflow_chevron.1x.icon',
       'vector_icons/overflow_chevron.icon',
       'vector_icons/paintbrush.icon',
+      'vector_icons/palette_tray_icon_default.1x.icon',
+      'vector_icons/palette_tray_icon_default.icon',
       'vector_icons/pdf.1x.icon',
       'vector_icons/pdf.icon',
       'vector_icons/photo_camera.icon',

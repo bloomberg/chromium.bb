@@ -22,6 +22,7 @@ class WmWindow;
 #if defined(OS_CHROMEOS)
 class ImeMenuTray;
 class LogoutButtonTray;
+class PaletteTray;
 class VirtualKeyboardTray;
 #endif
 
@@ -79,6 +80,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void AddWebNotificationTray();
 #if defined(OS_CHROMEOS)
   void AddLogoutButtonTray();
+  void AddPaletteTray();
   void AddVirtualKeyboardTray();
   void AddImeMenuTray();
 #endif
@@ -91,6 +93,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   WebNotificationTray* web_notification_tray_;
 #if defined(OS_CHROMEOS)
   LogoutButtonTray* logout_button_tray_;
+  PaletteTray* palette_tray_;
   VirtualKeyboardTray* virtual_keyboard_tray_;
   ImeMenuTray* ime_menu_tray_;
 #endif
