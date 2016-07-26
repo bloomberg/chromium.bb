@@ -35,6 +35,7 @@ class CacheStorageSchedulerTest : public testing::Test {
  protected:
   CacheStorageSchedulerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        scheduler_(CacheStorageSchedulerClient::CLIENT_STORAGE),
         task1_(TestTask(&scheduler_)),
         task2_(TestTask(&scheduler_)) {}
 

@@ -11,9 +11,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "content/browser/cache_storage/cache_storage_scheduler_client.h"
 #include "content/common/content_export.h"
 
 namespace content {
+
+class CacheStorageOperation;
 
 // TODO(jkarlin): Support readers and writers so operations can run in parallel.
 // TODO(jkarlin): Support operation identification so that ops can be checked in
@@ -25,7 +29,7 @@ namespace content {
 // the next operation.
 class CONTENT_EXPORT CacheStorageScheduler {
  public:
-  CacheStorageScheduler();
+  explicit CacheStorageScheduler(CacheStorageSchedulerClient client_type);
   virtual ~CacheStorageScheduler();
 
   // Adds the operation to the tail of the queue and starts it if the scheduler
@@ -63,9 +67,10 @@ class CONTENT_EXPORT CacheStorageScheduler {
       CompleteOperationAndRunNext();
   }
 
-  // The list of operations waiting on initialization.
-  std::list<base::Closure> pending_operations_;
-  bool operation_running_;
+  std::list<std::unique_ptr<CacheStorageOperation>> pending_operations_;
+  std::unique_ptr<CacheStorageOperation> running_operation_;
+  CacheStorageSchedulerClient client_type_;
+
   base::WeakPtrFactory<CacheStorageScheduler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageScheduler);

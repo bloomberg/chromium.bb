@@ -52144,6 +52144,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorkerCache.Scheduler.IsOperationSlow" enum="Boolean">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    An operation is slow (true) if it takes at least 10 seconds to run. If an
+    operation never completes, it will still be recorded as slow.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorkerCache.Scheduler.OperationDuration" units="ms">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The time in ms from when an operation is started until it completes.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorkerCache.Scheduler.QueueDuration" units="ms">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The time in ms from when an operation was queued until its task is posted.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorkerCache.Scheduler.QueueLength" units="operations">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The number of operations in the scheduling queue just before enqueuing a new
+    operation.
+  </summary>
+</histogram>
+
 <histogram name="Session.TotalDuration" units="ms">
   <owner>mariakhomenko@chromium.org</owner>
   <owner>fqian@chromium.org</owner>
@@ -100915,6 +100945,18 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="The time to perform the 'open' operation on a ServiceWorker
              CacheStorage, which gets or creates a cache."/>
   <affected-histogram name="ServiceWorkerCache.CacheStorage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorkerScheduler" separator="."
+    ordering="prefix">
+  <suffix name="CacheStorage" label="Collected from a CacheStorage instance"/>
+  <suffix name="Cache" label="Collected from a CacheStorageCache instance"/>
+  <suffix name="BackgroundSyncManager"
+      label="Collected from a BackgroundSyncManager instance"/>
+  <affected-histogram name="ServiceWorkerCache.Scheduler.IsOperationSlow"/>
+  <affected-histogram name="ServiceWorkerCache.Scheduler.OperationDuration"/>
+  <affected-histogram name="ServiceWorkerCache.Scheduler.QueueDuration"/>
+  <affected-histogram name="ServiceWorkerCache.Scheduler.QueueLength"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorkerSpecialApps" separator=".">

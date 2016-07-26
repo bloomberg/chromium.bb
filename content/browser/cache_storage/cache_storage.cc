@@ -490,7 +490,8 @@ CacheStorage::CacheStorage(
     : initialized_(false),
       initializing_(false),
       memory_only_(memory_only),
-      scheduler_(new CacheStorageScheduler()),
+      scheduler_(new CacheStorageScheduler(
+          CacheStorageSchedulerClient::CLIENT_STORAGE)),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),

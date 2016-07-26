@@ -543,7 +543,8 @@ CacheStorageCache::CacheStorageCache(
       request_context_getter_(std::move(request_context_getter)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
-      scheduler_(new CacheStorageScheduler()),
+      scheduler_(
+          new CacheStorageScheduler(CacheStorageSchedulerClient::CLIENT_CACHE)),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.is_empty());

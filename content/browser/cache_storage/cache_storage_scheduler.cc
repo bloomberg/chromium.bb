@@ -6,42 +6,57 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/cache_storage/cache_storage_histogram_macros.h"
+#include "content/browser/cache_storage/cache_storage_operation.h"
 
 namespace content {
 
-CacheStorageScheduler::CacheStorageScheduler()
-    : operation_running_(false), weak_ptr_factory_(this) {}
+CacheStorageScheduler::CacheStorageScheduler(
+    CacheStorageSchedulerClient client_type)
+    : client_type_(client_type), weak_ptr_factory_(this) {}
 
-CacheStorageScheduler::~CacheStorageScheduler() {
-}
+CacheStorageScheduler::~CacheStorageScheduler() {}
 
 void CacheStorageScheduler::ScheduleOperation(const base::Closure& closure) {
-  pending_operations_.push_back(closure);
+  CACHE_STORAGE_SCHEDULER_UMA(COUNTS_10000, "QueueLength", client_type_,
+                              pending_operations_.size());
+
+  pending_operations_.push_back(base::MakeUnique<CacheStorageOperation>(
+      closure, client_type_, base::ThreadTaskRunnerHandle::Get()));
   RunOperationIfIdle();
 }
 
 void CacheStorageScheduler::CompleteOperationAndRunNext() {
-  DCHECK(operation_running_);
-  operation_running_ = false;
+  DCHECK(running_operation_);
+  running_operation_.reset();
+
   RunOperationIfIdle();
 }
 
 bool CacheStorageScheduler::ScheduledOperations() const {
-  return operation_running_ || !pending_operations_.empty();
+  return running_operation_ || !pending_operations_.empty();
 }
 
 void CacheStorageScheduler::RunOperationIfIdle() {
-  if (!operation_running_ && !pending_operations_.empty()) {
-    operation_running_ = true;
+  if (!running_operation_ && !pending_operations_.empty()) {
     // TODO(jkarlin): Run multiple operations in parallel where allowed.
-    base::Closure closure = pending_operations_.front();
+    running_operation_ = std::move(pending_operations_.front());
     pending_operations_.pop_front();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(closure));
+
+    CACHE_STORAGE_SCHEDULER_UMA(
+        TIMES, "QueueDuration", client_type_,
+        base::TimeTicks::Now() - running_operation_->creation_ticks());
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&CacheStorageOperation::Run,
+                              running_operation_->AsWeakPtr()));
   }
 }
 
