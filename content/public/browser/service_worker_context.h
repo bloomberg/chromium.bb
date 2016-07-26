@@ -12,6 +12,10 @@
 #include "content/public/browser/service_worker_usage_info.h"
 #include "url/gurl.h"
 
+namespace blink {
+enum class WebNavigationHintType;
+}
+
 namespace content {
 
 // Represents the per-StoragePartition ServiceWorker data.
@@ -104,6 +108,18 @@ class ServiceWorkerContext {
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
   virtual void ClearAllServiceWorkersForTest(const base::Closure& callback) = 0;
+
+  // Starts a Service Worker for |document_url| for a navigation hint in the
+  // specified render process |render_process_id|. Must be called from the UI
+  // thread. The |callback| will always be called on the UI thread.
+  // This method can fail if:
+  //  * No Service Worker was registered for |document_url|.
+  //  * The specified render process is not suitable for loading |document_url|.
+  virtual void StartServiceWorkerForNavigationHint(
+      const GURL& document_url,
+      blink::WebNavigationHintType type,
+      int render_process_id,
+      const ResultCallback& callback) = 0;
 
  protected:
   ServiceWorkerContext() {}
