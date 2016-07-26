@@ -35,7 +35,7 @@ bool VerifyCredentialsAtTime(
     const std::string& signature,
     const std::string& data,
     const std::string& connected_mac,
-    const base::Time::Exploded& time);
+    const base::Time& time);
 
 // Encrypt |data| with |public_key|. |public_key| is a DER-encoded
 // RSAPublicKey. |data| is some string of bytes that is smaller than the

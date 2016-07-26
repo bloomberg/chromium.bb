@@ -118,16 +118,21 @@ TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
   static const char kBadHotspotBssid[] = "bad bssid";
 
   // April 1, 2016
-  base::Time::Exploded time = {0};
-  time.year = 2016;
-  time.month = 4;
-  time.day_of_month = 1;
+  base::Time::Exploded time_exploded = {0};
+  time_exploded.year = 2016;
+  time_exploded.month = 4;
+  time_exploded.day_of_month = 1;
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromUTCExploded(time_exploded, &time));
 
   // September 1, 2035
-  base::Time::Exploded expired_time = {0};
-  expired_time.year = 2035;
-  expired_time.month = 9;
-  expired_time.day_of_month = 1;
+  base::Time::Exploded expired_time_exploded = {0};
+  expired_time_exploded.year = 2035;
+  expired_time_exploded.month = 9;
+  expired_time_exploded.day_of_month = 1;
+  base::Time expired_time;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded(expired_time_exploded, &expired_time));
 
   std::string unsigned_data = std::string(std::begin(kData), std::end(kData));
   std::string signed_data =

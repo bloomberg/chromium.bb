@@ -35,6 +35,10 @@ struct SignatureTestData {
 // |file_name| should be relative to //components/test/data/cast_certificate
 SignatureTestData ReadSignatureTestData(const base::StringPiece& file_name);
 
+// Reads a file from the test data directory
+// (//src/components/test/data/cast_certificate)
+std::string ReadTestFileToString(const base::StringPiece& file_name);
+
 }  // namespace testing
 
 }  // namespace cast_certificate

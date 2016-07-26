@@ -13,13 +13,44 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        'cast_certificate_proto',
       ],
       'sources': [
         'cast_certificate/cast_cert_validator.cc',
         'cast_certificate/cast_cert_validator.h',
+        'cast_certificate/cast_crl.cc',
+        'cast_certificate/cast_crl.h',
         'cast_certificate/cast_root_ca_cert_der-inc.h',
         'cast_certificate/eureka_root_ca_der-inc.h',
       ],
+    },
+    {
+      'target_name': 'cast_certificate_proto',
+      'type': 'static_library',
+      'sources': [
+        'cast_certificate/proto/revocation.proto',
+      ],
+      'includes': [
+        '../build/protoc.gypi'
+      ],
+      'variables': {
+        'proto_in_dir': 'cast_certificate/proto',
+        'proto_out_dir': 'components/cast_certificate/proto',
+      },
+    },
+    {
+      'target_name': 'cast_certificate_test_proto',
+      'type': 'static_library',
+      'sources': [
+        'cast_certificate/proto/test_suite.proto',
+      ],
+      'includes': [
+        '../build/protoc.gypi'
+      ],
+      'variables': {
+        'proto_in_dir': 'cast_certificate/proto',
+        'proto_out_dir': 'components/cast_certificate/proto',
+      },
     },
     {
       'target_name': 'cast_certificate_test_support',

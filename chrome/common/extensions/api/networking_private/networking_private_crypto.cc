@@ -51,8 +51,7 @@ bool VerifyCredentials(
     const std::string& signature,
     const std::string& data,
     const std::string& connected_mac) {
-  base::Time::Exploded now;
-  base::Time::Now().UTCExplode(&now);
+  base::Time now = base::Time::Now();
   return VerifyCredentialsAtTime(certificate, intermediate_certificates,
                                  signature, data, connected_mac, now);
 }
@@ -63,7 +62,7 @@ bool VerifyCredentialsAtTime(
     const std::string& signature,
     const std::string& data,
     const std::string& connected_mac,
-    const base::Time::Exploded& time) {
+    const base::Time& time) {
   static const char kErrorPrefix[] = "Device verification failed. ";
 
   std::vector<std::string> headers;
@@ -97,7 +96,8 @@ bool VerifyCredentialsAtTime(
 
   std::unique_ptr<cast_crypto::CertVerificationContext> verification_context;
   if (!cast_crypto::VerifyDeviceCert(certs, time, &verification_context,
-                                     &unused_policy)) {
+                                     &unused_policy, nullptr,
+                                     cast_crypto::CRLPolicy::CRL_OPTIONAL)) {
     LOG(ERROR) << kErrorPrefix << "Failed verifying cast device cert";
     return false;
   }
