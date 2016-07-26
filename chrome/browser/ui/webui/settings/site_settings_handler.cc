@@ -64,7 +64,7 @@ void SiteSettingsHandler::RegisterMessages() {
 void SiteSettingsHandler::OnJavascriptAllowed() {
   observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile_));
   if (profile_->HasOffTheRecordProfile()) {
-    auto map = HostContentSettingsMapFactory::GetForProfile(
+    auto* map = HostContentSettingsMapFactory::GetForProfile(
         profile_->GetOffTheRecordProfile());
     if (!observer_.IsObserving(map))
       observer_.Add(map);

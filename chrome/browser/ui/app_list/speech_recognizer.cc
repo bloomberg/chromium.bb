@@ -142,7 +142,7 @@ void SpeechRecognizer::EventListener::StartOnIOThread(
   config.auth_token = auth_token;
   config.preamble = preamble;
 
-  auto speech_instance = content::SpeechRecognitionManager::GetInstance();
+  auto* speech_instance = content::SpeechRecognitionManager::GetInstance();
   session_ = speech_instance->CreateSession(config);
   speech_instance->StartSession(session_);
 }

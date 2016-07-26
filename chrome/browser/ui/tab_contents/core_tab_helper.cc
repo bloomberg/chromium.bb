@@ -133,7 +133,7 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "467185 CoreTabHelper::GetStatusTextForWebContents1"));
-  auto guest_manager = guest_view::GuestViewManager::FromBrowserContext(
+  auto* guest_manager = guest_view::GuestViewManager::FromBrowserContext(
       source->GetBrowserContext());
   if (!source->IsLoading() ||
       source->GetLoadState().state == net::LOAD_STATE_IDLE) {

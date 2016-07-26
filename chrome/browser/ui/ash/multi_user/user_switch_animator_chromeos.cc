@@ -90,7 +90,7 @@ class MaximizedWindowAnimationWatcher : public ui::LayerAnimationObserver {
 // any, and if it exists in |window_list|) will be the last window in the list.
 void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
   DCHECK(window_list);
-  auto active_window = ash::wm::GetActiveWindow();
+  auto* active_window = ash::wm::GetActiveWindow();
   if (!active_window)
     return;
 
@@ -301,8 +301,8 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
         // activateable window to restore focus to, and so we don't change
         // window order (crbug.com/424307).
         PutMruWindowLast(&(user_pair.second));
-        for (auto& window : user_pair.second) {
-          auto window_state = ash::wm::GetWindowState(window);
+        for (auto* window : user_pair.second) {
+          auto* window_state = ash::wm::GetWindowState(window);
 
           // Minimized visiting windows (minimized windows with an owner
           // different than that of the for_show_account_id) should retrun to
@@ -345,7 +345,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
       if (new_user_itr == windows_by_account_id_.end())
         return;
 
-      for (auto& window : new_user_itr->second) {
+      for (auto* window : new_user_itr->second) {
         auto entry = owner_->window_to_entry().find(window);
         DCHECK(entry != owner_->window_to_entry().end());
 
@@ -428,7 +428,7 @@ void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
     aura::Window* parent_window = window_entry_pair.first->parent();
     if (parent_windows.find(parent_window) == parent_windows.end()) {
       parent_windows.insert(parent_window);
-      for (auto& child_window : parent_window->children()) {
+      for (auto* child_window : parent_window->children()) {
         auto itr = window_to_entry_map.find(child_window);
         if (itr != window_to_entry_map.end()) {
           windows_by_account_id_[itr->second->show_for_user()].push_back(

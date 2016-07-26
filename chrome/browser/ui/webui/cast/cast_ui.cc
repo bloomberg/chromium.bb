@@ -18,7 +18,7 @@ CastUI::CastUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Retrieve the ID of the component extension.
   // TODO(crbug.com/597778): remove reference to MediaRouterMojoImpl.
-  auto router = static_cast<media_router::MediaRouterMojoImpl*>(
+  auto* router = static_cast<media_router::MediaRouterMojoImpl*>(
       media_router::MediaRouterFactory::GetApiForBrowserContext(
           web_ui->GetWebContents()->GetBrowserContext()));
   std::string extension_id = router->media_route_provider_extension_id();

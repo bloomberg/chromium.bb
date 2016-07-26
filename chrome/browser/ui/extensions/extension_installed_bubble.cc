@@ -182,12 +182,12 @@ void ExtensionInstalledBubble::ShowBubble(
     const SkBitmap& icon) {
   // The ExtensionInstalledBubbleObserver will delete itself when the
   // ExtensionInstalledBubble is shown or when it can't be shown anymore.
-  auto x = new ExtensionInstalledBubbleObserver(
+  auto* observer = new ExtensionInstalledBubbleObserver(
       base::WrapUnique(new ExtensionInstalledBubble(extension, browser, icon)));
   extensions::ExtensionRegistry* reg =
       extensions::ExtensionRegistry::Get(browser->profile());
   if (reg->enabled_extensions().GetByID(extension->id())) {
-    x->Run();
+    observer->Run();
   }
 }
 

@@ -249,7 +249,7 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
 
   // Collect the ids of local supervised user profiles.
   std::set<std::string> supervised_user_ids;
-  for (auto& entry : entries) {
+  for (auto* entry : entries) {
     // Filter out omitted profiles. These are currently being imported, and
     // shouldn't show up as "already on this device" just yet.
     if (entry->IsLegacySupervised() && !entry->IsOmitted()) {

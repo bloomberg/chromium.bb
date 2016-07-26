@@ -403,7 +403,7 @@ void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
   std::vector<LocationBarDecoration*> decorations = GetDecorations();
-  for (const auto& decoration : decorations)
+  for (auto* decoration : decorations)
     UpdateAccessibilityViewPosition(decoration);
   [field_ updateMouseTracking];
   [field_ resetFieldEditorFrameIfNeeded];
@@ -856,7 +856,7 @@ void LocationBarViewMac::OnDefaultZoomLevelChanged() {
 std::vector<NSView*> LocationBarViewMac::GetDecorationAccessibilityViews() {
   std::vector<LocationBarDecoration*> decorations = GetDecorations();
   std::vector<NSView*> views;
-  for (const auto& decoration : decorations)
+  for (auto* decoration : decorations)
     views.push_back(decoration->GetAccessibilityView());
   return views;
 }

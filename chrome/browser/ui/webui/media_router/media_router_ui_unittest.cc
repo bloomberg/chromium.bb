@@ -470,7 +470,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
   std::vector<GURL> origins;
-  for (auto& observer : media_sinks_observers_) {
+  for (auto* observer : media_sinks_observers_) {
     if (observer->source().id() != presentation_url) {
       observer->OnSinksUpdated(sinks, origins);
     }
@@ -500,7 +500,7 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
   std::vector<GURL> origins;
-  for (auto& observer : media_sinks_observers_) {
+  for (auto* observer : media_sinks_observers_) {
     if (observer->source().id() == presentation_url) {
       observer->OnSinksUpdated(sinks, origins);
     }

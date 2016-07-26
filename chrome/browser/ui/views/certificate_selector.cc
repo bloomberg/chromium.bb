@@ -140,7 +140,7 @@ CertificateSelector::CertificateSelector(
         // any extension currently. Don't expose it to the user.
         continue;
       }
-      const auto extension = extension_registry->GetExtensionById(
+      const auto* extension = extension_registry->GetExtensionById(
           extension_id, extensions::ExtensionRegistry::ENABLED);
       if (!extension) {
         // This extension was unloaded in the meantime. Don't show the

@@ -402,12 +402,12 @@ class PrefWatcher : public KeyedService {
   }
 
   void UpdateRendererPreferences() {
-    for (const auto& helper : helpers_)
+    for (auto* helper : helpers_)
       helper->UpdateRendererPreferences();
   }
 
   void OnWebPrefChanged(const std::string& pref_name) {
-    for (const auto& helper : helpers_)
+    for (auto* helper : helpers_)
       helper->OnWebPrefChanged(pref_name);
   }
 

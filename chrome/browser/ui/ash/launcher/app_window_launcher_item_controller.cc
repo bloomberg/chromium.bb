@@ -77,7 +77,7 @@ bool AppWindowLauncherItemController::IsOpen() const {
 
 bool AppWindowLauncherItemController::IsVisible() const {
   // Return true if any windows are visible.
-  for (const auto& window : windows_) {
+  for (const auto* window : windows_) {
     if (window->GetNativeWindow()->IsVisible())
       return true;
   }
@@ -101,7 +101,7 @@ AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
 void AppWindowLauncherItemController::Close() {
   // Note: Closing windows may affect the contents of app_windows_.
   WindowList windows_to_close = windows_;
-  for (const auto& window : windows_)
+  for (auto* window : windows_)
     window->Close();
 }
 

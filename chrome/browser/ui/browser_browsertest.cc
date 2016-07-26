@@ -2769,7 +2769,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   ui_test_utils::BrowserAddedObserver browser_added_observer;
   Browser* app_browser = CreateBrowserForApp("blah", profile);
   browser_added_observer.WaitForSingleNewBrowser();
-  auto app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
+  auto* app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
   CheckDisplayModeMQ(ASCIIToUTF16("standalone"), app_contents);
 
   app_browser->exclusive_access_manager()->context()->EnterFullscreen(

@@ -1079,7 +1079,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
       controlOrigin.y = rowBottomRight.y;
     }
 
-    for (auto object : chosenObjectInfoList) {
+    for (auto* object : chosenObjectInfoList) {
       controlOrigin.y += kPermissionsTabSpacing;
       NSPoint rowBottomRight = [self addChosenObject:base::WrapUnique(object)
                                               toView:permissionsView_

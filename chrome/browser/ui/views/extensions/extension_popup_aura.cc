@@ -15,7 +15,7 @@ ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
                                        views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        ShowAction show_action) {
-  auto popup = new ExtensionPopupAura(host, anchor_view, arrow, show_action);
+  auto* popup = new ExtensionPopupAura(host, anchor_view, arrow, show_action);
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(popup);
   gfx::NativeView native_view = widget->GetNativeView();
 
@@ -43,7 +43,7 @@ void ExtensionPopupAura::OnWidgetDestroying(views::Widget* widget) {
   ExtensionPopup::OnWidgetDestroying(widget);
 
   if (widget == GetWidget()) {
-    auto activation_client = aura::client::GetActivationClient(
+    auto* activation_client = aura::client::GetActivationClient(
         widget->GetNativeWindow()->GetRootWindow());
     // If the popup was being inspected with devtools and the browser window
     // was closed, then the root window and activation client are already

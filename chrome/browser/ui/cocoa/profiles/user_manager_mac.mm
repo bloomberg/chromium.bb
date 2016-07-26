@@ -327,7 +327,7 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   // Remove the ModalDailogManager that's about to be destroyed.
-  auto manager = web_modal::WebContentsModalDialogManager::FromWebContents(
+  auto* manager = web_modal::WebContentsModalDialogManager::FromWebContents(
       webContents_.get());
   if (manager)
     manager->SetDelegate(nullptr);

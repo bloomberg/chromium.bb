@@ -132,7 +132,7 @@ void LanguageOptionsHandlerCommon::Uninitialize() {
   if (!service)
     return;
 
-  for (auto dict : service->GetHunspellDictionaries())
+  for (auto* dict : service->GetHunspellDictionaries())
     dict->RemoveObserver(this);
 }
 
@@ -211,7 +211,7 @@ void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
   if (!service)
     return;
 
-  for (auto dictionary : service->GetHunspellDictionaries()) {
+  for (auto* dictionary : service->GetHunspellDictionaries()) {
     dictionary->RemoveObserver(this);
     dictionary->AddObserver(this);
 
@@ -250,7 +250,7 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
   if (!service)
     return;
 
-  for (auto dictionary : service->GetHunspellDictionaries()) {
+  for (auto* dictionary : service->GetHunspellDictionaries()) {
     dictionary->RemoveObserver(this);
     dictionary->AddObserver(this);
   }
@@ -284,7 +284,7 @@ void LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload(
   if (!service)
     return;
 
-  for (auto dictionary : service->GetHunspellDictionaries()) {
+  for (auto* dictionary : service->GetHunspellDictionaries()) {
     if (dictionary->GetLanguage() == language) {
       dictionary->RetryDownloadDictionary(
           Profile::FromWebUI(web_ui())->GetRequestContext());

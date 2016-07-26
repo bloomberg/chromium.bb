@@ -51,10 +51,13 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, MAYBE_BackForwardDoesntCrash) {
 IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ToggleJavaScript) {
   NavigateToURL(browser(), GURL(chrome::kChromeUIMdSettingsURL));
 
-  auto handlers = browser()->tab_strip_model()->GetActiveWebContents()
-      ->GetWebUI()->GetHandlersForTesting();
+  const auto& handlers = *browser()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetWebUI()
+                              ->GetHandlersForTesting();
 
-  for (content::WebUIMessageHandler* handler : *handlers) {
+  for (content::WebUIMessageHandler* handler : handlers) {
     handler->AllowJavascriptForTesting();
     handler->DisallowJavascript();
     handler->AllowJavascriptForTesting();

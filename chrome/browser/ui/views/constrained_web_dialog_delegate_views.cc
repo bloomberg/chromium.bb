@@ -62,7 +62,7 @@ class WebDialogWebContentsDelegateViews
     if (!initiator_observer_->web_contents())
       return;
 
-    auto delegate = initiator_observer_->web_contents()->GetDelegate();
+    auto* delegate = initiator_observer_->web_contents()->GetDelegate();
     if (!delegate)
       return;
     delegate->HandleKeyboardEvent(initiator_observer_->web_contents(), event);

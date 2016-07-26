@@ -696,7 +696,7 @@ void ContentSettingsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
   if (profile->HasOffTheRecordProfile()) {
-    auto map = HostContentSettingsMapFactory::GetForProfile(
+    auto* map = HostContentSettingsMapFactory::GetForProfile(
         profile->GetOffTheRecordProfile());
     if (!observer_.IsObserving(map))
       observer_.Add(map);

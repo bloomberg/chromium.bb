@@ -61,7 +61,7 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     // Poor-person's way of ensuring IO loop is idle.
-    auto io_loop = content::BrowserThread::UnsafeGetMessageLoopForThread(
+    auto* io_loop = content::BrowserThread::UnsafeGetMessageLoopForThread(
         content::BrowserThread::IO);
     ASSERT_TRUE(io_loop);
     while (!io_loop->IsIdleForTesting()) {

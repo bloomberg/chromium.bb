@@ -244,7 +244,7 @@ mojo::Array<mojom::PluginDataPtr> PluginsPageHandler::GeneratePluginsData(
     bool group_enabled = false;
 
     mojo::Array<mojom::PluginFilePtr> plugin_files;
-    for (const auto& group_plugin : group_plugins) {
+    for (const auto* group_plugin : group_plugins) {
       bool plugin_enabled = plugin_prefs->IsPluginEnabled(*group_plugin);
 
       plugin_files.push_back(GeneratePluginFile(

@@ -252,9 +252,9 @@ void ComponentsUI::OnEvent(Events event, const std::string& id) {
   parameters.SetString("event", ComponentEventToString(event));
   if (!id.empty()) {
     if (event == Events::COMPONENT_UPDATED) {
-      auto cus = g_browser_process->component_updater();
+      auto* component_updater = g_browser_process->component_updater();
       update_client::CrxUpdateItem item;
-      if (cus->GetComponentDetails(id, &item))
+      if (component_updater->GetComponentDetails(id, &item))
         parameters.SetString("version", item.component.version.GetString());
     }
     parameters.SetString("id", id);

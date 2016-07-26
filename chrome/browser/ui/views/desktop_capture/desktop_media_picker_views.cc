@@ -228,7 +228,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 #endif
   }
 
-  for (auto& list_view : list_views_)
+  for (auto* list_view : list_views_)
     list_view->StartUpdating(dialog_window_id);
 }
 

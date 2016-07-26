@@ -362,7 +362,7 @@ void StorageManagerHandler::UpdateOtherUsersSize() {
   user_sizes_.clear();
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
-  for (const auto& user : users) {
+  for (auto* user : users) {
     if (user->is_active())
       continue;
     other_users_.push_back(user);

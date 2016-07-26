@@ -130,7 +130,7 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
     const std::vector<Profile*> profile_list =
         profile_manager->GetLoadedProfiles();
     if (!profile_list.empty()) {
-      for (const auto& i : profile_list) {
+      for (auto* i : profile_list) {
         const extensions::Extension* extension = GetExtensionForTab(i, tab);
         if (extension)
           return extension->id();

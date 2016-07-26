@@ -40,7 +40,7 @@ initWithAvatarManager:(AccountAvatarFetcherManager*)avatarManager
 
 - (instancetype)initWithDelegate:
     (id<BasePasswordsContentViewDelegate>)delegate {
-  auto request_context = delegate.model->GetProfile()->GetRequestContext();
+  auto* request_context = delegate.model->GetProfile()->GetRequestContext();
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager(
       [[AccountAvatarFetcherManager alloc]
           initWithRequestContext:request_context]);

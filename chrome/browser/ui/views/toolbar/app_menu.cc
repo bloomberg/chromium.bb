@@ -633,7 +633,7 @@ class AppMenu::ZoomView : public AppMenuView {
     WebContents* contents = GetActiveWebContents();
     int zoom = 100;
     if (contents) {
-      auto zoom_controller = zoom::ZoomController::FromWebContents(contents);
+      auto* zoom_controller = zoom::ZoomController::FromWebContents(contents);
       if (zoom_controller)
         zoom = zoom_controller->GetZoomPercent();
       increment_button_->SetEnabled(zoom <
@@ -657,7 +657,7 @@ class AppMenu::ZoomView : public AppMenuView {
 
       WebContents* selected_tab = GetActiveWebContents();
       if (selected_tab) {
-        auto zoom_controller =
+        auto* zoom_controller =
             zoom::ZoomController::FromWebContents(selected_tab);
         DCHECK(zoom_controller);
         // Enumerate all zoom factors that can be used in PageZoom::Zoom.

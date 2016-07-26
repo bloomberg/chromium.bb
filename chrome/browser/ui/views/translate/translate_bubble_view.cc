@@ -584,7 +584,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     base::string16 target_language_name =
         model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
     std::vector<size_t> offsets;
-    auto styled_label = new views::StyledLabel(
+    auto* styled_label = new views::StyledLabel(
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_NEW,
                                    original_language_name, target_language_name,
                                    &offsets),

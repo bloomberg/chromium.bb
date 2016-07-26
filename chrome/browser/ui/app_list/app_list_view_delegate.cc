@@ -113,7 +113,7 @@ void PopulateUsers(const base::FilePath& active_profile_path,
   std::vector<ProfileAttributesEntry*> entries = g_browser_process->
       profile_manager()->GetProfileAttributesStorage().
       GetAllProfilesAttributesSortedByName();
-  for (const auto entry : entries) {
+  for (const auto* entry : entries) {
     app_list::AppListViewDelegate::User user;
     user.name = entry->GetName();
     user.email = entry->GetUserName();

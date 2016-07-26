@@ -35,9 +35,9 @@ class LanguageOptionsWebUITest : public InProcessBrowserTest {
   // a subset of languages from the list of available languages.
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
-    auto setting_name = prefs::kLanguagePreferredLanguages;
+    auto* setting_name = prefs::kLanguagePreferredLanguages;
 #else
-    auto setting_name = prefs::kAcceptLanguages;
+    auto* setting_name = prefs::kAcceptLanguages;
 #endif
 
     const GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);

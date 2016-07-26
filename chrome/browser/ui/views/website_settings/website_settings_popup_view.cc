@@ -670,10 +670,10 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     layout->AddPaddingRow(1, kContentRowSpacing);
   }
 
-  for (auto object : chosen_object_info_list) {
+  for (auto* object : chosen_object_info_list) {
     layout->StartRow(1, content_column);
     // The view takes ownership of the object info.
-    auto object_view = new ChosenObjectView(base::WrapUnique(object));
+    auto* object_view = new ChosenObjectView(base::WrapUnique(object));
     object_view->AddObserver(this);
     layout->AddView(object_view, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
