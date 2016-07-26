@@ -149,7 +149,8 @@ TEST_F(AlertCoordinatorTest, ValidateDismissalOnStop) {
 }
 
 // Tests the alert coordinator dismissal when the object is destroyed.
-TEST_F(AlertCoordinatorTest, ValidateDismissalOnDestroy) {
+// TODO(crbug.com/631049): This test is failing on Xcode 8 bot.
+TEST_F(AlertCoordinatorTest, DISABLED_ValidateDismissalOnDestroy) {
   // Setup.
   UIViewController* viewController = getViewController();
   AlertCoordinator* alertCoordinator = getAlertCoordinator(viewController);
