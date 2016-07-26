@@ -197,7 +197,10 @@ public class LibraryLoader {
                 TraceEvent.begin("LibraryLoader.asyncPrefetchLibrariesToMemory");
                 int percentage = nativePercentageOfResidentNativeLibraryCode();
                 boolean success = false;
-                if (coldStart) {
+                // Arbitrary percentage threshold. If most of the native library is already
+                // resident (likely with monochrome), don't bother creating a prefetch process.
+                boolean prefetch = coldStart && percentage < 90;
+                if (prefetch) {
                     success = nativeForkAndPrefetchNativeLibrary();
                     if (!success) {
                         Log.w(TAG, "Forking a process to prefetch the native library failed.");
@@ -206,7 +209,7 @@ public class LibraryLoader {
                 // As this runs in a background thread, it can be called before histograms are
                 // initialized. In this instance, histograms are dropped.
                 RecordHistogram.initialize();
-                if (coldStart) {
+                if (prefetch) {
                     RecordHistogram.recordBooleanHistogram("LibraryLoader.PrefetchStatus", success);
                 }
                 if (percentage != -1) {
