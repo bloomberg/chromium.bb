@@ -64336,6 +64336,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Call.LifetimeInSeconds" units="seconds">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The lifetime of a call. Recorded when a Call instance is destroyed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Call.PacerBitrateInKbps" units="kbps">
   <owner>holmer@chromium.org</owner>
   <summary>
@@ -64829,7 +64836,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     Configured video codec for a sent video stream. Recorded when a
-    VideoSendStream is created.
+    VideoSendStream is destroyed (for streams whose lifetime is longer than 10
+    seconds).
   </summary>
 </histogram>
 
@@ -65082,6 +65090,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average received width per frame for a received video stream. Recorded
     when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.ReceiveStreamLifetimeInSeconds" units="seconds">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The lifetime of a video receive stream. Recorded when a VideoReceiveStream
+    instance is destroyed.
   </summary>
 </histogram>
 
@@ -65441,6 +65457,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     input to video engine until a packet is sent to the network. For each sent
     packet, the maximum delay of all sent packets over the last second is
     reported. The average of these reported delays is recorded.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.SendStreamLifetimeInSeconds" units="seconds">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The lifetime of a video send stream. Recorded when a VideoSendStream
+    instance is destroyed.
   </summary>
 </histogram>
 
