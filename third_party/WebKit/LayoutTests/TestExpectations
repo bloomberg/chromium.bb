@@ -1375,3 +1375,5 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-eleme
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollTo.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scroll.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
+
+crbug.com/630996 [ Win7 Win10 Linux ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Skip ]
