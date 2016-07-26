@@ -216,10 +216,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
     // Update cursor location if mouse event caused it to change.
     gfx::Point mouse_location = aura::Env::GetInstance()->last_mouse_location();
-    if (mouse_location != widget_->GetNativeWindow()->bounds().origin()) {
-      gfx::Rect bounds = widget_->GetNativeWindow()->bounds();
+    gfx::Rect bounds = widget_->GetWindowBoundsInScreen();
+    if (mouse_location != bounds.origin()) {
       bounds.set_origin(mouse_location);
-      widget_->GetNativeWindow()->SetBounds(bounds);
+      widget_->SetBounds(bounds);
     }
 
     UpdateCursorScale();
