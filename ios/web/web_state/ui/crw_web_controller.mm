@@ -5319,10 +5319,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self webPageChanged];
   }
 
-  // Fast back forward navigation does not call |didFinishNavigation:|, so
-  // signal did finish navigation explicitly.
   [self updateSSLStatusForCurrentNavigationItem];
-  [self didFinishNavigation];
+
+  // Fast back forward navigation may not call |didFinishNavigation:|, so
+  // signal did finish navigation explicitly.
+  if (_lastRegisteredRequestURL == _documentURL) {
+    [self didFinishNavigation];
+  }
 }
 
 - (void)webViewTitleDidChange {
