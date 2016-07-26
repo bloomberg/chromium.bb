@@ -267,7 +267,7 @@ void MdTextButton::UpdateColors() {
           ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
           : is_default()
                 ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
-                : SK_ColorTRANSPARENT;
+                : SK_ColorWHITE;
 
   const SkAlpha kStrokeOpacity = 0x1A;
   SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))
