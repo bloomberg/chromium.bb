@@ -30,6 +30,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -167,10 +168,12 @@ void AwMainDelegate::PreSandboxStartup() {
     crash_signal_fd =
         global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
   }
-  if (process_type.empty() &&
-      command_line.HasSwitch(switches::kSingleProcess)) {
-    // "webview" has a special treatment in breakpad_linux.cc.
-    process_type = "webview";
+  if (process_type.empty()) {
+    if (command_line.HasSwitch(switches::kSingleProcess)) {
+      process_type = breakpad::kWebViewSingleProcessType;
+    } else {
+      process_type = breakpad::kBrowserProcessType;
+    }
   }
 
   crash_reporter::EnableMicrodumpCrashReporter(process_type, crash_signal_fd);

@@ -17,6 +17,10 @@ namespace breakpad {
 extern void InitCrashReporter(const std::string& process_type);
 
 #if defined(OS_ANDROID)
+
+const char kWebViewSingleProcessType[] = "webview";
+const char kBrowserProcessType[] = "browser";
+
 // Enables the crash reporter in child processes.
 extern void InitNonBrowserCrashReporterForAndroid(
     const std::string& process_type);
