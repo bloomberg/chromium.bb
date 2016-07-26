@@ -31,18 +31,11 @@
 #ifndef WebFrame_h
 #define WebFrame_h
 
-#include "WebCompositionUnderline.h"
-#include "WebHistoryItem.h"
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
-#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebTreeScopeType.h"
 #include <memory>
@@ -71,7 +64,6 @@ class WebFrameImplBase;
 class WebLayer;
 class WebLocalFrame;
 class WebPerformance;
-class WebRange;
 class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebSharedWorkerRepositoryClient;
@@ -82,16 +74,11 @@ class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
 struct WebConsoleMessage;
-struct WebFindOptions;
-struct WebFloatPoint;
-struct WebFloatRect;
 struct WebFrameOwnerProperties;
-struct WebPoint;
 struct WebPrintParams;
 struct WebRect;
 struct WebScriptSource;
 struct WebSize;
-struct WebURLLoaderOptions;
 
 template <typename T> class WebVector;
 

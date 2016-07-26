@@ -5,8 +5,11 @@
 #ifndef WebLocalFrame_h
 #define WebLocalFrame_h
 
+#include "WebCompositionUnderline.h"
 #include "WebFrame.h"
 #include "WebFrameLoadType.h"
+#include "WebHistoryItem.h"
+#include "public/platform/WebCachePolicy.h"
 
 namespace blink {
 
@@ -15,14 +18,16 @@ class WebContentSettingsClient;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebFrameClient;
-class WebNode;
+class WebFrameWidget;
+class WebRange;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
-class WebFrameWidget;
 enum class WebAppBannerPromptReply;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
+struct WebFindOptions;
+struct WebFloatRect;
 struct WebPrintPresetOptions;
 
 // Interface for interacting with in process frames. This contains methods that

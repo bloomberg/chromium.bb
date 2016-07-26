@@ -31,6 +31,7 @@
 #include "grit/components_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"

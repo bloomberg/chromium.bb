@@ -33,6 +33,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"

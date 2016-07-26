@@ -17,6 +17,7 @@
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"

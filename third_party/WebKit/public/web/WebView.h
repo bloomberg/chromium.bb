@@ -38,8 +38,6 @@
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
-#include "WebHistoryCommitType.h"
-#include "WebHistoryItem.h"
 #include "WebWidget.h"
 
 namespace blink {

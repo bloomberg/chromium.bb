@@ -35,6 +35,7 @@
 #include "WebExceptionCode.h"
 #include "WebFrame.h"
 #include "WebNode.h"
+#include "public/platform/WebColor.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebVector.h"

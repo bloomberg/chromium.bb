@@ -28,6 +28,7 @@
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
