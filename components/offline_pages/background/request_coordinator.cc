@@ -29,13 +29,6 @@ void RecordOfflinerResultUMA(Offliner::RequestStatus request_status) {
                             Offliner::RequestStatus::STATUS_COUNT);
 }
 
-// TODO(dougarnett/petewil): Move to Policy object. Also consider lower minimum
-// battery percentage once there is some processing time limits in place.
-const Scheduler::TriggerConditions kUserRequestTriggerConditions(
-    false /* require_power_connected */,
-    50 /* minimum_battery_percentage */,
-    false /* require_unmetered_network */);
-
 // Timeout is 2.5 minutes based on the size of Marshmallow doze mode
 // maintenance window (3 minutes)
 // TODO(petewil): Find the optimal timeout based on data for 2G connections and
@@ -234,9 +227,13 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   TryNextRequest();
 }
 
-const Scheduler::TriggerConditions&
+const Scheduler::TriggerConditions
 RequestCoordinator::GetTriggerConditionsForUserRequest() {
-  return kUserRequestTriggerConditions;
+  Scheduler::TriggerConditions trigger_conditions(
+      policy_->PowerRequiredForUserRequestedPage(),
+      policy_->BatteryPercentageRequiredForUserRequestedPage(),
+      policy_->UnmeteredNetworkRequiredForUserRequestedPage());
+  return trigger_conditions;
 }
 
 void RequestCoordinator::GetOffliner() {

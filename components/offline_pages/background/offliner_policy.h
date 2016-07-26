@@ -48,22 +48,37 @@ class OfflinerPolicy {
   }
 
   // The max number of times we will retry a request.
-  int GetMaxRetries() { return kMaxRetries; }
+  int GetMaxRetries() const { return kMaxRetries; }
+
+  bool PowerRequiredForUserRequestedPage() const { return false; }
+
+  bool PowerRequiredForNonUserRequestedPage() const { return true; }
+
+  bool UnmeteredNetworkRequiredForUserRequestedPage() const { return false; }
+
+  bool UnmeteredNetworkRequiredForNonUserRequestedPage() const { return true; }
+
+  int BatteryPercentageRequiredForUserRequestedPage() const { return 50; }
+
+  // This is so low because we require the device to be plugged in and charging.
+  // If we decide to allow non-user requested pages when not plugged in, we
+  // should raise this somewhat higher.
+  int BatteryPercentageRequiredForNonUserRequestedPage() const { return 25; }
 
   // How many seconds to keep trying new pages for, before we give up,  and
   // return to the scheduler.
-  int GetBackgroundProcessingTimeBudgetSeconds() {
+  int GetBackgroundProcessingTimeBudgetSeconds() const {
     return kBackgroundTimeBudgetSeconds;
   }
 
   // How long do we allow a page to load before giving up on it
-  int GetSinglePageTimeBudgetInSeconds() {
+  int GetSinglePageTimeBudgetInSeconds() const {
     return kSinglePageTimeBudgetSeconds;
   }
 
   // How much battery must we have before fetching a page not explicitly
   // requested by the user?
-  int GetMinimumBatteryPercentageForNonUserRequestOfflining() {
+  int GetMinimumBatteryPercentageForNonUserRequestOfflining() const {
     return kMinimumBatteryPercentageForNonUserRequestOfflining;
   }
 
