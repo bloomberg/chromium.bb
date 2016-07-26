@@ -54,6 +54,21 @@ Accelerator GetAccelerator(KeyboardCode code, int mask) {
   return Accelerator(code, mask);
 }
 
+// Possible flags used for accelerators.
+const int kAcceleratorModifiers[] = {EF_SHIFT_DOWN, EF_CONTROL_DOWN,
+                                     EF_ALT_DOWN, EF_COMMAND_DOWN};
+
+// Returns a set of flags from id, where id is a bitmask into
+// kAcceleratorModifiers used to determine which flags are set.
+int BuildAcceleratorModifier(int id) {
+  int result = 0;
+  for (size_t i = 0; i < arraysize(kAcceleratorModifiers); ++i) {
+    if (((1 << i) & id) != 0)
+      result |= kAcceleratorModifiers[i];
+  }
+  return result;
+}
+
 // AcceleratorManagerDelegate implementation that records calls to interface
 // using the following format.
 // . OnAcceleratorRegistered() -> 'Register ' + id
@@ -205,41 +220,43 @@ TEST_F(AcceleratorManagerTest, UnregisterAll) {
 TEST_F(AcceleratorManagerTest, Process) {
   TestTarget target;
 
-  // Test all 2*2*2 cases (shift/control/alt = on/off).
-  for (int mask = 0; mask < 2 * 2 * 2; ++mask) {
-    Accelerator accelerator(GetAccelerator(VKEY_A, mask));
-    const base::string16 text = accelerator.GetShortcutText();
+  // Test all cases of possible modifiers.
+  for (size_t i = 0; i < (1 << arraysize(kAcceleratorModifiers)); ++i) {
+    const int modifiers = BuildAcceleratorModifier(i);
+    Accelerator accelerator(GetAccelerator(VKEY_A, modifiers));
     manager_.Register(accelerator, AcceleratorManager::kNormalPriority,
                       &target);
 
     // The registered accelerator is processed.
     const int last_count = target.accelerator_pressed_count();
-    EXPECT_TRUE(manager_.Process(accelerator)) << text;
-    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << text;
+    EXPECT_TRUE(manager_.Process(accelerator)) << i;
+    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << i;
 
     // The non-registered accelerators are not processed.
     accelerator.set_type(ET_UNKNOWN);
-    EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
+    EXPECT_FALSE(manager_.Process(accelerator)) << i;  // different type
     accelerator.set_type(ET_KEY_RELEASED);
-    EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
+    EXPECT_FALSE(manager_.Process(accelerator)) << i;  // different type
 
-    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_UNKNOWN, mask)))
-        << text;  // different vkey
-    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_B, mask)))
-        << text;  // different vkey
-    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_SHIFT, mask)))
-        << text;  // different vkey
+    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_UNKNOWN, modifiers)))
+        << i;  // different vkey
+    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_B, modifiers)))
+        << i;  // different vkey
+    EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_SHIFT, modifiers)))
+        << i;  // different vkey
 
-    for (int test_mask = 0; test_mask < 2 * 2 * 2; ++test_mask) {
-      if (test_mask == mask)
+    for (size_t test_i = 0; test_i < (1 << arraysize(kAcceleratorModifiers));
+         ++test_i) {
+      if (test_i == i)
         continue;
-      const Accelerator test_accelerator(GetAccelerator(VKEY_A, test_mask));
-      const base::string16 test_text = test_accelerator.GetShortcutText();
-      EXPECT_FALSE(manager_.Process(test_accelerator))
-          << text << ", " << test_text;  // different modifiers
+      const int test_modifiers = BuildAcceleratorModifier(test_i);
+      const Accelerator test_accelerator(
+          GetAccelerator(VKEY_A, test_modifiers));
+      EXPECT_FALSE(manager_.Process(test_accelerator)) << " i=" << i
+                                                       << " test_i=" << test_i;
     }
 
-    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << text;
+    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << i;
     manager_.UnregisterAll(&target);
   }
 }

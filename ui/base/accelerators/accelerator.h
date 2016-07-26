@@ -27,16 +27,23 @@ class PlatformAccelerator;
 
 // This is a cross-platform class for accelerator keys used in menus.
 // |platform_accelerator| should be used to store platform specific data.
+//
+// While |modifiers| may include EF_IS_REPEAT, EF_IS_REPEAT is not considered
+// an intrinsic part of an Accelerator. This is done so that an accelerator
+// for a particular KeyEvent matches an accelerator with or without the repeat
+// flag. A side effect of this is that == (and <) does not consider the
+// repeat flag in its comparison.
 class UI_BASE_EXPORT Accelerator {
  public:
   Accelerator();
+  // NOTE: this constructor strips out non key related flags.
   Accelerator(ui::KeyboardCode keycode, int modifiers);
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();
 
   // Masks out all the non-modifiers KeyEvent |flags| and returns only the
-  // available modifier ones.
+  // available modifier ones. This does not include EF_IS_REPEAT.
   static int MaskOutKeyEventFlags(int flags);
 
   Accelerator& operator=(const Accelerator& accelerator);
@@ -76,20 +83,15 @@ class UI_BASE_EXPORT Accelerator {
     return platform_accelerator_.get();
   }
 
-  void set_is_repeat(bool is_repeat) { is_repeat_ = is_repeat; }
-
- protected:
+ private:
   // The keycode (VK_...).
   KeyboardCode key_code_;
 
   // The event type (usually ui::ET_KEY_PRESSED).
   EventType type_;
 
-  // The state of the Shift/Ctrl/Alt keys.
+  // The state of the Shift/Ctrl/Alt keys. This corresponds to Event::flags().
   int modifiers_;
-
-  // True if the accelerator is created for an auto repeated key event.
-  bool is_repeat_;
 
   // Stores platform specific data. May be NULL.
   std::unique_ptr<PlatformAccelerator> platform_accelerator_;

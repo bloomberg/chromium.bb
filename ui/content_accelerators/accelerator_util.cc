@@ -26,6 +26,10 @@ int GetModifiersFromNativeWebKeyboardEvent(
   if (event.modifiers & content::NativeWebKeyboardEvent::MetaKey)
     modifiers |= ui::EF_COMMAND_DOWN;
 #endif
+#if defined(USE_AURA)
+  if (event.os_event && static_cast<ui::KeyEvent*>(event.os_event)->is_repeat())
+    modifiers |= ui::EF_IS_REPEAT;
+#endif
   return modifiers;
 }
 
@@ -38,10 +42,6 @@ ui::Accelerator GetAcceleratorFromNativeWebKeyboardEvent(
       GetModifiersFromNativeWebKeyboardEvent(event));
   if (event.type == blink::WebInputEvent::KeyUp)
     accelerator.set_type(ui::ET_KEY_RELEASED);
-#if defined(USE_AURA)
-  if (event.os_event && static_cast<ui::KeyEvent*>(event.os_event)->is_repeat())
-    accelerator.set_is_repeat(true);
-#endif
   return accelerator;
 }
 
