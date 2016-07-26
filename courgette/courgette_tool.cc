@@ -277,9 +277,10 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
     old_source.Init(old_stream ? *old_stream : empty_sink);
     new_source.Init(new_stream ? *new_stream : empty_sink);
     courgette::SinkStream patch_stream;
-    courgette::BSDiffStatus status =
-        courgette::CreateBinaryPatch(&old_source, &new_source, &patch_stream);
-    if (status != courgette::OK) Problem("-xxx failed.");
+    bsdiff::BSDiffStatus status =
+        bsdiff::CreateBinaryPatch(&old_source, &new_source, &patch_stream);
+    if (status != bsdiff::OK)
+      Problem("-xxx failed.");
 
     std::string append = std::string("-") + base::IntToString(i);
 
@@ -327,7 +328,8 @@ void GenerateEnsemblePatch(const base::FilePath& old_file,
   courgette::Status status =
       courgette::GenerateEnsemblePatch(&old_stream, &new_stream, &patch_stream);
 
-  if (status != courgette::C_OK) Problem("-gen failed.");
+  if (status != courgette::C_OK)
+    Problem("-gen failed.");
 
   WriteSinkToFile(&patch_stream, patch_file);
 }
@@ -398,10 +400,11 @@ void GenerateBSDiffPatch(const base::FilePath& old_file,
   new_stream.Init(new_buffer.data(), new_buffer.length());
 
   courgette::SinkStream patch_stream;
-  courgette::BSDiffStatus status =
-      courgette::CreateBinaryPatch(&old_stream, &new_stream, &patch_stream);
+  bsdiff::BSDiffStatus status =
+      bsdiff::CreateBinaryPatch(&old_stream, &new_stream, &patch_stream);
 
-  if (status != courgette::OK) Problem("-genbsdiff failed.");
+  if (status != bsdiff::OK)
+    Problem("-genbsdiff failed.");
 
   WriteSinkToFile(&patch_stream, patch_file);
 }
@@ -418,10 +421,11 @@ void ApplyBSDiffPatch(const base::FilePath& old_file,
   patch_stream.Init(patch_buffer.data(), patch_buffer.length());
 
   courgette::SinkStream new_stream;
-  courgette::BSDiffStatus status =
-      courgette::ApplyBinaryPatch(&old_stream, &patch_stream, &new_stream);
+  bsdiff::BSDiffStatus status =
+      bsdiff::ApplyBinaryPatch(&old_stream, &patch_stream, &new_stream);
 
-  if (status != courgette::OK) Problem("-applybsdiff failed.");
+  if (status != bsdiff::OK)
+    Problem("-applybsdiff failed.");
 
   WriteSinkToFile(&new_stream, new_file);
 }

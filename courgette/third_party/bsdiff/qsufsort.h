@@ -48,7 +48,6 @@
 #ifndef COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
 #define COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
 
-namespace courgette {
 namespace qsuf {
 
 // ------------------------------------------------------------------------
@@ -59,7 +58,8 @@ namespace qsuf {
 // (2) indentation and spacing,
 // (3) using 'const',
 // (4) changing the V and I parameters from int* to template <typename T>.
-// (5) optimizing split() and search(); fix styles.
+// (5) optimizing split(); fix styles.
+// (6) moving matchlen() and search() to a separate file.
 //
 // The code appears to be a rewritten version of the suffix array algorithm
 // presented in "Faster Suffix Sorting" by N. Jesper Larsson and Kunihiko
@@ -221,6 +221,5 @@ static void qsufsort(T I, T V, const unsigned char* old, int oldsize) {
 // ------------------------------------------------------------------------
 
 }  // namespace qsuf
-}  // namespace courgette
 
 #endif  // COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_

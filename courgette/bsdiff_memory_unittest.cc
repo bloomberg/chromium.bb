@@ -25,8 +25,9 @@ void BSDiffMemoryTest::GenerateAndTestPatch(const std::string& old_text,
   new1.Init(new_text.c_str(), new_text.length());
 
   courgette::SinkStream patch1;
-  courgette::BSDiffStatus status = CreateBinaryPatch(&old1, &new1, &patch1);
-  EXPECT_EQ(courgette::OK, status);
+  bsdiff::BSDiffStatus status =
+      bsdiff::CreateBinaryPatch(&old1, &new1, &patch1);
+  EXPECT_EQ(bsdiff::OK, status);
 
   courgette::SourceStream old2;
   courgette::SourceStream patch2;
@@ -34,8 +35,8 @@ void BSDiffMemoryTest::GenerateAndTestPatch(const std::string& old_text,
   patch2.Init(patch1);
 
   courgette::SinkStream new2;
-  status = ApplyBinaryPatch(&old2, &patch2, &new2);
-  EXPECT_EQ(courgette::OK, status);
+  status = bsdiff::ApplyBinaryPatch(&old2, &patch2, &new2);
+  EXPECT_EQ(bsdiff::OK, status);
   EXPECT_EQ(new_text.length(), new2.Length());
   EXPECT_EQ(0, memcmp(new_text.c_str(), new2.Buffer(), new_text.length()));
 }

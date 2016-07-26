@@ -47,6 +47,11 @@
 #include "base/files/file_util.h"
 
 namespace courgette {
+class SourceStream;
+class SinkStream;
+}  // namespace courgette
+
+namespace bsdiff {
 
 enum BSDiffStatus {
   OK = 0,
@@ -57,22 +62,19 @@ enum BSDiffStatus {
   WRITE_ERROR = 5
 };
 
-class SourceStream;
-class SinkStream;
-
 // Creates a binary patch.
 //
-BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
-                               SourceStream* new_stream,
-                               SinkStream* patch_stream);
+BSDiffStatus CreateBinaryPatch(courgette::SourceStream* old_stream,
+                               courgette::SourceStream* new_stream,
+                               courgette::SinkStream* patch_stream);
 
 // Applies the given patch file to a given source file. This method validates
 // the CRC of the original file stored in the patch file, before applying the
 // patch to it.
 //
-BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
-                              SourceStream* patch_stream,
-                              SinkStream* new_stream);
+BSDiffStatus ApplyBinaryPatch(courgette::SourceStream* old_stream,
+                              courgette::SourceStream* patch_stream,
+                              courgette::SinkStream* new_stream);
 
 // As above, but simply takes the file paths.
 BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_stream,
@@ -94,5 +96,6 @@ typedef struct MBSPatchHeader_ {
 // null at end of string.
 #define MBS_PATCH_HEADER_TAG "GBSDIF42"
 
-}  // namespace
+}  // namespace bsdiff
+
 #endif  // COURGETTE_THIRD_PARTY_BSDIFF_BSDIFF_H_

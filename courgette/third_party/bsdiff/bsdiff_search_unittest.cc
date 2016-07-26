@@ -20,11 +20,11 @@ TEST(BSDiffSearchTest, Search) {
   const unsigned char* buf = reinterpret_cast<const unsigned char*>(str);
   std::vector<int> I(size + 1);
   std::vector<int> V(size + 1);
-  courgette::qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
+  qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
 
   // Specific queries.
   const struct {
-    int exp_pos;  // -1 means "don't care".
+    int exp_match_pos;  // -1 means "don't care".
     int exp_match_size;
     const char* query_str;
   } test_cases[] = {
@@ -44,7 +44,7 @@ TEST(BSDiffSearchTest, Search) {
       // Exact and non-unique match: take lexicographical first.
       {-1, 3, "the"},  // Non-unique prefix.
       {-1, 1, " "},
-      // Partial and non-unique match: no guarantees on |pos|!
+      // Partial and non-unique match: no guarantees on |match.pos|!
       {-1, 4, "the apple"},  // query      < "the l"... < "the q"...
       {-1, 4, "the opera"},  // "the l"... < query      < "the q"...
       {-1, 4, "the zebra"},  // "the l"... < "the q"... < query
@@ -64,22 +64,21 @@ TEST(BSDiffSearchTest, Search) {
         reinterpret_cast<const unsigned char*>(test_case.query_str);
 
     // Perform the search.
-    int pos = 0;
-    int match_size =
-        courgette::search(&I[0], buf, size, query_buf, query_size, &pos);
+    bsdiff::SearchResult match =
+        bsdiff::search(&I[0], buf, size, query_buf, query_size);
 
     // Check basic properties and match with expected values.
-    EXPECT_GE(match_size, 0);
-    EXPECT_LE(match_size, query_size);
-    if (match_size > 0) {
-      EXPECT_GE(pos, 0);
-      EXPECT_LE(pos, size - match_size);
-      EXPECT_EQ(0, ::memcmp(buf + pos, query_buf, match_size));
+    EXPECT_GE(match.size, 0);
+    EXPECT_LE(match.size, query_size);
+    if (match.size > 0) {
+      EXPECT_GE(match.pos, 0);
+      EXPECT_LE(match.pos, size - match.size);
+      EXPECT_EQ(0, ::memcmp(buf + match.pos, query_buf, match.size));
     }
-    if (test_case.exp_pos >= 0) {
-      EXPECT_EQ(test_case.exp_pos, pos);
+    if (test_case.exp_match_pos >= 0) {
+      EXPECT_EQ(test_case.exp_match_pos, match.pos);
     }
-    EXPECT_EQ(test_case.exp_match_size, match_size);
+    EXPECT_EQ(test_case.exp_match_size, match.size);
   }
 }
 
@@ -103,7 +102,7 @@ TEST(BSDiffSearchTest, SearchExact) {
         reinterpret_cast<const unsigned char*>(test_cases[idx]);
     std::vector<int> I(size + 1);
     std::vector<int> V(size + 1);
-    courgette::qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
+    qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
 
     // Test exact matches for every non-empty substring.
     for (int lo = 0; lo < size; ++lo) {
@@ -113,14 +112,13 @@ TEST(BSDiffSearchTest, SearchExact) {
         ASSERT_EQ(query_size, hi - lo);
         const unsigned char* query_buf =
             reinterpret_cast<const unsigned char*>(query.c_str());
-        int pos = 0;
-        int match_size =
-            courgette::search(&I[0], buf, size, query_buf, query_size, &pos);
+        bsdiff::SearchResult match =
+            bsdiff::search(&I[0], buf, size, query_buf, query_size);
 
-        EXPECT_EQ(query_size, match_size);
-        EXPECT_GE(pos, 0);
-        EXPECT_LE(pos, size - match_size);
-        std::string suffix(buf + pos, buf + size);
+        EXPECT_EQ(query_size, match.size);
+        EXPECT_GE(match.pos, 0);
+        EXPECT_LE(match.pos, size - match.size);
+        std::string suffix(buf + match.pos, buf + size);
         EXPECT_EQ(suffix.substr(0, query_size), query);
       }
     }

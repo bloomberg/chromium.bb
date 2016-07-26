@@ -208,8 +208,8 @@ void DeltaUpdateOpPatch::DoRun(const ComponentUnpacker::Callback& callback) {
 
   if (operation_ == kBsdiff) {
     DonePatching(callback,
-                 courgette::ApplyBinaryPatch(input_abs_path_, patch_abs_path_,
-                                             output_abs_path_));
+                 bsdiff::ApplyBinaryPatch(input_abs_path_, patch_abs_path_,
+                                          output_abs_path_));
   } else if (operation_ == kCourgette) {
     DonePatching(callback, courgette::ApplyEnsemblePatch(
                                input_abs_path_.value().c_str(),
@@ -224,7 +224,7 @@ void DeltaUpdateOpPatch::DonePatching(
     const ComponentUnpacker::Callback& callback,
     int result) {
   if (operation_ == kBsdiff) {
-    if (result == courgette::OK) {
+    if (result == bsdiff::OK) {
       callback.Run(ComponentUnpacker::kNone, 0);
     } else {
       callback.Run(ComponentUnpacker::kDeltaOperationFailure,

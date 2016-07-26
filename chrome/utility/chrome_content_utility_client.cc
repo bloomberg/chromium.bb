@@ -266,9 +266,9 @@ void ChromeContentUtilityClient::OnPatchFileBsdiff(
   if (input_file.empty() || patch_file.empty() || output_file.empty()) {
     Send(new ChromeUtilityHostMsg_PatchFile_Finished(-1));
   } else {
-    const int patch_status = courgette::ApplyBinaryPatch(input_file,
-                                                         patch_file,
-                                                         output_file);
+    const int patch_status = bsdiff::ApplyBinaryPatch(input_file,
+                                                      patch_file,
+                                                      output_file);
     Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
   }
   ReleaseProcessIfNeeded();

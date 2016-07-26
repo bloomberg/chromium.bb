@@ -44,7 +44,17 @@
 #include "courgette/crc.h"
 #include "courgette/streams.h"
 
-namespace courgette {
+namespace {
+
+using courgette::CalculateCrc;
+using courgette::SinkStream;
+using courgette::SinkStreamSet;
+using courgette::SourceStream;
+using courgette::SourceStreamSet;
+
+}  // namespace
+
+namespace bsdiff {
 
 BSDiffStatus MBS_ReadHeader(SourceStream* stream, MBSPatchHeader* header) {
   if (!stream->Read(header->tag, sizeof(header->tag)))
@@ -215,4 +225,4 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
   return OK;
 }
 
-}  // namespace
+}  // namespace bsdiff

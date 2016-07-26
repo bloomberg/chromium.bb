@@ -33,8 +33,9 @@
 //                --Samuel Huang <huangs@chromium.org>
 // 2015-08-19 - Optimized search() to be non-recursive.
 //                --Samuel Huang <huangs@chromium.org>
-// 2016-06-17 - Moved matchlen() and search() to a new file; format; changed
+// 2016-06-28 - Moved matchlen() and search() to a new file; format; changed
 //              search() use std::lexicographical_compare().
+// 2016-06-30 - Changed matchlen() input; changed search() to return struct.
 //                --Samuel Huang <huangs@chromium.org>
 
 // Copyright 2016 The Chromium Authors. All rights reserved.
@@ -45,57 +46,52 @@
 #define COURGETTE_THIRD_PARTY_BSDIFF_BSDIFF_SEARCH_H_
 
 #include <algorithm>
-#include <cstring>
 
-namespace courgette {
+namespace bsdiff {
 
-// Similar to ::memcmp(), but returns match length instead.
-inline int matchlen(const unsigned char* old,
-                    int oldsize,
-                    const unsigned char* newbuf,
-                    int newsize) {
-  int i;
+// Return values of search().
+struct SearchResult {
+  SearchResult(int pos_in, int size_in) : pos(pos_in), size(size_in) {}
+  int pos;
+  int size;
+};
 
-  for (i = 0; (i < oldsize) && (i < newsize); i++)
-    if (old[i] != newbuf[i])
-      break;
-
-  return i;
+// Similar to ::memcmp(), but assumes equal |size| and returns match length.
+inline int matchlen(const unsigned char* buf1,
+                    const unsigned char* buf2,
+                    int size) {
+  for (int i = 0; i < size; ++i)
+    if (buf1[i] != buf2[i])
+      return i;
+  return size;
 }
 
-// Finds a suffix in |old| that has the longest common prefix with |newbuf|,
+// Finds a suffix in |old| that has the longest common prefix with |keybuf|,
 // aided by suffix array |I| of |old|. Returns the match length, and writes to
 // |pos| a position of best match in |old|. If multiple such positions exist,
 // |pos| would take an arbitrary one.
 template <class T>
-int search(T I,
-           const unsigned char* old,
-           int oldsize,
-           const unsigned char* newbuf,
-           int newsize,
-           int* pos) {
+SearchResult search(T I,
+                    const unsigned char* srcbuf,
+                    int srcsize,
+                    const unsigned char* keybuf,
+                    int keysize) {
   int lo = 0;
-  int hi = oldsize;
+  int hi = srcsize;
   while (hi - lo >= 2) {
     int mid = (lo + hi) / 2;
-    if (std::lexicographical_compare(old + I[mid], old + oldsize, newbuf,
-                                     newbuf + newsize)) {
+    if (std::lexicographical_compare(
+            srcbuf + I[mid], srcbuf + srcsize, keybuf, keybuf + keysize)) {
       lo = mid;
     } else {
       hi = mid;
     }
   }
-
-  int x = matchlen(old + I[lo], oldsize - I[lo], newbuf, newsize);
-  int y = matchlen(old + I[hi], oldsize - I[hi], newbuf, newsize);
-  if (x > y) {
-    *pos = I[lo];
-    return x;
-  }
-  *pos = I[hi];
-  return y;
+  int x = matchlen(srcbuf + I[lo], keybuf, std::min(srcsize - I[lo], keysize));
+  int y = matchlen(srcbuf + I[hi], keybuf, std::min(srcsize - I[hi], keysize));
+  return (x > y) ? SearchResult(I[lo], x) : SearchResult(I[hi], y);
 }
 
-}  // namespace courgette
+}  // namespace bsdiff
 
 #endif  // COURGETTE_THIRD_PARTY_BSDIFF_BSDIFF_SEARCH_H_

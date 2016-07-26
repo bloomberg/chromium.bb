@@ -4,15 +4,26 @@
 
 #include "courgette/third_party/bsdiff/qsufsort.h"
 
-#include <stddef.h>
-
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+bool IsPermutation(const std::vector<int> v) {
+  std::vector<int> v_sorted(v);
+  std::sort(v_sorted.begin(), v_sorted.end());
+  for (int i = 0; i < static_cast<int>(v.size()); ++i)
+    if (i != v_sorted[i])
+      return false;
+  return true;
+}
+
+}  // namespace
 
 TEST(QSufSortTest, Sort) {
   const char* test_cases[] = {
@@ -31,29 +42,31 @@ TEST(QSufSortTest, Sort) {
   };
 
   for (size_t idx = 0; idx < arraysize(test_cases); ++idx) {
-    int len = static_cast<int>(::strlen(test_cases[idx]));
-    const unsigned char* s =
+    int size = static_cast<int>(::strlen(test_cases[idx]));
+    const unsigned char* buf =
         reinterpret_cast<const unsigned char*>(test_cases[idx]);
 
     // Generate the suffix array as I.
-    std::vector<int> I(len + 1);
-    std::vector<int> V(len + 1);
-    courgette::qsuf::qsufsort<int*>(&I[0], &V[0], s, len);
+    std::vector<int> I(size + 1);
+    std::vector<int> V(size + 1);
+    qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
 
-    // Expect that I[] is a permutation of [0, len].
-    std::vector<int> I_sorted(I);
-    std::sort(I_sorted.begin(), I_sorted.end());
-    for (int i = 0; i < len + 1; ++i)
-      EXPECT_EQ(i, I_sorted[i]);
+    // Expect I[] and V[] to be a permutation of [0, size].
+    EXPECT_TRUE(IsPermutation(I));
+    EXPECT_TRUE(IsPermutation(V));
+
+    // Expect V[] to be inverse of I[].
+    for (int i = 0; i < size + 1; ++i)
+      EXPECT_EQ(i, V[I[i]]);
 
     // First string must be empty string.
-    EXPECT_EQ(len, I[0]);
+    EXPECT_EQ(size, I[0]);
 
-    // Expect that the |len + 1| suffixes are strictly ordered.
-    const unsigned char* end = s + len;
-    for (int i = 0; i < len; ++i) {
-      const unsigned char* suf1 = s + I[i];
-      const unsigned char* suf2 = s + I[i + 1];
+    // Expect that the |size + 1| suffixes are strictly ordered.
+    const unsigned char* end = buf + size;
+    for (int i = 0; i < size; ++i) {
+      const unsigned char* suf1 = buf + I[i];
+      const unsigned char* suf2 = buf + I[i + 1];
       bool is_less = std::lexicographical_compare(suf1, end, suf2, end);
       EXPECT_TRUE(is_less);
     }

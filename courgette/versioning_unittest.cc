@@ -34,10 +34,10 @@ void VersioningTest::TestApplyingOldBsDiffPatch(
 
   courgette::SinkStream generated_stream;
 
-  courgette::BSDiffStatus status = courgette::ApplyBinaryPatch(
+  bsdiff::BSDiffStatus status = bsdiff::ApplyBinaryPatch(
       &old_stream, &patch_stream, &generated_stream);
 
-  EXPECT_EQ(status, courgette::OK);
+  EXPECT_EQ(status, bsdiff::OK);
 
   size_t expected_length = expected_buffer.size();
   size_t generated_length = generated_stream.Length();

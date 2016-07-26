@@ -65,7 +65,18 @@
 #include "courgette/third_party/bsdiff/paged_array.h"
 #include "courgette/third_party/bsdiff/qsufsort.h"
 
-namespace courgette {
+namespace {
+
+using courgette::CalculateCrc;
+using courgette::PagedArray;
+using courgette::SinkStream;
+using courgette::SinkStreamSet;
+using courgette::SourceStream;
+using courgette::SourceStreamSet;
+
+}  // namespace
+
+namespace bsdiff {
 
 static CheckBool WriteHeader(SinkStream* stream, MBSPatchHeader* header) {
   bool ok = stream->Write(header->tag, sizeof(header->tag));
@@ -165,26 +176,26 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   int lastscan = 0, lastpos = 0, lastoffset = 0;
 
   int scan = 0;
-  int match_length = 0;
+  SearchResult match(0, 0);
 
   while (scan < newsize) {
-    int pos = 0;
     int oldscore = 0;  // Count of how many bytes of the current match at |scan|
                        // extend the match at |lastscan|.
+    match.pos = 0;
 
-    scan += match_length;
+    scan += match.size;
     for (int scsc = scan; scan < newsize; ++scan) {
-      match_length = courgette::search<PagedArray<int>&>(
-          I, old, oldsize, newbuf + scan, newsize - scan, &pos);
+      match = search<PagedArray<int>&>(
+          I, old, oldsize, newbuf + scan, newsize - scan);
 
-      for (; scsc < scan + match_length; scsc++)
+      for (; scsc < scan + match.size; scsc++)
         if ((scsc + lastoffset < oldsize) &&
             (old[scsc + lastoffset] == newbuf[scsc]))
           oldscore++;
 
-      if ((match_length == oldscore) && (match_length != 0))
+      if ((match.size == oldscore) && (match.size != 0))
         break;  // Good continuing match, case (1)
-      if (match_length > oldscore + 8)
+      if (match.size > oldscore + 8)
         break;  // New seed match, case (2)
 
       if ((scan + lastoffset < oldsize) &&
@@ -193,7 +204,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       // Case (3) continues in this loop until we fall out of the loop (4).
     }
 
-    if ((match_length != oldscore) || (scan == newsize)) {  // Cases (2) and (4)
+    if ((match.size != oldscore) || (scan == newsize)) {  // Cases (2) and (4)
       // This next chunk of code finds the boundary between the bytes to be
       // copied as part of the current triple, and the bytes to be copied as
       // part of the next triple.  The |lastscan| match is extended forwards as
@@ -206,8 +217,8 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       int lenb = 0;
       if (scan < newsize) {  // i.e. not case (4); there is a match to extend.
         int score = 0, Sb = 0;
-        for (int i = 1; (scan >= lastscan + i) && (pos >= i); i++) {
-          if (old[pos - i] == newbuf[scan - i])
+        for (int i = 1; (scan >= lastscan + i) && (match.pos >= i); i++) {
+          if (old[match.pos - i] == newbuf[scan - i])
             score++;
           if (score * 2 - i > Sb * 2 - lenb) {
             Sb = score;
@@ -247,7 +258,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
               old[lastpos + lenf - overlap + i]) {
             score++;
           }
-          if (newbuf[scan - lenb + i] == old[pos - lenb + i]) {
+          if (newbuf[scan - lenb + i] == old[match.pos - lenb + i]) {
             score--;
           }
           if (score > Ss) {
@@ -284,7 +295,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
       uint32_t copy_count = lenf;
       uint32_t extra_count = gap;
-      int32_t seek_adjustment = ((pos - lenb) - (lastpos + lenf));
+      int32_t seek_adjustment = ((match.pos - lenb) - (lastpos + lenf));
 
       if (!control_stream_copy_counts->WriteVarint32(copy_count) ||
           !control_stream_extra_counts->WriteVarint32(extra_count) ||
@@ -300,7 +311,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 #endif
 
       lastscan = scan - lenb;  // Include the backward extension in seed.
-      lastpos = pos - lenb;    //  ditto.
+      lastpos = match.pos - lenb;    //  ditto.
       lastoffset = lastpos - lastscan;
     }
   }
@@ -339,4 +350,4 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   return OK;
 }
 
-}  // namespace courgette
+}  // namespace bsdiff
