@@ -111,6 +111,7 @@ function initialize(data, deviceId) {
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
   var countryCode = data.countryCode.toLowerCase();
   setBackupRestoreMode(data.textBackupRestore, data.backupRestoreEnabled);
+  setLocationServiceMode(data.textLocationService, data.locationServiceEnabled);
 
   var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
   termsView.addContentScripts([
@@ -148,7 +149,8 @@ var onLearnMore = function(event) {
 function setMetricsMode(text, canEnable, on) {
   var doc = appWindow.contentWindow.document;
   var enableMetrics = doc.getElementById('enable-metrics');
-  enableMetrics.hidden = !canEnable;
+  var enableMetricsContainer = doc.getElementById('enable-metrics-container');
+  enableMetricsContainer.hidden = !canEnable;
   enableMetrics.checked = on;
 
   var onSettings = function(event) {
@@ -166,7 +168,7 @@ function setMetricsMode(text, canEnable, on) {
 }
 
 /**
- * Sets current metrics mode.
+ * Sets current backup and restore mode.
  * @param {string} text String used to display next to checkbox.
  * @param {boolean} defaultCheckValue Defines the default value for backup and
  *     restore checkbox.
@@ -178,6 +180,21 @@ function setBackupRestoreMode(text, defaultCheckValue) {
   doc.getElementById('text-backup-restore').innerHTML = text;
   doc.getElementById('learn-more-link-backup-restore').addEventListener('click',
       onLearnMore);
+}
+
+/**
+ * Sets current usage of location service opt in mode.
+ * @param {string} text String used to display next to checkbox.
+ * @param {boolean} defaultCheckValue Defines the default value for location
+ *     service opt in.
+ */
+function setLocationServiceMode(text, defaultCheckValue) {
+  var doc = appWindow.contentWindow.document;
+  doc.getElementById('enable-location-service').checked = defaultCheckValue;
+
+  doc.getElementById('text-location-service').innerHTML = text;
+  doc.getElementById('learn-more-link-location-service').
+      addEventListener('click', onLearnMore);
 }
 
 /**
@@ -465,7 +482,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
       termsAccepted = true;
 
       var enableMetrics = doc.getElementById('enable-metrics');
-      if (!enableMetrics.hidden) {
+      var enableMetricsContainer =
+          doc.getElementById('enable-metrics-container');
+      if (!enableMetricsContainer.hidden) {
         sendNativeMessage('enableMetrics', {
           'enabled': enableMetrics.checked
         });
@@ -474,6 +493,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
       var enableBackupRestore = doc.getElementById('enable-backup-restore');
       sendNativeMessage('setBackupRestore', {
         'enabled': enableBackupRestore.checked
+      });
+
+      var enableLocationService = doc.getElementById('enable-location-service');
+      sendNativeMessage('setLocationService', {
+        'enabled': enableLocationService.checked
       });
 
       sendNativeMessage('startLso');

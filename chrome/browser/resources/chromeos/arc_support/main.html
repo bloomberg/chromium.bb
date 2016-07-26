@@ -62,17 +62,26 @@
         <div class="section-terms" id ="terms-container">
           <webview id="terms-view" partition="persist:arc_support"></webview>
         </div>
-        <div class="layout horizontal section-checkbox-container">
-          <input type="checkbox" class="checkbox-option" id="enable-metrics"
-              hidden>
+        <label class="layout horizontal section-checkbox-container">
+          <div class="checkbox-container" id="enable-metrics-container" hidden>
+            <input type="checkbox" class="checkbox-option" id="enable-metrics">
+          </div>
           <p class="checkbox-text" id="text-metrics"></p>
-        </div>
-        <div id="section-backup-restore" class="layout horizontal
-            section-checkbox-container">
-          <input type="checkbox" class="checkbox-option"
-              id="enable-backup-restore">
+        </label>
+        <label class="layout horizontal section-checkbox-container">
+          <div class="checkbox-container">
+            <input type="checkbox" class="checkbox-option"
+                id="enable-backup-restore">
+          </div>
           <p class="checkbox-text" id="text-backup-restore"></p>
-        </div>
+        </label>
+        <label class="layout horizontal section-checkbox-container">
+          <div class="checkbox-container">
+            <input type="checkbox" class="checkbox-option"
+                id="enable-location-service">
+          </div>
+          <p class="checkbox-text" id="text-location-service"></p>
+        </label>
         <div class="layout horizontal end-justified section-buttons">
           <paper-button class="white" id="button-cancel"
               i18n-content="buttonCancel">

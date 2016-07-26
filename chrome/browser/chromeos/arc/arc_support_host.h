@@ -49,6 +49,7 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   void SendMetricsMode();
   void EnableMetrics(bool is_enabled);
   void EnableBackupRestore(bool is_enabled);
+  void EnableLocationService(bool is_enabled);
 
   // Unowned pointer.
   Client* client_ = nullptr;

@@ -86,6 +86,9 @@ class ArcAuthService : public ArcService,
 
     // Called to notify that ARC enabled state has been updated.
     virtual void OnOptInEnabled(bool enabled) {}
+
+    // Called to notify that ARC has been initialized successfully.
+    virtual void OnInitialStart() {}
   };
 
   explicit ArcAuthService(ArcBridgeService* bridge_service);

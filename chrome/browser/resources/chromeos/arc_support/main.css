@@ -37,18 +37,32 @@ webview,
 }
 
 #terms-view {
-  width: 468px;
+  width: 640px;
 }
 
 .button-separator {
   width: 1px;
 }
 
-.checkbox-option {
-  height: 16px;
+.checkbox-container {
   margin: 0;
   padding: 0 8px 0 0;
-  width: 16px;
+}
+
+.checkbox-option {
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  width: 12px;
+}
+
+.checkbox-text {
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 0;
+  padding: 0;
 }
 
 .content {
@@ -81,7 +95,7 @@ webview,
 .section-buttons {
   margin: auto;
   padding: 16px 0 24px 0;
-  width: 468px;
+  width: 640px;
 }
 
 .section-flex {
@@ -93,7 +107,7 @@ webview,
   margin: auto;
   padding: 8px 0 0 0;
   text-align: left;
-  width: 468px;
+  width: 640px;
 }
 
 .section-terms {
@@ -103,7 +117,7 @@ webview,
   margin: 0 auto 8px auto;
   overflow: hidden;
   padding: 0;
-  width: 468px;
+  width: 640px;
 }
 
 .text-desc {
@@ -113,16 +127,7 @@ webview,
   line-height: 24px;
   margin: auto;
   padding: 16px 0 0 0;
-  width: 600px;
-}
-
-.checkbox-text {
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 16px;
-  margin: 0;
-  padding: 0;
+  width: 640px;
 }
 
 .text-status {
@@ -138,9 +143,9 @@ webview,
   font-size: 10px;
   font-weight: 500;
   margin: auto;
-  padding: 14px 0 8px 0;
+  padding: 10px 0 8px 0;
   text-align: left;
-  width: 468px;
+  width: 640px;
 }
 
 .text-title {

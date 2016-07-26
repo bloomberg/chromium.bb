@@ -127,6 +127,7 @@ void ArcAuthService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, true);
+  registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, true);
 }
 
 // static
@@ -257,6 +258,8 @@ void ArcAuthService::OnSignInComplete() {
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
                            IsAccountManaged(profile_));
   UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS);
+
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnInitialStart());
 }
 
 void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {

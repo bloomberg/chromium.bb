@@ -20,6 +20,8 @@ const char kArcApps[] = "arc.apps";
 const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
 // A preference to keep Android apps enabled state.
 const char kArcEnabled[] = "arc.enabled";
+// A preference to keep user's consent to use location service.
+const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 // A preference to keep list of Android packages and their infomation.
 const char kArcPackages[] = "arc.packages";
 // A preference to keep deferred requests of setting notifications enabled flag.

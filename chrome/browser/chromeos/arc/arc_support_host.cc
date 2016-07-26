@@ -31,6 +31,7 @@
 namespace {
 const char kAction[] = "action";
 const char kBackupRestoreEnabled[] = "backupRestoreEnabled";
+const char kLocationServiceEnabled[] = "locationServiceEnabled";
 const char kCanEnable[] = "canEnable";
 const char kCode[] = "code";
 const char kData[] = "data";
@@ -49,6 +50,7 @@ const char kActionSetAuthCode[] = "setAuthCode";
 const char kActionEnableMetrics[] = "enableMetrics";
 const char kActionSendFeedback[] = "sendFeedback";
 const char kActionSetBackupRestore[] = "setBackupRestore";
+const char kActionSetLocationService[] = "setLocationService";
 const char kActionCloseUI[] = "closeUI";
 const char kActionShowPage[] = "showPage";
 }  // namespace
@@ -155,6 +157,9 @@ bool ArcSupportHost::Initialize() {
       "textBackupRestore",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE));
   loadtime_data->SetString(
+      "textLocationService",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LOCATION_SETTING));
+  loadtime_data->SetString(
       "serverError",
       l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
 
@@ -165,6 +170,9 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetBoolean(kBackupRestoreEnabled,
                             arc_auth_service->profile()->GetPrefs()->GetBoolean(
                                 prefs::kArcBackupRestoreEnabled));
+  loadtime_data->SetBoolean(kLocationServiceEnabled,
+                            arc_auth_service->profile()->GetPrefs()->GetBoolean(
+                                prefs::kArcLocationServiceEnabled));
 
   webui::SetLoadTimeDataDefaults(app_locale, loadtime_data.get());
   DCHECK(arc_auth_service);
@@ -267,6 +275,13 @@ void ArcSupportHost::EnableBackupRestore(bool is_enabled) {
   pref_service->SetBoolean(prefs::kArcBackupRestoreEnabled, is_enabled);
 }
 
+void ArcSupportHost::EnableLocationService(bool is_enabled) {
+  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service && arc_auth_service->IsAllowed());
+  PrefService* pref_service = arc_auth_service->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kArcLocationServiceEnabled, is_enabled);
+}
+
 void ArcSupportHost::OnMessage(const std::string& request_string) {
   std::unique_ptr<base::Value> request_value =
       base::JSONReader::Read(request_string);
@@ -312,6 +327,13 @@ void ArcSupportHost::OnMessage(const std::string& request_string) {
       return;
     }
     EnableBackupRestore(is_enabled);
+  } else if (action == kActionSetLocationService) {
+    bool is_enabled;
+    if (!request->GetBoolean(kEnabled, &is_enabled)) {
+      NOTREACHED();
+      return;
+    }
+    EnableLocationService(is_enabled);
   } else {
     NOTREACHED();
   }
