@@ -24,6 +24,8 @@ struct NET_EXPORT OCSPVerifyResult {
   OCSPVerifyResult(const OCSPVerifyResult&);
   ~OCSPVerifyResult();
 
+  bool operator==(const OCSPVerifyResult& other) const;
+
   enum ResponseStatus {
     // No OCSPResponse was stapled.
     MISSING,

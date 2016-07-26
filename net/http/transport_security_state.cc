@@ -716,7 +716,7 @@ bool SerializeExpectStapleReport(const HostPortPair& host_port_pair,
 TransportSecurityState::TransportSecurityState()
     : enable_static_pins_(true),
       enable_static_expect_ct_(true),
-      enable_static_expect_staple_(false),
+      enable_static_expect_staple_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
