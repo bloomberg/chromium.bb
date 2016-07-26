@@ -46,7 +46,6 @@
 #define NET_HTTP_HTTP_CHUNKED_DECODER_H_
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <string>
 
@@ -108,10 +107,10 @@ class NET_EXPORT_PRIVATE HttpChunkedDecoder {
   // Converts string |start| of length |len| to a numeric value.
   // |start| is a string of type "chunk-size" (hex string).
   // If the conversion succeeds, returns true and places the result in |out|.
-  static bool ParseChunkSize(const char* start, int len, int64_t* out);
+  static bool ParseChunkSize(const char* start, int len, int* out);
 
   // Indicates the number of bytes remaining for the current chunk.
-  int64_t chunk_remaining_;
+  int chunk_remaining_;
 
   // A small buffer used to store a partial chunk marker.
   std::string line_buf_;
