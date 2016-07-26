@@ -18,54 +18,7 @@ LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase(
     const LayerTreeSettings& settings)
     : LayerTestCommon::LayerImplTest(settings) {}
 
-LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
-}
-
-void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
-    Layer* layer,
-    const gfx::Transform& transform,
-    const gfx::Point3F& transform_origin,
-    const gfx::PointF& position,
-    const gfx::Size& bounds,
-    bool flatten_transform,
-    bool is_3d_sorted) {
-  SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       is_3d_sorted);
-  layer->SetTransformOrigin(transform_origin);
-  layer->SetShouldFlattenTransform(flatten_transform);
-}
-
-void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
-    LayerImpl* layer,
-    const gfx::Transform& transform,
-    const gfx::Point3F& transform_origin,
-    const gfx::PointF& position,
-    const gfx::Size& bounds,
-    bool flatten_transform,
-    bool is_3d_sorted) {
-  SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       is_3d_sorted);
-  layer->test_properties()->transform_origin = transform_origin;
-  layer->test_properties()->should_flatten_transform = flatten_transform;
-}
-
-void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
-    LayerImpl* layer,
-    const gfx::Transform& transform,
-    const gfx::Point3F& transform_origin,
-    const gfx::PointF& position,
-    const gfx::Size& bounds,
-    bool flatten_transform,
-    bool is_3d_sorted,
-    bool create_render_surface) {
-  SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       is_3d_sorted);
-  layer->test_properties()->transform_origin = transform_origin;
-  layer->test_properties()->should_flatten_transform = flatten_transform;
-  if (create_render_surface) {
-    layer->test_properties()->force_render_surface = true;
-  }
-}
+LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() = default;
 
 void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     Layer* root_layer,
