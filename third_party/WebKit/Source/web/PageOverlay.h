@@ -44,16 +44,15 @@ class WebViewImpl;
 // Manages a layer that is overlaid on a WebView's content.
 class WEB_EXPORT PageOverlay : public GraphicsLayerClient, public DisplayItemClient {
 public:
-    class Delegate : public GarbageCollectedFinalized<Delegate> {
+    class Delegate {
     public:
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
+        virtual ~Delegate() { }
 
         // Paints page overlay contents.
         virtual void paintPageOverlay(const PageOverlay&, GraphicsContext&, const WebSize& webViewSize) const = 0;
-        virtual ~Delegate() { }
     };
 
-    static std::unique_ptr<PageOverlay> create(WebViewImpl*, PageOverlay::Delegate*);
+    static std::unique_ptr<PageOverlay> create(WebViewImpl*, std::unique_ptr<PageOverlay::Delegate>);
 
     ~PageOverlay();
 
@@ -72,10 +71,10 @@ public:
     String debugName(const GraphicsLayer*) const override;
 
 private:
-    PageOverlay(WebViewImpl*, PageOverlay::Delegate*);
+    PageOverlay(WebViewImpl*, std::unique_ptr<PageOverlay::Delegate>);
 
     WebViewImpl* m_viewImpl;
-    Persistent<PageOverlay::Delegate> m_delegate;
+    std::unique_ptr<PageOverlay::Delegate> m_delegate;
     std::unique_ptr<GraphicsLayer> m_layer;
 };
 

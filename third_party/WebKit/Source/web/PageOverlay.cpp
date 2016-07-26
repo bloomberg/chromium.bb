@@ -45,14 +45,14 @@
 
 namespace blink {
 
-std::unique_ptr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
+std::unique_ptr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, std::unique_ptr<PageOverlay::Delegate> delegate)
 {
-    return wrapUnique(new PageOverlay(viewImpl, delegate));
+    return wrapUnique(new PageOverlay(viewImpl, std::move(delegate)));
 }
 
-PageOverlay::PageOverlay(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
+PageOverlay::PageOverlay(WebViewImpl* viewImpl, std::unique_ptr<PageOverlay::Delegate> delegate)
     : m_viewImpl(viewImpl)
-    , m_delegate(delegate)
+    , m_delegate(std::move(delegate))
 {
 }
 

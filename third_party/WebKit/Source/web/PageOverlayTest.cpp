@@ -82,7 +82,7 @@ protected:
 
     std::unique_ptr<PageOverlay> createSolidYellowOverlay()
     {
-        return PageOverlay::create(webViewImpl(), new SolidColorOverlay(SK_ColorYELLOW));
+        return PageOverlay::create(webViewImpl(), wrapUnique(new SolidColorOverlay(SK_ColorYELLOW)));
     }
 
     template <typename OverlayType>

@@ -105,12 +105,6 @@ public:
         : m_overlay(&overlay)
     { }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_overlay);
-        PageOverlay::Delegate::trace(visitor);
-    }
-
     void paintPageOverlay(const PageOverlay&, GraphicsContext& graphicsContext, const WebSize& webViewSize) const override
     {
         if (m_overlay->isEmpty())
@@ -122,7 +116,7 @@ public:
     }
 
 private:
-    Member<InspectorOverlay> m_overlay;
+    Persistent<InspectorOverlay> m_overlay;
 };
 
 
@@ -220,7 +214,7 @@ void InspectorOverlay::init(InspectorCSSAgent* cssAgent, V8InspectorSession* v8S
 void InspectorOverlay::invalidate()
 {
     if (!m_pageOverlay)
-        m_pageOverlay = PageOverlay::create(m_webViewImpl, new InspectorPageOverlayDelegate(*this));
+        m_pageOverlay = PageOverlay::create(m_webViewImpl, wrapUnique(new InspectorPageOverlayDelegate(*this)));
 
     m_pageOverlay->update();
 }

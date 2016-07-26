@@ -315,10 +315,6 @@ public:
     {
     }
 
-    virtual ~ColorOverlay()
-    {
-    }
-
 private:
     void paintPageOverlay(const PageOverlay& pageOverlay, GraphicsContext& graphicsContext, const WebSize& size) const override
     {
@@ -4154,7 +4150,7 @@ void WebViewImpl::setPageOverlayColor(WebColor color)
     if (color == Color::transparent)
         return;
 
-    m_pageColorOverlay = PageOverlay::create(this, new ColorOverlay(color));
+    m_pageColorOverlay = PageOverlay::create(this, wrapUnique(new ColorOverlay(color)));
     m_pageColorOverlay->update();
 }
 
