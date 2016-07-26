@@ -36,6 +36,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
+#include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
@@ -164,37 +165,6 @@ static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
     return clampTo<int>(value * kHbPosition1);
 }
 
-static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint, hb_position_t* width, hb_glyph_extents_t* extents)
-{
-    ASSERT(codepoint <= 0xFFFF);
-    paint->setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-
-    SkScalar skWidth;
-    SkRect skBounds;
-    uint16_t glyph = codepoint;
-
-    paint->getTextWidths(&glyph, sizeof(glyph), &skWidth, &skBounds);
-    if (width) {
-        if (!paint->isSubpixelText())
-            skWidth = SkScalarRoundToInt(skWidth);
-        *width = SkiaScalarToHarfBuzzPosition(skWidth);
-    }
-    if (extents) {
-        if (!paint->isSubpixelText()) {
-            // Use roundOut() rather than round() to avoid rendering glyphs
-            // outside the visual overflow rect. crbug.com/452914.
-            SkIRect ir;
-            skBounds.roundOut(&ir);
-            skBounds.set(ir);
-        }
-        // Invert y-axis because Skia is y-grows-down but we set up HarfBuzz to be y-grows-up.
-        extents->x_bearing = SkiaScalarToHarfBuzzPosition(skBounds.fLeft);
-        extents->y_bearing = SkiaScalarToHarfBuzzPosition(-skBounds.fTop);
-        extents->width = SkiaScalarToHarfBuzzPosition(skBounds.width());
-        extents->height = SkiaScalarToHarfBuzzPosition(-skBounds.height());
-    }
-}
-
 static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoint_t unicode, hb_codepoint_t variationSelector, hb_codepoint_t* glyph, void* userData)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
@@ -211,7 +181,7 @@ static hb_position_t harfBuzzGetGlyphHorizontalAdvance(hb_font_t* hbFont, void* 
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
     hb_position_t advance = 0;
 
-    SkiaGetGlyphWidthAndExtents(&hbFontData->m_paint, glyph, &advance, 0);
+    SkiaTextMetrics(&hbFontData->m_paint).getGlyphWidthAndExtentsForHarfBuzz(glyph, &advance, 0);
     return advance;
 }
 
@@ -268,7 +238,7 @@ static hb_bool_t harfBuzzGetGlyphExtents(hb_font_t* hbFont, void* fontData, hb_c
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
-    SkiaGetGlyphWidthAndExtents(&hbFontData->m_paint, glyph, 0, extents);
+    SkiaTextMetrics(&hbFontData->m_paint).getGlyphWidthAndExtentsForHarfBuzz(glyph, 0, extents);
     return true;
 }
 
@@ -373,6 +343,7 @@ PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t* face)
 hb_font_t* HarfBuzzFace::getScaledFont(PassRefPtr<UnicodeRangeSet> rangeSet) const
 {
     m_platformData->setupPaint(&m_harfBuzzFontData->m_paint);
+    m_harfBuzzFontData->m_paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     m_harfBuzzFontData->m_rangeSet = rangeSet;
     m_harfBuzzFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData).get();
     ASSERT(m_harfBuzzFontData->m_simpleFontData);

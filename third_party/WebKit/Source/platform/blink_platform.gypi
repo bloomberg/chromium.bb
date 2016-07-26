@@ -489,6 +489,8 @@
       'fonts/shaping/SimpleShaper.cpp',
       'fonts/shaping/SimpleShaper.h',
       'fonts/skia/FontCacheSkia.cpp',
+      'fonts/skia/SkiaTextMetrics.h',
+      'fonts/skia/SkiaTextMetrics.cpp',
       'fonts/win/FontCacheSkiaWin.cpp',
       'fonts/win/FontFallbackWin.cpp',
       'fonts/win/FontFallbackWin.h',

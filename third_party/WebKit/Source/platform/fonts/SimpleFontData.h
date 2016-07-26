@@ -37,6 +37,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringHash.h"
+#include <SkPaint.h>
 #include <memory>
 
 namespace blink {
@@ -95,8 +96,8 @@ public:
     void setAvgCharWidth(float avgCharWidth) { m_avgCharWidth = avgCharWidth; }
 
     FloatRect boundsForGlyph(Glyph) const;
-    float widthForGlyph(Glyph glyph) const;
     FloatRect platformBoundsForGlyph(Glyph) const;
+    float widthForGlyph(Glyph) const;
     float platformWidthForGlyph(Glyph) const;
 
     float spaceWidth() const { return m_spaceWidth; }
@@ -143,9 +144,9 @@ private:
     float m_avgCharWidth;
 
     FontPlatformData m_platformData;
-
     mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
+    SkPaint m_paint;
 
     bool m_isTextOrientationFallback;
     RefPtr<OpenTypeVerticalData> m_verticalData;
@@ -182,24 +183,35 @@ private:
     RefPtr<CustomFontData> m_customFontData;
 };
 
+
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
 {
-    FloatRect bounds;
+    if (!m_platformData.size())
+        return FloatRect();
+
+    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
+
+    FloatRect boundsResult;
     if (m_glyphToBoundsMap) {
-        bounds = m_glyphToBoundsMap->metricsForGlyph(glyph);
-        if (bounds.width() != cGlyphSizeUnknown)
-            return bounds;
+        boundsResult = m_glyphToBoundsMap->metricsForGlyph(glyph);
+        if (boundsResult.width() != cGlyphSizeUnknown)
+            return boundsResult;
     }
 
-    bounds = platformBoundsForGlyph(glyph);
+    boundsResult = platformBoundsForGlyph(glyph);
     if (!m_glyphToBoundsMap)
         m_glyphToBoundsMap = wrapUnique(new GlyphMetricsMap<FloatRect>);
-    m_glyphToBoundsMap->setMetricsForGlyph(glyph, bounds);
-    return bounds;
+    m_glyphToBoundsMap->setMetricsForGlyph(glyph, boundsResult);
+
+    return boundsResult;
 }
 
 ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
 {
+    if (!m_platformData.size())
+        return 0;
+    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
+
     float width = m_glyphToWidthMap.metricsForGlyph(glyph);
     if (width != cGlyphSizeUnknown)
         return width;

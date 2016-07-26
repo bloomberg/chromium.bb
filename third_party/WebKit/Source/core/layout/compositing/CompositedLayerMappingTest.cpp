@@ -504,11 +504,13 @@ TEST_F(CompositedLayerMappingTest, InterestRectShouldNotChangeOnPaintInvalidatio
 TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithNegativeOverflow)
 {
     setBodyInnerHTML(
-        "<style>body { margin: 0 }</style>"
+        "<style>body { margin: 0; font-size: 16px; }</style>"
         "<div style='position: absolute; top: -500px; width: 200px; height: 700px; will-change: transform'></div>"
-        "<div id='squashed' style='position: absolute; top: 190px'>"
-        "  <div style='width: 100px; height: 100px; text-indent: -10000px'>text</div>"
+        "<div id='squashed' style='position: absolute; top: 190px;'>"
+        "  <div id='inside' style='width: 100px; height: 100px; text-indent: -10000px'>text</div>"
         "</div>");
+
+    EXPECT_EQ(document().getElementById("inside")->layoutBox()->visualOverflowRect().size().height(), 100);
 
     CompositedLayerMapping* groupedMapping = document().getElementById("squashed")->layoutBox()->layer()->groupedMapping();
     // The squashing layer is at (-10000, 190, 10100, 100) in viewport coordinates.
