@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -82,7 +81,6 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
-#include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -4476,25 +4474,6 @@ void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
 
   if (page_state == frame_entry->page_state())
     return;  // Nothing to update.
-
-  // The document_sequence_number and item_sequence_number recorded in the
-  // FrameNavigationEntry should not differ from the one coming with the update,
-  // since it must come from the same document.
-  ExplodedPageState exploded_state;
-  if (!DecodePageState(page_state.ToEncodedData(), &exploded_state))
-    return;
-
-  if (exploded_state.top.document_sequence_number !=
-          frame_entry->document_sequence_number() ||
-      exploded_state.top.item_sequence_number !=
-          frame_entry->item_sequence_number()) {
-    // Generate a minidump, which can be debugged to understand the root cause
-    // this unexpected update.
-    // TODO(nasko): Remove once https://crbug.com/628677 is understood.
-    base::debug::Alias(&page_state);
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
 
   frame_entry->set_page_state(page_state);
   controller_.NotifyEntryChanged(entry);
