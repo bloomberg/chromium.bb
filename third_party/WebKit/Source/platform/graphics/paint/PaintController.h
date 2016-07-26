@@ -171,7 +171,7 @@ protected:
         , m_numIndexedItems(0)
 #endif
     {
-        resetCurrentListIterators();
+        resetCurrentListIndices();
     }
 
 private:
@@ -200,14 +200,14 @@ private:
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItemList&);
     static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
 
-    DisplayItemList::iterator findCachedItem(const DisplayItem::Id&);
-    DisplayItemList::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&);
-    void copyCachedSubsequence(DisplayItemList::iterator&);
+    size_t findCachedItem(const DisplayItem::Id&);
+    size_t findOutOfOrderCachedItemForward(const DisplayItem::Id&);
+    void copyCachedSubsequence(size_t&);
 
-    // Resets the iterators (e.g. m_nextItemToMatch) of m_currentPaintArtifact.getDisplayItemList()
+    // Resets the indices (e.g. m_nextItemToMatch) of m_currentPaintArtifact.getDisplayItemList()
     // to their initial values. This should be called when the DisplayItemList in m_currentPaintArtifact
-    // is newly created, or is changed causing the previous iterators to be invalid.
-    void resetCurrentListIterators();
+    // is newly created, or is changed causing the previous indices to be invalid.
+    void resetCurrentListIndices();
 
 #if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
@@ -249,10 +249,10 @@ private:
     DisplayItemIndicesByClientMap m_outOfOrderItemIndices;
 
     // The next item in the current list for sequential match.
-    DisplayItemList::iterator m_nextItemToMatch;
+    size_t m_nextItemToMatch;
 
     // The next item in the current list to be indexed for out-of-order cache requests.
-    DisplayItemList::iterator m_nextItemToIndex;
+    size_t m_nextItemToIndex;
 
     DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;
 
@@ -269,8 +269,8 @@ private:
     // indicating the begin and end of the cached drawing or subsequence in the current list.
     // The functions return false to let the client do actual painting, and PaintController
     // will check if the actual painting results are the same as the cached.
-    DisplayItemList::iterator m_underInvalidationCheckingBegin;
-    DisplayItemList::iterator m_underInvalidationCheckingEnd;
+    size_t m_underInvalidationCheckingBegin;
+    size_t m_underInvalidationCheckingEnd;
     String m_underInvalidationMessagePrefix;
 #endif
 
