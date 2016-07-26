@@ -2946,7 +2946,6 @@
             '../components/components.gyp:crash_core_browser',
             '../components/components.gyp:flags_ui',
             '../components/components.gyp:net_log',
-            '../components/components.gyp:page_load_metrics_browser',
             '../components/components.gyp:translate_content_common',
             '../components/components_resources.gyp:components_resources',
             '../content/app/resources/content_resources.gyp:content_resources',

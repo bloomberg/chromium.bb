@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
+#include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "components/page_load_metrics/common/page_load_timing.h"
-#include "components/page_load_metrics/renderer/fake_page_timing_metrics_ipc_sender.h"
+#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "chrome/renderer/page_load_metrics/fake_page_timing_metrics_ipc_sender.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

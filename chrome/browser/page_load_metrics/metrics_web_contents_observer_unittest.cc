@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 
 #include <memory>
 #include <vector>
@@ -12,8 +12,9 @@
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
-#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -103,13 +104,12 @@ class TestPageLoadMetricsEmbedderInterface
 
 }  //  namespace
 
-class MetricsWebContentsObserverTest
-    : public content::RenderViewHostTestHarness {
+class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
  public:
   MetricsWebContentsObserverTest() : num_errors_(0) {}
 
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     AttachObserver();
   }
 
@@ -469,8 +469,7 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChainsNoCommit) {
   web_contents()->Stop();
 
   histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNoCommit, 1);
-  histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNoCommit, 3,
-                                      1);
+  histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNoCommit, 3, 1);
 }
 
 }  // namespace page_load_metrics

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAGE_LOAD_METRICS_RENDERER_PAGE_LOAD_METRICS_RENDER_FRAME_OBSERVER_H_
-#define COMPONENTS_PAGE_LOAD_METRICS_RENDERER_PAGE_LOAD_METRICS_RENDER_FRAME_OBSERVER_H_
+#ifndef CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_
+#define CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/page_load_metrics/common/page_load_timing.h"
+#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
@@ -50,4 +50,4 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
 
 }  // namespace page_load_metrics
 
-#endif  // COMPONENTS_PAGE_LOAD_METRICS_RENDERER_PAGE_LOAD_METRICS_RENDER_FRAME_OBSERVER_H_
+#endif  // CHROME_RENDERER_PAGE_LOAD_METRICS_METRICS_RENDER_FRAME_OBSERVER_H_

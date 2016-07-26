@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
 

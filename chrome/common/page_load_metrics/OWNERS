@@ -1,0 +1,4 @@
+file://chrome/browser/page_load_metrics/OWNERS
+
+per-file *_messages*.h=set noparent
+per-file *_messages*.h=file://ipc/SECURITY_OWNERS

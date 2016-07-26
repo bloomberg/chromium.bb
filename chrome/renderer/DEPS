@@ -20,7 +20,6 @@ include_rules = [
   "+components/nacl/common",
   "+components/nacl/renderer",
   "+components/network_hints/renderer",
-  "+components/page_load_metrics/renderer",
   "+components/password_manager/content/renderer",
   "+components/password_manager/core/common",
   "+components/pdf/renderer",

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
+#include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 
 #include <utility>
 
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "ipc/ipc_sender.h"
 
 namespace page_load_metrics {

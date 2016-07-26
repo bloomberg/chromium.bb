@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"

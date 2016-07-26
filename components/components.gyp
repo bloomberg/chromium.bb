@@ -129,7 +129,6 @@
         'navigation_interception.gypi',
         'network_hints.gypi',
         'packed_ct_ev_whitelist.gypi',
-        'page_load_metrics.gypi',
         'power.gypi',
         'renderer_context_menu.gypi',
         'safe_browsing_db.gypi',

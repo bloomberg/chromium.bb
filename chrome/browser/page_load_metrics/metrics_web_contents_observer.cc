@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 
 #include <algorithm>
 #include <ostream>
@@ -14,9 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "components/page_load_metrics/browser/page_load_metrics_util.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
-#include "components/page_load_metrics/common/page_load_timing.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
+#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"

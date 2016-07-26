@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_GOOGLE_CAPTCHA_OBSERVER_H_
 
 #include "base/macros.h"
-#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 
 namespace google_captcha_observer {
 

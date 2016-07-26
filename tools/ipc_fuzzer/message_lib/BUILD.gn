@@ -12,7 +12,6 @@ static_library("ipc_message_lib") {
     "//chrome/common/safe_browsing:proto",
     "//components/content_settings/content/common",
     "//components/network_hints/common",
-    "//components/page_load_metrics/common",
     "//components/pdf/common",
     "//components/tracing",
     "//content/child",

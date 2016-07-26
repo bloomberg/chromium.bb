@@ -191,8 +191,6 @@ test("components_unittests") {
       "//components/network_hints/renderer:unit_tests",
       "//components/ntp_tiles:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
-      "//components/page_load_metrics/browser:unit_tests",
-      "//components/page_load_metrics/renderer:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
       "//components/power:unit_tests",
       "//components/precache/content:unit_tests",

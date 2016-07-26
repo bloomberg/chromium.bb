@@ -21,7 +21,6 @@
 #include "components/nacl/common/nacl_host_messages.h"
 #endif
 #include "components/network_hints/common/network_hints_message_generator.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/pdf/common/pdf_message_generator.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "components/translate/content/common/translate_messages.h"

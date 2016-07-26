@@ -679,7 +679,9 @@
         'ui/gl/gl_.*ozone.*'
     },
     'page_load_metrics' : {
-      'filepath': 'components/page_load_metrics/'
+      'filepath': 'chrome/browser/page_load_metrics/'\
+                  '|chrome/common/page_load_metrics/'\
+                  '|chrome/renderer/page_load_metrics/'
     },
     'panels': {
       'filepath': 'chrome/browser/ui/panels'\

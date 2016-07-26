@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/page_load_metrics/browser",
-  "+components/page_load_metrics/common",
-]

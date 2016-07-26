@@ -6,7 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/time/time.h"
-#include "components/page_load_metrics/common/page_load_timing.h"
+#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START PageLoadMetricsMsgStart

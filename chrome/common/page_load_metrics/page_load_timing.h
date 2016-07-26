@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
-#define COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
+#ifndef CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_
+#define CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_
 
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -92,4 +92,4 @@ struct PageLoadMetadata {
 
 }  // namespace page_load_metrics
 
-#endif  // COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
+#endif  // CHROME_COMMON_PAGE_LOAD_METRICS_PAGE_LOAD_TIMING_H_

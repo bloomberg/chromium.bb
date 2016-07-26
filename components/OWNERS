@@ -138,8 +138,6 @@ per-file ownership.gypi=file://components/ownership/OWNERS
 
 per-file packed_ct_ev_whitelist.gypi=file://components/packed_ct_ev_whitelist/OWNERS
 
-per-file page_load_metrics.gypi=file://components/page_load_metrics/OWNERS
-
 per-file pairing.gypi=file://components/pairing/OWNERS
 
 per-file password_manager.gypi=file://components/password_manager/OWNERS

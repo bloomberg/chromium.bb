@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UTIL_H_
-#define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UTIL_H_
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
 
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -42,4 +42,4 @@ bool WasParseInForeground(const base::Optional<base::TimeDelta>& parse_start,
                           const PageLoadExtraInfo& info);
 }  // namespace page_load_metrics
 
-#endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_UTIL_H_
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_

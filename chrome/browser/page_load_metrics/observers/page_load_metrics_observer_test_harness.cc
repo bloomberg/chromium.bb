@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"

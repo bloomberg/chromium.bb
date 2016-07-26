@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
-#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "ui/base/page_transition_types.h"

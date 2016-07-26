@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
+#include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
 
 #include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
+#include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
