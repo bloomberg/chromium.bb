@@ -132,7 +132,6 @@ class SearchBox : public content::RenderViewObserver,
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
-  bool display_instant_results() const { return display_instant_results_; }
   const base::string16& query() const { return query_; }
   const InstantSuggestion& suggestion() const { return suggestion_; }
 
@@ -150,7 +149,6 @@ class SearchBox : public content::RenderViewObserver,
   void OnHistorySyncCheckResult(bool sync_history);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
-  void OnSetDisplayInstantResults(bool display_instant_results);
   void OnSetInputInProgress(bool input_in_progress);
   void OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion);
   void OnSubmit(const base::string16& query,
@@ -170,7 +168,6 @@ class SearchBox : public content::RenderViewObserver,
   bool is_focused_;
   bool is_input_in_progress_;
   bool is_key_capture_enabled_;
-  bool display_instant_results_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
   base::string16 query_;

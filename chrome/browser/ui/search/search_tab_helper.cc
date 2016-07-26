@@ -325,10 +325,6 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  if (search::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                               profile()))
-    ipc_router_.SetDisplayInstantResults();
-
   UpdateMode(true);
 
   content::NavigationEntry* entry =

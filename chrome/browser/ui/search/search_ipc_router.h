@@ -100,7 +100,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
     virtual bool ShouldProcessHistorySyncCheck() = 0;
-    virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
@@ -128,9 +127,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Tells the renderer whether the user syncs history.
   void SendHistorySyncCheckResult(bool sync_history);
-
-  // Tells the renderer whether to display the Instant results.
-  void SetDisplayInstantResults();
 
   // Tells the page the suggestion to be prefetched if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
@@ -169,8 +165,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           DoNotSendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
 
   // Overridden from contents::WebContentsObserver:

@@ -136,11 +136,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(false));
 }
 
-TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendSetDisplayInstantResults());
-}
-
 TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendSetSuggestionToPrefetch());
@@ -153,7 +148,6 @@ TEST_F(SearchIPCRouterPolicyTest,
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_FALSE(router_policy->ShouldSendSetSuggestionToPrefetch());
-  EXPECT_FALSE(router_policy->ShouldSendSetDisplayInstantResults());
   EXPECT_FALSE(router_policy->ShouldSendThemeBackgroundInfo());
   EXPECT_FALSE(router_policy->ShouldSendMostVisitedItems());
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(true));

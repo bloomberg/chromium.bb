@@ -491,10 +491,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void UndoMostVisitedDeletion(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Indicates whether the page supports Instant.
-  static void GetDisplayInstantResults(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -639,9 +635,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, UndoAllMostVisitedDeletions);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "UndoMostVisitedDeletion")))
     return v8::FunctionTemplate::New(isolate, UndoMostVisitedDeletion);
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "GetDisplayInstantResults")))
-    return v8::FunctionTemplate::New(isolate, GetDisplayInstantResults);
   return v8::Local<v8::FunctionTemplate>();
 }
 
@@ -1140,19 +1133,6 @@ void SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
   DVLOG(1) << render_view << " UndoMostVisitedDeletion";
   SearchBox::Get(render_view)
       ->UndoMostVisitedDeletion(args[0]->ToInteger()->Value());
-}
-
-// static
-void SearchBoxExtensionWrapper::GetDisplayInstantResults(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  bool display_instant_results =
-      SearchBox::Get(render_view)->display_instant_results();
-  DVLOG(1) << render_view << " GetDisplayInstantResults" <<
-      display_instant_results;
-  args.GetReturnValue().Set(display_instant_results);
 }
 
 }  // namespace extensions_v8

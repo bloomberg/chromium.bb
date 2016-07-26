@@ -238,7 +238,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
     is_focused_(false),
     is_input_in_progress_(false),
     is_key_capture_enabled_(false),
-    display_instant_results_(false),
     most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
     query_() {
 }
@@ -371,8 +370,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
-                        OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetInputInProgress,
                         OnSetInputInProgress)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
@@ -460,10 +457,6 @@ void SearchBox::OnMostVisitedChanged(
     extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
         render_view()->GetWebView()->mainFrame());
   }
-}
-
-void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
-  display_instant_results_ = display_instant_results;
 }
 
 void SearchBox::OnSetInputInProgress(bool is_input_in_progress) {

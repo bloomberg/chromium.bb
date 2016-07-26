@@ -14,7 +14,6 @@ if (!chrome.embeddedSearch) {
       //                            Private functions
       // =======================================================================
       native function Focus();
-      native function GetDisplayInstantResults();
       native function GetMostVisitedItemData();
       native function GetQuery();
       native function GetSearchRequestParams();
@@ -29,7 +28,6 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                           Exported functions
       // =======================================================================
-      this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('rtl', GetRightToLeft);

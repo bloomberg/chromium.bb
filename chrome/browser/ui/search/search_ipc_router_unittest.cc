@@ -76,7 +76,6 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessChromeIdentityCheck, bool());
   MOCK_METHOD0(ShouldProcessHistorySyncCheck, bool());
-  MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
@@ -145,23 +144,6 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
   bool MessageWasSent(uint32_t id) {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
-  }
-
-  void VerifyDisplayInstantResultsMsg(bool expected_param_value) {
-    SetupMockDelegateAndPolicy();
-    MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-    EXPECT_CALL(*policy, ShouldSendSetDisplayInstantResults()).Times(1)
-        .WillOnce(testing::Return(true));
-
-    GetSearchIPCRouter().SetDisplayInstantResults();
-    const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-        ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID);
-    EXPECT_NE(static_cast<const IPC::Message*>(NULL), message);
-    std::tuple<bool> display_instant_results_param;
-    ChromeViewMsg_SearchBoxSetDisplayInstantResults::Read(
-        message, &display_instant_results_param);
-    EXPECT_EQ(expected_param_value,
-              std::get<0>(display_instant_results_param));
   }
 
   MockSearchIPCRouterDelegate* mock_delegate() { return &delegate_; }
@@ -551,53 +533,6 @@ TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
 
   OnMessageReceived(ChromeViewHostMsg_PasteAndOpenDropdown(
       contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), text));
-}
-
-TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_EnableInstantOnResultsPage) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:42 query_extraction:1 prefetch_results_srp:1"));
-  NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
-
-  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
-  // set to true if the underlying page is a results page and
-  // "prefetch_results_srp" flag is enabled via field trials.
-  VerifyDisplayInstantResultsMsg(true);
-}
-
-TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_DisableInstantOnResultsPage) {
-  // |prefetch_results_srp" flag is disabled via field trials.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:42 query_extraction:1 prefetch_results_srp:0"));
-  NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
-
-  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
-  // set to false.
-  VerifyDisplayInstantResultsMsg(false);
-}
-
-TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_EnableInstantOutsideSearchResultsPage) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults param is set to
-  // true if the underlying page is not a search results page.
-  VerifyDisplayInstantResultsMsg(true);
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetDisplayInstantResults()).Times(1)
-      .WillOnce(testing::Return(false));
-
-  process()->sink().ClearMessages();
-  GetSearchIPCRouter().SetDisplayInstantResults();
-  EXPECT_FALSE(MessageWasSent(
-      ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
