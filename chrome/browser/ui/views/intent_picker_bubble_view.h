@@ -18,10 +18,10 @@
 
 namespace content {
 class NavigationHandle;
+class WebContents;
 }  // namespace content
 
 namespace views {
-class EventMonitor;
 class Label;
 class LabelButton;
 class View;
@@ -60,19 +60,27 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
   using ThrottleCallback =
       base::Callback<void(size_t, arc::ArcNavigationThrottle::CloseReason)>;
 
+  ~IntentPickerBubbleView() override;
   static void ShowBubble(content::NavigationHandle* handle,
                          const std::vector<NameAndIcon>& app_info,
                          const ThrottleCallback& throttle_cb);
+  static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
+      const std::vector<NameAndIcon>& app_info,
+      const ThrottleCallback& throttle_cb,
+      content::WebContents* web_contents);
 
  protected:
   // views::BubbleDialogDelegateView overrides:
   void Init() override;
 
  private:
+  friend class IntentPickerBubbleViewTest;
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, NullIcons);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, NonNullIcons);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, LabelsPtrVectorSize);
   IntentPickerBubbleView(const std::vector<NameAndIcon>& app_info,
                          ThrottleCallback throttle_cb,
                          content::WebContents* web_contents);
-  ~IntentPickerBubbleView() override;
 
   // views::BubbleDialogDelegateView overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -87,6 +95,11 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
   // content::WebContentsObserver overrides:
   void WebContentsDestroyed() override;
 
+  // Retrieves the LabelButton* contained at position |index| from the internal
+  // ScrollView.
+  views::LabelButton* GetLabelButtonAt(size_t index);
+  void SetLabelButtonBackgroundColor(size_t index, SkColor color);
+
   // Flag set to true iff the callback was Run at some previous step, used to
   // ensure we only use the callback once.
   bool was_callback_run_;
@@ -99,6 +112,7 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
 
   views::LabelButton* always_button_;
   views::LabelButton* just_once_button_;
+  views::ScrollView* scroll_view_;
 
   std::vector<NameAndIcon> app_info_;
 

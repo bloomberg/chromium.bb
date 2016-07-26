@@ -23,10 +23,6 @@ class NavigationHandle;
 
 namespace arc {
 
-// Restricts the amount of apps displayed to the user without the need of a
-// ScrollView.
-constexpr size_t kMaxAppResults = 3;
-
 // A class that allow us to retrieve ARC app's information and handle URL
 // traffic initiated on Chrome browser, either on Chrome or an ARC's app.
 class ArcNavigationThrottle : public content::NavigationThrottle {
@@ -42,6 +38,10 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
     PREFERRED_ACTIVITY_FOUND = 4,
     SIZE,
   };
+
+  // Restricts the amount of apps displayed to the user without the need of a
+  // ScrollView.
+  enum { kMaxAppResults = 3 };
 
   using NameAndIcon = std::pair<std::string, gfx::Image>;
   using ShowDisambigDialogCallback =

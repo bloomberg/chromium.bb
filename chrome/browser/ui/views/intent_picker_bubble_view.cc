@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
@@ -18,16 +16,18 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
-// TODO(djacobo): Add a scroll bar and remove kMaxAppResults.
-// Discriminating app results when the list is longer than |kMaxAppResults|
-constexpr size_t kMaxAppResults = 3;
+// Using |kMaxAppResults| as a measure of how many apps we want to show.
+constexpr size_t kMaxAppResults = arc::ArcNavigationThrottle::kMaxAppResults;
 // Main components sizes
 constexpr int kRowHeight = 40;
 constexpr int kMaxWidth = 320;
@@ -39,7 +39,7 @@ constexpr int kLabelImageSeparation = 12;
 
 // UI position wrt the Top Container
 constexpr int kTopContainerMerge = 3;
-constexpr int kAppTagNoneSelected = -1;
+constexpr size_t kAppTagNoneSelected = static_cast<size_t>(-1);
 
 // Arbitrary negative values to use as tags on the |always_button_| and
 // |just_once_button_|. These are negative to differentiate from the app's tags
@@ -89,6 +89,18 @@ void IntentPickerBubbleView::ShowBubble(
   widget->Show();
 }
 
+// static
+std::unique_ptr<IntentPickerBubbleView>
+IntentPickerBubbleView::CreateBubbleView(
+    const std::vector<NameAndIcon>& app_info,
+    const ThrottleCallback& throttle_cb,
+    content::WebContents* web_contents) {
+  std::unique_ptr<IntentPickerBubbleView> bubble(
+      new IntentPickerBubbleView(app_info, throttle_cb, web_contents));
+  bubble->Init();
+  return bubble;
+}
+
 void IntentPickerBubbleView::Init() {
   SkColor button_text_color = SkColorSetRGB(0x42, 0x85, 0xf4);
 
@@ -128,6 +140,7 @@ void IntentPickerBubbleView::Init() {
   always_button_->SetTextColor(views::Button::STATE_HOVERED, button_text_color);
   always_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   always_button_->SetState(views::Button::STATE_DISABLED);
+  always_button_->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(16)));
 
   just_once_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_JUST_ONCE));
@@ -142,8 +155,18 @@ void IntentPickerBubbleView::Init() {
   just_once_button_->SetTextColor(views::Button::STATE_HOVERED,
                                   button_text_color);
   just_once_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  just_once_button_->SetBorder(
+      views::Border::CreateEmptyBorder(gfx::Insets(16)));
 
-  for (size_t i = 0; i < std::min(app_info_.size(), kMaxAppResults); ++i) {
+  header_layout->StartRow(0, 0);
+  AddChildView(header);
+
+  // Creates a view to hold the views for each app.
+  views::View* scrollable_view = new views::View();
+  views::BoxLayout* scrollable_layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  scrollable_view->SetLayoutManager(scrollable_layout);
+  for (size_t i = 0; i < app_info_.size(); ++i) {
     views::LabelButton* tmp_label = new views::LabelButton(
         this, base::UTF8ToUTF16(base::StringPiece(app_info_[i].first)));
     tmp_label->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -152,23 +175,36 @@ void IntentPickerBubbleView::Init() {
     tmp_label->SetMinSize(gfx::Size(kMaxWidth, kRowHeight));
     tmp_label->SetMaxSize(gfx::Size(kMaxWidth, kRowHeight));
     tmp_label->set_tag(i);
-    const gfx::ImageSkia* icon_ = app_info_[i].second.ToImageSkia();
-    tmp_label->SetImage(views::ImageButton::STATE_NORMAL, *icon_);
-    header_layout->StartRow(0, 0);
-    header_layout->AddView(tmp_label);
+    if (!app_info_[i].second.IsEmpty()) {
+      tmp_label->SetImage(views::ImageButton::STATE_NORMAL,
+                          *app_info_[i].second.ToImageSkia());
+    }
+    tmp_label->SetBorder(views::Border::CreateEmptyBorder(10, 16, 10, 0));
+    scrollable_view->AddChildViewAt(tmp_label, i);
   }
 
-  // Adding the Upper part of the Intent Picker |open_with| label and all the
-  // app options to |this|.
-  header_layout->StartRow(0, 0);
-  header_layout->AddPaddingRow(0, 12);
-  AddChildView(header);
+  scroll_view_ = new views::ScrollView();
+  scroll_view_->SetContents(scrollable_view);
+  // Setting a customized ScrollBar which is shown only when the mouse pointer
+  // is inside the ScrollView.
+  scroll_view_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
+  // This part gives the scroll a fixed width and height. The height depends on
+  // how many app candidates we got and how many we actually want to show.
+  // The added 0.5 on the else block allow us to let the user know there are
+  // more than |kMaxAppResults| apps accessible by scrolling the list.
+  if (app_info_.size() <= kMaxAppResults) {
+    scroll_view_->ClipHeightTo(kRowHeight, app_info_.size() * kRowHeight);
+  } else {
+    scroll_view_->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
+  }
+  AddChildView(scroll_view_);
 
   // The lower part of the Picker contains only the 2 buttons
   // |just_once_button_| and |always_button_|.
   View* footer = new View();
+  footer->SetBorder(views::Border::CreateEmptyBorder(24, 0, 12, 12));
   views::BoxLayout* buttons_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 12, 12, kButtonSeparation);
+      views::BoxLayout::kHorizontal, 0, 0, kButtonSeparation);
   footer->SetLayoutManager(buttons_layout);
 
   buttons_layout->set_main_axis_alignment(
@@ -190,6 +226,7 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       selected_app_tag_(kAppTagNoneSelected),
       always_button_(nullptr),
       just_once_button_(nullptr),
+      scroll_view_(nullptr),
       app_info_(app_info) {}
 
 IntentPickerBubbleView::~IntentPickerBubbleView() {
@@ -228,11 +265,15 @@ void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
       GetWidget()->Close();
       break;
     default:
-      // TODO(djacobo): Paint the background of the selected button on a
-      // different color, so the user has a clear remainder of his selection.
+      // The selected app must be a value in the range [0, app_info_.size()-1].
+      DCHECK(static_cast<size_t>(sender->tag()) < app_info_.size());
       // The user cannot click on the |always_button_| or |just_once_button_|
       // unless an explicit app has been selected.
+      if (selected_app_tag_ != kAppTagNoneSelected)
+        SetLabelButtonBackgroundColor(selected_app_tag_, SK_ColorWHITE);
       selected_app_tag_ = sender->tag();
+      SetLabelButtonBackgroundColor(selected_app_tag_,
+                                    SkColorSetRGB(0xeb, 0xeb, 0xeb));
       always_button_->SetState(views::Button::STATE_NORMAL);
       just_once_button_->SetState(views::Button::STATE_NORMAL);
   }
@@ -241,8 +282,15 @@ void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
 gfx::Size IntentPickerBubbleView::GetPreferredSize() const {
   gfx::Size ps;
   ps.set_width(kMaxWidth);
-  ps.set_height((std::min(app_info_.size(), kMaxAppResults)) * kRowHeight +
-                kHeaderHeight + kFooterHeight);
+  int apps_height = app_info_.size();
+  // We are showing |kMaxAppResults| + 0.5 rows at max, the extra 0.5 is used so
+  // the user can notice that more options are available.
+  if (app_info_.size() > kMaxAppResults) {
+    apps_height = (kMaxAppResults + 0.5) * kRowHeight;
+  } else {
+    apps_height *= kRowHeight;
+  }
+  ps.set_height(apps_height + kHeaderHeight + kFooterHeight);
   return ps;
 }
 
@@ -255,4 +303,16 @@ void IntentPickerBubbleView::WebContentsDestroyed() {
     was_callback_run_ = true;
   }
   GetWidget()->Close();
+}
+
+views::LabelButton* IntentPickerBubbleView::GetLabelButtonAt(size_t index) {
+  views::View* temp_contents = scroll_view_->contents();
+  return static_cast<views::LabelButton*>(temp_contents->child_at(index));
+}
+
+void IntentPickerBubbleView::SetLabelButtonBackgroundColor(size_t index,
+                                                           SkColor color) {
+  views::LabelButton* temp_lb = GetLabelButtonAt(index);
+  temp_lb->set_background(views::Background::CreateSolidBackground(color));
+  temp_lb->SchedulePaint();
 }
