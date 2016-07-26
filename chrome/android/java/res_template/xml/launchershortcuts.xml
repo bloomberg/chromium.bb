@@ -6,7 +6,7 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android" >
     <shortcut
         android:shortcutId="new-tab-shortcut"
-        android:icon="@drawable/btn_new_tab_white_normal"
+        android:icon="@drawable/shortcut_newtab"
         android:shortcutShortLabel="@string/menu_new_tab" >
         <intent
             android:action="chromium.shortcut.action.OPEN_NEW_TAB"
@@ -16,8 +16,9 @@
     </shortcut>
     <shortcut
         android:shortcutId="new-incognito-tab-shortcut"
-        android:icon="@drawable/btn_tabstrip_switch_incognito"
-        android:shortcutShortLabel="@string/menu_new_incognito_tab" >
+        android:icon="@drawable/shortcut_incognito"
+        android:shortcutShortLabel="@string/accessibility_tabstrip_incognito_identifier"
+        android:shortcutLongLabel="@string/menu_new_incognito_tab" >
         <intent
             android:action="chromium.shortcut.action.OPEN_NEW_INCOGNITO_TAB"
             android:targetPackage="{{manifest_package}}"
