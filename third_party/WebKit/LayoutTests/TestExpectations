@@ -60,6 +60,7 @@ crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage-in-worker.
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Failure ]
 
 crbug.com/355305 fast/canvas/DrawImageSinglePixelStretch.html [ Failure ]
+crbug.com/355305 virtual/display_list_2d_canvas/fast/canvas/DrawImageSinglePixelStretch.html [ Failure ]
 crbug.com/355305 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Failure ]
 crbug.com/355305 fast/images/paint-subrect-grid.html [ Failure ]
 crbug.com/355305 virtual/gpu-rasterization/fast/images/paint-subrect-grid.html [ Failure ]
