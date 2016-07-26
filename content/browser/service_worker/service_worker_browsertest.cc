@@ -134,7 +134,7 @@ void ReceiveFindRegistrationStatus(
     const base::Closure& quit,
     ServiceWorkerStatusCode* out_status,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   *out_status = status;
   if (!quit.is_null())
     BrowserThread::PostTask(run_quit_thread, FROM_HERE, quit);
@@ -1448,7 +1448,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
       ServiceWorkerStatusCode* out_status,
       const base::Closure& continuation,
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+      scoped_refptr<ServiceWorkerRegistration> registration) {
     *out_status = status;
     if (!registration.get())
       EXPECT_NE(SERVICE_WORKER_OK, status);

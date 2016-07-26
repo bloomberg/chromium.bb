@@ -66,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   void PrepareForMainResource(const net::URLRequest* request);
   void DidLookupRegistrationForMainResource(
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
   void OnVersionStatusChanged(
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version);

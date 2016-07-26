@@ -51,9 +51,9 @@ void RegisterServiceWorkerCallback(bool* called,
 void FindServiceWorkerRegistrationCallback(
     scoped_refptr<ServiceWorkerRegistration>* out_registration,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
-  *out_registration = registration;
+  *out_registration = std::move(registration);
 }
 
 // Callbacks from BackgroundSyncServiceImpl methods

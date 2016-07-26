@@ -55,7 +55,7 @@ void WorkerStarted(const ServiceWorkerContextWrapper::StatusCallback& callback,
 void StartActiveWorkerOnIO(
     const ServiceWorkerContextWrapper::StatusCallback& callback,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status == SERVICE_WORKER_OK) {
     // Pass the reference of |registration| to WorkerStarted callback to prevent
@@ -72,7 +72,7 @@ void StartActiveWorkerOnIO(
 
 void SkipWaitingWorkerOnIO(
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK || !registration->waiting_version())
     return;
@@ -400,7 +400,7 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkersForOrigin(
 
 void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != SERVICE_WORKER_OK)
@@ -564,7 +564,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
 void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
     const FindRegistrationCallback& callback,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK) {
     callback.Run(status, nullptr);
@@ -587,17 +587,17 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
     // Wait until the version is activated.
     active_version->RegisterStatusChangeCallback(base::Bind(
         &ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration,
-        this, callback, registration));
+        this, callback, std::move(registration)));
     return;
   }
 
   DCHECK_EQ(ServiceWorkerVersion::ACTIVATED, active_version->status());
-  callback.Run(SERVICE_WORKER_OK, registration);
+  callback.Run(SERVICE_WORKER_OK, std::move(registration));
 }
 
 void ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration(
     const FindRegistrationCallback& callback,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();

@@ -249,8 +249,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const base::Closure& event_fired_callback,
       const base::Closure& event_completed_callback,
       ServiceWorkerStatusCode service_worker_status,
-      const scoped_refptr<ServiceWorkerRegistration>&
-          service_worker_registration);
+      scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
   void FireReadyEventsAllEventsFiring(const base::Closure& callback);
 
   // Called when a sync event has completed.

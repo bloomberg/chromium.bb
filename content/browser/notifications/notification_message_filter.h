@@ -98,7 +98,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const NotificationResources& notification_resources,
       int64_t persistent_notification_id,
       content::ServiceWorkerStatusCode service_worker_status,
-      const scoped_refptr<content::ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // Callback to be invoked when all notifications belonging to a Service Worker
   // registration have been read from the database. The |success| argument

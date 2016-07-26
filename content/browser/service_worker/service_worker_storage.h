@@ -57,9 +57,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
  public:
   typedef std::vector<ServiceWorkerDatabase::ResourceRecord> ResourceList;
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const scoped_refptr<ServiceWorkerRegistration>&
-                                  registration)> FindRegistrationCallback;
+  typedef base::Callback<void(
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration)>
+      FindRegistrationCallback;
   typedef base::Callback<void(
       ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&

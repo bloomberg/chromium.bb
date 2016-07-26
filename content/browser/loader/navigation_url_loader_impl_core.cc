@@ -147,8 +147,8 @@ void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
 }
 
 void NavigationURLLoaderImplCore::OnServiceWorkerChecksPerformed(
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If the navigation has a ServiceWorker, bail out immediately.
   // TODO(clamy): only bail out when the ServiceWorker has a Fetch event

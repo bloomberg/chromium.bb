@@ -333,10 +333,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& other_url,
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
   void OnRegistrationFinishedForCheckHasServiceWorker(
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses

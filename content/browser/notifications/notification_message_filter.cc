@@ -222,7 +222,7 @@ void NotificationMessageFilter::DidFindServiceWorkerRegistration(
     const NotificationResources& notification_resources,
     int64_t persistent_notification_id,
     content::ServiceWorkerStatusCode service_worker_status,
-    const scoped_refptr<content::ServiceWorkerRegistration>& registration) {
+    scoped_refptr<content::ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (service_worker_status != SERVICE_WORKER_OK) {

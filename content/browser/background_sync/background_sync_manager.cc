@@ -974,8 +974,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     const base::Closure& event_fired_callback,
     const base::Closure& event_completed_callback,
     ServiceWorkerStatusCode service_worker_status,
-    const scoped_refptr<ServiceWorkerRegistration>&
-        service_worker_registration) {
+    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

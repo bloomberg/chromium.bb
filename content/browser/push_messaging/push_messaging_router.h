@@ -54,8 +54,7 @@ class PushMessagingRouter {
       const PushEventPayload& payload,
       const DeliverMessageCallback& deliver_message_callback,
       ServiceWorkerStatusCode service_worker_status,
-      const scoped_refptr<ServiceWorkerRegistration>&
-          service_worker_registration);
+      scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
 
   // Delivers a push message with |data| to a specific |service_worker|. Must be
   // called on the IO thread, with the the worker running.
