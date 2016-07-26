@@ -27,7 +27,7 @@ class ArcWallpaperHandler : public SetWallpaperDelegate,
   ~ArcWallpaperHandler() override;
 
   // SetWallpaperDelegate implementation.
-  void SetWallpaper(const std::vector<uint8_t>& jpeg_data) override;
+  void SetWallpaper(std::vector<uint8_t> jpeg_data) override;
 
   // ImageDecoder::ImageRequest implementation.
   void OnImageDecoded(const SkBitmap& bitmap) override;

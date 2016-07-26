@@ -79,10 +79,18 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   // Calls StartWithOptions() with ImageCodec::DEFAULT_CODEC and
   // shrink_to_fit = false.
   static void Start(ImageRequest* image_request,
+                    std::vector<uint8_t> image_data);
+  // Deprecated. Use std::vector<uint8_t> version to avoid an extra copy.
+  static void Start(ImageRequest* image_request,
                     const std::string& image_data);
 
   // Starts asynchronous image decoding. Once finished, the callback will be
   // posted back to image_request's |task_runner_|.
+  static void StartWithOptions(ImageRequest* image_request,
+                               std::vector<uint8_t> image_data,
+                               ImageCodec image_codec,
+                               bool shrink_to_fit);
+  // Deprecated. Use std::vector<uint8_t> version to avoid an extra copy.
   static void StartWithOptions(ImageRequest* image_request,
                                const std::string& image_data,
                                ImageCodec image_codec,
@@ -105,12 +113,12 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   // batch mode if necessary. If the utility process fails to start,
   // an OnDecodeImageFailed task is posted to image_request's |task_runner_|.
   void DecodeImageInSandbox(int request_id,
-                            const std::vector<unsigned char>& image_data,
+                            std::vector<uint8_t> image_data,
                             ImageCodec image_codec,
                             bool shrink_to_fit);
 
   void StartWithOptionsImpl(ImageRequest* image_request,
-                            const std::string& image_data,
+                            std::vector<uint8_t> image_data,
                             ImageCodec image_codec,
                             bool shrink_to_fit);
   void CancelImpl(ImageRequest* image_request);

@@ -17,7 +17,7 @@ class SetWallpaperDelegate {
   virtual ~SetWallpaperDelegate() = default;
 
   // Sets an image represented in JPEG format as the wallpaper.
-  virtual void SetWallpaper(const std::vector<uint8_t>& jpeg_data) = 0;
+  virtual void SetWallpaper(std::vector<uint8_t> jpeg_data) = 0;
 };
 
 }  // namespace arc

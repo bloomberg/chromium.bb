@@ -4,6 +4,8 @@
 
 #include "chrome/browser/image_decoder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -70,8 +72,25 @@ ImageDecoder::ImageRequest::~ImageRequest() {
 
 // static
 void ImageDecoder::Start(ImageRequest* image_request,
+                         std::vector<uint8_t> image_data) {
+  StartWithOptions(image_request, std::move(image_data), DEFAULT_CODEC, false);
+}
+
+// static
+void ImageDecoder::Start(ImageRequest* image_request,
                          const std::string& image_data) {
-  StartWithOptions(image_request, image_data, DEFAULT_CODEC, false);
+  Start(image_request,
+        std::vector<uint8_t>(image_data.begin(), image_data.end()));
+}
+
+// static
+void ImageDecoder::StartWithOptions(ImageRequest* image_request,
+                                    std::vector<uint8_t> image_data,
+                                    ImageCodec image_codec,
+                                    bool shrink_to_fit) {
+  g_decoder.Pointer()->StartWithOptionsImpl(image_request,
+                                            std::move(image_data),
+                                            image_codec, shrink_to_fit);
 }
 
 // static
@@ -79,12 +98,13 @@ void ImageDecoder::StartWithOptions(ImageRequest* image_request,
                                     const std::string& image_data,
                                     ImageCodec image_codec,
                                     bool shrink_to_fit) {
-  g_decoder.Pointer()->StartWithOptionsImpl(image_request, image_data,
-                                            image_codec, shrink_to_fit);
+  StartWithOptions(image_request,
+                   std::vector<uint8_t>(image_data.begin(), image_data.end()),
+                   image_codec, shrink_to_fit);
 }
 
 void ImageDecoder::StartWithOptionsImpl(ImageRequest* image_request,
-                                        const std::string& image_data,
+                                        std::vector<uint8_t> image_data,
                                         ImageCodec image_codec,
                                         bool shrink_to_fit) {
   DCHECK(image_request);
@@ -102,7 +122,7 @@ void ImageDecoder::StartWithOptionsImpl(ImageRequest* image_request,
       base::Bind(
           &ImageDecoder::DecodeImageInSandbox,
           g_decoder.Pointer(), request_id,
-          std::vector<unsigned char>(image_data.begin(), image_data.end()),
+          base::Passed(std::move(image_data)),
           image_codec, shrink_to_fit));
 }
 
@@ -114,7 +134,7 @@ void ImageDecoder::Cancel(ImageRequest* image_request) {
 
 void ImageDecoder::DecodeImageInSandbox(
     int request_id,
-    const std::vector<unsigned char>& image_data,
+    std::vector<uint8_t> image_data,
     ImageCodec image_codec,
     bool shrink_to_fit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -154,7 +174,7 @@ void ImageDecoder::DecodeImageInSandbox(
     mojo_codec = mojom::ImageCodec::ROBUST_PNG;
 #endif  // defined(OS_CHROMEOS)
   decoder_->DecodeImage(
-      mojo::Array<uint8_t>::From(image_data),
+      mojo::Array<uint8_t>(std::move(image_data)),
       mojo_codec,
       shrink_to_fit,
       base::Bind(&OnDecodeImageDone,

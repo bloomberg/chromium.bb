@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/arc_wallpaper_handler.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -66,15 +67,12 @@ ArcWallpaperHandler::~ArcWallpaperHandler() {
   ImageDecoder::Cancel(this);
 }
 
-void ArcWallpaperHandler::SetWallpaper(const std::vector<uint8_t>& jpeg_data) {
+void ArcWallpaperHandler::SetWallpaper(std::vector<uint8_t> jpeg_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // If there is an in-flight request, cancel it. It is safe to call Cancel()
   // even when there is no in-flight request.
   ImageDecoder::Cancel(this);
-  // TODO(nya): Improve ImageDecoder to minimize copy.
-  std::string jpeg_data_as_string(
-      reinterpret_cast<const char*>(jpeg_data.data()), jpeg_data.size());
-  ImageDecoder::StartWithOptions(this, jpeg_data_as_string,
+  ImageDecoder::StartWithOptions(this, std::move(jpeg_data),
                                  ImageDecoder::ROBUST_JPEG_CODEC, true);
 }
 
