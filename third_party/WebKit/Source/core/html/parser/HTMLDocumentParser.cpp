@@ -117,7 +117,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
-    , m_parsedChunkQueue(ParsedChunkQueue::create())
+    , m_tokenizedChunkQueue(TokenizedChunkQueue::create())
     , m_evaluator(DocumentWriteEvaluator::create(document))
     , m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing)
     , m_endWasDelayed(false)
@@ -152,11 +152,11 @@ DEFINE_TRACE(HTMLDocumentParser)
 
 void HTMLDocumentParser::detach()
 {
-    if (!isParsingFragment() && m_parsedChunkQueue.get() && m_parsedChunkQueue->peakPendingChunkCount()) {
+    if (!isParsingFragment() && m_tokenizedChunkQueue.get() && m_tokenizedChunkQueue->peakPendingChunkCount()) {
         DEFINE_STATIC_LOCAL(CustomCountHistogram, peakPendingChunkHistogram, ("Parser.PeakPendingChunkCount", 1, 1000, 50));
-        peakPendingChunkHistogram.count(m_parsedChunkQueue->peakPendingChunkCount());
+        peakPendingChunkHistogram.count(m_tokenizedChunkQueue->peakPendingChunkCount());
         DEFINE_STATIC_LOCAL(CustomCountHistogram, peakPendingTokenHistogram, ("Parser.PeakPendingTokenCount", 1, 100000, 50));
-        peakPendingTokenHistogram.count(m_parsedChunkQueue->peakPendingTokenCount());
+        peakPendingTokenHistogram.count(m_tokenizedChunkQueue->peakPendingTokenCount());
     }
 
     if (m_haveBackgroundParser)
@@ -285,13 +285,13 @@ bool HTMLDocumentParser::canTakeNextToken()
     return true;
 }
 
-void HTMLDocumentParser::notifyPendingParsedChunks()
+void HTMLDocumentParser::notifyPendingTokenizedChunks()
 {
-    TRACE_EVENT0("blink", "HTMLDocumentParser::notifyPendingParsedChunks");
-    ASSERT(m_parsedChunkQueue);
+    TRACE_EVENT0("blink", "HTMLDocumentParser::notifyPendingTokenizedChunks");
+    DCHECK(m_tokenizedChunkQueue);
 
-    Vector<std::unique_ptr<ParsedChunk>> pendingChunks;
-    m_parsedChunkQueue->takeAll(pendingChunks);
+    Vector<std::unique_ptr<TokenizedChunk>> pendingChunks;
+    m_tokenizedChunkQueue->takeAll(pendingChunks);
 
     if (!isParsing())
         return;
@@ -362,7 +362,7 @@ void HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser(const Docume
     document()->setEncodingData(data);
 }
 
-void HTMLDocumentParser::validateSpeculations(std::unique_ptr<ParsedChunk> chunk)
+void HTMLDocumentParser::validateSpeculations(std::unique_ptr<TokenizedChunk> chunk)
 {
     ASSERT(chunk);
     if (isWaitingForScripts()) {
@@ -401,7 +401,7 @@ void HTMLDocumentParser::validateSpeculations(std::unique_ptr<ParsedChunk> chunk
     discardSpeculationsAndResumeFrom(std::move(chunk), std::move(token), std::move(tokenizer));
 }
 
-void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<ParsedChunk> lastChunkBeforeScript, std::unique_ptr<HTMLToken> token, std::unique_ptr<HTMLTokenizer> tokenizer)
+void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<TokenizedChunk> lastChunkBeforeScript, std::unique_ptr<HTMLToken> token, std::unique_ptr<HTMLTokenizer> tokenizer)
 {
     m_weakFactory.revokeAll();
 
@@ -428,9 +428,9 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<Parsed
     postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::resumeFrom, m_backgroundParser, passed(std::move(checkpoint)));
 }
 
-size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_ptr<ParsedChunk> popChunk)
+size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(std::unique_ptr<TokenizedChunk> popChunk)
 {
-    TRACE_EVENT_WITH_FLOW0("blink,loading", "HTMLDocumentParser::processParsedChunkFromBackgroundParser", popChunk.get(), TRACE_EVENT_FLAG_FLOW_IN);
+    TRACE_EVENT_WITH_FLOW0("blink,loading", "HTMLDocumentParser::processTokenizedChunkFromBackgroundParser", popChunk.get(), TRACE_EVENT_FLAG_FLOW_IN);
     AutoReset<bool> hasLineNumber(&m_isParsingAtLineNumber, true);
 
     ASSERT_WITH_SECURITY_IMPLICATION(m_pumpSpeculationsSessionNestingLevel == 1);
@@ -443,7 +443,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(std::unique_pt
     ASSERT(!m_token);
     ASSERT(!m_lastChunkBeforeScript);
 
-    std::unique_ptr<ParsedChunk> chunk(std::move(popChunk));
+    std::unique_ptr<TokenizedChunk> chunk(std::move(popChunk));
     std::unique_ptr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
     size_t elementTokenCount = 0;
 
@@ -542,12 +542,12 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel);
     while (!m_speculations.isEmpty()) {
         ASSERT(!isScheduledForResume());
-        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
+        size_t elementTokenCount = processTokenizedChunkFromBackgroundParser(m_speculations.takeFirst());
         session.addedElementTokens(elementTokenCount);
 
         // Always check isParsing first as m_document may be null.
         // Surprisingly, isScheduledForResume() may be set here as a result of
-        // processParsedChunkFromBackgroundParser running arbitrary javascript
+        // processTokenizedChunkFromBackgroundParser running arbitrary javascript
         // which invokes nested event loops. (e.g. inspector breakpoints)
         if (!isParsing() || isWaitingForScripts() || isScheduledForResume())
             break;
@@ -735,7 +735,7 @@ void HTMLDocumentParser::startBackgroundParser()
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
 
     config->decoder = takeDecoder();
-    config->parsedChunkQueue = m_parsedChunkQueue.get();
+    config->tokenizedChunkQueue = m_tokenizedChunkQueue.get();
     if (document()->settings()) {
         if (document()->settings()->backgroundHtmlParserOutstandingTokenLimit())
             config->outstandingTokenLimit = document()->settings()->backgroundHtmlParserOutstandingTokenLimit();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/ParsedChunkQueue.h"
+#include "core/html/parser/TokenizedChunkQueue.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include <algorithm>
@@ -34,16 +34,16 @@ private:
 
 } // namespace
 
-ParsedChunkQueue::ParsedChunkQueue()
+TokenizedChunkQueue::TokenizedChunkQueue()
     : m_mutex(RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled() ? nullptr : new Mutex)
 {
 }
 
-ParsedChunkQueue::~ParsedChunkQueue()
+TokenizedChunkQueue::~TokenizedChunkQueue()
 {
 }
 
-bool ParsedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk)
+bool TokenizedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk)
 {
     MaybeLocker locker(m_mutex.get());
 
@@ -57,7 +57,7 @@ bool ParsedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk> 
     return wasEmpty;
 }
 
-void ParsedChunkQueue::clear()
+void TokenizedChunkQueue::clear()
 {
     MaybeLocker locker(m_mutex.get());
 
@@ -65,21 +65,21 @@ void ParsedChunkQueue::clear()
     m_pendingChunks.clear();
 }
 
-void ParsedChunkQueue::takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>& vector)
+void TokenizedChunkQueue::takeAll(Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>& vector)
 {
     MaybeLocker locker(m_mutex.get());
 
-    ASSERT(vector.isEmpty());
+    DCHECK(vector.isEmpty());
     m_pendingChunks.swap(vector);
 }
 
-size_t ParsedChunkQueue::peakPendingChunkCount()
+size_t TokenizedChunkQueue::peakPendingChunkCount()
 {
     MaybeLocker locker(m_mutex.get());
     return m_peakPendingChunkCount;
 }
 
-size_t ParsedChunkQueue::peakPendingTokenCount()
+size_t TokenizedChunkQueue::peakPendingTokenCount()
 {
     MaybeLocker locker(m_mutex.get());
     return m_peakPendingTokenCount;

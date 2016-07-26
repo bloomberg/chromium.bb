@@ -33,8 +33,8 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
-#include "core/html/parser/ParsedChunkQueue.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "wtf/WeakPtr.h"
 #include <memory>
@@ -57,7 +57,7 @@ public:
         WeakPtr<HTMLDocumentParser> parser;
         std::unique_ptr<XSSAuditor> xssAuditor;
         std::unique_ptr<TextResourceDecoder> decoder;
-        RefPtr<ParsedChunkQueue> parsedChunkQueue;
+        RefPtr<TokenizedChunkQueue> tokenizedChunkQueue;
         // outstandingTokenLimit must be greater than or equal to
         // pendingTokenLimit
         size_t outstandingTokenLimit;
@@ -124,7 +124,7 @@ private:
     std::unique_ptr<TextResourceDecoder> m_decoder;
     DocumentEncodingData m_lastSeenEncodingData;
     std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
-    RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
+    RefPtr<TokenizedChunkQueue> m_tokenizedChunkQueue;
 
     bool m_startingScript;
     double m_lastBytesReceivedTime;

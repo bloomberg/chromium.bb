@@ -110,7 +110,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_preloadScanner(wrapUnique(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
     , m_decoder(std::move(config->decoder))
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
-    , m_parsedChunkQueue(config->parsedChunkQueue.release())
+    , m_tokenizedChunkQueue(config->tokenizedChunkQueue.release())
     , m_startingScript(false)
     , m_lastBytesReceivedTime(0.0)
 {
@@ -177,7 +177,7 @@ void BackgroundHTMLParser::resumeFrom(std::unique_ptr<Checkpoint> checkpoint)
     m_input.rewindTo(checkpoint->inputCheckpoint, checkpoint->unparsedInput);
     m_preloadScanner->rewindTo(checkpoint->preloadScannerCheckpoint);
     m_startingScript = false;
-    m_parsedChunkQueue->clear();
+    m_tokenizedChunkQueue->clear();
     m_lastBytesReceivedTime = monotonicallyIncreasingTimeMS();
     pumpTokenizer();
 }
@@ -289,7 +289,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 #endif
 
     double chunkStartTime = monotonicallyIncreasingTimeMS();
-    std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk = wrapUnique(new HTMLDocumentParser::ParsedChunk);
+    std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk = wrapUnique(new HTMLDocumentParser::TokenizedChunk);
     TRACE_EVENT_WITH_FLOW0("blink,loading", "BackgroundHTMLParser::sendTokensToMainThread", chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
 
     if (!m_pendingPreloads.isEmpty()) {
@@ -311,13 +311,13 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->likelyDocumentWriteScriptIndices.swap(m_likelyDocumentWriteScriptIndices);
     m_startingScript = false;
 
-    bool isEmpty = m_parsedChunkQueue->enqueue(std::move(chunk));
+    bool isEmpty = m_tokenizedChunkQueue->enqueue(std::move(chunk));
 
     DEFINE_STATIC_LOCAL(CustomCountHistogram, chunkEnqueueTime, ("Parser.ChunkEnqueueTime", 1, 10000, 50));
     chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
     if (isEmpty) {
-        runOnMainThread(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser);
+        runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks, m_parser);
     }
 
     m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);

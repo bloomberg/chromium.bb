@@ -64,8 +64,8 @@ class HTMLParserScheduler;
 class HTMLResourcePreloader;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
-class ParsedChunkQueue;
 class PumpSession;
+class TokenizedChunkQueue;
 
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
@@ -91,8 +91,8 @@ public:
     void suspendScheduledTasks() final;
     void resumeScheduledTasks() final;
 
-    struct ParsedChunk {
-        USING_FAST_MALLOC(ParsedChunk);
+    struct TokenizedChunk {
+        USING_FAST_MALLOC(TokenizedChunk);
     public:
         std::unique_ptr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
@@ -106,7 +106,7 @@ public:
         // Indices into |tokens|.
         Vector<int> likelyDocumentWriteScriptIndices;
     };
-    void notifyPendingParsedChunks();
+    void notifyPendingTokenizedChunks();
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
 
     void appendBytes(const char* bytes, size_t length) override;
@@ -150,9 +150,9 @@ private:
 
     void startBackgroundParser();
     void stopBackgroundParser();
-    void validateSpeculations(std::unique_ptr<ParsedChunk> lastChunk);
-    void discardSpeculationsAndResumeFrom(std::unique_ptr<ParsedChunk> lastChunk, std::unique_ptr<HTMLToken>, std::unique_ptr<HTMLTokenizer>);
-    size_t processParsedChunkFromBackgroundParser(std::unique_ptr<ParsedChunk>);
+    void validateSpeculations(std::unique_ptr<TokenizedChunk> lastChunk);
+    void discardSpeculationsAndResumeFrom(std::unique_ptr<TokenizedChunk> lastChunk, std::unique_ptr<HTMLToken>, std::unique_ptr<HTMLTokenizer>);
+    size_t processTokenizedChunkFromBackgroundParser(std::unique_ptr<TokenizedChunk>);
     void pumpPendingSpeculations();
 
     bool canTakeNextToken();
@@ -216,14 +216,14 @@ private:
 
     // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be combined into a single state object
     // so they can be set and cleared together and passed between threads together.
-    std::unique_ptr<ParsedChunk> m_lastChunkBeforeScript;
-    Deque<std::unique_ptr<ParsedChunk>> m_speculations;
+    std::unique_ptr<TokenizedChunk> m_lastChunkBeforeScript;
+    Deque<std::unique_ptr<TokenizedChunk>> m_speculations;
     WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
     Member<HTMLResourcePreloader> m_preloader;
     PreloadRequestStream m_queuedPreloads;
     Vector<String> m_queuedDocumentWriteScripts;
-    RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
+    RefPtr<TokenizedChunkQueue> m_tokenizedChunkQueue;
     std::unique_ptr<DocumentWriteEvaluator> m_evaluator;
 
     bool m_shouldUseThreading;

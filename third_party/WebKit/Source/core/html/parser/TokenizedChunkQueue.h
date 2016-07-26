@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ParsedChunkQueue_h
-#define ParsedChunkQueue_h
+#ifndef TokenizedChunkQueue_h
+#define TokenizedChunkQueue_h
 
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "wtf/Deque.h"
@@ -15,35 +15,35 @@
 
 namespace blink {
 
-// ParsedChunkQueue is used to transfer parsed HTML token chunks
+// TokenizedChunkQueue is used to transfer parsed HTML token chunks
 // from BackgroundHTMLParser thread to Blink main thread without
 // spamming task queue.
-// ParsedChunkQueue is accessed from both BackgroundHTMLParser
+// TokenizedChunkQueue is accessed from both BackgroundHTMLParser
 // thread (producer) and Blink main thread (consumer).
 // Access to the backend queue vector is protected by a mutex.
 // If enqueue is done against empty queue, BackgroundHTMLParser
 // thread kicks a consumer task on Blink main thread.
-class ParsedChunkQueue : public ThreadSafeRefCounted<ParsedChunkQueue> {
+class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
 public:
-    static PassRefPtr<ParsedChunkQueue> create()
+    static PassRefPtr<TokenizedChunkQueue> create()
     {
-        return adoptRef(new ParsedChunkQueue);
+        return adoptRef(new TokenizedChunkQueue);
     }
 
-    ~ParsedChunkQueue();
+    ~TokenizedChunkQueue();
 
-    bool enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk>);
+    bool enqueue(std::unique_ptr<HTMLDocumentParser::TokenizedChunk>);
     void clear();
 
-    void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>&);
+    void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>&);
     size_t peakPendingChunkCount();
     size_t peakPendingTokenCount();
 
 private:
-    ParsedChunkQueue();
+    TokenizedChunkQueue();
 
     std::unique_ptr<Mutex> m_mutex;
-    Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>> m_pendingChunks;
+    Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>> m_pendingChunks;
     size_t m_peakPendingChunkCount = 0;
     size_t m_peakPendingTokenCount = 0;
     size_t m_pendingTokenCount = 0;
