@@ -564,7 +564,8 @@ void PersonalDataManagerAndroid::RecordAndLogProfileUse(
     const JavaParamRef<jstring>& jguid) {
   AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
       ConvertJavaStringToUTF8(env, jguid));
-  personal_data_manager_->RecordUseOf(*profile);
+  if (profile)
+    personal_data_manager_->RecordUseOf(*profile);
 }
 
 void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
@@ -606,7 +607,8 @@ void PersonalDataManagerAndroid::RecordAndLogCreditCardUse(
     const JavaParamRef<jstring>& jguid) {
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
       ConvertJavaStringToUTF8(env, jguid));
-  personal_data_manager_->RecordUseOf(*card);
+  if (card)
+    personal_data_manager_->RecordUseOf(*card);
 }
 
 void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
