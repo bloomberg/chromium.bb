@@ -98,22 +98,7 @@ static IntRect backgroundRect(const LayoutObject* layoutObject)
 
     LayoutRect rect;
     const LayoutBox* box = toLayoutBox(layoutObject);
-    EFillBox clip = box->style()->backgroundClip();
-    switch (clip) {
-    case BorderFillBox:
-        rect = box->borderBoxRect();
-        break;
-    case PaddingFillBox:
-        rect = box->paddingBoxRect();
-        break;
-    case ContentFillBox:
-        rect = box->contentBoxRect();
-        break;
-    case TextFillBox:
-        break;
-    }
-
-    return pixelSnappedIntRect(rect);
+    return pixelSnappedIntRect(box->backgroundClipRect());
 }
 
 static inline bool isAcceleratedCanvas(const LayoutObject* layoutObject)

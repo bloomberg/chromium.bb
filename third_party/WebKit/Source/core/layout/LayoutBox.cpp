@@ -704,6 +704,29 @@ FloatQuad LayoutBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
+LayoutRect LayoutBox::backgroundClipRect() const
+{
+    // TODO(flackr): Check for the maximum background clip rect.
+    switch (style()->backgroundClip()) {
+    case BorderFillBox:
+        // A 'border-box' clip on scrollable elements local attachment is treated as 'padding-box'.
+        // https://www.w3.org/TR/css3-background/#the-background-attachment
+        if (!style()->isOverflowVisible() && style()->backgroundLayers().attachment() == LocalBackgroundAttachment)
+            return paddingBoxRect();
+        return borderBoxRect();
+        break;
+    case PaddingFillBox:
+        return paddingBoxRect();
+        break;
+    case ContentFillBox:
+        return contentBoxRect();
+        break;
+    default:
+        break;
+    }
+    return LayoutRect();
+}
+
 void LayoutBox::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const
 {
     rects.append(LayoutRect(additionalOffset, size()));
@@ -1372,21 +1395,7 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
     // FIXME: The background color clip is defined by the last layer.
     if (style()->backgroundLayers().next())
         return false;
-    LayoutRect backgroundRect;
-    switch (style()->backgroundClip()) {
-    case BorderFillBox:
-        backgroundRect = borderBoxRect();
-        break;
-    case PaddingFillBox:
-        backgroundRect = paddingBoxRect();
-        break;
-    case ContentFillBox:
-        backgroundRect = contentBoxRect();
-        break;
-    default:
-        break;
-    }
-    return backgroundRect.contains(localRect);
+    return backgroundClipRect().contains(localRect);
 }
 
 static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
