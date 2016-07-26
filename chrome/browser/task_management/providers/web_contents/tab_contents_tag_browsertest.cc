@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, PostExistingTaskProviding) {
   EXPECT_EQ(kTestPagesLength, task_manager.tasks().size());
   const base::string16 closed_tab_title =
       GetTestPageExpectedTitle(kTestPages[kTestPagesLength - 1]);
-  for (const auto& task : task_manager.tasks())
+  for (const auto* task : task_manager.tasks())
     EXPECT_NE(closed_tab_title, task->title());
 }
 

@@ -25,7 +25,7 @@ class BackgroundContentsTagTest : public ExtensionBrowserTest {
   ~BackgroundContentsTagTest() override {}
 
   const extensions::Extension* LoadBackgroundExtension() {
-    auto extension = LoadExtension(
+    auto* extension = LoadExtension(
         test_data_dir_.AppendASCII("app_process_background_instances"));
     return extension;
   }
@@ -60,7 +60,7 @@ class BackgroundContentsTagTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, TagsManagerRecordsATag) {
   // Browser tests start with only one tab available.
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  auto extension = LoadBackgroundExtension();
+  auto* extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
 
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, TasksProvidedWhileObserving) {
   // The pre-existing tab is provided.
   EXPECT_EQ(1U, task_manager.tasks().size());
 
-  auto extension = LoadBackgroundExtension();
+  auto* extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
   ASSERT_EQ(2U, task_manager.tasks().size());
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, PreExistingTasksAreProvided) {
   EXPECT_TRUE(task_manager.tasks().empty());
   // Browser tests start with only one tab available.
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  auto extension = LoadBackgroundExtension();
+  auto* extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
 

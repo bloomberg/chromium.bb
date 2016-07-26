@@ -470,7 +470,7 @@ void TaskManagerImpl::StartUpdating() {
 
   is_running_ = true;
 
-  for (auto& provider : task_providers_)
+  for (auto* provider : task_providers_)
     provider->SetObserver(this);
 
   io_thread_helper_manager_.reset(new IoThreadHelperManager);
@@ -484,7 +484,7 @@ void TaskManagerImpl::StopUpdating() {
 
   io_thread_helper_manager_.reset();
 
-  for (auto& provider : task_providers_)
+  for (auto* provider : task_providers_)
     provider->ClearObserver();
 
   STLDeleteValues(&task_groups_by_proc_id_);
@@ -495,7 +495,7 @@ void TaskManagerImpl::StopUpdating() {
 bool TaskManagerImpl::UpdateTasksWithBytesRead(const BytesReadParam& param) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (const auto& task_provider : task_providers_) {
+  for (auto* task_provider : task_providers_) {
     Task* task = task_provider->GetTaskOfUrlRequest(param.origin_pid,
                                                     param.child_id,
                                                     param.route_id);
