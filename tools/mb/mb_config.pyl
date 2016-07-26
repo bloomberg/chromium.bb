@@ -133,13 +133,13 @@
       'CrWinClang':
         'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
       'CrWinClang(dbg)':
-        'swarming_gyp_clang_debug_bot_minimal_symbols_x86',
+        'swarming_gn_clang_debug_bot_minimal_symbols_x86',
       'CrWinClang(dbg) tester': 'none',
       'CrWinClang64':
-        'swarming_gyp_clang_official_release_bot_minimal_symbols_x64',
+        'swarming_gn_clang_official_release_bot_minimal_symbols_x64',
       'CrWinClang tester': 'none',
       'CrWinClang64(dll)':
-        'swarming_gyp_clang_minimal_symbols_shared_release_bot_x64',
+        'swarming_gn_clang_minimal_symbols_shared_release_bot_x64',
       'CrWinClangGoma':
         'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
       'CrWinGoma': 'gn_release_bot_minimal_symbols_x86',
@@ -165,19 +165,19 @@
         'swarming_gyp_asan_clang_tot_full_symbols_static_release',
       'ClangToTMacASan tester': 'none',
       'ClangToTWin':
-        'swarming_gyp_clang_tot_official_minimal_symbols_static_release_x86',
+        'swarming_gn_clang_tot_official_minimal_symbols_static_release_x86',
       'ClangToTWin tester': 'none',
       'ClangToTWin(dbg)':
         'swarming_gn_clang_tot_minimal_symbols_shared_debug_x86',
       'ClangToTWin(dbg) tester': 'none',
       'ClangToTWin(dll)':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_release_x86',
+        'swarming_gn_clang_tot_minimal_symbols_shared_release_x86',
       'ClangToTWin(dll) tester': 'none',
       'ClangToTWin64':
         'swarming_gn_clang_tot_official_minimal_symbols_static_release_x64',
       'ClangToTWin64 tester': 'none',
       'ClangToTWin64(dbg)':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_debug_x64',
+        'swarming_gn_clang_tot_minimal_symbols_shared_debug_x64',
       'ClangToTWin64(dbg) tester': 'none',
       'ClangToTWin64(dll)':
         'swarming_gn_clang_tot_minimal_symbols_shared_release_x64',
@@ -202,16 +202,16 @@
       'CrWinClang64(dbg) tester': 'none',
       'CrWinClang64(dll) tester': 'none',
       'CrWinClangLLD':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_release_use_lld_x86',
+        'swarming_gn_clang_tot_minimal_symbols_shared_release_use_lld_x86',
       'CrWinClangLLD tester': 'none',
       'CrWinClangLLD64':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_release_use_lld_x64',
+        'swarming_gn_clang_tot_minimal_symbols_shared_release_use_lld_x64',
       'CrWinClangLLD64 tester': 'none',
       'CrWinClngLLD64dbg':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x64',
+        'swarming_gn_clang_tot_minimal_symbols_shared_debug_use_lld_x64',
       'CrWinClngLLD64dbg tester': 'none',
       'CrWinClngLLDdbg':
-        'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x86',
+        'swarming_gn_clang_tot_minimal_symbols_shared_debug_use_lld_x86',
       'CrWinClngLLDdbg tester': 'none',
       'EarlGreyiOS': 'ios_gyp',
       'Headless Linux (dbg)':
@@ -918,10 +918,10 @@
       'win_chromium_variable_webkit_win7_builder_x64': 'findit',
       'win_chromium_x64_rel_ng': 'swarming_gn_release_trybot_x64',
       'win_clang': 'win_clang_debug_bot',
-      'win_clang_dbg': 'swarming_gyp_clang_debug_trybot_x86',
-      'win_clang_rel': 'swarming_gyp_clang_official_release_trybot_x86',
+      'win_clang_dbg': 'swarming_gn_clang_debug_trybot_x86',
+      'win_clang_rel': 'swarming_gn_clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
-      'win_clang_x64_rel': 'swarming_gyp_clang_official_release_trybot_x64',
+      'win_clang_x64_rel': 'swarming_gn_clang_official_release_trybot_x64',
       'win_nacl_sdk': 'gyp_release_bot_minimal_symbols_x86',
       'win_nacl_sdk_build': 'gyp_release_bot_minimal_symbols_x86',
       'win_optional_gpu_tests_rel':
@@ -1771,21 +1771,21 @@
       'swarming', 'gn', 'chromeos', 'msan', 'release_bot',
     ],
 
-    'swarming_gyp_clang_debug_bot_minimal_symbols_x86': [
-      'swarming', 'gyp', 'clang', 'debug_bot', 'minimal_symbols', 'x86',
+    'swarming_gn_clang_debug_bot_minimal_symbols_x86': [
+      'swarming', 'gn', 'clang', 'debug_bot', 'minimal_symbols', 'x86',
     ],
 
-    'swarming_gyp_clang_debug_trybot_x86': [
-      'swarming', 'gyp', 'clang', 'debug_trybot', 'x86',
+    'swarming_gn_clang_debug_trybot_x86': [
+      'swarming', 'gn', 'clang', 'debug_trybot', 'x86',
     ],
 
-    'swarming_gyp_clang_minimal_symbols_shared_release_bot_x64': [
-      'swarming', 'gyp', 'clang', 'minimal_symbols', 'shared_release_bot',
+    'swarming_gn_clang_minimal_symbols_shared_release_bot_x64': [
+      'swarming', 'gn', 'clang', 'minimal_symbols', 'shared_release_bot',
       'x64',
     ],
 
-    'swarming_gyp_clang_official_release_bot_minimal_symbols_x64': [
-      'swarming', 'gyp', 'clang', 'official', 'release_bot',
+    'swarming_gn_clang_official_release_bot_minimal_symbols_x64': [
+      'swarming', 'gn', 'clang', 'official', 'release_bot',
       'minimal_symbols', 'x64',
     ],
 
@@ -1794,12 +1794,12 @@
       'minimal_symbols', 'x86',
     ],
 
-    'swarming_gyp_clang_official_release_trybot_x64': [
-      'swarming', 'gyp', 'clang', 'official', 'release_trybot', 'x64',
+    'swarming_gn_clang_official_release_trybot_x64': [
+      'swarming', 'gn', 'clang', 'official', 'release_trybot', 'x64',
     ],
 
-    'swarming_gyp_clang_official_release_trybot_x86': [
-      'swarming', 'gyp', 'clang', 'official', 'release_trybot', 'x86',
+    'swarming_gn_clang_official_release_trybot_x86': [
+      'swarming', 'gn', 'clang', 'official', 'release_trybot', 'x86',
     ],
 
     'swarming_gn_clang_shared_release_bot_minimal_symbols_x86': [
@@ -1826,18 +1826,18 @@
       'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x64': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
+    'swarming_gn_clang_tot_minimal_symbols_shared_debug_use_lld_x64': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
       'use_lld', 'x64',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x86': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
+    'swarming_gn_clang_tot_minimal_symbols_shared_debug_use_lld_x86': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
       'use_lld', 'x86',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_debug_x64': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
+    'swarming_gn_clang_tot_minimal_symbols_shared_debug_x64': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'debug',
       'x64',
     ],
 
@@ -1846,13 +1846,13 @@
       'x86',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_release_use_lld_x64': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'release',
+    'swarming_gn_clang_tot_minimal_symbols_shared_release_use_lld_x64': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'release',
       'use_lld', 'x64',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_release_use_lld_x86': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'release',
+    'swarming_gn_clang_tot_minimal_symbols_shared_release_use_lld_x86': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'release',
       'use_lld', 'x86',
     ],
 
@@ -1865,8 +1865,8 @@
       'x64',
     ],
 
-    'swarming_gyp_clang_tot_minimal_symbols_shared_release_x86': [
-      'swarming', 'gyp', 'clang_tot', 'minimal_symbols', 'shared', 'release',
+    'swarming_gn_clang_tot_minimal_symbols_shared_release_x86': [
+      'swarming', 'gn', 'clang_tot', 'minimal_symbols', 'shared', 'release',
       'x86',
     ],
 
@@ -1875,8 +1875,8 @@
       'release', 'x64',
     ],
 
-    'swarming_gyp_clang_tot_official_minimal_symbols_static_release_x86': [
-      'swarming', 'gyp', 'clang_tot', 'official', 'minimal_symbols', 'static',
+    'swarming_gn_clang_tot_official_minimal_symbols_static_release_x86': [
+      'swarming', 'gn', 'clang_tot', 'official', 'minimal_symbols', 'static',
       'release', 'x86',
     ],
 
