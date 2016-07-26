@@ -131,6 +131,7 @@
       'public/browser/bluetooth_chooser.cc',
       'public/browser/bluetooth_chooser.h',
       'public/browser/browser_accessibility_state.h',
+      'public/browser/browser_associated_interface.h',
       'public/browser/browser_child_process_host.h',
       'public/browser/browser_child_process_host_delegate.cc',
       'public/browser/browser_child_process_host_delegate.h',

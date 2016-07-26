@@ -29,6 +29,7 @@ class MessageFilter;
 }
 
 namespace content {
+class BrowserAssociatedInterfaceTest;
 struct BrowserMessageFilterTraits;
 
 // Base class for message filters in the browser process.  You can receive and
@@ -82,6 +83,12 @@ class CONTENT_EXPORT BrowserMessageFilter
   // your function will be called on the requested thread.
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
+  // Adds an associated interface factory to this filter. Must be called before
+  // RegisterAssociatedInterfaces().
+  void AddAssociatedInterface(
+      const std::string& name,
+      const IPC::ChannelProxy::GenericAssociatedInterfaceFactory& factory);
+
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessHandle PeerHandle();
 
@@ -109,14 +116,17 @@ class CONTENT_EXPORT BrowserMessageFilter
                                           BrowserMessageFilterTraits>;
 
   class Internal;
+  friend class BrowserAssociatedInterfaceTest;
   friend class BrowserChildProcessHostImpl;
   friend class BrowserPpapiHost;
   friend class RenderProcessHostImpl;
 
-  // This is private because the only classes that need access to it are made
-  // friends above. This is only guaranteed to be valid on creation, after that
-  // this class could outlive the filter.
+  // These are private because the only classes that need access to them are
+  // made friends above. These are only guaranteed to be valid to call on
+  // creation. After that this class could outlive the filter and new interface
+  // registrations could race with incoming requests.
   IPC::MessageFilter* GetFilter();
+  void RegisterAssociatedInterfaces(IPC::ChannelProxy* proxy);
 
   // This implements IPC::MessageFilter so that we can hide that from child
   // classes. Internal keeps a reference to this class, which is why there's a
@@ -128,6 +138,10 @@ class CONTENT_EXPORT BrowserMessageFilter
   base::Process peer_process_;
 
   std::vector<uint32_t> message_classes_to_filter_;
+
+  std::vector<std::pair<std::string,
+                        IPC::ChannelProxy::GenericAssociatedInterfaceFactory>>
+      associated_interfaces_;
 };
 
 struct BrowserMessageFilterTraits {

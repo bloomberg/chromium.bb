@@ -114,6 +114,12 @@ BrowserMessageFilter::BrowserMessageFilter(
   DCHECK(num_message_classes_to_filter);
 }
 
+void BrowserMessageFilter::AddAssociatedInterface(
+    const std::string& name,
+    const IPC::ChannelProxy::GenericAssociatedInterfaceFactory& factory) {
+  associated_interfaces_.emplace_back(name, factory);
+}
+
 base::ProcessHandle BrowserMessageFilter::PeerHandle() {
   return peer_process_.Handle();
 }
@@ -182,6 +188,13 @@ IPC::MessageFilter* BrowserMessageFilter::GetFilter() {
   DCHECK(!internal_) << "Should only be called once.";
   internal_ = new Internal(this);
   return internal_;
+}
+
+void BrowserMessageFilter::RegisterAssociatedInterfaces(
+    IPC::ChannelProxy* proxy) {
+  for (const auto& entry : associated_interfaces_)
+    proxy->AddGenericAssociatedInterfaceForIOThread(entry.first, entry.second);
+  associated_interfaces_.clear();
 }
 
 }  // namespace content

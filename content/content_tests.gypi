@@ -394,6 +394,7 @@
       'browser/bluetooth/bluetooth_allowed_devices_map_unittest.cc',
       'browser/bluetooth/bluetooth_blacklist_unittest.cc',
       'browser/bluetooth/frame_connected_bluetooth_devices_unittest.cc',
+      'browser/browser_associated_interface_unittest.cc',
       'browser/browser_thread_unittest.cc',
       'browser/browser_url_handler_impl_unittest.cc',
       'browser/byte_stream_unittest.cc',
@@ -1366,10 +1367,8 @@
       'type': 'static_library',
       'sources': [
         'public/test/test_mojo_service.mojom',
+        'test/test_browser_associated_interfaces.mojom',
       ],
-      'variables': {
-        'use_new_wrapper_types': 'false',
-      },
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
     {

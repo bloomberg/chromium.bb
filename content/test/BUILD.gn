@@ -264,9 +264,8 @@ static_library("browsertest_support") {
 mojom("content_test_mojo_bindings") {
   sources = [
     "../public/test/test_mojo_service.mojom",
+    "test_browser_associated_interfaces.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 mojom("web_ui_test_mojo_bindings") {

@@ -12,3 +12,9 @@ per-file test_expectations_chrome.txt=*
 per-file fake_renderer_scheduler.*=alexclarke@chromium.org
 per-file fake_renderer_scheduler.*=rmcilroy@chromium.org
 per-file fake_renderer_scheduler.*=skyostil@chromium.org
+
+# Make the mojom security presubmit happy with the following lines, despite also
+# allowing wildcard ownership for any test mojom here.
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+per-file *.mojom=*
