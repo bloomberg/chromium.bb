@@ -625,12 +625,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     return QUIC_HANDSHAKE_FAILED;
   }
 
-  if (version > QUIC_VERSION_29) {
-    StringPiece cert_sct;
-    if (client_hello.GetStringPiece(kCertificateSCTTag, &cert_sct) &&
-        cert_sct.empty()) {
-      params->sct_supported_by_client = true;
-    }
+  StringPiece cert_sct;
+  if (client_hello.GetStringPiece(kCertificateSCTTag, &cert_sct) &&
+      cert_sct.empty()) {
+    params->sct_supported_by_client = true;
   }
 
   if (!info.reject_reasons.empty() || !requested_config.get()) {
@@ -719,13 +717,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
   DCHECK(proof_source_.get());
-  if (version > QUIC_VERSION_25) {
-    if (crypto_proof->chain->certs.empty()) {
-      *error_details = "Failed to get certs";
-      return QUIC_CRYPTO_INTERNAL_ERROR;
-    }
-    hkdf_suffix.append(crypto_proof->chain->certs.at(0));
+  if (crypto_proof->chain->certs.empty()) {
+    *error_details = "Failed to get certs";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
   }
+  hkdf_suffix.append(crypto_proof->chain->certs.at(0));
 
   StringPiece cetv_ciphertext;
   if (requested_config->channel_id_enabled &&
@@ -834,10 +830,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   forward_secure_hkdf_input.append(hkdf_suffix);
 
   string shlo_nonce;
-  if (version > QUIC_VERSION_26) {
-    shlo_nonce = NewServerNonce(rand, info.now);
-    out->SetStringPiece(kServerNonceTag, shlo_nonce);
-  }
+  shlo_nonce = NewServerNonce(rand, info.now);
+  out->SetStringPiece(kServerNonceTag, shlo_nonce);
 
   if (!CryptoUtils::DeriveKeys(
           params->forward_secure_premaster_secret, params->aead,
@@ -1113,42 +1107,40 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
 
   bool get_proof_failed = false;
-  if (version > QUIC_VERSION_25) {
-    bool x509_supported = false;
-    bool x509_ecdsa_supported = false;
-    ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
-    string serialized_config = primary_config->serialized;
-    string chlo_hash;
-    CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash);
-    bool need_proof = true;
-    if (FLAGS_quic_refresh_proof) {
-      need_proof = !crypto_proof->chain;
+  bool x509_supported = false;
+  bool x509_ecdsa_supported = false;
+  ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
+  string serialized_config = primary_config->serialized;
+  string chlo_hash;
+  CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash);
+  bool need_proof = true;
+  if (FLAGS_quic_refresh_proof) {
+    need_proof = !crypto_proof->chain;
+  }
+  if (FLAGS_enable_async_get_proof) {
+    if (need_proof) {
+      // Make an async call to GetProof and setup the callback to trampoline
+      // back into EvaluateClientHelloAfterGetProof
+      std::unique_ptr<EvaluateClientHelloCallback> cb(
+          new EvaluateClientHelloCallback(
+              *this, found_error, server_ip, version, primary_orbit,
+              requested_config, primary_config, crypto_proof,
+              client_hello_state, done_cb));
+      proof_source_->GetProof(server_ip, info->sni.as_string(),
+                              serialized_config, version, chlo_hash,
+                              x509_ecdsa_supported, std::move(cb));
+      helper.DetachCallback();
+      return;
     }
-    if (FLAGS_enable_async_get_proof) {
-      if (need_proof) {
-        // Make an async call to GetProof and setup the callback to trampoline
-        // back into EvaluateClientHelloAfterGetProof
-        std::unique_ptr<EvaluateClientHelloCallback> cb(
-            new EvaluateClientHelloCallback(
-                *this, found_error, server_ip, version, primary_orbit,
-                requested_config, primary_config, crypto_proof,
-                client_hello_state, done_cb));
-        proof_source_->GetProof(server_ip, info->sni.as_string(),
-                                serialized_config, version, chlo_hash,
-                                x509_ecdsa_supported, std::move(cb));
-        helper.DetachCallback();
-        return;
-      }
-    }
+  }
 
-    // No need to get a new proof if one was already generated.
-    if (need_proof &&
-        !proof_source_->GetProof(
-            server_ip, info->sni.as_string(), serialized_config, version,
-            chlo_hash, x509_ecdsa_supported, &crypto_proof->chain,
-            &crypto_proof->signature, &crypto_proof->cert_sct)) {
-      get_proof_failed = true;
-    }
+  // No need to get a new proof if one was already generated.
+  if (need_proof &&
+      !proof_source_->GetProof(
+          server_ip, info->sni.as_string(), serialized_config, version,
+          chlo_hash, x509_ecdsa_supported, &crypto_proof->chain,
+          &crypto_proof->signature, &crypto_proof->cert_sct)) {
+    get_proof_failed = true;
   }
 
   EvaluateClientHelloAfterGetProof(
@@ -1178,11 +1170,9 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
   }
 
-  if (version > QUIC_VERSION_25) {
-    if (!ValidateExpectedLeafCertificate(client_hello, *crypto_proof)) {
-      found_error = true;
-      info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
-    }
+  if (!ValidateExpectedLeafCertificate(client_hello, *crypto_proof)) {
+    found_error = true;
+    info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
   }
 
   if (info->client_nonce.size() != kNonceSize) {
@@ -1308,8 +1298,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 
   out->SetStringPiece(kCertificateTag, compressed);
   out->SetStringPiece(kPROF, signature);
-  if (params.sct_supported_by_client && version > QUIC_VERSION_29 &&
-      enable_serving_sct_) {
+  if (params.sct_supported_by_client && enable_serving_sct_) {
     if (cert_sct.empty()) {
       DLOG(WARNING) << "SCT is expected but it is empty.";
     } else {
@@ -1416,8 +1405,7 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
 
   message.SetStringPiece(kCertificateTag, compressed);
   message.SetStringPiece(kPROF, signature);
-  if (sct_supported_by_client && version > QUIC_VERSION_29 &&
-      enable_serving_sct_) {
+  if (sct_supported_by_client && enable_serving_sct_) {
     if (leaf_cert_sct.empty()) {
       DLOG(WARNING) << "SCT is expected but it is empty.";
     } else {
@@ -1502,8 +1490,8 @@ void QuicCryptoServerConfig::BuildRejection(
       client_hello.size() * chlo_multiplier_ - kREJOverheadBytes;
   static_assert(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                 "overhead calculation may underflow");
-  bool should_return_sct = params->sct_supported_by_client &&
-                           version > QUIC_VERSION_29 && enable_serving_sct_;
+  bool should_return_sct =
+      params->sct_supported_by_client && enable_serving_sct_;
   const size_t sct_size = should_return_sct ? crypto_proof.cert_sct.size() : 0;
   if (info.valid_source_address_token ||
       crypto_proof.signature.size() + compressed.size() + sct_size <

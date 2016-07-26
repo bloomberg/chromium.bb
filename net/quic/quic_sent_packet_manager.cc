@@ -322,12 +322,6 @@ void QuicSentPacketManager::HandleAckForSentPackets(
   }
 }
 
-bool QuicSentPacketManager::HasRetransmittableFrames(
-    QuicPathId,
-    QuicPacketNumber packet_number) const {
-  return unacked_packets_.HasRetransmittableFrames(packet_number);
-}
-
 void QuicSentPacketManager::RetransmitUnackedPackets(
     TransmissionType retransmission_type) {
   DCHECK(retransmission_type == ALL_UNACKED_RETRANSMISSION ||
@@ -535,11 +529,6 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   }
 }
 
-bool QuicSentPacketManager::IsUnacked(QuicPathId,
-                                      QuicPacketNumber packet_number) const {
-  return unacked_packets_.IsUnacked(packet_number);
-}
-
 bool QuicSentPacketManager::HasUnackedPackets() const {
   return unacked_packets_.HasUnackedPackets();
 }
@@ -562,12 +551,7 @@ bool QuicSentPacketManager::OnPacketSent(
       << "Cannot send empty packets.";
 
   if (delegate_ == nullptr && original_packet_number != 0) {
-    if (!pending_retransmissions_.erase(original_packet_number) &&
-        !FLAGS_quic_always_write_queued_retransmissions) {
-      QUIC_BUG << "Expected packet number to be in "
-               << "pending_retransmissions_.  packet_number: "
-               << original_packet_number;
-    }
+    pending_retransmissions_.erase(original_packet_number);
   }
 
   if (pending_timer_transmission_count_ > 0) {
@@ -897,9 +881,9 @@ QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {
   return send_algorithm_->BandwidthEstimate();
 }
 
-const QuicSustainedBandwidthRecorder&
+const QuicSustainedBandwidthRecorder*
 QuicSentPacketManager::SustainedBandwidthRecorder() const {
-  return sustained_bandwidth_recorder_;
+  return &sustained_bandwidth_recorder_;
 }
 
 QuicPacketCount QuicSentPacketManager::EstimateMaxPacketsInFlight(
@@ -927,7 +911,7 @@ void QuicSentPacketManager::CancelRetransmissionsForStream(
   }
   PendingRetransmissionMap::iterator it = pending_retransmissions_.begin();
   while (it != pending_retransmissions_.end()) {
-    if (HasRetransmittableFrames(path_id_, it->first)) {
+    if (unacked_packets_.HasRetransmittableFrames(it->first)) {
       ++it;
       continue;
     }

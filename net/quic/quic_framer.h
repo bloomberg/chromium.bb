@@ -233,9 +233,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetStopWaitingFrameSize(
       QuicVersion version,
       QuicPacketNumberLength packet_number_length);
-  // Size in bytes of all reset stream frame without the error details.
-  // Used before QUIC_VERSION_25.
-  static size_t GetMinRstStreamFrameSize();
   // Size in bytes of all reset stream frame fields.
   static size_t GetRstStreamFrameSize();
   // Size in bytes of all connection close frame fields without the error

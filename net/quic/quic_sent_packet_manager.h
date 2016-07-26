@@ -93,9 +93,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager
   void OnIncomingAck(const QuicAckFrame& ack_frame,
                      QuicTime ack_receive_time) override;
 
-  // Returns true if packet |packet_number| is unacked.
-  bool IsUnacked(QuicPathId, QuicPacketNumber packet_number) const override;
-
   // Requests retransmission of all unacked packets of |retransmission_type|.
   // The behavior of this method depends on the value of |retransmission_type|:
   // ALL_UNACKED_RETRANSMISSION - All unacked packets will be retransmitted.
@@ -113,13 +110,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
   void NeuterUnencryptedPackets() override;
-
-  // Returns true if the unacked packet |packet_number| has retransmittable
-  // frames.  This will only return false if the packet has been acked, if a
-  // previous transmission of this packet was ACK'd, or if this packet has been
-  // retransmitted as with different packet number.
-  bool HasRetransmittableFrames(QuicPathId,
-                                QuicPacketNumber packet_number) const override;
 
   // Returns true if there are pending retransmissions.
   // Not const because retransmissions may be cancelled before returning.
@@ -167,7 +157,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate() const override;
 
-  const QuicSustainedBandwidthRecorder& SustainedBandwidthRecorder()
+  const QuicSustainedBandwidthRecorder* SustainedBandwidthRecorder()
       const override;
 
   // Returns the size of the current congestion window in number of

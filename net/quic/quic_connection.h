@@ -36,7 +36,9 @@
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_alarm_factory.h"
 #include "net/quic/quic_blocked_writer_interface.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_framer.h"
+#include "net/quic/quic_multipath_sent_packet_manager.h"
 #include "net/quic/quic_one_block_arena.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
@@ -285,7 +287,7 @@ class NET_EXPORT_PRIVATE QuicConnection
     : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
       public QuicPacketGenerator::DelegateInterface,
-      public QuicSentPacketManager::NetworkChangeVisitor {
+      public QuicSentPacketManagerInterface::NetworkChangeVisitor {
  public:
   enum AckBundling {
     // Send an ack if it's already queued in the connection.

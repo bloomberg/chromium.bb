@@ -496,7 +496,8 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
 
   // Drive congestion control manually.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
+                                       send_algorithm);
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
@@ -539,7 +540,8 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
 
   // Drive congestion control manually.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
+                                       send_algorithm);
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
@@ -1039,8 +1041,7 @@ TEST_P(QuicSessionTestServer, WindowUpdateUnblocksHeadersStream) {
 
 TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   // If a buggy/malicious peer creates too many streams that are not ended
-  // with a FIN or RST then we send a connection close or an RST to
-  // refuse streams.
+  // with a FIN or RST then we send an RST to refuse streams.
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
   const QuicStreamId kFirstStreamId = kClientDataStreamId1;
@@ -1056,15 +1057,9 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
     session_.CloseStream(i);
   }
 
-  if (GetParam() <= QUIC_VERSION_27) {
-    EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS, _, _));
-    EXPECT_CALL(*connection_, SendRstStream(kFinalStreamId, _, _)).Times(0);
-  } else {
-    EXPECT_CALL(*connection_,
-                SendRstStream(kFinalStreamId, QUIC_REFUSED_STREAM, _))
-        .Times(1);
-  }
+  EXPECT_CALL(*connection_,
+              SendRstStream(kFinalStreamId, QUIC_REFUSED_STREAM, _))
+      .Times(1);
   // Create one more data streams to exceed limit of open stream.
   QuicStreamFrame data1(kFinalStreamId, false, 0, StringPiece("HT"));
   session_.OnStreamFrame(data1);
@@ -1078,13 +1073,7 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   // Verify that a draining stream (which has received a FIN but not consumed
   // it) does not count against the open quota (because it is closed from the
   // protocol point of view).
-  if (GetParam() <= QUIC_VERSION_27) {
-    EXPECT_CALL(*connection_, CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS, _, _))
-        .Times(0);
-  } else {
-    EXPECT_CALL(*connection_, SendRstStream(_, QUIC_REFUSED_STREAM, _))
-        .Times(0);
-  }
+  EXPECT_CALL(*connection_, SendRstStream(_, QUIC_REFUSED_STREAM, _)).Times(0);
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
 

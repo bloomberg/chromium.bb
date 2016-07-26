@@ -93,6 +93,13 @@ class QuicSentPacketManagerPeer {
 
   static bool UsingPacing(const QuicSentPacketManager* sent_packet_manager);
 
+  static bool IsUnacked(QuicSentPacketManager* sent_packet_manager,
+                        QuicPacketNumber packet_number);
+
+  static bool HasRetransmittableFrames(
+      QuicSentPacketManager* sent_packet_manager,
+      QuicPacketNumber packet_number);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);
 };

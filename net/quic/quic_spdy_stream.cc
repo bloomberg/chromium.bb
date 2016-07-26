@@ -47,8 +47,8 @@ QuicSpdyStream::~QuicSpdyStream() {
 }
 
 void QuicSpdyStream::CloseWriteSide() {
-  if (version() > QUIC_VERSION_28 && !fin_received() && !rst_received() &&
-      sequencer()->ignore_read_data() && !rst_sent()) {
+  if (!fin_received() && !rst_received() && sequencer()->ignore_read_data() &&
+      !rst_sent()) {
     DCHECK(fin_sent());
     // Tell the peer to stop sending further data.
     DVLOG(1) << ENDPOINT << "Send QUIC_STREAM_NO_ERROR on stream " << id();
@@ -59,8 +59,8 @@ void QuicSpdyStream::CloseWriteSide() {
 }
 
 void QuicSpdyStream::StopReading() {
-  if (version() > QUIC_VERSION_28 && !fin_received() && !rst_received() &&
-      write_side_closed() && !rst_sent()) {
+  if (!fin_received() && !rst_received() && write_side_closed() &&
+      !rst_sent()) {
     DCHECK(fin_sent());
     // Tell the peer to stop sending further data.
     DVLOG(1) << ENDPOINT << "Send QUIC_STREAM_NO_ERROR on stream " << id();
@@ -332,8 +332,7 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
 }
 
 void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
-  if (frame.error_code != QUIC_STREAM_NO_ERROR ||
-      version() <= QUIC_VERSION_28) {
+  if (frame.error_code != QUIC_STREAM_NO_ERROR) {
     ReliableQuicStream::OnStreamReset(frame);
     return;
   }

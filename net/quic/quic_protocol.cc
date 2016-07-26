@@ -183,22 +183,16 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
   QuicVersionVector filtered_versions(versions.size());
   filtered_versions.clear();  // Guaranteed by spec not to change capacity.
   for (QuicVersion version : versions) {
-    if (version < QUIC_VERSION_30) {
-      if (!FLAGS_quic_disable_pre_30) {
+    if (version == QUIC_VERSION_35) {
+      if (FLAGS_quic_enable_version_35) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version == QUIC_VERSION_36) {
+      if (FLAGS_quic_enable_version_35 && FLAGS_quic_enable_version_36) {
         filtered_versions.push_back(version);
       }
     } else {
-      if (version == QUIC_VERSION_35) {
-        if (FLAGS_quic_enable_version_35) {
-          filtered_versions.push_back(version);
-        }
-      } else if (version == QUIC_VERSION_36) {
-        if (FLAGS_quic_enable_version_35 && FLAGS_quic_enable_version_36) {
-          filtered_versions.push_back(version);
-        }
-      } else {
-        filtered_versions.push_back(version);
-      }
+      filtered_versions.push_back(version);
     }
   }
   return filtered_versions;
@@ -206,16 +200,6 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_25:
-      return MakeQuicTag('Q', '0', '2', '5');
-    case QUIC_VERSION_26:
-      return MakeQuicTag('Q', '0', '2', '6');
-    case QUIC_VERSION_27:
-      return MakeQuicTag('Q', '0', '2', '7');
-    case QUIC_VERSION_28:
-      return MakeQuicTag('Q', '0', '2', '8');
-    case QUIC_VERSION_29:
-      return MakeQuicTag('Q', '0', '2', '9');
     case QUIC_VERSION_30:
       return MakeQuicTag('Q', '0', '3', '0');
     case QUIC_VERSION_31:
@@ -256,11 +240,6 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_25);
-    RETURN_STRING_LITERAL(QUIC_VERSION_26);
-    RETURN_STRING_LITERAL(QUIC_VERSION_27);
-    RETURN_STRING_LITERAL(QUIC_VERSION_28);
-    RETURN_STRING_LITERAL(QUIC_VERSION_29);
     RETURN_STRING_LITERAL(QUIC_VERSION_30);
     RETURN_STRING_LITERAL(QUIC_VERSION_31);
     RETURN_STRING_LITERAL(QUIC_VERSION_32);

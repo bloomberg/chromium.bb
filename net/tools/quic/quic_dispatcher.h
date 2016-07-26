@@ -292,10 +292,9 @@ class QuicDispatcher : public QuicServerSessionBase::Visitor,
   // skipped as necessary).
   QuicVersionVector supported_versions_;
 
-  // FLAGS_quic_disable_pre_30
-  bool disable_quic_pre_30_;
-  // The list of versions that may be supported by this dispatcher.
-  // |supported_versions| is derived from this list and |disable_quic_pre_30_|.
+  // The std::list of versions that may be supported by this dispatcher.
+  // |supported_versions| is derived from this std::list and
+  // |disable_quic_pre_30_|.
   const QuicVersionVector allowed_supported_versions_;
 
   // Information about the packet currently being handled.

@@ -45,9 +45,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
                        perspective(),
                        kMinimumFlowControlSendWindow,
                        config_.GetInitialSessionFlowControlWindowToSend(),
-                       FLAGS_quic_enable_autotune_by_default
-                           ? perspective() == Perspective::IS_SERVER
-                           : false),
+                       perspective() == Perspective::IS_SERVER),
       currently_writing_stream_id_(0) {}
 
 void QuicSession::Initialize() {
@@ -400,25 +398,6 @@ void QuicSession::OnConfigNegotiated() {
     max_streams = config_.MaxStreamsPerConnection();
   }
   set_max_open_outgoing_streams(max_streams);
-  if (!FLAGS_quic_enable_autotune_by_default &&
-      perspective() == Perspective::IS_SERVER) {
-    if (config_.HasReceivedConnectionOptions()) {
-      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
-        // The following variations change the initial receive flow control
-        // window sizes.
-        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW5)) {
-          AdjustInitialFlowControlWindows(32 * 1024);
-        }
-        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW6)) {
-          AdjustInitialFlowControlWindows(64 * 1024);
-        }
-        if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW7)) {
-          AdjustInitialFlowControlWindows(128 * 1024);
-        }
-        EnableAutoTuneReceiveWindow();
-      }
-    }
-  }
 
   if (version <= QUIC_VERSION_34) {
     // A small number of additional incoming streams beyond the limit should be
@@ -449,47 +428,6 @@ void QuicSession::OnConfigNegotiated() {
   if (config_.HasReceivedInitialSessionFlowControlWindowBytes()) {
     OnNewSessionFlowControlWindow(
         config_.ReceivedInitialSessionFlowControlWindowBytes());
-  }
-}
-
-// TODO(ckrasic): remove the following two methods when deprecating
-// FLAGS_quic_enable_autotune_by_default.
-void QuicSession::EnableAutoTuneReceiveWindow() {
-  DVLOG(1) << ENDPOINT << "Enable auto tune receive windows";
-  flow_controller_.set_auto_tune_receive_window(true);
-  // Inform all existing streams about the new window.
-  for (auto const& kv : static_stream_map_) {
-    kv.second->flow_controller()->set_auto_tune_receive_window(true);
-  }
-  for (auto const& kv : dynamic_stream_map_) {
-    kv.second->flow_controller()->set_auto_tune_receive_window(true);
-  }
-}
-
-void QuicSession::AdjustInitialFlowControlWindows(size_t stream_window) {
-  const float session_window_multiplier =
-      config_.GetInitialStreamFlowControlWindowToSend()
-          ? static_cast<float>(
-                config_.GetInitialSessionFlowControlWindowToSend()) /
-                config_.GetInitialStreamFlowControlWindowToSend()
-          : 1.0;
-  DVLOG(1) << ENDPOINT << "Set stream receive window to " << stream_window;
-  config_.SetInitialStreamFlowControlWindowToSend(stream_window);
-  // Reduce the session window as well, motivation is reducing resource waste
-  // and denial of service vulnerability, as with the stream window.  Session
-  // size is set according to the ratio between session and stream window size
-  // previous to auto-tuning. Note that the ratio may change dynamically, since
-  // auto-tuning acts independently for each flow controller.
-  size_t session_window = session_window_multiplier * stream_window;
-  DVLOG(1) << ENDPOINT << "Set session receive window to " << session_window;
-  config_.SetInitialSessionFlowControlWindowToSend(session_window);
-  flow_controller_.UpdateReceiveWindowSize(session_window);
-  // Inform all existing streams about the new window.
-  for (auto const& kv : static_stream_map_) {
-    kv.second->flow_controller()->UpdateReceiveWindowSize(stream_window);
-  }
-  for (auto const& kv : dynamic_stream_map_) {
-    kv.second->flow_controller()->UpdateReceiveWindowSize(stream_window);
   }
 }
 
@@ -701,14 +639,8 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   // Check if the new number of open streams would cause the number of
   // open streams to exceed the limit.
   if (GetNumOpenIncomingStreams() >= max_open_incoming_streams()) {
-    if (connection()->version() <= QUIC_VERSION_27) {
-      connection()->CloseConnection(
-          QUIC_TOO_MANY_OPEN_STREAMS, "Old style stream rejection",
-          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    } else {
-      // Refuse to open the stream.
-      SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
-    }
+    // Refuse to open the stream.
+    SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
     return nullptr;
   }
 

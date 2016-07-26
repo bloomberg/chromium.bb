@@ -67,12 +67,6 @@ bool FLAGS_quic_supports_push_promise = true;
 // of < 10 packets.
 bool FLAGS_quic_no_lower_bw_resumption_limit = true;
 
-// If true, flow controller may grow the receive window size if necessary.
-bool FLAGS_quic_auto_tune_receive_window = true;
-
-// If true, enable auto tuning by default (server side).
-bool FLAGS_quic_enable_autotune_by_default = true;
-
 // Use largest acked in the most recent ack instead of largest acked ever in
 // loss recovery.
 bool FLAGS_quic_loss_recovery_use_largest_acked = true;
@@ -85,19 +79,12 @@ bool FLAGS_quic_only_one_sending_alarm = false;
 // flags.
 bool FLAGS_quic_use_old_public_reset_packets = true;
 
-// If true, checks if the CHLO is acceptable as a matter of policy.
-bool FLAGS_quic_enable_chlo_policy = true;
-
 // If true, ignore QUIC data frames of length 0 for flow control.
 bool FLAGS_quic_ignore_zero_length_frames = true;
 
 // If true, replace ServerHelloNotifier with a check to see if a decrypted
 // packet is forward secure.
 bool FLAGS_quic_no_shlo_listener = true;
-
-// If true, queued retransmission packets, because of write blocked
-// socket, are always sent once the socket gets unblocked
-bool FLAGS_quic_always_write_queued_retransmissions = true;
 
 // Adds a RATE connection option to do rate based sending.
 bool FLAGS_quic_rate_based_sending = true;
@@ -109,14 +96,6 @@ bool FLAGS_quic_use_cheap_stateless_rejects = false;
 // If true, treat timestamps from SO_TIMESTAMPING as QuicWallTimes rather
 // than QuicTimes.
 bool FLAGS_quic_socket_walltimestamps = true;
-
-// If true, default to immediate forward secure once established on the
-// server side, and the IPFS connection option disables this instead of
-// enabling it.
-bool FLAGS_quic_default_immediate_forward_secure = true;
-
-// If true, disables support for QUIC version 29 and earlier.
-bool FLAGS_quic_disable_pre_30 = true;
 
 // If true, QUIC respect HTTP2 SETTINGS frame rather than always close the
 // connection.
@@ -133,10 +112,10 @@ bool FLAGS_quic_simple_packet_number_length = true;
 bool FLAGS_quic_enable_version_35 = true;
 
 // If true, enables QUIC_VERSION_36.
-bool FLAGS_quic_enable_version_36 = false;
+bool FLAGS_quic_enable_version_36 = true;
 
 // If true, requires support for X509 certificates in QUIC CHLO PDMDs.
-bool FLAGS_quic_require_x509 = false;
+bool FLAGS_quic_require_x509 = true;
 
 // If true, deprecate safeguards for b/26023400.
 bool FLAGS_quic_deprecate_kfixd = false;

@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
                                    const QuicHeaderList& header_list);
 
   // Override the base class to not discard response when receiving
-  // QUIC_STREAM_NO_ERROR on QUIC_VERSION_29 and later versions.
+  // QUIC_STREAM_NO_ERROR.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
 
   // Writes the headers contained in |header_block| to the dedicated

@@ -205,6 +205,18 @@ class CryptoTestUtils {
                           PacketSavingConnection* dest_conn,
                           Perspective dest_perspective);
 
+  // Takes a inchoate CHLO, returns a full CHLO in |out| which can pass
+  // |crypto_config|'s validation.
+  static void GenerateFullCHLO(const CryptoHandshakeMessage& inchoate_chlo,
+                               QuicCryptoServerConfig* crypto_config,
+                               IPAddress server_ip,
+                               IPEndPoint client_addr,
+                               QuicVersion version,
+                               const QuicClock* clock,
+                               QuicCryptoProof* proof,
+                               QuicCompressedCertsCache* compressed_certs_cache,
+                               CryptoHandshakeMessage* out);
+
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,
                                          QuicCryptoServerStream* server);

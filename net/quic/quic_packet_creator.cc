@@ -118,7 +118,9 @@ void QuicPacketCreator::UpdatePacketNumberLength(
   if (FLAGS_quic_simple_packet_number_length && !queued_frames_.empty()) {
     // Don't change creator state if there are frames queued.
     QUIC_BUG << "Called UpdatePacketNumberLength with " << queued_frames_.size()
-             << " queued_frames.";
+             << " queued_frames.  First frame type:"
+             << queued_frames_.front().type
+             << " last frame type:" << queued_frames_.back().type;
     return;
   }
 

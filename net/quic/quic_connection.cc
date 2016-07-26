@@ -318,6 +318,10 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   last_stop_waiting_frame_.least_unacked = 0;
   stats_.connection_creation_time = clock_->ApproximateNow();
+  if (FLAGS_quic_enable_multipath) {
+    sent_packet_manager_.reset(new QuicMultipathSentPacketManager(
+        sent_packet_manager_.release(), this));
+  }
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
   sent_packet_manager_->SetNetworkChangeVisitor(this);
@@ -842,13 +846,12 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
 
   if (incoming_ack.largest_observed <
       sent_packet_manager_->GetLargestObserved(incoming_ack.path_id)) {
-    LOG(WARNING) << ENDPOINT << "Peer's largest_observed packet decreased:"
-                 << incoming_ack.largest_observed << " vs "
-                 << sent_packet_manager_->GetLargestObserved(
-                        incoming_ack.path_id)
-                 << " packet_number:" << last_header_.packet_number
-                 << " largest seen with ack:" << largest_seen_packet_with_ack_
-                 << " connection_id: " << connection_id_;
+    VLOG(1) << ENDPOINT << "Peer's largest_observed packet decreased:"
+            << incoming_ack.largest_observed << " vs "
+            << sent_packet_manager_->GetLargestObserved(incoming_ack.path_id)
+            << " packet_number:" << last_header_.packet_number
+            << " largest seen with ack:" << largest_seen_packet_with_ack_
+            << " connection_id: " << connection_id_;
     // A new ack has a diminished largest_observed value.  Error out.
     // If this was an old packet, we wouldn't even have checked.
     return "Largest observed too low.";
@@ -1231,7 +1234,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
       id, AdjustErrorForVersion(error, version()), bytes_written)));
 
-  if (error == QUIC_STREAM_NO_ERROR && version() > QUIC_VERSION_28) {
+  if (error == QUIC_STREAM_NO_ERROR) {
     // All data for streams which are reset with QUIC_STREAM_NO_ERROR must
     // be received by the peer.
     return;
@@ -1741,25 +1744,6 @@ bool QuicConnection::ShouldDiscardPacket(const SerializedPacket& packet) {
     // anymore.
     DVLOG(1) << ENDPOINT << "Dropping NULL encrypted packet: " << packet_number
              << " since the connection is forward secure.";
-    return true;
-  }
-
-  // TODO(fayang): Remove IsUnacked and HasRetransmittableFrames from
-  // QuicSentPacketManagerInterface when deprecating
-  // gfe2_reloadable_flag_quic_always_write_queued_retransmissions.
-  if (FLAGS_quic_always_write_queued_retransmissions) {
-    return false;
-  }
-
-  // If a retransmission has been acked before sending, don't send it.
-  // This occurs if a packet gets serialized, queued, then discarded.
-  if (packet.transmission_type != NOT_RETRANSMISSION &&
-      (!sent_packet_manager_->IsUnacked(packet.original_path_id,
-                                        packet.original_packet_number) ||
-       !sent_packet_manager_->HasRetransmittableFrames(
-           packet.original_path_id, packet.original_packet_number))) {
-    DVLOG(1) << ENDPOINT << "Dropping unacked packet: " << packet_number
-             << " A previous transmission was acked while write blocked.";
     return true;
   }
 

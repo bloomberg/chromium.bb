@@ -225,30 +225,6 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
   EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
 
-TEST_P(QuicCryptoServerStreamTest, InitialEncryptionAfterCHLO) {
-  Initialize();
-  InitializeFakeClient(/* supports_stateless_rejects= */ false);
-
-  // Do a first handshake in order to prime the client config with the server's
-  // information.
-  AdvanceHandshakeWithFakeClient();
-  EXPECT_FALSE(server_stream()->encryption_established());
-  EXPECT_FALSE(server_stream()->handshake_confirmed());
-
-  // Now do another handshake, with the blocking SHLO connection option.
-  InitializeServer();
-  InitializeFakeClient(/* supports_stateless_rejects= */ false);
-  if (FLAGS_quic_default_immediate_forward_secure) {
-    client_session_->config()->SetConnectionOptionsToSend({kIPFS});
-  }
-
-  AdvanceHandshakeWithFakeClient();
-  EXPECT_TRUE(server_stream()->encryption_established());
-  EXPECT_TRUE(server_stream()->handshake_confirmed());
-  EXPECT_EQ(ENCRYPTION_INITIAL,
-            server_session_->connection()->encryption_level());
-}
-
 TEST_P(QuicCryptoServerStreamTest, ForwardSecureAfterCHLO) {
   Initialize();
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
@@ -262,9 +238,6 @@ TEST_P(QuicCryptoServerStreamTest, ForwardSecureAfterCHLO) {
   // Now do another handshake, with the blocking SHLO connection option.
   InitializeServer();
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
-  if (!FLAGS_quic_default_immediate_forward_secure) {
-    client_session_->config()->SetConnectionOptionsToSend({kIPFS});
-  }
 
   AdvanceHandshakeWithFakeClient();
   EXPECT_TRUE(server_stream()->encryption_established());
@@ -427,8 +400,6 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, FailByPolicy) {
-  FLAGS_quic_enable_chlo_policy = true;
-  FLAGS_quic_disable_pre_30 = true;
   FLAGS_quic_deprecate_kfixd = true;
   Initialize();
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
@@ -442,7 +413,6 @@ TEST_P(QuicCryptoServerStreamTest, FailByPolicy) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
-  FLAGS_quic_disable_pre_30 = true;
   FLAGS_quic_deprecate_kfixd = true;
   Initialize();
   CompleteCryptoHandshake();
@@ -457,7 +427,6 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
-  FLAGS_quic_disable_pre_30 = true;
   FLAGS_quic_deprecate_kfixd = true;
   Initialize();
 
@@ -568,9 +537,9 @@ TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
   // Tests that the client can close the connection while the remote strike
   // register verification RPC is still pending.
 
-  // Set version to QUIC_VERSION_25 as QUIC_VERSION_26 and later don't support
+  // Set version to QUIC_VERSION_32 as QUIC_VERSION_33 and later don't support
   // asynchronous strike register RPCs.
-  supported_versions_ = {QUIC_VERSION_25};
+  supported_versions_ = {QUIC_VERSION_32};
   Initialize();
   if (!AsyncStrikeRegisterVerification()) {
     return;

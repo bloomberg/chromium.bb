@@ -463,9 +463,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }
 
-  if (preferred_version > QUIC_VERSION_29) {
-    out->SetStringPiece(kCertificateSCTTag, "");
-  }
+  out->SetStringPiece(kCertificateSCTTag, "");
 
   const vector<string>& certs = cached->certs();
   // We save |certs| in the QuicCryptoNegotiatedParameters so that, if the
@@ -516,9 +514,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
   out->SetStringPiece(kSCID, scid);
 
-  if (preferred_version > QUIC_VERSION_29) {
-    out->SetStringPiece(kCertificateSCTTag, "");
-  }
+  out->SetStringPiece(kCertificateSCTTag, "");
 
   const QuicTag* their_aeads;
   const QuicTag* their_key_exchanges;
@@ -613,13 +609,11 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
 
   const vector<string>& certs = cached->certs();
-  if (preferred_version > QUIC_VERSION_25) {
-    if (certs.empty()) {
-      *error_details = "No certs to calculate XLCT";
-      return QUIC_CRYPTO_INTERNAL_ERROR;
-    }
-    out->SetValue(kXLCT, CryptoUtils::ComputeLeafCertHash(certs[0]));
+  if (certs.empty()) {
+    *error_details = "No certs to calculate XLCT";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
   }
+  out->SetValue(kXLCT, CryptoUtils::ComputeLeafCertHash(certs[0]));
 
   if (channel_id_key) {
     // In order to calculate the encryption key for the CETV block we need to
@@ -691,13 +685,11 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());
   out_params->hkdf_input_suffix.append(cached->server_config());
-  if (preferred_version > QUIC_VERSION_25) {
-    if (certs.empty()) {
-      *error_details = "No certs found to include in KDF";
-      return QUIC_CRYPTO_INTERNAL_ERROR;
-    }
-    out_params->hkdf_input_suffix.append(certs[0]);
+  if (certs.empty()) {
+    *error_details = "No certs found to include in KDF";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
   }
+  out_params->hkdf_input_suffix.append(certs[0]);
 
   string hkdf_input;
   const size_t label_len = strlen(QuicCryptoConfig::kInitialLabel) + 1;
@@ -768,9 +760,7 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }
 
-    if (version > QUIC_VERSION_29) {
-      message.GetStringPiece(kCertificateSCTTag, &cert_sct);
-    }
+    message.GetStringPiece(kCertificateSCTTag, &cert_sct);
     cached->SetProof(certs, cert_sct, chlo_hash, proof);
   } else {
     // Secure QUIC: clear existing proof as we have been sent a new SCFG
@@ -857,8 +847,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   }
 
   StringPiece shlo_nonce;
-  if (version > QUIC_VERSION_26 &&
-      !server_hello.GetStringPiece(kServerNonceTag, &shlo_nonce)) {
+  if (!server_hello.GetStringPiece(kServerNonceTag, &shlo_nonce)) {
     *error_details = "server hello missing server nonce";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }

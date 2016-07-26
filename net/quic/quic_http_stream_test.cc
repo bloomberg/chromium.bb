@@ -90,7 +90,7 @@ class TestQuicConnection : public QuicConnection {
                        versions) {}
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
-    QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
+    QuicConnectionPeer::SetSendAlgorithm(this, kDefaultPathId, send_algorithm);
   }
 };
 

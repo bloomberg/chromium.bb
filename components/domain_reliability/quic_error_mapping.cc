@@ -209,6 +209,12 @@ const struct QuicErrorMapping {
 
   // Multipath is not enabled, but a packet with multipath flag on is received.
   { net::QUIC_BAD_MULTIPATH_FLAG, "quic.bad_multipath_flag" },
+  // A path is supposed to exist but does not.
+  { net::QUIC_MULTIPATH_PATH_DOES_NOT_EXIST,
+    "quic.quic_multipath_path_does_not_exist" },
+  // A path is supposed to be active but is not.
+  { net::QUIC_MULTIPATH_PATH_NOT_ACTIVE,
+    "quic.quic_multipath_path_not_active" },
 
   // Network change and connection migration errors.
 

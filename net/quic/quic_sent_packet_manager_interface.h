@@ -81,13 +81,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManagerInterface {
   virtual void OnIncomingAck(const QuicAckFrame& ack_frame,
                              QuicTime ack_receive_time) = 0;
 
-  virtual bool IsUnacked(QuicPathId path_id,
-                         QuicPacketNumber packet_number) const = 0;
-
-  virtual bool HasRetransmittableFrames(
-      QuicPathId path_id,
-      QuicPacketNumber packet_number) const = 0;
-
   // Requests retransmission of all unacked packets of |retransmission_type| on
   // the default path.
   virtual void RetransmitUnackedPackets(
@@ -140,7 +133,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManagerInterface {
   virtual QuicBandwidth BandwidthEstimate() const = 0;
 
   // Returns the sustained bandwidth recorder on the default path.
-  virtual const QuicSustainedBandwidthRecorder& SustainedBandwidthRecorder()
+  virtual const QuicSustainedBandwidthRecorder* SustainedBandwidthRecorder()
       const = 0;
 
   // Returns the size of the current congestion window on default path in number

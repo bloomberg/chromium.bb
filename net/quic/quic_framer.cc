@@ -1574,7 +1574,6 @@ bool QuicFramer::ProcessTimestampsInAckFrame(QuicDataReader* reader,
   }
 
   if (num_received_packets > 0) {
-    ack_frame->received_packet_times.reserve(num_received_packets);
     uint8_t delta_from_largest_observed;
     if (!reader->ReadBytes(&delta_from_largest_observed,
                            PACKET_1BYTE_PACKET_NUMBER)) {

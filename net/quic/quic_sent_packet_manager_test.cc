@@ -124,7 +124,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
     EXPECT_TRUE(manager_.HasUnackedPackets());
     EXPECT_EQ(packets[0], manager_.GetLeastUnacked(kDefaultPathId));
     for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(manager_.IsUnacked(kDefaultPathId, packets[i])) << packets[i];
+      EXPECT_TRUE(QuicSentPacketManagerPeer::IsUnacked(&manager_, packets[i]))
+          << packets[i];
     }
   }
 
@@ -134,7 +135,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
         num_packets,
         QuicSentPacketManagerPeer::GetNumRetransmittablePackets(&manager_));
     for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(manager_.HasRetransmittableFrames(kDefaultPathId, packets[i]))
+      EXPECT_TRUE(QuicSentPacketManagerPeer::HasRetransmittableFrames(
+          &manager_, packets[i]))
           << " packets[" << i << "]:" << packets[i];
     }
   }
@@ -590,7 +592,7 @@ TEST_P(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
     NackPackets(1, 2, &ack_frame);
     ExpectAck(2);
     manager_.OnIncomingAck(ack_frame, clock_.Now());
-    EXPECT_TRUE(manager_.IsUnacked(kDefaultPathId, 4));
+    EXPECT_TRUE(QuicSentPacketManagerPeer::IsUnacked(&manager_, 4));
   }
 
   // Truncated ack with 4 NACKs

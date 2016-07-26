@@ -114,9 +114,7 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   QuicCryptoServerStreamBase::OnHandshakeMessage(message);
   ++num_handshake_messages_;
 
-  // It's only safe to deprecate kFIXD where we have deprecated v25
-  bool require_kfixd =
-      !FLAGS_quic_deprecate_kfixd || !FLAGS_quic_disable_pre_30;
+  bool require_kfixd = !FLAGS_quic_deprecate_kfixd;
 
   if (require_kfixd && !HasFixedTag(message)) {
     CloseConnectionWithDetails(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
@@ -248,11 +246,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   session()->connection()->SetEncrypter(
       ENCRYPTION_FORWARD_SECURE,
       crypto_negotiated_params_.forward_secure_crypters.encrypter.release());
-  if (FLAGS_quic_default_immediate_forward_secure !=
-      config->HasClientSentConnectionOption(kIPFS, Perspective::IS_SERVER)) {
-    session()->connection()->SetDefaultEncryptionLevel(
-        ENCRYPTION_FORWARD_SECURE);
-  }
+  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
   session()->connection()->SetAlternativeDecrypter(
       ENCRYPTION_FORWARD_SECURE,
@@ -428,8 +422,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     string* error_details) {
   QuicServerSessionBase* session_base =
       static_cast<QuicServerSessionBase*>(session());
-  if (FLAGS_quic_enable_chlo_policy &&
-      !session_base->CanAcceptClientHello(message, error_details)) {
+  if (!session_base->CanAcceptClientHello(message, error_details)) {
     return QUIC_HANDSHAKE_FAILED;
   }
 

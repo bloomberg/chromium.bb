@@ -629,17 +629,10 @@ TEST_P(QuicSpdyStreamTest, TestHandlingQuicRstStreamNoError) {
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
 
-  if (GetParam() <= QUIC_VERSION_28) {
-    EXPECT_CALL(*session_, SendRstStream(_, _, _));
-  }
   stream_->OnStreamReset(
       QuicRstStreamFrame(stream_->id(), QUIC_STREAM_NO_ERROR, 0));
   EXPECT_TRUE(stream_->write_side_closed());
-  if (GetParam() > QUIC_VERSION_28) {
-    EXPECT_FALSE(stream_->reading_stopped());
-  } else {
-    EXPECT_TRUE(stream_->reading_stopped());
-  }
+  EXPECT_FALSE(stream_->reading_stopped());
 }
 
 TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {

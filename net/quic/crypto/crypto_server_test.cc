@@ -434,14 +434,13 @@ TEST_P(CryptoServerTest, DefaultCert) {
   StringPiece cert, proof, cert_sct;
   EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
   EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
-  EXPECT_EQ(client_version_ > QUIC_VERSION_29,
-            out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
+  EXPECT_TRUE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
-  EXPECT_EQ(client_version_ > QUIC_VERSION_29, cert_sct.size() > 0);
+  EXPECT_LT(0u, cert_sct.size());
 }
 
 TEST_P(CryptoServerTest, RejectTooLarge) {
@@ -499,8 +498,7 @@ TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
   StringPiece cert, proof, cert_sct;
   EXPECT_TRUE(out_.GetStringPiece(kCertificateTag, &cert));
   EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
-  EXPECT_EQ(client_version_ > QUIC_VERSION_29,
-            out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
+  EXPECT_TRUE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
   const HandshakeFailureReason kRejectReasons[] = {
@@ -864,10 +862,6 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
 }
 
 TEST_P(CryptoServerTest, RejectInvalidXlct) {
-  if (client_version_ <= QUIC_VERSION_25) {
-    // XLCT tag introduced in QUIC_VERSION_26.
-    return;
-  }
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
@@ -924,7 +918,6 @@ TEST_P(CryptoServerTest, ValidXlct) {
 }
 
 TEST_P(CryptoServerTest, NonceInSHLO) {
-  // After QUIC_VERSION_27, the SHLO should contain a nonce.
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",
@@ -949,11 +942,7 @@ TEST_P(CryptoServerTest, NonceInSHLO) {
   EXPECT_EQ(kSHLO, out_.tag());
 
   StringPiece nonce;
-  if (client_version_ <= QUIC_VERSION_26) {
-    EXPECT_FALSE(out_.GetStringPiece(kServerNonceTag, &nonce));
-  } else {
-    EXPECT_TRUE(out_.GetStringPiece(kServerNonceTag, &nonce));
-  }
+  EXPECT_TRUE(out_.GetStringPiece(kServerNonceTag, &nonce));
 }
 
 TEST(CryptoServerConfigGenerationTest, Determinism) {

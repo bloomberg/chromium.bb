@@ -26,6 +26,9 @@ namespace net {
 namespace {
 
 void AppendFixed(CryptoHandshakeMessage* message) {
+  if (FLAGS_quic_deprecate_kfixd) {
+    return;
+  }
   vector<QuicTag> tags;
   tags.push_back(kFIXD);
 
@@ -310,7 +313,8 @@ void QuicCryptoClientStream::DoSendCHLO(
   // inchoate or subsequent hello.
   session()->config()->ToHandshakeMessage(&out);
 
-  // This call and function should be removed after removing QUIC_VERSION_25.
+  // This call and function should be removed when
+  // FLAGS_quic_deprecate_kfixd is removed.
   AppendFixed(&out);
 
   // Send a local timestamp to the server.

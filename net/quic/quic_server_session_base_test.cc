@@ -300,14 +300,8 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
 
   // Now violate the server's internal stream limit.
   stream_id += 2;
-  if (connection_->version() <= QUIC_VERSION_27) {
-    EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS, _, _));
-    EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
-  } else {
-    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-    EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
-  }
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
   // Even if the connection remains open, the stream creation should fail.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
       session_.get(), stream_id));
@@ -406,7 +400,6 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   // Client has sent kBWRE connection option to trigger bandwidth resumption.
   // Disable this flag because if connection uses multipath sent packet manager,
   // static_cast here does not work.
-  FLAGS_quic_enable_multipath = false;
   QuicTagVector copt;
   copt.push_back(kBWRE);
   QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
@@ -426,8 +419,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
-      static_cast<QuicSentPacketManager*>(
-          QuicConnectionPeer::GetSentPacketManager(session_->connection()));
+      QuicConnectionPeer::GetSentPacketManager(session_->connection(),
+                                               kDefaultPathId);
   QuicSustainedBandwidthRecorder& bandwidth_recorder =
       QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
   // Seed an rtt measurement equal to the initial default rtt.

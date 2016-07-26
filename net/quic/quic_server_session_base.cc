@@ -127,16 +127,17 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
   }
 
   // If the bandwidth recorder does not have a valid estimate, return early.
-  const QuicSustainedBandwidthRecorder& bandwidth_recorder =
+  const QuicSustainedBandwidthRecorder* bandwidth_recorder =
       sent_packet_manager.SustainedBandwidthRecorder();
-  if (!bandwidth_recorder.HasEstimate()) {
+  if (bandwidth_recorder == nullptr || !bandwidth_recorder->HasEstimate()) {
     return;
   }
 
   // The bandwidth recorder has recorded at least one sustained bandwidth
   // estimate. Check that it's substantially different from the last one that
   // we sent to the client, and if so, send the new one.
-  QuicBandwidth new_bandwidth_estimate = bandwidth_recorder.BandwidthEstimate();
+  QuicBandwidth new_bandwidth_estimate =
+      bandwidth_recorder->BandwidthEstimate();
 
   int64_t bandwidth_delta =
       std::abs(new_bandwidth_estimate.ToBitsPerSecond() -
@@ -157,8 +158,8 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
 
   // Include max bandwidth in the update.
   QuicBandwidth max_bandwidth_estimate =
-      bandwidth_recorder.MaxBandwidthEstimate();
-  int32_t max_bandwidth_timestamp = bandwidth_recorder.MaxBandwidthTimestamp();
+      bandwidth_recorder->MaxBandwidthEstimate();
+  int32_t max_bandwidth_timestamp = bandwidth_recorder->MaxBandwidthTimestamp();
 
   // Fill the proto before passing it to the crypto stream to send.
   const int32_t bw_estimate_bytes_per_second =
@@ -180,7 +181,7 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
   cached_network_params.set_min_rtt_ms(
       sent_packet_manager.GetRttStats()->min_rtt().ToMilliseconds());
   cached_network_params.set_previous_connection_state(
-      bandwidth_recorder.EstimateRecordedDuringSlowStart()
+      bandwidth_recorder->EstimateRecordedDuringSlowStart()
           ? CachedNetworkParameters::SLOW_START
           : CachedNetworkParameters::CONGESTION_AVOIDANCE);
   cached_network_params.set_timestamp(

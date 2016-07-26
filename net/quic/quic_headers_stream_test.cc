@@ -37,6 +37,11 @@ using testing::StrictMock;
 using testing::WithArgs;
 using testing::_;
 
+// TODO(bnc): Merge these correctly.
+bool FLAGS_use_http2_frame_decoder_adapter;
+bool FLAGS_spdy_use_hpack_decoder2;
+bool FLAGS_spdy_framer_use_new_methods2;
+
 namespace net {
 namespace test {
 
@@ -138,38 +143,94 @@ class ForceHolAckListener : public QuicAckListenerInterface {
   DISALLOW_COPY_AND_ASSIGN(ForceHolAckListener);
 };
 
-// Run all tests with each version, perspective (client or server),
-// and relevant flag options (false or true)
-struct TestParams {
-  TestParams(QuicVersion version, Perspective perspective)
-      : version(version), perspective(perspective) {}
+enum Http2DecoderChoice {
+  HTTP2_DECODER_SPDY,
+  HTTP2_DECODER_NESTED_SPDY,
+  HTTP2_DECODER_NEW
+};
+ostream& operator<<(ostream& os, Http2DecoderChoice v) {
+  switch (v) {
+    case HTTP2_DECODER_SPDY:
+      return os << "SPDY";
+    case HTTP2_DECODER_NESTED_SPDY:
+      return os << "NESTED_SPDY";
+    case HTTP2_DECODER_NEW:
+      return os << "NEW";
+  }
+  return os;
+}
 
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
-    os << "{ version: " << QuicVersionToString(p.version);
-    os << ", perspective: " << p.perspective << " }";
-    return os;
+enum HpackDecoderChoice { HPACK_DECODER_SPDY, HPACK_DECODER_NEW };
+ostream& operator<<(ostream& os, HpackDecoderChoice v) {
+  switch (v) {
+    case HPACK_DECODER_SPDY:
+      return os << "SPDY";
+    case HPACK_DECODER_NEW:
+      return os << "NEW";
+  }
+  return os;
+}
+
+typedef std::
+    tuple<QuicVersion, Perspective, Http2DecoderChoice, HpackDecoderChoice>
+        TestParamsTuple;
+
+struct TestParams {
+  explicit TestParams(TestParamsTuple params)
+      : version(std::get<0>(params)),
+        perspective(std::get<1>(params)),
+        http2_decoder(std::get<2>(params)),
+        hpack_decoder(std::get<3>(params)) {
+    switch (http2_decoder) {
+      case HTTP2_DECODER_SPDY:
+        FLAGS_use_nested_spdy_framer_decoder = false;
+        FLAGS_use_http2_frame_decoder_adapter = false;
+        break;
+      case HTTP2_DECODER_NESTED_SPDY:
+        FLAGS_use_nested_spdy_framer_decoder = true;
+        FLAGS_use_http2_frame_decoder_adapter = false;
+        break;
+      case HTTP2_DECODER_NEW:
+        FLAGS_use_nested_spdy_framer_decoder = false;
+        FLAGS_use_http2_frame_decoder_adapter = true;
+        // Http2FrameDecoderAdapter needs the new header methods, else
+        // --use_http2_frame_decoder_adapter=true will be ignored.
+        FLAGS_spdy_framer_use_new_methods2 = true;
+        break;
+    }
+    switch (hpack_decoder) {
+      case HPACK_DECODER_SPDY:
+        FLAGS_spdy_use_hpack_decoder2 = false;
+        break;
+      case HPACK_DECODER_NEW:
+        FLAGS_spdy_use_hpack_decoder2 = true;
+        // Needs new header methods to be used.
+        FLAGS_spdy_framer_use_new_methods2 = true;
+        break;
+    }
+    FLAGS_quic_supports_push_promise = true;
+    FLAGS_quic_always_log_bugs_for_tests = true;
+    VLOG(1) << "TestParams: version: " << QuicVersionToString(version)
+            << ", perspective: " << perspective
+            << ", http2_decoder: " << http2_decoder
+            << ", hpack_decoder: " << hpack_decoder;
   }
 
   QuicVersion version;
   Perspective perspective;
+  Http2DecoderChoice http2_decoder;
+  HpackDecoderChoice hpack_decoder;
 };
 
-// Constructs various test permutations.
-vector<TestParams> GetTestParams() {
-  vector<TestParams> params;
-  QuicVersionVector all_supported_versions = QuicSupportedVersions();
-  for (const QuicVersion version : all_supported_versions) {
-    params.push_back(TestParams(version, Perspective::IS_CLIENT));
-    params.push_back(TestParams(version, Perspective::IS_SERVER));
-  }
-  FLAGS_quic_supports_push_promise = true;
-  return params;
-}
-
-class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
+class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
  public:
+  // Constructing the test_params_ object will set the necessary flags before
+  // the MockQuicConnection is constructed, which we need because the latter
+  // will construct a SpdyFramer that will use those flags to decide whether
+  // to construct a decoder adapter.
   QuicHeadersStreamTest()
-      : connection_(new StrictMock<MockQuicConnection>(&helper_,
+      : test_params_(GetParam()),
+        connection_(new StrictMock<MockQuicConnection>(&helper_,
                                                        &alarm_factory_,
                                                        perspective(),
                                                        GetVersion())),
@@ -180,7 +241,6 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
         hpack_decoder_visitor_(new StrictMock<MockHpackDebugVisitor>),
         stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
         next_promised_stream_id_(2) {
-    FLAGS_quic_always_log_bugs_for_tests = true;
     headers_[":version"] = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";
@@ -188,7 +248,6 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     framer_->set_visitor(&visitor_);
     EXPECT_EQ(version(), session_.connection()->version());
     EXPECT_TRUE(headers_stream_ != nullptr);
-    VLOG(1) << GetParam();
     connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
   }
 
@@ -305,9 +364,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     headers_handler_.reset();
   }
 
-  Perspective perspective() { return GetParam().perspective; }
+  Perspective perspective() const { return test_params_.perspective; }
 
-  QuicVersion version() { return GetParam().version; }
+  QuicVersion version() const { return test_params_.version; }
 
   QuicVersionVector GetVersion() {
     QuicVersionVector versions;
@@ -324,6 +383,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
 
+  const TestParams test_params_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
@@ -343,9 +403,18 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   QuicStreamId next_promised_stream_id_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicHeadersStreamTest,
-                        ::testing::ValuesIn(GetTestParams()));
+// Run all tests with each version, perspective (client or server),
+// HTTP/2 and HPACK decoder.
+INSTANTIATE_TEST_CASE_P(
+    Tests,
+    QuicHeadersStreamTest,
+    ::testing::Combine(
+        ::testing::ValuesIn(QuicSupportedVersions()),
+        ::testing::Values(Perspective::IS_CLIENT, Perspective::IS_SERVER),
+        ::testing::Values(HTTP2_DECODER_SPDY,
+                          HTTP2_DECODER_NESTED_SPDY,
+                          HTTP2_DECODER_NEW),
+        ::testing::Values(HPACK_DECODER_SPDY, HPACK_DECODER_NEW)));
 
 TEST_P(QuicHeadersStreamTest, StreamId) {
   EXPECT_EQ(3u, headers_stream_->id());

@@ -286,11 +286,7 @@ TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorInStopReading) {
   stream_->set_fin_sent(true);
   stream_->CloseWriteSide();
 
-  if (GetParam() > QUIC_VERSION_28) {
-    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
-  } else {
-    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
-  }
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
   stream_->StopReading();
 }
 
@@ -601,11 +597,7 @@ TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorWithEarlyResponse) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(3, true)));
-  if (GetParam() > QUIC_VERSION_28) {
-    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
-  } else {
-    EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
-  }
+  EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(1);
   EXPECT_FALSE(stream_->fin_received());
   QuicSimpleServerStreamPeer::SendErrorResponse(stream_);
   EXPECT_TRUE(stream_->reading_stopped());

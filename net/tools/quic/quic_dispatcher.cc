@@ -202,7 +202,6 @@ QuicDispatcher::QuicDispatcher(
           alarm_factory_->CreateAlarm(new DeleteSessionsAlarm(this))),
       buffered_packets_(this, helper_->GetClock(), alarm_factory_.get()),
       supported_versions_(supported_versions),
-      disable_quic_pre_30_(FLAGS_quic_disable_pre_30),
       allowed_supported_versions_(supported_versions),
       current_packet_(nullptr),
       framer_(supported_versions,
@@ -741,10 +740,9 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::MaybeRejectStatelessly(
 
 const QuicVersionVector& QuicDispatcher::GetSupportedVersions() {
   // Filter (or un-filter) the list of supported versions based on the flag.
-  if (disable_quic_pre_30_ != FLAGS_quic_disable_pre_30) {
+  if (false) {
     DCHECK_EQ(supported_versions_.capacity(),
               allowed_supported_versions_.capacity());
-    disable_quic_pre_30_ = FLAGS_quic_disable_pre_30;
     supported_versions_ = FilterSupportedVersions(allowed_supported_versions_);
   }
   return supported_versions_;

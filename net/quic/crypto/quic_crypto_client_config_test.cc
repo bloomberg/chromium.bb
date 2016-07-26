@@ -432,39 +432,14 @@ TEST(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
   EXPECT_EQ("Missing kRCID", error);
 }
 
-TEST(QuicCryptoClientConfigTest, ServerNonceinSHLO_BeforeQ027) {
-  // Test that in QUIC_VERSION_26 and lower, the the server does not need to
-  // include a nonce in the SHLO.
-  CryptoHandshakeMessage msg;
-  msg.set_tag(kSHLO);
-  // Choose the lowest version.
-  QuicVersionVector supported_versions;
-  QuicVersion version = QuicSupportedVersions().back();
-  supported_versions.push_back(version);
-  EXPECT_LE(version, QUIC_VERSION_26);
-  QuicTagVector versions;
-  versions.push_back(QuicVersionToQuicTag(version));
-  msg.SetVector(kVER, versions);
-
-  QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
-  QuicCryptoClientConfig::CachedState cached;
-  QuicCryptoNegotiatedParameters out_params;
-  string error_details;
-  config.ProcessServerHello(msg, 0, version, supported_versions, &cached,
-                            &out_params, &error_details);
-  EXPECT_NE("server hello missing server nonce", error_details);
-}
-
-TEST(QuicCryptoClientConfigTest, ServerNonceinSHLO_AfterQ027) {
-  // Test that in QUIC_VERSION_27 and higher, the the server must include a
-  // nonce in the SHLO.
+TEST(QuicCryptoClientConfigTest, ServerNonceinSHLO) {
+  // Test that the server must include a nonce in the SHLO.
   CryptoHandshakeMessage msg;
   msg.set_tag(kSHLO);
   // Choose the latest version.
   QuicVersionVector supported_versions;
   QuicVersion version = QuicSupportedVersions().front();
   supported_versions.push_back(version);
-  EXPECT_LE(QUIC_VERSION_27, version);
   QuicTagVector versions;
   versions.push_back(QuicVersionToQuicTag(version));
   msg.SetVector(kVER, versions);

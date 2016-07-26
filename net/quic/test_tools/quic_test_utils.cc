@@ -832,6 +832,14 @@ MockReceivedPacketManager::MockReceivedPacketManager(QuicConnectionStats* stats)
 
 MockReceivedPacketManager::~MockReceivedPacketManager() {}
 
+MockSentPacketManager::MockSentPacketManager() {}
+
+MockSentPacketManager::~MockSentPacketManager() {}
+
+MockConnectionCloseDelegate::MockConnectionCloseDelegate() {}
+
+MockConnectionCloseDelegate::~MockConnectionCloseDelegate() {}
+
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,

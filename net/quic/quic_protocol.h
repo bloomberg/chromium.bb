@@ -359,12 +359,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_25 = 25,  // SPDY/4 header keys, and removal of error_details
-                         // from QuicRstStreamFrame
-  QUIC_VERSION_26 = 26,  // In CHLO, send XLCT tag containing hash of leaf cert
-  QUIC_VERSION_27 = 27,  // Sends a nonce in the SHLO.
-  QUIC_VERSION_28 = 28,  // Receiver can refuse to create a requested stream.
-  QUIC_VERSION_29 = 29,  // Server and client honor QUIC_STREAM_NO_ERROR.
   QUIC_VERSION_30 = 30,  // Add server side support of cert transparency.
   QUIC_VERSION_31 = 31,  // Adds a hash of the client hello to crypto proof.
   QUIC_VERSION_32 = 32,  // FEC related fields are removed from wire format.
@@ -384,8 +378,7 @@ enum QuicVersion {
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
     QUIC_VERSION_36, QUIC_VERSION_35, QUIC_VERSION_34, QUIC_VERSION_33,
-    QUIC_VERSION_32, QUIC_VERSION_31, QUIC_VERSION_30, QUIC_VERSION_29,
-    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
+    QUIC_VERSION_32, QUIC_VERSION_31, QUIC_VERSION_30};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -682,8 +675,13 @@ enum QuicErrorCode {
   // tampered with.
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
+  // Multipath errors.
   // Multipath is not enabled, but a packet with multipath flag on is received.
   QUIC_BAD_MULTIPATH_FLAG = 79,
+  // A path is supposed to exist but does not.
+  QUIC_MULTIPATH_PATH_DOES_NOT_EXIST = 91,
+  // A path is supposed to be active but is not.
+  QUIC_MULTIPATH_PATH_NOT_ACTIVE = 92,
 
   // IP address changed causing connection close.
   QUIC_IP_ADDRESS_CHANGED = 80,
@@ -700,7 +698,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 91,
+  QUIC_LAST_ERROR = 93,
 };
 
 typedef char DiversificationNonce[32];
