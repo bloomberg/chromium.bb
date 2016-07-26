@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
+#include "media/gpu/gpu_video_decode_accelerator_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -32,50 +32,50 @@
 namespace media {
 
 // static
-MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
-GpuVideoDecodeAcceleratorFactoryImpl::Create(
+MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::Create(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb) {
-  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactoryImpl(
+  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
       GetGLES2DecoderCallback()));
 }
 
 // static
-MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
+MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const GetGLES2DecoderCallback& get_gles2_decoder_cb) {
-  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactoryImpl(
+  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
       get_gles2_decoder_cb));
 }
 
 // static
-MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL() {
+MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
+GpuVideoDecodeAcceleratorFactory::CreateWithNoGL() {
   return Create(GetGLContextCallback(), MakeGLContextCurrentCallback(),
                 BindGLImageCallback());
 }
 
 // static
 MEDIA_GPU_EXPORT gpu::VideoDecodeAcceleratorCapabilities
-GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
+GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
     const gpu::GpuPreferences& gpu_preferences) {
   VideoDecodeAccelerator::Capabilities capabilities;
   if (gpu_preferences.disable_accelerated_video_decode)
     return gpu::VideoDecodeAcceleratorCapabilities();
 
-  // Query VDAs for their capabilities and construct a set of supported
-  // profiles for current platform. This must be done in the same order as in
-  // CreateVDA(), as we currently preserve additional capabilities (such as
-  // resolutions supported) only for the first VDA supporting the given codec
-  // profile (instead of calculating a superset).
-  // TODO(posciak,henryhsu): improve this so that we choose a superset of
-  // resolutions and other supported profile parameters.
+// Query VDAs for their capabilities and construct a set of supported
+// profiles for current platform. This must be done in the same order as in
+// CreateVDA(), as we currently preserve additional capabilities (such as
+// resolutions supported) only for the first VDA supporting the given codec
+// profile (instead of calculating a superset).
+// TODO(posciak,henryhsu): improve this so that we choose a superset of
+// resolutions and other supported profile parameters.
 #if defined(OS_WIN)
   capabilities.supported_profiles =
       DXVAVideoDecodeAccelerator::GetSupportedProfiles();
@@ -106,7 +106,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
 }
 
 MEDIA_GPU_EXPORT std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
+GpuVideoDecodeAcceleratorFactory::CreateVDA(
     VideoDecodeAccelerator::Client* client,
     const VideoDecodeAccelerator::Config& config,
     const gpu::GpuDriverBugWorkarounds& workarounds,
@@ -121,24 +121,24 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
   // if applicable. This list must be in the same order as the querying order
   // in GetDecoderCapabilities() above.
   using CreateVDAFp = std::unique_ptr<VideoDecodeAccelerator> (
-      GpuVideoDecodeAcceleratorFactoryImpl::*)(
-      const gpu::GpuDriverBugWorkarounds&, const gpu::GpuPreferences&) const;
+      GpuVideoDecodeAcceleratorFactory::*)(const gpu::GpuDriverBugWorkarounds&,
+                                           const gpu::GpuPreferences&) const;
   const CreateVDAFp create_vda_fps[] = {
 #if defined(OS_WIN)
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA,
 #endif
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2VDA,
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2SVDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA,
 #endif
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateVaapiVDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA,
 #endif
 #if defined(OS_MACOSX)
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateVTVDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateVTVDA,
 #endif
 #if defined(OS_ANDROID)
-    &GpuVideoDecodeAcceleratorFactoryImpl::CreateAndroidVDA,
+    &GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA,
 #endif
   };
 
@@ -155,7 +155,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVDA(
 
 #if defined(OS_WIN)
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA(
+GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -171,7 +171,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateDXVAVDA(
 
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2VDA(
+GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -185,7 +185,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2VDA(
 }
 
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2SVDA(
+GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -201,7 +201,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateV4L2SVDA(
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateVaapiVDA(
+GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -213,7 +213,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVaapiVDA(
 
 #if defined(OS_MACOSX)
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateVTVDA(
+GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -225,7 +225,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateVTVDA(
 
 #if defined(OS_ANDROID)
 std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactoryImpl::CreateAndroidVDA(
+GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
@@ -235,7 +235,7 @@ GpuVideoDecodeAcceleratorFactoryImpl::CreateAndroidVDA(
 }
 #endif
 
-GpuVideoDecodeAcceleratorFactoryImpl::GpuVideoDecodeAcceleratorFactoryImpl(
+GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
@@ -245,6 +245,6 @@ GpuVideoDecodeAcceleratorFactoryImpl::GpuVideoDecodeAcceleratorFactoryImpl(
       bind_image_cb_(bind_image_cb),
       get_gles2_decoder_cb_(get_gles2_decoder_cb) {}
 
-GpuVideoDecodeAcceleratorFactoryImpl::~GpuVideoDecodeAcceleratorFactoryImpl() {}
+GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() {}
 
 }  // namespace media

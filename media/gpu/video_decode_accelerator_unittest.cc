@@ -55,7 +55,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/fake_video_decode_accelerator.h"
-#include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
+#include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/rendering_helper.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -486,7 +486,7 @@ class GLRenderingVDAClient
   base::WeakPtr<VideoDecodeAccelerator> weak_vda_;
   std::unique_ptr<base::WeakPtrFactory<VideoDecodeAccelerator>>
       weak_vda_ptr_factory_;
-  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory_;
+  std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory_;
   int remaining_play_throughs_;
   int reset_after_frame_num_;
   int delete_decoder_state_;
@@ -614,7 +614,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     LOG_ASSERT(decoder_->Initialize(profile_, this));
   } else {
     if (!vda_factory_) {
-      vda_factory_ = GpuVideoDecodeAcceleratorFactoryImpl::Create(
+      vda_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
           base::Bind(&RenderingHelper::GetGLContext,
                      base::Unretained(rendering_helper_)),
           base::Bind(&DoNothingReturnTrue), base::Bind(&DummyBindImage));

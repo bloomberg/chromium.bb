@@ -24,7 +24,7 @@
 #include "ipc/message_filter.h"
 #include "media/base/limits.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
-#include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
+#include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
@@ -187,7 +187,7 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
 gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAccelerator::GetCapabilities(
     const gpu::GpuPreferences& gpu_preferences) {
-  return GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
+  return GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
       gpu_preferences);
 }
 
@@ -345,8 +345,8 @@ bool GpuVideoDecodeAccelerator::Initialize(
     return false;
 #endif
 
-  std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory =
-      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
+  std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory =
+      GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
           get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
           get_gles2_decoder_cb_);
 

@@ -9,7 +9,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/gpu_video_decode_accelerator_factory_impl.h"
+#include "media/gpu/gpu_video_decode_accelerator_factory.h"
 
 namespace chromeos {
 namespace arc {
@@ -111,8 +111,7 @@ ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::Initialize(
   vda_config.output_mode =
       media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
 
-  auto vda_factory =
-      media::GpuVideoDecodeAcceleratorFactoryImpl::CreateWithNoGL();
+  auto vda_factory = media::GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
   vda_ = vda_factory->CreateVDA(
       this, vda_config, gpu::GpuDriverBugWorkarounds(), gpu_preferences_);
   if (!vda_) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_IMPL_H_
-#define MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_IMPL_H_
+#ifndef MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_H_
+#define MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_H_
 
 #include <memory>
 
@@ -30,9 +30,9 @@ class GLES2Decoder;
 
 namespace media {
 
-class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
+class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
  public:
-  ~GpuVideoDecodeAcceleratorFactoryImpl();
+  ~GpuVideoDecodeAcceleratorFactory();
 
   // Return current GLContext.
   using GetGLContextCallback = base::Callback<gl::GLContext*(void)>;
@@ -55,19 +55,19 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
   using GetGLES2DecoderCallback =
       base::Callback<base::WeakPtr<gpu::gles2::GLES2Decoder>(void)>;
 
-  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> Create(
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> Create(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb);
 
-  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl>
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
   CreateWithGLES2Decoder(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
-  static std::unique_ptr<GpuVideoDecodeAcceleratorFactoryImpl> CreateWithNoGL();
+  static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> CreateWithNoGL();
 
   static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
@@ -79,7 +79,7 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
       const gpu::GpuPreferences& gpu_preferences);
 
  private:
-  GpuVideoDecodeAcceleratorFactoryImpl(
+  GpuVideoDecodeAcceleratorFactory(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
@@ -121,9 +121,9 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAcceleratorFactoryImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAcceleratorFactory);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_IMPL_H_
+#endif  // MEDIA_GPU_GPU_VIDEO_DECODE_ACCELERATOR_FACTORY_H_
