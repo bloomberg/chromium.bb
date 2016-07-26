@@ -66,6 +66,8 @@ static_library("os_crypt") {
     }
     if (use_dbus) {
       sources += [
+        "key_storage_kwallet.cc",
+        "key_storage_kwallet.h",
         "kwallet_dbus.cc",
         "kwallet_dbus.h",
       ]
@@ -91,8 +93,13 @@ static_library("test_support") {
       "os_crypt_mocker_linux.cc",
       "os_crypt_mocker_linux.h",
     ]
-    deps += [ "//third_party/libsecret" ]
-    defines = [ "USE_LIBSECRET" ]
+    defines = []
+    if (use_glib) {
+      defines += [ "USE_LIBSECRET" ]
+    }
+    if (use_dbus) {
+      defines += [ "USE_KWALLET" ]
+    }
   }
 }
 
@@ -122,7 +129,10 @@ source_set("unit_tests") {
       defines += [ "USE_LIBSECRET" ]
     }
     if (use_dbus) {
-      sources += [ "kwallet_dbus_unittest.cc" ]
+      sources += [
+        "key_storage_kwallet_unittest.cc",
+        "kwallet_dbus_unittest.cc",
+      ]
       deps += [ "//dbus:test_support" ]
       defines += [ "USE_KWALLET" ]
     }

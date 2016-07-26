@@ -1610,6 +1610,7 @@
         }],
         ['OS=="linux" and chromeos!=1', {
           'sources': [
+            'os_crypt/key_storage_kwallet_unittest.cc',
             'os_crypt/kwallet_dbus_unittest.cc',
             'os_crypt/os_crypt_linux_unittest.cc',
             'os_crypt/os_crypt_util_linux_unittest.cc',

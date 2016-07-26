@@ -26,6 +26,10 @@ class OSCrypt {
   // In any other case, we default to auto-detecting the store.
   // This should not be changed after OSCrypt has been used.
   static void SetStore(const std::string& store_type);
+
+  // Some password stores may prompt the user for permission and show the
+  // application name.
+  static void SetProductName(const std::string& product_name);
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   // Encrypt a string16. The output (second argument) is really an array of

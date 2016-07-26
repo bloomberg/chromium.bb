@@ -68,7 +68,7 @@ bool KWalletDBus::StartKWalletd() {
   builder.AppendBool(false);             // blind
   std::unique_ptr<dbus::Response> response(klauncher->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting klauncher to start " << kwalletd_name_;
     return false;
   }
@@ -96,7 +96,7 @@ KWalletDBus::Error KWalletDBus::IsEnabled(bool* enabled) {
   dbus::MethodCall method_call(kKWalletInterface, "isEnabled");
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (isEnabled)";
     return CANNOT_CONTACT;
   }
@@ -119,7 +119,7 @@ KWalletDBus::Error KWalletDBus::NetworkWallet(std::string* wallet_name) {
   dbus::MethodCall method_call(kKWalletInterface, "networkWallet");
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (networkWallet)";
     return CANNOT_CONTACT;
   }
@@ -143,7 +143,7 @@ KWalletDBus::Error KWalletDBus::Open(const std::string& wallet_name,
   builder.AppendString(app_name);     // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (open)";
     return CANNOT_CONTACT;
   }
@@ -169,7 +169,7 @@ KWalletDBus::Error KWalletDBus::HasEntry(const int wallet_handle,
   builder.AppendString(app_name);      // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasEntry)";
     return CANNOT_CONTACT;
   }
@@ -195,7 +195,7 @@ KWalletDBus::Error KWalletDBus::ReadEntry(const int wallet_handle,
   builder.AppendString(app_name);      // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readEntry)";
     return CANNOT_CONTACT;
   }
@@ -227,7 +227,7 @@ KWalletDBus::Error KWalletDBus::EntryList(
   builder.AppendString(app_name);      // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (entryList)";
     return CANNOT_CONTACT;
   }
@@ -253,7 +253,7 @@ KWalletDBus::Error KWalletDBus::RemoveEntry(const int wallet_handle,
   builder.AppendString(app_name);      // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (removeEntry)";
     return CANNOT_CONTACT;
   }
@@ -282,7 +282,7 @@ KWalletDBus::Error KWalletDBus::WriteEntry(const int wallet_handle,
   builder.AppendString(app_name);            // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (writeEntry)";
     return CANNOT_CONTACT;
   }
@@ -306,7 +306,7 @@ KWalletDBus::Error KWalletDBus::HasFolder(const int handle,
   builder.AppendString(app_name);     // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
+  if (!response) {
     LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (hasFolder)";
     return CANNOT_CONTACT;
   }
@@ -330,8 +330,8 @@ KWalletDBus::Error KWalletDBus::CreateFolder(const int handle,
   builder.AppendString(app_name);     // appid
   std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-  if (!response.get()) {
-    LOG(ERROR) << "Error contacting << " << kwalletd_name_ << " (createFolder)";
+  if (!response) {
+    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (createFolder)";
     return CANNOT_CONTACT;
   }
   dbus::MessageReader reader(response.get());
@@ -340,5 +340,87 @@ KWalletDBus::Error KWalletDBus::CreateFolder(const int handle,
                << " (createFolder): " << response->ToString();
     return CANNOT_READ;
   }
+  return SUCCESS;
+}
+
+KWalletDBus::Error KWalletDBus::WritePassword(const int handle,
+                                              const std::string& folder_name,
+                                              const std::string& key,
+                                              const std::string& password,
+                                              const std::string& app_name,
+                                              bool* const write_success_ptr) {
+  dbus::MethodCall method_call(kKWalletInterface, "writePassword");
+  dbus::MessageWriter builder(&method_call);
+  builder.AppendInt32(handle);
+  builder.AppendString(folder_name);
+  builder.AppendString(key);
+  builder.AppendString(password);
+  builder.AppendString(app_name);
+  std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (!response) {
+    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (writePassword)";
+    return CANNOT_CONTACT;
+  }
+  dbus::MessageReader reader(response.get());
+  int return_code;
+  if (!reader.PopInt32(&return_code)) {
+    LOG(ERROR) << "Error reading response from " << kwalletd_name_
+               << " (writePassword): " << response->ToString();
+    return CANNOT_READ;
+  }
+  *write_success_ptr = return_code == 0;
+  return SUCCESS;
+}
+
+KWalletDBus::Error KWalletDBus::ReadPassword(const int handle,
+                                             const std::string& folder_name,
+                                             const std::string& key,
+                                             const std::string& app_name,
+                                             std::string* const password_ptr) {
+  dbus::MethodCall method_call(kKWalletInterface, "readPassword");
+  dbus::MessageWriter builder(&method_call);
+  builder.AppendInt32(handle);
+  builder.AppendString(folder_name);
+  builder.AppendString(key);
+  builder.AppendString(app_name);
+  std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (!response) {
+    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (readPassword)";
+    return CANNOT_CONTACT;
+  }
+  dbus::MessageReader reader(response.get());
+  if (!reader.PopString(password_ptr)) {
+    LOG(ERROR) << "Error reading response from " << kwalletd_name_
+               << " (readPassword): " << response->ToString();
+    return CANNOT_READ;
+  }
+  return SUCCESS;
+}
+
+KWalletDBus::Error KWalletDBus::Close(const int handle,
+                                      const bool force,
+                                      const std::string& app_name,
+                                      bool* success_ptr) {
+  dbus::MethodCall method_call(kKWalletInterface, "close");
+  dbus::MessageWriter builder(&method_call);
+  builder.AppendInt32(handle);
+  builder.AppendBool(force);
+  builder.AppendString(app_name);
+  std::unique_ptr<dbus::Response> response(kwallet_proxy_->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (!response) {
+    LOG(ERROR) << "Error contacting " << kwalletd_name_ << " (close)";
+    return CANNOT_CONTACT;
+  }
+  dbus::MessageReader reader(response.get());
+  int return_code = 1;
+  if (!reader.PopInt32(&return_code)) {
+    LOG(ERROR) << "Error reading response from " << kwalletd_name_
+               << " (close): " << response->ToString();
+    return CANNOT_READ;
+  }
+  *success_ptr = return_code == 0;
   return SUCCESS;
 }

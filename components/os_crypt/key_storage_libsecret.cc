@@ -11,12 +11,6 @@
 
 namespace {
 
-#if defined(OFFICIAL_BUILD)
-const char kKeyStorageEntryName[] = "Chrome Safe Storage";
-#else
-const char kKeyStorageEntryName[] = "Chromium Safe Storage";
-#endif
-
 const SecretSchema kKeystoreSchema = {
     "chrome_libsecret_os_crypt_password",
     SECRET_SCHEMA_NONE,
@@ -24,12 +18,14 @@ const SecretSchema kKeystoreSchema = {
         {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
     }};
 
-std::string AddRandomPasswordInLibsecret() {
+}  // namespace
+
+std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   std::string password;
   base::Base64Encode(base::RandBytesAsString(16), &password);
   GError* error = nullptr;
   LibsecretLoader::secret_password_store_sync(
-      &kKeystoreSchema, nullptr, kKeyStorageEntryName, password.c_str(),
+      &kKeystoreSchema, nullptr, KeyStorageLinux::kKey, password.c_str(),
       nullptr, &error, nullptr);
 
   if (error) {
@@ -38,8 +34,6 @@ std::string AddRandomPasswordInLibsecret() {
   }
   return password;
 }
-
-}  // namespace
 
 std::string KeyStorageLibsecret::GetKey() {
   GError* error = nullptr;

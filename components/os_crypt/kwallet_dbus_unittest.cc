@@ -272,6 +272,61 @@ MATCHER_P5(ArgumentsAreStringStringsStringsStringBool,
   return true;
 }
 
+MATCHER_P5(ArgumentsAreIntStringStringStringString,
+           int_1,
+           str_2,
+           str_3,
+           str_4,
+           str_5,
+           "") {
+  dbus::MessageReader reader(arg);
+
+  int32_t i;
+  EXPECT_TRUE(reader.PopInt32(&i));
+  if (int_1 != i)
+    return false;
+
+  std::string str;
+  EXPECT_TRUE(reader.PopString(&str));
+  if (str_2 != str)
+    return false;
+
+  EXPECT_TRUE(reader.PopString(&str));
+  if (str_3 != str)
+    return false;
+
+  EXPECT_TRUE(reader.PopString(&str));
+  if (str_4 != str)
+    return false;
+
+  EXPECT_TRUE(reader.PopString(&str));
+  if (str_5 != str)
+    return false;
+
+  return true;
+}
+
+MATCHER_P3(ArgumentsAreIntBoolString, int_1, bool_2, str_3, "") {
+  dbus::MessageReader reader(arg);
+
+  int32_t i;
+  EXPECT_TRUE(reader.PopInt32(&i));
+  if (int_1 != i)
+    return false;
+
+  bool b;
+  EXPECT_TRUE(reader.PopBool(&b));
+  if (bool_2 != b)
+    return false;
+
+  std::string str;
+  EXPECT_TRUE(reader.PopString(&str));
+  if (str_3 != str)
+    return false;
+
+  return true;
+}
+
 TEST_P(KWalletDBusTest, StartWalletd) {
   // The receiver of the message takes ownership of the response object.
   dbus::Response* response_success = RespondEmpty();
@@ -691,6 +746,147 @@ TEST_P(KWalletDBusTest, CreateFolderErrorContact) {
   bool created_folder = false;
   EXPECT_EQ(KWalletDBus::Error::CANNOT_CONTACT,
             kwallet_dbus_.CreateFolder(123, "folder", "app", &created_folder));
+}
+
+TEST_P(KWalletDBusTest, WritePassword) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(
+                  AllOf(Calls(kKWalletInterface, "writePassword"),
+                        ArgumentsAreIntStringStringStringString(
+                            123, "folder", "key", "password", "app")),
+                  _))
+      .WillOnce(Return(RespondInt32(0)));
+
+  bool write_success = false;
+  EXPECT_EQ(KWalletDBus::Error::SUCCESS,
+            kwallet_dbus_.WritePassword(123, "folder", "key", "password", "app",
+                                        &write_success));
+  EXPECT_TRUE(write_success);
+}
+
+TEST_P(KWalletDBusTest, WritePasswordRejected) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(
+                  AllOf(Calls(kKWalletInterface, "writePassword"),
+                        ArgumentsAreIntStringStringStringString(
+                            123, "folder", "key", "password", "app")),
+                  _))
+      .WillOnce(Return(RespondInt32(-1)));
+
+  bool write_success = true;
+  EXPECT_EQ(KWalletDBus::Error::SUCCESS,
+            kwallet_dbus_.WritePassword(123, "folder", "key", "password", "app",
+                                        &write_success));
+  EXPECT_FALSE(write_success);
+}
+
+TEST_P(KWalletDBusTest, WritePasswordErrorRead) {
+  EXPECT_CALL(
+      *mock_kwallet_proxy_.get(),
+      MockCallMethodAndBlock(Calls(kKWalletInterface, "writePassword"), _))
+      .WillOnce(Return(RespondEmpty()));
+
+  bool write_success = false;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_READ,
+            kwallet_dbus_.WritePassword(123, "folder", "key", "password", "app",
+                                        &write_success));
+}
+
+TEST_P(KWalletDBusTest, WritePasswordErrorContact) {
+  EXPECT_CALL(
+      *mock_kwallet_proxy_.get(),
+      MockCallMethodAndBlock(Calls(kKWalletInterface, "writePassword"), _))
+      .WillOnce(Return(nullptr));
+
+  bool write_success = false;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_CONTACT,
+            kwallet_dbus_.WritePassword(123, "folder", "key", "password", "app",
+                                        &write_success));
+}
+
+TEST_P(KWalletDBusTest, ReadPassword) {
+  EXPECT_CALL(
+      *mock_kwallet_proxy_.get(),
+      MockCallMethodAndBlock(
+          AllOf(Calls(kKWalletInterface, "readPassword"),
+                ArgumentsAreIntStringStringString(123, "folder", "key", "app")),
+          _))
+      .WillOnce(Return(RespondString("password")));
+
+  std::string password;
+  EXPECT_EQ(KWalletDBus::Error::SUCCESS,
+            kwallet_dbus_.ReadPassword(123, "folder", "key", "app", &password));
+  EXPECT_EQ("password", password);
+}
+
+TEST_P(KWalletDBusTest, ReadPasswordErrorRead) {
+  EXPECT_CALL(
+      *mock_kwallet_proxy_.get(),
+      MockCallMethodAndBlock(Calls(kKWalletInterface, "readPassword"), _))
+      .WillOnce(Return(RespondEmpty()));
+
+  std::string password;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_READ,
+            kwallet_dbus_.ReadPassword(123, "folder", "key", "app", &password));
+}
+
+TEST_P(KWalletDBusTest, ReadPasswordErrorContact) {
+  EXPECT_CALL(
+      *mock_kwallet_proxy_.get(),
+      MockCallMethodAndBlock(Calls(kKWalletInterface, "readPassword"), _))
+      .WillOnce(Return(nullptr));
+
+  std::string password;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_CONTACT,
+            kwallet_dbus_.ReadPassword(123, "folder", "key", "app", &password));
+}
+
+TEST_P(KWalletDBusTest, CloseSuccess) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(
+                  AllOf(Calls(kKWalletInterface, "close"),
+                        ArgumentsAreIntBoolString(123, false, "app")),
+                  _))
+      .WillOnce(Return(RespondInt32(0)));
+
+  bool success = false;
+  EXPECT_EQ(KWalletDBus::Error::SUCCESS,
+            kwallet_dbus_.Close(123, false, "app", &success));
+  EXPECT_TRUE(success);
+}
+
+TEST_P(KWalletDBusTest, CloseUnsuccessful) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(
+                  AllOf(Calls(kKWalletInterface, "close"),
+                        ArgumentsAreIntBoolString(123, false, "app")),
+                  _))
+      .WillOnce(Return(RespondInt32(1)));
+
+  bool success = true;
+  EXPECT_EQ(KWalletDBus::Error::SUCCESS,
+            kwallet_dbus_.Close(123, false, "app", &success));
+  EXPECT_FALSE(success);
+}
+
+TEST_P(KWalletDBusTest, CloseErrorRead) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(Calls(kKWalletInterface, "close"), _))
+      .WillOnce(Return(RespondEmpty()));
+
+  bool success = true;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_READ,
+            kwallet_dbus_.Close(123, false, "app", &success));
+}
+
+TEST_P(KWalletDBusTest, CloseErrorContact) {
+  EXPECT_CALL(*mock_kwallet_proxy_.get(),
+              MockCallMethodAndBlock(Calls(kKWalletInterface, "close"), _))
+      .WillOnce(Return(nullptr));
+
+  bool success = true;
+  EXPECT_EQ(KWalletDBus::Error::CANNOT_CONTACT,
+            kwallet_dbus_.Close(123, false, "app", &success));
 }
 
 }  // namespace

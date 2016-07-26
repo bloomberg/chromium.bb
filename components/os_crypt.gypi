@@ -79,6 +79,8 @@
             }],
             ['use_dbus==1', {
               'sources': [
+                'os_crypt/key_storage_kwallet.cc',
+                'os_crypt/key_storage_kwallet.h',
                 'os_crypt/kwallet_dbus.cc',
                 'os_crypt/kwallet_dbus.h',
               ],

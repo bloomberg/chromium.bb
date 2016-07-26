@@ -24,6 +24,8 @@ class KeyStorageLibsecret : public KeyStorageLinux {
   bool Init() override;
 
  private:
+  std::string AddRandomPasswordInLibsecret();
+
   DISALLOW_COPY_AND_ASSIGN(KeyStorageLibsecret);
 };
 

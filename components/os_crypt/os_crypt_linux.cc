@@ -218,6 +218,14 @@ void OSCrypt::SetStore(const std::string& store_type) {
   KeyStorageLinux::SetStore(store_type);
 }
 
+// static
+void OSCrypt::SetProductName(const std::string& product_name) {
+  // Setting the product name makes no sense after initializing.
+  DCHECK(!g_cache.Get().is_key_storage_cached);
+
+  KeyStorageLinux::SetProductName(product_name);
+}
+
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.
