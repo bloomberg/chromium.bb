@@ -56,6 +56,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -2220,24 +2221,6 @@ bool Node::isUserActionElementFocused() const
     return document().userActionElements().isFocused(this);
 }
 
-std::ostream& operator<<(std::ostream& os, CustomElementState state)
-{
-    switch (state) {
-    case CustomElementState::Uncustomized: return os << "Uncustomized";
-    case CustomElementState::Undefined: return os << "Undefined";
-    case CustomElementState::Custom: return os << "Custom";
-    default: NOTREACHED();
-    }
-    return os;
-}
-
-CustomElementState Node::getCustomElementState() const
-{
-    return !isCustomElement()
-        ? CustomElementState::Uncustomized
-        : (getFlag(CustomElementCustomFlag) ? CustomElementState::Custom : CustomElementState::Undefined);
-}
-
 void Node::setCustomElementState(CustomElementState newState)
 {
     CustomElementState oldState = getCustomElementState();
@@ -2254,25 +2237,24 @@ void Node::setCustomElementState(CustomElementState newState)
     case CustomElementState::Custom:
         DCHECK_EQ(CustomElementState::Undefined, oldState);
         break;
+
+    case CustomElementState::Failed:
+        DCHECK_NE(CustomElementState::Failed, oldState);
+        break;
     }
 
     DCHECK(isHTMLElement());
     DCHECK_NE(V0Upgraded, getV0CustomElementState());
-#if DCHECK_IS_ON()
-    bool wasDefined = toElement(this)->isDefined();
-#endif
 
-    setFlag(CustomElementFlag);
-    if (newState == CustomElementState::Custom)
-        setFlag(CustomElementCustomFlag);
+    Element* element = toElement(this);
+    bool wasDefined = element->isDefined();
+
+    m_nodeFlags = (m_nodeFlags & ~CustomElementStateMask)
+        | static_cast<NodeFlags>(newState);
     DCHECK(newState == getCustomElementState());
 
-    // When the state goes from Uncustomized to Undefined, and then to Custom,
-    // isDefined is always flipped.
-#if DCHECK_IS_ON()
-    DCHECK_NE(wasDefined, toElement(this)->isDefined());
-#endif
-    toElement(this)->pseudoStateChanged(CSSSelector::PseudoDefined);
+    if (element->isDefined() != wasDefined)
+        element->pseudoStateChanged(CSSSelector::PseudoDefined);
 }
 
 void Node::setV0CustomElementState(V0CustomElementState newState)

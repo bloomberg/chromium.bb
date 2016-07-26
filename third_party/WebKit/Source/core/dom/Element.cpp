@@ -1959,7 +1959,7 @@ ShadowRoot* Element::attachShadow(const ScriptState* scriptState, const ShadowRo
 
     const AtomicString& tagName = localName();
     bool tagNameIsSupported = isV0CustomElement()
-        || isCustomElement()
+        || getCustomElementState() != CustomElementState::Uncustomized
         || tagName == HTMLNames::articleTag
         || tagName == HTMLNames::asideTag
         || tagName == HTMLNames::blockquoteTag

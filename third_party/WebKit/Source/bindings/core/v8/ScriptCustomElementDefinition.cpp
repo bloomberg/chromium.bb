@@ -13,8 +13,8 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLUnknownElement.h"
 #include "v8.h"
 #include "wtf/Allocator.h"
 
@@ -205,12 +205,7 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
             exceptionState.throwIfNeeded();
         }
 
-        // ...and let element be instead a new element that implements
-        // HTMLUnknownElement, with no attributes, namespace set to given
-        // namespace, namespace prefix set to null, custom element state
-        // "undefined", and node document set to document.
-        element = HTMLUnknownElement::create(tagName, document);
-        element->setCustomElementState(CustomElementState::Undefined);
+        return CustomElement::createFailedElement(document, tagName);
     }
     return element;
 }

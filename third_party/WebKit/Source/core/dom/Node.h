@@ -92,6 +92,7 @@ class Text;
 class TouchEvent;
 
 const int nodeStyleChangeShift = 19;
+const int nodeCustomElementShift = 21;
 
 enum StyleChangeType {
     NoStyleChange = 0,
@@ -101,12 +102,14 @@ enum StyleChangeType {
 };
 
 enum class CustomElementState {
+    // https://dom.spec.whatwg.org/#concept-element-custom-element-state
     Uncustomized = 0,
-    Custom = 1,
-    Undefined = 2,
-};
+    Custom = 1 << nodeCustomElementShift,
+    Undefined = 2 << nodeCustomElementShift,
+    Failed = 3 << nodeCustomElementShift,
 
-CORE_EXPORT std::ostream& operator<<(std::ostream&, CustomElementState);
+    NotDefinedFlag = 2 << nodeCustomElementShift,
+};
 
 class NodeRareDataBase {
 public:
@@ -255,8 +258,7 @@ public:
     bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
     virtual PseudoId getPseudoId() const { return PseudoIdNone; }
 
-    bool isCustomElement() const { return getFlag(CustomElementFlag); }
-    CustomElementState getCustomElementState() const;
+    CustomElementState getCustomElementState() const { return static_cast<CustomElementState>(m_nodeFlags & CustomElementStateMask); }
     void setCustomElementState(CustomElementState);
     bool isV0CustomElement() const { return getFlag(V0CustomElementFlag); }
     enum V0CustomElementState {
@@ -695,8 +697,7 @@ private:
         ChildNeedsStyleRecalcFlag = 1 << 18,
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        CustomElementFlag = 1 << 21,
-        CustomElementCustomFlag = 1 << 22,
+        CustomElementStateMask = 0x3 << nodeCustomElementShift,
 
         HasNameOrIsEditingTextFlag = 1 << 23,
         HasWeakReferencesFlag = 1 << 24,

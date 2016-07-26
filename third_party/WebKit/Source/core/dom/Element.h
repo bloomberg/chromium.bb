@@ -376,7 +376,7 @@ public:
     void setIsInCanvasSubtree(bool value) { setElementFlag(IsInCanvasSubtree, value); }
     bool isInCanvasSubtree() const { return hasElementFlag(IsInCanvasSubtree); }
 
-    bool isDefined() const { return getCustomElementState() != CustomElementState::Undefined; }
+    bool isDefined() const { return !(static_cast<int>(getCustomElementState()) & static_cast<int>(CustomElementState::NotDefinedFlag)); }
     bool isUpgradedV0CustomElement() { return getV0CustomElementState() == V0Upgraded; }
     bool isUnresolvedV0CustomElement() { return getV0CustomElementState() == V0WaitingForUpgrade; }
 

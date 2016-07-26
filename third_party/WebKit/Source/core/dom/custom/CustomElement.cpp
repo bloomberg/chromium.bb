@@ -15,6 +15,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLUnknownElement.h"
 #include "platform/text/Character.h"
 #include "wtf/text/AtomicStringHash.h"
 
@@ -165,6 +166,23 @@ HTMLElement* CustomElement::createUndefinedElement(Document& document, const Qua
 
     element->setCustomElementState(CustomElementState::Undefined);
 
+    return element;
+}
+
+HTMLElement* CustomElement::createFailedElement(Document& document, const QualifiedName& tagName)
+{
+    DCHECK(shouldCreateCustomElement(document, tagName));
+
+    // "create an element for a token":
+    // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+
+    // 7. If this step throws an exception, let element be instead a new element
+    // that implements HTMLUnknownElement, with no attributes, namespace set to
+    // given namespace, namespace prefix set to null, custom element state set
+    // to "failed", and node document set to document.
+
+    HTMLElement* element = HTMLUnknownElement::create(tagName, document);
+    element->setCustomElementState(CustomElementState::Failed);
     return element;
 }
 

@@ -122,8 +122,10 @@ void CustomElementDefinition::upgrade(Element* element)
     DCHECK_EQ(m_constructionStack.size(), depth); // It's a *stack*.
     m_constructionStack.removeLast();
 
-    if (!succeeded)
+    if (!succeeded) {
+        element->setCustomElementState(CustomElementState::Failed);
         return;
+    }
 
     CHECK(element->getCustomElementState() == CustomElementState::Custom);
 }
