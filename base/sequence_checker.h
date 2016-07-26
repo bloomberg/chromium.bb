@@ -29,10 +29,11 @@ class SequenceCheckerDoNothing {
   void DetachFromSequence() {}
 };
 
-// SequenceChecker is a helper class used to help verify that some
-// methods of a class are called in sequence -- that is, called from
-// the same SequencedTaskRunner. It is a generalization of
-// ThreadChecker; see comments in sequence_checker_impl.h for details.
+// SequenceChecker is a helper class to verify that calls to some methods of a
+// class are sequenced. Calls are sequenced when they are issued:
+// - From tasks posted to SequencedTaskRunners or SingleThreadTaskRunners bound
+//   to the same sequence, or,
+// - From a single thread outside of any task.
 //
 // Example:
 // class MyClass {

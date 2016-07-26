@@ -555,6 +555,8 @@
           'sequence_checker.h',
           'sequence_checker_impl.cc',
           'sequence_checker_impl.h',
+          'sequence_token.cc',
+          'sequence_token.h',
           'sequenced_task_runner.cc',
           'sequenced_task_runner.h',
           'sequenced_task_runner_helpers.h',
