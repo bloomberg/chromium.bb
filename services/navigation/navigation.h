@@ -33,7 +33,7 @@ class Navigation : public content::ConnectionFilter,
                  shell::Connector* connector) override;
 
   // shell::InterfaceFactory<mojom::ViewFactory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::ViewFactoryRequest request) override;
 
   // mojom::ViewFactory:

@@ -41,7 +41,7 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   bool OnStop() final;
 
   // shell::InterfaceFactory<mojom::ServiceFactory> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::ServiceFactory> request) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
@@ -50,6 +50,7 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
   shell::Connector* connector_;
+  shell::mojom::InterfaceProvider* remote_interface_provider_ = nullptr;
   scoped_refptr<MediaLog> media_log_;
   shell::ServiceContextRefFactory ref_factory_;
 };

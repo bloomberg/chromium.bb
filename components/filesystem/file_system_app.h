@@ -37,7 +37,7 @@ class FileSystemApp : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<Files>| implementation:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::FileSystem> request) override;
 
   mojo::TracingImpl tracing_;

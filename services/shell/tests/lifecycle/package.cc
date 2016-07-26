@@ -44,7 +44,7 @@ class PackagedApp : public shell::Service,
   }
 
   // shell::InterfaceFactory<LifecycleControl>
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               LifecycleControlRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -105,7 +105,7 @@ class Package
   }
 
   // shell::InterfaceFactory<shell::mojom::ServiceFactory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               shell::mojom::ServiceFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

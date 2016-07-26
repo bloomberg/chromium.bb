@@ -39,11 +39,11 @@ class UserShellClient
   bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<mojom::UserService>| implementation:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::UserServiceRequest request) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
   void OnLevelDBServiceRequest(shell::Connection* connection,

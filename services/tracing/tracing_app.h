@@ -38,12 +38,12 @@ class TracingApp
   bool OnStop() override;
 
   // shell::InterfaceFactory<TraceCollector> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<TraceCollector> request) override;
 
   // shell::InterfaceFactory<StartupPerformanceDataCollector> implementation.
   void Create(
-      shell::Connection* connection,
+      const shell::Identity& remote_identity,
       mojo::InterfaceRequest<StartupPerformanceDataCollector> request) override;
 
   // tracing::TraceCollector implementation.

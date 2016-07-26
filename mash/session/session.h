@@ -46,7 +46,7 @@ class Session : public shell::Service,
   void UnlockScreen() override;
 
   // shell::InterfaceFactory<mojom::Session>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::SessionRequest request) override;
 
   void StartWindowManager();

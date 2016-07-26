@@ -207,7 +207,7 @@ class MojoShellConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // shell::InterfaceFactory<shell::mojom::ServiceFactory> implementation
 
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               shell::mojom::ServiceFactoryRequest request) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     factory_bindings_.AddBinding(this, std::move(request));

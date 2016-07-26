@@ -64,7 +64,11 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
 
   auto iter = name_to_binder_.find(interface_name);
   if (iter != name_to_binder_.end()) {
-    iter->second->BindInterface(connection_, interface_name, std::move(handle));
+    Identity remote_identity =
+        connection_ ? connection_->GetRemoteIdentity() : Identity();
+    iter->second->BindInterface(remote_identity,
+                                interface_name,
+                                std::move(handle));
   } else if (connection_ && !connection_->AllowsInterface(interface_name)) {
     LOG(ERROR) << "Connection CapabilityFilter prevented binding to "
                << "interface: " << interface_name << " connection_name:"
@@ -72,6 +76,8 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                << connection_->GetRemoteIdentity().name();
   } else if (!default_binder_.is_null()) {
     default_binder_.Run(interface_name, std::move(handle));
+  } else {
+    LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name;
   }
 }
 

@@ -36,11 +36,11 @@ class SysUIApplication
   bool OnConnect(shell::Connection* connection) override;
 
   // InterfaceFactory<mash::shelf::mojom::ShelfController>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mash::shelf::mojom::ShelfControllerRequest request) override;
 
   // InterfaceFactory<mojom::WallpaperController>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::WallpaperControllerRequest request) override;
 
   mojo::TracingImpl tracing_;

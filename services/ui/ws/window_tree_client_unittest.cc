@@ -476,7 +476,7 @@ class WindowTreeClientFactory
 
  private:
   // InterfaceFactory<WindowTreeClient>:
-  void Create(Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               InterfaceRequest<WindowTreeClient> request) override {
     client_impl_.reset(new TestWindowTreeClient());
     client_impl_->Bind(std::move(request));

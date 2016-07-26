@@ -31,7 +31,7 @@ class TestMojoApp : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::TestMojoService>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::TestMojoService> request) override;
 
   // TestMojoService:

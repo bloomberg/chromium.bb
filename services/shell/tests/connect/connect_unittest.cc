@@ -126,7 +126,7 @@ class ConnectTest : public test::ServiceTest,
   }
 
   // InterfaceFactory<test::mojom::ExposedInterface>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ExposedInterfaceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

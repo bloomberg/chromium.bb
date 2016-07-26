@@ -37,7 +37,7 @@ class Init : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::Login>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::InitRequest request) override;
 
   // mojom::Init:

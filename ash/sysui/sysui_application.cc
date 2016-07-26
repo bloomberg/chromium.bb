@@ -331,7 +331,7 @@ bool SysUIApplication::OnConnect(::shell::Connection* connection) {
 }
 
 void SysUIApplication::Create(
-    ::shell::Connection* connection,
+    const ::shell::Identity& remote_identity,
     mash::shelf::mojom::ShelfControllerRequest request) {
   mash::shelf::mojom::ShelfController* shelf_controller =
       static_cast<ShelfDelegateMus*>(WmShell::Get()->shelf_delegate());
@@ -339,7 +339,7 @@ void SysUIApplication::Create(
   shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
 }
 
-void SysUIApplication::Create(::shell::Connection* connection,
+void SysUIApplication::Create(const ::shell::Identity& remote_identity,
                               mojom::WallpaperControllerRequest request) {
   mojom::WallpaperController* wallpaper_controller =
       static_cast<UserWallpaperDelegateMus*>(

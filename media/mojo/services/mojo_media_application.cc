@@ -36,6 +36,7 @@ void MojoMediaApplication::OnStart(shell::Connector* connector,
 
 bool MojoMediaApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::ServiceFactory>(this);
+  remote_interface_provider_ = connection->GetRemoteInterfaceProvider();
   return true;
 }
 
@@ -45,12 +46,12 @@ bool MojoMediaApplication::OnStop() {
 }
 
 void MojoMediaApplication::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::ServiceFactory> request) {
   // The created object is owned by the pipe.
-  new ServiceFactoryImpl(std::move(request),
-                         connection->GetRemoteInterfaceProvider(), media_log_,
-                         ref_factory_.CreateRef(), mojo_media_client_.get());
+  new ServiceFactoryImpl(std::move(request), remote_interface_provider_,
+                         media_log_, ref_factory_.CreateRef(),
+                         mojo_media_client_.get());
 }
 
 }  // namespace media

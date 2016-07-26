@@ -44,7 +44,7 @@ class Parent : public shell::Service,
   }
 
   // InterfaceFactory<shell::test::mojom::Parent>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               shell::test::mojom::ParentRequest request) override {
     parent_bindings_.AddBinding(this, std::move(request));
   }

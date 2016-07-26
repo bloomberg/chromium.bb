@@ -33,7 +33,7 @@ class FontServiceApp : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::FontService>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::FontService> request) override;
 
   // FontService:

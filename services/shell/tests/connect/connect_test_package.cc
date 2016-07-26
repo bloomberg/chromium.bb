@@ -91,19 +91,19 @@ class ProvidedService
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::BlockedInterface>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::BlockedInterfaceRequest request) override {
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::UserIdTest>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::UserIdTestRequest request) override {
     user_id_test_bindings_.AddBinding(this, std::move(request));
   }
@@ -189,13 +189,13 @@ class ConnectTestService
   }
 
   // InterfaceFactory<mojom::ServiceFactory>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               mojom::ServiceFactoryRequest request) override {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

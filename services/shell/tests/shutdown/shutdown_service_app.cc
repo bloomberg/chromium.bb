@@ -32,7 +32,7 @@ class ShutdownServiceApp
   }
 
   // InterfaceFactory<mojom::ShutdownTestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               mojom::ShutdownTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

@@ -85,7 +85,7 @@ void Session::UnlockScreen() {
   StopScreenlock();
 }
 
-void Session::Create(shell::Connection* connection,
+void Session::Create(const shell::Identity& remote_identity,
                      mojom::SessionRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

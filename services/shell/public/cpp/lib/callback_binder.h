@@ -30,7 +30,7 @@ class CallbackBinder : public InterfaceBinder {
  private:
   // InterfaceBinder:
   void BindInterface(
-      Connection* connection,
+      const Identity& remote_identity,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle handle) override {
     mojo::InterfaceRequest<Interface> request =
@@ -67,9 +67,9 @@ class GenericCallbackBinder : public InterfaceBinder {
 
  private:
   // InterfaceBinder:
-  void BindInterface(Connection* connection,
-        const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle handle) override;
+  void BindInterface(const shell::Identity& remote_identity,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle handle) override;
 
   static void RunCallbackOnTaskRunner(
       const BindCallback& callback,

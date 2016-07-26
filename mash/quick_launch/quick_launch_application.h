@@ -43,7 +43,7 @@ class QuickLaunchApplication
   void Launch(uint32_t what, mojom::LaunchMode how) override;
 
   // shell::InterfaceFactory<mojom::Launchable>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::LaunchableRequest request) override;
 
   shell::Connector* connector_ = nullptr;

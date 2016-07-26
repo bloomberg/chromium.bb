@@ -17,16 +17,16 @@
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
-#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/identity.h"
 #include "url/gurl.h"
 
 namespace filesystem {
 
-FileSystemImpl::FileSystemImpl(shell::Connection* connection,
+FileSystemImpl::FileSystemImpl(const shell::Identity& remote_identity,
                                mojom::FileSystemRequest request,
                                base::FilePath persistent_dir,
                                scoped_refptr<LockTable> lock_table)
-    : remote_application_name_(connection->GetRemoteIdentity().name()),
+    : remote_application_name_(remote_identity.name()),
       binding_(this, std::move(request)),
       lock_table_(std::move(lock_table)),
       persistent_dir_(persistent_dir) {}

@@ -28,7 +28,7 @@ bool TestMojoApp::OnConnect(shell::Connection* connection) {
 }
 
 void TestMojoApp::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::TestMojoService> request) {
   DCHECK(!service_binding_.is_bound());
   service_binding_.Bind(std::move(request));

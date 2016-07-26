@@ -60,7 +60,7 @@ bool FontServiceApp::OnConnect(shell::Connection* connection) {
 }
 
 void FontServiceApp::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::FontService> request) {
   bindings_.AddBinding(this, std::move(request));
 }

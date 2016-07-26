@@ -25,7 +25,7 @@ class UserShellClient::UserServiceObjects
   ~UserServiceObjects() {}
 
   // Called on the |user_service_runner_|.
-  void OnUserServiceRequest(shell::Connection* connection,
+  void OnUserServiceRequest(const shell::Identity& remote_identity,
                             mojom::UserServiceRequest request) {
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
@@ -52,7 +52,7 @@ class UserShellClient::LevelDBServiceObjects
   ~LevelDBServiceObjects() {}
 
   // Called on the |leveldb_service_runner_|.
-  void OnLevelDBServiceRequest(shell::Connection* connection,
+  void OnLevelDBServiceRequest(const shell::Identity& remote_identity,
                                leveldb::mojom::LevelDBServiceRequest request) {
     if (!leveldb_service_)
       leveldb_service_.reset(new leveldb::LevelDBServiceImpl(task_runner_));
@@ -103,22 +103,22 @@ bool UserShellClient::OnConnect(shell::Connection* connection) {
   return true;
 }
 
-void UserShellClient::Create(shell::Connection* connection,
+void UserShellClient::Create(const shell::Identity& remote_identity,
                              mojom::UserServiceRequest request) {
   user_service_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UserShellClient::UserServiceObjects::OnUserServiceRequest,
-                 user_objects_->AsWeakPtr(), connection,
+                 user_objects_->AsWeakPtr(), remote_identity,
                  base::Passed(&request)));
 }
 
-void UserShellClient::Create(shell::Connection* connection,
+void UserShellClient::Create(const shell::Identity& remote_identity,
                              leveldb::mojom::LevelDBServiceRequest request) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &UserShellClient::LevelDBServiceObjects::OnLevelDBServiceRequest,
-          leveldb_objects_->AsWeakPtr(), connection,
+          leveldb_objects_->AsWeakPtr(), remote_identity,
           base::Passed(&request)));
 }
 

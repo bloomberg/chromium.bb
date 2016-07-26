@@ -91,7 +91,7 @@ class WindowServerTestBase
                                    const ui::Event& event) override;
 
   // InterfaceFactory<WindowTreeClient>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
   // Used to receive the most recent window tree client loaded by an embed

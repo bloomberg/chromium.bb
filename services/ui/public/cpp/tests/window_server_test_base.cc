@@ -154,7 +154,7 @@ mojom::EventResult WindowServerTestBase::OnAccelerator(uint32_t accelerator_id,
              : mojom::EventResult::UNHANDLED;
 }
 
-void WindowServerTestBase::Create(shell::Connection* connection,
+void WindowServerTestBase::Create(const shell::Identity& remote_identity,
                                   mojom::WindowTreeClientRequest request) {
   new WindowTreeClient(this, nullptr, std::move(request));
 }

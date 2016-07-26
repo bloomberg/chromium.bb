@@ -23,8 +23,7 @@ void EstablishGpuChannelDone(
 }
 
 GpuServiceImpl::GpuServiceImpl(
-    mojo::InterfaceRequest<mojom::GpuService> request,
-    shell::Connection* connection)
+    mojo::InterfaceRequest<mojom::GpuService> request)
     : binding_(this, std::move(request)) {}
 
 GpuServiceImpl::~GpuServiceImpl() {}

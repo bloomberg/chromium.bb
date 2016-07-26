@@ -50,7 +50,8 @@ void Init::StopServicesForUser(const mojo::String& user_id) {
     user_services_.erase(it);
 }
 
-void Init::Create(shell::Connection* connection, mojom::InitRequest request) {
+void Init::Create(const shell::Identity& remote_identity,
+                  mojom::InitRequest request) {
   init_bindings_.AddBinding(this, std::move(request));
 }
 

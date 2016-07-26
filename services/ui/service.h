@@ -90,13 +90,13 @@ class Service
 
   void InitializeResources(shell::Connector* connector);
 
-  // Returns the user specific state for the user id of |connection|. Service
-  // owns the return value.
+  // Returns the user specific state for the user id of |remote_identity|.
+  // Service owns the return value.
   // TODO(sky): if we allow removal of user ids then we need to close anything
   // associated with the user (all incoming pipes...) on removal.
-  UserState* GetUserState(shell::Connection* connection);
+  UserState* GetUserState(const shell::Identity& remote_identity);
 
-  void AddUserIfNecessary(shell::Connection* connection);
+  void AddUserIfNecessary(const shell::Identity& remote_identity);
 
   // shell::Service:
   void OnStart(shell::Connector* connector,
@@ -111,48 +111,48 @@ class Service
   void CreateDefaultDisplays() override;
 
   // shell::InterfaceFactory<mojom::AccessibilityManager> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::AccessibilityManagerRequest request) override;
 
   // shell::InterfaceFactory<mojom::Clipboard> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::ClipboardRequest request) override;
 
   // shell::InterfaceFactory<mojom::DisplayManager> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::DisplayManagerRequest request) override;
 
   // shell::InterfaceFactory<mojom::Gpu> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::GpuRequest request) override;
 
   // shell::InterfaceFactory<mojom::GpuService> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::GpuServiceRequest request) override;
 
   // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::UserAccessManagerRequest request) override;
 
   // shell::InterfaceFactory<mojom::UserActivityMonitor> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::UserActivityMonitorRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>
   // implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::WindowManagerWindowTreeFactoryRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowTreeFactory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::WindowTreeFactoryRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowTreeHostFactory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::WindowTreeHostFactoryRequest request) override;
 
   // shell::InterfaceFactory<mojom::WindowServerTest> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::WindowServerTestRequest request) override;
 
   // Callback for display configuration. |id| is the identifying token for the

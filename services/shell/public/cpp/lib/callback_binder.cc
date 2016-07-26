@@ -15,7 +15,7 @@ GenericCallbackBinder::GenericCallbackBinder(
 GenericCallbackBinder::~GenericCallbackBinder() {}
 
 void GenericCallbackBinder::BindInterface(
-    Connection* connection,
+    const Identity& remote_identity,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
   if (task_runner_) {

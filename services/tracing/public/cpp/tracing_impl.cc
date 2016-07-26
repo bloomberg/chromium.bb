@@ -67,7 +67,7 @@ void TracingImpl::Initialize(shell::Connector* connector,
 #endif
 }
 
-void TracingImpl::Create(shell::Connection* connection,
+void TracingImpl::Create(const shell::Identity& remote_identity,
                          tracing::TraceProviderRequest request) {
   provider_impl_.Bind(std::move(request));
 }

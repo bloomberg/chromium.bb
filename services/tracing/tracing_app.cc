@@ -50,13 +50,13 @@ bool TracingApp::OnStop() {
   return false;
 }
 
-void TracingApp::Create(shell::Connection* connection,
+void TracingApp::Create(const shell::Identity& remote_identity,
                         mojo::InterfaceRequest<TraceCollector> request) {
   collector_binding_.Bind(std::move(request));
 }
 
 void TracingApp::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
   startup_performance_data_collector_bindings_.AddBinding(this,
                                                           std::move(request));

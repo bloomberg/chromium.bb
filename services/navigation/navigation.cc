@@ -49,7 +49,7 @@ bool Navigation::OnConnect(shell::Connection* connection,
   return true;
 }
 
-void Navigation::Create(shell::Connection* connection,
+void Navigation::Create(const shell::Identity& remote_identity,
                         mojom::ViewFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
   refs_.insert(ref_factory_.CreateRef());

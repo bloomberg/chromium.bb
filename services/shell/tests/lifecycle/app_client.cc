@@ -19,7 +19,7 @@ bool AppClient::OnConnect(Connection* connection) {
   return true;
 }
 
-void AppClient::Create(Connection* connection,
+void AppClient::Create(const Identity& remote_identity,
                        LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

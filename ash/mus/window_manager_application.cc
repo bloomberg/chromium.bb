@@ -127,7 +127,7 @@ bool WindowManagerApplication::OnConnect(shell::Connection* connection) {
 }
 
 void WindowManagerApplication::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::ShelfLayout> request) {
   // TODO(msw): Handle multiple shelves (one per display).
   if (!window_manager_->GetRootWindowControllers().empty()) {
@@ -138,7 +138,7 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::UserWindowController> request) {
   if (!window_manager_->GetRootWindowControllers().empty()) {
     user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
@@ -149,7 +149,7 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request) {
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.

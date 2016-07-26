@@ -108,7 +108,7 @@ class Driver : public shell::Service,
   }
 
   // shell::InterfaceFactory<Driver>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               shell::test::mojom::DriverRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

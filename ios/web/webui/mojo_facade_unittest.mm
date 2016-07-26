@@ -15,6 +15,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/test/mojo_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #import "testing/gtest_mac.h"
@@ -50,7 +51,7 @@ class TestUIHandlerFactory : public shell::InterfaceFactory<TestUIHandlerMojo> {
 
  private:
   // shell::InterfaceFactory overrides.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<TestUIHandlerMojo> request) override {}
 };
 

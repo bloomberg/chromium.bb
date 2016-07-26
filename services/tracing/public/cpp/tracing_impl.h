@@ -29,7 +29,7 @@ class TracingImpl : public shell::InterfaceFactory<tracing::TraceProvider> {
 
  private:
   // InterfaceFactory<tracing::TraceProvider> implementation.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               tracing::TraceProviderRequest request) override;
 
   std::unique_ptr<shell::Connection> connection_;

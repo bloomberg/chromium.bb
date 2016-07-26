@@ -59,7 +59,7 @@ class DefaultService : public shell::Service,
   }
 
   // shell::InterfaceFactory<ServiceFactory>
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<ServiceFactory> request) override {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }

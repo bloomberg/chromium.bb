@@ -37,7 +37,7 @@ class ViewsExamplesApplicationDelegate
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
 
   // shell::InterfaceFactory<mash::mojom::Launchable>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mash::mojom::LaunchableRequest request) override;
 
   mojo::BindingSet<mash::mojom::Launchable> bindings_;

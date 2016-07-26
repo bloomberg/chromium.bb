@@ -47,7 +47,7 @@ class ShellTestClient
 
   // InterfaceFactory<test::mojom::CreateInstanceTest>:
   void Create(
-      Connection* connection,
+      const Identity& remote_identity,
       test::mojom::CreateInstanceTestRequest request) override {
     binding_.Bind(std::move(request));
   }

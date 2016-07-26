@@ -198,7 +198,7 @@ void QuickLaunchApplication::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void QuickLaunchApplication::Create(shell::Connection* connection,
+void QuickLaunchApplication::Create(const shell::Identity& remote_identity,
                                     mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

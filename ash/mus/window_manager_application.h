@@ -72,16 +72,16 @@ class WindowManagerApplication
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::ShelfLayout>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::ShelfLayout> request) override;
 
   // shell::InterfaceFactory<mojom::UserWindowController>:
   void Create(
-      shell::Connection* connection,
+      const shell::Identity& remote_identity,
       mojo::InterfaceRequest<mojom::UserWindowController> request) override;
 
   // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request)
       override;
 

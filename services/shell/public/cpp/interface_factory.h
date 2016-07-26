@@ -9,7 +9,7 @@
 
 namespace shell {
 
-class Connection;
+class Identity;
 
 // Implement this class to provide implementations of a given interface and
 // bind them to incoming requests. The implementation of this class is
@@ -19,7 +19,7 @@ template <typename Interface>
 class InterfaceFactory {
  public:
   virtual ~InterfaceFactory() {}
-  virtual void Create(Connection* connection,
+  virtual void Create(const Identity& remote_identity,
                       mojo::InterfaceRequest<Interface> request) = 0;
 };
 

@@ -294,7 +294,7 @@ class ServiceManager::Instance
   }
 
   // InterfaceFactory<mojom::ServiceManager>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               mojom::ServiceManagerRequest request) override {
     service_manager_bindings_.AddBinding(this, std::move(request));
   }

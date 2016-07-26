@@ -51,9 +51,9 @@ bool FileSystemApp::OnConnect(shell::Connection* connection) {
 }
 
 // |InterfaceFactory<Files>| implementation:
-void FileSystemApp::Create(shell::Connection* connection,
+void FileSystemApp::Create(const shell::Identity& remote_identity,
                            mojo::InterfaceRequest<mojom::FileSystem> request) {
-  new FileSystemImpl(connection, std::move(request), GetUserDataDir(),
+  new FileSystemImpl(remote_identity, std::move(request), GetUserDataDir(),
                      lock_table_);
 }
 

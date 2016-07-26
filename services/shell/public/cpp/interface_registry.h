@@ -17,6 +17,7 @@
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace shell {
+class Connection;
 class InterfaceBinder;
 
 // An implementation of mojom::InterfaceProvider that allows the user to

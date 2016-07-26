@@ -52,7 +52,7 @@ class InputDeviceServer
   void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
 
   // mojo::InterfaceFactory<mojom::InputDeviceServer>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::InputDeviceServerRequest request) override;
 
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;

@@ -39,7 +39,7 @@ void ViewsExamplesApplicationDelegate::Launch(uint32_t what,
 }
 
 void ViewsExamplesApplicationDelegate::Create(
-    shell::Connection* connection,
+    const shell::Identity& remote_identity,
     mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

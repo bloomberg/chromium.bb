@@ -516,7 +516,7 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void WindowTypeLauncher::Create(shell::Connection* connection,
+void WindowTypeLauncher::Create(const shell::Identity& remote_identity,
                                 mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

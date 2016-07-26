@@ -38,7 +38,7 @@ class Target : public shell::Service,
   }
 
   // shell::InterfaceFactory<ConnectTestService>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

@@ -199,7 +199,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void CatalogViewer::Create(shell::Connection* connection,
+void CatalogViewer::Create(const shell::Identity& remote_identity,
                            mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

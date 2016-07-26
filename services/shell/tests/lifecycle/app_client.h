@@ -40,7 +40,8 @@ class AppClient : public Service,
   bool OnConnect(Connection* connection) override;
 
   // InterfaceFactory<LifecycleControl>:
-  void Create(Connection* connection, LifecycleControlRequest request) override;
+  void Create(const Identity& remote_identity,
+              LifecycleControlRequest request) override;
 
   // LifecycleControl:
   void Ping(const PingCallback& callback) override;

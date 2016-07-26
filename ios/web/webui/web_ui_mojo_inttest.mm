@@ -17,6 +17,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -68,7 +69,7 @@ class TestUIHandler : public TestUIHandlerMojo,
 
  private:
   // shell::InterfaceFactory overrides.
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<TestUIHandlerMojo> request) override {
     bindings_.AddBinding(this, std::move(request));
   }

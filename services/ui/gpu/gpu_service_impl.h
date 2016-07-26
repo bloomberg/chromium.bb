@@ -10,16 +10,11 @@
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
-namespace shell {
-class Connection;
-}
-
 namespace ui {
 
 class GpuServiceImpl : public mojom::GpuService {
  public:
-  GpuServiceImpl(mojo::InterfaceRequest<mojom::GpuService> request,
-                 shell::Connection* connection);
+  GpuServiceImpl(mojo::InterfaceRequest<mojom::GpuService> request);
   ~GpuServiceImpl() override;
 
   // mojom::GpuService overrides:

@@ -16,7 +16,7 @@ class TestBinder : public InterfaceBinder {
  public:
   explicit TestBinder(int* delete_count) : delete_count_(delete_count) {}
   ~TestBinder() override { (*delete_count_)++; }
-  void BindInterface(Connection* connection,
+  void BindInterface(const shell::Identity& remote_identity,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle client_handle) override {}
 

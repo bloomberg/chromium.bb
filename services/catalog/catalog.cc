@@ -111,26 +111,24 @@ bool Catalog::OnConnect(shell::Connection* connection) {
   return true;
 }
 
-void Catalog::Create(shell::Connection* connection,
+void Catalog::Create(const shell::Identity& remote_identity,
                      shell::mojom::ResolverRequest request) {
-  Instance* instance =
-      GetInstanceForUserId(connection->GetRemoteIdentity().user_id());
+  Instance* instance = GetInstanceForUserId(remote_identity.user_id());
   instance->BindResolver(std::move(request));
 }
 
-void Catalog::Create(shell::Connection* connection,
+void Catalog::Create(const shell::Identity& remote_identity,
                      mojom::CatalogRequest request) {
-  Instance* instance =
-      GetInstanceForUserId(connection->GetRemoteIdentity().user_id());
+  Instance* instance = GetInstanceForUserId(remote_identity.user_id());
   instance->BindCatalog(std::move(request));
 }
 
-void Catalog::Create(shell::Connection* connection,
+void Catalog::Create(const shell::Identity& remote_identity,
                      filesystem::mojom::DirectoryRequest request) {
   if (!lock_table_)
     lock_table_ = new filesystem::LockTable;
   base::FilePath resources_path =
-      GetPathForApplicationName(connection->GetRemoteIdentity().name());
+      GetPathForApplicationName(remote_identity.name());
   new filesystem::DirectoryImpl(std::move(request), resources_path,
                                 scoped_refptr<filesystem::SharedTempDir>(),
                                 lock_table_);

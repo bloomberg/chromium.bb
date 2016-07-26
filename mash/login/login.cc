@@ -166,7 +166,7 @@ class Login : public shell::Service,
   }
 
   // shell::InterfaceFactory<mojom::Login>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::LoginRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }

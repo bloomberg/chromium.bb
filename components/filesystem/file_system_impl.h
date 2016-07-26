@@ -17,7 +17,7 @@ class FilePath;
 }
 
 namespace shell {
-class Connection;
+class Identity;
 }
 
 namespace filesystem {
@@ -30,7 +30,7 @@ class FileSystemImpl : public mojom::FileSystem {
  public:
   // |persistent_dir| is the directory served to callers of
   // |OpenPersistentFileSystem().
-  FileSystemImpl(shell::Connection* connection,
+  FileSystemImpl(const shell::Identity& remote_identity,
                  mojo::InterfaceRequest<mojom::FileSystem> request,
                  base::FilePath persistent_dir,
                  scoped_refptr<LockTable> lock_table);

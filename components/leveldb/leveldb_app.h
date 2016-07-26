@@ -29,7 +29,7 @@ class LevelDBApp : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<mojom::LevelDBService>| implementation:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;

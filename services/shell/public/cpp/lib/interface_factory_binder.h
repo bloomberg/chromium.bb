@@ -21,10 +21,10 @@ class InterfaceFactoryBinder : public InterfaceBinder {
       : factory_(factory) {}
    ~InterfaceFactoryBinder() override {}
 
-   void BindInterface(Connection* connection,
+   void BindInterface(const Identity& remote_identity,
                       const std::string& interface_name,
                       mojo::ScopedMessagePipeHandle client_handle) override {
-     factory_->Create(connection,
+     factory_->Create(remote_identity,
                       mojo::MakeRequest<Interface>(std::move(client_handle)));
   }
 

@@ -103,7 +103,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   }
 }
 
-void TouchHudApplication::Create(shell::Connection* connection,
+void TouchHudApplication::Create(const shell::Identity& remote_identity,
                                  mash::mojom::LaunchableRequest request) {
   binding_.Bind(std::move(request));
 }

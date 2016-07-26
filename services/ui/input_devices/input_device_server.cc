@@ -102,7 +102,7 @@ void InputDeviceServer::SendDeviceListsComplete(
       manager_->GetMouseDevices(), manager_->GetTouchpadDevices());
 }
 
-void InputDeviceServer::Create(shell::Connection* connection,
+void InputDeviceServer::Create(const shell::Identity& remote_identity,
                                mojom::InputDeviceServerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

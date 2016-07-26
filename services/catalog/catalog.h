@@ -67,15 +67,15 @@ class Catalog : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<shell::mojom::Resolver>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               shell::mojom::ResolverRequest request) override;
 
   // shell::InterfaceFactory<mojom::Catalog>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojom::CatalogRequest request) override;
 
   // shell::InterfaceFactory<filesystem::mojom::Directory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               filesystem::mojom::DirectoryRequest request) override;
 
   Instance* GetInstanceForUserId(const std::string& user_id);

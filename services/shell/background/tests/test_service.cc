@@ -29,7 +29,7 @@ class TestClient : public Service,
   }
 
   // InterfaceFactory<mojom::TestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               mojo::InterfaceRequest<mojom::TestService> request) override {
     bindings_.AddBinding(this, std::move(request));
   }

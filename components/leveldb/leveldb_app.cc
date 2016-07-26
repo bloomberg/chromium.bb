@@ -25,7 +25,7 @@ bool LevelDBApp::OnConnect(shell::Connection* connection) {
   return true;
 }
 
-void LevelDBApp::Create(shell::Connection* connection,
+void LevelDBApp::Create(const shell::Identity& remote_identity,
                         leveldb::mojom::LevelDBServiceRequest request) {
   if (!service_)
     service_.reset(

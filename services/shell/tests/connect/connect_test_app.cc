@@ -86,25 +86,25 @@ class ConnectTestApp : public Service,
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::StandaloneApp>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::StandaloneAppRequest request) override {
     standalone_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::BlockedInterface>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::BlockedInterfaceRequest request) override {
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::UserIdTest>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::UserIdTestRequest request) override {
     user_id_test_bindings_.AddBinding(this, std::move(request));
   }

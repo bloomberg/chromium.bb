@@ -57,7 +57,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
   }
 
   // shell::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>:
-  void Create(shell::Connection* connection,
+  void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::RenderWidgetWindowTreeClientFactory>
                   request) override {
     bindings_.AddBinding(this, std::move(request));

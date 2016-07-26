@@ -47,13 +47,13 @@ class ConnectTestClassApp
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::ClassInterface>:
-  void Create(Connection* connection,
+  void Create(const Identity& remote_identity,
               test::mojom::ClassInterfaceRequest request) override {
     class_interface_bindings_.AddBinding(this, std::move(request));
   }
