@@ -211,6 +211,11 @@ class PortTest(unittest.TestCase):
             [('/tmp/local-baselines', 'fast/test-expected.txt')])
         self.assertEqual(port.baseline_path(), '/foo')
 
+        # Flag-specific baseline directory
+        port._options.additional_platform_directory = []
+        port._options.additional_driver_flag = ['--special-flag']
+        self.assertEqual(port.baseline_path(), '/mock-checkout/third_party/WebKit/LayoutTests/flag-specific/special-flag')
+
     def test_nonexistant_expectations(self):
         port = self.make_port(port_name='foo')
         port.expectations_files = lambda: ['/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations',

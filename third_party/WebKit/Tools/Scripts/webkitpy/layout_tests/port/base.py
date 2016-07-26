@@ -300,7 +300,10 @@ class Port(object):
         return [self._filesystem.join(path, suite.name) for path in self.default_baseline_search_path()]
 
     def baseline_search_path(self):
-        return self.get_option('additional_platform_directory', []) + self._compare_baseline() + self.default_baseline_search_path()
+        return (self.get_option('additional_platform_directory', []) +
+                self._flag_specific_baseline_search_path() +
+                self._compare_baseline() +
+                self.default_baseline_search_path())
 
     def default_baseline_search_path(self):
         """Return a list of absolute paths to directories to search under for
@@ -1263,6 +1266,11 @@ class Port(object):
 
     def _flag_specific_expectations_files(self):
         return [self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
+                for flag in self.get_option('additional_driver_flag', [])]
+
+    def _flag_specific_baseline_search_path(self):
+        # TODO(skobes): Baselines specific to both flag and platform?
+        return [self._filesystem.join(self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
                 for flag in self.get_option('additional_driver_flag', [])]
 
     def expectations_dict(self):
