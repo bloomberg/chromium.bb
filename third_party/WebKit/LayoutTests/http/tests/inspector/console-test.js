@@ -368,6 +368,14 @@ InspectorTest.waitUntilMessageReceived = function(callback)
     InspectorTest.addSniffer(InspectorTest.consoleModel, "addMessage", callback, false);
 }
 
+InspectorTest.waitUntilMessageReceivedPromise = function()
+{
+    var callback;
+    var promise = new Promise((fullfill) => callback = fullfill);
+    InspectorTest.waitUntilMessageReceived(callback);
+    return promise;
+}
+
 InspectorTest.waitUntilNthMessageReceived = function(count, callback)
 {
     function override()
@@ -378,6 +386,14 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
             InspectorTest.addSniffer(InspectorTest.consoleModel, "addMessage", override, false);
     }
     InspectorTest.addSniffer(InspectorTest.consoleModel, "addMessage", override, false);
+}
+
+InspectorTest.waitUntilNthMessageReceivedPromise = function(count)
+{
+    var callback;
+    var promise = new Promise((fullfill) => callback = fullfill);
+    InspectorTest.waitUntilNthMessageReceived(count, callback);
+    return promise;
 }
 
 InspectorTest.changeExecutionContext = function(namePrefix)
