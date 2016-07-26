@@ -95,6 +95,9 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
     const ChosenObjectInfoList& chosen_object_info_list) {
   // TODO(reillyg): Display the contents of |chosen_object_info_list|.
   // https://crbug.com/424667.
+  STLDeleteContainerPointers(chosen_object_info_list.begin(),
+                             chosen_object_info_list.end());
+
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // On Android, we only want to display a subset of the available options in a
