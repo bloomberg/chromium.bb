@@ -167,8 +167,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 3, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectSmallerTotal DISABLED_WebAppBannerCreatedDirectSmallerTotal
+#else
+#define MAYBE_WebAppBannerCreatedDirectSmallerTotal WebAppBannerCreatedDirectSmallerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectSmallerTotal) {
+                       MAYBE_WebAppBannerCreatedDirectSmallerTotal) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
                 0, true);
@@ -214,8 +220,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 ui::PAGE_TRANSITION_GENERATED, 5, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectMultipleSmallerTotal DISABLED_WebAppBannerCreatedDirectMultipleSmallerTotal
+#else
+#define MAYBE_WebAppBannerCreatedDirectMultipleSmallerTotal WebAppBannerCreatedDirectMultipleSmallerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectMultipleSmallerTotal) {
+                       MAYBE_WebAppBannerCreatedDirectMultipleSmallerTotal) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
   RunBannerTest("/banners/manifest_test_page.html",
@@ -416,7 +428,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 false);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerIndirect) {
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_CancelBannerIndirect DISABLED_CancelBannerIndirect
+#else
+#define MAYBE_CancelBannerIndirect CancelBannerIndirect
+#endif
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_CancelBannerIndirect) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 3,
                 false);
