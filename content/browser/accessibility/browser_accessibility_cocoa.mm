@@ -868,7 +868,7 @@ bool InitializeAccessibilityTreeSearch(
   if (![self instanceActive])
     return nil;
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, ui::AX_STATE_ENABLED)];
+      !GetState(browserAccessibility_, ui::AX_STATE_DISABLED)];
 }
 
 // Returns a text marker that points to the last character in the document that

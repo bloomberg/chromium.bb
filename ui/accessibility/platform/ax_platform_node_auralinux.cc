@@ -443,7 +443,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
   if (state & (1 << ui::AX_STATE_EDITABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EDITABLE);
-  if (state & (1 << ui::AX_STATE_ENABLED))
+  if (!(state & (1 << ui::AX_STATE_DISABLED)))
     atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
   if (state & (1 << ui::AX_STATE_EXPANDED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);

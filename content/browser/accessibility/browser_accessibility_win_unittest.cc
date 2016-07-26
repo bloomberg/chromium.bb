@@ -732,7 +732,6 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   CountedBrowserAccessibility::reset();
   const int32_t busy_state = 1 << ui::AX_STATE_BUSY;
   const int32_t readonly_state = 1 << ui::AX_STATE_READ_ONLY;
-  const int32_t enabled_state = 1 << ui::AX_STATE_ENABLED;
   std::unique_ptr<BrowserAccessibilityManager> manager(
       new BrowserAccessibilityManagerWin(
           BrowserAccessibilityManagerWin::GetEmptyDocument(), nullptr,
@@ -742,7 +741,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->GetId());
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
-  EXPECT_EQ(busy_state | readonly_state | enabled_state, root->GetState());
+  EXPECT_EQ(busy_state | readonly_state, root->GetState());
 
   // Tree with a child textfield.
   ui::AXNodeData tree1_1;
@@ -822,9 +821,7 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->GetId());
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
-  EXPECT_EQ(1 << ui::AX_STATE_BUSY |
-            1 << ui::AX_STATE_READ_ONLY |
-            1 << ui::AX_STATE_ENABLED,
+  EXPECT_EQ(1 << ui::AX_STATE_BUSY | 1 << ui::AX_STATE_READ_ONLY,
             root->GetState());
 
   int32_t unique_id = ToBrowserAccessibilityWin(root)->unique_id();

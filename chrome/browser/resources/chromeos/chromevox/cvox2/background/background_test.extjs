@@ -1104,3 +1104,12 @@ TEST_F('BackgroundTest', 'MissingTableCells', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'DisabledState', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <button aria-disabled="true">ok</button>
+  */}, function(root) {
+    mockFeedback.expectSpeech('ok', 'Disabled', 'Button').replay();
+  });
+});

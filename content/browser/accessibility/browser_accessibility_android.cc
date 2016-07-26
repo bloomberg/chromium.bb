@@ -195,7 +195,7 @@ bool BrowserAccessibilityAndroid::IsEditableText() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
-  return HasState(ui::AX_STATE_ENABLED);
+  return !HasState(ui::AX_STATE_DISABLED);
 }
 
 bool BrowserAccessibilityAndroid::IsFocusable() const {

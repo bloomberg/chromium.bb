@@ -258,7 +258,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
   ui::AXNodeData* node = new ui::AXNodeData();
   node->id = render_accessibility->GenerateAXID();
   node->role = role;
-  node->state = 1 << ui::AX_STATE_ENABLED | 1 << ui::AX_STATE_READ_ONLY;
+  node->state = 1 << ui::AX_STATE_READ_ONLY;
   nodes_.push_back(base::WrapUnique(node));
   return node;
 }

@@ -64,8 +64,8 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.isEditable())
     state |= (1 << ui::AX_STATE_EDITABLE);
 
-  if (o.isEnabled())
-    state |= (1 << ui::AX_STATE_ENABLED);
+  if (!o.isEnabled())
+    state |= (1 << ui::AX_STATE_DISABLED);
 
   if (o.isSelected())
     state |= (1 << ui::AX_STATE_SELECTED);

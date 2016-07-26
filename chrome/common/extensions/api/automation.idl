@@ -188,9 +188,8 @@
     checked,
     collapsed,
     default,
-    disabled,  // ui/views only
+    disabled,
     editable,
-    enabled,   // content only
     expanded,
     focusable,
     focused,
@@ -263,8 +262,8 @@
 
     // A map of $(ref:automation.StateType) to boolean, indicating for each
     // state whether it should be set or not. For example:
-    // <code>{ StateType.enabled: false }</code> would only match if
-    // <code>StateType.enabled</code> was <em>not</em> present in the node's
+    // <code>{ StateType.disabled: false }</code> would only match if
+    // <code>StateType.disabled</code> was <em>not</em> present in the node's
     // <code>state</code> object.
     object? state;
 

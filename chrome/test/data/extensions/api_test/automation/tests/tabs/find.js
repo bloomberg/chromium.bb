@@ -42,12 +42,13 @@ function initializeNodes(rootNode) {
   okButton = anonGroup.firstChild;
   assertEq(RoleType.button, okButton.role);
   assertEq('Ok', okButton.name);
-  assertFalse(StateType.enabled in okButton.state);
+  assertTrue(StateType.disabled in okButton.state);
+  assertTrue(okButton.state.disabled);
 
   cancelButton = anonGroup.lastChild;
   assertEq(RoleType.button, cancelButton.role);
   assertEq('Cancel', cancelButton.name);
-  assertTrue(StateType.enabled in cancelButton.state);
+  assertFalse(StateType.disabled in cancelButton.state);
 }
 
 var allTests = [
@@ -96,21 +97,21 @@ var allTests = [
 
     // Find disabled buttons.
     assertEq(okButton, rootNode.find({ role: RoleType.button,
-                                       state: { enabled: false }}));
+                                       state: { disabled: true }}));
     assertEq([okButton], rootNode.findAll({ role: RoleType.button,
-                                            state: { enabled: false }}));
+                                            state: { disabled: true }}));
 
     // Find disabled buttons within a portion of the tree.
     assertEq(okButton, anonGroup.find({ role: RoleType.button,
-                                       state: { enabled: false }}));
+                                       state: { disabled: true }}));
     assertEq([okButton], anonGroup.findAll({ role: RoleType.button,
-                                            state: { enabled: false }}));
+                                            state: { disabled: true }}));
 
     // Find enabled buttons.
     assertEq(cancelButton, rootNode.find({ role: RoleType.button,
-                                           state: { enabled: true }}));
+                                           state: { disabled: false }}));
     assertEq([cancelButton], rootNode.findAll({ role: RoleType.button,
-                                                state: { enabled: true }}));
+                                                state: { disabled: false }}));
     chrome.test.succeed();
   },
 

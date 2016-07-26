@@ -19,7 +19,7 @@ var allTests = [
 
     var state = RemoveUntestedStates(rootNode.state);
     assertEq(
-        {enabled: true, focusable: true, readOnly: true, focused: true},
+        {focusable: true, readOnly: true, focused: true},
         state);
 
     var children = rootNode.children;
@@ -28,23 +28,23 @@ var allTests = [
     var body = children[0];
     assertEq('body', body.htmlTag);
     state = RemoveUntestedStates(body.state);
-    assertEq({enabled: true, readOnly: true}, state);
+    assertEq({readOnly: true}, state);
 
     var contentChildren = body.children;
     assertEq(3, contentChildren.length);
     var okButton = contentChildren[0];
     assertEq('Ok', okButton.name);
     state = RemoveUntestedStates(okButton.state);
-    assertEq({enabled: true, focusable: true, readOnly: true}, state);
+    assertEq({focusable: true, readOnly: true}, state);
     var userNameInput = contentChildren[1];
     assertEq('Username', userNameInput.name);
     state = RemoveUntestedStates(userNameInput.state);
-    assertEq({editable: true, enabled: true, focusable: true}, state);
+    assertEq({editable: true, focusable: true}, state);
     var cancelButton = contentChildren[2];
     assertEq('Cancel',
              cancelButton.name);
     state = RemoveUntestedStates(cancelButton.state);
-    assertEq({enabled: true, focusable: true, readOnly: true}, state);
+    assertEq({focusable: true, readOnly: true}, state);
 
     // Traversal.
     assertEq(undefined, rootNode.parent);

@@ -362,6 +362,11 @@ Output.STATE_INFO_ = {
       msgId: 'aria_expanded_true'
     }
   },
+  disabled: {
+    on: {
+      msgId: 'aria_disabled_true'
+    }
+  },
   expanded: {
     on: {
       msgId: 'aria_expanded_true'
@@ -543,7 +548,7 @@ Output.RULES = {
     },
     textField: {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
-          '$inputType, $inputType, $role)) $description',
+          '$inputType, $inputType, $role)) $description $state',
       braille: ''
     },
     toggleButton: {

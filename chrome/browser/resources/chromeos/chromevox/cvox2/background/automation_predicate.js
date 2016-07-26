@@ -318,7 +318,8 @@ AutomationPredicate.checkable = function(node) {
   return node.role == RoleType.checkBox ||
       node.role == RoleType.radioButton ||
       node.role == RoleType.menuItemCheckBox ||
-      node.role == RoleType.menuItemRadio;
+      node.role == RoleType.menuItemRadio ||
+      node.role == RoleType.treeItem;
 };
 
 // Table related predicates.

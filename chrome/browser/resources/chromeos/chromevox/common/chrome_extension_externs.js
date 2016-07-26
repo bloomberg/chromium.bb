@@ -205,7 +205,6 @@ chrome.automation.StateType = {
   default: '',
   disabled: '',
   editable: '',
-  enabled: '',
   expanded: '',
   focusable: '',
   focused: '',

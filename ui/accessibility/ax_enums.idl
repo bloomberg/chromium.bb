@@ -195,16 +195,13 @@
     window
   };
 
-  // TODO(dmazzoni): switch content/ to use AX_STATE_DISABLED instead of
-  // !AX_STATE_ENABLED.
   enum AXState {
     busy,
     checked,
     collapsed,
     default,
-    disabled,  // ui/views only
+    disabled,
     editable,
-    enabled,   // content only
     expanded,
     focusable,
     haspopup,
