@@ -593,10 +593,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel without ANGLE only
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
-    self.Fail('deqp/functional/gles3/fbocompleteness.html',
-        ['linux', 'intel', 'no_angle'], bug=598902)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -616,8 +612,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/3d*',
         ['linux', 'amd'], bug=606114)
-    self.Fail('deqp/functional/gles3/fbocompleteness.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/lifetime.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
