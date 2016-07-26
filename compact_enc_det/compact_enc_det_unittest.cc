@@ -4799,15 +4799,25 @@ TEST_F(CompactEncDetTest, EasyTests) {
   // Ascii7 and seven-bit CJK and Unicode encodings
   EXPECT_EQ(JAPANESE_JIS,
             TestCompactEncDet(kTeststr12, strlen(kTeststr12), "JAPANESE_JIS"));
+#if defined(HTML5_MODE)
+  EXPECT_EQ(ASCII_7BIT,
+            TestCompactEncDet(kTeststr44, strlen(kTeststr44), "ASCII_7BIT"));
+  EXPECT_EQ(ASCII_7BIT,
+            TestCompactEncDet(kTeststr48, strlen(kTeststr48), "ASCII_7BIT"));
+  EXPECT_EQ(ASCII_7BIT,
+            TestCompactEncDet(kTeststr54, strlen(kTeststr54), "ASCII_7BIT"));
+  EXPECT_EQ(ASCII_7BIT,
+            TestCompactEncDet(kTeststr62, strlen(kTeststr62), "ASCII_7BIT"));
+#else
   EXPECT_EQ(ISO_2022_KR,
             TestCompactEncDet(kTeststr44, strlen(kTeststr44), "ISO_2022_KR"));
   EXPECT_EQ(ISO_2022_CN,
             TestCompactEncDet(kTeststr48, strlen(kTeststr48), "ISO_2022_CN"));
   EXPECT_EQ(UTF7,
             TestCompactEncDet(kTeststr54, strlen(kTeststr54), "UTF7"));
-
   EXPECT_EQ(HZ_GB_2312,
             TestCompactEncDet(kTeststr62, strlen(kTeststr62), "HZ_GB_2312"));
+#endif
 
   TestUTF8UTF8(kTeststr63, UTF8, "UTF8UTF8");
 

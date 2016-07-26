@@ -5645,6 +5645,23 @@ Encoding CompactEncDet::DetectEncoding(
     while (doing_used--) {printf("doing ");}
     printf("\n");
   }
+
+#if defined(HTML5_MODE)
+  // ISO_2022_JP (JAPANESE_JIS) is the only 7-bit encoding
+  // supported in HTML5 mode. Mark all the other encodings to
+  // ASCII_7BIT.
+  switch (enc) {
+    case ISO_2022_KR:
+    case ISO_2022_CN:
+    case HZ_GB_2312:
+    case UTF7:
+      enc = ASCII_7BIT;
+      break;
+    default:
+      break;
+  }
+#endif
+
   return enc;
 }
 
