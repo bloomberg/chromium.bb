@@ -480,6 +480,8 @@ void V8DebuggerImpl::breakProgramCallback(const v8::FunctionCallbackInfo<v8::Val
 {
     DCHECK_EQ(info.Length(), 2);
     V8DebuggerImpl* thisPtr = toV8DebuggerImpl(info.Data());
+    if (!thisPtr->enabled())
+        return;
     v8::Local<v8::Context> pausedContext = thisPtr->m_isolate->GetCurrentContext();
     v8::Local<v8::Value> exception;
     v8::Local<v8::Array> hitBreakpoints;
@@ -630,8 +632,10 @@ void V8DebuggerImpl::compileDebuggerScript()
 
     v8::Local<v8::String> scriptValue = v8::String::NewFromUtf8(m_isolate, DebuggerScript_js, v8::NewStringType::kInternalized, sizeof(DebuggerScript_js)).ToLocalChecked();
     v8::Local<v8::Value> value;
-    if (!compileAndRunInternalScript(debuggerContext(), scriptValue).ToLocal(&value))
+    if (!compileAndRunInternalScript(debuggerContext(), scriptValue).ToLocal(&value)) {
+        NOTREACHED();
         return;
+    }
     DCHECK(value->IsObject());
     m_debuggerScript.Reset(m_isolate, value.As<v8::Object>());
 }
