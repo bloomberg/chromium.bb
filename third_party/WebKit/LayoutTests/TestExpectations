@@ -1365,6 +1365,7 @@ crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-w
 
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
+crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
 
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 crbug.com/399507 [ Mac10.9 Mac10.10 Linux ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
