@@ -64,38 +64,16 @@ load-plugins=
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once).
 # CHANGED:
+# The "design" disable below disables all of the "too-many-*" checks,
+# e.g. too-many-arguments, too-many-branches.
 disable=
-  invalid-name,
+  design,
   missing-docstring,
-  line-too-long,
-  too-many-lines,
-  bad-inline-option,
   locally-disabled,
-  no-self-use,
-  duplicate-code,
-  too-many-ancestors,
-  too-many-instance-attributes,
-  too-few-public-methods,
-  too-many-public-methods,
-  too-many-return-statements,
-  too-many-branches,
-  too-many-arguments,
-  too-many-locals,
-  too-many-statements,
-  abstract-class-not-used,
-  abstract-class-little-used,
-  exec-used,
-  bad-builtin,
   star-args,
-  protected-access,
   wildcard-import,
-  deprecated-module,
-  reimported,
   fixme,
   global-statement,
-  unused-wildcard-import,
-  broad-except,
-  logging-not-lazy,
 
 
 [REPORTS]
@@ -180,10 +158,10 @@ ignore-docstrings=yes
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=200
+max-line-length=132
 
 # Maximum number of lines in a module
-max-module-lines=1000
+max-module-lines=4000
 
 # String used as indentation unit. This is usually " " (4 spaces) or "\t" (1
 # tab).
@@ -197,10 +175,10 @@ indent-string='    '
 required-attributes=
 
 # List of builtins function names that should not be used, separated by a comma
-bad-functions=map,filter,apply,input
+bad-functions=apply
 
 # Regular expression which should only match correct module names
-module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+)|([a-z-][a-z0-9-]*))$
 
 # Regular expression which should only match correct module level names
 const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
@@ -215,20 +193,20 @@ function-rgx=[a-z_][a-z0-9_]{2,30}$
 method-rgx=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression which should only match correct instance attribute names
-attr-rgx=[a-z_][a-z0-9_]{2,30}$
+attr-rgx=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression which should only match correct argument names
-argument-rgx=[a-z_][a-z0-9_]{2,30}$
+argument-rgx=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression which should only match correct variable names
-variable-rgx=[a-z_][a-z0-9_]{2,30}$
+variable-rgx=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression which should only match correct list comprehension /
 # generator expression variable names
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_
+good-names=i,j,k,ex,Run,_,_log
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
