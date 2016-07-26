@@ -246,6 +246,19 @@ public:
         return GestureTypeFirst <= type && type <= GestureTypeLast;
     }
 
+    bool isSameEventClass(const WebInputEvent& other) const
+    {
+        if (isMouseEventType(type))
+            return isMouseEventType(other.type);
+        if (isGestureEventType(type))
+            return isGestureEventType(other.type);
+        if (isTouchEventType(type))
+            return isTouchEventType(other.type);
+        if (isKeyboardEventType(type))
+            return isKeyboardEventType(other.type);
+        return type == other.type;
+    }
+
 protected:
     explicit WebInputEvent(unsigned sizeParam)
     {

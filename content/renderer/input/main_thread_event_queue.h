@@ -17,41 +17,28 @@
 
 namespace content {
 
-template <typename BaseClass, typename BaseType>
-class EventWithDispatchType : public BaseClass {
+class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
  public:
-  EventWithDispatchType(const BaseType& e,
-                        const ui::LatencyInfo& l,
-                        InputEventDispatchType t)
-      : BaseClass(e, l), type(t) {}
-
-  InputEventDispatchType type;
-  std::deque<uint32_t> eventsToAck;
-
+  EventWithDispatchType(const blink::WebInputEvent& event,
+                        const ui::LatencyInfo& latency,
+                        InputEventDispatchType dispatch_type);
+  ~EventWithDispatchType();
   bool CanCoalesceWith(const EventWithDispatchType& other) const
-      WARN_UNUSED_RESULT {
-    return other.type == type && BaseClass::CanCoalesceWith(other);
-  }
+      WARN_UNUSED_RESULT;
+  void CoalesceWith(const EventWithDispatchType& other);
 
-  void CoalesceWith(const EventWithDispatchType& other) {
-    // If we are blocking and are coalescing touch, make sure to keep
-    // the touch ids that need to be acked.
-    if (type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
-      // We should only have blocking touch events that need coalescing.
-      DCHECK(blink::WebInputEvent::isTouchEventType(other.event.type));
-      eventsToAck.push_back(
-          WebInputEventTraits::GetUniqueTouchEventId(other.event));
-    }
-    BaseClass::CoalesceWith(other);
-  }
+  const std::deque<uint32_t>& eventsToAck() const { return eventsToAck_; }
+  InputEventDispatchType dispatchType() const { return dispatch_type_; }
+
+ private:
+  InputEventDispatchType dispatch_type_;
+
+  // |eventsToAck_| contains the unique touch event id to be acked. If
+  // the events are TouchEvents the value will be 0. More importantly for
+  // those cases the deque ends up containing how many additional ACKs
+  // need to be sent.
+  std::deque<uint32_t> eventsToAck_;
 };
-
-using PendingMouseWheelEvent =
-    EventWithDispatchType<MouseWheelEventWithLatencyInfo,
-                          blink::WebMouseWheelEvent>;
-
-using PendingTouchEvent =
-    EventWithDispatchType<TouchEventWithLatencyInfo, blink::WebTouchEvent>;
 
 class CONTENT_EXPORT MainThreadEventQueueClient {
  public:
@@ -128,14 +115,10 @@ class CONTENT_EXPORT MainThreadEventQueue {
   friend class MainThreadEventQueueTest;
   int routing_id_;
   MainThreadEventQueueClient* client_;
-  WebInputEventQueue<PendingMouseWheelEvent> wheel_events_;
-  WebInputEventQueue<PendingTouchEvent> touch_events_;
+  WebInputEventQueue<EventWithDispatchType> events_;
+  std::unique_ptr<EventWithDispatchType> in_flight_event_;
   bool is_flinging_;
-
-  // TODO(dtapuska): These can be removed when the queues are dequeued
-  // on the main thread. See crbug.com/624021
-  std::unique_ptr<PendingMouseWheelEvent> in_flight_wheel_event_;
-  std::unique_ptr<PendingTouchEvent> in_flight_touch_event_;
+  bool sent_notification_to_main_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };

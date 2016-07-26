@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/common/content_export.h"
+#include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 
@@ -33,6 +34,27 @@ void CONTENT_EXPORT Coalesce(const blink::WebGestureEvent& event_to_coalesce,
                              blink::WebGestureEvent* event);
 
 }  // namespace internal
+
+class ScopedWebInputEventWithLatencyInfo {
+ public:
+  ScopedWebInputEventWithLatencyInfo(const blink::WebInputEvent&,
+                                     const ui::LatencyInfo&);
+
+  ~ScopedWebInputEventWithLatencyInfo();
+
+  bool CanCoalesceWith(const ScopedWebInputEventWithLatencyInfo& other) const
+      WARN_UNUSED_RESULT;
+
+  const blink::WebInputEvent& event() const;
+  blink::WebInputEvent& event();
+  const ui::LatencyInfo latencyInfo() const { return latency_; }
+
+  void CoalesceWith(const ScopedWebInputEventWithLatencyInfo& other);
+
+ private:
+  ScopedWebInputEvent event_;
+  mutable ui::LatencyInfo latency_;
+};
 
 template <typename T>
 class EventWithLatencyInfo {

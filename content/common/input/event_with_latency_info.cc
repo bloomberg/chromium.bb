@@ -6,6 +6,7 @@
 
 #include <bitset>
 #include <limits>
+#include "content/common/input/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -194,5 +195,100 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
   }
 }
 
+bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
+                 const blink::WebInputEvent& event) {
+  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isGestureEventType(event.type)) {
+    return CanCoalesce(
+        static_cast<const blink::WebGestureEvent&>(event_to_coalesce),
+        static_cast<const blink::WebGestureEvent&>(event));
+  }
+  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isMouseEventType(event.type)) {
+    return CanCoalesce(
+        static_cast<const blink::WebMouseEvent&>(event_to_coalesce),
+        static_cast<const blink::WebMouseEvent&>(event));
+  }
+  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isTouchEventType(event.type)) {
+    return CanCoalesce(
+        static_cast<const blink::WebTouchEvent&>(event_to_coalesce),
+        static_cast<const blink::WebTouchEvent&>(event));
+  }
+  if (event_to_coalesce.type == blink::WebInputEvent::MouseWheel &&
+      event.type == blink::WebInputEvent::MouseWheel) {
+    return CanCoalesce(
+        static_cast<const blink::WebMouseWheelEvent&>(event_to_coalesce),
+        static_cast<const blink::WebMouseWheelEvent&>(event));
+  }
+  return false;
+}
+
+void Coalesce(const blink::WebInputEvent& event_to_coalesce,
+              blink::WebInputEvent* event) {
+  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isGestureEventType(event->type)) {
+    Coalesce(static_cast<const blink::WebGestureEvent&>(event_to_coalesce),
+             static_cast<blink::WebGestureEvent*>(event));
+    return;
+  }
+  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isMouseEventType(event->type)) {
+    Coalesce(static_cast<const blink::WebMouseEvent&>(event_to_coalesce),
+             static_cast<blink::WebMouseEvent*>(event));
+    return;
+  }
+  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type) &&
+      blink::WebInputEvent::isTouchEventType(event->type)) {
+    Coalesce(static_cast<const blink::WebTouchEvent&>(event_to_coalesce),
+             static_cast<blink::WebTouchEvent*>(event));
+    return;
+  }
+  if (event_to_coalesce.type == blink::WebInputEvent::MouseWheel &&
+      event->type == blink::WebInputEvent::MouseWheel) {
+    Coalesce(static_cast<const blink::WebMouseWheelEvent&>(event_to_coalesce),
+             static_cast<blink::WebMouseWheelEvent*>(event));
+  }
+}
+
 }  // namespace internal
+
+ScopedWebInputEventWithLatencyInfo::ScopedWebInputEventWithLatencyInfo(
+    const WebInputEvent& event,
+    const ui::LatencyInfo& latency_info)
+    : event_(WebInputEventTraits::Clone(event)), latency_(latency_info) {}
+
+ScopedWebInputEventWithLatencyInfo::~ScopedWebInputEventWithLatencyInfo() {}
+
+bool ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(
+    const ScopedWebInputEventWithLatencyInfo& other) const {
+  return internal::CanCoalesce(other.event(), event());
+}
+
+void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
+    const ScopedWebInputEventWithLatencyInfo& other) {
+  // |other| should be a newer event than |this|.
+  if (other.latency_.trace_id() >= 0 && latency_.trace_id() >= 0)
+    DCHECK_GT(other.latency_.trace_id(), latency_.trace_id());
+
+  // New events get coalesced into older events, and the newer timestamp
+  // should always be preserved.
+  const double time_stamp_seconds = other.event().timeStampSeconds;
+  internal::Coalesce(other.event(), event_.get());
+  event_->timeStampSeconds = time_stamp_seconds;
+
+  // When coalescing two input events, we keep the oldest LatencyInfo
+  // since it will represent the longest latency.
+  other.latency_ = latency_;
+  other.latency_.set_coalesced();
+}
+
+const blink::WebInputEvent& ScopedWebInputEventWithLatencyInfo::event() const {
+  return *event_;
+}
+
+blink::WebInputEvent& ScopedWebInputEventWithLatencyInfo::event() {
+  return *event_;
+}
+
 }  // namespace content

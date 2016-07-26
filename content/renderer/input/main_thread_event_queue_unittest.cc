@@ -47,13 +47,11 @@ class MainThreadEventQueueTest : public testing::Test,
     additional_acked_events_.push_back(touch_event_id);
   }
 
-  WebInputEventQueue<PendingMouseWheelEvent>& wheel_event_queue() {
-    return queue_.wheel_events_;
+  WebInputEventQueue<EventWithDispatchType>& event_queue() {
+    return queue_.events_;
   }
 
-  WebInputEventQueue<PendingTouchEvent>& touch_event_queue() {
-    return queue_.touch_events_;
-  }
+  bool eventPendingToMain() const { return queue_.sent_notification_to_main_; }
 
  protected:
   MainThreadEventQueue queue_;
@@ -69,11 +67,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
       SyntheticWebMouseWheelEventBuilder::Build(30, 30, 0, 53, 1, false),
   };
 
-  ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
-            wheel_event_queue().state());
+  ASSERT_FALSE(eventPendingToMain());
   queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, wheel_event_queue().state());
+  ASSERT_TRUE(eventPendingToMain());
   queue_.HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(kEvents[0].size, last_event_.size());
@@ -86,11 +83,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
   kEvents[1].dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[1], kEvents[1].size) == 0);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, wheel_event_queue().state());
+  ASSERT_TRUE(eventPendingToMain());
   queue_.EventHandled(blink::WebInputEvent::MouseWheel,
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
-            wheel_event_queue().state());
+  ASSERT_FALSE(eventPendingToMain());
 
   // Ensure that coalescing takes place.
   queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
@@ -99,8 +95,8 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   queue_.HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  ASSERT_EQ(1u, wheel_event_queue().size());
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, wheel_event_queue().state());
+  ASSERT_EQ(1u, event_queue().size());
+  ASSERT_TRUE(eventPendingToMain());
 }
 
 TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
@@ -114,11 +110,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
 
-  ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
-            touch_event_queue().state());
+  ASSERT_FALSE(eventPendingToMain());
   queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
+  ASSERT_TRUE(eventPendingToMain());
   queue_.HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(kEvents[0].size, last_event_.size());
@@ -131,11 +126,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   kEvents[1].dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[1], kEvents[1].size) == 0);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
+  ASSERT_TRUE(eventPendingToMain());
   queue_.EventHandled(blink::WebInputEvent::TouchMove,
                       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
-            touch_event_queue().state());
+  ASSERT_FALSE(eventPendingToMain());
 
   // Ensure that coalescing takes place.
   queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
@@ -144,8 +138,8 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   queue_.HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  ASSERT_EQ(1u, touch_event_queue().size());
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
+  ASSERT_EQ(1u, event_queue().size());
+  ASSERT_TRUE(eventPendingToMain());
 }
 
 TEST_F(MainThreadEventQueueTest, BlockingTouch) {
@@ -158,8 +152,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
 
-  ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
-            touch_event_queue().state());
+  ASSERT_FALSE(eventPendingToMain());
   // Ensure that coalescing takes place.
   queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
@@ -169,10 +162,10 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   queue_.HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(1u, touch_event_queue().size());
-  ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
+  ASSERT_EQ(1u, event_queue().size());
+  ASSERT_TRUE(eventPendingToMain());
   queue_.EventHandled(kEvents[0].type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(0u, touch_event_queue().size());
+  ASSERT_EQ(0u, event_queue().size());
   queue_.EventHandled(kEvents[1].type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(2u, additional_acked_events_.size());
   ASSERT_EQ(kEvents[2].uniqueTouchEventId, additional_acked_events_.at(0));
