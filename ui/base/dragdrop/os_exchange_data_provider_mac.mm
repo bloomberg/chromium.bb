@@ -29,8 +29,10 @@ OSExchangeDataProviderMac::OSExchangeDataProviderMac(
 OSExchangeDataProviderMac::~OSExchangeDataProviderMac() {
 }
 
-OSExchangeData::Provider* OSExchangeDataProviderMac::Clone() const {
-  return new OSExchangeDataProviderMac(pasteboard_);
+std::unique_ptr<OSExchangeData::Provider>
+OSExchangeDataProviderMac::Clone() const {
+  return std::unique_ptr<OSExchangeData::Provider>(
+      new OSExchangeDataProviderMac(pasteboard_));
 }
 
 void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
@@ -199,7 +201,8 @@ OSExchangeDataProviderMac::CreateDataFromPasteboard(NSPasteboard* pasteboard) {
   for (NSPasteboardItem* item in [pasteboard pasteboardItems])
     ClipboardUtil::AddDataToPasteboard(provider->pasteboard_->get(), item);
 
-  return base::MakeUnique<OSExchangeData>(provider);
+  return base::MakeUnique<OSExchangeData>(
+      base::WrapUnique<OSExchangeData::Provider>(provider));
 }
 
 // static
@@ -210,14 +213,6 @@ NSArray* OSExchangeDataProviderMac::SupportedPasteboardTypes() {
     NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
     NSFilenamesPboardType, ui::kWebCustomDataPboardType, NSPasteboardTypeString
   ];
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, public:
-
-// static
-OSExchangeData::Provider* OSExchangeData::CreateProvider() {
-  return new OSExchangeDataProviderMac;
 }
 
 }  // namespace ui

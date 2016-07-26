@@ -5,6 +5,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -19,7 +20,8 @@ OSExchangeDataProviderAura::OSExchangeDataProviderAura()
 
 OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
 
-OSExchangeData::Provider* OSExchangeDataProviderAura::Clone() const {
+std::unique_ptr<OSExchangeData::Provider>
+OSExchangeDataProviderAura::Clone() const {
   OSExchangeDataProviderAura* ret = new OSExchangeDataProviderAura();
   ret->formats_ = formats_;
   ret->string_ = string_;
@@ -31,7 +33,7 @@ OSExchangeData::Provider* OSExchangeDataProviderAura::Clone() const {
   ret->html_ = html_;
   ret->base_url_ = base_url_;
 
-  return ret;
+  return base::WrapUnique<OSExchangeData::Provider>(ret);
 }
 
 void OSExchangeDataProviderAura::MarkOriginatedFromRenderer() {
@@ -215,14 +217,6 @@ bool OSExchangeDataProviderAura::GetPlainTextURL(GURL* url) const {
   if (url)
     *url = test_url;
   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, public:
-
-// static
-OSExchangeData::Provider* OSExchangeData::CreateProvider() {
-  return new OSExchangeDataProviderAura();
 }
 
 }  // namespace ui

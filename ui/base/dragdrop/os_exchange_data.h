@@ -87,7 +87,7 @@ class UI_BASE_EXPORT OSExchangeData {
     Provider() {}
     virtual ~Provider() {}
 
-    virtual Provider* Clone() const = 0;
+    virtual std::unique_ptr<Provider> Clone() const = 0;
 
     virtual void MarkOriginatedFromRenderer() = 0;
     virtual bool DidOriginateFromRenderer() const = 0;
@@ -138,13 +138,10 @@ class UI_BASE_EXPORT OSExchangeData {
 #endif
   };
 
-  // Creates the platform specific Provider.
-  static Provider* CreateProvider();
-
   OSExchangeData();
   // Creates an OSExchangeData with the specified provider. OSExchangeData
   // takes ownership of the supplied provider.
-  explicit OSExchangeData(Provider* provider);
+  explicit OSExchangeData(std::unique_ptr<Provider> provider);
 
   ~OSExchangeData();
 

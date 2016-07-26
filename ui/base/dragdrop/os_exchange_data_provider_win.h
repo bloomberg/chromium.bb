@@ -146,7 +146,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   IDataObjectAsyncCapability* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
-  Provider* Clone() const override;
+  std::unique_ptr<Provider> Clone() const override;
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
   void SetString(const base::string16& data) override;

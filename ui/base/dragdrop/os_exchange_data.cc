@@ -6,6 +6,7 @@
 
 #include "base/pickle.h"
 #include "build/build_config.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -19,10 +20,12 @@ OSExchangeData::DownloadFileInfo::DownloadFileInfo(
 
 OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
 
-OSExchangeData::OSExchangeData() : provider_(CreateProvider()) {
+OSExchangeData::OSExchangeData()
+    : provider_(OSExchangeDataProviderFactory::CreateProvider()) {
 }
 
-OSExchangeData::OSExchangeData(Provider* provider) : provider_(provider) {
+OSExchangeData::OSExchangeData(std::unique_ptr<Provider> provider)
+    : provider_(std::move(provider)) {
 }
 
 OSExchangeData::~OSExchangeData() {

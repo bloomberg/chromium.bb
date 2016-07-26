@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/win/win_util.h"
 #include "ui/aura/window.h"
@@ -148,7 +149,8 @@ void DesktopDropTargetWin::Translate(
   if (!*delegate)
     return;
 
-  data->reset(new OSExchangeData(new OSExchangeDataProviderWin(data_object)));
+  data->reset(new OSExchangeData(
+      base::MakeUnique<OSExchangeDataProviderWin>(data_object)));
   location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);
   event->reset(new ui::DropTargetEvent(

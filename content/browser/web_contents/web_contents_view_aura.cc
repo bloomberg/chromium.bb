@@ -60,6 +60,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
@@ -833,10 +834,12 @@ void WebContentsViewAura::StartDragging(
   ui::TouchSelectionController* selection_controller = GetSelectionController();
   if (selection_controller)
     selection_controller->HideAndDisallowShowingAutomatically();
-  ui::OSExchangeData::Provider* provider = ui::OSExchangeData::CreateProvider();
-  PrepareDragData(drop_data, provider, web_contents_);
+  std::unique_ptr<ui::OSExchangeData::Provider> provider =
+      ui::OSExchangeDataProviderFactory::CreateProvider();
+  PrepareDragData(drop_data, provider.get(), web_contents_);
 
-  ui::OSExchangeData data(provider);  // takes ownership of |provider|.
+  ui::OSExchangeData data(
+      std::move(provider));  // takes ownership of |provider|.
 
   if (!image.isNull())
     drag_utils::SetDragImageOnDataObject(image, image_offset, &data);

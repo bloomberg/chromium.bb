@@ -62,7 +62,8 @@ class BookmarkNodeDataTest : public testing::Test {
 
 namespace {
 
-ui::OSExchangeData::Provider* CloneProvider(const ui::OSExchangeData& data) {
+std::unique_ptr<ui::OSExchangeData::Provider> CloneProvider(
+    const ui::OSExchangeData& data) {
   return data.provider().Clone();
 }
 

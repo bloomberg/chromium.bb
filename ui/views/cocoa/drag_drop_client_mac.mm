@@ -25,7 +25,8 @@
 
 - (id)initWithData:(const ui::OSExchangeData&)data {
   if ((self = [super init])) {
-    data_.reset(new OSExchangeData(data.provider().Clone()));
+    data_.reset(new OSExchangeData(
+        std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone())));
   }
   return self;
 }

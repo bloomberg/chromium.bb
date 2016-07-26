@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
@@ -33,7 +35,8 @@ TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   data.SetString(input);
   EXPECT_TRUE(data.HasString());
 
-  OSExchangeData data2(data.provider().Clone());
+  OSExchangeData data2(
+      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
   base::string16 output;
   EXPECT_TRUE(data2.HasString());
   EXPECT_TRUE(data2.GetString(&output));
@@ -56,7 +59,8 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   data.SetURL(url, url_title);
   EXPECT_TRUE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 
-  OSExchangeData data2(data.provider().Clone());
+  OSExchangeData data2(
+      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
 
   // URL spec and title should match
   GURL output_url;
@@ -144,7 +148,8 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   OSExchangeData data;
   data.SetPickledData(kTestFormat, saved_pickle);
 
-  OSExchangeData copy(data.provider().Clone());
+  OSExchangeData copy(
+      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
   EXPECT_TRUE(copy.HasCustomFormat(kTestFormat));
 
   base::Pickle restored_pickle;
@@ -167,7 +172,8 @@ TEST_F(OSExchangeDataTest, TestHTML) {
       "</BODY>\n</HTML>");
   data.SetHtml(html, url);
 
-  OSExchangeData copy(data.provider().Clone());
+  OSExchangeData copy(
+      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
   base::string16 read_html;
   EXPECT_TRUE(copy.GetHtml(&read_html, &url));
   EXPECT_EQ(html, read_html);
