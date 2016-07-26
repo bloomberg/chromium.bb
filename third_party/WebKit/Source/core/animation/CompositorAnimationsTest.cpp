@@ -395,12 +395,6 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCou
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_EQ(5.5, m_compositorTiming.adjustedIterationCount);
 
-    // EXPECT_DEATH tests are flaky on Android.
-#if ENABLE(ASSERT) && !OS(ANDROID)
-    m_timing.iterationCount = -1;
-    EXPECT_DEATH(convertTimingForCompositor(m_timing, m_compositorTiming), "");
-#endif
-
     m_timing.iterationCount = std::numeric_limits<double>::infinity();
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
