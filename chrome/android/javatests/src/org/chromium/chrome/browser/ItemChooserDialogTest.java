@@ -61,11 +61,12 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         SpannableString title = new SpannableString("title");
         SpannableString searching = new SpannableString("searching");
         SpannableString noneFound = new SpannableString("noneFound");
+        SpannableString statusActive = new SpannableString("statusActive");
         SpannableString statusIdleNoneFound = new SpannableString("statusIdleNoneFound");
         SpannableString statusIdleSomeFound = new SpannableString("statusIdleSomeFound");
         String positiveButton = new String("positiveButton");
         final ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ItemChooserDialog>() {
@@ -134,6 +135,14 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key", "key"));
         mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
 
+        // Two items showing, the empty view should be no more and the button
+        // should now be enabled.
+        assertEquals(View.VISIBLE, items.getVisibility());
+        assertEquals(View.GONE, items.getEmptyView().getVisibility());
+        assertEquals("statusActive", statusView.getText().toString());
+        assertFalse(button.isEnabled());
+
+        mChooserDialog.setIdleState();
         // After discovery stops the list should be visible with two items,
         // it should not show the empty view and the button should not be enabled.
         // The chooser should show the status idle text.
@@ -228,6 +237,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertEquals(2, itemAdapter.getCount());
         assertEquals(itemAdapter.getItem(0), item1);
         assertEquals(itemAdapter.getItem(1), item2);
+
+        mChooserDialog.setIdleState();
 
         // Try removing an item that doesn't exist.
         mChooserDialog.removeItemFromList(nonExistentItem);

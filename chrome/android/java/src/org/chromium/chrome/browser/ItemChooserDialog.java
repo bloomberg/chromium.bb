@@ -95,6 +95,9 @@ public class ItemChooserDialog {
         public final CharSequence searching;
         // The message to show when no results were produced.
         public final CharSequence noneFound;
+        // A status message to show above the button row after an item has
+        // been added and discovery is still ongoing.
+        public final CharSequence statusActive;
         // A status message to show above the button row after discovery has
         // stopped and no devices have been found.
         public final CharSequence statusIdleNoneFound;
@@ -105,11 +108,12 @@ public class ItemChooserDialog {
         public final CharSequence positiveButton;
 
         public ItemChooserLabels(CharSequence title, CharSequence searching, CharSequence noneFound,
-                CharSequence statusIdleNoneFound, CharSequence statusIdleSomeFound,
-                CharSequence positiveButton) {
+                CharSequence statusActive, CharSequence statusIdleNoneFound,
+                CharSequence statusIdleSomeFound, CharSequence positiveButton) {
             this.title = title;
             this.searching = searching;
             this.noneFound = noneFound;
+            this.statusActive = statusActive;
             this.statusIdleNoneFound = statusIdleNoneFound;
             this.statusIdleSomeFound = statusIdleSomeFound;
             this.positiveButton = positiveButton;
@@ -119,7 +123,7 @@ public class ItemChooserDialog {
     /**
      * The various states the dialog can represent.
      */
-    private enum State { STARTING, DISCOVERY_IDLE }
+    private enum State { STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
 
     /**
      * An adapter for keeping track of which items to show in the dialog.
@@ -417,7 +421,7 @@ public class ItemChooserDialog {
     public void addItemToList(ItemChooserRow item) {
         mProgressBar.setVisibility(View.GONE);
         mItemAdapter.add(item);
-        setState(State.DISCOVERY_IDLE);
+        setState(State.PROGRESS_UPDATE_AVAILABLE);
     }
 
     /**
@@ -473,6 +477,11 @@ public class ItemChooserDialog {
                 mListView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mEmptyMessage.setVisibility(View.GONE);
+                break;
+            case PROGRESS_UPDATE_AVAILABLE:
+                mStatus.setText(mLabels.statusActive);
+                mProgressBar.setVisibility(View.GONE);
+                mListView.setVisibility(View.VISIBLE);
                 break;
             case DISCOVERY_IDLE:
                 boolean showEmptyMessage = mItemAdapter.isEmpty();

@@ -67,7 +67,7 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
 
         String searching = "";
         String noneFound = activity.getString(R.string.usb_chooser_dialog_no_devices_found_prompt);
-        SpannableString statusIdleNoneFound =
+        SpannableString statusActive =
                 SpanApplier.applySpans(
                         activity.getString(R.string.usb_chooser_dialog_footnote_text),
                         new SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan() {
@@ -83,11 +83,12 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
                                 view.invalidate();
                             }
                         }));
-        SpannableString statusIdleSomeFound = statusIdleNoneFound;
+        SpannableString statusIdleNoneFound = statusActive;
+        SpannableString statusIdleSomeFound = statusActive;
         String positiveButton = activity.getString(R.string.usb_chooser_dialog_connect_button_text);
 
         ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         mItemChooserDialog = new ItemChooserDialog(activity, this, labels);
     }

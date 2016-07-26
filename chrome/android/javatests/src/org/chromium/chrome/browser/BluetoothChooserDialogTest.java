@@ -224,8 +224,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         // the progress spinner should disappear, the Commit button should still
         // be disabled (since nothing's selected), and the list view should
         // show.
-        assertEquals(removeLinkTags(getActivity().getString(
-                R.string.bluetooth_not_seeing_it_idle_some_found)),
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_not_seeing_it)),
                 statusView.getText().toString());
         assertFalse(button.isEnabled());
         assertEquals(View.VISIBLE, items.getVisibility());

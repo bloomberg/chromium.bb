@@ -141,6 +141,11 @@ public class BluetoothChooserDialog
                 new SpanInfo("<link>", "</link>",
                         new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
 
+        SpannableString statusActive = SpanApplier.applySpans(
+                mActivity.getString(R.string.bluetooth_not_seeing_it),
+                new SpanInfo("<link>", "</link>",
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
+
         SpannableString statusIdleSomeFound = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
                 new SpanInfo("<link1>", "</link1>",
@@ -149,7 +154,7 @@ public class BluetoothChooserDialog
                         new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
 
         ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         mItemChooserDialog = new ItemChooserDialog(mActivity, this, labels);
 
