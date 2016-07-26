@@ -662,7 +662,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                     .getSystemService(Context.CLIPBOARD_SERVICE);
             Tab tab = getCurrentTab();
             if (tab == null) return false;
-            String url = tab.isOfflinePage() ? tab.getOfflinePageOriginalUrl() : tab.getUrl();
+            String url = tab.getOriginalUrl();
             ClipData clip = ClipData.newPlainText("url", url);
             clipboard.setPrimaryClip(clip);
             Toast.makeText(getContext(), R.string.url_copied, Toast.LENGTH_SHORT).show();
