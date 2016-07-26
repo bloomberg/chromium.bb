@@ -55,7 +55,6 @@ class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class MojoChildConnection;
 class NotificationMessageFilter;
-class OwnedInterface;
 #if defined(ENABLE_WEBRTC)
 class P2PSocketDispatcherHost;
 #endif
@@ -137,7 +136,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
-  void AddOwnedInterface(std::unique_ptr<OwnedInterface> impl) override;
   bool FastShutdownForPageCount(size_t count) override;
   bool FastShutdownStarted() const override;
   base::TimeDelta GetChildProcessIdleTime() const override;
@@ -359,11 +357,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const std::string& error);
 
   std::string child_token_;
-
-  // Services owned by this host for the purpose of service impl lifetime
-  // management. These need to outlive |mojo_child_connection_|, as they are
-  // registered on the |InterfaceRegistry| indirectly owned by that object.
-  std::vector<std::unique_ptr<OwnedInterface>> owned_interface_impls_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
   shell::mojom::ServicePtr test_service_;

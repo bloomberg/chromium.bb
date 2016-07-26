@@ -11,7 +11,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/search_provider.mojom.h"
-#include "content/public/browser/owned_interface.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "url/gurl.h"
@@ -26,6 +25,7 @@ SearchProviderInstallStateImpl::SearchProviderInstallStateImpl(
                      GoogleURLTrackerFactory::GetForProfile(profile),
                      content::RenderProcessHost::FromID(render_process_id)),
       is_off_the_record_(profile->IsOffTheRecord()),
+      binding_(this),
       weak_factory_(this) {
   // This is initialized by RenderProcessHostImpl. Do not add any non-trivial
   // initialization here. Instead do it lazily when required.
@@ -36,9 +36,23 @@ SearchProviderInstallStateImpl::~SearchProviderInstallStateImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void SearchProviderInstallStateImpl::Bind(
+// static
+void SearchProviderInstallStateImpl::Create(
+    int render_process_id,
+    Profile* profile,
     chrome::mojom::SearchProviderInstallStateRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+  // BindOnIOThread takes ownership on the impl object:
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SearchProviderInstallStateImpl::BindOnIOThread,
+                 base::Unretained(new SearchProviderInstallStateImpl(
+                     render_process_id, profile)),
+                 base::Passed(&request)));
+}
+
+void SearchProviderInstallStateImpl::BindOnIOThread(
+    chrome::mojom::SearchProviderInstallStateRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 chrome::mojom::InstallState

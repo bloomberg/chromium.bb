@@ -245,7 +245,6 @@
       'public/browser/notification_source.h',
       'public/browser/notification_types.h',
       'public/browser/overscroll_configuration.h',
-      'public/browser/owned_interface.h',
       'public/browser/page_navigator.cc',
       'public/browser/page_navigator.h',
       'public/browser/pepper_flash_settings_helper.h',

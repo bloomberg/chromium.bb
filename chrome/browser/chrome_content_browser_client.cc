@@ -965,11 +965,10 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
-  host->AddOwnedInterface(
-      base::MakeUnique<SearchProviderInstallStateImpl>(id, profile),
-      &SearchProviderInstallStateImpl::Bind,
+  host->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&SearchProviderInstallStateImpl::Create, id, profile),
       content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+          content::BrowserThread::UI));
 #if defined(ENABLE_SPELLCHECK)
   host->AddFilter(new SpellCheckMessageFilter(id));
 #endif

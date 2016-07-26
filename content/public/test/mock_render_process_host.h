@@ -25,7 +25,6 @@ class StoragePartition;
 namespace content {
 
 class MockRenderProcessHostFactory;
-class OwnedInterface;
 
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.
@@ -78,7 +77,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool InSameStoragePartition(StoragePartition* partition) const override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
-  void AddOwnedInterface(std::unique_ptr<OwnedInterface> impl) override;
   bool FastShutdownForPageCount(size_t count) override;
   base::TimeDelta GetChildProcessIdleTime() const override;
   void FilterURL(bool empty_allowed, GURL* url) override;

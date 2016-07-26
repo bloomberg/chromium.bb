@@ -11,7 +11,7 @@
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/common/search_provider.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 class GURL;
 class Profile;
@@ -28,9 +28,13 @@ class SearchProviderInstallStateImpl
   SearchProviderInstallStateImpl(int render_process_id, Profile* profile);
   ~SearchProviderInstallStateImpl() override;
 
-  void Bind(chrome::mojom::SearchProviderInstallStateRequest request);
+  static void Create(int render_process_id,
+                     Profile* profile,
+                     chrome::mojom::SearchProviderInstallStateRequest request);
 
  private:
+  void BindOnIOThread(chrome::mojom::SearchProviderInstallStateRequest request);
+
   // Figures out the install state for the search provider.
   chrome::mojom::InstallState GetSearchProviderInstallState(
       const GURL& page_location,
@@ -54,7 +58,7 @@ class SearchProviderInstallStateImpl
   // thread.
   const bool is_off_the_record_;
 
-  mojo::BindingSet<chrome::mojom::SearchProviderInstallState> binding_set_;
+  mojo::StrongBinding<chrome::mojom::SearchProviderInstallState> binding_;
 
   // Used to schedule invocations of ReplyWithProviderInstallState.
   base::WeakPtrFactory<SearchProviderInstallStateImpl> weak_factory_;

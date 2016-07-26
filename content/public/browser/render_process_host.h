@@ -16,7 +16,6 @@
 #include "base/process/process_handle.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/owned_interface.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -42,7 +41,6 @@ class InterfaceProvider;
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
-class OwnedInterface;
 class RenderProcessHostObserver;
 class RenderWidgetHost;
 class StoragePartition;
@@ -184,36 +182,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Adds a message filter to the IPC channel.
   virtual void AddFilter(BrowserMessageFilter* filter) = 0;
-
-  // Adds an interface impl which will be owned by this host and registered in
-  // its interface registry. Requests to bind will be handled by calling
-  // |callback|, which must be a member function on |impl|. The method referred
-  // to by |Callback| must conform to the signature `void fun(MyInterfaceRequest
-  // request)`.
-  //
-  // New connections and incoming messages will be dispatched on |task_runner|
-  // (or on the current task runner if not specified). The impl will also be
-  // deleted on |task_runner|.
-  template <typename InterfaceImpl, typename Callback>
-  void AddOwnedInterface(std::unique_ptr<InterfaceImpl> impl,
-                         Callback callback,
-                         const scoped_refptr<base::SingleThreadTaskRunner>&
-                             task_runner = nullptr) {
-    auto owned = base::MakeUnique<content::OwnedInterfaceImpl<InterfaceImpl>>(
-        std::move(impl), task_runner);
-    GetInterfaceRegistry()->AddInterface(
-        base::Bind(callback, base::Unretained(owned->get())), task_runner);
-    AddOwnedInterface(std::move(owned));
-  }
-
-  // Adds the |impl| to the collection of interface impls owned by this
-  // host. The impl must be registered separately using
-  // |GetInterfaceRegistry()|. This function is useful if a single object is
-  // used to implement several interfaces.
-  //
-  // Implementation of |AddOwnedInterface()| must guarantee that the added impls
-  // outlive the |InterfaceRegistry| returned by |GetInterfaceRegistry()|.
-  virtual void AddOwnedInterface(std::unique_ptr<OwnedInterface> impl) = 0;
 
   // Try to shutdown the associated render process as fast as possible
   virtual bool FastShutdownForPageCount(size_t count) = 0;

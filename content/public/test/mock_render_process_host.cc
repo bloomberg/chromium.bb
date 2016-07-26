@@ -249,9 +249,6 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
 }
 
-void MockRenderProcessHost::AddOwnedInterface(
-    std::unique_ptr<OwnedInterface> impl) {}
-
 bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
   if (GetActiveViewCount() == count)
     return FastShutdownIfPossible();
