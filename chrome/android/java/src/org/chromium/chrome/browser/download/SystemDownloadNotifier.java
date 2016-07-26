@@ -34,6 +34,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_CANCEL = 3;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL = 4;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_PAUSE = 5;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT = 6;
     private final Context mApplicationContext;
     private final Object mLock = new Object();
     @Nullable private DownloadNotificationService mBoundService;
@@ -204,9 +205,16 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     @Override
-    public void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable) {
+    public void notifyDownloadPaused(DownloadInfo downloadInfo) {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_PAUSE, downloadInfo);
+        updateDownloadNotification(info);
+    }
+
+    @Override
+    public void notifyDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable) {
+        PendingNotificationInfo info =
+                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT, downloadInfo);
         info.isAutoResumable = isAutoResumable;
         updateDownloadNotification(info);
     }
@@ -261,13 +269,16 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                         mBoundService.notifyDownloadProgress(
                                 info.getDownloadGuid(), info.getFileName(),
                                 info.getPercentCompleted(), info.getTimeRemainingInMillis(),
-                                notificationInfo.startTime, info.isResumable(),
+                                notificationInfo.startTime, info.isOffTheRecord(),
                                 notificationInfo.canDownloadWhileMetered);
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
-                        assert info.isResumable();
+                        mBoundService.notifyDownloadPaused(info.getDownloadGuid(), true, false);
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
                         mBoundService.notifyDownloadPaused(
-                                info.getDownloadGuid(), notificationInfo.isAutoResumable);
+                                info.getDownloadGuid(), info.isResumable(),
+                                notificationInfo.isAutoResumable);
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         final int notificationId = mBoundService.notifyDownloadSuccessful(

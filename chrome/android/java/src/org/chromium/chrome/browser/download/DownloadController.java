@@ -145,7 +145,6 @@ public class DownloadController {
                 .setTimeRemainingInMillis(timeRemainingInMs)
                 .setHasUserGesture(hasUserGesture)
                 .setIsPaused(isPaused)
-                .setIsResumable(!isOffTheRecord)
                 .setIsOffTheRecord(isOffTheRecord)
                 .build();
         sDownloadNotificationService.onDownloadUpdated(downloadInfo);

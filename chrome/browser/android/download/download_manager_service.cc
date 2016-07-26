@@ -79,10 +79,11 @@ DownloadManagerService::~DownloadManagerService() {}
 void DownloadManagerService::ResumeDownload(
     JNIEnv* env,
     jobject obj,
-    const JavaParamRef<jstring>& jdownload_guid) {
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  if (is_history_query_complete_)
-    ResumeDownloadInternal(download_guid);
+  if (is_history_query_complete_ || is_off_the_record)
+    ResumeDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, RESUME);
 }
@@ -90,10 +91,11 @@ void DownloadManagerService::ResumeDownload(
 void DownloadManagerService::PauseDownload(
     JNIEnv* env,
     jobject obj,
-    const JavaParamRef<jstring>& jdownload_guid) {
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  if (is_history_query_complete_)
-    PauseDownloadInternal(download_guid);
+  if (is_history_query_complete_ || is_off_the_record)
+    PauseDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, PAUSE);
 }
@@ -149,20 +151,12 @@ void DownloadManagerService::CancelDownload(
     bool is_off_the_record,
     bool is_notification_dismissed) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-
   DownloadController::RecordDownloadCancelReason(
       is_notification_dismissed ?
           DownloadController::CANCEL_REASON_NOTIFICATION_DISMISSED :
           DownloadController::CANCEL_REASON_ACTION_BUTTON);
-  // Incognito download can only be cancelled in the same browser session, no
-  // need to wait for download history.
-  if (is_off_the_record) {
-    CancelDownloadInternal(download_guid, true);
-    return;
-  }
-
-  if (is_history_query_complete_)
-    CancelDownloadInternal(download_guid, false);
+  if (is_history_query_complete_ || is_off_the_record)
+    CancelDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, CANCEL);
 }
@@ -175,10 +169,10 @@ void DownloadManagerService::OnHistoryQueryComplete() {
     std::string download_guid = iter->first;
     switch (action) {
       case RESUME:
-        ResumeDownloadInternal(download_guid);
+        ResumeDownloadInternal(download_guid, false);
         break;
       case PAUSE:
-        PauseDownloadInternal(download_guid);
+        PauseDownloadInternal(download_guid, false);
         break;
       case CANCEL:
         CancelDownloadInternal(download_guid, false);
@@ -195,8 +189,8 @@ void DownloadManagerService::OnHistoryQueryComplete() {
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
-    const std::string& download_guid) {
-  content::DownloadManager* manager = GetDownloadManager(false);
+    const std::string& download_guid, bool is_off_the_record) {
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
   if (!manager) {
     OnResumptionFailed(download_guid);
     return;
@@ -229,8 +223,8 @@ void DownloadManagerService::CancelDownloadInternal(
 }
 
 void DownloadManagerService::PauseDownloadInternal(
-    const std::string& download_guid) {
-  content::DownloadManager* manager = GetDownloadManager(false);
+    const std::string& download_guid, bool is_off_the_record) {
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
   if (!manager)
     return;
   content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);

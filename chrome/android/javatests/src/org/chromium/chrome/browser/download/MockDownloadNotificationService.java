@@ -18,6 +18,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     private boolean mPaused = false;
     private Context mContext;
     private int mLastNotificationId;
+    private String mFailedDownloadGuid;
 
     void setContext(Context context) {
         mContext = context;
@@ -50,8 +51,18 @@ public class MockDownloadNotificationService extends DownloadNotificationService
         mNotificationIds.remove(Integer.valueOf(notificationId));
     }
 
+    @Override
+    public void notifyDownloadFailed(String downloadGuid, String fileName) {
+        super.notifyDownloadFailed(downloadGuid, fileName);
+        mFailedDownloadGuid = downloadGuid;
+    }
+
     public int getLastAddedNotificationId() {
         return mLastNotificationId;
+    }
+
+    public String getFailedDownloadGuid() {
+        return mFailedDownloadGuid;
     }
 
     @Override

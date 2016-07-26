@@ -19,17 +19,17 @@ public class DownloadSharedPreferenceEntry {
     private static final String TAG = "DownloadEntry";
     // Current version of the DownloadSharedPreferenceEntry. When changing the SharedPreference,
     // we need to change the version number too.
-    @VisibleForTesting static final int VERSION = 1;
+    @VisibleForTesting static final int VERSION = 2;
     public final int notificationId;
-    public final boolean isResumable;
+    public final boolean isOffTheRecord;  // Whether the download is public (non incognito).
     public boolean canDownloadWhileMetered;
     public final String fileName;
     public final String downloadGuid;
 
-    DownloadSharedPreferenceEntry(int notificationId, boolean isResumable,
+    DownloadSharedPreferenceEntry(int notificationId, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, String guid, String fileName) {
         this.notificationId = notificationId;
-        this.isResumable = isResumable;
+        this.isOffTheRecord = isOffTheRecord;
         this.canDownloadWhileMetered = canDownloadWhileMetered;
         this.downloadGuid = guid;
         this.fileName = fileName;
@@ -48,17 +48,18 @@ public class DownloadSharedPreferenceEntry {
             try {
                 int version = Integer.parseInt(values[0]);
                 // Ignore all SharedPreference entries that has an invalid version for now.
-                if (version != VERSION) {
+                if (version < 1) {
                     return new DownloadSharedPreferenceEntry(-1, false, false, null, "");
                 }
                 int id = Integer.parseInt(values[1]);
-                boolean isResumable = "1".equals(values[2]);
+                boolean isOffTheRecord =
+                        (version >= 2) ? "1".equals(values[2]) : "0".equals(values[2]);
                 boolean canDownloadWhileMetered = "1".equals(values[3]);
                 if (!isValidGUID(values[4])) {
                     return new DownloadSharedPreferenceEntry(-1, false, false, null, "");
                 }
                 return new DownloadSharedPreferenceEntry(
-                        id, isResumable, canDownloadWhileMetered, values[4], values[5]);
+                        id, isOffTheRecord, canDownloadWhileMetered, values[4], values[5]);
             } catch (NumberFormatException nfe) {
                 Log.w(TAG, "Exception while parsing pending download:" + sharedPrefString);
             }
@@ -71,7 +72,7 @@ public class DownloadSharedPreferenceEntry {
      *         SharedPrefs.
      */
     String getSharedPreferenceString() {
-        return VERSION + "," + notificationId + "," + (isResumable ? "1" : "0") + ","
+        return VERSION + "," + notificationId + "," + (isOffTheRecord ? "1" : "0") + ","
                 + (canDownloadWhileMetered ? "1" : "0") + "," + downloadGuid + "," + fileName;
     }
 
@@ -101,7 +102,7 @@ public class DownloadSharedPreferenceEntry {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(downloadGuid)
                 .setFileName(fileName)
-                .setIsResumable(isResumable)
+                .setIsOffTheRecord(isOffTheRecord)
                 .build();
         return new DownloadItem(false, info);
     }
@@ -115,14 +116,14 @@ public class DownloadSharedPreferenceEntry {
         return TextUtils.equals(downloadGuid, other.downloadGuid)
                 && TextUtils.equals(fileName, other.fileName)
                 && notificationId == other.notificationId
-                && isResumable == other.isResumable
+                && isOffTheRecord == other.isOffTheRecord
                 && canDownloadWhileMetered == other.canDownloadWhileMetered;
     }
 
     @Override
     public int hashCode() {
         int hash = 31;
-        hash = 37 * hash + (isResumable ? 1 : 0);
+        hash = 37 * hash + (isOffTheRecord ? 1 : 0);
         hash = 37 * hash + (canDownloadWhileMetered ? 1 : 0);
         hash = 37 * hash + notificationId;
         hash = 37 * hash + downloadGuid.hashCode();

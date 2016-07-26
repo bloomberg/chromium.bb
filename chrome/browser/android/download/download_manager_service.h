@@ -41,7 +41,8 @@ class DownloadManagerService : public DownloadHistory::Observer {
   // |jdownload_guid|..
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
-                      const JavaParamRef<jstring>& jdownload_guid);
+                      const JavaParamRef<jstring>& jdownload_guid,
+                      bool is_off_the_record);
 
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
@@ -55,7 +56,8 @@ class DownloadManagerService : public DownloadHistory::Observer {
   // If the DownloadItem is not yet created, do nothing as it is already paused.
   void PauseDownload(JNIEnv* env,
                      jobject obj,
-                     const JavaParamRef<jstring>& jdownload_guid);
+                     const JavaParamRef<jstring>& jdownload_guid,
+                     bool is_off_the_record);
 
   // Called to request that the DownloadManagerService return data about all
   // downloads in the user's history.
@@ -73,14 +75,16 @@ class DownloadManagerService : public DownloadHistory::Observer {
   friend class DownloadManagerServiceTest;
 
   // Helper function to start the download resumption.
-  void ResumeDownloadInternal(const std::string& download_guid);
+  void ResumeDownloadInternal(const std::string& download_guid,
+                              bool is_off_the_record);
 
   // Helper function to cancel a download.
   void CancelDownloadInternal(const std::string& download_guid,
                               bool is_off_the_record);
 
   // Helper function to pause a download.
-  void PauseDownloadInternal(const std::string& download_guid);
+  void PauseDownloadInternal(const std::string& download_guid,
+                             bool is_off_the_record);
 
   // Helper function to send info about all downloads to the Java-side.
   void GetAllDownloadsInternal();

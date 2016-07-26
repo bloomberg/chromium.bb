@@ -40,9 +40,15 @@ public interface DownloadNotifier {
     /**
      * Update the download notification to paused.
      * @param downloadInfo info about in progress download.
+     */
+    void notifyDownloadPaused(DownloadInfo downloadInfo);
+
+    /**
+     * Update the download notification to paused.
+     * @param downloadInfo info about in progress download.
      * @param isAutoResumable Whether the download can be auto resumed when network is available.
      */
-    void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable);
+    void notifyDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable);
 
     /**
      * Cancel the notification for a download.

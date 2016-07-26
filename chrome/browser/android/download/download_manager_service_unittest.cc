@@ -77,7 +77,8 @@ class DownloadManagerServiceTest : public testing::Test {
         env, nullptr,
         JavaParamRef<jstring>(
             env,
-            base::android::ConvertUTF8ToJavaString(env, download_guid).obj()));
+            base::android::ConvertUTF8ToJavaString(env, download_guid).obj()),
+        false);
     EXPECT_FALSE(success_);
     service_->OnHistoryQueryComplete();
     while (!finished_)

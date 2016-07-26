@@ -63,6 +63,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
             DOWNLOAD_FAILED,
             DOWNLOAD_PROGRESS,
             DOWNLOAD_PAUSED,
+            DOWNLOAD_INTERRUPTED,
             CANCEL_DOWNLOAD_ID,
             CLEAR_PENDING_DOWNLOADS
         }
@@ -152,8 +153,13 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable) {
+        public void notifyDownloadPaused(DownloadInfo downloadInfo) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_PAUSED, downloadInfo);
+        }
+
+        @Override
+        public void notifyDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable) {
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_INTERRUPTED, downloadInfo);
         }
 
         @Override
@@ -443,10 +449,10 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();
-        DownloadInfo paused =
+        DownloadInfo interrupted =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
-        notifier.expect(MethodID.DOWNLOAD_PAUSED, paused);
-        dService.onDownloadInterrupted(paused, true);
+        notifier.expect(MethodID.DOWNLOAD_INTERRUPTED, interrupted);
+        dService.onDownloadInterrupted(interrupted, true);
         notifier.waitTillExpectedCallsComplete();
     }
 
@@ -479,13 +485,13 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();
-        DownloadInfo paused =
+        DownloadInfo interrupted =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
-        notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
-                .andThen(MethodID.DOWNLOAD_PAUSED, paused);
-        dService.onDownloadUpdated(paused);
+        notifier.expect(MethodID.DOWNLOAD_PROGRESS, interrupted)
+                .andThen(MethodID.DOWNLOAD_INTERRUPTED, interrupted);
+        dService.onDownloadUpdated(interrupted);
         Thread.sleep(DELAY_BETWEEN_CALLS);
-        dService.onDownloadInterrupted(paused, true);
+        dService.onDownloadInterrupted(interrupted, true);
         notifier.waitTillExpectedCallsComplete();
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
         dService.onConnectionTypeChanged(ConnectionType.CONNECTION_WIFI);
@@ -506,13 +512,13 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();
-        DownloadInfo paused =
+        DownloadInfo interrupted =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
-        notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
-                .andThen(MethodID.DOWNLOAD_PAUSED, paused);
-        dService.onDownloadUpdated(paused);
+        notifier.expect(MethodID.DOWNLOAD_PROGRESS, interrupted)
+                .andThen(MethodID.DOWNLOAD_INTERRUPTED, interrupted);
+        dService.onDownloadUpdated(interrupted);
         Thread.sleep(DELAY_BETWEEN_CALLS);
-        dService.onDownloadInterrupted(paused, true);
+        dService.onDownloadInterrupted(interrupted, true);
         notifier.waitTillExpectedCallsComplete();
         DownloadManagerService.setIsNetworkMeteredForTest(true);
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
