@@ -2,6 +2,7 @@ CONSOLE MESSAGE: line 25: angle: 0; type: portrait-primary
 CONSOLE MESSAGE: line 25: angle: 180; type: portrait-secondary
 CONSOLE MESSAGE: line 25: angle: 90; type: landscape-primary
 CONSOLE MESSAGE: line 25: angle: 270; type: landscape-secondary
+CONSOLE MESSAGE: line 25: angle: 0; type: landscape-primary
 
 Running: initial
 

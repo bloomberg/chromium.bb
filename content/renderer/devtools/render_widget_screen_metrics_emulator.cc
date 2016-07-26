@@ -25,10 +25,10 @@ RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
 }
 
 RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() {
+  delegate_->Resize(original_resize_params_);
   delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
   delegate_->SetScreenRects(original_view_screen_rect_,
                             original_window_screen_rect_);
-  delegate_->Resize(original_resize_params_);
 }
 
 void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
