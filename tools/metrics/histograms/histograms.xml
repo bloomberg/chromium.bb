@@ -23379,13 +23379,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <obsolete>
-    Deprecated 07/2016 and replaced with Memory.Browser.Large2.
-  </obsolete>
   <summary>
     The private working set used by the browser process.  Recorded once per UMA
     ping.  Note the existence of Memory.Browser.Large, which doesn't have
-    overflow issues.
+    overflow issues. TODO(rkaplow): This should be replaced with
+    Memory.Browser.Large2 in M54.
   </summary>
 </histogram>
 
@@ -23732,12 +23730,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <obsolete>
-    Deprecated 07/2016 and replaced with Memory.Renderer.Large2.
-  </obsolete>
   <summary>
     The private working set used by each renderer process.  Each renderer
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per UMA ping. TODO(rkaplow):
+    This should be replaced with Memory.Renderer.Large2 in M54.
   </summary>
 </histogram>
 
