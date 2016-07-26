@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
 
+class BackgroundModeOptimizer;
 class BackgroundTrigger;
 class Browser;
 class PrefRegistrySimple;
@@ -78,6 +79,16 @@ class BackgroundModeManager
   // Gets a browser window for |profile| associated with the active desktop.
   // Opens a new browser window if there isn't one for the active desktop.
   static Browser* GetBrowserWindowForProfile(Profile* profile);
+
+  // Getter and setter for the flag indicating whether Chrome should start in
+  // background mode the next time.
+  static bool should_restart_in_background() {
+    return should_restart_in_background_;
+  }
+
+  static void set_should_restart_in_background(bool enable) {
+    should_restart_in_background_ = enable;
+  }
 
   // Returns true if background mode is active.
   virtual bool IsBackgroundModeActive();
@@ -314,7 +325,7 @@ class BackgroundModeManager
   // and has a status bar icon.
   void StartBackgroundMode();
 
-  // Invoked to take Chrome out of KeepAlive mode - chrome stops running in
+  // Invoked to take Chrome out of KeepAlive mode - Chrome stops running in
   // the background and removes its status bar icon.
   void EndBackgroundMode();
 
@@ -389,6 +400,11 @@ class BackgroundModeManager
   // if the profile isn't locked. Returns NULL otherwise.
   BackgroundModeData* GetBackgroundModeDataForLastProfile() const;
 
+  // Set to true when the next restart should be done in background mode.
+  // Static because its value is read after the background mode manager is
+  // destroyed.
+  static bool should_restart_in_background_;
+
   // Reference to the ProfileAttributesStorage. It is used to update the
   // background app status of profiles when they open/close background apps.
   ProfileAttributesStorage* profile_storage_;
@@ -430,6 +446,10 @@ class BackgroundModeManager
   // is required when running with the --no-startup-window flag, as otherwise
   // chrome would immediately exit due to having no open windows.
   std::unique_ptr<ScopedKeepAlive> keep_alive_for_startup_;
+
+  // Reference to the optimizer to use to reduce Chrome's footprint when in
+  // background mode. If null, optimizations are disabled.
+  std::unique_ptr<BackgroundModeOptimizer> optimizer_;
 
   // Set to true when Chrome is running with the --keep-alive-for-test flag
   // (used for testing background mode without having to install a background

@@ -1575,6 +1575,8 @@
       'browser/background/background_mode_manager_chromeos.cc',
       'browser/background/background_mode_manager_mac.mm',
       'browser/background/background_mode_manager_win.cc',
+      'browser/background/background_mode_optimizer.cc',
+      'browser/background/background_mode_optimizer.h',
       'browser/background/background_trigger.h',
     ],
     'chrome_browser_bookmark_sources': [

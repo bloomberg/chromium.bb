@@ -235,6 +235,10 @@
 #include "components/nacl/browser/nacl_process_host.h"
 #endif  // !defined(DISABLE_NACL)
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+#include "chrome/browser/background/background_mode_manager.h"
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
+
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
@@ -2035,11 +2039,24 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
+
+  int restart_flags = restart_last_session_
+                          ? browser_shutdown::RESTART_LAST_SESSION
+                          : browser_shutdown::NO_FLAGS;
+
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  if (restart_flags) {
+    restart_flags |= BackgroundModeManager::should_restart_in_background()
+                         ? browser_shutdown::RESTART_IN_BACKGROUND
+                         : browser_shutdown::NO_FLAGS;
+  }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
+
   browser_process_->PostDestroyThreads();
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());
-  browser_shutdown::ShutdownPostThreadsStop(restart_last_session_);
+  browser_shutdown::ShutdownPostThreadsStop(restart_flags);
   master_prefs_.reset();
   process_singleton_.reset();
   device_event_log::Shutdown();

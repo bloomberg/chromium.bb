@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
+#include "chrome/browser/background/background_mode_optimizer.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -91,6 +92,9 @@ void RecordMenuItemClick(MenuItem item) {
                             MENU_ITEM_NUM_STATES);
 }
 }  // namespace
+
+// static
+bool BackgroundModeManager::should_restart_in_background_ = false;
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
     Profile* profile,
@@ -318,6 +322,7 @@ BackgroundModeManager::BackgroundModeManager(
     // in a mode that doesn't open a browser window. It will be resumed when the
     // first browser window is opened.
     SuspendBackgroundMode();
+    optimizer_ = BackgroundModeOptimizer::Create();
   }
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
@@ -671,6 +676,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
 //  BackgroundModeManager, private
 void BackgroundModeManager::ReleaseStartupKeepAliveCallback() {
   keep_alive_for_startup_.reset();
+  optimizer_ = BackgroundModeOptimizer::Create();
 }
 
 void BackgroundModeManager::ReleaseStartupKeepAlive() {

@@ -789,6 +789,10 @@ extern const char kRecoveryComponentNeedsElevation[];
 
 extern const char kRegisteredSupervisedUserWhitelists[];
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+extern const char kRestartInBackground[];
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 extern const char kAnimationPolicy[];
 #endif

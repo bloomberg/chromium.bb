@@ -195,10 +195,11 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   testing_browser_process->SetProfileManager(profile_manager);
 
   chrome::AttemptRestart();
+  EXPECT_TRUE(testing_pref_service.GetBoolean(prefs::kWasRestarted));
+
   // Cancel the effects of us calling chrome::AttemptRestart. Otherwise tests
   // ran after this one will fail.
   browser_shutdown::SetTryingToQuit(false);
 
-  EXPECT_TRUE(testing_pref_service.GetBoolean(prefs::kWasRestarted));
   testing_browser_process->SetLocalState(NULL);
 }

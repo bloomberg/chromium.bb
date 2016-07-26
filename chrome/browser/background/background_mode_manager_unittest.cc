@@ -261,11 +261,13 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
     // We're getting ready to shutdown the message loop. Clear everything out!
     base::RunLoop().RunUntilIdle();
 
-    test_keep_alive_.reset();
-
     // TestBackgroundModeManager has dependencies on the infrastructure.
     // It should get cleared first.
     manager_.reset();
+
+    // Now that the background manager is destroyed, the test KeepAlive can be
+    // cleared without having |manager_| attempt to perform optimizations.
+    test_keep_alive_.reset();
 
     // The Profile Manager references the Browser Process.
     // The Browser Process references the Notification UI Manager.

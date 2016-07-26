@@ -394,6 +394,7 @@
       'browser/background/background_application_list_model_unittest.cc',
       'browser/background/background_contents_service_unittest.cc',
       'browser/background/background_mode_manager_unittest.cc',
+      'browser/background/background_mode_optimizer_unittest.cc',
     ],
     'chrome_unit_tests_extensions_sources': [
       '../apps/saved_files_service_unittest.cc',

@@ -20,6 +20,14 @@ const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Enables the Restart background mode optimization. When all Chrome UI is
+// closed and it goes in the background, allows to restart the browser to
+// discard memory.
+const base::Feature kBackgroundModeAllowRestart{
+    "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
+
 // Experiment to disable small cross-origin content. (http://crbug.com/608886)
 const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

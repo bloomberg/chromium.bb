@@ -92,11 +92,13 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
   bool new_keeping_alive = IsKeepingAlive();
   bool new_restart_allowed = IsRestartAllowed();
 
-  if (new_restart_allowed != old_restart_allowed)
-    OnRestartAllowedChanged(new_restart_allowed);
-
+  // Update the KeepAlive state first, so that listeners can check if we are
+  // trying to shutdown.
   if (new_keeping_alive != old_keeping_alive)
     OnKeepAliveStateChanged(new_keeping_alive);
+
+  if (new_restart_allowed != old_restart_allowed)
+    OnRestartAllowedChanged(new_restart_allowed);
 
   DVLOG(1) << "New state of the KeepAliveRegistry:" << *this;
 }
