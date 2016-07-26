@@ -11,10 +11,15 @@ var SearchField = Polymer({
     value_: String,
   },
 
+  /** @return {!HTMLInputElement} */
+  getSearchInput: function() {
+    return this.$.searchInput;
+  },
+
   /** @private */
   clearSearch_: function() {
     this.setValue('');
-    this.$.searchInput.focus();
+    this.getSearchInput().focus();
   },
 
   /** @private */

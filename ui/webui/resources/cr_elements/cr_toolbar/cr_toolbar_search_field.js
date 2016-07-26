@@ -36,6 +36,16 @@ Polymer({
     'searchInput.bind-value-changed': 'onBindValueChanged_',
   },
 
+  /** @return {!HTMLInputElement} */
+  getSearchInput: function() {
+    return this.$.searchInput;
+  },
+
+  /** @return {boolean} */
+  isSearchFocused: function() {
+    return this.$.searchTerm.focused;
+  },
+
   /**
    * @param {boolean} narrow
    * @return {number}

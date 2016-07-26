@@ -10815,10 +10815,17 @@ var CrSearchFieldBehavior = {
   },
 
   /**
+   * @abstract
+   * @return {!HTMLInputElement} The input field element the behavior should
+   * use.
+   */
+  getSearchInput: function() {},
+
+  /**
    * @return {string} The value of the search field.
    */
   getValue: function() {
-    return this.$.searchInput.value;
+    return this.getSearchInput().value;
   },
 
   /**
@@ -10828,7 +10835,7 @@ var CrSearchFieldBehavior = {
   setValue: function(value) {
     // Use bindValue when setting the input value so that changes propagate
     // correctly.
-    this.$.searchInput.bindValue = value;
+    this.getSearchInput().bindValue = value;
     this.onValueChanged_(value);
   },
 
@@ -10839,7 +10846,7 @@ var CrSearchFieldBehavior = {
 
   /** @private */
   focus_: function() {
-    this.$.searchInput.focus();
+    this.getSearchInput().focus();
   },
 
   onSearchTermSearch: function() {
@@ -10873,12 +10880,7 @@ var CrSearchFieldBehavior = {
     }
 
     this.setValue('');
-    this.$.searchInput.blur();
-  },
-
-  /** @return {boolean} */
-  isSearchFocused: function() {
-    return this.$.searchTerm.focused;
+    this.getSearchInput().blur();
   }
 };
 (function() {
@@ -11655,10 +11657,15 @@ var SearchField = Polymer({
     value_: String,
   },
 
+  /** @return {!HTMLInputElement} */
+  getSearchInput: function() {
+    return this.$.searchInput;
+  },
+
   /** @private */
   clearSearch_: function() {
     this.setValue('');
-    this.$.searchInput.focus();
+    this.getSearchInput().focus();
   },
 
   /** @private */
