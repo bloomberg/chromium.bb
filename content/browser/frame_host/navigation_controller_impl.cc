@@ -819,7 +819,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
-      RendererDidNavigateToNewPage(rfh, params, details->did_replace_entry);
+      RendererDidNavigateToNewPage(rfh, params, details->is_in_page,
+                                   details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       details->did_replace_entry = details->is_in_page;
@@ -829,7 +830,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
       RendererDidNavigateToSamePage(rfh, params);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
-      RendererDidNavigateNewSubframe(rfh, params, details->did_replace_entry);
+      RendererDidNavigateNewSubframe(rfh, params, details->is_in_page,
+                                     details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
       if (!RendererDidNavigateAutoSubframe(rfh, params))
@@ -1049,9 +1051,30 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 void NavigationControllerImpl::RendererDidNavigateToNewPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_in_page,
     bool replace_entry) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
-  bool update_virtual_url;
+  bool update_virtual_url = false;
+
+  // First check if this is an in-page navigation.  If so, clone the current
+  // entry instead of looking at the pending entry, because the pending entry
+  // does not have any subframe history items.
+  if (is_in_page && GetLastCommittedEntry()) {
+    FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
+        params.frame_unique_name, params.item_sequence_number,
+        params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
+        params.url, params.referrer, params.method, params.post_id);
+    new_entry = GetLastCommittedEntry()->CloneAndReplace(
+        frame_entry, true, rfh->frame_tree_node(),
+        delegate_->GetFrameTree()->root());
+
+    // We expect |frame_entry| to be owned by |new_entry|.  This should never
+    // fail, because it's the main frame.
+    CHECK(frame_entry->HasOneRef());
+
+    update_virtual_url = new_entry->update_virtual_url_with_url();
+  }
+
   // Only make a copy of the pending entry if it is appropriate for the new page
   // that was just loaded. Verify this by checking if the entry corresponds
   // to the current navigation handle. Note that in some tests the render frame
@@ -1064,13 +1087,18 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // checks.
   NavigationHandleImpl* handle = rfh->navigation_handle();
   DCHECK(handle);
-  if (PendingEntryMatchesHandle(handle) && pending_entry_index_ == -1 &&
+
+  if (!new_entry &&
+      PendingEntryMatchesHandle(handle) && pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
-  } else {
+  }
+
+  // For non-in-page commits with no matching pending entry, create a new entry.
+  if (!new_entry) {
     new_entry = base::WrapUnique(new NavigationEntryImpl);
 
     // Find out whether the new entry needs to update its virtual URL on URL
@@ -1115,9 +1143,9 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   frame_entry->set_post_id(params.post_id);
 
   // history.pushState() is classified as a navigation to a new page, but
-  // sets was_within_same_page to true. In this case, we already have the
-  // title and favicon available, so set them immediately.
-  if (params.was_within_same_page && GetLastCommittedEntry()) {
+  // sets is_in_page to true. In this case, we already have the title and
+  // favicon available, so set them immediately.
+  if (is_in_page && GetLastCommittedEntry()) {
     new_entry->SetTitle(GetLastCommittedEntry()->GetTitle());
     new_entry->GetFavicon() = GetLastCommittedEntry()->GetFavicon();
   }
@@ -1251,6 +1279,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_in_page,
     bool replace_entry) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
@@ -1269,8 +1298,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
         params.frame_unique_name, params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
         params.url, params.referrer, params.method, params.post_id));
-    new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
-                                                         frame_entry.get());
+    new_entry = GetLastCommittedEntry()->CloneAndReplace(
+        frame_entry.get(), is_in_page, rfh->frame_tree_node(),
+        delegate_->GetFrameTree()->root());
 
     // TODO(creis): Update this to add the frame_entry if we can't find the one
     // to replace, which can happen due to a unique name change.  See

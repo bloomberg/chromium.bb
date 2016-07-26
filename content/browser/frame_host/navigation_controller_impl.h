@@ -284,6 +284,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void RendererDidNavigateToNewPage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool is_in_page,
       bool replace_entry);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
@@ -294,6 +295,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool is_in_page,
       bool replace_entry);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,

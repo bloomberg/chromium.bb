@@ -39,8 +39,6 @@
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
   fast/history/history-length-append-subframe-with-hash.html [ Failure ]
-  fast/history/same-document-iframes-changing-fragment.html [ Failure ]
-  fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
   http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
   http/tests/navigation/back-to-dynamic-iframe.html [ Failure Crash ]
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]

@@ -48,16 +48,19 @@ class CONTENT_EXPORT NavigationEntryImpl
 
     // Recursively makes a deep copy of TreeNode with copies of each of the
     // FrameNavigationEntries in the subtree.  Replaces the TreeNode
-    // corresponding to |frame_tree_node| (and all of its children) with a new
-    // TreeNode for |frame_navigation_entry|.  Pass nullptr for both parameters
-    // to make a complete clone.
+    // corresponding to |target_frame_tree_node|, clearing all of its children
+    // unless |clone_children_of_target| is true.  This function omits any
+    // subframe history items that do not correspond to frames actually in the
+    // current page, using |current_frame_tree_node| (if present).
     // |is_root_tree_node| indicates whether this is being called on the root
     // NavigationEntryImpl::TreeNode.
     // TODO(creis): For --site-per-process, share FrameNavigationEntries between
     // NavigationEntries of the same tab.
     std::unique_ptr<TreeNode> CloneAndReplace(
-        FrameTreeNode* frame_tree_node,
         FrameNavigationEntry* frame_navigation_entry,
+        bool clone_children_of_target,
+        FrameTreeNode* target_frame_tree_node,
+        FrameTreeNode* current_frame_tree_node,
         bool is_root_tree_node) const;
 
     // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
@@ -146,18 +149,26 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Creates a copy of this NavigationEntryImpl that can be modified
   // independently from the original.  Does not copy any value that would be
-  // cleared in ResetForCommit.
+  // cleared in ResetForCommit.  Unlike |CloneAndReplace|, this does not check
+  // whether the subframe history items are for frames that are still in the
+  // current page.
   std::unique_ptr<NavigationEntryImpl> Clone() const;
 
   // Like |Clone|, but replaces the FrameNavigationEntry corresponding to
-  // |frame_tree_node| (and all its children) with |frame_entry|.
+  // |target_frame_tree_node| with |frame_entry|, clearing all of its children
+  // unless |clone_children_of_target| is true.  This function omits any
+  // subframe history items that do not correspond to frames actually in the
+  // current page, using |root_frame_tree_node| (if present).
+  //
   // TODO(creis): Once we start sharing FrameNavigationEntries between
   // NavigationEntryImpls, we will need to support two versions of Clone: one
   // that shares the existing FrameNavigationEntries (for use within the same
   // tab) and one that draws them from a different pool (for use in a new tab).
   std::unique_ptr<NavigationEntryImpl> CloneAndReplace(
-      FrameTreeNode* frame_tree_node,
-      FrameNavigationEntry* frame_entry) const;
+      FrameNavigationEntry* frame_entry,
+      bool clone_children_of_target,
+      FrameTreeNode* target_frame_tree_node,
+      FrameTreeNode* root_frame_tree_node) const;
 
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.

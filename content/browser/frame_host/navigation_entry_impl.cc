@@ -116,24 +116,58 @@ bool NavigationEntryImpl::TreeNode::MatchesFrame(FrameTreeNode* frame_tree_node,
 
 std::unique_ptr<NavigationEntryImpl::TreeNode>
 NavigationEntryImpl::TreeNode::CloneAndReplace(
-    FrameTreeNode* frame_tree_node,
     FrameNavigationEntry* frame_navigation_entry,
+    bool clone_children_of_target,
+    FrameTreeNode* target_frame_tree_node,
+    FrameTreeNode* current_frame_tree_node,
     bool is_root_tree_node) const {
-  if (frame_tree_node && MatchesFrame(frame_tree_node, is_root_tree_node)) {
-    // Replace this node in the cloned tree and prune its children.
-    return base::WrapUnique(
-        new NavigationEntryImpl::TreeNode(frame_navigation_entry));
-  }
-
-  // Clone the tree using a copy of the FrameNavigationEntry, without sharing.
-  // TODO(creis): Share FNEs unless it's for another tab.
+  // Clone this TreeNode, possibly replacing its FrameNavigationEntry.
+  bool is_target_frame =
+      target_frame_tree_node &&
+      MatchesFrame(target_frame_tree_node, is_root_tree_node);
   std::unique_ptr<NavigationEntryImpl::TreeNode> copy(
-      new NavigationEntryImpl::TreeNode(frame_entry->Clone()));
+      new NavigationEntryImpl::TreeNode(
+          is_target_frame ? frame_navigation_entry : frame_entry->Clone()));
 
-  // Recursively clone the children.
-  for (auto* child : children) {
-    copy->children.push_back(
-        child->CloneAndReplace(frame_tree_node, frame_navigation_entry, false));
+  // Recursively clone the children if needed.
+  if (!is_target_frame || clone_children_of_target) {
+    for (size_t i = 0; i < children.size(); i++) {
+      NavigationEntryImpl::TreeNode* child = children[i];
+
+      // Don't check whether it's still in the tree if |current_frame_tree_node|
+      // is null.
+      if (!current_frame_tree_node) {
+        copy->children.push_back(child->CloneAndReplace(
+            frame_navigation_entry, clone_children_of_target,
+            target_frame_tree_node, nullptr, false));
+        continue;
+      }
+
+      // Otherwise, make sure the frame is still in the tree before cloning it.
+      // This is O(N^2) in the worst case because we need to look up each frame
+      // (and since we want to avoid a map of unique names, which can be very
+      // long).  To partly mitigate this, we add an optimization for the common
+      // case that the two child lists are the same length and are likely in the
+      // same order: we pick the starting offset of the inner loop to get O(N).
+      size_t ftn_child_count = current_frame_tree_node->child_count();
+      for (size_t j = 0; j < ftn_child_count; j++) {
+        size_t index = j;
+        // If the two lists of children are the same length, start looking at
+        // the same index as |child|.
+        if (children.size() == ftn_child_count)
+          index = (i + j) % ftn_child_count;
+
+        if (current_frame_tree_node->child_at(index)->unique_name() ==
+            child->frame_entry->frame_unique_name()) {
+          // Found |child| in the tree.  Clone it and break out of inner loop.
+          copy->children.push_back(child->CloneAndReplace(
+              frame_navigation_entry, clone_children_of_target,
+              target_frame_tree_node, current_frame_tree_node->child_at(index),
+              false));
+          break;
+        }
+      }
+    }
   }
 
   return copy;
@@ -516,19 +550,22 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 }
 
 std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
-  return NavigationEntryImpl::CloneAndReplace(nullptr, nullptr);
+  return NavigationEntryImpl::CloneAndReplace(nullptr, false, nullptr, nullptr);
 }
 
 std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
-    FrameTreeNode* frame_tree_node,
-    FrameNavigationEntry* frame_navigation_entry) const {
+    FrameNavigationEntry* frame_navigation_entry,
+    bool clone_children_of_target,
+    FrameTreeNode* target_frame_tree_node,
+    FrameTreeNode* root_frame_tree_node) const {
   std::unique_ptr<NavigationEntryImpl> copy =
       base::WrapUnique(new NavigationEntryImpl());
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.
   copy->frame_tree_ = frame_tree_->CloneAndReplace(
-      frame_tree_node, frame_navigation_entry, true);
+      frame_navigation_entry, clone_children_of_target, target_frame_tree_node,
+      root_frame_tree_node, true);
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.

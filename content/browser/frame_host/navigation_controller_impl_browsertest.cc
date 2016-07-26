@@ -297,10 +297,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigateToURL(shell(), js_url);
   EXPECT_EQ(2, controller.GetEntryCount());
   NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
-  // TODO(boliu): These expectations maybe incorrect due to crbug.com/561034.
-  EXPECT_TRUE(entry->GetBaseURLForDataURL().is_empty());
-  EXPECT_TRUE(entry->GetHistoryURLForDataURL().is_empty());
-  EXPECT_EQ(data_url, entry->GetVirtualURL());
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
   EXPECT_EQ(data_url, entry->GetURL());
 
   // Passes if renderer is still alive.
@@ -2375,6 +2374,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
   NavigateToURL(shell(), main_url);
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
           GetFrameTree()->root();
@@ -2399,7 +2401,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, push_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // TODO(creis): Verify subframe entries.  https://crbug.com/522193.
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the subframe.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(subframe_url,
+              entry->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
 
   // 3. Add a nested subframe.
   {
@@ -2413,7 +2425,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
   }
 
-  // TODO(creis): Verify subframe entries.  https://crbug.com/522193.
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  entry = controller.GetLastCommittedEntry();
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the subframe.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(subframe_url,
+              entry->root_node()->children[0]->frame_entry->url());
+    ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
+    EXPECT_EQ(subframe_url,
+              entry->root_node()->children[0]->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry->root_node()->children.size());
+  }
 }
 
 // Verify the tree of FrameNavigationEntries after back/forward navigations in a
