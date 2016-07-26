@@ -96,6 +96,7 @@
       'Afl Upload Linux ASan': 'gn_release_afl_asan',
       'Android ChromeDriver Tests (dbg)': 'none',
       'Android Cloud Tests': 'android_gn_debug_static_bot_x86',
+      'Android Find Annotated Test': 'none',
       'Android Remoting Tests': 'none',
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
@@ -235,7 +236,7 @@
       'Linux remote_run Builder': 'swarming_gn_release_bot',
       'Linux remote_run Tester': 'swarming_gn_release_bot',
       'Linux V8 API Stability': 'gn_release_bot',
-      'Mac deterministic': 'gn_release_bot_mac_strip',
+      'Mac deterministic': 'gn_release_bot',
       'Mojo ChromiumOS': 'swarming_chromeos_gn_release_bot',
       'Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
       'Site Isolation Linux': 'gn_release_trybot',
@@ -246,9 +247,9 @@
       'WebKit Mac - WPTServe': 'swarming_gn_release_bot',
       'WebKit Win - WPTServe': 'swarming_gn_release_bot_minimal_symbols_x86',
       'Win 10 Fast Ring': 'gn_release_trybot_x64',
+      'Win deterministic': 'gn_release_bot_minimal_symbols_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
-      'Windows deterministic': 'gn_release_bot_minimal_symbols_x86',
     },
 
     'chromium.gpu': {
@@ -510,8 +511,6 @@
       'Win 7 Intel GPU Perf (3)': 'none',
       'Win 7 Intel GPU Perf (4)': 'none',
       'Win 7 Intel GPU Perf (5)': 'none',
-      'Win 7 Low-End Perf (1)': 'none',
-      'Win 7 Low-End Perf (2)': 'none',
       'Win 7 Nvidia GPU Perf (1)': 'none',
       'Win 7 Nvidia GPU Perf (2)': 'none',
       'Win 7 Nvidia GPU Perf (3)': 'none',
@@ -607,12 +606,8 @@
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Linux Tester': 'none',
       'Mac Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot',
-      'Mac GN (dbg)': 'gn_debug_static_bot_chrome_with_codecs',
-      'Mac GN': 'gn_release_bot_chrome_with_codecs',
       'Mac Tester': 'none',
       'Win Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot_x86',
-      'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols_chrome_with_codecs',
-      'Win x64 GN': 'gn_release_bot_minimal_symbols_chrome_with_codecs',
       'Win10 Tester': 'none',
       'Win7 Tester': 'none',
     },
@@ -1146,10 +1141,6 @@
       'gn', 'debug_bot',
     ],
 
-    'gn_debug_bot_minimal_symbols_chrome_with_codecs': [
-      'gn', 'debug_bot_minimal_symbols', 'chrome_with_codecs',
-    ],
-
     'gn_debug_bot_minimal_symbols_x86': [
       'gn', 'debug_bot_minimal_symbols', 'x86',
     ],
@@ -1157,10 +1148,6 @@
     'gn_debug_libfuzzer_asan': [
       'gn', 'debug', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
       'disable_nacl',
-    ],
-
-    'gn_debug_static_bot_chrome_with_codecs': [
-      'gn', 'debug_static_bot', 'chrome_with_codecs',
     ],
 
     'gn_linux_upload': [
@@ -1205,14 +1192,6 @@
 
     'gn_release_bot_chrome_with_codecs': [
       'gn', 'release_bot', 'chrome_with_codecs',
-    ],
-
-    'gn_release_bot_mac_strip': [
-      'gn', 'release_bot', 'mac_strip',
-    ],
-
-    'gn_release_bot_minimal_symbols_chrome_with_codecs': [
-      'gn', 'release_bot_minimal_symbols', 'chrome_with_codecs',
     ],
 
     'gn_release_bot_minimal_symbols_x86': [
