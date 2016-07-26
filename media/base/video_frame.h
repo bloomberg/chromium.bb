@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -321,6 +322,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns true if |frame| has textures with any StorageType and should not be
   // accessed via data(), visible_data() etc.
   bool HasTextures() const;
+
+  // Returns the color space of this frame's content.
+  gfx::ColorSpace ColorSpace() const;
 
   VideoPixelFormat format() const { return format_; }
   StorageType storage_type() const { return storage_type_; }

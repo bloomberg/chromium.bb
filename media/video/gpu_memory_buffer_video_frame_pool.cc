@@ -438,8 +438,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     FrameResources* frame_resources,
     const FrameReadyCB& frame_ready_cb) {
   for (const auto& plane_resource : frame_resources->plane_resources) {
-    if (plane_resource.gpu_memory_buffer)
+    if (plane_resource.gpu_memory_buffer) {
       plane_resource.gpu_memory_buffer->Unmap();
+      plane_resource.gpu_memory_buffer->SetColorSpaceForScanout(
+          video_frame->ColorSpace());
+    }
   }
 
   media_task_runner_->PostTask(

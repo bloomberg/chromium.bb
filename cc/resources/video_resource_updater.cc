@@ -514,10 +514,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       external_resources.multiplier = 2048.0 / max_input_value;
     }
 
-    external_resources.mailboxes.push_back(
-        TextureMailbox(plane_resource.mailbox(), gpu::SyncToken(),
-                       resource_provider_->GetResourceTextureTarget(
-                           plane_resource.resource_id())));
+    TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
+                           resource_provider_->GetResourceTextureTarget(
+                               plane_resource.resource_id()));
+    mailbox.set_color_space(video_frame->ColorSpace());
+    external_resources.mailboxes.push_back(mailbox);
     external_resources.release_callbacks.push_back(base::Bind(
         &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
   }
@@ -608,9 +609,10 @@ void VideoResourceUpdater::CopyPlaneTexture(
   // Done with the source video frame texture at this point.
   video_frame->UpdateReleaseSyncToken(&client);
 
-  external_resources->mailboxes.push_back(
-      TextureMailbox(resource->mailbox(), sync_token, GL_TEXTURE_2D,
-                     video_frame->coded_size(), false, false));
+  TextureMailbox mailbox(resource->mailbox(), sync_token, GL_TEXTURE_2D,
+                         video_frame->coded_size(), false, false);
+  mailbox.set_color_space(video_frame->ColorSpace());
+  external_resources->mailboxes.push_back(mailbox);
 
   external_resources->release_callbacks.push_back(
       base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id()));
@@ -646,13 +648,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
             media::VideoFrameMetadata::COPY_REQUIRED)) {
       CopyPlaneTexture(video_frame.get(), mailbox_holder, &external_resources);
     } else {
-      external_resources.mailboxes.push_back(TextureMailbox(
-          mailbox_holder.mailbox, mailbox_holder.sync_token,
-          mailbox_holder.texture_target, video_frame->coded_size(),
-          video_frame->metadata()->IsTrue(
-              media::VideoFrameMetadata::ALLOW_OVERLAY),
-          false));
-
+      TextureMailbox mailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
+                             mailbox_holder.texture_target,
+                             video_frame->coded_size(),
+                             video_frame->metadata()->IsTrue(
+                                 media::VideoFrameMetadata::ALLOW_OVERLAY),
+                             false);
+      mailbox.set_color_space(video_frame->ColorSpace());
+      external_resources.mailboxes.push_back(mailbox);
       external_resources.release_callbacks.push_back(
           base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
     }

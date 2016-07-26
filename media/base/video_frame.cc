@@ -652,6 +652,24 @@ bool VideoFrame::HasTextures() const {
   return !mailbox_holders_[0].mailbox.IsZero();
 }
 
+gfx::ColorSpace VideoFrame::ColorSpace() const {
+  int videoframe_color_space;
+  if (metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
+                             &videoframe_color_space)) {
+    switch (videoframe_color_space) {
+      case media::COLOR_SPACE_JPEG:
+        return gfx::ColorSpace::CreateJpeg();
+      case media::COLOR_SPACE_HD_REC709:
+        return gfx::ColorSpace::CreateREC709();
+      case media::COLOR_SPACE_SD_REC601:
+        return gfx::ColorSpace::CreateREC601();
+      default:
+        break;
+    }
+  }
+  return gfx::ColorSpace();
+}
+
 int VideoFrame::stride(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
   return strides_[plane];
