@@ -24,6 +24,8 @@ chrome::SadTabKind SadTabKindFromTerminationStatus(
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       return chrome::SAD_TAB_KIND_KILLED;
+    case base::TERMINATION_STATUS_OOM:
+      return chrome::SAD_TAB_KIND_OOM;
     default:
       return chrome::SAD_TAB_KIND_CRASHED;
   }

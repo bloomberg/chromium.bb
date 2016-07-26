@@ -50,30 +50,26 @@ const int kCrashesBeforeFeedbackIsDisplayed = 1;
 void RecordKillCreated() {
   static int killed = 0;
   killed++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.SadTab.KillCreated", killed, 1, 1000, 50);
+  UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.KillCreated", killed);
 }
 
 void RecordKillDisplayed() {
   static int killed = 0;
   killed++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.SadTab.KillDisplayed", killed, 1, 1000, 50);
+  UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.KillDisplayed", killed);
 }
 
 #if defined(OS_CHROMEOS)
 void RecordKillCreatedOOM() {
   static int oom_killed = 0;
   oom_killed++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.SadTab.KillCreated.OOM", oom_killed, 1, 1000, 50);
+  UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.KillCreated.OOM", oom_killed);
 }
 
 void RecordKillDisplayedOOM() {
   static int oom_killed = 0;
   oom_killed++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.SadTab.KillDisplayed.OOM", oom_killed, 1, 1000, 50);
+  UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.KillDisplayed.OOM", oom_killed);
 }
 #endif
 
@@ -102,14 +98,19 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     case chrome::SAD_TAB_KIND_CRASHED: {
       static int crashed = 0;
       crashed++;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
+      UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.CrashCreated", crashed);
       break;
     }
     case chrome::SAD_TAB_KIND_KILLED: {
       RecordKillCreated();
       LOG(WARNING) << "Tab Killed: "
                    <<  web_contents->GetURL().GetOrigin().spec();
+      break;
+    }
+    case chrome::SAD_TAB_KIND_OOM: {
+      static int crashed_due_to_oom = 0;
+      crashed_due_to_oom++;
+      UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.OomCreated", crashed_due_to_oom);
       break;
     }
 #if defined(OS_CHROMEOS)
@@ -166,6 +167,8 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   if (kind_ == chrome::SAD_TAB_KIND_KILLED_BY_OOM)
     message_id = IDS_KILLED_TAB_BY_OOM_MESSAGE;
 #endif
+  if (kind_ == chrome::SAD_TAB_KIND_OOM)
+    message_id = IDS_SAD_TAB_OOM_MESSAGE;
 
   message_ = CreateLabel(l10n_util::GetStringUTF16(message_id));
 
@@ -248,8 +251,15 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
     switch (kind_) {
       case chrome::SAD_TAB_KIND_CRASHED: {
         static int crashed = 0;
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Tabs.SadTab.CrashDisplayed", ++crashed, 1, 1000, 50);
+        crashed++;
+        UMA_HISTOGRAM_COUNTS_1000("Tabs.SadTab.CrashDisplayed", crashed);
+        break;
+      }
+      case chrome::SAD_TAB_KIND_OOM: {
+        static int crashed_due_to_oom = 0;
+        crashed_due_to_oom++;
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Tabs.SadTab.OomDisplayed", crashed_due_to_oom);
         break;
       }
       case chrome::SAD_TAB_KIND_KILLED:

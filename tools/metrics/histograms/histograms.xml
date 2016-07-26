@@ -59127,7 +59127,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.CrashCreated">
+<histogram name="Tabs.SadTab.CrashCreated" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab crashed with &quot;Aw, Snap!&quot;,
@@ -59139,7 +59139,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.CrashDisplayed">
+<histogram name="Tabs.SadTab.CrashDisplayed" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab crashed with &quot;Aw, Snap!&quot; and the
@@ -59150,7 +59150,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.KillCreated">
+<histogram name="Tabs.SadTab.KillCreated" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was killed with a &quot;He's dead,
@@ -59164,7 +59164,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.KillCreated.OOM">
+<histogram name="Tabs.SadTab.KillCreated.OOM" units="tabs">
   <owner>oshima@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was killed with a &quot;He's dead,
@@ -59177,7 +59177,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.KillDisplayed">
+<histogram name="Tabs.SadTab.KillDisplayed" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was killed with a &quot;He's dead,
@@ -59188,7 +59188,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.KillDisplayed.OOM">
+<histogram name="Tabs.SadTab.KillDisplayed.OOM" units="tabs">
   <owner>oshima@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was killed with a &quot;He's dead,
@@ -59200,7 +59200,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tabs.SadTab.ReloadCount">
+<histogram name="Tabs.SadTab.OomCreated" units="tabs">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab crashed with &quot;Aw, Snap!&quot;,
+    recorded once per tab oom event.  For example, a user who ran out of memory
+    in 3 tabs will record a count in the 1 bin, 2 bin, and 3 bin.  Thus each bin
+    N is the number of sessions where users experienced N or more oom events.
+    The user may not have actually seen the sad tab page, as it might have been
+    an inactive tab. Compare to Tabs.SadTab.OomDisplayed.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.OomDisplayed" units="tabs">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab ran out of memory with &quot;Aw,
+    Snap!&quot; and the user saw the page, recorded once per tab oom event.  For
+    example, a user who ran out of memory in 3 tabs will record a count in the 1
+    bin, 2 bin, and 3 bin.  Thus each bin N is the number of sessions where
+    users experienced N or more oom events.  Compare to Tabs.SadTab.OomCreated.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.ReloadCount" units="tabs">
   <owner>jamescook@chromium.org</owner>
   <summary>
     The number of times a tab was reloaded because it was killed (usually by the

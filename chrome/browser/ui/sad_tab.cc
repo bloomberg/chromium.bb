@@ -14,7 +14,8 @@ bool SadTab::ShouldShow(base::TerminationStatus status) {
 #if defined(OS_CHROMEOS)
           status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM ||
 #endif
-          status == base::TERMINATION_STATUS_PROCESS_CRASHED);
+          status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+          status == base::TERMINATION_STATUS_OOM);
 }
 
 }  // namespace chrome
