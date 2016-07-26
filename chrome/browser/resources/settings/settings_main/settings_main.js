@@ -49,6 +49,12 @@ Polymer({
       },
     },
 
+    /** @private */
+    showNoResultsFound_: {
+      type: Boolean,
+      value: false,
+    },
+
     toolbarSpinnerActive: {
       type: Boolean,
       value: false,
@@ -61,13 +67,6 @@ Polymer({
     /** @private {!PromiseResolver} */
     this.resolver_ = new PromiseResolver;
     settings.main.rendered = this.resolver_.promise;
-  },
-
-  /** @override */
-  ready: function() {
-    settings.getSearchManager().setCallback(function(isRunning) {
-      this.toolbarSpinnerActive = isRunning;
-    }.bind(this));
   },
 
   /** @override */
@@ -203,18 +202,30 @@ Polymer({
    */
   searchContents: function(query) {
     this.ensureInDefaultSearchPage_();
+    this.toolbarSpinnerActive = true;
 
     // Trigger rendering of the basic and advanced pages and search once ready.
-    // Even if those are already rendered, yield to the message loop before
-    // initiating searching.
     this.showPages_ = {about: false, basic: true, advanced: true};
+
     setTimeout(function() {
       settings.getSearchManager().search(
           query, assert(this.$$('settings-basic-page')));
     }.bind(this), 0);
     setTimeout(function() {
       settings.getSearchManager().search(
-          query, assert(this.$$('settings-advanced-page')));
+          query, assert(this.$$('settings-advanced-page'))).then(
+          function(request) {
+            if (!request.finished) {
+              // Nothing to do here. A previous search request was canceled
+              // because a new search request was issued before the first one
+              // completed.
+              return;
+            }
+
+            this.toolbarSpinnerActive = false;
+            this.showNoResultsFound_ =
+                !request.isSame('') && !request.didFindMatches();
+          }.bind(this));
     }.bind(this), 0);
   },
 });

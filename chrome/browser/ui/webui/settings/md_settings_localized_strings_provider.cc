@@ -70,10 +70,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
       {"save", IDS_SAVE},
       {"advancedPageTitle", IDS_SETTINGS_ADVANCED},
       {"basicPageTitle", IDS_SETTINGS_BASIC},
-      {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
-      // TODO(dpapad); IDS_DOWNLOAD_CLEAR_SEARCH and IDS_MD_HISTORY_CLEAR_SEARCH
-      // are identical, merge them to one and re-use here.
-      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
       {"settings", IDS_SETTINGS_SETTINGS},
       {"restart", IDS_SETTINGS_RESTART},
   };
@@ -990,6 +986,23 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
                              base::ASCIIToUTF16(chrome::kPrivacyLearnMoreURL)));
 }
 
+void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+    {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
+    {"searchNoResults", IDS_SETTINGS_SEARCH_NO_RESULTS},
+    // TODO(dpapad); IDS_DOWNLOAD_CLEAR_SEARCH and IDS_MD_HISTORY_CLEAR_SEARCH
+    // are identical, merge them to one and re-use here.
+    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+
+  base::string16 help_text = l10n_util::GetStringFUTF16(
+      IDS_SETTINGS_SEARCH_NO_RESULTS_HELP,
+      base::ASCIIToUTF16(chrome::kSettingsSearchHelpURL));
+  html_source->AddString("searchNoResultsHelp", help_text);
+}
+
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"searchPageTitle", IDS_SETTINGS_SEARCH},
@@ -1333,6 +1346,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPrivacyStrings(html_source);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
+  AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source);
 #if !defined(OS_CHROMEOS)

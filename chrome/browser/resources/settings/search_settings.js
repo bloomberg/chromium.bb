@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{id: number, rawQuery: ?string, regExp: ?RegExp}} */
-var SearchContext;
-
 cr.define('settings', function() {
   /** @const {string} */
   var WRAPPER_CSS_CLASS = 'search-highlight-wrapper';
@@ -103,16 +100,17 @@ cr.define('settings', function() {
    * ensures that <settings-section> instances become visible if any matches
    * occurred under their subtree.
    *
-   * @param {!SearchContext} context
+   * @param {!SearchRequest} request
    * @param {!Node} root The root of the sub-tree to be searched
    * @private
    */
-  function findAndHighlightMatches_(context, root) {
+  function findAndHighlightMatches_(request, root) {
+    var foundMatches = false;
     function doSearch(node) {
       if (node.nodeName == 'TEMPLATE' && node.hasAttribute('name') &&
           !node.if) {
         getSearchManager().queue_.addRenderTask(
-            new RenderTask(context, node));
+            new RenderTask(request, node));
         return;
       }
 
@@ -124,9 +122,10 @@ cr.define('settings', function() {
         if (textContent.length == 0)
           return;
 
-        if (context.regExp.test(textContent)) {
+        if (request.regExp.test(textContent)) {
+          foundMatches = true;
           revealParentSection_(node);
-          highlight_(node, textContent.split(context.regExp));
+          highlight_(node, textContent.split(request.regExp));
         }
         // Returning early since TEXT_NODE nodes never have children.
         return;
@@ -147,6 +146,7 @@ cr.define('settings', function() {
     }
 
     doSearch(root);
+    return foundMatches;
   }
 
   /**
@@ -167,12 +167,12 @@ cr.define('settings', function() {
   /**
    * @constructor
    *
-   * @param {!SearchContext} context
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
-  function Task(context, node) {
-    /** @protected {!SearchContext} */
-    this.context = context;
+  function Task(request, node) {
+    /** @protected {!SearchRequest} */
+    this.request = request;
 
     /** @protected {!Node} */
     this.node = node;
@@ -193,11 +193,11 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!SearchContext} context
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
-  function RenderTask(context, node) {
-    Task.call(this, context, node);
+  function RenderTask(request, node) {
+    Task.call(this, request, node);
   }
 
   RenderTask.prototype = {
@@ -216,7 +216,7 @@ cr.define('settings', function() {
           // Register a SearchAndHighlightTask for the part of the DOM that was
           // just rendered.
           getSearchManager().queue_.addSearchAndHighlightTask(
-              new SearchAndHighlightTask(this.context, assert(renderedNode)));
+              new SearchAndHighlightTask(this.request, assert(renderedNode)));
           resolve();
         }.bind(this));
       }.bind(this));
@@ -227,17 +227,18 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!SearchContext} context
+   * @param {!SearchRequest} request
    * @param {!Node} node
    */
-  function SearchAndHighlightTask(context, node) {
-    Task.call(this, context, node);
+  function SearchAndHighlightTask(request, node) {
+    Task.call(this, request, node);
   }
 
   SearchAndHighlightTask.prototype = {
     /** @override */
     exec: function() {
-      findAndHighlightMatches_(this.context, this.node);
+      var foundMatches = findAndHighlightMatches_(this.request, this.node);
+      this.request.updateMatches(foundMatches);
       return Promise.resolve();
     },
   };
@@ -246,11 +247,11 @@ cr.define('settings', function() {
    * @constructor
    * @extends {Task}
    *
-   * @param {!SearchContext} context
+   * @param {!SearchRequest} request
    * @param {!Node} page
    */
-  function TopLevelSearchTask(context, page) {
-    Task.call(this, context, page);
+  function TopLevelSearchTask(request, page) {
+    Task.call(this, request, page);
   }
 
   TopLevelSearchTask.prototype = {
@@ -258,10 +259,12 @@ cr.define('settings', function() {
     exec: function() {
       findAndRemoveHighlights_(this.node);
 
-      var shouldSearch = this.context.regExp !== null;
+      var shouldSearch = this.request.regExp !== null;
       this.setSectionsVisibility_(!shouldSearch);
-      if (shouldSearch)
-        findAndHighlightMatches_(this.context, this.node);
+      if (shouldSearch) {
+        var foundMatches = findAndHighlightMatches_(this.request, this.node);
+        this.request.updateMatches(foundMatches);
+      }
 
       return Promise.resolve();
     },
@@ -291,6 +294,9 @@ cr.define('settings', function() {
      */
     this.queues_;
     this.reset();
+
+    /** @private {?Function} */
+    this.onEmptyCallback_ = null;
 
     /**
      * Whether a task is currently running.
@@ -324,6 +330,14 @@ cr.define('settings', function() {
     },
 
     /**
+     * Registers a callback to be called every time the queue becomes empty.
+     * @param {function():void} onEmptyCallback
+     */
+    onEmpty: function(onEmptyCallback) {
+      this.onEmptyCallback_ = onEmptyCallback;
+    },
+
+    /**
      * @return {!Task|undefined}
      * @private
      */
@@ -342,7 +356,8 @@ cr.define('settings', function() {
         var task = this.popNextTask_();
         if (!task) {
           this.running_ = false;
-          getSearchManager().notifyCallback(false);
+          if (this.onEmptyCallback_)
+            this.onEmptyCallback_();
           return;
         }
 
@@ -352,8 +367,8 @@ cr.define('settings', function() {
             this.running_ = false;
             this.consumePending_();
           }
-          if (task.context.id ==
-              getSearchManager().activeContext_.id) {
+          if (task.request.id ==
+              getSearchManager().activeRequest_.id) {
             task.exec().then(startNextTask.bind(this));
           } else {
             // Dropping this task without ever executing it, since a new search
@@ -369,63 +384,116 @@ cr.define('settings', function() {
   /**
    * @constructor
    */
+  var SearchRequest = function(rawQuery) {
+    /** @type {number} */
+    this.id = SearchRequest.nextId_++;
+
+    /** @private {string} */
+    this.rawQuery_ = rawQuery;
+
+    /** @type {?RegExp} */
+    this.regExp = this.generateRegExp_();
+
+    /**
+     * Whether this request was fully processed.
+     * @type {boolean}
+     */
+    this.finished = false;
+
+    /** @private {boolean} */
+    this.foundMatches_ = false;
+
+    /** @type {!PromiseResolver} */
+    this.resolver = new PromiseResolver();
+  };
+
+  /** @private {number} */
+  SearchRequest.nextId_ = 0;
+
+  /** @private {!RegExp} */
+  SearchRequest.SANITIZE_REGEX_ = /[-[\]{}()*+?.,\\^$|#\s]/g;
+
+  SearchRequest.prototype = {
+    /**
+     * @return {?RegExp}
+     * @private
+     */
+    generateRegExp_: function() {
+      var regExp = null;
+
+      // Generate search text by escaping any characters that would be
+      // problematic for regular expressions.
+      var searchText = this.rawQuery_.trim().replace(
+          SearchRequest.SANITIZE_REGEX_, '\\$&');
+      if (searchText.length > 0)
+        regExp = new RegExp('(' + searchText + ')', 'i');
+
+      return regExp;
+    },
+
+    /**
+     * @param {string} rawQuery
+     * @return {boolean} Whether this SearchRequest refers to an identical
+     *     query.
+     */
+    isSame: function(rawQuery) {
+      return this.rawQuery_ == rawQuery;
+    },
+
+    /**
+     * Updates the result for this search request.
+     * @param {boolean} found
+     */
+    updateMatches: function(found) {
+      this.foundMatches_ = this.foundMatches_ || found;
+    },
+
+    /** @return {boolean} Whether any matches were found. */
+    didFindMatches: function() {
+      return this.foundMatches_;
+    },
+  };
+
+  /**
+   * @constructor
+   */
   var SearchManager = function() {
+    /** @private {?SearchRequest} */
+    this.activeRequest_ = null;
+
     /** @private {!TaskQueue} */
     this.queue_ = new TaskQueue();
-
-    /** @private {!SearchContext} */
-    this.activeContext_ = {id: 0, rawQuery: null, regExp: null};
-
-    /** @private {?function(boolean):void} */
-    this.callbackFn_ = null;
+    this.queue_.onEmpty(function() {
+      this.activeRequest_.finished = true;
+      this.activeRequest_.resolver.resolve(this.activeRequest_);
+      this.activeRequest_ = null;
+    }.bind(this));
   };
   cr.addSingletonGetter(SearchManager);
 
-  /** @private @const {!RegExp} */
-  SearchManager.SANITIZE_REGEX_ = /[-[\]{}()*+?.,\\^$|#\s]/g;
-
   SearchManager.prototype = {
-    /**
-     * Registers a callback function that will be called every time search
-     * starts/finishes.
-     * @param {?function(boolean):void} callbackFn
-     */
-    setCallback: function(callbackFn) {
-      this.callbackFn_ = callbackFn;
-    },
-
-    /** @param {boolean} isRunning */
-    notifyCallback: function(isRunning) {
-      if (this.callbackFn_)
-        this.callbackFn_(isRunning);
-    },
-
     /**
      * @param {string} text The text to search for.
      * @param {!Node} page
+     * @return {!Promise<!SearchRequest>} A signal indicating that searching
+     *     finished.
      */
     search: function(text, page) {
-      if (this.activeContext_.rawQuery != text) {
-        var newId = this.activeContext_.id + 1;
-
-        var regExp = null;
-        // Generate search text by escaping any characters that would be
-        // problematic for regular expressions.
-        var searchText = text.trim().replace(
-            SearchManager.SANITIZE_REGEX_, '\\$&');
-        if (searchText.length > 0)
-          regExp = new RegExp('(' + searchText + ')', 'i');
-
-        this.activeContext_ = {id: newId, rawQuery: text, regExp: regExp};
-
-        // Drop all previously scheduled tasks, since a new search was just
-        // issued.
+      // Creating a new request only if the |text| changed.
+      if (!this.activeRequest_ || !this.activeRequest_.isSame(text)) {
+        // Resolving previous search request without marking it as
+        // 'finisthed', if any, and droping all pending tasks.
         this.queue_.reset();
-        this.notifyCallback(true);
+        if (this.activeRequest_)
+          this.activeRequest_.resolver.resolve(this.activeRequest_);
+
+        this.activeRequest_ = new SearchRequest(text);
       }
 
       this.queue_.addTopLevelSearchTask(
-          new TopLevelSearchTask(this.activeContext_, page));
+          new TopLevelSearchTask(this.activeRequest_, page));
+
+      return this.activeRequest_.resolver.promise;
     },
   };
 

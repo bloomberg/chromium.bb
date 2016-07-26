@@ -36,8 +36,24 @@
       iron-icon {
         -webkit-margin-start: 16px;
       }
+
+      #no-search-results {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        margin-top: 80px;
+      }
+
+      #no-search-results div:first-child {
+        font-size: 120%;
+        margin-bottom: 10px;
+      }
     </style>
     <content select="paper-icon-button"></content>
+    <div id="no-search-results" hidden$="[[!showNoResultsFound_]]">
+      <div>$i18n{searchNoResults}</div>
+      <div>$i18nRaw{searchNoResultsHelp}</div>
+    </div>
     <template is="dom-if" if="[[showPages_.basic]]">
       <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
       </settings-basic-page>
@@ -45,7 +61,7 @@
     <template is="dom-if"
         if="[[showAdvancedToggle_(showPages_.basic, inSubpage_)]]">
       <div id="toggleSpacer"></div>
-      <div id="toggleContainer">
+      <div id="toggleContainer" hidden$="[[showNoResultsFound_]]">
         <div id="advancedToggle" on-tap="toggleAdvancedPage_">
           <span>$i18n{advancedPageTitle}</span>
           <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>

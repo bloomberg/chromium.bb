@@ -212,6 +212,12 @@
   <message name="IDS_SETTINGS_SEARCH_PROMPT" desc="Label for input field to search within settings.">
     Search settings
   </message>
+  <message name="IDS_SETTINGS_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
+    No matches were found.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_NO_RESULTS_HELP" desc="Help text for a search that has no results.">
+    Go to <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Google Chrome help<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> if you can't find what you're looking for.
+  </message>
   <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
     Settings
   </message>
