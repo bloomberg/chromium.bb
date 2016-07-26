@@ -47,18 +47,31 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsNoList)
     EXPECT_TRUE(testElement().filteredDataListOptions().isEmpty());
 }
 
-TEST_F(HTMLInputElementTest, FilteredDataListOptionsPrefixed)
+TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain)
 {
     document().documentElement()->setInnerHTML(
-        "<input id=test value=ABC list=dl2>"
+        "<input id=test value=BC list=dl2>"
         "<datalist id=dl2>"
         "<option>AbC DEF</option>"
         "<option>VAX</option>"
-        "<option value=ghi>abc</option>"
+        "<option value=ghi>abc</option>" // Match to label, not value.
         "</datalist>", ASSERT_NO_EXCEPTION);
     auto options = testElement().filteredDataListOptions();
-    EXPECT_EQ(1u, options.size());
+    EXPECT_EQ(2u, options.size());
     EXPECT_EQ("AbC DEF", options[0]->value().utf8());
+    EXPECT_EQ("ghi", options[1]->value().utf8());
+
+    document().documentElement()->setInnerHTML(
+        "<input id=test value=i list=dl2>"
+        "<datalist id=dl2>"
+        "<option>I</option>"
+        "<option>&#x0130;</option>" // LATIN CAPITAL LETTER I WITH DOT ABOVE
+        "<option>&#xFF49;</option>" // FULLWIDTH LATIN SMALL LETTER I
+        "</datalist>", ASSERT_NO_EXCEPTION);
+    options = testElement().filteredDataListOptions();
+    EXPECT_EQ(2u, options.size());
+    EXPECT_EQ("I", options[0]->value().utf8());
+    EXPECT_EQ(0x0130, options[1]->value()[0]);
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail)

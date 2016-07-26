@@ -1590,21 +1590,28 @@ HeapVector<Member<HTMLOptionElement>> HTMLInputElement::filteredDataListOptions(
     if (!dataList)
         return filtered;
 
-    String prefix = innerEditorValue();
+    String value = innerEditorValue();
     if (multiple() && type() == InputTypeNames::email) {
         Vector<String> emails;
-        prefix.split(',', true, emails);
+        value.split(',', true, emails);
         if (!emails.isEmpty())
-            prefix = emails.last().stripWhiteSpace();
+            value = emails.last().stripWhiteSpace();
     }
 
     HTMLDataListOptionsCollection* options = dataList->options();
     filtered.reserveCapacity(options->length());
-    prefix = prefix.lower();
+    value = value.foldCase();
     for (unsigned i = 0; i < options->length(); ++i) {
         HTMLOptionElement* option = options->item(i);
         DCHECK(option);
-        if (!option->value().lower().startsWith(prefix) || !isValidValue(option->value()))
+        if (!value.isEmpty()) {
+            // Firefox shows OPTIONs with matched labels, Edge shows OPTIONs
+            // with matches values. We show both.
+            if (option->value().foldCase().find(value) == kNotFound && option->label().foldCase().find(value) == kNotFound)
+                continue;
+        }
+        // TODO(tkent): Should allow invalid strings. crbug.com/607097.
+        if (!isValidValue(option->value()))
             continue;
         filtered.append(option);
     }
