@@ -1092,7 +1092,7 @@ crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Fai
 crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/619103 virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled-out-and-in.html [ Crash Timeout ]
 crbug.com/619103 virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Crash Timeout ]
-crbug.com/619103 [ Debug ] fast/layers/remove-layer-with-nested-stacking.html [ Crash Timeout ]
+crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
 crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
