@@ -50,8 +50,10 @@ class UnpackedInstaller
   // |extension_path| synchronously.
   // The return value indicates whether the installation has begun successfully.
   // The id of the extension being loaded is returned in |extension_id|.
+  // |only_allow_apps| is used to avoid side-loading of non-app extensions.
   bool LoadFromCommandLine(const base::FilePath& extension_path,
-                           std::string* extension_id);
+                           std::string* extension_id,
+                           bool only_allow_apps);
 
   // Allows prompting for plugins to be disabled; intended for testing only.
   bool prompt_for_plugins() { return prompt_for_plugins_; }

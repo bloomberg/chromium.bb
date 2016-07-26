@@ -40,6 +40,10 @@ namespace {
 const char kUnpackedExtensionsBlacklistedError[] =
     "Loading of unpacked extensions is disabled by the administrator.";
 
+const char kUnpackedExtensionInsteadOfAppError[] =
+    "App loading flags cannot be used to load extensions. Please use "
+    "--load-extension instead.";
+
 const char kImportMinVersionNewer[] =
     "'import' version requested is newer than what is installed.";
 const char kImportMissing[] = "'import' extension is not installed.";
@@ -130,7 +134,8 @@ void UnpackedInstaller::Load(const base::FilePath& path_in) {
 }
 
 bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
-                                            std::string* extension_id) {
+                                            std::string* extension_id,
+                                            bool only_allow_apps) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(extension_path_.empty());
 
@@ -151,6 +156,16 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   install_checker_.set_extension(
       file_util::LoadExtension(
           extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
+
+  if (only_allow_apps && !extension()->is_platform_app()) {
+#if defined(GOOGLE_CHROME_BUILD)
+    // Avoid crashing for users with hijacked shortcuts.
+    return true;
+#else
+    ReportExtensionLoadError(kUnpackedExtensionInsteadOfAppError);
+    return false;
+#endif
+  }
 
   if (!extension() ||
       !extension_l10n_util::ValidateExtensionLocales(
