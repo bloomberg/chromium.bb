@@ -662,6 +662,15 @@ bool WmWindowAura::HasObserver(const WmWindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void WmWindowAura::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
+  // This behaves differently from WmWindowMus for child and embedded windows.
+  window_->AddPreTargetHandler(handler);
+}
+
+void WmWindowAura::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
+  window_->RemovePreTargetHandler(handler);
+}
+
 void WmWindowAura::OnWindowHierarchyChanging(
     const HierarchyChangeParams& params) {
   WmWindowObserver::TreeChangeParams wm_params;

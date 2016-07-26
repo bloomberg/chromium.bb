@@ -28,6 +28,7 @@ class Transform;
 }
 
 namespace ui {
+class EventHandler;
 class Layer;
 }
 
@@ -45,7 +46,6 @@ class WmWindowObserver;
 enum class WmWindowProperty;
 
 namespace wm {
-class WMEvent;
 class WindowState;
 }
 
@@ -283,6 +283,13 @@ class ASH_EXPORT WmWindow {
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;
   virtual bool HasObserver(const WmWindowObserver* observer) const = 0;
+
+  // Adds or removes a handler to receive events targeted at this window, before
+  // this window handles the events itself; the handler does not recieve events
+  // from embedded windows. This only supports windows with internal widgets;
+  // see GetInternalWidget(). Ownership of the handler is not transferred.
+  virtual void AddLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
 
  protected:
   virtual ~WmWindow() {}

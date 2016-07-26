@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
-#define ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_TOOLTIP_MANAGER_H_
+#define ASH_COMMON_SHELF_SHELF_TOOLTIP_MANAGER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/pointer_watcher.h"
 
@@ -20,7 +19,6 @@ class View;
 }
 
 namespace ash {
-class ShelfLayoutManager;
 class ShelfView;
 
 namespace test {
@@ -30,9 +28,8 @@ class ShelfViewTest;
 
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
-                                       public aura::WindowObserver,
                                        public views::PointerWatcher,
-                                       public ShelfLayoutManagerObserver {
+                                       public WmShelfObserver {
  public:
   explicit ShelfTooltipManager(ShelfView* shelf_view);
   ~ShelfTooltipManager() override;
@@ -58,10 +55,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
 
  protected:
   // ui::EventHandler overrides:
-  void OnEvent(ui::Event* event) override;
-
-  // aura::WindowObserver overrides:
-  void OnWindowDestroying(aura::Window* window) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::PointerWatcher overrides:
   void OnMousePressed(const ui::MouseEvent& event,
@@ -71,8 +65,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                       const gfx::Point& location_in_screen,
                       views::Widget* target) override;
 
-  // ShelfLayoutManagerObserver overrides:
-  void WillDeleteShelfLayoutManager() override;
+  // WmShelfObserver overrides:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
@@ -88,8 +81,6 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   base::OneShotTimer timer_;
 
   ShelfView* shelf_view_;
-  aura::Window* root_window_;
-  ShelfLayoutManager* shelf_layout_manager_;
   views::BubbleDialogDelegateView* bubble_;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
@@ -99,4 +90,4 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_TOOLTIP_MANAGER_H_

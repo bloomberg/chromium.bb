@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/common/shelf/shelf_tooltip_manager.h"
 
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
@@ -77,7 +77,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   EXPECT_FALSE(IsTimerRunning());
 
   // The manager should start the timer for a view on the shelf.
-  ShelfModel* model = shelf_view_->model();
+  ShelfModel* model = WmShell::Get()->shelf_model();
   ShelfItem item;
   item.type = TYPE_APP_SHORTCUT;
   const int index = model->Add(item);
@@ -111,7 +111,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsHidden) {
   widget->Show();
 
   // Once the shelf is hidden, the tooltip should be invisible.
-  ASSERT_EQ(SHELF_HIDDEN, shelf_->shelf_layout_manager()->visibility_state());
+  ASSERT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 
   // Do not show the view if the shelf is hidden.
@@ -135,9 +135,9 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   tooltip_manager_->ShowTooltip(shelf_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
 
-  shelf_->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  shelf_->shelf_layout_manager()->UpdateAutoHideState();
-  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_->GetAutoHideState());
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetPrimaryShelf()->UpdateAutoHideState();
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 
   // Tooltip visibility change for auto hide may take time.
   EXPECT_TRUE(tooltip_manager_->IsVisible());
@@ -155,7 +155,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
 
 TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   ui::test::EventGenerator& generator = GetEventGenerator();
-  gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetNativeWindow()->bounds();
+  gfx::Rect shelf_bounds = shelf_view_->GetBoundsInScreen();
 
   // Should hide if the mouse exits the shelf area.
   tooltip_manager_->ShowTooltip(shelf_->GetAppListButton());
@@ -187,16 +187,13 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
 
 TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   ui::test::EventGenerator& generator = GetEventGenerator();
-  // TODO(msw): Observe events outside the shelf in mash, to close tooltips.
-  aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
-  bool closes = shelf_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
 
   // Should hide for touches outside the shelf.
   tooltip_manager_->ShowTooltip(shelf_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
   generator.set_current_location(gfx::Point());
   generator.PressTouch();
-  EXPECT_EQ(tooltip_manager_->IsVisible(), !closes);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
   generator.ReleaseTouch();
 
   // Should hide for touch events on the tooltip.
@@ -205,14 +202,14 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   generator.set_current_location(
       GetTooltip()->GetWindowBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  EXPECT_EQ(tooltip_manager_->IsVisible(), !closes);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
   generator.ReleaseTouch();
 
   // Should hide for gestures outside the shelf.
   tooltip_manager_->ShowTooltip(shelf_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
   generator.GestureTapDownAndUp(gfx::Point());
-  EXPECT_EQ(tooltip_manager_->IsVisible(), !closes);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
 
 TEST_F(ShelfTooltipManagerTest, DoNotHideForKeyEvents) {

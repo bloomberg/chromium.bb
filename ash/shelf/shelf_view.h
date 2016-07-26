@@ -13,8 +13,8 @@
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
+#include "ash/common/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
-#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -75,6 +75,7 @@ class ASH_EXPORT ShelfView : public views::View,
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
+  WmShelf* wm_shelf() const { return wm_shelf_; }
   ShelfModel* model() const { return model_; }
 
   void Init();

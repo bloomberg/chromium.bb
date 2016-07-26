@@ -19,6 +19,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/mus_util.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display.h"
 #include "ui/views/view.h"
@@ -737,6 +738,15 @@ void WmWindowMus::RemoveObserver(WmWindowObserver* observer) {
 
 bool WmWindowMus::HasObserver(const WmWindowObserver* observer) const {
   return observers_.HasObserver(observer);
+}
+
+void WmWindowMus::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
+  DCHECK(GetInternalWidget());
+  widget_->GetNativeWindow()->AddPreTargetHandler(handler);
+}
+
+void WmWindowMus::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
+  widget_->GetNativeWindow()->RemovePreTargetHandler(handler);
 }
 
 void WmWindowMus::OnTreeChanging(const TreeChangeParams& params) {

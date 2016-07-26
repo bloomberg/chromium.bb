@@ -156,6 +156,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
   bool HasObserver(const WmWindowObserver* observer) const override;
+  void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;
+  void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
  private:
   // aura::WindowObserver:
