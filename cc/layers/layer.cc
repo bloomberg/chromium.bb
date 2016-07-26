@@ -83,10 +83,10 @@ Layer::Layer()
       parent_(nullptr),
       layer_tree_host_(nullptr),
       num_descendants_that_draw_content_(0),
-      transform_tree_index_(-1),
-      effect_tree_index_(-1),
-      clip_tree_index_(-1),
-      scroll_tree_index_(-1),
+      transform_tree_index_(TransformTree::kInvalidNodeId),
+      effect_tree_index_(EffectTree::kInvalidNodeId),
+      clip_tree_index_(ClipTree::kInvalidNodeId),
+      scroll_tree_index_(ScrollTree::kInvalidNodeId),
       property_tree_sequence_number_(-1),
       should_flatten_transform_from_property_tree_(false),
       draws_content_(false),
@@ -782,7 +782,7 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
     return;
 
   PropertyTrees* property_trees = layer_tree_host_->property_trees();
-  if (scroll_tree_index() != -1 && scrollable())
+  if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
     property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
 
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
@@ -815,7 +815,7 @@ void Layer::SetScrollOffsetFromImplSide(
   bool needs_rebuild = true;
 
   PropertyTrees* property_trees = layer_tree_host_->property_trees();
-  if (scroll_tree_index() != -1 && scrollable())
+  if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
     property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
 
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
@@ -942,7 +942,7 @@ int Layer::transform_tree_index() const {
   if (!layer_tree_host_ ||
       layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
-    return -1;
+    return TransformTree::kInvalidNodeId;
   }
   return transform_tree_index_;
 }
@@ -959,7 +959,7 @@ int Layer::clip_tree_index() const {
   if (!layer_tree_host_ ||
       layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
-    return -1;
+    return ClipTree::kInvalidNodeId;
   }
   return clip_tree_index_;
 }
@@ -976,7 +976,7 @@ int Layer::effect_tree_index() const {
   if (!layer_tree_host_ ||
       layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
-    return -1;
+    return EffectTree::kInvalidNodeId;
   }
   return effect_tree_index_;
 }
@@ -1002,16 +1002,16 @@ int Layer::scroll_tree_index() const {
   if (!layer_tree_host_ ||
       layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
-    return -1;
+    return ScrollTree::kInvalidNodeId;
   }
   return scroll_tree_index_;
 }
 
 void Layer::InvalidatePropertyTreesIndices() {
-  int invalid_property_tree_index = -1;
-  SetTransformTreeIndex(invalid_property_tree_index);
-  SetClipTreeIndex(invalid_property_tree_index);
-  SetEffectTreeIndex(invalid_property_tree_index);
+  SetTransformTreeIndex(TransformTree::kInvalidNodeId);
+  SetClipTreeIndex(ClipTree::kInvalidNodeId);
+  SetEffectTreeIndex(EffectTree::kInvalidNodeId);
+  SetScrollTreeIndex(ScrollTree::kInvalidNodeId);
 }
 
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
@@ -1871,7 +1871,7 @@ int Layer::num_copy_requests_in_target_subtree() {
 }
 
 gfx::Transform Layer::screen_space_transform() const {
-  DCHECK_NE(transform_tree_index_, -1);
+  DCHECK_NE(transform_tree_index_, TransformTree::kInvalidNodeId);
   return draw_property_utils::ScreenSpaceTransform(
       this, layer_tree_host_->property_trees()->transform_tree);
 }

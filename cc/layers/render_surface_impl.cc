@@ -135,7 +135,7 @@ int RenderSurfaceImpl::OwningLayerId() const {
 }
 
 bool RenderSurfaceImpl::HasReplica() const {
-  return OwningEffectNode()->replica_layer_id != -1;
+  return OwningEffectNode()->replica_layer_id != EffectTree::kInvalidNodeId;
 }
 
 const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
@@ -154,7 +154,7 @@ LayerImpl* RenderSurfaceImpl::MaskLayer() {
 }
 
 bool RenderSurfaceImpl::HasMask() const {
-  return OwningEffectNode()->mask_layer_id != -1;
+  return OwningEffectNode()->mask_layer_id != EffectTree::kInvalidNodeId;
 }
 
 LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
@@ -163,7 +163,8 @@ LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
 }
 
 bool RenderSurfaceImpl::HasReplicaMask() const {
-  return OwningEffectNode()->replica_mask_layer_id != -1;
+  return OwningEffectNode()->replica_mask_layer_id !=
+         EffectTree::kInvalidNodeId;
 }
 
 const FilterOperations& RenderSurfaceImpl::Filters() const {

@@ -70,10 +70,10 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       background_color_(0),
       safe_opaque_background_color_(0),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
-      transform_tree_index_(-1),
-      effect_tree_index_(-1),
-      clip_tree_index_(-1),
-      scroll_tree_index_(-1),
+      transform_tree_index_(TransformTree::kInvalidNodeId),
+      effect_tree_index_(EffectTree::kInvalidNodeId),
+      clip_tree_index_(ClipTree::kInvalidNodeId),
+      scroll_tree_index_(ScrollTree::kInvalidNodeId),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       mutable_properties_(MutableProperty::kNone),
@@ -444,14 +444,14 @@ bool LayerImpl::LayerPropertyChanged() const {
       (layer_tree_impl()->property_trees() &&
        layer_tree_impl()->property_trees()->full_tree_damaged))
     return true;
-  if (transform_tree_index() == -1)
+  if (transform_tree_index() == TransformTree::kInvalidNodeId)
     return false;
   TransformNode* transform_node =
       layer_tree_impl()->property_trees()->transform_tree.Node(
           transform_tree_index());
   if (transform_node && transform_node->transform_changed)
     return true;
-  if (effect_tree_index() == -1)
+  if (effect_tree_index() == EffectTree::kInvalidNodeId)
     return false;
   EffectNode* effect_node =
       layer_tree_impl()->property_trees()->effect_tree.Node(
@@ -1174,7 +1174,7 @@ bool LayerImpl::InsideReplica() const {
   EffectNode* node = effect_tree.Node(effect_tree_index_);
 
   while (node->id > 0) {
-    if (node->replica_layer_id != -1)
+    if (node->replica_layer_id != EffectTree::kInvalidNodeId)
       return true;
     node = effect_tree.Node(node->target_id);
   }

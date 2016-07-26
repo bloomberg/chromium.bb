@@ -78,12 +78,12 @@ class CC_EXPORT PropertyTree {
   T* Node(int i) {
     // TODO(vollick): remove this.
     CHECK(i < static_cast<int>(nodes_.size()));
-    return i > -1 ? &nodes_[i] : nullptr;
+    return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
   const T* Node(int i) const {
     // TODO(vollick): remove this.
     CHECK(i < static_cast<int>(nodes_.size()));
-    return i > -1 ? &nodes_[i] : nullptr;
+    return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
 
   T* parent(const T* t) { return Node(t->parent_id); }
@@ -134,6 +134,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   TransformTree& operator=(const TransformTree&);
 
   bool operator==(const TransformTree& other) const;
+
+  static const int kContentsRootNodeId = 1;
 
   int Insert(const TransformNode& tree_node, int parent_id);
 
@@ -294,6 +296,8 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
  public:
   bool operator==(const ClipTree& other) const;
 
+  static const int kViewportNodeId = 1;
+
   void SetViewportClip(gfx::RectF viewport_rect);
   gfx::RectF ViewportClip();
 
@@ -309,6 +313,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   EffectTree& operator=(const EffectTree& from);
   bool operator==(const EffectTree& other) const;
+
+  static const int kContentsRootNodeId = 1;
 
   void clear();
 

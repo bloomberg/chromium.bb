@@ -30,8 +30,8 @@ template <typename T>
 PropertyTree<T>::PropertyTree()
     : needs_update_(false) {
   nodes_.push_back(T());
-  back()->id = 0;
-  back()->parent_id = -1;
+  back()->id = kRootNodeId;
+  back()->parent_id = kInvalidNodeId;
 }
 
 // Equivalent to
@@ -69,8 +69,8 @@ template <typename T>
 void PropertyTree<T>::clear() {
   nodes_.clear();
   nodes_.push_back(T());
-  back()->id = 0;
-  back()->parent_id = -1;
+  back()->id = kRootNodeId;
+  back()->parent_id = kInvalidNodeId;
 }
 
 template <typename T>
@@ -92,8 +92,8 @@ void PropertyTree<T>::FromProtobuf(
     std::unordered_map<int, int>* node_id_to_index_map) {
   // Verify that the property tree is empty.
   DCHECK_EQ(static_cast<int>(nodes_.size()), 1);
-  DCHECK_EQ(back()->id, 0);
-  DCHECK_EQ(back()->parent_id, -1);
+  DCHECK_EQ(back()->id, kRootNodeId);
+  DCHECK_EQ(back()->parent_id, kInvalidNodeId);
 
   // Add the first node.
   DCHECK_GT(proto.nodes_size(), 0);
@@ -191,7 +191,7 @@ void TransformTree::UpdateTransforms(int id) {
 
 bool TransformTree::IsDescendant(int desc_id, int source_id) const {
   while (desc_id != source_id) {
-    if (desc_id < 0)
+    if (desc_id == kInvalidNodeId)
       return false;
     desc_id = Node(desc_id)->parent_id;
   }
@@ -409,7 +409,7 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     // to the root of the transform tree in ComputeTransform.
     int target_id = target_node->id;
     ComputeTransform(node->id, target_id, &target_space_transform);
-    if (target_id != 0) {
+    if (target_id != kRootNodeId) {
       target_space_transform.matrix().postScale(
           target_node->surface_contents_scale.x(),
           target_node->surface_contents_scale.y(), 1.f);
@@ -806,7 +806,8 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
-  if (!effect_node->has_render_surface || effect_node->transform_id == 0) {
+  if (!effect_node->has_render_surface ||
+      effect_node->transform_id == kRootNodeId) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
     return;
   }
@@ -892,13 +893,13 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
       // The root surface doesn't have the notion of sub-layer scale, but
       // instead has a similar notion of transforming from the space of the root
       // layer to the space of the screen.
-      DCHECK_EQ(0, destination_id);
-      source_id = 1;
+      DCHECK_EQ(kRootNodeId, destination_id);
+      source_id = TransformTree::kContentsRootNodeId;
     }
     gfx::Transform transform;
     property_trees()->transform_tree.ComputeTransform(source_id, destination_id,
                                                       &transform);
-    if (effect_node->id != 1) {
+    if (effect_node->id != kContentsRootNodeId) {
       transform.matrix().postScale(effect_node->surface_contents_scale.x(),
                                    effect_node->surface_contents_scale.y(),
                                    1.f);
@@ -983,7 +984,7 @@ void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
 gfx::RectF ClipTree::ViewportClip() {
   const unsigned long min_size = 1;
   DCHECK_GT(size(), min_size);
-  return Node(1)->clip;
+  return Node(kViewportNodeId)->clip;
 }
 
 bool ClipTree::operator==(const ClipTree& other) const {
@@ -1046,14 +1047,14 @@ void EffectTree::FromProtobuf(
 }
 
 ScrollTree::ScrollTree()
-    : currently_scrolling_node_id_(-1),
+    : currently_scrolling_node_id_(kInvalidNodeId),
       layer_id_to_scroll_offset_map_(ScrollTree::ScrollOffsetMap()) {}
 
 ScrollTree::~ScrollTree() {}
 
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   PropertyTree::operator=(from);
-  currently_scrolling_node_id_ = -1;
+  currently_scrolling_node_id_ = kInvalidNodeId;
   // layer_id_to_scroll_offset_map_ is intentionally omitted in operator=,
   // because we do not want to simply copy the map when property tree is
   // propagating from pending to active.
@@ -1078,7 +1079,7 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
   }
 
   bool is_currently_scrolling_node_equal =
-      (currently_scrolling_node_id_ == -1)
+      (currently_scrolling_node_id_ == kInvalidNodeId)
           ? (!other.CurrentlyScrollingNode())
           : (other.CurrentlyScrollingNode() &&
              currently_scrolling_node_id_ ==
@@ -1133,7 +1134,7 @@ void ScrollTree::clear() {
   PropertyTree<ScrollNode>::clear();
 
   if (property_trees()->is_main_thread) {
-    currently_scrolling_node_id_ = -1;
+    currently_scrolling_node_id_ = kInvalidNodeId;
     layer_id_to_scroll_offset_map_.clear();
   }
 }
@@ -1310,13 +1311,13 @@ void ScrollTree::UpdateScrollOffsetMapEntry(
       synced_scroll_offset(key)->set_clobber_active_value();
     }
     if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key, -1);
+      layer_tree_impl->DidUpdateScrollOffset(key, kInvalidNodeId);
     }
   } else {
     layer_id_to_scroll_offset_map_[key] = new_scroll_offset_map->at(key);
     changed |= synced_scroll_offset(key)->PushPendingToActive();
     if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key, -1);
+      layer_tree_impl->DidUpdateScrollOffset(key, kInvalidNodeId);
     }
   }
 }
@@ -1961,14 +1962,15 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
   transform->MakeIdentity();
 
   int destination_transform_id;
-  if (effect_id == -1) {
+  if (effect_id == EffectTree::kInvalidNodeId) {
     // This can happen when PaintArtifactCompositor builds property trees as
     // it doesn't set effect ids on clip nodes. We want to compute transform
     // to the root in this case.
-    destination_transform_id = 0;
+    destination_transform_id = TransformTree::kRootNodeId;
   } else {
     const EffectNode* effect_node = effect_tree.Node(effect_id);
-    DCHECK(effect_node->has_render_surface || effect_node->id == 0);
+    DCHECK(effect_node->has_render_surface ||
+           effect_node->id == EffectTree::kRootNodeId);
     destination_transform_id = effect_node->transform_id;
   }
 

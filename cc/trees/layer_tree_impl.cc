@@ -1005,7 +1005,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
               it->render_surface()->TransformTreeIndex(),
               occlusion_surface->EffectTreeIndex(), &draw_transform);
           // We don't have to apply surface contents scale when target is root.
-          if (occlusion_surface->EffectTreeIndex() != 1) {
+          if (occlusion_surface->EffectTreeIndex() !=
+              EffectTree::kContentsRootNodeId) {
             const EffectNode* occlusion_effect_node =
                 property_trees()->effect_tree.Node(
                     occlusion_surface->EffectTreeIndex());
