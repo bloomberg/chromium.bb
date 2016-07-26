@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <head>
 <title>Canvas test: drawFocusIfNeeded scrolls</title>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body style="padding: 0; margin: 0">
 <div style="border: 1px solid #000; height: 1000px;">1000-pixel box</div>
@@ -10,8 +11,6 @@
     <button id="bottom_button"></button>
 </canvas>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
 
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
@@ -33,25 +32,27 @@ function draw() {
     context.drawFocusIfNeeded(document.getElementById("bottom_button"));
 }
 
-document.getElementById("bottom_button").focus();
-window.scrollTo(0, 0);
-shouldBe("window.pageYOffset", "0");
-draw();
+test(function(t) {
+  document.getElementById("bottom_button").focus();
+  window.scrollTo(0, 0);
+  assert_equals(window.pageYOffset, 0);
+  draw();
 
-var minYOffset = BOTTOM_BUTTON_Y_POS + canvas.offsetTop - window.innerHeight;
-var maxYOffset = BOTTOM_BUTTON_Y_POS + canvas.offsetTop;
-shouldBeGreaterThanOrEqual("window.pageYOffset", "minYOffset");
-shouldBeGreaterThanOrEqual("maxYOffset", "window.pageYOffset");
+  var minYOffset = BOTTOM_BUTTON_Y_POS + canvas.offsetTop - window.innerHeight;
+  var maxYOffset = BOTTOM_BUTTON_Y_POS + canvas.offsetTop;
+  assert_greater_than_equal(window.pageYOffset, minYOffset);
+  assert_greater_than_equal(maxYOffset, window.pageYOffset);
 
-document.getElementById("top_button").focus();
-shouldBeGreaterThanOrEqual("window.pageYOffset", "minYOffset");
-shouldBeGreaterThanOrEqual("maxYOffset", "window.pageYOffset");
+  document.getElementById("top_button").focus();
+  assert_greater_than_equal(window.pageYOffset, minYOffset);
+  assert_greater_than_equal(maxYOffset, window.pageYOffset);
 
-draw();
-minYOffset = TOP_BUTTON_Y_POS + canvas.offsetTop - window.innerHeight;
-maxYOffset = TOP_BUTTON_Y_POS + canvas.offsetTop;
-shouldBeGreaterThanOrEqual("window.pageYOffset", "minYOffset");
-shouldBeGreaterThanOrEqual("maxYOffset", "window.pageYOffset");
+  draw();
+  minYOffset = TOP_BUTTON_Y_POS + canvas.offsetTop - window.innerHeight;
+  maxYOffset = TOP_BUTTON_Y_POS + canvas.offsetTop;
+  assert_greater_than_equal(window.pageYOffset, minYOffset);
+  assert_greater_than_equal(maxYOffset, window.pageYOffset);
+}, 'Canvas test: drawFocusIfNeeded scrolls');
 
 </script>
 </body>

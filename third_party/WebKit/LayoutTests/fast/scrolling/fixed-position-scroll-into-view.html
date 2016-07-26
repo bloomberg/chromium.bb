@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 .target {
   position: fixed;
@@ -16,24 +17,17 @@
   <div class="target" id="t2"></div>
 </div>
 <script>
+test(function(t) {
+  location.hash = "#t1";
+  assert_equals(window.scrollY, 0);
+
+  location.hash = "#t2";
+  assert_equals(window.scrollY, 200);
+
+  location.hash = "#t1";
+  assert_equals(window.scrollY, 200);
+
+  location.hash = "#";
+  assert_equals(window.scrollY, 0);
+}, 'Tests that scrolling to a fixed position element does not scroll the viewport.');
 </script>
-
-<script>
-
-description("Tests that scrolling to a fixed position element does not scroll the viewport.");
-
-location.hash = "#t1";
-shouldBe("scrollY", "0");
-
-location.hash = "#t2";
-shouldBe("scrollY", "200");
-
-location.hash = "#t1";
-shouldBe("scrollY", "200");
-
-location.hash = "#";
-shouldBe("scrollY", "0");
-
-</script>
-</body>
-<html>

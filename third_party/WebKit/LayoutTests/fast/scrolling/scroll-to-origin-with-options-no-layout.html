@@ -4,6 +4,8 @@
 <script>
 var styleCount, layoutCount;
 
+setPrintTestResultsLazily();
+
 function assertSyncLayout(sync) {
     if (window.internals) {
         styleCount = internals.updateStyleAndReturnAffectedElementCount();
