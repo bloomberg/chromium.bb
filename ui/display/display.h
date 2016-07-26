@@ -164,6 +164,16 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
+  int color_depth() const { return color_depth_; }
+  void set_color_depth(int color_depth) {
+    color_depth_ = color_depth;
+  }
+
+  int depth_per_component() const { return depth_per_component_; }
+  void set_depth_per_component(int depth_per_component) {
+    depth_per_component_ = depth_per_component;
+  }
+
  private:
   int64_t id_;
   gfx::Rect bounds_;
@@ -172,6 +182,8 @@ class DISPLAY_EXPORT Display final {
   Rotation rotation_;
   TouchSupport touch_support_;
   gfx::Size maximum_cursor_size_;
+  int color_depth_;
+  int depth_per_component_;
 
 #if !defined(OS_IOS)
   friend struct mojo::StructTraits<display::mojom::Display, display::Display>;

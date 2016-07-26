@@ -1960,8 +1960,8 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
   results->orientationType =
       RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
   gfx::DeviceDisplayInfo info;
-  results->depth = info.GetBitsPerPixel();
-  results->depthPerComponent = info.GetBitsPerComponent();
+  results->depth = display.color_depth();
+  results->depthPerComponent = display.depth_per_component();
   results->isMonochrome = (results->depthPerComponent == 0);
 }
 

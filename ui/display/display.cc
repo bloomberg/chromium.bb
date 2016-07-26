@@ -73,11 +73,16 @@ void Display::ResetForceDeviceScaleFactorForTesting() {
   g_forced_device_scale_factor = -1.0;
 }
 
+constexpr int DEFAULT_BITS_PER_PIXEL = 24;
+constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
+
 Display::Display()
     : id_(kInvalidDisplayID),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN) {}
+      touch_support_(TOUCH_SUPPORT_UNKNOWN),
+      color_depth_(DEFAULT_BITS_PER_PIXEL),
+      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {}
 
 Display::Display(const Display& other) = default;
 
@@ -85,7 +90,9 @@ Display::Display(int64_t id)
     : id_(id),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN) {}
+      touch_support_(TOUCH_SUPPORT_UNKNOWN),
+      color_depth_(DEFAULT_BITS_PER_PIXEL),
+      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {}
 
 Display::Display(int64_t id, const gfx::Rect& bounds)
     : id_(id),
@@ -93,7 +100,9 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
+      touch_support_(TOUCH_SUPPORT_UNKNOWN),
+      color_depth_(DEFAULT_BITS_PER_PIXEL),
+      depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
