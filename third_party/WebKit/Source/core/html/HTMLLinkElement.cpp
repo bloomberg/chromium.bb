@@ -663,8 +663,7 @@ void LinkStyle::process()
 
         bool mediaQueryMatches = true;
         LocalFrame* frame = loadingFrame();
-        if (!m_owner->media().isEmpty() && frame && frame->document()) {
-            RefPtr<ComputedStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
+        if (!m_owner->media().isEmpty() && frame) {
             MediaQuerySet* media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(frame);
             mediaQueryMatches = evaluator.eval(media);
