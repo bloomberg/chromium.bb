@@ -1107,6 +1107,8 @@ crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pas
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
+crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
+
 crbug.com/595483 [ Android ] editing/caret/caret-color.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/invalid/009.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Crash ]
