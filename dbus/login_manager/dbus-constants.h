@@ -10,18 +10,10 @@ const char kSessionManagerInterface[] = "org.chromium.SessionManagerInterface";
 const char kSessionManagerServicePath[] = "/org/chromium/SessionManager";
 const char kSessionManagerServiceName[] = "org.chromium.SessionManager";
 // Methods
-const char kSessionManagerEmitLoginPromptReady[] = "EmitLoginPromptReady";
 const char kSessionManagerEmitLoginPromptVisible[] = "EmitLoginPromptVisible";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
-const char kSessionManagerSetOwnerKey[] = "SetOwnerKey";
-const char kSessionManagerUnwhitelist[] = "Unwhitelist";
-const char kSessionManagerCheckWhitelist[] = "CheckWhitelist";
-const char kSessionManagerEnumerateWhitelisted[] = "EnumerateWhitelisted";
-const char kSessionManagerWhitelist[] = "Whitelist";
-const char kSessionManagerStoreProperty[] = "StoreProperty";
-const char kSessionManagerRetrieveProperty[] = "RetrieveProperty";
 const char kSessionManagerStorePolicy[] = "StorePolicy";
 const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
@@ -32,8 +24,6 @@ const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
     "RetrieveDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
-const char kSessionManagerStartSessionService[] = "StartSessionService";
-const char kSessionManagerStopSessionService[] = "StopSessionService";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
 const char kSessionManagerHandleSupervisedUserCreationStarting[] =
     "HandleSupervisedUserCreationStarting";
@@ -43,7 +33,6 @@ const char kSessionManagerLockScreen[] = "LockScreen";
 const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
-const char kSessionManagerHandleLivenessConfirmed[] = "HandleLivenessConfirmed";
 const char kSessionManagerSetFlagsForUser[] = "SetFlagsForUser";
 const char kSessionManagerGetServerBackedStateKeys[] =
     "GetServerBackedStateKeys";
