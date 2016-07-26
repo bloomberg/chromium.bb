@@ -196,6 +196,14 @@
           },
 
           /**
+           * Whether focus should be restored to the button when the menu closes.
+           */
+          restoreFocusOnClose: {
+            type: Boolean,
+            value: true
+          },
+
+          /**
            * This is the element intended to be bound as the focus target
            * for the `iron-dropdown` contained by `paper-menu-button`.
            */

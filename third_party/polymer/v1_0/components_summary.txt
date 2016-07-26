@@ -335,11 +335,11 @@ Revision: f31a1dbc5b594a84c8c01eca0f23f9bcb8f6ba76
 Tree link: https://github.com/PolymerElements/paper-menu/tree/v1.2.2
 
 Name: paper-menu-button
-Version: 1.4.1
+Version: 1.5.0
 Repository: git://github.com/PolymerElements/paper-menu-button.git
-Tag: v1.4.1
-Revision: c41613064e583d59bc4d37160805cf07368236d6
-Tree link: https://github.com/PolymerElements/paper-menu-button/tree/v1.4.1
+Tag: v1.5.0
+Revision: 4902e216e1c4f6cb78aef4ec3ea338434e6c2ad1
+Tree link: https://github.com/PolymerElements/paper-menu-button/tree/v1.5.0
 
 Name: paper-progress
 Version: 1.0.9
