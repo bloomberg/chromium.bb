@@ -2219,17 +2219,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)prepareForGoBack {
-  // Make sure any transitions that may have occurred have been seen and acted
-  // on by the CRWWebController, so the history stack and state of the
-  // CRWWebController is 100% up to date before the stack navigation starts.
-  if (_webView) {
-    [self injectWindowID];
-  }
-
-  bool wasShowingInterstitial = _webStateImpl->IsShowingWebInterstitial();
-
   // Before changing the current session history entry, record the tab state.
-  if (!wasShowingInterstitial) {
+  if (!_webStateImpl->IsShowingWebInterstitial()) {
     [self recordStateInHistory];
   }
 }
