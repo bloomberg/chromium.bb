@@ -159,8 +159,15 @@ class Timer : public TimerBase {
 public:
     using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
 
+    // TODO(dcheng): Consider removing this overload once all timers are using the
+    // appropriate task runner. https://crbug.com/624694
     Timer(TimerFiredClass* o, TimerFiredFunction f)
         : m_object(o), m_function(f)
+    {
+    }
+
+    Timer(TimerFiredClass* o, TimerFiredFunction f, WebTaskRunner* webTaskRunner)
+        : TimerBase(webTaskRunner), m_object(o), m_function(f)
     {
     }
 
@@ -179,11 +186,6 @@ protected:
         // swept, it is not safe to proceed if the object is about to
         // be swept (and this timer will be stopped while doing so.)
         return TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object);
-    }
-
-    Timer(TimerFiredClass* o, TimerFiredFunction f, WebTaskRunner* webTaskRunner)
-        : TimerBase(webTaskRunner), m_object(o), m_function(f)
-    {
     }
 
 private:

@@ -40,6 +40,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/events/GestureEvent.h"
@@ -168,7 +169,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_progressTracker(ProgressTracker::create(frame))
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
-    , m_checkTimer(this, &FrameLoader::checkTimerFired)
+    , m_checkTimer(this, &FrameLoader::checkTimerFired, TaskRunnerHelper::getLoadingTaskRunner(frame))
     , m_didAccessInitialDocument(false)
     , m_forcedSandboxFlags(SandboxNone)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)

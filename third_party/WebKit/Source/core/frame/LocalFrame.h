@@ -200,6 +200,8 @@ private:
     void enableNavigation() { --m_navigationDisableCount; }
     void disableNavigation() { ++m_navigationDisableCount; }
 
+    std::unique_ptr<WebFrameScheduler> m_frameScheduler;
+
     mutable FrameLoader m_loader;
     Member<NavigationScheduler> m_navigationScheduler;
 
@@ -215,7 +217,6 @@ private:
     const Member<EventHandler> m_eventHandler;
     const Member<FrameConsole> m_console;
     const Member<InputMethodController> m_inputMethodController;
-    std::unique_ptr<WebFrameScheduler> m_frameScheduler;
 
     int m_navigationDisableCount;
 

@@ -380,7 +380,6 @@ void LocalFrame::detach(FrameDetachType type)
     SubframeLoadingDisabler disabler(*document());
     m_loader.dispatchUnloadEvent();
     detachChildren();
-    m_frameScheduler.reset();
 
     // All done if detaching the subframes brought about a detach of this frame also.
     if (!client())
@@ -397,8 +396,6 @@ void LocalFrame::detach(FrameDetachType type)
     // - Document::detachLayoutTree()'s deferred widget updates can run script.
     ScriptForbiddenScope forbidScript;
     m_loader.clear();
-    // Clear FrameScheduler again in case it is recreated in scripting.
-    m_frameScheduler.reset();
     if (!client())
         return;
 
@@ -427,6 +424,7 @@ void LocalFrame::detach(FrameDetachType type)
     Frame::detach(type);
 
     m_supplements.clear();
+    m_frameScheduler.reset();
     WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
 }
 
@@ -806,6 +804,7 @@ bool LocalFrame::shouldThrottleRendering() const
 
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
     : Frame(client, host, owner)
+    , m_frameScheduler(page()->chromeClient().createFrameScheduler(client->frameBlameContext()))
     , m_loader(this)
     , m_navigationScheduler(NavigationScheduler::create(this))
     , m_script(ScriptController::create(this))
@@ -829,10 +828,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
 
 WebFrameScheduler* LocalFrame::frameScheduler()
 {
-    if (!m_frameScheduler.get())
-        m_frameScheduler = page()->chromeClient().createFrameScheduler(client()->frameBlameContext());
-
-    ASSERT(m_frameScheduler.get());
     return m_frameScheduler.get();
 }
 
