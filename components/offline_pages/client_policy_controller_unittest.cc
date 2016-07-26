@@ -65,4 +65,10 @@ TEST_F(ClientPolicyControllerTest, CheckAsyncDefined) {
   EXPECT_FALSE(isTemporary(policy));
 }
 
+TEST_F(ClientPolicyControllerTest, CheckCCTDefined) {
+  OfflinePageClientPolicy policy = controller()->GetPolicy(kCCTNamespace);
+  EXPECT_EQ(policy.name_space, kCCTNamespace);
+  EXPECT_TRUE(isTemporary(policy));
+}
+
 }  // namespace offline_pages

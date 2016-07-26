@@ -14,6 +14,7 @@ namespace offline_pages {
 extern const char kBookmarkNamespace[];
 extern const char kLastNNamespace[];
 extern const char kAsyncNamespace[];
+extern const char kCCTNamespace[];
 
 // Currently used for fallbacks like tests.
 extern const char kDefaultNamespace[];

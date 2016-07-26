@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -161,6 +162,8 @@ class OfflinePageModelImplTest
 
   bool last_expire_page_result() const { return last_expire_page_result_; }
 
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -178,6 +181,8 @@ class OfflinePageModelImplTest
   int last_cleared_pages_count_;
   DeletePageResult last_clear_page_result_;
   bool last_expire_page_result_;
+
+  base::HistogramTester histogram_tester_;
 };
 
 OfflinePageModelImplTest::OfflinePageModelImplTest()
@@ -1052,6 +1057,15 @@ TEST_F(OfflinePageModelImplTest, ExpirePages) {
     }
   }
   EXPECT_TRUE(last_expire_page_result());
+}
+
+TEST_F(OfflinePageModelImplTest, CustomTabsNamespace) {
+  SavePage(kTestUrl, ClientId(kCCTNamespace, "123"));
+  std::string histogram_name = "OfflinePages.SavePageResult.";
+  histogram_name += kCCTNamespace;
+
+  histograms().ExpectUniqueSample(histogram_name,
+                                  static_cast<int>(SavePageResult::SUCCESS), 1);
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
