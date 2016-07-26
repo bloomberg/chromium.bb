@@ -355,6 +355,18 @@ function test()
                 InspectorTest.addResult(e);
             }
             next();
+        },
+
+        function testReparentWithinWidget(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            parentWidget.show(WebInspector.inspectorView.element);
+            var childWidget = new TestWidget("Child");
+            var container1 = parentWidget.element.createChild("div");
+            var container2 = parentWidget.element.createChild("div");
+            childWidget.show(container1);
+            childWidget.show(container2);
+            next();
         }
     ]);
 }

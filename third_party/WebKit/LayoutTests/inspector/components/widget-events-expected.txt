@@ -244,3 +244,15 @@ Parent()
 Child()
 Error: Attempt to show under node belonging to alien widget
 
+Running: testReparentWithinWidget
+Parent()
+Parent.show()
+  Parent.wasShown()
+  Parent.onResize()
+Child()
+Child.show()
+  Child.wasShown()
+  Child.onResize()
+Child.show()
+  Child.onResize()
+
