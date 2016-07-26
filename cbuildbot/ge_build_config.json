@@ -184,7 +184,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "strago,"
+          "board_group": "strago"
         }
       ]
     },
@@ -492,7 +492,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "strago,"
+          "board_group": "strago"
         }
       ]
     },
@@ -855,7 +855,7 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago,"
+          "board_group": "strago"
         }
       ]
     },
@@ -1064,7 +1064,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron,"
+          "board_group": "veyron"
         }
       ]
     },
@@ -1097,7 +1097,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron,"
+          "board_group": "veyron"
         }
       ]
     },
@@ -1130,7 +1130,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron,"
+          "board_group": "veyron"
         }
       ]
     },
@@ -1163,7 +1163,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron,"
+          "board_group": "veyron"
         }
       ]
     },
@@ -1185,7 +1185,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron,"
+          "board_group": "veyron"
         }
       ]
     },
