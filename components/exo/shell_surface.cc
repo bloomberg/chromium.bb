@@ -29,6 +29,7 @@
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -1147,10 +1148,10 @@ void ShellSurface::UpdateWidgetBounds() {
   gfx::Rect visible_bounds = GetVisibleBounds();
   gfx::Rect new_widget_bounds = visible_bounds;
 
-  // Avoid changing widget origin unless initial bounds were specificed and
+  // Avoid changing widget origin unless initial bounds were specified and
   // widget origin is always relative to it.
   if (initial_bounds_.IsEmpty())
-    new_widget_bounds.set_origin(widget_->GetNativeWindow()->bounds().origin());
+    new_widget_bounds.set_origin(widget_->GetWindowBoundsInScreen().origin());
 
   // Update widget origin using the surface origin if the current location of
   // surface is being anchored to one side of the widget as a result of a
@@ -1158,9 +1159,7 @@ void ShellSurface::UpdateWidgetBounds() {
   if (resize_component_ != HTCAPTION) {
     gfx::Point new_widget_origin =
         GetSurfaceOrigin() + visible_bounds.OffsetFromOrigin();
-    aura::Window::ConvertPointToTarget(widget_->GetNativeWindow(),
-                                       widget_->GetNativeWindow()->parent(),
-                                       &new_widget_origin);
+    wm::ConvertPointToScreen(widget_->GetNativeWindow(), &new_widget_origin);
     new_widget_bounds.set_origin(new_widget_origin);
   }
 
@@ -1168,7 +1167,7 @@ void ShellSurface::UpdateWidgetBounds() {
   // should not result in a configure request.
   DCHECK(!ignore_window_bounds_changes_);
   ignore_window_bounds_changes_ = true;
-  if (widget_->GetNativeWindow()->bounds() != new_widget_bounds)
+  if (widget_->GetWindowBoundsInScreen() != new_widget_bounds)
     widget_->SetBounds(new_widget_bounds);
   ignore_window_bounds_changes_ = false;
 
