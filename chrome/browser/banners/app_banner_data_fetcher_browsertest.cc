@@ -142,14 +142,26 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   base::WeakPtrFactory<AppBannerDataFetcherBrowserTest> weak_factory_;
 };
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirect DISABLED_WebAppBannerCreatedDirect
+#else
+#define MAYBE_WebAppBannerCreatedDirect WebAppBannerCreatedDirect
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirect) {
+                       MAYBE_WebAppBannerCreatedDirect) {
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
                 1, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectLargerTotal DISABLED_WebAppBannerCreatedDirectLargerTotal
+#else
+#define MAYBE_WebAppBannerCreatedDirectLargerTotal WebAppBannerCreatedDirectLargerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectLargerTotal) {
+                       MAYBE_WebAppBannerCreatedDirectLargerTotal) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(4);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
                 3, true);
@@ -162,22 +174,40 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 0, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectSingle DISABLED_WebAppBannerCreatedDirectSingle
+#else
+#define MAYBE_WebAppBannerCreatedDirectSingle WebAppBannerCreatedDirectSingle
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectSingle) {
+                       MAYBE_WebAppBannerCreatedDirectSingle) {
   AppBannerSettingsHelper::SetEngagementWeights(2, 1);
   RunBannerTest("/banners/manifest_test_page.html",
                 ui::PAGE_TRANSITION_GENERATED, 0, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectMultiple DISABLED_WebAppBannerCreatedDirectMultiple
+#else
+#define MAYBE_WebAppBannerCreatedDirectMultiple WebAppBannerCreatedDirectMultiple
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectMultiple) {
+                       MAYBE_WebAppBannerCreatedDirectMultiple) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
   RunBannerTest("/banners/manifest_test_page.html",
                 ui::PAGE_TRANSITION_GENERATED, 3, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectMultipleLargerTotal DISABLED_WebAppBannerCreatedDirectMultipleLargerTotal
+#else
+#define MAYBE_WebAppBannerCreatedDirectMultipleLargerTotal WebAppBannerCreatedDirectMultipleLargerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectMultipleLargerTotal) {
+                       MAYBE_WebAppBannerCreatedDirectMultipleLargerTotal) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(3);
   RunBannerTest("/banners/manifest_test_page.html",
@@ -192,50 +222,92 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 ui::PAGE_TRANSITION_GENERATED, 1, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirect DISABLED_WebAppBannerCreatedIndirect
+#else
+#define MAYBE_WebAppBannerCreatedIndirect WebAppBannerCreatedIndirect
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirect) {
+                       MAYBE_WebAppBannerCreatedIndirect) {
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 1, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirectLargerTotal DISABLED_WebAppBannerCreatedIndirectLargerTotal
+#else
+#define MAYBE_WebAppBannerCreatedIndirectLargerTotal WebAppBannerCreatedIndirectLargerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirectLargerTotal) {
+                       MAYBE_WebAppBannerCreatedIndirectLargerTotal) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(5);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 4, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirectSmallerTotal DISABLED_WebAppBannerCreatedIndirectSmallerTotal
+#else
+#define MAYBE_WebAppBannerCreatedIndirectSmallerTotal WebAppBannerCreatedIndirectSmallerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirectSmallerTotal) {
+                       MAYBE_WebAppBannerCreatedIndirectSmallerTotal) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 0, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirectSingle DISABLED_WebAppBannerCreatedIndirectSingle
+#else
+#define MAYBE_WebAppBannerCreatedIndirectSingle WebAppBannerCreatedIndirectSingle
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirectSingle) {
+                       MAYBE_WebAppBannerCreatedIndirectSingle) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 3);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_RELOAD,
                 0, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirectMultiple DISABLED_WebAppBannerCreatedIndirectMultiple
+#else
+#define MAYBE_WebAppBannerCreatedIndirectMultiple WebAppBannerCreatedIndirectMultiple
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirectMultiple) {
+                       MAYBE_WebAppBannerCreatedIndirectMultiple) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 3, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal DISABLED_WebAppBannerCreatedIndirectMultipleLargerTotal
+#else
+#define MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal WebAppBannerCreatedIndirectMultipleLargerTotal
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedIndirectMultipleLargerTotal) {
+                       MAYBE_WebAppBannerCreatedIndirectMultipleLargerTotal) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(4);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 7, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedVarious DISABLED_WebAppBannerCreatedVarious
+#else
+#define MAYBE_WebAppBannerCreatedVarious WebAppBannerCreatedVarious
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedVarious) {
+                       MAYBE_WebAppBannerCreatedVarious) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 0.25);
 
   std::string valid_page("/banners/manifest_test_page.html");
@@ -282,14 +354,26 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
              ui::PAGE_TRANSITION_TYPED, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerNoTypeInManifest DISABLED_WebAppBannerNoTypeInManifest
+#else
+#define MAYBE_WebAppBannerNoTypeInManifest WebAppBannerNoTypeInManifest
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerNoTypeInManifest) {
+                       MAYBE_WebAppBannerNoTypeInManifest) {
   RunBannerTest("/banners/manifest_no_type_test_page.html",
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerNoTypeInManifestCapsExtension DISABLED_WebAppBannerNoTypeInManifestCapsExtension
+#else
+#define MAYBE_WebAppBannerNoTypeInManifestCapsExtension WebAppBannerNoTypeInManifestCapsExtension
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerNoTypeInManifestCapsExtension) {
+                       MAYBE_WebAppBannerNoTypeInManifestCapsExtension) {
   RunBannerTest("/banners/manifest_no_type_caps_test_page.html",
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
@@ -320,7 +404,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, MissingManifest) {
                 ui::PAGE_TRANSITION_TYPED, 1, false);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerDirect) {
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_CancelBannerDirect DISABLED_CancelBannerDirect
+#else
+#define MAYBE_CancelBannerDirect CancelBannerDirect
+#endif
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_CancelBannerDirect) {
   RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
                 false);
 }
@@ -331,12 +422,26 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerIndirect) {
                 false);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBanner) {
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_PromptBanner DISABLED_PromptBanner
+#else
+#define MAYBE_PromptBanner PromptBanner
+#endif
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_PromptBanner) {
   RunBannerTest("/banners/prompt_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
                 true);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBannerInHandler) {
+// http://crbug.com/631190
+#if defined(OS_WIN)
+#define MAYBE_PromptBannerInHandler DISABLED_PromptBannerInHandler
+#else
+#define MAYBE_PromptBannerInHandler PromptBannerInHandler
+#endif
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_PromptBannerInHandler) {
   RunBannerTest("/banners/prompt_in_handler_test_page.html",
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
