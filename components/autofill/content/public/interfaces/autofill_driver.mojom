@@ -4,7 +4,56 @@
 
 module autofill.mojom;
 
+import "components/autofill/content/public/interfaces/autofill_types.mojom";
+import "mojo/common/common_custom_types.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// There is one instance of this interface per render frame host in the browser
+// process.
 interface AutofillDriver {
   // Notification that there has been a user gesture.
   FirstUserGestureObserved();
+
+  // Notification that forms have been seen that are candidates for
+  // filling/submitting by the AutofillManager.
+  FormsSeen(array<FormData> forms, mojo.common.mojom.TimeTicks timestamp);
+
+  // Notification that a form is about to be submitted. The user hit the button.
+  WillSubmitForm(FormData form, mojo.common.mojom.TimeTicks timestamp);
+
+  // Notification that a form has been submitted.
+  FormSubmitted(FormData form);
+
+  // Notification that a form field's value has changed.
+  TextFieldDidChange(FormData form,
+                     FormFieldData field,
+                     mojo.common.mojom.TimeTicks timestamp);
+
+  // Queries the browser for Autofill suggestions for a form input field.
+  // |id| is the request ID which is used to map responses correctly.
+  QueryFormFieldAutofill(int32 id,
+                         FormData form,
+                         FormFieldData field,
+                         gfx.mojom.RectF bounding_box);
+
+  // Instructs the browser to hide the Autofill popup if it is open.
+  HidePopup();
+
+  // Sent immediately after the renderer receives a ping IPC.
+  PingAck();
+
+  // Sent when the current form is no longer focused.
+  FocusNoLongerOnForm();
+
+  // Sent when a form is filled with Autofill suggestions.
+  DidFillAutofillFormData(FormData form, mojo.common.mojom.TimeTicks timestamp);
+
+  // Sent when a form is previewed with Autofill suggestions.
+  DidPreviewAutofillFormData();
+
+  // Sent when a text field is done editing.
+  DidEndTextFieldEditing();
+
+  // Informs browser of data list values for the current field.
+  SetDataList(array<string> values, array<string> labels);
 };

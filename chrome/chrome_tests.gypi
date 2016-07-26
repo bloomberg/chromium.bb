@@ -2663,6 +2663,10 @@
             # TODO(dbeam): log webui URLs on iOS and test them.
             'browser/ui/webui/log_web_ui_url_browsertest.cc',
           ],
+        }, { # else: OS != "ios"
+          'dependencies': [
+            '../mojo/mojo_base.gyp:mojo_common_lib',
+          ],
         }],
         ['enable_app_list==1', {
           'sources': [ '<@(chrome_browser_tests_app_list_sources)' ],

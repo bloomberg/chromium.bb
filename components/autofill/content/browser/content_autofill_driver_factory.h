@@ -18,10 +18,6 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace autofill {
 
 class AutofillDriver;
@@ -50,8 +46,6 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host);
 
   // content::WebContentsObserver:
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidNavigateAnyFrame(

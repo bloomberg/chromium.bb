@@ -37,6 +37,7 @@ static_library("browser") {
     "//google_apis",
     "//gpu/config",
     "//ipc",
+    "//mojo/common:common_base",
     "//net",
     "//services/shell/public/cpp",
     "//sql",
@@ -77,8 +78,10 @@ source_set("unit_tests") {
     "//google_apis",
     "//google_apis:test_support",
     "//ipc:test_support",
+    "//mojo/common:common_base",
     "//net",
     "//net:test_support",
+    "//services/shell/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

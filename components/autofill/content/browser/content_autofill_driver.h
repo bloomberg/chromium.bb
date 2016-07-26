@@ -14,17 +14,13 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
-}
-
-namespace IPC {
-class Message;
 }
 
 namespace autofill {
@@ -43,6 +39,10 @@ class ContentAutofillDriver : public AutofillDriver,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   ~ContentAutofillDriver() override;
+
+  // Gets the driver for |render_frame_host|.
+  static ContentAutofillDriver* GetForRenderFrameHost(
+      content::RenderFrameHost* render_frame_host);
 
   void BindRequest(mojom::AutofillDriverRequest request);
 
@@ -71,9 +71,26 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // mojom::AutofillDriver:
   void FirstUserGestureObserved() override;
-
-  // Handles a message that came from the associated render frame.
-  bool HandleMessage(const IPC::Message& message);
+  void FormsSeen(mojo::Array<FormData> forms,
+                 base::TimeTicks timestamp) override;
+  void WillSubmitForm(const FormData& form, base::TimeTicks timestamp) override;
+  void FormSubmitted(const FormData& form) override;
+  void TextFieldDidChange(const FormData& form,
+                          const FormFieldData& field,
+                          base::TimeTicks timestamp) override;
+  void QueryFormFieldAutofill(int32_t id,
+                              const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box) override;
+  void HidePopup() override;
+  void PingAck() override;
+  void FocusNoLongerOnForm() override;
+  void DidFillAutofillFormData(const FormData& form,
+                               base::TimeTicks timestamp) override;
+  void DidPreviewAutofillFormData() override;
+  void DidEndTextFieldEditing() override;
+  void SetDataList(mojo::Array<mojo::String> values,
+                   mojo::Array<mojo::String> labels) override;
 
   // Called when the frame has navigated.
   void DidNavigateFrame(const content::LoadCommittedDetails& details,
@@ -90,14 +107,14 @@ class ContentAutofillDriver : public AutofillDriver,
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
+  const mojom::AutofillAgentPtr& GetAutofillAgent();
+
  protected:
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.
   void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
 
  private:
-  void ConnectToMojoAutofillAgentIfNeeded();
-
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_;
@@ -113,7 +130,7 @@ class ContentAutofillDriver : public AutofillDriver,
   // case where the Autofill native UI is enabled.
   AutofillExternalDelegate autofill_external_delegate_;
 
-  mojo::BindingSet<mojom::AutofillDriver> bindings_;
+  mojo::Binding<mojom::AutofillDriver> binding_;
 
   mojom::AutofillAgentPtr mojo_autofill_agent_;
 };

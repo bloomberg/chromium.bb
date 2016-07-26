@@ -18,7 +18,7 @@
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -58,6 +58,27 @@ class AutofillAgent : public content::RenderFrameObserver,
   ~AutofillAgent() override;
 
   void BindRequest(mojom::AutofillAgentRequest request);
+
+  const mojom::AutofillDriverPtr& GetAutofillDriver();
+
+  // mojom::AutofillAgent:
+  void FirstUserGestureObservedInTab() override;
+  void FillForm(int32_t id, const FormData& form) override;
+  void PreviewForm(int32_t id, const FormData& form) override;
+  void FieldTypePredictionsAvailable(
+      mojo::Array<FormDataPredictions> forms) override;
+  void ClearForm() override;
+  void ClearPreviewedForm() override;
+  void FillFieldWithValue(const mojo::String& value) override;
+  void PreviewFieldWithValue(const mojo::String& value) override;
+  void AcceptDataListSuggestion(const mojo::String& value) override;
+  void FillPasswordSuggestion(const mojo::String& username,
+                              const mojo::String& password) override;
+  void PreviewPasswordSuggestion(const mojo::String& username,
+                                 const mojo::String& password) override;
+  void ShowInitialPasswordAccountSuggestions(
+      int32_t key,
+      const PasswordFormFillData& form_data) override;
 
  protected:
   // blink::WebAutofillClient:
@@ -123,7 +144,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   };
 
   // content::RenderFrameObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   void DidFinishDocumentLoad() override;
@@ -166,28 +186,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void firstUserGestureObserved() override;
   void ajaxSucceeded() override;
 
-  void OnFieldTypePredictionsAvailable(
-      const std::vector<FormDataPredictions>& forms);
-  void OnFillForm(int query_id, const FormData& form);
   void OnPing();
-  void OnPreviewForm(int query_id, const FormData& form);
-
-  // mojom::AutofillAgent:
-  void FirstUserGestureObservedInTab() override;
-
-  // For external Autofill selection.
-  void OnClearForm();
-  void OnClearPreviewedForm();
-  void OnFillFieldWithValue(const base::string16& value);
-  void OnPreviewFieldWithValue(const base::string16& value);
-  void OnAcceptDataListSuggestion(const base::string16& value);
-  void OnFillPasswordSuggestion(const base::string16& username,
-                                const base::string16& password);
-  void OnPreviewPasswordSuggestion(const base::string16& username,
-                                   const base::string16& password);
-  void OnShowInitialPasswordAccountSuggestions(
-      int key,
-      const PasswordFormFillData& form_data);
 
   // Called when a same-page navigation is detected.
   void OnSamePageNavigationCompleted();
@@ -212,7 +211,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void QueryAutofillSuggestions(const blink::WebFormControlElement& element);
 
   // Sets the element value to reflect the selected |suggested_value|.
-  void AcceptDataListSuggestion(const base::string16& suggested_value);
+  void DoAcceptDataListSuggestion(const base::string16& suggested_value);
 
   // Fills |form| and |field| with the FormData and FormField corresponding to
   // |node|. Returns true if the data was found; and false otherwise.
@@ -222,14 +221,14 @@ class AutofillAgent : public content::RenderFrameObserver,
       FormFieldData* field) WARN_UNUSED_RESULT;
 
   // Set |node| to display the given |value|.
-  void FillFieldWithValue(const base::string16& value,
-                          blink::WebInputElement* node);
+  void DoFillFieldWithValue(const base::string16& value,
+                            blink::WebInputElement* node);
 
   // Set |node| to display the given |value| as a preview.  The preview is
   // visible on screen to the user, but not visible to the page via the DOM or
   // JavaScript.
-  void PreviewFieldWithValue(const base::string16& value,
-                             blink::WebInputElement* node);
+  void DoPreviewFieldWithValue(const base::string16& value,
+                               blink::WebInputElement* node);
 
   // Notifies browser of new fillable forms in |render_frame|.
   void ProcessForms();
@@ -248,8 +247,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Returns true if the text field change is due to a user gesture. Can be
   // overriden in tests.
   virtual bool IsUserGesture() const;
-
-  void ConnectToMojoAutofillDriverIfNeeded();
 
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
@@ -301,7 +298,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // for the password manager. TODO(gcasto): Have both UIs show on focus.
   bool is_generation_popup_possibly_visible_;
 
-  mojo::BindingSet<mojom::AutofillAgent> bindings_;
+  mojo::Binding<mojom::AutofillAgent> binding_;
 
   mojom::AutofillDriverPtr mojo_autofill_driver_;
 

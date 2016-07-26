@@ -118,16 +118,6 @@ using FormsPredictionsMap =
 
 // Autofill messages sent from the browser to the renderer.
 
-// Instructs the renderer to fill the active form with the given form data.
-IPC_MESSAGE_ROUTED2(AutofillMsg_FillForm,
-                    int /* query_id */,
-                    autofill::FormData /* form */)
-
-// Instructs the renderer to preview the active form with the given form data.
-IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewForm,
-                    int /* query_id */,
-                    autofill::FormData /* form */)
-
 // Fill a password form and prepare field autocomplete for multiple
 // matching logins. Lets the renderer know if it should disable the popup
 // because the browser process will own the popup UI. |key| serves for
@@ -141,29 +131,6 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordForm,
 // the decisions made about saving the password.
 IPC_MESSAGE_ROUTED1(AutofillMsg_SetLoggingState, bool /* active */)
 
-// Send the heuristic and server field type predictions to the renderer.
-IPC_MESSAGE_ROUTED1(
-    AutofillMsg_FieldTypePredictionsAvailable,
-    std::vector<autofill::FormDataPredictions> /* forms */)
-
-// Clears the currently displayed Autofill results.
-IPC_MESSAGE_ROUTED0(AutofillMsg_ClearForm)
-
-// Tells the renderer that the Autofill previewed form should be cleared.
-IPC_MESSAGE_ROUTED0(AutofillMsg_ClearPreviewedForm)
-
-// Sets the currently selected node's value.
-IPC_MESSAGE_ROUTED1(AutofillMsg_FillFieldWithValue,
-                    base::string16 /* value */)
-
-// Sets the suggested value for the currently previewed node.
-IPC_MESSAGE_ROUTED1(AutofillMsg_PreviewFieldWithValue,
-                    base::string16 /* value */)
-
-// Sets the currently selected node's value to be the given data list value.
-IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
-                    base::string16 /* accepted data list value */)
-
 // Tells the renderer to populate the correct password fields with this
 // generated password.
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
@@ -171,24 +138,6 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
 
 // Tells the renderer to enable the form classifier.
 IPC_MESSAGE_ROUTED0(AutofillMsg_AllowToRunFormClassifier)
-
-// Tells the renderer to fill the username and password with with given
-// values.
-IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordSuggestion,
-                    base::string16 /* username */,
-                    base::string16 /* password */)
-
-// Tells the renderer to preview the username and password with the given
-// values.
-IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewPasswordSuggestion,
-                    base::string16 /* username */,
-                    base::string16 /* password */)
-
-// Sent when a password form is initially detected and suggestions should be
-// shown. Used by the fill-on-select experiment.
-IPC_MESSAGE_ROUTED2(AutofillMsg_ShowInitialPasswordAccountSuggestions,
-                    int /* key */,
-                    autofill::PasswordFormFillData /* the fill form data */)
 
 // Tells the renderer to find the focused password form (assuming it exists).
 // Renderer is expected to respond with the message
@@ -221,12 +170,6 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AutofillUsernameAndPasswordDataReceived,
 
 // TODO(creis): check in the browser that the renderer actually has permission
 // for the URL to avoid compromised renderers talking to the browser.
-
-// Notification that forms have been seen that are candidates for
-// filling/submitting by the AutofillManager.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
-                    std::vector<autofill::FormData> /* forms */,
-                    base::TimeTicks /* timestamp */)
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.
@@ -261,47 +204,12 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_InPageNavigation,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_RecordSavePasswordProgress,
                     std::string /* log */)
 
-// Notification that a form is about to be submitted. The user hit the button.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_WillSubmitForm,
-                    autofill::FormData /* form */,
-                    base::TimeTicks /* timestamp */)
-
-// Notification that a form has been submitted.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_FormSubmitted,
-                    autofill::FormData /* form */)
-
-// Notification that a form field's value has changed.
-IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
-                    autofill::FormData /* the form */,
-                    autofill::FormFieldData /* the form field */,
-                    base::TimeTicks /* timestamp */)
-
 // Queries the browser for Autofill suggestions for a form input field.
 IPC_MESSAGE_ROUTED4(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
                     autofill::FormData /* the form */,
                     autofill::FormFieldData /* the form field */,
                     gfx::RectF /* input field bounds, window-relative */)
-
-// Sent when a form is previewed with Autofill suggestions.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidPreviewAutofillFormData)
-
-// Sent immediately after the renderer receives a ping IPC.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_PingAck)
-
-// Sent when the current form is no longer focused.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_FocusNoLongerOnForm)
-
-// Sent when a form is filled with Autofill suggestions.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_DidFillAutofillFormData,
-                    autofill::FormData /* the form */,
-                    base::TimeTicks /* timestamp */)
-
-// Send when a text field is done editing.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
-
-// Instructs the browser to hide the Autofill popup if it is open.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePopup)
 
 // Instructs the browser that generation is available for this particular form.
 // This is used for UMA stats.
@@ -353,11 +261,6 @@ IPC_MESSAGE_ROUTED5(
     base::string16 /* username typed by user */,
     int /* options bitmask of autofill::ShowPasswordSuggestionsOptions */,
     gfx::RectF /* input field bounds, window-relative */)
-
-// Inform browser of data list values for the curent field.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_SetDataList,
-                    std::vector<base::string16> /* values */,
-                    std::vector<base::string16> /* labels */)
 
 // Inform the browser which password form is currently focused, as a response
 // to the |AutofillMsg_FindFocusedPasswordForm| request. If no password form

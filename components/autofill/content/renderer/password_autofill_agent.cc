@@ -559,6 +559,10 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
 PasswordAutofillAgent::~PasswordAutofillAgent() {
 }
 
+void PasswordAutofillAgent::SetAutofillAgent(AutofillAgent* autofill_agent) {
+  autofill_agent_ = autofill_agent;
+}
+
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
     : was_user_gesture_seen_(false) {
 }
@@ -1411,7 +1415,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   if (user_input.isPasswordField() && !user_input.isAutofilled() &&
       !user_input.value().isEmpty()) {
-    Send(new AutofillHostMsg_HidePopup(routing_id()));
+    GetAutofillDriver()->HidePopup();
     return false;
   }
 
@@ -1478,6 +1482,11 @@ bool PasswordAutofillAgent::ProvisionallySavedPasswordIsValid() {
          !provisionally_saved_form_->username_value.empty() &&
          !(provisionally_saved_form_->password_value.empty() &&
          provisionally_saved_form_->new_password_value.empty());
+}
+
+const mojom::AutofillDriverPtr& PasswordAutofillAgent::GetAutofillDriver() {
+  DCHECK(autofill_agent_);
+  return autofill_agent_->GetAutofillDriver();
 }
 
 }  // namespace autofill

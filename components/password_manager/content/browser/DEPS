@@ -1,6 +1,7 @@
 include_rules = [
   "+components/autofill/core/browser",
   "+components/autofill/content/browser",
+  "+components/autofill/content/public/interfaces",
   "+components/keyed_service/content",
   "+content/public/browser",
   "+ipc",

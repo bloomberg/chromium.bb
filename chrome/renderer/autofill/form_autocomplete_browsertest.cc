@@ -11,7 +11,10 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
-#include "content/public/test/mock_render_thread.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -24,72 +27,123 @@ using blink::WebElement;
 using blink::WebInputElement;
 using blink::WebString;
 
-typedef ChromeRenderViewTest FormAutocompleteTest;
-
 namespace autofill {
 
 namespace {
 
+class FakeContentAutofillDriver : public mojom::AutofillDriver {
+ public:
+  FakeContentAutofillDriver() : did_unfocus_form_(false) {}
+
+  ~FakeContentAutofillDriver() override {}
+
+  void BindRequest(mojom::AutofillDriverRequest request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  bool did_unfocus_form() const { return did_unfocus_form_; }
+
+  const FormData* form_will_submit() const { return form_will_submit_.get(); }
+
+  const FormData* form_submitted() const { return form_submitted_.get(); }
+
+ private:
+  // mojom::AutofillDriver:
+  void FirstUserGestureObserved() override {}
+
+  void FormsSeen(mojo::Array<FormData> forms,
+                 base::TimeTicks timestamp) override {}
+
+  void WillSubmitForm(const FormData& form,
+                      base::TimeTicks timestamp) override {
+    form_will_submit_.reset(new FormData(form));
+  }
+
+  void FormSubmitted(const FormData& form) override {
+    form_submitted_.reset(new FormData(form));
+  }
+
+  void TextFieldDidChange(const FormData& form,
+                          const FormFieldData& field,
+                          base::TimeTicks timestamp) override {}
+
+  void QueryFormFieldAutofill(int32_t id,
+                              const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box) override {}
+
+  void HidePopup() override {}
+
+  void PingAck() override {}
+
+  void FocusNoLongerOnForm() override { did_unfocus_form_ = true; }
+
+  void DidFillAutofillFormData(const FormData& form,
+                               base::TimeTicks timestamp) override {}
+
+  void DidPreviewAutofillFormData() override {}
+
+  void DidEndTextFieldEditing() override {}
+
+  void SetDataList(mojo::Array<mojo::String> values,
+                   mojo::Array<mojo::String> labels) override {}
+
+  // Records whether FocusNoLongerOnForm() get called.
+  bool did_unfocus_form_;
+  // Records the form data received via WillSubmitForm() call.
+  std::unique_ptr<FormData> form_will_submit_;
+  // Records the form data received via FormSubmitted() call.
+  std::unique_ptr<FormData> form_submitted_;
+
+  mojo::BindingSet<mojom::AutofillDriver> bindings_;
+};
+
 // Helper function to verify the form-related messages received from the
 // renderer. The same data is expected in both messages. Depending on
 // |expect_submitted_message|, will verify presence of FormSubmitted message.
-void VerifyReceivedRendererMessages(content::MockRenderThread* render_thread,
-                                    const std::string& fname,
-                                    const std::string& lname,
-                                    bool expect_submitted_message) {
-  const IPC::Message* will_submit_message =
-      render_thread->sink().GetFirstMessageMatching(
-          AutofillHostMsg_WillSubmitForm::ID);
-  const IPC::Message* submitted_message =
-      render_thread->sink().GetFirstMessageMatching(
-          AutofillHostMsg_FormSubmitted::ID);
-  ASSERT_TRUE(will_submit_message != NULL);
-  ASSERT_EQ(expect_submitted_message, submitted_message != NULL);
+void VerifyReceivedRendererMessages(
+    const FakeContentAutofillDriver& fake_driver,
+    const std::string& fname,
+    const std::string& lname,
+    bool expect_submitted_message) {
+  ASSERT_TRUE(fake_driver.form_will_submit());
+  ASSERT_EQ(expect_submitted_message, fake_driver.form_submitted() != nullptr);
 
   // The tuple also includes a timestamp, which is ignored.
-  std::tuple<FormData, base::TimeTicks> will_submit_forms;
-  AutofillHostMsg_WillSubmitForm::Read(will_submit_message, &will_submit_forms);
-  ASSERT_LE(2U, std::get<0>(will_submit_forms).fields.size());
+  const FormData& will_submit_form = *(fake_driver.form_will_submit());
+  ASSERT_LE(2U, will_submit_form.fields.size());
 
-  FormFieldData& will_submit_form_field =
-      std::get<0>(will_submit_forms).fields[0];
-  EXPECT_EQ(WebString("fname"), will_submit_form_field.name);
-  EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)), will_submit_form_field.value);
-  will_submit_form_field = std::get<0>(will_submit_forms).fields[1];
-  EXPECT_EQ(WebString("lname"), will_submit_form_field.name);
-  EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)), will_submit_form_field.value);
+  EXPECT_EQ(WebString("fname"), will_submit_form.fields[0].name);
+  EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)),
+            will_submit_form.fields[0].value);
+  EXPECT_EQ(WebString("lname"), will_submit_form.fields[1].name);
+  EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)),
+            will_submit_form.fields[1].value);
 
   if (expect_submitted_message) {
-    std::tuple<FormData> submitted_forms;
-    AutofillHostMsg_FormSubmitted::Read(submitted_message, &submitted_forms);
-    ASSERT_LE(2U, std::get<0>(submitted_forms).fields.size());
+    const FormData& submitted_form = *(fake_driver.form_submitted());
+    ASSERT_LE(2U, submitted_form.fields.size());
 
-    FormFieldData& submitted_field = std::get<0>(submitted_forms).fields[0];
-    EXPECT_EQ(WebString("fname"), submitted_field.name);
-    EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)), submitted_field.value);
-    submitted_field = std::get<0>(submitted_forms).fields[1];
-    EXPECT_EQ(WebString("lname"), submitted_field.name);
-    EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)), submitted_field.value);
+    EXPECT_EQ(WebString("fname"), submitted_form.fields[0].name);
+    EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)),
+              submitted_form.fields[0].value);
+    EXPECT_EQ(WebString("lname"), submitted_form.fields[1].name);
+    EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)),
+              submitted_form.fields[1].value);
   }
 }
 
 // Helper function to verify that NO form-related messages are received from the
 // renderer.
-void VerifyNoSubmitMessagesReceived(content::MockRenderThread* render_thread) {
+void VerifyNoSubmitMessagesReceived(
+    const FakeContentAutofillDriver& fake_driver) {
   // No submission messages sent.
-  const IPC::Message* will_submit_message =
-      render_thread->sink().GetFirstMessageMatching(
-          AutofillHostMsg_WillSubmitForm::ID);
-  const IPC::Message* submitted_message =
-      render_thread->sink().GetFirstMessageMatching(
-          AutofillHostMsg_FormSubmitted::ID);
-  EXPECT_EQ(NULL, will_submit_message);
-  EXPECT_EQ(NULL, submitted_message);
+  EXPECT_EQ(nullptr, fake_driver.form_will_submit());
+  EXPECT_EQ(nullptr, fake_driver.form_submitted());
 }
 
 // Simulates receiving a message from the browser to fill a form.
-void SimulateOnFillForm(content::MockRenderThread* render_thread,
-                        autofill::AutofillAgent* autofill_agent,
+void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
                         blink::WebFrame* main_frame) {
   WebDocument document = main_frame->document();
   WebElement element =
@@ -98,7 +152,6 @@ void SimulateOnFillForm(content::MockRenderThread* render_thread,
 
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
-  render_thread->sink().ClearMessages();
   static_cast<autofill::PageClickListener*>(autofill_agent)
       ->FormControlElementClicked(element.to<WebInputElement>(), false);
 
@@ -119,12 +172,41 @@ void SimulateOnFillForm(content::MockRenderThread* render_thread,
   field_data.is_autofilled = true;
   data.fields.push_back(field_data);
 
-  AutofillMsg_FillForm msg(0, 0, data);
-  static_cast<content::RenderFrameObserver*>(autofill_agent)
-      ->OnMessageReceived(msg);
+  autofill_agent->FillForm(0, data);
 }
 
 }  // end namespace
+
+class FormAutocompleteTest : public ChromeRenderViewTest {
+ public:
+  FormAutocompleteTest() {}
+  ~FormAutocompleteTest() override {}
+
+ protected:
+  void SetUp() override {
+    ChromeRenderViewTest::SetUp();
+
+    // We only use the fake driver for main frame
+    // because our test cases only involve the main frame.
+    shell::InterfaceProvider* remote_interfaces =
+        view_->GetMainRenderFrame()->GetRemoteInterfaces();
+    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    test_api.SetBinderForName(
+        mojom::AutofillDriver::Name_,
+        base::Bind(&FormAutocompleteTest::BindAutofillDriver,
+                   base::Unretained(this)));
+  }
+
+  void BindAutofillDriver(mojo::ScopedMessagePipeHandle handle) {
+    fake_driver_.BindRequest(
+        mojo::MakeRequest<mojom::AutofillDriver>(std::move(handle)));
+  }
+
+  FakeContentAutofillDriver fake_driver_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FormAutocompleteTest);
+};
 
 // Tests that submitting a form generates WillSubmitForm and FormSubmitted
 // messages with the form fields.
@@ -137,7 +219,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -157,7 +239,7 @@ TEST_F(FormAutocompleteTest, SubmitEventPrevented) {
       "document.querySelector('input[type=submit]').click();");
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  false /* expect_submitted_message */);
 }
 
@@ -186,7 +268,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -220,7 +302,7 @@ TEST_F(FormAutocompleteTest,
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -261,7 +343,7 @@ TEST_F(FormAutocompleteTest, MAYBE_NoLongerVisibleBothNoActions) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -290,7 +372,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible_NoAction) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -316,7 +398,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_StillVisible) {
   ProcessPendingMessages();
 
   // No submission messages sent.
-  VerifyNoSubmitMessagesReceived(render_thread_.get());
+  VerifyNoSubmitMessagesReceived(fake_driver_);
 }
 
 // Tests that completing an Ajax request without any prior form interaction
@@ -339,7 +421,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoFormInteractionInvisible) {
   ProcessPendingMessages();
 
   // No submission messages sent.
-  VerifyNoSubmitMessagesReceived(render_thread_.get());
+  VerifyNoSubmitMessagesReceived(fake_driver_);
 }
 
 // Tests that completing an Ajax request after having autofilled a form,
@@ -353,7 +435,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
       "<input name='lname'/></form></html>");
 
   // Simulate filling a form using Autofill.
-  SimulateOnFillForm(render_thread_.get(), autofill_agent_, GetMainFrame());
+  SimulateOnFillForm(autofill_agent_, GetMainFrame());
 
   // Simulate removing the form just before the ajax request completes.
   ExecuteJavaScriptForTests("var element = document.getElementById('myForm');"
@@ -363,7 +445,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "John", "Smith",
+  VerifyReceivedRendererMessages(fake_driver_, "John", "Smith",
                                  true /* expect_submitted_message */);
 }
 
@@ -378,7 +460,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
       "<input name='lname' value='Deckard'/></form></html>");
 
   // Simulate filling a form using Autofill.
-  SimulateOnFillForm(render_thread_.get(), autofill_agent_, GetMainFrame());
+  SimulateOnFillForm(autofill_agent_, GetMainFrame());
 
   // Form still visible.
 
@@ -387,7 +469,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
   ProcessPendingMessages();
 
   // No submission messages sent.
-  VerifyNoSubmitMessagesReceived(render_thread_.get());
+  VerifyNoSubmitMessagesReceived(fake_driver_);
 }
 
 // Tests that completing an Ajax request without a form present will still
@@ -417,7 +499,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FormlessElements) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Kirby", "Puckett",
+  VerifyReceivedRendererMessages(fake_driver_, "Kirby", "Puckett",
                                  /* expect_submitted_message = */ true);
 }
 
@@ -465,15 +547,17 @@ TEST_F(FormAutocompleteTest,
   WebInputElement fname_element = element.to<WebInputElement>();
   SimulateUserInputChangeForElement(&fname_element, std::string("Rick"));
 
+  ASSERT_FALSE(fake_driver_.did_unfocus_form());
+
   // Change focus to a different node outside the form.
   WebElement different =
       document.getElementById(WebString::fromUTF8("different"));
   SetFocused(different);
 
-  ProcessPendingMessages();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-                  AutofillHostMsg_FocusNoLongerOnForm::ID) != nullptr);
+  EXPECT_TRUE(fake_driver_.did_unfocus_form());
 }
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from one
@@ -495,6 +579,8 @@ TEST_F(FormAutocompleteTest, InteractingInDifferentForms_FocusNoLongerOnForm) {
   WebInputElement fname_element = element.to<WebInputElement>();
   SimulateUserInputChangeForElement(&fname_element, std::string("Rick"));
 
+  ASSERT_FALSE(fake_driver_.did_unfocus_form());
+
   // Simulate user input in the second form so that a "no longer focused"
   // message is sent for the first form.
   document = GetMainFrame()->document();
@@ -503,10 +589,10 @@ TEST_F(FormAutocompleteTest, InteractingInDifferentForms_FocusNoLongerOnForm) {
   fname_element = element.to<WebInputElement>();
   SimulateUserInputChangeForElement(&fname_element, std::string("John"));
 
-  ProcessPendingMessages();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-                  AutofillHostMsg_FocusNoLongerOnForm::ID) != nullptr);
+  EXPECT_TRUE(fake_driver_.did_unfocus_form());
 }
 
 // Tests that submitting a form that has autocomplete="off" generates
@@ -522,7 +608,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -538,7 +624,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 
@@ -566,7 +652,7 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+  VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
 }
 

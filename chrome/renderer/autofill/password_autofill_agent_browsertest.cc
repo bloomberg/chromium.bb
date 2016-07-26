@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/renderer/render_frame.h"
+#include "mojo/common/common_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -255,14 +256,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   // Simulates the show initial password account suggestions message being sent
-  // to the renderer. We use that so we don't have to make
-  // RenderView::OnShowInitialPasswordAccountSuggestions() protected.
+  // to the renderer.
   void SimulateOnShowInitialPasswordAccountSuggestions(
       const PasswordFormFillData& fill_data) {
-    AutofillMsg_ShowInitialPasswordAccountSuggestions msg(
-        0, kPasswordFillFormDataId, fill_data);
-    static_cast<content::RenderFrameObserver*>(autofill_agent_)
-        ->OnMessageReceived(msg);
+    autofill_agent_->ShowInitialPasswordAccountSuggestions(
+        kPasswordFillFormDataId, fill_data);
   }
 
   void SendVisiblePasswordForms() {
@@ -387,9 +385,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     static_cast<autofill::PageClickListener*>(autofill_agent_)
         ->FormControlElementClicked(input, false);
 
-    AutofillMsg_FillPasswordSuggestion msg(0, username, password);
-    static_cast<content::RenderFrameObserver*>(autofill_agent_)
-        ->OnMessageReceived(msg);
+    autofill_agent_->FillPasswordSuggestion(mojo::String::From(username),
+                                            mojo::String::From(password));
   }
 
   void SimulateUsernameChange(const std::string& username) {

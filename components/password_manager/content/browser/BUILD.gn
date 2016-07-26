@@ -20,6 +20,7 @@ static_library("browser") {
     "//base",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
+    "//components/autofill/content/public/interfaces",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
     "//components/password_manager/content/public/cpp",
@@ -30,6 +31,7 @@ static_library("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
+    "//mojo/common:common_base",
     "//net",
   ]
 }

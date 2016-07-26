@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
@@ -33,6 +35,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
  public:
   explicit PasswordAutofillAgent(content::RenderFrame* render_frame);
   ~PasswordAutofillAgent() override;
+
+  void SetAutofillAgent(AutofillAgent* autofill_agent);
 
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
@@ -224,6 +228,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Helper function called when in-page navigation completed
   void OnSamePageNavigationCompleted();
 
+  const mojom::AutofillDriverPtr& GetAutofillDriver();
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |login_to_password_info_|.
@@ -254,6 +260,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Contains server predictions for username, password and/or new password
   // fields for individual forms.
   FormsPredictionsMap form_predictions_;
+
+  AutofillAgent* autofill_agent_;  // Weak reference.
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

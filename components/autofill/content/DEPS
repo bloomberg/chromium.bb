@@ -4,6 +4,7 @@ include_rules = [
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
   "+ipc",
+  "+mojo/common",
   "+mojo/public",
   "+services/shell/public/cpp",
 ]

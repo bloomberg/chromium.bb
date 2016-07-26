@@ -12,6 +12,8 @@ mojom("interfaces") {
 
   public_deps = [
     ":types",
+    "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
   ]
 
   use_new_wrapper_types = false

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/common/common_type_converters.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace password_manager {
@@ -92,31 +94,26 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
 void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {
-  content::RenderFrameHost* host = render_frame_host_;
-  host->Send(new AutofillMsg_FillPasswordSuggestion(host->GetRoutingID(),
-                                                    username, password));
+  GetAutofillAgent()->FillPasswordSuggestion(mojo::String::From(username),
+                                             mojo::String::From(password));
 }
 
 void ContentPasswordManagerDriver::PreviewSuggestion(
     const base::string16& username,
     const base::string16& password) {
-  content::RenderFrameHost* host = render_frame_host_;
-  host->Send(new AutofillMsg_PreviewPasswordSuggestion(host->GetRoutingID(),
-                                                       username, password));
+  GetAutofillAgent()->PreviewPasswordSuggestion(mojo::String::From(username),
+                                                mojo::String::From(password));
 }
 
 void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
     const autofill::PasswordFormFillData& form_data) {
   const int key = next_free_key_++;
   password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
-  render_frame_host_->Send(
-      new AutofillMsg_ShowInitialPasswordAccountSuggestions(
-          render_frame_host_->GetRoutingID(), key, form_data));
+  GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(key, form_data);
 }
 
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
-  content::RenderFrameHost* host = render_frame_host_;
-  host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
+  GetAutofillAgent()->ClearPreviewedForm();
 }
 
 void ContentPasswordManagerDriver::ForceSavePassword() {
@@ -293,6 +290,15 @@ bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(
   }
 
   return true;
+}
+
+const autofill::mojom::AutofillAgentPtr&
+ContentPasswordManagerDriver::GetAutofillAgent() {
+  autofill::ContentAutofillDriver* autofill_driver =
+      autofill::ContentAutofillDriver::GetForRenderFrameHost(
+          render_frame_host_);
+  DCHECK(autofill_driver);
+  return autofill_driver->GetAutofillAgent();
 }
 
 }  // namespace password_manager

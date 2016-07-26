@@ -1346,6 +1346,7 @@
           ],
           'dependencies': [
             '../content/content_shell_and_tests.gyp:test_support_content',
+            '../mojo/mojo_base.gyp:mojo_common_lib',
             '../skia/skia.gyp:skia',
             'components.gyp:autofill_content_browser',
             'components.gyp:autofill_content_renderer',

@@ -16,7 +16,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message_macros.h"
 
 namespace autofill {
 
@@ -93,12 +92,6 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
   auto mapping = frame_driver_map_.find(render_frame_host);
   return mapping == frame_driver_map_.end() ? nullptr : mapping->second.get();
-}
-
-bool ContentAutofillDriverFactory::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  return frame_driver_map_[render_frame_host]->HandleMessage(message);
 }
 
 void ContentAutofillDriverFactory::RenderFrameCreated(

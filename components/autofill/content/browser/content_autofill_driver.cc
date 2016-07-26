@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -23,7 +24,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "ipc/ipc_message_macros.h"
+#include "content/public/browser/web_contents.h"
+#include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -40,14 +42,24 @@ ContentAutofillDriver::ContentAutofillDriver(
                                             client,
                                             app_locale,
                                             enable_download_manager)),
-      autofill_external_delegate_(autofill_manager_.get(), this) {
+      autofill_external_delegate_(autofill_manager_.get(), this),
+      binding_(this) {
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 
 ContentAutofillDriver::~ContentAutofillDriver() {}
 
+// static
+ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  ContentAutofillDriverFactory* factory =
+      ContentAutofillDriverFactory::FromWebContents(
+          content::WebContents::FromRenderFrameHost(render_frame_host));
+  return factory ? factory->DriverForFrame(render_frame_host) : nullptr;
+}
+
 void ContentAutofillDriver::BindRequest(mojom::AutofillDriverRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 bool ContentAutofillDriver::IsOffTheRecord() const {
@@ -76,14 +88,13 @@ void ContentAutofillDriver::SendFormDataToRenderer(
     const FormData& data) {
   if (!RendererIsAvailable())
     return;
+
   switch (action) {
     case FORM_DATA_ACTION_FILL:
-      render_frame_host_->Send(new AutofillMsg_FillForm(
-          render_frame_host_->GetRoutingID(), query_id, data));
+      GetAutofillAgent()->FillForm(query_id, data);
       break;
     case FORM_DATA_ACTION_PREVIEW:
-      render_frame_host_->Send(new AutofillMsg_PreviewForm(
-          render_frame_host_->GetRoutingID(), query_id, data));
+      GetAutofillAgent()->PreviewForm(query_id, data);
       break;
   }
 }
@@ -105,46 +116,41 @@ void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
 
   std::vector<FormDataPredictions> type_predictions =
       FormStructure::GetFieldTypePredictions(forms);
-  render_frame_host_->Send(new AutofillMsg_FieldTypePredictionsAvailable(
-      render_frame_host_->GetRoutingID(), type_predictions));
+  GetAutofillAgent()->FieldTypePredictionsAvailable(
+      std::move(type_predictions));
 }
 
 void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  render_frame_host_->Send(new AutofillMsg_AcceptDataListSuggestion(
-      render_frame_host_->GetRoutingID(), value));
+  GetAutofillAgent()->AcceptDataListSuggestion(mojo::String::From(value));
 }
 
 void ContentAutofillDriver::RendererShouldClearFilledForm() {
   if (!RendererIsAvailable())
     return;
-  render_frame_host_->Send(
-      new AutofillMsg_ClearForm(render_frame_host_->GetRoutingID()));
+  GetAutofillAgent()->ClearForm();
 }
 
 void ContentAutofillDriver::RendererShouldClearPreviewedForm() {
   if (!RendererIsAvailable())
     return;
-  render_frame_host_->Send(
-      new AutofillMsg_ClearPreviewedForm(render_frame_host_->GetRoutingID()));
+  GetAutofillAgent()->ClearPreviewedForm();
 }
 
 void ContentAutofillDriver::RendererShouldFillFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  render_frame_host_->Send(new AutofillMsg_FillFieldWithValue(
-      render_frame_host_->GetRoutingID(), value));
+  GetAutofillAgent()->FillFieldWithValue(mojo::String::From(value));
 }
 
 void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  render_frame_host_->Send(new AutofillMsg_PreviewFieldWithValue(
-      render_frame_host_->GetRoutingID(), value));
+  GetAutofillAgent()->PreviewFieldWithValue(mojo::String::From(value));
 }
 
 void ContentAutofillDriver::PopupHidden() {
@@ -172,47 +178,63 @@ void ContentAutofillDriver::FirstUserGestureObserved() {
   client_->OnFirstUserGestureObserved();
 }
 
-bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ContentAutofillDriver, message)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_FormsSeen,
-                      autofill_manager_.get(),
-                      AutofillManager::OnFormsSeen)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_WillSubmitForm, autofill_manager_.get(),
-                      AutofillManager::OnWillSubmitForm)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_FormSubmitted,
-                      autofill_manager_.get(),
-                      AutofillManager::OnFormSubmitted)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_TextFieldDidChange,
-                      autofill_manager_.get(),
-                      AutofillManager::OnTextFieldDidChange)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_FocusNoLongerOnForm,
-                      autofill_manager_.get(),
-                      AutofillManager::OnFocusNoLongerOnForm)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_QueryFormFieldAutofill,
-                      autofill_manager_.get(),
-                      AutofillManager::OnQueryFormFieldAutofill)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_DidPreviewAutofillFormData,
-                      autofill_manager_.get(),
-                      AutofillManager::OnDidPreviewAutofillFormData)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_PingAck,
-                      &autofill_external_delegate_,
-                      AutofillExternalDelegate::OnPingAck)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_DidFillAutofillFormData,
-                      autofill_manager_.get(),
-                      AutofillManager::OnDidFillAutofillFormData)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_DidEndTextFieldEditing,
-                      autofill_manager_.get(),
-                      AutofillManager::OnDidEndTextFieldEditing)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_HidePopup,
-                      autofill_manager_.get(),
-                      AutofillManager::OnHidePopup)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_SetDataList,
-                      autofill_manager_.get(),
-                      AutofillManager::OnSetDataList)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void ContentAutofillDriver::FormsSeen(mojo::Array<FormData> forms,
+                                      base::TimeTicks timestamp) {
+  autofill_manager_->OnFormsSeen(forms.storage(), timestamp);
+}
+
+void ContentAutofillDriver::WillSubmitForm(const FormData& form,
+                                           base::TimeTicks timestamp) {
+  autofill_manager_->OnWillSubmitForm(form, timestamp);
+}
+
+void ContentAutofillDriver::FormSubmitted(const FormData& form) {
+  autofill_manager_->OnFormSubmitted(form);
+}
+
+void ContentAutofillDriver::TextFieldDidChange(const FormData& form,
+                                               const FormFieldData& field,
+                                               base::TimeTicks timestamp) {
+  autofill_manager_->OnTextFieldDidChange(form, field, timestamp);
+}
+
+void ContentAutofillDriver::QueryFormFieldAutofill(
+    int32_t id,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  autofill_manager_->OnQueryFormFieldAutofill(id, form, field, bounding_box);
+}
+
+void ContentAutofillDriver::HidePopup() {
+  autofill_manager_->OnHidePopup();
+}
+
+void ContentAutofillDriver::PingAck() {
+  autofill_external_delegate_.OnPingAck();
+}
+
+void ContentAutofillDriver::FocusNoLongerOnForm() {
+  autofill_manager_->OnFocusNoLongerOnForm();
+}
+
+void ContentAutofillDriver::DidFillAutofillFormData(const FormData& form,
+                                                    base::TimeTicks timestamp) {
+  autofill_manager_->OnDidFillAutofillFormData(form, timestamp);
+}
+
+void ContentAutofillDriver::DidPreviewAutofillFormData() {
+  autofill_manager_->OnDidPreviewAutofillFormData();
+}
+
+void ContentAutofillDriver::DidEndTextFieldEditing() {
+  autofill_manager_->OnDidEndTextFieldEditing();
+}
+
+void ContentAutofillDriver::SetDataList(mojo::Array<mojo::String> values,
+                                        mojo::Array<mojo::String> labels) {
+  autofill_manager_->OnSetDataList(values.To<std::vector<base::string16>>(),
+                                   labels.To<std::vector<base::string16>>());
 }
 
 void ContentAutofillDriver::DidNavigateFrame(
@@ -229,16 +251,17 @@ void ContentAutofillDriver::SetAutofillManager(
 }
 
 void ContentAutofillDriver::NotifyFirstUserGestureObservedInTab() {
-  ConnectToMojoAutofillAgentIfNeeded();
-  mojo_autofill_agent_->FirstUserGestureObservedInTab();
+  GetAutofillAgent()->FirstUserGestureObservedInTab();
 }
 
-void ContentAutofillDriver::ConnectToMojoAutofillAgentIfNeeded() {
-  if (mojo_autofill_agent_)
-    return;
+const mojom::AutofillAgentPtr& ContentAutofillDriver::GetAutofillAgent() {
+  // Here is a lazy binding, and will not reconnect after connection error.
+  if (!mojo_autofill_agent_) {
+    render_frame_host_->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&mojo_autofill_agent_));
+  }
 
-  render_frame_host_->GetRemoteInterfaces()->GetInterface(
-      &mojo_autofill_agent_);
+  return mojo_autofill_agent_;
 }
 
 }  // namespace autofill
