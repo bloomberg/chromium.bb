@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/image_decoder.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_files_id.h"
@@ -58,58 +57,34 @@ void SetBitmapAsWallpaper(const SkBitmap& bitmap) {
 
 }  // namespace
 
-// An implementation of ImageDecoder::ImageRequest that just calls back
-// ArcWallpaperHandler.
-class ArcWallpaperHandler::ImageRequestImpl
-    : public ImageDecoder::ImageRequest {
- public:
-  // |handler| outlives this instance.
-  explicit ImageRequestImpl(ArcWallpaperHandler* handler) : handler_(handler) {}
-
-  // ImageDecoder::ImageRequest implementation.
-  void OnImageDecoded(const SkBitmap& bitmap) override {
-    handler_->OnImageDecoded(this, bitmap);
-  }
-  void OnDecodeImageFailed() override { handler_->OnDecodeImageFailed(this); }
-
- private:
-  ArcWallpaperHandler* const handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageRequestImpl);
-};
-
 ArcWallpaperHandler::ArcWallpaperHandler() = default;
 
 ArcWallpaperHandler::~ArcWallpaperHandler() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Cancel in-flight requests.
-  for (auto& request : inflight_requests_)
-    ImageDecoder::Cancel(request.get());
-  inflight_requests_.clear();
+  // Make sure the callback is never called after destruction. It is safe to
+  // call Cancel() even when there is no in-flight request.
+  ImageDecoder::Cancel(this);
 }
 
 void ArcWallpaperHandler::SetWallpaper(const std::vector<uint8_t>& jpeg_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<ImageRequestImpl> request =
-      base::MakeUnique<ImageRequestImpl>(this);
+  // If there is an in-flight request, cancel it. It is safe to call Cancel()
+  // even when there is no in-flight request.
+  ImageDecoder::Cancel(this);
   // TODO(nya): Improve ImageDecoder to minimize copy.
   std::string jpeg_data_as_string(
       reinterpret_cast<const char*>(jpeg_data.data()), jpeg_data.size());
-  ImageDecoder::StartWithOptions(request.get(), jpeg_data_as_string,
+  ImageDecoder::StartWithOptions(this, jpeg_data_as_string,
                                  ImageDecoder::ROBUST_JPEG_CODEC, true);
-  inflight_requests_.insert(std::move(request));
 }
 
-void ArcWallpaperHandler::OnImageDecoded(ImageRequestImpl* request,
-                                         const SkBitmap& bitmap) {
+void ArcWallpaperHandler::OnImageDecoded(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  inflight_requests_.erase(base::WrapUnique(request));
   SetBitmapAsWallpaper(bitmap);
 }
 
-void ArcWallpaperHandler::OnDecodeImageFailed(ImageRequestImpl* request) {
+void ArcWallpaperHandler::OnDecodeImageFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  inflight_requests_.erase(base::WrapUnique(request));
   LOG(ERROR) << "Failed to decode wallpaper image.";
 }
 

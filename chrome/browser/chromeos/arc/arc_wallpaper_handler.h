@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/image_decoder.h"
 #include "components/arc/set_wallpaper_delegate.h"
 
 class SkBitmap;
@@ -19,7 +20,8 @@ class SkBitmap;
 namespace arc {
 
 // Lives on the UI thread.
-class ArcWallpaperHandler : public SetWallpaperDelegate {
+class ArcWallpaperHandler : public SetWallpaperDelegate,
+                            public ImageDecoder::ImageRequest {
  public:
   ArcWallpaperHandler();
   ~ArcWallpaperHandler() override;
@@ -27,16 +29,11 @@ class ArcWallpaperHandler : public SetWallpaperDelegate {
   // SetWallpaperDelegate implementation.
   void SetWallpaper(const std::vector<uint8_t>& jpeg_data) override;
 
+  // ImageDecoder::ImageRequest implementation.
+  void OnImageDecoded(const SkBitmap& bitmap) override;
+  void OnDecodeImageFailed() override;
+
  private:
-  class ImageRequestImpl;
-
-  // Called from ImageRequestImpl on decode completion.
-  void OnImageDecoded(ImageRequestImpl* request, const SkBitmap& bitmap);
-  void OnDecodeImageFailed(ImageRequestImpl* request);
-
-  // The set of in-flight decode requests.
-  std::set<std::unique_ptr<ImageRequestImpl>> inflight_requests_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcWallpaperHandler);
 };
 
