@@ -13,6 +13,8 @@ namespace base {
 
 PowerMonitorTestSource::PowerMonitorTestSource()
     : test_on_battery_power_(false) {
+  DCHECK(MessageLoop::current())
+      << "PowerMonitorTestSource requires a MessageLoop.";
 }
 
 PowerMonitorTestSource::~PowerMonitorTestSource() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/power_monitor_test_base.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/power_monitor_messages.h"
@@ -60,6 +61,7 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
   base::PowerMonitor* monitor() { return power_monitor_.get(); }
 
  private:
+  base::MessageLoop message_loop_;
   base::PowerMonitorTestSource* power_monitor_source_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 

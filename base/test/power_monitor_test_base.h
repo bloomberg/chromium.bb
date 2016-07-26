@@ -5,7 +5,6 @@
 #ifndef BASE_TEST_POWER_MONITOR_TEST_BASE_H_
 #define BASE_TEST_POWER_MONITOR_TEST_BASE_H_
 
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 
@@ -24,7 +23,6 @@ class PowerMonitorTestSource : public PowerMonitorSource {
   bool IsOnBatteryPowerImpl() override;
 
   bool test_on_battery_power_;
-  MessageLoop message_loop_;
 };
 
 class PowerMonitorTestObserver : public PowerObserver {
