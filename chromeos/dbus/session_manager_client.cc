@@ -380,7 +380,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RemoveArcData(const cryptohome::Identification& cryptohome_id) override {
+  void RemoveArcData(const cryptohome::Identification& cryptohome_id,
+                     const ArcCallback& callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerRemoveArcData);
     dbus::MessageWriter writer(&method_call);
@@ -389,7 +390,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnArcMethod,
                    weak_ptr_factory_.GetWeakPtr(),
-                   login_manager::kSessionManagerRemoveArcData, ArcCallback()));
+                   login_manager::kSessionManagerRemoveArcData, callback));
   }
 
  protected:
@@ -947,7 +948,10 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     callback.Run(false, base::TimeTicks::Now());
   }
 
-  void RemoveArcData(const cryptohome::Identification& cryptohome_id) override {
+  void RemoveArcData(const cryptohome::Identification& cryptohome_id,
+                     const ArcCallback& callback) override {
+    if (!callback.is_null())
+      callback.Run(false);
   }
 
  private:

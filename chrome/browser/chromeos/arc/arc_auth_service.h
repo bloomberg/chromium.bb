@@ -175,6 +175,9 @@ class ArcAuthService : public ArcService,
   void OnAndroidManagementChecked(
       policy::AndroidManagementClient::Result result) override;
 
+  // Stops ARC without changing ArcEnabled preference.
+  void StopArc();
+
   // Returns current page that has to be shown in OptIn UI.
   UIPage ui_page() const { return ui_page_; }
 
@@ -195,7 +198,6 @@ class ArcAuthService : public ArcService,
   void StartAndroidManagementClient();
   void CheckAndroidManagement(bool background_mode);
   void StartArcIfSignedIn();
-  void StopArc();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;

@@ -52,6 +52,8 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
       mojom::ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(
       mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
+  void OnEnterpriseReportingInstanceReady(
+      mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) override;
   void OnFileSystemInstanceReady(
       mojom::FileSystemInstancePtr file_system_ptr) override;
   void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;

@@ -166,6 +166,7 @@
         'arc/common/bluetooth.mojom',
         'arc/common/clipboard.mojom',
         'arc/common/crash_collector.mojom',
+        'arc/common/enterprise_reporting.mojom',
         'arc/common/file_system.mojom',
         'arc/common/ime.mojom',
         'arc/common/intent_helper.mojom',

@@ -193,7 +193,8 @@ void DeviceSettingsTestHelper::GetArcStartTime(
     const GetArcStartTimeCallback& callback) {}
 
 void DeviceSettingsTestHelper::RemoveArcData(
-    const cryptohome::Identification& cryptohome_id) {}
+    const cryptohome::Identification& cryptohome_id,
+    const ArcCallback& callback) {}
 
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}

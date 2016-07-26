@@ -10,6 +10,7 @@ import "auth.mojom";
 import "bluetooth.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
+import "enterprise_reporting.mojom";
 import "file_system.mojom";
 import "ime.mojom";
 import "intent_helper.mojom";
@@ -23,9 +24,9 @@ import "process.mojom";
 import "storage_manager.mojom";
 import "video.mojom";
 
-// Next MinVersion: 15
-// Deprecated method IDs: 101, 105, 117
-// Next method ID: 121
+// Next MinVersion: 16
+// Deprecated method IDs: 101, 105
+// Next method ID: 123
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -49,6 +50,10 @@ interface ArcBridgeHost {
   // Notifies Chrome that the CrashCollectorInstance interface is ready.
   [MinVersion=7] OnCrashCollectorInstanceReady@112(
       CrashCollectorInstance instance_ptr);
+
+  // Notifies Chrome that the EnterpriseReportingInstance interface is ready.
+  [MinVersion=15] OnEnterpriseReportingInstanceReady@122(
+      EnterpriseReportingInstance instance_ptr);
 
   // Notifies Chrome that the FileSystemInstance interface is ready.
   [MinVersion=13] OnFileSystemInstanceReady@119(

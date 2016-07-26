@@ -70,6 +70,8 @@
         'browser/chromeos/arc/arc_boot_error_notification.h',
         'browser/chromeos/arc/arc_downloads_watcher_service.cc',
         'browser/chromeos/arc/arc_downloads_watcher_service.h',
+        'browser/chromeos/arc/arc_enterprise_reporting_service.cc',
+        'browser/chromeos/arc/arc_enterprise_reporting_service.h',
         'browser/chromeos/arc/arc_navigation_throttle.cc',
         'browser/chromeos/arc/arc_navigation_throttle.h',
         'browser/chromeos/arc/arc_service_launcher.cc',

@@ -98,6 +98,9 @@ class ArcBridgeService {
   InstanceHolder<mojom::CrashCollectorInstance>* crash_collector() {
     return &crash_collector_;
   }
+  InstanceHolder<mojom::EnterpriseReportingInstance>* enterprise_reporting() {
+    return &enterprise_reporting_;
+  }
   InstanceHolder<mojom::FileSystemInstance>* file_system() {
     return &file_system_;
   }
@@ -176,6 +179,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::BluetoothInstance> bluetooth_;
   InstanceHolder<mojom::ClipboardInstance> clipboard_;
   InstanceHolder<mojom::CrashCollectorInstance> crash_collector_;
+  InstanceHolder<mojom::EnterpriseReportingInstance> enterprise_reporting_;
   InstanceHolder<mojom::FileSystemInstance> file_system_;
   InstanceHolder<mojom::ImeInstance> ime_;
   InstanceHolder<mojom::IntentHelperInstance> intent_helper_;

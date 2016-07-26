@@ -178,7 +178,13 @@ void FakeSessionManagerClient::GetArcStartTime(
 }
 
 void FakeSessionManagerClient::RemoveArcData(
-    const cryptohome::Identification& cryptohome_id) {}
+    const cryptohome::Identification& cryptohome_id,
+    const ArcCallback& callback) {
+  if (!callback.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, arc_available_));
+  }
+}
 
 const std::string& FakeSessionManagerClient::device_policy() const {
   return device_policy_;

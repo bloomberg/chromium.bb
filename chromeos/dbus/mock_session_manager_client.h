@@ -64,7 +64,8 @@ class MockSessionManagerClient : public SessionManagerClient {
                void(const cryptohome::Identification&, const ArcCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
   MOCK_METHOD1(GetArcStartTime, void(const GetArcStartTimeCallback&));
-  MOCK_METHOD1(RemoveArcData, void(const cryptohome::Identification&));
+  MOCK_METHOD2(RemoveArcData,
+               void(const cryptohome::Identification&, const ArcCallback&));
 };
 
 }  // namespace chromeos

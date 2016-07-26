@@ -230,6 +230,12 @@ void ArcBridgeServiceImpl::OnCrashCollectorInstanceReady(
   crash_collector_.OnInstanceReady(std::move(crash_collector_ptr));
 }
 
+void ArcBridgeServiceImpl::OnEnterpriseReportingInstanceReady(
+    mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) {
+  DCHECK(CalledOnValidThread());
+  enterprise_reporting_.OnInstanceReady(std::move(enterprise_reporting_ptr));
+}
+
 void ArcBridgeServiceImpl::OnFileSystemInstanceReady(
     mojom::FileSystemInstancePtr file_system_ptr) {
   DCHECK(CalledOnValidThread());

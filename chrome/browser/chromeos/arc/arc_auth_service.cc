@@ -208,7 +208,8 @@ void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
   clear_required_ = false;
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
       cryptohome::Identification(
-          multi_user_util::GetAccountIdFromProfile(profile_)));
+          multi_user_util::GetAccountIdFromProfile(profile_)),
+      chromeos::SessionManagerClient::ArcCallback());
 }
 
 std::string ArcAuthService::GetAndResetAuthCode() {

@@ -136,6 +136,7 @@ mojom("arc_bindings") {
     "common/bluetooth.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
+    "common/enterprise_reporting.mojom",
     "common/file_system.mojom",
     "common/ime.mojom",
     "common/intent_helper.mojom",

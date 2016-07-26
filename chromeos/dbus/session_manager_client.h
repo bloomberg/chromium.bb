@@ -237,9 +237,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void GetArcStartTime(const GetArcStartTimeCallback& callback) = 0;
 
   // Asynchronously removes all ARC user data for the user whose cryptohome is
-  // located by |cryptohome_id|.
-  virtual void RemoveArcData(
-      const cryptohome::Identification& cryptohome_id) = 0;
+  // located by |cryptohome_id|. Upon completion, invokes |callback| with the
+  // result; true on success, false on failure (either session manager failed
+  // to remove user data or session manager can not be reached).
+  virtual void RemoveArcData(const cryptohome::Identification& cryptohome_id,
+                             const ArcCallback& callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);
