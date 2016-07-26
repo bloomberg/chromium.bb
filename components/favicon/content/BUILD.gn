@@ -11,11 +11,11 @@ static_library("content") {
   ]
 
   public_deps = [
+    "//components/favicon/core",
     "//ui/gfx",
   ]
   deps = [
     "//base",
-    "//components/favicon/core",
     "//components/favicon_base",
     "//components/history/core/browser",
     "//content/public/browser",

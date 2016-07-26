@@ -54,7 +54,6 @@
       # desktop platforms.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
-      'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
       'app/chrome_version.rc.version',
@@ -1368,7 +1367,6 @@
       'test/chromedriver/net/websocket.h',
     ],
     'performance_browser_tests_sources': [
-      'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
       'app/chrome_version.rc.version',
@@ -1484,7 +1482,6 @@
       'test/chromedriver/test_util.h',
     ],
     'sync_integration_tests_sources': [
-      'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
       'app/chrome_version.rc.version',
@@ -1604,7 +1601,6 @@
       'browser/sync/test/integration/wifi_credentials_helper_chromeos.h',
     ],
     'sync_performance_tests_sources': [
-      'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
       'app/chrome_version.rc.version',
@@ -2531,7 +2527,6 @@
           ],
         }, { # else: OS != "win"
           'sources!': [
-            'app/chrome_command_ids.h',
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
@@ -2823,7 +2818,6 @@
           }
         }, { # else: OS != "win"
           'sources!': [
-            'app/chrome_command_ids.h',
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',

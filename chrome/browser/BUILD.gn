@@ -459,6 +459,7 @@ split_static_library("browser") {
   }
   if (enable_extensions) {
     public_deps += [ "//chrome/browser/extensions" ]
+    allow_circular_includes_from += [ "//chrome/browser/extensions" ]
     deps += [
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",
@@ -644,6 +645,7 @@ split_static_library("browser") {
   if (use_ash) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ash_sources, ".", "//chrome")
+    deps += [ "//ash" ]
   }
 
   if (use_x11) {

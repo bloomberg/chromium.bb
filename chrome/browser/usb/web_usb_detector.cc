@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/system/system_notifier.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +28,10 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/common/system/system_notifier.h"  // nogncheck
+#endif
 
 namespace {
 

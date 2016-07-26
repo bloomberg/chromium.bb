@@ -17,15 +17,15 @@ static_library("browser") {
 
   public_deps = [
     ":risk_proto",
+    "//components/autofill/content/common",
+    "//components/autofill/content/public/interfaces",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/common",
     "//skia",
   ]
   deps = [
     "//base",
     "//base:i18n",
-    "//components/autofill/content/common",
-    "//components/autofill/content/public/interfaces",
-    "//components/autofill/core/browser",
-    "//components/autofill/core/common",
     "//components/os_crypt",
     "//components/prefs",
     "//components/resources",

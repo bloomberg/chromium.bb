@@ -299,7 +299,6 @@ if (is_win) {
 
     sources = [
       "//base/win/dllmain.cc",
-      "app/chrome_command_ids.h",
       "app/chrome_dll.rc",
       "app/chrome_dll_resource.h",
       "app/chrome_main.cc",
@@ -312,6 +311,7 @@ if (is_win) {
     deps = [
       ":browser_dependencies",
       "//build/config/sanitizers:deps",
+      "//chrome/app:command_ids",
       "//chrome/common:features",
       "//third_party/cld_2",
     ]
@@ -950,7 +950,6 @@ if (is_win) {
     ]
 
     sources = [
-      "app/chrome_command_ids.h",
       "app/chrome_crash_reporter_client.cc",
       "app/chrome_crash_reporter_client.h",
       "app/chrome_crash_reporter_client_mac.mm",
@@ -965,6 +964,7 @@ if (is_win) {
     deps = [
       ":browser_dependencies",
       ":child_dependencies",
+      "//chrome/app:command_ids",
       "//chrome/common:features",
       "//components/crash/content/app",
       "//components/policy",

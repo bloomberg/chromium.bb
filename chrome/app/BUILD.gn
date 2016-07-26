@@ -6,6 +6,13 @@ import("//build/config/ui.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
+# This target is for dependency tracking for the command ID header.
+source_set("command_ids") {
+  sources = [
+    "chrome_command_ids.h",
+  ]
+}
+
 if (is_android) {
   import("//build/config/android/rules.gni")
   android_generated_java_resources = [

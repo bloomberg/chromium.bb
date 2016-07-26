@@ -18,7 +18,7 @@
 #include "extensions/common/extension.h"
 
 #if defined(USE_ASH)
-#include "ash/shell.h"
+#include "ash/shell.h"  // nogncheck
 #endif
 
 namespace extensions {

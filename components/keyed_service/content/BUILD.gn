@@ -24,10 +24,13 @@ component("content") {
 
   defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//components/keyed_service/core",
+  ]
+
+  deps = [
+    "//base/third_party/dynamic_annotations",
     "//components/pref_registry",
     "//components/user_prefs",
     "//content/public/browser",

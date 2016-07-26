@@ -1259,12 +1259,12 @@ test("browser_tests") {
     if (is_win) {
       deps += [
         "//chrome:other_version",
+        "//chrome/app:command_ids",
         "//third_party/wtl",
         "//ui/resources",
       ]
     } else {
       sources -= [
-        "../app/chrome_command_ids.h",
         "../app/chrome_dll_resource.h",
         "../app/chrome_version.rc.version",
         "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
@@ -1542,6 +1542,7 @@ if (!is_android) {
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
+      "//chrome/app:command_ids",
       "//chrome/common",
       "//chrome/renderer",
       "//crypto:platform",
@@ -1621,6 +1622,7 @@ if (!is_android) {
     deps = [
       ":sync_integration_test_support",
       ":test_support_ui",
+      "//chrome/app:command_ids",
       "//crypto:platform",
       "//sync",
       "//testing/gmock",
@@ -2429,11 +2431,9 @@ if (!is_android && !is_ios && !is_chromecast) {
       configs -= [ "//build/config/win:default_incremental_linking" ]
       configs +=
           [ "//build/config/win:default_large_module_incremental_linking" ]
+      deps += [ "//chrome/app:command_ids" ]
     } else {
-      sources -= [
-        "../app/chrome_command_ids.h",
-        "../app/chrome_version.rc.version",
-      ]
+      sources -= [ "../app/chrome_version.rc.version" ]
     }
     if (!is_mac) {
       sources -= [ "perf/mach_ports_performancetest.cc" ]
