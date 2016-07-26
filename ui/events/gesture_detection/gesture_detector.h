@@ -99,6 +99,14 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void set_longpress_enabled(bool enabled) { longpress_enabled_ = enabled; }
   void set_showpress_enabled(bool enabled) { showpress_enabled_ = enabled; }
 
+  // Returns the event storing the initial position of the pointer with given
+  // pointer ID. This returns nullptr if the source event isn't
+  // current_down_event_ or secondary_pointer_down_event_.
+  const MotionEvent* GetSourcePointerDownEvent(
+      const MotionEvent& current_down_event,
+      const MotionEvent& secondary_pointer_down_event,
+      const int pointer_id);
+
  private:
   void Init(const Config& config);
   void OnShowPressTimeout();

@@ -1064,6 +1064,39 @@ TEST_F(GestureProviderTest, NoSlopRegionCheckOnThreeFingerScroll) {
   EXPECT_EQ(3U, GetReceivedGestureCount());
 }
 
+TEST_F(GestureProviderTest, ScrollStartWithSecondaryPointer) {
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
+  const float scaled_touch_slop = GetTouchSlop();
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 0, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN, 0, 0,
+                            kMaxTwoFingerTapSeparation / 2, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // Wait for the two finger tap timeout, and put the second pointer down.
+  event_time += kOneSecond;
+  event.set_event_time(event_time);
+  event.ReleasePointAtIndex(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event.MovePoint(0, kMaxTwoFingerTapSeparation / 2, 2 * scaled_touch_slop);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event.ReleasePoint();
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type());
+  EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetReceivedGesture(1).type());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetReceivedGesture(2).type());
+  EXPECT_EQ(ET_GESTURE_SCROLL_END, GetReceivedGesture(3).type());
+  EXPECT_EQ(4U, GetReceivedGestureCount());
+}
+
 TEST_F(GestureProviderTest, LongPressAndTapCancelledWhenScrollBegins) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 

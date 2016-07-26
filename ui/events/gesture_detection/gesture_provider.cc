@@ -676,25 +676,24 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     // so Slop region is not deducted.
     DCHECK(ev2.GetPointerCount() < 3);
 
-    const int id0 = ev1.GetPointerId(0);
-    const int ev_idx0 = ev2.GetPointerId(0) == id0 ? 0 : 1;
-
-    // Subtract the slop region from the first pointer move.
-    float dx0 = ev1.GetX() - ev2.GetX(ev_idx0);
-    float dy0 = ev1.GetY() - ev2.GetY(ev_idx0);
-    gfx::Vector2dF first_pointer_delta = SubtractSlopRegion(dx0, dy0);
-
-    gfx::Vector2dF second_pointer_delta(0, 0);
-    // Subtract the slop region from the second pointer move.
-    if (ev2.GetPointerCount() == 2) {
-      const int ev_idx1 = ev_idx0 == 0 ? 1 : 0;
-      const int idx1 = secondary_pointer_down.GetActionIndex();
-      float dx1 = secondary_pointer_down.GetX(idx1) - ev2.GetX(ev_idx1);
-      float dy1 = secondary_pointer_down.GetY(idx1) - ev2.GetY(ev_idx1);
-      second_pointer_delta = SubtractSlopRegion(dx1, dy1);
+    gfx::Vector2dF delta(0, 0);
+    for (size_t i = 0; i < ev2.GetPointerCount(); i++) {
+      const int pointer_id = ev2.GetPointerId(i);
+      const MotionEvent* source_pointer_down_event =
+          gesture_detector_.GetSourcePointerDownEvent(
+              ev1, secondary_pointer_down, pointer_id);
+      DCHECK(source_pointer_down_event);
+      if (!source_pointer_down_event)
+        continue;
+      int source_index =
+          source_pointer_down_event->FindPointerIndexOfId(pointer_id);
+      DCHECK_GE(source_index, 0);
+      if (source_index < 0)
+        continue;
+      float dx = source_pointer_down_event->GetX(source_index) - ev2.GetX(i);
+      float dy = source_pointer_down_event->GetY(source_index) - ev2.GetY(i);
+      delta += SubtractSlopRegion(dx, dy);
     }
-
-    gfx::Vector2dF delta = first_pointer_delta + second_pointer_delta;
     delta.Scale(1.0 / ev2.GetPointerCount());
     return delta;
   }

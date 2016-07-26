@@ -119,10 +119,26 @@ MockMotionEvent& MockMotionEvent::MovePoint(size_t index, float x, float y) {
 }
 
 MockMotionEvent& MockMotionEvent::ReleasePoint() {
-  UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
+  switch (GetAction()) {
+    // If the previous action is one of those who need removing a pointer in
+    // UpdatePointersAndID, then the last index will be GetPointerCount() - 2.
+    case ACTION_POINTER_UP:
+    case ACTION_UP:
+    case ACTION_CANCEL:
+      return ReleasePointAtIndex(GetPointerCount() - 2);
+      break;
+    default:
+      break;
+  }
+  return ReleasePointAtIndex(GetPointerCount() - 1);
+}
+
+MockMotionEvent& MockMotionEvent::ReleasePointAtIndex(size_t index) {
+  UpdatePointersAndID();
+  DCHECK_LT(index, GetPointerCount());
   if (GetPointerCount() > 1) {
-    set_action_index(static_cast<int>(GetPointerCount()) - 1);
+    set_action_index(static_cast<int>(index));
     set_action(ACTION_POINTER_UP);
   } else {
     set_action(ACTION_UP);
@@ -165,17 +181,22 @@ void MockMotionEvent::PushPointer(float x, float y) {
 }
 
 void MockMotionEvent::UpdatePointersAndID() {
-  set_action_index(-1);
   set_unique_event_id(ui::GetNextTouchEventId());
   switch (GetAction()) {
+    case ACTION_POINTER_UP: {
+      int index = GetActionIndex();
+      DCHECK_LT(index, static_cast<int>(GetPointerCount()));
+      RemovePointerAt(index);
+      break;
+    }
     case ACTION_UP:
-    case ACTION_POINTER_UP:
     case ACTION_CANCEL:
       PopPointer();
-      return;
+      break;
     default:
       break;
   }
+  set_action_index(-1);
 }
 
 MockMotionEvent& MockMotionEvent::SetPrimaryPointerId(int id) {

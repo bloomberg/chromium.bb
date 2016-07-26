@@ -306,8 +306,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           if (!IsWithinTouchSlop(ev)) {
             handled = listener_->OnScroll(
                 *current_down_event_, ev,
-                (ev.GetPointerCount() > 1 ? *secondary_pointer_down_event_
-                                          : ev),
+                (maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
+                                            : ev),
                 scroll_x, scroll_y);
             last_focus_x_ = focus_x;
             last_focus_y_ = focus_y;
@@ -324,7 +324,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
                    std::abs(scroll_y) > kScrollEpsilon) {
           handled = listener_->OnScroll(
               *current_down_event_, ev,
-              (ev.GetPointerCount() > 1 ? *secondary_pointer_down_event_ : ev),
+              (maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
+                                          : ev),
               scroll_x, scroll_y);
           last_focus_x_ = focus_x;
           last_focus_y_ = focus_y;
@@ -538,31 +539,51 @@ bool GestureDetector::HandleSwipeIfNeeded(const MotionEvent& up,
 }
 
 bool GestureDetector::IsWithinTouchSlop(const MotionEvent& ev) {
-  // If there are more than two down pointers, tapping is not possible.
-  // Slop region check is not needed.
-  if (ev.GetPointerCount() > 2)
+  // If there have been more than two down pointers in the touch sequence,
+  // tapping is not possible. Slop region check is not needed.
+  if (maximum_pointer_count_ > 2)
     return false;
 
-  const int id0 = current_down_event_->GetPointerId(0);
-  const int ev_idx0 = ev.GetPointerId(0) == id0 ? 0 : 1;
+  for (size_t i = 0; i < ev.GetPointerCount(); i++) {
+    const int pointer_id = ev.GetPointerId(i);
+    const MotionEvent* source_pointer_down_event = GetSourcePointerDownEvent(
+        *current_down_event_,
+        maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
+                                   : *current_down_event_,
+        pointer_id);
+    DCHECK(source_pointer_down_event);
+    if (!source_pointer_down_event)
+      return false;
 
-  // Check if the primary pointer exceeded the slop region.
-  float dx = current_down_event_->GetX() - ev.GetX(ev_idx0);
-  float dy = current_down_event_->GetY() - ev.GetY(ev_idx0);
-  if (dx * dx + dy * dy > touch_slop_square_)
-    return false;
+    int source_index =
+        source_pointer_down_event->FindPointerIndexOfId(pointer_id);
+    DCHECK_GE(source_index, 0);
+    if (source_index < 0)
+      return false;
 
-  if (ev.GetPointerCount() == 2) {
-    // Check if the secondary pointer exceeded the slop region.
-    const int ev_idx1 = ev_idx0 == 0 ? 1 : 0;
-    const int idx1 = secondary_pointer_down_event_->GetActionIndex();
-    dx = secondary_pointer_down_event_->GetX(idx1) - ev.GetX(ev_idx1);
-    dy = secondary_pointer_down_event_->GetY(idx1) - ev.GetY(ev_idx1);
+    float dx = source_pointer_down_event->GetX(source_index) - ev.GetX(i);
+    float dy = source_pointer_down_event->GetY(source_index) - ev.GetY(i);
     if (dx * dx + dy * dy > touch_slop_square_)
       return false;
   }
 
   return true;
+}
+
+const MotionEvent* GestureDetector::GetSourcePointerDownEvent(
+    const MotionEvent& current_down_event,
+    const MotionEvent& secondary_pointer_down_event,
+    const int pointer_id) {
+  if (current_down_event.GetPointerId(0) == pointer_id)
+    return &current_down_event;
+
+  for (size_t i = 0; i < secondary_pointer_down_event.GetPointerCount(); i++) {
+    if (secondary_pointer_down_event.GetPointerId(i) == pointer_id)
+      return &secondary_pointer_down_event;
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace ui

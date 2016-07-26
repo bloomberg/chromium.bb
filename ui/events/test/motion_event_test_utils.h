@@ -48,6 +48,7 @@ struct MockMotionEvent : public MotionEventGeneric {
   MockMotionEvent& PressPoint(float x, float y);
   MockMotionEvent& MovePoint(size_t index, float x, float y);
   MockMotionEvent& ReleasePoint();
+  MockMotionEvent& ReleasePointAtIndex(size_t index);
   MockMotionEvent& CancelPoint();
   MockMotionEvent& SetTouchMajor(float new_touch_major);
   MockMotionEvent& SetRawOffset(float raw_offset_x, float raw_offset_y);
