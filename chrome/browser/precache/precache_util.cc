@@ -15,14 +15,18 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+namespace net {
+class HttpResponseInfo;
+}
+
 namespace {
 
 void UpdatePrecacheMetricsAndStateOnUIThread(const GURL& url,
                                              const GURL& referrer,
                                              base::TimeDelta latency,
                                              const base::Time& fetch_time,
+                                             const net::HttpResponseInfo& info,
                                              int64_t size,
-                                             bool was_cached,
                                              bool is_user_traffic,
                                              void* profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -38,7 +42,7 @@ void UpdatePrecacheMetricsAndStateOnUIThread(const GURL& url,
     return;
 
   precache_manager->UpdatePrecacheMetricsAndState(
-      url, referrer, latency, fetch_time, size, was_cached, is_user_traffic);
+      url, referrer, latency, fetch_time, info, size, is_user_traffic);
 }
 
 }  // namespace
@@ -63,7 +67,7 @@ void UpdatePrecacheMetricsAndState(const net::URLRequest* request,
       base::Bind(
           &UpdatePrecacheMetricsAndStateOnUIThread, request->url(),
           GURL(request->referrer()), latency, base::Time::Now(),
-          received_content_length, request->was_cached(),
+          request->response_info(), received_content_length,
           data_use_measurement::DataUseMeasurement::IsUserInitiatedRequest(
               request),
           profile_id));

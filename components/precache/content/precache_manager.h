@@ -37,6 +37,10 @@ namespace history {
 class HistoryService;
 }
 
+namespace net {
+class HttpResponseInfo;
+}
+
 namespace sync_driver {
 class SyncService;
 }
@@ -108,8 +112,8 @@ class PrecacheManager : public KeyedService,
                                      const GURL& referrer,
                                      const base::TimeDelta& latency,
                                      const base::Time& fetch_time,
+                                     const net::HttpResponseInfo& info,
                                      int64_t size,
-                                     bool was_cached,
                                      bool is_user_traffic);
 
  private:
@@ -159,16 +163,16 @@ class PrecacheManager : public KeyedService,
                            const GURL& referrer,
                            const base::TimeDelta& latency,
                            const base::Time& fetch_time,
-                           int64_t size,
-                           bool was_cached);
+                           const net::HttpResponseInfo& info,
+                           int64_t size);
 
   // Update precache-related metrics in response to a URL being fetched. Called
   // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.
   void RecordStatsForFetchInternal(const GURL& url,
                                    const base::TimeDelta& latency,
                                    const base::Time& fetch_time,
+                                   const net::HttpResponseInfo& info,
                                    int64_t size,
-                                   bool was_cached,
                                    int host_rank);
 
   // The browser context that owns this PrecacheManager.

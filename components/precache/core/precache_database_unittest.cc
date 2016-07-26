@@ -17,6 +17,9 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_constants.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
+#include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -26,18 +29,37 @@ namespace {
 using ::testing::ContainerEq;
 using ::testing::ElementsAre;
 using base::Bucket;
+using net::HttpResponseInfo;
 
 const GURL kURL("http://url.com");
 const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(5);
 const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
 const int64_t kSize = 5000;
+const int64_t kFreshnessBucket10K = 9089;
 
 std::map<GURL, base::Time> BuildURLTableMap(const GURL& url,
                                             const base::Time& precache_time) {
   std::map<GURL, base::Time> url_table_map;
   url_table_map[url] = precache_time;
   return url_table_map;
+}
+
+HttpResponseInfo CreateHttpResponseInfo(bool was_cached,
+                                        bool network_accessed) {
+  HttpResponseInfo result;
+  result.was_cached = was_cached;
+  result.network_accessed = network_accessed;
+  std::string header(
+      "HTTP/1.1 200 OK\n"
+      "cache-control: max-age=10000\n\n");
+  result.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(header.c_str(), header.size()));
+  DCHECK_EQ(
+      10000,
+      result.headers->GetFreshnessLifetimes(base::Time()).freshness.InSeconds())
+      << "Error parsing the test headers: " << header;
+  return result;
 }
 
 }  // namespace
@@ -129,25 +151,29 @@ void PrecacheDatabaseTest::RecordPrecacheFromNetwork(
     base::TimeDelta latency,
     const base::Time& fetch_time,
     int64_t size) {
-  precache_database_->RecordURLPrefetch(url, latency, fetch_time, size,
-                                        false /* was_cached */);
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      false /* was_cached */, false /* network_accessed */);
+  precache_database_->RecordURLPrefetch(url, latency, fetch_time, info, size);
 }
 
 void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
                                                    const base::Time& fetch_time,
                                                    int64_t size) {
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      true /* was_cached */, false /* network_accessed */);
   precache_database_->RecordURLPrefetch(url, base::TimeDelta() /* latency */,
-                                        fetch_time, size,
-                                        true /* was_cached */);
+                                        fetch_time, info, size);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
                                                   base::TimeDelta latency,
                                                   const base::Time& fetch_time,
                                                   int64_t size) {
-  precache_database_->RecordURLNonPrefetch(
-      url, latency, fetch_time, size, false /* was_cached */,
-      history::kMaxTopHosts, false /* is_connection_cellular */);
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      false /* was_cached */, false /* network_accessed */);
+  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, info, size,
+                                           history::kMaxTopHosts,
+                                           false /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
@@ -155,8 +181,10 @@ void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
                                                   const base::Time& fetch_time,
                                                   int64_t size,
                                                   int host_rank) {
-  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
-                                           false /* was_cached */, host_rank,
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      false /* was_cached */, false /* network_accessed */);
+  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, info, size,
+                                           host_rank,
                                            false /* is_connection_cellular */);
 }
 
@@ -165,28 +193,32 @@ void PrecacheDatabaseTest::RecordFetchFromNetworkCellular(
     base::TimeDelta latency,
     const base::Time& fetch_time,
     int64_t size) {
-  precache_database_->RecordURLNonPrefetch(
-      url, latency, fetch_time, size, false /* was_cached */,
-      history::kMaxTopHosts, true /* is_connection_cellular */);
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      false /* was_cached */, false /* network_accessed */);
+  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, info, size,
+                                           history::kMaxTopHosts,
+                                           true /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
                                                 const base::Time& fetch_time,
                                                 int64_t size) {
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      true /* was_cached */, false /* network_accessed */);
   precache_database_->RecordURLNonPrefetch(
-      url, base::TimeDelta() /* latency */, fetch_time, size,
-      true /* was_cached */, history::kMaxTopHosts,
-      false /* is_connection_cellular */);
+      url, base::TimeDelta() /* latency */, fetch_time, info, size,
+      history::kMaxTopHosts, false /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCacheCellular(
     const GURL& url,
     const base::Time& fetch_time,
     int64_t size) {
+  const HttpResponseInfo info = CreateHttpResponseInfo(
+      true /* was_cached */, false /* network_accessed */);
   precache_database_->RecordURLNonPrefetch(
-      url, base::TimeDelta() /* latency */, fetch_time, size,
-      true /* was_cached */, history::kMaxTopHosts,
-      true /* is_connection_cellular */);
+      url, base::TimeDelta() /* latency */, fetch_time, info, size,
+      history::kMaxTopHosts, true /* is_connection_cellular */);
 }
 
 namespace {
@@ -198,6 +230,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
 
   ExpectNewSample("Precache.DownloadedPrecacheMotivated", kSize);
   ExpectNewSample("Precache.Latency.Prefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
 
@@ -210,6 +243,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
   EXPECT_EQ(BuildURLTableMap(kURL, kFetchTime), GetActualURLTableMap());
 
   ExpectNewSample("Precache.Latency.Prefetch", 0);
+  ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
 
@@ -219,6 +253,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithoutURLTableEntry) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.Latency.Prefetch", 0);
+  ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
 
@@ -283,6 +318,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
   ExpectNewSample("Precache.Saved", kSize);
+  ExpectNewSample("Precache.Saved.Freshness", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
 
@@ -297,6 +333,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Cellular", kSize);
+  ExpectNewSample("Precache.Saved.Freshness", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
 
@@ -408,6 +445,15 @@ TEST_F(PrecacheDatabaseTest, LastPrecacheTimestamp) {
 
   EXPECT_THAT(histograms_.GetAllSamples("Precache.TimeSinceLastPrecache"),
               ElementsAre(Bucket(0, 2), Bucket(2406, 3), Bucket(69347, 1)));
+}
+
+TEST_F(PrecacheDatabaseTest, PrecacheFreshnessPrefetch) {
+  auto info = CreateHttpResponseInfo(false /* was_cached */,
+                                     false /* network_accessed */);
+  RecordPrecacheFromNetwork(kURL, kLatency, kFetchTime, kSize);
+
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.Freshness.Prefetch"),
+              ElementsAre(Bucket(kFreshnessBucket10K, 1)));
 }
 
 }  // namespace

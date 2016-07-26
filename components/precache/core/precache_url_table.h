@@ -18,9 +18,11 @@ class Connection;
 namespace precache {
 
 // Interface for database table that keeps track of the URLs that have been
-// precached but not used. Each row in this table represents a URL that was
-// precached over the network, and has not been fetched through user browsing
-// since then. Manages one table { URL (primary key), precache timestamp }.
+// precached but not used. This table is used to count how many bytes were saved
+// by precached resources.
+// Each row in this table represents a URL that was precached over the network,
+// and has not been fetched through user browsing since then.
+// Manages one table { URL (primary key), precache timestamp }.
 class PrecacheURLTable {
  public:
   PrecacheURLTable();

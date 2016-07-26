@@ -43085,6 +43085,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Freshness.Prefetch" units="seconds">
+  <owner>jamartin@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The freshness lifetimes of the resources that were precached from the moment
+    they were fetched or revalidated as described in RFC 2616 13.2.4. Logged per
+    precache request.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Latency.NonPrefetch" units="ms">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -43139,6 +43149,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of bytes during user browsing that were served from the cache,
     but would have been downloaded over a network if precaching was disabled.
     Logged per-request.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Saved.Freshness" units="seconds">
+  <owner>jamartin@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The freshness lifetimes (RFC 2616 13.2.4) of the resources that were
+    precached and later used (and thus served from the cache). This is computed
+    at serving time and thus possibly different from the precached value if the
+    cache entry was revalidated. Logged per-request but only once per URL and
+    precaching cycle (as Precache.Saved).
   </summary>
 </histogram>
 
