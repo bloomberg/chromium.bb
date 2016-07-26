@@ -149,11 +149,7 @@ class ConstrainedWebDialogDelegateViewMac :
       EnableAutoResize();
   }
   void DocumentOnLoadCompletedInMainFrame() override {
-    if (!IsDialogAutoResizable())
-      return;
-
-    EnableAutoResize();
-    if (GetWebContents())
+    if (IsDialogAutoResizable() && GetWebContents())
       constrained_window_->ShowWebContentsModalDialog();
   }
 
@@ -202,8 +198,10 @@ ConstrainedWebDialogDelegateViewMac::ConstrainedWebDialogDelegateViewMac(
             this)),
       min_size_(min_size),
       max_size_(max_size) {
-  if (IsDialogAutoResizable())
+  if (IsDialogAutoResizable()) {
     Observe(GetWebContents());
+    EnableAutoResize();
+  }
 
   // Create a window to hold web_contents in the constrained sheet:
   gfx::Size size;
