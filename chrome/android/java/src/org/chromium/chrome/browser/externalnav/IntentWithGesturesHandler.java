@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -64,10 +63,8 @@ public class IntentWithGesturesHandler {
             protected SecureRandom doInBackground(Void... params) {
                 SecureRandom secureRandom = null;
                 try {
-                    secureRandom = SecureRandom.getInstance("SHA1PRNG");
+                    secureRandom = new SecureRandom();
                     SecureRandomInitializer.initialize(secureRandom);
-                } catch (NoSuchAlgorithmException e) {
-                    Log.e(TAG, "Cannot create SecureRandom", e);
                 } catch (IOException ioe) {
                     Log.e(TAG, "Cannot initialize SecureRandom", ioe);
                 }

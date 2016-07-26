@@ -212,7 +212,7 @@ public class WebappAuthenticator {
                 @Override
                 public SecretKey call() throws Exception {
                     KeyGenerator generator = KeyGenerator.getInstance(MAC_ALGORITHM_NAME);
-                    SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                    SecureRandom random = new SecureRandom();
                     SecureRandomInitializer.initialize(random);
                     generator.init(MAC_KEY_BYTE_COUNT * 8, random);
                     return generator.generateKey();

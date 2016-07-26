@@ -202,7 +202,7 @@ public class CipherFactory {
                 }
 
                 try {
-                    SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                    SecureRandom random = new SecureRandom();
                     SecureRandomInitializer.initialize(random);
 
                     KeyGenerator generator = KeyGenerator.getInstance("AES");
