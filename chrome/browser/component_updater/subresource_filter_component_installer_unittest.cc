@@ -12,12 +12,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/component_updater/mock_component_updater_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -46,7 +50,22 @@ class TestRulesetService : public subresource_filter::RulesetService {
  private:
   std::string rules_;
   base::Version version_;
+
   DISALLOW_COPY_AND_ASSIGN(TestRulesetService);
+};
+
+class SubresourceFilterMockComponentUpdateService
+    : public component_updater::MockComponentUpdateService {
+ public:
+  SubresourceFilterMockComponentUpdateService() {}
+  ~SubresourceFilterMockComponentUpdateService() override {}
+
+  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override {
+    return base::ThreadTaskRunnerHandle::Get();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterMockComponentUpdateService);
 };
 
 }  //  namespace
@@ -120,6 +139,32 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterComponentInstallerTest);
 };
+
+TEST_F(SubresourceFilterComponentInstallerTest,
+       TestComponentRegistrationWhenFeatureDisabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
+      scoped_feature_toggle(base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+                            subresource_filter::kActivationStateDisabled);
+  std::unique_ptr<SubresourceFilterMockComponentUpdateService>
+      component_updater(new SubresourceFilterMockComponentUpdateService());
+  EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
+  RegisterSubresourceFilterComponent(component_updater.get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(SubresourceFilterComponentInstallerTest,
+       TestComponentRegistrationWhenFeatureEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
+      scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                            subresource_filter::kActivationStateEnabled);
+  std::unique_ptr<SubresourceFilterMockComponentUpdateService>
+      component_updater(new SubresourceFilterMockComponentUpdateService());
+  EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(1);
+  RegisterSubresourceFilterComponent(component_updater.get());
+  base::RunLoop().RunUntilIdle();
+}
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyFile) {
   ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRules(std::string()));

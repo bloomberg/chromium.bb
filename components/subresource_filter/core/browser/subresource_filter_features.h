@@ -17,6 +17,7 @@ extern const base::Feature kSafeBrowsingSubresourceFilter;
 extern const char kActivationStateParameterName[];
 extern const char kActivationStateDryRun[];
 extern const char kActivationStateEnabled[];
+extern const char kActivationStateDisabled[];
 
 // Returns the maximum degree to which subresource filtering should be activated
 // on any RenderFrame. This will be ActivationState::DISABLED unless the feature

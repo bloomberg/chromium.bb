@@ -17,6 +17,7 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 const char kActivationStateParameterName[] = "activation_state";
 const char kActivationStateDryRun[] = "dryrun";
 const char kActivationStateEnabled[] = "enabled";
+const char kActivationStateDisabled[] = "disabled";
 
 ActivationState GetMaximumActivationState() {
   std::string activation_state = variations::GetVariationParamValueByFeature(

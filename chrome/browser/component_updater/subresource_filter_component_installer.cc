@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/browser_thread.h"
 
 using component_updater::ComponentUpdateService;
@@ -117,6 +118,9 @@ void SubresourceFilterComponentInstallerTraits::
 }
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {
+  if (!base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilter))
+    return;
   std::unique_ptr<ComponentInstallerTraits> traits(
       new SubresourceFilterComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).

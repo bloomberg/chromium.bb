@@ -2262,7 +2262,9 @@
         'test_support_common',
         'test_support_unit',
         # 3) anything tests directly depend on
+        '../components/components.gyp:component_updater_test_support',
         '../components/components.gyp:generate_version_info',
+        '../components/components.gyp:subresource_filter_core_browser_test_support',
         '../courgette/courgette.gyp:courgette_lib',
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',

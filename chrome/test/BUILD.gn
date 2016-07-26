@@ -1803,7 +1803,9 @@ test("unit_tests") {
     # 3) anything tests directly depend on
     "//chrome:resources",
     "//chrome:strings",
+    "//components/component_updater:test_support",
     "//components/safe_browsing_db:test_database_manager",
+    "//components/subresource_filter/core/browser:test_support",
     "//components/version_info:generate_version_info",
     "//courgette:courgette_lib",
     "//google_apis",
