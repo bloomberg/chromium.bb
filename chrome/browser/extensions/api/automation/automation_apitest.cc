@@ -159,8 +159,9 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
       << message_;
 }
 
+// TODO(crbug.com/615908): Flaky on CrOS sanitizers.
 #if defined(OS_CHROMEOS)
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DesktopInitialFocus DISABLED_DesktopInitialFocus
 #else
 #define MAYBE_DesktopInitialFocus DesktopInitialFocus
