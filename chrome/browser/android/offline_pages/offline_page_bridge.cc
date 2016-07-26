@@ -54,6 +54,7 @@ void ToJavaOfflinePageList(JNIEnv* env,
         ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
         ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
         ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
+        ConvertUTF8ToJavaString(env, offline_page.file_path.value()).obj(),
         offline_page.file_size, offline_page.creation_time.ToJavaTime(),
         offline_page.access_count, offline_page.last_access_time.ToJavaTime());
   }
@@ -68,6 +69,7 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
       ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
       ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
       ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
+      ConvertUTF8ToJavaString(env, offline_page.file_path.value()).obj(),
       offline_page.file_size, offline_page.creation_time.ToJavaTime(),
       offline_page.access_count, offline_page.last_access_time.ToJavaTime());
 }

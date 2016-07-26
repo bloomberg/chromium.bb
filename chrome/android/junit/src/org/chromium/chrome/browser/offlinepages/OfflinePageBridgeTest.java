@@ -52,14 +52,15 @@ public class OfflinePageBridgeTest {
     private static final long TEST_OFFLINE_ID = 42;
     private static final ClientId TEST_CLIENT_ID = new ClientId(TEST_NAMESPACE, TEST_ID);
     private static final String TEST_OFFLINE_URL = "TEST_OFFLINE_URL";
+    private static final String TEST_FILE_PATH = "TEST_FILE_PATH";
     private static final long TEST_FILESIZE = 12345;
     private static final long TEST_CREATIONTIMEMS = 150;
     private static final int TEST_ACCESSCOUNT = 1;
     private static final long TEST_LASTACCESSTIMEMS = 20160314;
 
     private static final OfflinePageItem TEST_OFFLINE_PAGE_ITEM = new OfflinePageItem(TEST_URL,
-            TEST_OFFLINE_ID, TEST_NAMESPACE, TEST_ID, TEST_OFFLINE_URL, TEST_FILESIZE,
-            TEST_CREATIONTIMEMS, TEST_ACCESSCOUNT, TEST_LASTACCESSTIMEMS);
+            TEST_OFFLINE_ID, TEST_NAMESPACE, TEST_ID, TEST_OFFLINE_URL, TEST_FILE_PATH,
+            TEST_FILESIZE, TEST_CREATIONTIMEMS, TEST_ACCESSCOUNT, TEST_LASTACCESSTIMEMS);
 
     @Captor
     ArgumentCaptor<List<OfflinePageItem>> mResultArgument;
