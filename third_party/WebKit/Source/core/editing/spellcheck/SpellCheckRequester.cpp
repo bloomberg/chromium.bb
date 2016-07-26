@@ -27,6 +27,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"

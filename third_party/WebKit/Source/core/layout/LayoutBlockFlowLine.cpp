@@ -21,6 +21,7 @@
  */
 
 #include "core/dom/AXObjectCache.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/BidiRunForLine.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"

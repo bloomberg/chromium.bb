@@ -21,6 +21,7 @@
 #ifndef LayoutButton_h
 #define LayoutButton_h
 
+#include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutFlexibleBox.h"
 

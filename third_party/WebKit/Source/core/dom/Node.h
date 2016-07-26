@@ -856,15 +856,6 @@ inline ScriptWrappable* ScriptWrappable::fromNode(Node* node)
     return node;
 }
 
-// TODO(yoichio): Move to core/editing
-CORE_EXPORT bool isRootEditableElement(const Node&);
-CORE_EXPORT Element* rootEditableElement(const Node&);
-CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
-CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
-CORE_EXPORT bool layoutObjectIsRichlyEditable(const Node&, EditableType = ContentIsEditable);
-CORE_EXPORT bool isContentEditable(const Node&);
-CORE_EXPORT bool isContentRichlyEditable(const Node&);
-
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
 

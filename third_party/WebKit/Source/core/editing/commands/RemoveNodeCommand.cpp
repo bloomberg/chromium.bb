@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/commands/EditingState.h"
 #include "wtf/Assertions.h"
 

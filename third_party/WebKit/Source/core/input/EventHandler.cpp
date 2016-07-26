@@ -37,6 +37,7 @@
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"

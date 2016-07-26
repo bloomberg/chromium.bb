@@ -31,6 +31,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

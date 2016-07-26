@@ -23,6 +23,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

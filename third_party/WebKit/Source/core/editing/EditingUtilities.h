@@ -72,8 +72,13 @@ CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
 // Node
 // -------------------------------------------------------------------------
 
-// Functions returning Node
-
+CORE_EXPORT bool isContentEditable(const Node&);
+CORE_EXPORT bool isContentRichlyEditable(const Node&);
+CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool layoutObjectIsRichlyEditable(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool isRootEditableElement(const Node&);
+CORE_EXPORT Element* rootEditableElement(const Node&);
+CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
 // highestEditableRoot returns the highest editable node. If the
 // rootEditableElement of the speicified Position is <body>, this returns the
 // <body>. Otherwise, this searches ancestors for the highest editable node in

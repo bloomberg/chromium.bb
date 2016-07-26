@@ -540,96 +540,6 @@ void Node::normalize()
     }
 }
 
-// TODO(yoichio): Move to core/editing
-enum EditableLevel { Editable, RichlyEditable };
-static bool hasEditableStyle(const Node&, EditableLevel);
-static bool isEditableToAccessibility(const Node&, EditableLevel);
-
-// TODO(yoichio): Move to core/editing
-bool isContentEditable(const Node& node)
-{
-    node.document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(node, Editable);
-}
-
-// TODO(yoichio): Move to core/editing
-bool isContentRichlyEditable(const Node& node)
-{
-    node.document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(node, RichlyEditable);
-}
-
-// TODO(yoichio): Move to core/editing
-static bool hasEditableStyle(const Node& node, EditableLevel editableLevel)
-{
-    if (node.isPseudoElement())
-        return false;
-
-    // Ideally we'd call DCHECK(!needsStyleRecalc()) here, but
-    // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion
-    // would fire in the middle of Document::setFocusedNode().
-
-    for (const Node& ancestor : NodeTraversal::inclusiveAncestorsOf(node)) {
-        if ((ancestor.isHTMLElement() || ancestor.isDocumentNode()) && ancestor.layoutObject()) {
-            switch (ancestor.layoutObject()->style()->userModify()) {
-            case READ_ONLY:
-                return false;
-            case READ_WRITE:
-                return true;
-            case READ_WRITE_PLAINTEXT_ONLY:
-                return editableLevel != RichlyEditable;
-            }
-            ASSERT_NOT_REACHED();
-            return false;
-        }
-    }
-
-    return false;
-}
-
-// TODO(yoichio): Move to core/editing
-static bool isEditableToAccessibility(const Node& node, EditableLevel editableLevel)
-{
-    if (blink::hasEditableStyle(node, editableLevel))
-        return true;
-
-    // FIXME: Respect editableLevel for ARIA editable elements.
-    if (editableLevel == RichlyEditable)
-        return false;
-
-    // FIXME(dmazzoni): support ScopedAXObjectCache (crbug/489851).
-    if (AXObjectCache* cache = node.document().existingAXObjectCache())
-        return cache->rootAXEditableElement(&node);
-
-    return false;
-}
-
-// TODO(yoichio): Move to core/editing
-bool hasEditableStyle(const Node& node, EditableType editableType)
-{
-    switch (editableType) {
-    case ContentIsEditable:
-        return blink::hasEditableStyle(node, Editable);
-    case HasEditableAXRole:
-        return isEditableToAccessibility(node, Editable);
-    }
-    NOTREACHED();
-    return false;
-}
-
-// TODO(yoichio): Move to core/editing
-bool layoutObjectIsRichlyEditable(const Node& node, EditableType editableType)
-{
-    switch (editableType) {
-    case ContentIsEditable:
-        return blink::hasEditableStyle(node, RichlyEditable);
-    case HasEditableAXRole:
-        return isEditableToAccessibility(node, RichlyEditable);
-    }
-    NOTREACHED();
-    return false;
-}
-
 LayoutBox* Node::layoutBox() const
 {
     LayoutObject* layoutObject = this->layoutObject();
@@ -1146,39 +1056,6 @@ ContainerNode* Node::parentOrShadowHostOrTemplateHostNode() const
         return static_cast<const TemplateContentDocumentFragment*>(this)->host();
     return parentOrShadowHostNode();
 }
-
-// TODO(yoichio): Move to core/editing
-bool isRootEditableElement(const Node& node)
-{
-    return hasEditableStyle(node) && node.isElementNode() && (!node.parentNode() || !hasEditableStyle(*node.parentNode())
-        || !node.parentNode()->isElementNode() || &node == node.document().body());
-}
-
-// TODO(yoichio): Move to core/editing
-Element* rootEditableElement(const Node& node, EditableType editableType)
-{
-    if (editableType == HasEditableAXRole) {
-        if (AXObjectCache* cache = node.document().existingAXObjectCache())
-            return const_cast<Element*>(cache->rootAXEditableElement(&node));
-    }
-
-    return rootEditableElement(node);
-}
-
-// TODO(yoichio): Move to core/editing
-Element* rootEditableElement(const Node& node)
-{
-    const Node* result = nullptr;
-    for (const Node* n = &node; n && hasEditableStyle(*n); n = n->parentNode()) {
-        if (n->isElementNode())
-            result = n;
-        if (node.document().body() == n)
-            break;
-    }
-    return toElement(const_cast<Node*>(result));
-}
-
-// FIXME: End of obviously misplaced HTML editing functions.  Try to move these out of Node.
 
 Document* Node::ownerDocument() const
 {

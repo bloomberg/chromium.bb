@@ -42,6 +42,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"

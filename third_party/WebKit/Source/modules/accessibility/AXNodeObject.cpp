@@ -33,6 +33,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDListElement.h"

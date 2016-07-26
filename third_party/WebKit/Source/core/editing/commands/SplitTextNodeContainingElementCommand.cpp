@@ -27,6 +27,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutObject.h"
 #include "wtf/Assertions.h"
 

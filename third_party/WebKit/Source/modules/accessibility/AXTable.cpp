@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXTable.h"
 
 #include "core/dom/ElementTraversal.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"

@@ -27,6 +27,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameHost.h"

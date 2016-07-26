@@ -34,6 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "platform/graphics/Image.h"
 #include "public/platform/WebRect.h"

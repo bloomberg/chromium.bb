@@ -26,6 +26,7 @@
 #include "core/editing/commands/RemoveNodePreservingChildrenCommand.h"
 
 #include "core/dom/Node.h"
+#include "core/editing/EditingUtilities.h"
 #include "wtf/Assertions.h"
 
 namespace blink {

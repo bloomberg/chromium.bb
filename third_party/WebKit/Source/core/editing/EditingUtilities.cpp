@@ -255,6 +255,114 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b)
     return comparePositions(a.deepEquivalent(), b.deepEquivalent());
 }
 
+enum EditableLevel { Editable, RichlyEditable };
+static bool hasEditableStyle(const Node& node, EditableLevel editableLevel)
+{
+    if (node.isPseudoElement())
+        return false;
+
+    // Ideally we'd call DCHECK(!needsStyleRecalc()) here, but
+    // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion
+    // would fire in the middle of Document::setFocusedNode().
+
+    for (const Node& ancestor : NodeTraversal::inclusiveAncestorsOf(node)) {
+        if ((ancestor.isHTMLElement() || ancestor.isDocumentNode()) && ancestor.layoutObject()) {
+            switch (ancestor.layoutObject()->style()->userModify()) {
+            case READ_ONLY:
+                return false;
+            case READ_WRITE:
+                return true;
+            case READ_WRITE_PLAINTEXT_ONLY:
+                return editableLevel != RichlyEditable;
+            }
+            NOTREACHED();
+            return false;
+        }
+    }
+
+    return false;
+}
+
+static bool isEditableToAccessibility(const Node& node, EditableLevel editableLevel)
+{
+    if (blink::hasEditableStyle(node, editableLevel))
+        return true;
+
+    // FIXME: Respect editableLevel for ARIA editable elements.
+    if (editableLevel == RichlyEditable)
+        return false;
+
+    // FIXME(dmazzoni): support ScopedAXObjectCache (crbug/489851).
+    if (AXObjectCache* cache = node.document().existingAXObjectCache())
+        return cache->rootAXEditableElement(&node);
+
+    return false;
+}
+
+bool isContentEditable(const Node& node)
+{
+    node.document().updateStyleAndLayoutTree();
+    return blink::hasEditableStyle(node, Editable);
+}
+
+bool isContentRichlyEditable(const Node& node)
+{
+    node.document().updateStyleAndLayoutTree();
+    return blink::hasEditableStyle(node, RichlyEditable);
+}
+
+bool hasEditableStyle(const Node& node, EditableType editableType)
+{
+    switch (editableType) {
+    case ContentIsEditable:
+        return blink::hasEditableStyle(node, Editable);
+    case HasEditableAXRole:
+        return isEditableToAccessibility(node, Editable);
+    }
+    NOTREACHED();
+    return false;
+}
+
+bool layoutObjectIsRichlyEditable(const Node& node, EditableType editableType)
+{
+    switch (editableType) {
+    case ContentIsEditable:
+        return blink::hasEditableStyle(node, RichlyEditable);
+    case HasEditableAXRole:
+        return isEditableToAccessibility(node, RichlyEditable);
+    }
+    NOTREACHED();
+    return false;
+}
+
+bool isRootEditableElement(const Node& node)
+{
+    return hasEditableStyle(node) && node.isElementNode() && (!node.parentNode() || !hasEditableStyle(*node.parentNode())
+        || !node.parentNode()->isElementNode() || &node == node.document().body());
+}
+
+Element* rootEditableElement(const Node& node)
+{
+    const Node* result = nullptr;
+    for (const Node* n = &node; n && hasEditableStyle(*n); n = n->parentNode()) {
+        if (n->isElementNode())
+            result = n;
+        if (node.document().body() == n)
+            break;
+    }
+    return toElement(const_cast<Node*>(result));
+}
+
+Element* rootEditableElement(const Node& node, EditableType editableType)
+{
+    if (editableType == HasEditableAXRole) {
+        if (AXObjectCache* cache = node.document().existingAXObjectCache())
+            return const_cast<Element*>(cache->rootAXEditableElement(&node));
+    }
+
+    return rootEditableElement(node);
+}
+
 ContainerNode* highestEditableRoot(const Position& position, EditableType editableType)
 {
     if (position.isNull())

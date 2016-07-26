@@ -23,6 +23,7 @@
 #ifndef LayoutTextFragment_h
 #define LayoutTextFragment_h
 
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutText.h"
 #include "platform/heap/Handle.h"
 

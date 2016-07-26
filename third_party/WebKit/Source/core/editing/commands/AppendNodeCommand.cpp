@@ -26,6 +26,7 @@
 #include "core/editing/commands/AppendNodeCommand.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/editing/EditingUtilities.h"
 
 namespace blink {
 
