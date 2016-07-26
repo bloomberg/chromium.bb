@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include "ash/shelf/scoped_observer_with_duplicated_sources.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
@@ -138,11 +136,6 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // Holds removed windows that has an item from default container.
   ScopedObserver<aura::Window, aura::WindowObserver> observed_removed_windows_;
-
-  // Holds all observed activation clients.
-  ScopedObserverWithDuplicatedSources<aura::client::ActivationClient,
-                                      aura::client::ActivationChangeObserver>
-      observed_activation_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcher);
 };

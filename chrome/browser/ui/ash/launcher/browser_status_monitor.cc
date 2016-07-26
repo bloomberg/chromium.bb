@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -29,7 +28,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
 // This class monitors the WebContent of the all tab and notifies a navigation
@@ -105,43 +103,20 @@ class BrowserStatusMonitor::SettingsWindowObserver
 BrowserStatusMonitor::BrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : launcher_controller_(launcher_controller),
-      observed_activation_clients_(this),
-      observed_root_windows_(this),
       settings_window_observer_(new SettingsWindowObserver),
       browser_tab_strip_tracker_(this, this, this) {
   DCHECK(launcher_controller_);
 
   chrome::SettingsWindowManager::GetInstance()->AddObserver(
       settings_window_observer_.get());
-
-  // This check needs for win7_aura. Without this, all tests in
-  // ChromeLauncherController will fail in win7_aura.
-  if (ash::Shell::HasInstance()) {
-    // We can't assume all RootWindows have the same ActivationClient.
-    // Add a RootWindow and its ActivationClient to the observed list.
-    aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-    aura::Window::Windows::const_iterator iter = root_windows.begin();
-    for (; iter != root_windows.end(); ++iter) {
-      // |observed_activation_clients_| can have the same activation client
-      // multiple times - which would be handled by the used
-      // |ScopedObserverWithDuplicatedSources|.
-      observed_activation_clients_.Add(
-          aura::client::GetActivationClient(*iter));
-      observed_root_windows_.Add(static_cast<aura::Window*>(*iter));
-    }
-    display::Screen::GetScreen()->AddObserver(this);
-  }
+  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
 
   browser_tab_strip_tracker_.Init(
       BrowserTabStripTracker::InitWith::ALL_BROWERS);
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {
-  // This check needs for win7_aura. Without this, all tests in
-  // ChromeLauncherController will fail in win7_aura.
-  if (ash::Shell::HasInstance())
-    display::Screen::GetScreen()->RemoveObserver(this);
-
+  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   chrome::SettingsWindowManager::GetInstance()->RemoveObserver(
       settings_window_observer_.get());
 
@@ -204,13 +179,6 @@ void BrowserStatusMonitor::OnWindowActivated(
     UpdateBrowserItemState();
 }
 
-void BrowserStatusMonitor::OnWindowDestroyed(aura::Window* window) {
-  // Remove RootWindow and its ActivationClient from observed list.
-  observed_root_windows_.Remove(window);
-  observed_activation_clients_.Remove(
-      aura::client::GetActivationClient(window));
-}
-
 bool BrowserStatusMonitor::ShouldTrackBrowser(Browser* browser) {
   return true;
 }
@@ -229,33 +197,6 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
     RemoveV1AppFromShelf(browser);
 
   UpdateBrowserItemState();
-}
-
-void BrowserStatusMonitor::OnDisplayAdded(const display::Display& new_display) {
-  // Add a new RootWindow and its ActivationClient to observed list.
-  aura::Window* root_window = ash::Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(new_display.id());
-  // When the primary root window's display get removed, the existing root
-  // window is taken over by the new display and the observer is already set.
-  if (!observed_root_windows_.IsObserving(root_window)) {
-    observed_root_windows_.Add(static_cast<aura::Window*>(root_window));
-    observed_activation_clients_.Add(
-        aura::client::GetActivationClient(root_window));
-  }
-}
-
-void BrowserStatusMonitor::OnDisplayRemoved(
-    const display::Display& old_display) {
-  // When this is called, RootWindow of |old_display| is already removed.
-  // Instead, we can remove RootWindow and its ActivationClient in the
-  // OnWindowRemoved().
-  // Do nothing here.
-}
-
-void BrowserStatusMonitor::OnDisplayMetricsChanged(const display::Display&,
-                                                   uint32_t) {
-  // Do nothing here.
 }
 
 void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,

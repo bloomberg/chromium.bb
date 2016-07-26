@@ -10,25 +10,16 @@
 #include <map>
 #include <string>
 
-#include "ash/shelf/scoped_observer_with_duplicated_sources.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "ui/aura/window_observer.h"
-#include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;
-
-namespace client {
-class ActivationClient;
-}
 }  // namespace aura
 
 class Browser;
@@ -37,10 +28,8 @@ class Browser;
 // TabStripModel to keep the launcher representation up to date as the
 // active tab changes.
 class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
-                             public aura::WindowObserver,
                              public BrowserTabStripTrackerDelegate,
                              public chrome::BrowserListObserver,
-                             public display::DisplayObserver,
                              public TabStripModelObserver {
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
@@ -66,21 +55,12 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // aura::WindowObserver overrides:
-  void OnWindowDestroyed(aura::Window* window) override;
-
   // BrowserTabStripTrackerDelegate overrides:
   bool ShouldTrackBrowser(Browser* browser) override;
 
   // chrome::BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
-
-  // display::DisplayObserver overrides:
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
 
   // TabStripModelObserver overrides:
   void ActiveTabChanged(content::WebContents* old_contents,
@@ -137,13 +117,6 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                                           content::WebContents* web_contents);
 
   ChromeLauncherController* launcher_controller_;
-
-  // Hold all observed activation clients.
-  ScopedObserverWithDuplicatedSources<aura::client::ActivationClient,
-      aura::client::ActivationChangeObserver> observed_activation_clients_;
-
-  // Hold all observed root windows.
-  ScopedObserver<aura::Window, aura::WindowObserver> observed_root_windows_;
 
   BrowserToAppIDMap browser_to_app_id_map_;
   WebContentsToObserverMap webcontents_to_observer_map_;
