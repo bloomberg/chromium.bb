@@ -133,6 +133,11 @@
             "group_name": "Enable"
         }
     ],
+    "PasswordSmartBubble": [
+        {
+            "group_name": "3-Times"
+        }
+    ],
     "PointerEvent": [
         {
             "enable_features": [
