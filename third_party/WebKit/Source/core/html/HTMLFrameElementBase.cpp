@@ -47,7 +47,6 @@ HTMLFrameElementBase::HTMLFrameElementBase(const QualifiedName& tagName, Documen
     , m_scrollingMode(ScrollbarAuto)
     , m_marginWidth(-1)
     , m_marginHeight(-1)
-    , m_javaScriptURLFailedAccessCheck(false)
 {
 }
 
@@ -59,11 +58,8 @@ bool HTMLFrameElementBase::isURLAllowed() const
     const KURL& completeURL = document().completeURL(m_URL);
 
     if (protocolIsJavaScript(completeURL)) {
-        if (contentFrame() && !ScriptController::canAccessFromCurrentOrigin(toIsolate(&document()), contentFrame())) {
-            m_javaScriptURLFailedAccessCheck = true;
+        if (contentFrame() && !ScriptController::canAccessFromCurrentOrigin(toIsolate(&document()), contentFrame()))
             return false;
-        }
-        SECURITY_CHECK(!m_javaScriptURLFailedAccessCheck);
     }
 
     LocalFrame* parentFrame = document().frame();
@@ -172,10 +168,6 @@ void HTMLFrameElementBase::didNotifySubtreeInsertionsToDocument()
     if (!SubframeLoadingDisabler::canLoadFrame(*this))
         return;
 
-    // We should never have a content frame at the point where we got inserted
-    // into a tree.
-    SECURITY_CHECK(!contentFrame());
-
     setNameAndOpenURL();
 }
 
@@ -196,7 +188,6 @@ void HTMLFrameElementBase::attachLayoutTree(const AttachContext& context)
 void HTMLFrameElementBase::setLocation(const String& str)
 {
     m_URL = AtomicString(str);
-    m_javaScriptURLFailedAccessCheck = false;
 
     if (isConnected())
         openURL(false);
