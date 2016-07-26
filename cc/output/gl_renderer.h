@@ -35,6 +35,7 @@ namespace cc {
 class GLRendererShaderTest;
 class OutputSurface;
 class PictureDrawQuad;
+class ResourcePool;
 class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
@@ -262,6 +263,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
+
+  // Copies the contents of the render pass to an overlay resource, returned in
+  // |resource|. The resource is allocated from |overlay_resource_pool_|.
+  void CopyRenderPassToOverlayResource(const RenderPassId& render_pass_id,
+                                       Resource** resource);
 
   using OverlayResourceLock =
       std::unique_ptr<ResourceProvider::ScopedReadLockGL>;
@@ -520,6 +526,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool use_sync_query_;
   bool use_blend_equation_advanced_;
   bool use_blend_equation_advanced_coherent_;
+
+  // Some overlays require that content is copied from a render pass into an
+  // overlay resource. This means the GLRenderer needs its own ResourcePool.
+  std::unique_ptr<ResourcePool> overlay_resource_pool_;
 
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);

@@ -14,7 +14,6 @@
 #include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "cc/raster/task_graph_runner.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"

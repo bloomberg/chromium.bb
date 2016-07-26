@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
@@ -41,6 +42,7 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/raster/scoped_gpu_raster.h"
+#include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -3639,13 +3641,35 @@ bool GLRenderer::IsContextLost() {
 
 void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
   scoped_refptr<CALayerOverlaySharedState> shared_state;
+  size_t copied_render_pass_count = 0;
   for (const CALayerOverlay& ca_layer_overlay : frame->ca_layer_overlay_list) {
+    if (!overlay_resource_pool_) {
+      overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
+          resource_provider_, base::ThreadTaskRunnerHandle::Get().get());
+    }
+
+    ResourceId contents_resource_id = ca_layer_overlay.contents_resource_id;
+    Resource* resource = nullptr;
+    // Some CALayers require a final round of processing.
+    if (ca_layer_overlay.render_pass_id.IsValid()) {
+      CopyRenderPassToOverlayResource(ca_layer_overlay.render_pass_id,
+                                      &resource);
+      contents_resource_id = resource->id();
+      ++copied_render_pass_count;
+    }
+
     unsigned texture_id = 0;
-    if (ca_layer_overlay.contents_resource_id) {
+    if (contents_resource_id) {
       pending_overlay_resources_.push_back(
           base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
-              resource_provider_, ca_layer_overlay.contents_resource_id)));
+              resource_provider_, contents_resource_id)));
       texture_id = pending_overlay_resources_.back()->texture_id();
+
+      if (resource) {
+        // Once a resource is released, it is marked as "busy". It will be
+        // available for reuse after the ScopedReadLockGL is destroyed.
+        overlay_resource_pool_->ReleaseResource(resource);
+      }
     }
     GLfloat contents_rect[4] = {
         ca_layer_overlay.contents_rect.x(), ca_layer_overlay.contents_rect.y(),
@@ -3698,6 +3722,13 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
         texture_id, contents_rect, ca_layer_overlay.background_color,
         ca_layer_overlay.edge_aa_mask, bounds_rect, filter);
   }
+
+  // Take the number of copied render passes in this frame, and use 3 times that
+  // amount as the cache limit.
+  if (overlay_resource_pool_) {
+    overlay_resource_pool_->SetResourceUsageLimits(
+        std::numeric_limits<std::size_t>::max(), copied_render_pass_count * 3);
+  }
 }
 
 void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
@@ -3721,6 +3752,36 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
         overlay.plane_z_order, overlay.transform, texture_id,
         ToNearestRect(overlay.display_rect), overlay.uv_rect);
   }
+}
+
+void GLRenderer::CopyRenderPassToOverlayResource(
+    const RenderPassId& render_pass_id,
+    Resource** resource) {
+  ScopedResource* contents_texture =
+      render_pass_textures_[render_pass_id].get();
+  DCHECK(contents_texture);
+  DCHECK(contents_texture->id());
+  // TODO(erikchen): Fix this to allow the creation of IOSurfaces.
+  // https://crbug.com/581526.
+  *resource = overlay_resource_pool_->AcquireResource(
+      contents_texture->size(), ResourceFormat::RGBA_8888);
+  ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
+                                                  (*resource)->id(), false);
+
+  GLuint source_texture = 0;
+  std::unique_ptr<ResourceProvider::ScopedReadLockGL> source;
+  if (current_framebuffer_lock_ &&
+      current_framebuffer_lock_->texture_id() == contents_texture->id()) {
+    source_texture = current_framebuffer_lock_->texture_id();
+  } else {
+    source.reset(new ResourceProvider::ScopedReadLockGL(
+        resource_provider_, contents_texture->id()));
+    source_texture = source->texture_id();
+  }
+  gl_->CopySubTextureCHROMIUM(source_texture, destination.texture_id(), 0, 0, 0,
+                              0, contents_texture->size().width(),
+                              contents_texture->size().height(), GL_TRUE,
+                              GL_FALSE, GL_FALSE);
 }
 
 }  // namespace cc

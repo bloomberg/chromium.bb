@@ -20,8 +20,6 @@
 #include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 
-namespace base { class SingleThreadTaskRunner; }
-
 namespace ui {
 class LatencyInfo;
 }
