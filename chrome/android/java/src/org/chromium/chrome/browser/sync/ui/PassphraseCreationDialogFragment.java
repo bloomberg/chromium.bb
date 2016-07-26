@@ -107,10 +107,12 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
         String confirmPassphrase = mConfirmPassphrase.getText().toString();
 
         if (!passphrase.equals(confirmPassphrase)) {
+            mEnterPassphrase.setError(null);
             mConfirmPassphrase.setError(getString(R.string.sync_passphrases_do_not_match));
             mConfirmPassphrase.requestFocus();
             return;
         } else if (passphrase.isEmpty()) {
+            mConfirmPassphrase.setError(null);
             mEnterPassphrase.setError(getString(R.string.sync_passphrase_cannot_be_blank));
             mEnterPassphrase.requestFocus();
             return;

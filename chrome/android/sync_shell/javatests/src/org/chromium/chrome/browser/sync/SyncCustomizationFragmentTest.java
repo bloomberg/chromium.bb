@@ -548,32 +548,42 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         clickButton(okButton);
         assertTrue(pcdf.isResumed());
         assertNotNull(enterPassphrase.getError());
+        assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit with only the first box filled.
         clearError(confirmPassphrase);
         setText(enterPassphrase, "foo");
         clickButton(okButton);
         assertTrue(pcdf.isResumed());
+        assertNull(enterPassphrase.getError());
         assertNotNull(confirmPassphrase.getError());
 
-        // Error if you try to submit with only the second box filled.
+        // Remove first box should only show empty error message
         setText(enterPassphrase, "");
+        clickButton(okButton);
+        assertNotNull(enterPassphrase.getError());
+        assertNull(confirmPassphrase.getError());
+
+        // Error if you try to submit with only the second box filled.
         clearError(confirmPassphrase);
         setText(confirmPassphrase, "foo");
         clickButton(okButton);
         assertTrue(pcdf.isResumed());
+        assertNull(enterPassphrase.getError());
         assertNotNull(confirmPassphrase.getError());
 
         // No error if text doesn't match without button press.
         setText(enterPassphrase, "foo");
         clearError(confirmPassphrase);
         setText(confirmPassphrase, "bar");
+        assertNull(enterPassphrase.getError());
         assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit unmatching text.
         clearError(confirmPassphrase);
         clickButton(okButton);
         assertTrue(pcdf.isResumed());
+        assertNull(enterPassphrase.getError());
         assertNotNull(confirmPassphrase.getError());
 
         // Success if text matches.
