@@ -318,7 +318,12 @@ void PersonalDataManager::OnSyncServiceInitialized(
     return;
   }
 
-  // Otherwise, run the de-duplication now.
+  // This runs as a one-time fix, tracked in syncable prefs. If it has already
+  // run, it is a NOP (other than checking the pref).
+  ApplyProfileUseDatesFix();
+
+  // This runs at most once per major version, tracked in syncable prefs. If it
+  // has already run for this version, it's a NOP, other than checking the pref.
   ApplyDedupingRoutine();
 }
 
@@ -349,7 +354,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         ReceiveLoadedDbValues(h, result, &pending_profiles_query_,
                               &web_profiles_);
         LogProfileCount();  // This only logs local profiles.
-        ApplyProfileUseDatesFix();
       } else {
         ReceiveLoadedDbValues(h, result, &pending_server_profiles_query_,
                               &server_profiles_);
@@ -404,8 +408,14 @@ void PersonalDataManager::AutofillMultipleChanged() {
 }
 
 void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
-  if (model_type == syncer::AUTOFILL_PROFILE &&
-      is_autofill_profile_dedupe_pending_) {
+  if (model_type == syncer::AUTOFILL_PROFILE) {
+    // This runs as a one-time fix, tracked in syncable prefs. If it has already
+    // run, it is a NOP (other than checking the pref).
+    ApplyProfileUseDatesFix();
+
+    // This runs at most once per major version, tracked in syncable prefs. If
+    // it has already run for this version, it's a NOP, other than checking the
+    // pref.
     ApplyDedupingRoutine();
   }
 }

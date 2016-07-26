@@ -150,6 +150,8 @@ class PersonalDataManagerTest : public testing::Test {
     // Reset the deduping pref to its default value.
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
+    personal_data_->pref_service_->SetBoolean(
+        prefs::kAutofillProfileUseDatesFixed, false);
   }
 
   void TearDown() override {
