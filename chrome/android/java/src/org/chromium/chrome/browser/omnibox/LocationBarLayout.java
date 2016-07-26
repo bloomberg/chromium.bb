@@ -321,8 +321,19 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                     });
                 }
                 return true;
+            } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    // Tell the framework to start tracking this event.
+                    getKeyDispatcherState().startTracking(event, this);
+                    return true;
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    getKeyDispatcherState().handleUpEvent(event);
+                    if (event.isTracking() && !event.isCanceled()) {
+                        backKeyPressed();
+                        return true;
+                    }
+                }
             }
-
             return false;
         }
 
@@ -1952,8 +1963,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
     }
 
-    @Override
-    public void backKeyPressed() {
+    private void backKeyPressed() {
         hideSuggestions();
         UiUtils.hideKeyboard(mUrlBar);
         // Revert the URL to match the current page.

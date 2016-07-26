@@ -730,9 +730,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void setAutocompleteProfile(Profile profile) {}
 
     @Override
-    public void backKeyPressed() {}
-
-    @Override
     public void showAppMenuUpdateBadge() {}
 
     @Override

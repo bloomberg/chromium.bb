@@ -20,10 +20,8 @@ import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnKeyListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -52,7 +50,7 @@ import java.net.URL;
 /**
  * The URL text entry view for the Omnibox.
  */
-public class UrlBar extends VerticallyFixedEditText implements OnKeyListener {
+public class UrlBar extends VerticallyFixedEditText {
     private static final String TAG = "UrlBar";
 
     // TextView becomes very slow on long strings, so we limit maximum length
@@ -166,11 +164,6 @@ public class UrlBar extends VerticallyFixedEditText implements OnKeyListener {
         void onTextChangedForAutocomplete(boolean textDeleted);
 
         /**
-         * Called to notify that back key has been pressed while the focus in on the url bar.
-         */
-        void backKeyPressed();
-
-        /**
          * @return Whether the light security theme should be used.
          */
         boolean shouldEmphasizeHttpsScheme();
@@ -225,7 +218,6 @@ public class UrlBar extends VerticallyFixedEditText implements OnKeyListener {
 
         mAccessibilityManager =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        setOnKeyListener(this);
     }
 
     /**
@@ -506,24 +498,6 @@ public class UrlBar extends VerticallyFixedEditText implements OnKeyListener {
         } else {
             return super.focusSearch(direction);
         }
-    }
-
-    @Override
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-                // Tell the framework to start tracking this event.
-                getKeyDispatcherState().startTracking(event, this);
-                return true;
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                getKeyDispatcherState().handleUpEvent(event);
-                if (event.isTracking() && !event.isCanceled()) {
-                    mUrlBarDelegate.backKeyPressed();
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     @Override
