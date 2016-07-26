@@ -412,9 +412,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   config_name = 'debug_symbols'
 
-  @failures_lib.SetFailureType(
-      failures_lib.InfrastructureFailure,
-      exclude_exceptions=(DebugSymbolsUploadException,))
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -474,8 +472,10 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
     # TODO(dgarrett): Convert this to a fatal error.
     # See http://crbug.com/212437
-    exc_type = exc_info[0]
-    if issubclass(exc_type, DebugSymbolsUploadException):
+    exc_type, e, _ = exc_info
+    if (issubclass(exc_type, DebugSymbolsUploadException) or
+        (isinstance(e, failures_lib.CompoundFailure) and
+         e.MatchesFailureType(DebugSymbolsUploadException))):
       return self._HandleExceptionAsWarning(exc_info)
 
     return super(DebugSymbolsStage, self)._HandleStageException(exc_info)
