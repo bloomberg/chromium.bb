@@ -555,7 +555,6 @@ TEST_P(CacheStorageManagerTestP, DropRefAfterNewCacheWithSameNameCreated) {
   // 1. Create cache A and hang onto the handle
   const GURL kTestURL = GURL("http://example.com/foo");
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
   std::unique_ptr<CacheStorageCacheHandle> cache_handle =
       std::move(callback_cache_handle_);
 
@@ -564,13 +563,38 @@ TEST_P(CacheStorageManagerTestP, DropRefAfterNewCacheWithSameNameCreated) {
 
   // 3. Create cache B (with the same name)
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
 
   // 4. Drop handle to A
   cache_handle.reset();
 
   // 5. Verify that B still works
   EXPECT_FALSE(CacheMatch(callback_cache_handle_->value(), kTestURL));
+}
+
+TEST_P(CacheStorageManagerTestP, DeleteCorrectDirectory) {
+  // This test reproduces crbug.com/630036.
+  // 1. Cache A with name "foo" is created
+  const GURL kTestURL = GURL("http://example.com/foo");
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  std::unique_ptr<CacheStorageCacheHandle> cache_handle =
+      std::move(callback_cache_handle_);
+
+  // 2. Cache A is doomed, but js hangs onto the handle.
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+
+  // 3. Cache B with name "foo" is created
+  EXPECT_TRUE(Open(origin1_, "foo"));
+
+  // 4. Cache B is doomed, and both handles are reset.
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  cache_handle.reset();
+  callback_cache_handle_.reset();
+
+  // Do some busy work on a different cache to move the cache pool threads
+  // along and trigger the bug.
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(CachePut(callback_cache_handle_->value(), kTestURL));
+  EXPECT_TRUE(CacheMatch(callback_cache_handle_->value(), kTestURL));
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
