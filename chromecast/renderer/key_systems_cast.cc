@@ -99,7 +99,8 @@ void AddChromecastKeySystems(
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
   ::media::SupportedCodecs codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
-      ::media::EME_CODEC_WEBM_VP8 | ::media::EME_CODEC_WEBM_VP9;
+      ::media::EME_CODEC_MP4_VP9 | ::media::EME_CODEC_WEBM_VP8 |
+      ::media::EME_CODEC_WEBM_VP9;
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,  // Regular codecs.
 #if defined(OS_ANDROID)
