@@ -30,4 +30,22 @@ void BitmapImageMetrics::countImageOrientation(const ImageOrientationEnum orient
     orientationHistogram.count(orientation);
 }
 
+void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace)
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gammaNamedHistogram, new EnumerationHistogram("Blink.ColorSpace.Destination", GammaEnd));
+
+    if (colorSpace) {
+        SkColorSpace::GammaNamed skGamma = colorSpace->gammaNamed();
+        Gamma gamma =
+            (SkColorSpace::kLinear_GammaNamed == skGamma)      ? GammaLinear :
+            (SkColorSpace::kSRGB_GammaNamed == skGamma)        ? GammaSRGB :
+            (SkColorSpace::k2Dot2Curve_GammaNamed == skGamma)  ? Gamma2Dot2 :
+            (SkColorSpace::kNonStandard_GammaNamed == skGamma) ? GammaNonStandard :
+            GammaFail;
+        gammaNamedHistogram.count(gamma);
+    } else {
+        gammaNamedHistogram.count(GammaNull);
+    }
+}
+
 } // namespace blink

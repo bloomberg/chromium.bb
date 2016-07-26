@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
@@ -27,8 +28,21 @@ public:
         DecodedImageTypeEnumEnd = ImageBMP + 1
     };
 
+    enum Gamma {
+        // Values synced with 'Gamma' in src/tools/metrics/histograms/histograms.xml
+        GammaLinear = 0,
+        GammaSRGB = 1,
+        Gamma2Dot2 = 2,
+        GammaNonStandard = 3,
+        GammaEmpty = 4,
+        GammaNull = 5,
+        GammaFail = 6,
+        GammaEnd = GammaFail + 1,
+    };
+
     static void countDecodedImageType(const String& type);
     static void countImageOrientation(const ImageOrientationEnum);
+    static void countGamma(SkColorSpace*);
 };
 
 } // namespace blink

@@ -21,6 +21,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
+#include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
@@ -330,6 +331,11 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile)
     // Layout tests expect that only the first call will take effect.
     if (gTargetColorProfile)
         return;
+
+    {
+        sk_sp<SkColorSpace> colorSpace = SkColorSpace::NewICC(profile.data(), profile.size());
+        BitmapImageMetrics::countGamma(colorSpace.get());
+    }
 
     // FIXME: Add optional ICCv4 support and support for multiple monitors.
     gTargetColorProfile = qcms_profile_from_memory(profile.data(), profile.size());

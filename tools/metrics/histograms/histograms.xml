@@ -3670,6 +3670,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent on 2D canvas toDataURL API call.</summary>
 </histogram>
 
+<histogram name="Blink.ColorSpace.Destination" enum="Gamma">
+  <owner>msarett@chromium.org</owner>
+  <summary>Gamma properties of destination color space.</summary>
+</histogram>
+
 <histogram name="Blink.Compositing.UpdateTime" units="microseconds">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -78267,6 +78272,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="ListAccounts call failed"/>
   <int value="7" label="No restore needed, fresh cookies found"/>
   <int value="8" label="Overflow"/>
+</enum>
+
+<enum name="Gamma" type="int">
+  <int value="0" label="kLinear_Gamma"/>
+  <int value="1" label="kSRGB_Gamma"/>
+  <int value="2" label="k2Dot2Curve_Gamma"/>
+  <int value="3" label="kNonStandard_Gamma"/>
+  <int value="4" label="kNull_Gamma"/>
+  <int value="5" label="kFail_Gamma"/>
 </enum>
 
 <enum name="GATTCharacteristicHash" type="int">
