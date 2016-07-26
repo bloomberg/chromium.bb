@@ -90,6 +90,20 @@ bool FindInspectedBrowserAndTabIndex(
   return false;
 }
 
+void SetPreferencesFromJson(Profile* profile, const std::string& json) {
+  base::DictionaryValue* dict = nullptr;
+  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
+  if (!parsed || !parsed->GetAsDictionary(&dict))
+    return;
+  DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    if (!it.value().IsType(base::Value::TYPE_STRING))
+      continue;
+    update.Get()->SetWithoutPathExpansion(
+        it.key(), it.value().CreateDeepCopy());
+  }
+}
+
 // DevToolsToolboxDelegate ----------------------------------------------------
 
 class DevToolsToolboxDelegate
@@ -791,7 +805,7 @@ DevToolsWindow* DevToolsWindow::Create(
   GURL url(GetDevToolsURL(profile, frontend_url,
                           shared_worker_frontend,
                           remote_frontend,
-                          can_dock, settings));
+                          can_dock));
   std::unique_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
@@ -801,7 +815,8 @@ DevToolsWindow* DevToolsWindow::Create(
       DevToolsUIBindings::ForWebContents(main_web_contents.get());
   if (!bindings)
     return nullptr;
-
+  if (!settings.empty())
+    SetPreferencesFromJson(profile, settings);
   return new DevToolsWindow(profile, main_web_contents.release(), bindings,
                             inspected_web_contents, can_dock);
 }
@@ -811,8 +826,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const GURL& base_url,
                                     bool shared_worker_frontend,
                                     const std::string& remote_frontend,
-                                    bool can_dock,
-                                    const std::string& settings) {
+                                    bool can_dock) {
   // Compatibility errors are encoded with data urls, pass them
   // through with no decoration.
   if (base_url.SchemeIs("data"))
@@ -834,8 +848,6 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   }
   if (can_dock)
     url_string += "&can_dock=true";
-  if (settings.size())
-    url_string += "&settings=" + settings;
   return GURL(url_string);
 }
 

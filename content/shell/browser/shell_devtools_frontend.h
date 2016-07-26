@@ -55,7 +55,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
-  base::DictionaryValue* preferences() { return &preferences_; }
+  void SetPreferences(const std::string& json);
   virtual void HandleMessageFromDevToolsFrontend(const std::string& message);
 
  private:

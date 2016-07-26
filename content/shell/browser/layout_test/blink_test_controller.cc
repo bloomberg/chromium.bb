@@ -774,7 +774,7 @@ void BlinkTestController::OnClearDevToolsLocalStorage() {
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, NULL);
   storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-      content::LayoutTestDevToolsFrontend::GetDevToolsPathAsURL("", "")
+      content::LayoutTestDevToolsFrontend::GetDevToolsPathAsURL("")
           .GetOrigin());
 }
 

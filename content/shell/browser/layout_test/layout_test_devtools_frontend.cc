@@ -30,15 +30,13 @@ LayoutTestDevToolsFrontend* LayoutTestDevToolsFrontend::Show(
                                         gfx::Size());
   LayoutTestDevToolsFrontend* devtools_frontend =
       new LayoutTestDevToolsFrontend(shell, inspected_contents);
-
-  shell->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
-
+  devtools_frontend->SetPreferences(settings);
+  shell->LoadURL(GetDevToolsPathAsURL(frontend_url));
   return devtools_frontend;
 }
 
 // static.
 GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
-    const std::string& settings,
     const std::string& frontend_url) {
   if (!frontend_url.empty())
     return GURL(frontend_url);
@@ -62,18 +60,16 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
 #if defined(DEBUG_DEVTOOLS)
   url_string += "&debugFrontend=true";
 #endif  // defined(DEBUG_DEVTOOLS)
-  if (!settings.empty())
-    url_string += "&settings=" + settings;
   return GURL(url_string);
 }
 
 void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,
                                                const std::string frontend_url) {
   DisconnectFromTarget();
-  preferences()->Clear();
+  SetPreferences(settings);
   ready_for_test_ = false;
   pending_evaluations_.clear();
-  frontend_shell()->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
+  frontend_shell()->LoadURL(GetDevToolsPathAsURL(frontend_url));
 }
 
 void LayoutTestDevToolsFrontend::EvaluateInFrontend(

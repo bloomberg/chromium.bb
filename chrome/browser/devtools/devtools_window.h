@@ -254,8 +254,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              const GURL& base_url,
                              bool shared_worker_frontend,
                              const std::string& remote_frontend,
-                             bool can_dock,
-                             const std::string& settings);
+                             bool can_dock);
 
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static void ToggleDevToolsWindow(
