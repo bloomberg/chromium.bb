@@ -10,9 +10,7 @@
 #include "remoting/host/security_key/security_key_extension_session.h"
 
 namespace {
-// TODO(joedow): Update this once clients support sending a security key
-//               capabililty.  Tracked via: crbug.com/587485
-const char kCapability[] = "";
+const char kCapability[] = "securityKey";
 }
 
 namespace remoting {
