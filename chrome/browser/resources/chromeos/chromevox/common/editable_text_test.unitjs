@@ -220,6 +220,7 @@ TEST_F('CvoxEditableTextUnitTest', 'TypingWords', function() {
   assertEqualStringArrays(['.', 'd', 'l'], tts.get());
 
   // Forward-delete
+  cvox.ChromeVoxEditableTextBase.useIBeamCursor = true;
   obj.changed(new cvox.TextChangeEvent('Hello, Wor', 9, 9));
   obj.changed(new cvox.TextChangeEvent('Hello, Wor', 8, 8));
   obj.changed(new cvox.TextChangeEvent('Hello, Wor', 7, 7));
@@ -227,6 +228,16 @@ TEST_F('CvoxEditableTextUnitTest', 'TypingWords', function() {
   obj.changed(new cvox.TextChangeEvent('Hello, r', 7, 7));
   obj.changed(new cvox.TextChangeEvent('Hello, ', 7, 7));
   assertEqualStringArrays(['r', 'o', 'W', 'W', 'o', 'r'], tts.get());
+
+  obj.changed(new cvox.TextChangeEvent('Hello, Wor', 10, 10));
+  cvox.ChromeVoxEditableTextBase.useIBeamCursor = false;
+  obj.changed(new cvox.TextChangeEvent('Hello, Wor', 9, 9));
+  obj.changed(new cvox.TextChangeEvent('Hello, Wor', 8, 8));
+  obj.changed(new cvox.TextChangeEvent('Hello, Wor', 7, 7));
+  obj.changed(new cvox.TextChangeEvent('Hello, or', 7, 7));
+  obj.changed(new cvox.TextChangeEvent('Hello, r', 7, 7));
+  obj.changed(new cvox.TextChangeEvent('Hello, ', 7, 7));
+  assertEqualStringArrays(['Wor', 'r', 'o', 'W', 'o', 'r'], tts.get());
 
   // Clear all
   obj.changed(new cvox.TextChangeEvent('', 0, 0));

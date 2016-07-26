@@ -493,9 +493,18 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
       evt.start == evtEnd &&
       evtValue.substr(0, prefixLen) == value.substr(0, prefixLen) &&
       evtValue.substr(newLen - suffixLen) ==
-      value.substr(len - suffixLen)) {
-    this.describeTextChangedHelper(
-        evt, prefixLen, suffixLen, autocompleteSuffix, personality);
+          value.substr(len - suffixLen)) {
+    // Forward deletions causes reading of the character immediately to the
+    // right of the caret or the deleted text depending on the iBeam cursor
+    // setting.
+    if (this.start == evt.start &&
+        this.end == evt.end &&
+        !cvox.ChromeVoxEditableTextBase.useIBeamCursor) {
+      this.speak(evt.value[evt.start], evt.triggeredByUser);
+    } else {
+      this.describeTextChangedHelper(
+          evt, prefixLen, suffixLen, autocompleteSuffix, personality);
+    }
     return;
   }
 
