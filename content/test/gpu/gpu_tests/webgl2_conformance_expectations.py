@@ -728,6 +728,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/*.html',
