@@ -6,7 +6,10 @@
 
 namespace policy {
 
-EnrollmentConfig::EnrollmentConfig() : mode(MODE_NONE) {
-}
+// TODO(drcrash): Initialize in declarations and get rid of constructor.
+EnrollmentConfig::EnrollmentConfig()
+    : mode(MODE_NONE),
+      // TODO(drcrash): Change to best available once ZTE is everywhere.
+      auth_mechanism(AUTH_MECHANISM_INTERACTIVE) {}
 
 }  // namespace policy

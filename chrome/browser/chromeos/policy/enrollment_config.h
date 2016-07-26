@@ -37,6 +37,18 @@ struct EnrollmentConfig {
     MODE_RECOVERY,
   };
 
+  // An enumeration of authentication mechanisms that can be used for
+  // enrollment.
+  enum AuthMechanism {
+    // Interactive authentication.
+    AUTH_MECHANISM_INTERACTIVE,
+    // Automatic authentication relying on the attestation process.
+    AUTH_MECHANISM_ATTESTATION,
+    // Let the system determine the best mechanism (typically the one
+    // that requires the least user interaction).
+    AUTH_MECHANISM_BEST_AVAILABLE,
+  };
+
   // Initializes |mode| to MODE_NONE and |management_domain| to empty string.
   EnrollmentConfig();
 
@@ -61,6 +73,9 @@ struct EnrollmentConfig {
   // to a domain, policy validation during enrollment will verify the domains
   // match.
   std::string management_domain;
+
+  // The authentication mechanism to use.
+  AuthMechanism auth_mechanism;
 };
 
 }  // namespace policy

@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -108,10 +109,10 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   manager_->core()->Disconnect();
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
-      owner_settings_service,
-      CreateClient(device_management_service), background_task_runner_,
-      enrollment_config, auth_token, install_attributes_->GetDeviceId(),
-      manager_->GetDeviceRequisition(), allowed_device_modes, management_mode,
+      owner_settings_service, CreateClient(device_management_service),
+      background_task_runner_, enrollment_config, auth_token,
+      install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
+      allowed_device_modes, management_mode,
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
   enrollment_handler_->StartEnrollment();
@@ -120,6 +121,26 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
 EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
     const {
   EnrollmentConfig config;
+
+  // Authentication through the attestation mechanism is controlled by a
+  // command line switch that either enables it or forces it (meaning that
+  // interactive authentication is disabled).
+  switch (DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode()) {
+    case ZeroTouchEnrollmentMode::DISABLED:
+      // Only use interactive authentication.
+      config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
+      break;
+
+    case ZeroTouchEnrollmentMode::ENABLED:
+      // Use the best mechanism, which may include attestation if available.
+      config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
+      break;
+
+    case ZeroTouchEnrollmentMode::FORCED:
+      // Only use attestation to authenticate since zero-touch is forced.
+      config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
+      break;
+  }
 
   const bool oobe_complete = local_state_->GetBoolean(prefs::kOobeComplete);
   if (oobe_complete && install_attributes_->IsEnterpriseDevice()) {
@@ -136,6 +157,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
       else
         config.mode = EnrollmentConfig::MODE_RECOVERY;
     }
+
     return config;
   }
 
