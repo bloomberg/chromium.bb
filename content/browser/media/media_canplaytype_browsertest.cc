@@ -44,13 +44,8 @@ const char* kHlsProbably = kPropProbably;
 const char* kHlsMaybe = kPropMaybe;
 #endif  // !OS_ANDROID
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-// TODO(servolk): Change this to kPropProbably after adding platform-level
-// checks for HEVC codec ids. crbug.com/601949
-const char* kHevcSupported = kPropMaybe;
-#else
+// Chrome doesn't support HEVC.
 const char* kHevcSupported = kNot;
-#endif
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char* kMp2tsMaybe = kPropMaybe;

@@ -93,6 +93,28 @@ void RenderMediaClient::RecordRapporURL(const std::string& metric,
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
 }
 
+bool RenderMediaClient::IsSupportedVideoConfig(media::VideoCodec codec,
+                                               media::VideoCodecProfile profile,
+                                               int level) {
+  switch (codec) {
+    case media::kCodecH264:
+    case media::kCodecVP8:
+    case media::kCodecVP9:
+    case media::kCodecTheora:
+      return true;
+
+    case media::kUnknownVideoCodec:
+    case media::kCodecVC1:
+    case media::kCodecMPEG2:
+    case media::kCodecMPEG4:
+    case media::kCodecHEVC:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 void RenderMediaClient::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_.swap(tick_clock);

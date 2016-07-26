@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/mime_util.h"
+#include "media/base/video_codecs.h"
 
 namespace media {
 namespace internal {
@@ -118,11 +119,15 @@ class MEDIA_EXPORT MimeUtil {
   // |is_ambiguous| is true if |codec_id| did not have enough information to
   // unambiguously determine the proper Codec enum value. If |is_ambiguous|
   // is true |codec| contains the best guess for the intended Codec enum value.
+  // |profile| and |level| indicate video codec profile and level (unused for
+  // audio codecs).
   // |is_encrypted| means the codec will be used with encrypted blocks.
   bool StringToCodec(const std::string& mime_type_lower_case,
                      const std::string& codec_id,
                      Codec* codec,
                      bool* is_ambiguous,
+                     VideoCodecProfile* out_profile,
+                     uint8_t* out_level,
                      bool is_encrypted) const;
 
   // Returns true if |codec| is supported when contained in

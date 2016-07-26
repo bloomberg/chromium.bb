@@ -32,6 +32,9 @@ class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
       std::vector<std::unique_ptr<media::KeySystemProperties>>*
           key_systems_properties) final;
   void RecordRapporURL(const std::string& metric, const GURL& url) final;
+  bool IsSupportedVideoConfig(media::VideoCodec codec,
+                              media::VideoCodecProfile profile,
+                              int level) override;
 
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 

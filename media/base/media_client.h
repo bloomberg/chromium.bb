@@ -10,6 +10,7 @@
 
 #include "media/base/key_system_properties.h"
 #include "media/base/media_export.h"
+#include "media/base/video_codecs.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -64,6 +65,12 @@ class MEDIA_EXPORT MediaClient {
   // Records a domain and registry of a url to a Rappor privacy-preserving
   // metric. See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) = 0;
+
+  // Returns true if the given combination of video codec, profile and level is
+  // supported. The |level| value is codec-specific.
+  virtual bool IsSupportedVideoConfig(VideoCodec codec,
+                                      VideoCodecProfile profile,
+                                      int level) = 0;
 };
 
 }  // namespace media
