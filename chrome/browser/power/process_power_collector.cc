@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,10 +44,7 @@ ProcessPowerCollector::PerProcessData::PerProcessData(
       seen_this_cycle_(true) {}
 
 ProcessPowerCollector::PerProcessData::PerProcessData()
-    : profile_(NULL),
-      last_cpu_percent_(0.0),
-      seen_this_cycle_(false) {
-}
+    : profile_(nullptr), last_cpu_percent_(0.0), seen_this_cycle_(false) {}
 
 ProcessPowerCollector::PerProcessData::~PerProcessData() {
 }
@@ -98,12 +97,9 @@ void ProcessPowerCollector::StartTimer() {
 double ProcessPowerCollector::UpdatePowerConsumption() {
   double total_cpu_percent = SynchronizeProcesses();
 
-  for (ProcessMetricsMap::iterator it = metrics_map_.begin();
-       it != metrics_map_.end();
-       ++it) {
-    // Invalidate the process for the next cycle.
-    it->second->set_seen_this_cycle(false);
-  }
+  // Invalidate the process for the next cycle.
+  for (auto& metrics : metrics_map_)
+    metrics.second->set_seen_this_cycle(false);
 
   RecordCpuUsageByOrigin(total_cpu_percent);
   return total_cpu_percent;
@@ -126,17 +122,11 @@ double ProcessPowerCollector::SynchronizeProcesses() {
   // Iterate over all profiles to find all app windows to attribute all apps.
   ProfileManager* pm = g_browser_process->profile_manager();
   std::vector<Profile*> open_profiles = pm->GetLoadedProfiles();
-  for (std::vector<Profile*>::const_iterator it = open_profiles.begin();
-       it != open_profiles.end();
-       ++it) {
+  for (Profile* profile : open_profiles) {
     const extensions::AppWindowRegistry::AppWindowList& app_windows =
-        extensions::AppWindowRegistry::Get(*it)->app_windows();
-    for (extensions::AppWindowRegistry::AppWindowList::const_iterator itr =
-             app_windows.begin();
-         itr != app_windows.end();
-         ++itr) {
-      content::WebContents* web_contents = (*itr)->web_contents();
-
+        extensions::AppWindowRegistry::Get(profile)->app_windows();
+    for (auto* window : app_windows) {
+      content::WebContents* web_contents = window->web_contents();
       UpdateProcessInMap(web_contents->GetRenderProcessHost(),
                          web_contents->GetLastCommittedURL().GetOrigin());
     }
@@ -163,34 +153,28 @@ void ProcessPowerCollector::RecordCpuUsageByOrigin(double total_cpu_percent) {
   if (total_cpu_percent == 0)
     return;
 
-  for (ProcessMetricsMap::iterator it = metrics_map_.begin();
-       it != metrics_map_.end();
-       ++it) {
-    double last_process_power_usage = it->second->last_cpu_percent();
+  for (auto& metrics : metrics_map_) {
+    double last_process_power_usage = metrics.second->last_cpu_percent();
     last_process_power_usage *= scale_factor_ / total_cpu_percent;
 
-    GURL origin = it->second->last_origin();
+    const GURL& origin = metrics.second->last_origin();
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(
-            it->second->profile());
+            metrics.second->profile());
     // |origin_power_map| can be NULL, if the profile is a guest profile in
     // Chrome OS.
-    if (!origin_power_map)
-      continue;
-    origin_power_map->AddPowerForOrigin(origin, last_process_power_usage);
+    if (origin_power_map)
+      origin_power_map->AddPowerForOrigin(origin, last_process_power_usage);
   }
 
   // Iterate over all profiles to let them know we've finished updating.
   ProfileManager* pm = g_browser_process->profile_manager();
   std::vector<Profile*> open_profiles = pm->GetLoadedProfiles();
-  for (std::vector<Profile*>::const_iterator it = open_profiles.begin();
-       it != open_profiles.end();
-       ++it) {
+  for (Profile* profile : open_profiles) {
     power::OriginPowerMap* origin_power_map =
-        power::OriginPowerMapFactory::GetForBrowserContext(*it);
-    if (!origin_power_map)
-      continue;
-    origin_power_map->OnAllOriginsUpdated();
+        power::OriginPowerMapFactory::GetForBrowserContext(profile);
+    if (origin_power_map)
+      origin_power_map->OnAllOriginsUpdated();
   }
 }
 
@@ -198,19 +182,17 @@ void ProcessPowerCollector::UpdateProcessInMap(
     const content::RenderProcessHost* rph,
     const GURL& origin) {
   base::ProcessHandle handle = rph->GetHandle();
-  if (metrics_map_.find(handle) == metrics_map_.end()) {
-    metrics_map_[handle] = linked_ptr<PerProcessData>(new PerProcessData(
+  if (!ContainsKey(metrics_map_, handle)) {
+    metrics_map_[handle] = base::MakeUnique<PerProcessData>(
 #if defined(OS_MACOSX)
-        std::unique_ptr<base::ProcessMetrics>(
-            base::ProcessMetrics::CreateProcessMetrics(handle, NULL)),
+        base::ProcessMetrics::CreateProcessMetrics(handle, nullptr),
 #else
-        std::unique_ptr<base::ProcessMetrics>(
-            base::ProcessMetrics::CreateProcessMetrics(handle)),
+        base::ProcessMetrics::CreateProcessMetrics(handle),
 #endif
-        origin, Profile::FromBrowserContext(rph->GetBrowserContext())));
+        origin, Profile::FromBrowserContext(rph->GetBrowserContext()));
   }
 
-  linked_ptr<PerProcessData>& process_data = metrics_map_[handle];
+  PerProcessData* process_data = metrics_map_[handle].get();
   process_data->set_last_cpu_percent(std::max(0.0,
       cpu_usage_callback_.is_null() ? process_data->metrics()->GetCPUUsage()
                                     : cpu_usage_callback_.Run(handle)));

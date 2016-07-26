@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_management/providers/task.h"
 #include "chrome/browser/task_management/sampling/task_group_sampler.h"

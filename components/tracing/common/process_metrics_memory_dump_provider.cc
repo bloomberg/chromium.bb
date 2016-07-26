@@ -160,16 +160,14 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
 std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
     base::ProcessId process) {
   if (process == base::kNullProcessId)
-    return base::WrapUnique(
-        base::ProcessMetrics::CreateCurrentProcessMetrics());
+    return base::ProcessMetrics::CreateCurrentProcessMetrics();
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Just pass ProcessId instead of handle since they are the same in linux and
   // android.
-  return base::WrapUnique(base::ProcessMetrics::CreateProcessMetrics(process));
+  return base::ProcessMetrics::CreateProcessMetrics(process);
 #else
   // Creating process metrics for child processes in mac or windows requires
-  // additional information like ProcessHandle or port provider. This is a non
-  // needed use case.
+  // additional information like ProcessHandle or port provider.
   NOTREACHED();
   return std::unique_ptr<base::ProcessMetrics>();
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)

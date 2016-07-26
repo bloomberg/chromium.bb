@@ -71,19 +71,19 @@ void MemoryDetails::CollectProcessData(
     if (!process_handle.IsValid())
       continue;
     if (_wcsicmp(process_data_[0].process_name.c_str(),
-                 process_entry.szExeFile) != 0)
+                 process_entry.szExeFile) != 0) {
       continue;
+    }
+
     // Get Memory Information.
     ProcessMemoryInformation info;
     info.pid = pid;
-    if (info.pid == GetCurrentProcessId())
-      info.process_type = content::PROCESS_TYPE_BROWSER;
-    else
-      info.process_type = content::PROCESS_TYPE_UNKNOWN;
+    info.process_type = pid == GetCurrentProcessId()
+                            ? content::PROCESS_TYPE_BROWSER
+                            : content::PROCESS_TYPE_UNKNOWN;
 
-    std::unique_ptr<base::ProcessMetrics> metrics;
-    metrics.reset(
-        base::ProcessMetrics::CreateProcessMetrics(process_handle.Get()));
+    std::unique_ptr<base::ProcessMetrics> metrics =
+        base::ProcessMetrics::CreateProcessMetrics(process_handle.Get());
     metrics->GetCommittedKBytes(&info.committed);
     metrics->GetWorkingSetKBytes(&info.working_set);
 
@@ -91,12 +91,12 @@ void MemoryDetails::CollectProcessData(
     info.version = base::ASCIIToUTF16(version_info::GetVersionNumber());
     // Check if this is one of the child processes whose data we collected
     // on the IO thread, and if so copy over that data.
-    for (size_t child = 0; child < child_info.size(); child++) {
-      if (child_info[child].pid != info.pid)
-        continue;
-      info.titles = child_info[child].titles;
-      info.process_type = child_info[child].process_type;
-      break;
+    for (const ProcessMemoryInformation& child : child_info) {
+      if (child.pid == info.pid) {
+        info.titles = child.titles;
+        info.process_type = child.process_type;
+        break;
+      }
     }
 
     // Add the process info to our list.

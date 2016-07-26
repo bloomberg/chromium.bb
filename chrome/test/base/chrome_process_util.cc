@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -22,9 +24,8 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 void TerminateAllChromeProcesses(const ChromeProcessList& process_pids) {
-  ChromeProcessList::const_iterator it;
-  for (it = process_pids.begin(); it != process_pids.end(); ++it) {
-    base::Process process = base::Process::Open(*it);
+  for (auto pid : process_pids) {
+    base::Process process = base::Process::Open(pid);
     if (process.IsValid()) {
       // Ignore processes for which we can't open the handle. We don't
       // guarantee that all processes will terminate, only try to do so.
@@ -42,7 +43,7 @@ class ChildProcessFilter : public base::ProcessFilter {
       : parent_pids_(parent_pids.begin(), parent_pids.end()) {}
 
   bool Includes(const base::ProcessEntry& entry) const override {
-    return parent_pids_.find(entry.parent_pid()) != parent_pids_.end();
+    return ContainsKey(parent_pids_, entry.parent_pid());
   }
 
  private:
@@ -110,12 +111,23 @@ ChromeTestProcessMetrics::~ChromeTestProcessMetrics() {}
 
 ChromeTestProcessMetrics::ChromeTestProcessMetrics(
     base::ProcessHandle process) {
-#if !defined(OS_MACOSX)
-  process_metrics_.reset(
-      base::ProcessMetrics::CreateProcessMetrics(process));
+#if defined(OS_MACOSX)
+  process_metrics_ =
+      base::ProcessMetrics::CreateProcessMetrics(process, nullptr);
 #else
-  process_metrics_.reset(
-      base::ProcessMetrics::CreateProcessMetrics(process, NULL));
+  process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(process);
 #endif
   process_handle_ = process;
+}
+
+size_t ChromeTestProcessMetrics::GetPeakPagefileUsage() {
+  return process_metrics_->GetPeakPagefileUsage();
+}
+
+size_t ChromeTestProcessMetrics::GetPeakWorkingSetSize() {
+  return process_metrics_->GetPeakWorkingSetSize();
+}
+
+bool ChromeTestProcessMetrics::GetIOCounters(base::IoCounters* io_counters) {
+  return process_metrics_->GetIOCounters(io_counters);
 }

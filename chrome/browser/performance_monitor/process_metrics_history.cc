@@ -36,9 +36,6 @@ ProcessMetricsHistory::ProcessMetricsHistory()
     : last_update_sequence_(0), cpu_usage_(0.0), trace_trigger_handle_(-1) {
 }
 
-ProcessMetricsHistory::ProcessMetricsHistory(
-    const ProcessMetricsHistory& other) = default;
-
 ProcessMetricsHistory::~ProcessMetricsHistory() {
 }
 
@@ -50,12 +47,12 @@ void ProcessMetricsHistory::Initialize(
   last_update_sequence_ = initial_update_sequence;
 
 #if defined(OS_MACOSX)
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(
+  process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(
       process_data_.handle,
-      content::BrowserChildProcessHost::GetPortProvider()));
+      content::BrowserChildProcessHost::GetPortProvider());
 #else
-  process_metrics_.reset(
-      base::ProcessMetrics::CreateProcessMetrics(process_data_.handle));
+  process_metrics_ =
+      base::ProcessMetrics::CreateProcessMetrics(process_data_.handle);
 #endif
 
   const char* trigger_name = NULL;

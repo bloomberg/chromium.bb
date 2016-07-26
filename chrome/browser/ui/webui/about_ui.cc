@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_POWER_PROCESS_POWER_COLLECTOR_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
@@ -49,7 +49,7 @@ class ProcessPowerCollector
 
     base::ProcessMetrics* metrics() const { return metrics_.get(); }
     Profile* profile() const { return profile_; }
-    GURL last_origin() const { return last_origin_; }
+    const GURL& last_origin() const { return last_origin_; }
     int last_cpu_percent() const { return last_cpu_percent_; }
     bool seen_this_cycle() const { return seen_this_cycle_; }
     void set_last_cpu_percent(double new_cpu) { last_cpu_percent_ = new_cpu; }
@@ -78,10 +78,11 @@ class ProcessPowerCollector
   };
 
   // A map from all process handles to a metric.
-  typedef std::map<base::ProcessHandle, linked_ptr<PerProcessData> >
-      ProcessMetricsMap;
+  using ProcessMetricsMap =
+      std::map<base::ProcessHandle, std::unique_ptr<PerProcessData>>;
+
   // A callback used to define mock CPU usage for testing.
-  typedef base::Callback<double(base::ProcessHandle)> CpuUsageCallback;
+  using CpuUsageCallback = base::Callback<double(base::ProcessHandle)>;
 
   // On Chrome OS, can only be initialized after the DBusThreadManager has been
   // initialized.

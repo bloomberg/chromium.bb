@@ -10,20 +10,21 @@
 #include <unistd.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 
 namespace base {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
+      processor_count_(SysInfo::NumberOfProcessors()),
       last_system_time_(0),
-      last_cpu_(0) {
-  processor_count_ = base::SysInfo::NumberOfProcessors();
-}
+      last_cpu_(0) {}
 
 // static
-ProcessMetrics* ProcessMetrics::CreateProcessMetrics(ProcessHandle process) {
-  return new ProcessMetrics(process);
+std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
+    ProcessHandle process) {
+  return WrapUnique(new ProcessMetrics(process));
 }
 
 size_t ProcessMetrics::GetPagefileUsage() const {

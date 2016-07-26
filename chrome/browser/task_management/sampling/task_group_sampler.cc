@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -17,7 +18,8 @@ namespace task_management {
 
 namespace {
 
-base::ProcessMetrics* CreateProcessMetrics(base::ProcessHandle handle) {
+std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
+    base::ProcessHandle handle) {
 #if !defined(OS_MACOSX)
   return base::ProcessMetrics::CreateProcessMetrics(handle);
 #else

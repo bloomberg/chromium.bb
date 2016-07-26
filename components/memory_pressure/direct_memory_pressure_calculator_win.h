@@ -5,11 +5,10 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_WIN_H_
 #define COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_WIN_H_
 
-#include "components/memory_pressure/memory_pressure_calculator.h"
-
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
+#include "components/memory_pressure/memory_pressure_calculator.h"
 
 namespace memory_pressure {
 

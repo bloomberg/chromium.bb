@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_METRICS_HISTORY_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_METRICS_HISTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/child_process_data.h"
@@ -38,7 +39,7 @@ struct ProcessMetricsMetadata {
 class ProcessMetricsHistory {
  public:
   ProcessMetricsHistory();
-  ProcessMetricsHistory(const ProcessMetricsHistory& other);
+  ProcessMetricsHistory(const ProcessMetricsHistory& other) = delete;
   ~ProcessMetricsHistory();
 
   // Configure this to monitor a specific process.
@@ -63,7 +64,7 @@ class ProcessMetricsHistory {
   // May not be fully populated. e.g. no |id| and no |name| for browser and
   // renderer processes.
   ProcessMetricsMetadata process_data_;
-  linked_ptr<base::ProcessMetrics> process_metrics_;
+  std::unique_ptr<base::ProcessMetrics> process_metrics_;
   int last_update_sequence_;
 
   double cpu_usage_;

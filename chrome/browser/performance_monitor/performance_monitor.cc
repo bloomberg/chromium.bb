@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -26,38 +26,18 @@
 
 using content::BrowserThread;
 
+namespace performance_monitor {
+
 namespace {
 
 // The default interval at which PerformanceMonitor performs its timed
 // collections.
 const int kGatherIntervalInSeconds = 120;
 
-}  // namespace
-
-namespace performance_monitor {
-
-PerformanceMonitor::PerformanceMonitor() {
-}
-
-PerformanceMonitor::~PerformanceMonitor() {
-}
-
-// static
-PerformanceMonitor* PerformanceMonitor::GetInstance() {
-  return base::Singleton<PerformanceMonitor>::get();
-}
-
-void PerformanceMonitor::StartGatherCycle() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  repeating_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(kGatherIntervalInSeconds),
-                         this, &PerformanceMonitor::GatherMetricsMapOnUIThread);
-}
-
-namespace {
+base::LazyInstance<PerformanceMonitor> g_monitor = LAZY_INSTANCE_INITIALIZER;
 
 void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
-                                   ProcessMetricsMetadata& data) {
+                                   ProcessMetricsMetadata* data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(ENABLE_EXTENSIONS)
   content::BrowserContext* browser_context = host->GetBrowserContext();
@@ -81,15 +61,30 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
   if (!extension)
     return;
 
-  if (extensions::BackgroundInfo::HasPersistentBackgroundPage(extension)) {
-    data.process_subtype = kProcessSubtypeExtensionPersistent;
-  } else {
-    data.process_subtype = kProcessSubtypeExtensionEvent;
-  }
+  data->process_subtype =
+      extensions::BackgroundInfo::HasPersistentBackgroundPage(extension)
+          ? kProcessSubtypeExtensionPersistent
+          : kProcessSubtypeExtensionEvent;
 #endif
 }
 
 }  // namespace
+
+PerformanceMonitor::PerformanceMonitor() {}
+
+PerformanceMonitor::~PerformanceMonitor() {}
+
+// static
+PerformanceMonitor* PerformanceMonitor::GetInstance() {
+  return g_monitor.Pointer();
+}
+
+void PerformanceMonitor::StartGatherCycle() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  repeating_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromSeconds(kGatherIntervalInSeconds),
+                         this, &PerformanceMonitor::GatherMetricsMapOnUIThread);
+}
 
 void PerformanceMonitor::GatherMetricsMapOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -108,7 +103,7 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
     data.process_type = content::PROCESS_TYPE_RENDERER;
     data.handle = host->GetHandle();
 
-    GatherMetricsForRenderProcess(host, data);
+    GatherMetricsForRenderProcess(host, &data);
     MarkProcessAsAlive(data, current_update_sequence);
   }
 
@@ -132,11 +127,12 @@ void PerformanceMonitor::MarkProcessAsAlive(
   MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
   if (process_metrics_iter == metrics_map_.end()) {
     // If we're not already watching the process, let's initialize it.
-    metrics_map_[handle].Initialize(process_data, current_update_sequence);
+    metrics_map_[handle] = base::MakeUnique<ProcessMetricsHistory>();
+    metrics_map_[handle]->Initialize(process_data, current_update_sequence);
   } else {
     // If we are watching the process, touch it to keep it alive.
-    ProcessMetricsHistory& process_metrics = process_metrics_iter->second;
-    process_metrics.set_last_update_sequence(current_update_sequence);
+    ProcessMetricsHistory* process_metrics = process_metrics_iter->second.get();
+    process_metrics->set_last_update_sequence(current_update_sequence);
   }
 }
 
@@ -144,8 +140,8 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list(
-      new std::vector<ProcessMetricsMetadata>());
+  auto process_data_list =
+      base::MakeUnique<std::vector<ProcessMetricsMetadata>>();
 
   // Find all child processes (does not include renderers), which has to be
   // done on the IO thread.
@@ -179,9 +175,8 @@ void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
     std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (size_t i = 0; i < process_data_list->size(); ++i) {
-    MarkProcessAsAlive((*process_data_list)[i], current_update_sequence);
-  }
+  for (const ProcessMetricsMetadata& data : *process_data_list)
+    MarkProcessAsAlive(data, current_update_sequence);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -194,12 +189,12 @@ void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
   // Update metrics for all watched processes; remove dead entries from the map.
   MetricsMap::iterator iter = metrics_map_.begin();
   while (iter != metrics_map_.end()) {
-    ProcessMetricsHistory& process_metrics = iter->second;
-    if (process_metrics.last_update_sequence() != current_update_sequence) {
+    ProcessMetricsHistory* process_metrics = iter->second.get();
+    if (process_metrics->last_update_sequence() != current_update_sequence) {
       // Not touched this iteration; let's get rid of it.
       metrics_map_.erase(iter++);
     } else {
-      process_metrics.SampleMetrics();
+      process_metrics->SampleMetrics();
       ++iter;
     }
   }
@@ -211,9 +206,8 @@ void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
 
 void PerformanceMonitor::RunTriggersUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto it = metrics_map_.begin(); it != metrics_map_.end(); ++it) {
-    it->second.RunPerformanceTriggers();
-  }
+  for (auto& metrics : metrics_map_)
+    metrics.second->RunPerformanceTriggers();
 
   StartGatherCycle();
 }

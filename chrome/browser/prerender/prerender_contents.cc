@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -609,17 +610,23 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (!process_metrics_) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
-    if (!GetRenderViewHost() || !GetRenderViewHost()->GetProcess())
-      return NULL;
-    base::ProcessHandle handle = GetRenderViewHost()->GetProcess()->GetHandle();
+    const RenderViewHost* rvh = GetRenderViewHost();
+    if (!rvh)
+      return nullptr;
+
+    const content::RenderProcessHost* rph = rvh->GetProcess();
+    if (!rph)
+      return nullptr;
+
+    base::ProcessHandle handle = rph->GetHandle();
     if (handle == base::kNullProcessHandle)
-      return NULL;
+      return nullptr;
+
 #if !defined(OS_MACOSX)
-    process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
+    process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(handle);
 #else
-    process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(
-        handle,
-        content::BrowserChildProcessHost::GetPortProvider()));
+    process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(
+        handle, content::BrowserChildProcessHost::GetPortProvider());
 #endif
   }
 

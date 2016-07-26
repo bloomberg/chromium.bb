@@ -328,12 +328,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   };
 
   // The delay between updates of the information (in ms).
-#if defined(OS_MACOSX)
   // Match Activity Monitor's default refresh rate.
   static const int kUpdateTimeMs = 2000;
-#else
-  static const int kUpdateTimeMs = 1000;
-#endif
 
   // Values cached per resource. Values are validated on demand. The is_XXX
   // members indicate if a value is valid.
@@ -550,10 +546,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   std::vector<BytesReadParam> bytes_read_buffer_;
 
   std::vector<base::Closure> on_data_ready_callbacks_;
-
-#if defined(OS_WIN)
-  std::unique_ptr<PrivateWorkingSetSnapshot> working_set_snapshot_;
-#endif
 
   // All per-Resource values are stored here.
   mutable PerResourceCache per_resource_cache_;

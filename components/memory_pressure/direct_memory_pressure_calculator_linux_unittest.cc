@@ -4,14 +4,15 @@
 
 #include "components/memory_pressure/direct_memory_pressure_calculator_linux.h"
 
+#include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace memory_pressure {
 
 namespace {
 
-static const int kKBperMB = 1024;
-static const int kTotalMemoryInMB = 4096;
+const int kKBperMB = 1024;
+const int kTotalMemoryInMB = 4096;
 
 }  // namespace
 
@@ -20,7 +21,7 @@ static const int kTotalMemoryInMB = 4096;
 class TestDirectMemoryPressureCalculator
     : public DirectMemoryPressureCalculator {
  public:
-  explicit TestDirectMemoryPressureCalculator()
+  TestDirectMemoryPressureCalculator()
       : DirectMemoryPressureCalculator(20, 10) {
     // The values passed to the MemoryPressureCalculator constructor are dummy
     // values that are immediately overwritten by InferTresholds.

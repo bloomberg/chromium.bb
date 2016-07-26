@@ -42,6 +42,7 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -57,14 +58,6 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
-
-#if defined(OS_MACOSX)
-#include "content/public/browser/browser_child_process_host.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/win/private_working_set_snapshot.h"
-#endif
 
 using content::BrowserThread;
 using content::ResourceRequestInfo;
@@ -134,42 +127,6 @@ bool IsSharedByGroup(int col_id) {
       return false;
   }
 }
-
-#if defined(OS_WIN)
-void GetWinGDIHandles(base::ProcessHandle process,
-                      size_t* current,
-                      size_t* peak) {
-  *current = 0;
-  *peak = 0;
-  // Get a handle to |process| that has PROCESS_QUERY_INFORMATION rights.
-  HANDLE current_process = GetCurrentProcess();
-  HANDLE process_with_query_rights;
-  if (DuplicateHandle(current_process, process, current_process,
-                      &process_with_query_rights, PROCESS_QUERY_INFORMATION,
-                      false, 0)) {
-    *current = GetGuiResources(process_with_query_rights, GR_GDIOBJECTS);
-    *peak = GetGuiResources(process_with_query_rights, GR_GDIOBJECTS_PEAK);
-    CloseHandle(process_with_query_rights);
-  }
-}
-
-void GetWinUSERHandles(base::ProcessHandle process,
-                       size_t* current,
-                       size_t* peak) {
-  *current = 0;
-  *peak = 0;
-  // Get a handle to |process| that has PROCESS_QUERY_INFORMATION rights.
-  HANDLE current_process = GetCurrentProcess();
-  HANDLE process_with_query_rights;
-  if (DuplicateHandle(current_process, process, current_process,
-                      &process_with_query_rights, PROCESS_QUERY_INFORMATION,
-                      false, 0)) {
-    *current = GetGuiResources(process_with_query_rights, GR_USEROBJECTS);
-    *peak = GetGuiResources(process_with_query_rights, GR_USEROBJECTS_PEAK);
-    CloseHandle(process_with_query_rights);
-  }
-}
-#endif
 
 }  // namespace
 
@@ -283,11 +240,6 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager, std::unique_ptr<WebContentsInformation>(
                         new task_manager::GuestInformation())));
-#if defined(OS_WIN)
-  working_set_snapshot_.reset(new PrivateWorkingSetSnapshot);
-  working_set_snapshot_->AddToMonitorList("chrome");
-  working_set_snapshot_->AddToMonitorList("nacl64");
-#endif
 }
 
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
@@ -451,13 +403,9 @@ base::string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
 
 base::string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
   return base::UTF8ToUTF16(base::StringPrintf(
-#if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
       // consistent with that.
       "%.1f",
-#else
-      "%.0f",
-#endif
       GetCPUUsage(GetResource(index))));
 }
 
@@ -591,10 +539,6 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
       return false;
 
     values.is_physical_memory_valid = true;
-#if defined(OS_LINUX)
-    // On Linux private memory is also resident. Just use it.
-    values.physical_memory = ws_usage.priv * 1024;
-#else
     // Memory = working_set.private which is working set minus shareable. This
     // avoids the unpredictable counting that occurs when calculating memory as
     // working set minus shared (renderer code counted when one tab is open and
@@ -602,7 +546,6 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
     // calculate on Windows.
     values.physical_memory = iter->second->GetWorkingSetSize();
     values.physical_memory -= ws_usage.shareable * 1024;
-#endif
   }
   *result = values.physical_memory;
   return true;
@@ -613,19 +556,6 @@ void TaskManagerModel::GetGDIHandles(int index,
                                      size_t* peak) const {
   *current = 0;
   *peak = 0;
-#if defined(OS_WIN)
-  base::ProcessHandle handle = GetResource(index)->GetProcess();
-  PerProcessValues& values(per_process_cache_[handle]);
-
-  if (!values.is_gdi_handles_valid) {
-    GetWinGDIHandles(GetResource(index)->GetProcess(),
-                     &values.gdi_handles,
-                     &values.gdi_handles_peak);
-    values.is_gdi_handles_valid = true;
-  }
-  *current = values.gdi_handles;
-  *peak = values.gdi_handles_peak;
-#endif
 }
 
 void TaskManagerModel::GetUSERHandles(int index,
@@ -633,19 +563,6 @@ void TaskManagerModel::GetUSERHandles(int index,
                                       size_t* peak) const {
   *current = 0;
   *peak = 0;
-#if defined(OS_WIN)
-  base::ProcessHandle handle = GetResource(index)->GetProcess();
-  PerProcessValues& values(per_process_cache_[handle]);
-
-  if (!values.is_user_handles_valid) {
-    GetWinUSERHandles(GetResource(index)->GetProcess(),
-                      &values.user_handles,
-                      &values.user_handles_peak);
-    values.is_user_handles_valid = true;
-  }
-  *current = values.user_handles;
-  *peak = values.user_handles_peak;
-#endif
 }
 
 bool TaskManagerModel::GetWebCoreCacheStats(
@@ -967,15 +884,10 @@ void TaskManagerModel::AddResource(Resource* resource) {
 
   // Create the ProcessMetrics for this process if needed (not in map).
   if (metrics_map_.find(process) == metrics_map_.end()) {
-    base::ProcessMetrics* pm =
-#if !defined(OS_MACOSX)
-        base::ProcessMetrics::CreateProcessMetrics(process);
-#else
+    std::unique_ptr<base::ProcessMetrics> pm =
         base::ProcessMetrics::CreateProcessMetrics(
             process, content::BrowserChildProcessHost::GetPortProvider());
-#endif
-
-    metrics_map_[process] = pm;
+    metrics_map_[process] = pm.release();
   }
 
   // Notify the table that the contents have changed for it to redraw.
@@ -1147,31 +1059,8 @@ void TaskManagerModel::ModelChanged() {
 }
 
 void TaskManagerModel::RefreshPhysicalMemoryFromWorkingSetSnapshot() {
-#if defined(OS_WIN)
-  // Collect working-set data for all monitored processes in one operation, to
-  // avoid the inefficiency of retrieving it one at a time.
-  working_set_snapshot_->Sample();
-
-  for (size_t i = 0; i < resources_.size(); ++i) {
-    size_t private_working_set =
-        working_set_snapshot_->GetPrivateWorkingSet(GetProcessId(i));
-
-    // If working-set data is available then use it. If not then
-    // GetWorkingSetKBytes will retrieve the data. This is rare except on
-    // Windows XP where GetWorkingSetKBytes will always be used.
-    if (private_working_set) {
-      // Fill in the cache with the retrieved private working set value.
-      base::ProcessHandle handle = GetResource(i)->GetProcess();
-      PerProcessValues& values(per_process_cache_[handle]);
-      values.is_physical_memory_valid = true;
-      // Note that the other memory fields are *not* filled in.
-      values.physical_memory = private_working_set;
-    }
-  }
-#else
 // This is a NOP on other platforms because they can efficiently retrieve
 // the private working-set data on a per-process basis.
-#endif
 }
 
 void TaskManagerModel::Refresh() {
@@ -1212,14 +1101,12 @@ void TaskManagerModel::Refresh() {
       values.is_cpu_usage_valid = true;
       values.cpu_usage = metrics_iter->second->GetCPUUsage();
     }
-#if defined(OS_MACOSX) || defined(OS_LINUX)
     // TODO(port): Implement GetIdleWakeupsPerSecond() on other platforms,
     // crbug.com/120488
     if (!values.is_idle_wakeups_valid) {
       values.is_idle_wakeups_valid = true;
       values.idle_wakeups = metrics_iter->second->GetIdleWakeupsPerSecond();
     }
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
   }
 
   // Send a request to refresh GPU memory consumption values
@@ -1436,17 +1323,9 @@ int TaskManagerModel::GetIdleWakeupsPerSecond(Resource* resource) const {
 }
 
 base::string16 TaskManagerModel::GetMemCellText(int64_t number) const {
-#if !defined(OS_MACOSX)
-  base::string16 str = base::FormatNumber(number / 1024);
-
-  // Adjust number string if necessary.
-  base::i18n::AdjustStringForLocaleDirection(&str);
-  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
-#else
   // System expectation is to show "100 kB", "200 MB", etc.
   // TODO(thakis): Switch to metric units (as opposed to powers of two).
   return ui::FormatBytes(number);
-#endif
 }
 
 bool TaskManagerModel::CachePrivateAndSharedMemory(

@@ -11,7 +11,7 @@ namespace memory_pressure {
 
 namespace {
 
-static const int kKiBperMiB = 1024;
+const int kKiBperMiB = 1024;
 
 int GetAvailableSystemMemoryMiB(const base::SystemMemoryInfoKB* mem_info) {
   // How much system memory is actively available for use right now, in MBs.

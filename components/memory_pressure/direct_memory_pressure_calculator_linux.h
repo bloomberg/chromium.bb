@@ -5,13 +5,9 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_LINUX_H_
 #define COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_LINUX_H_
 
-#include "components/memory_pressure/memory_pressure_calculator.h"
-
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
-#include "base/timer/timer.h"
+#include "components/memory_pressure/memory_pressure_calculator.h"
 
 namespace memory_pressure {
 
