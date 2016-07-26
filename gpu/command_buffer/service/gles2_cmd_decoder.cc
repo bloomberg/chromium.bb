@@ -11017,7 +11017,7 @@ void GLES2DecoderImpl::DoScheduleCALayerFilterEffectsCHROMIUM(
     GLsizei count,
     const GLCALayerFilterEffect* filter_effects) {
   std::vector<ui::CARendererLayerParams::FilterEffect> effects;
-  effects.reserve(count);
+  effects.resize(count);
   for (GLsizei i = 0; i < count; ++i) {
     const GLCALayerFilterEffect& filter_effect = filter_effects[i];
     GLint min =
