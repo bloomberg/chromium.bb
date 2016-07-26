@@ -159,7 +159,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         @Override
         protected NetworkCapabilities getNetworkCapabilities(Network network) {
-            long netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
+            int netId = demungeNetId(NetworkChangeNotifierAutoDetect.networkToNetId(network));
             for (MockNetwork mockNetwork : mMockNetworks) {
                 if (netId == mockNetwork.mNetId) {
                     return mockNetwork.getCapabilities();
@@ -170,7 +170,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         @Override
         protected boolean vpnAccessible(Network network) {
-            long netId = NetworkChangeNotifierAutoDetect.networkToNetId(network);
+            int netId = demungeNetId(NetworkChangeNotifierAutoDetect.networkToNetId(network));
             for (MockNetwork mockNetwork : mMockNetworks) {
                 if (netId == mockNetwork.mNetId) {
                     return mockNetwork.mVpnAccessible;
@@ -279,6 +279,16 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         }
     }
 
+    private static int demungeNetId(long netId) {
+        // On Marshmallow, demunge the NetID to undo munging done in Network.getNetworkHandle().
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            netId >>= 32;
+        }
+        // Now that the NetID has been demunged it is a true NetID which means it's only a 16-bit
+        // value (see ConnectivityService.MAX_NET_ID) so it should be safe to cast to int.
+        return (int) netId;
+    }
+
     // Types of network changes. Each is associated with a NetworkChangeNotifierAutoDetect.Observer
     // callback, and NONE is provided to indicate no callback observed.
     private static enum ChangeType { NONE, CONNECT, SOON_TO_DISCONNECT, DISCONNECT, PURGE_LIST }
@@ -288,7 +298,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // The type of change.
         final ChangeType mChangeType;
         // The network identifier of the network changing.
-        final long mNetId;
+        final int mNetId;
 
         /**
          * @param changeType the type of change.
@@ -296,7 +306,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
          */
         ChangeInfo(ChangeType changeType, long netId) {
             mChangeType = changeType;
-            mNetId = netId;
+            mNetId = demungeNetId(netId);
         }
     }
 
@@ -799,9 +809,9 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // returns an array of a repeated sequence of: (NetID, ConnectionType).
         // There are 4 entries in the array, two for each network.
         assertEquals(4, ncn.getNetworksAndTypes().length);
-        assertEquals(111, ncn.getNetworksAndTypes()[0]);
+        assertEquals(111, demungeNetId(ncn.getNetworksAndTypes()[0]));
         assertEquals(ConnectionType.CONNECTION_NONE, ncn.getNetworksAndTypes()[1]);
-        assertEquals(333, ncn.getNetworksAndTypes()[2]);
+        assertEquals(333, demungeNetId(ncn.getNetworksAndTypes()[2]));
         assertEquals(ConnectionType.CONNECTION_NONE, ncn.getNetworksAndTypes()[3]);
     }
 
