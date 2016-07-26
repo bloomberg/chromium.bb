@@ -4,7 +4,6 @@
 
 #include "components/arc/net/arc_net_host_impl.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -220,22 +219,6 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   return mojo;
 }
 
-void CreateNetworkSuccessCallback(
-    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
-    const std::string& service_path,
-    const std::string& guid) {
-  VLOG(1) << "CreateNetworkSuccessCallback";
-  mojo_callback.Run(guid);
-}
-
-void CreateNetworkFailureCallback(
-    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "CreateNetworkFailureCallback: " << error_name;
-  mojo_callback.Run("");
-}
-
 void ForgetNetworkSuccessCallback(
     const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback) {
   mojo_callback.Run(arc::mojom::NetworkResult::SUCCESS);
@@ -424,6 +407,26 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   callback.Run(std::move(data));
 }
 
+void ArcNetHostImpl::CreateNetworkSuccessCallback(
+    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    const std::string& service_path,
+    const std::string& guid) {
+  VLOG(1) << "CreateNetworkSuccessCallback";
+
+  cached_guid_ = guid;
+  cached_service_path_ = service_path;
+
+  mojo_callback.Run(guid);
+}
+
+void ArcNetHostImpl::CreateNetworkFailureCallback(
+    const arc::mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  VLOG(1) << "CreateNetworkFailureCallback: " << error_name;
+  mojo_callback.Run("");
+}
+
 void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                    const CreateNetworkCallback& callback) {
   if (!IsDeviceOwner()) {
@@ -467,8 +470,27 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
-      base::Bind(&CreateNetworkSuccessCallback, callback),
-      base::Bind(&CreateNetworkFailureCallback, callback));
+      base::Bind(&ArcNetHostImpl::CreateNetworkSuccessCallback,
+                 weak_factory_.GetWeakPtr(), callback),
+      base::Bind(&ArcNetHostImpl::CreateNetworkFailureCallback,
+                 weak_factory_.GetWeakPtr(), callback));
+}
+
+bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
+                                            std::string* path) {
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+  if (network) {
+    *path = network->path();
+    return true;
+  }
+
+  if (cached_guid_ == guid) {
+    *path = cached_service_path_;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void ArcNetHostImpl::ForgetNetwork(const mojo::String& guid,
@@ -478,46 +500,41 @@ void ArcNetHostImpl::ForgetNetwork(const mojo::String& guid,
     return;
   }
 
-  const chromeos::NetworkState* network =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
-
-  if (!network) {
+  std::string path;
+  if (!GetNetworkPathFromGuid(guid, &path)) {
     callback.Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
+  cached_guid_.clear();
   GetManagedConfigurationHandler()->RemoveConfiguration(
-      network->path(), base::Bind(&ForgetNetworkSuccessCallback, callback),
+      path, base::Bind(&ForgetNetworkSuccessCallback, callback),
       base::Bind(&ForgetNetworkFailureCallback, callback));
 }
 
 void ArcNetHostImpl::StartConnect(const mojo::String& guid,
                                   const StartConnectCallback& callback) {
-  const chromeos::NetworkState* network =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
-
-  if (!network) {
+  std::string path;
+  if (!GetNetworkPathFromGuid(guid, &path)) {
     callback.Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
   GetNetworkConnectionHandler()->ConnectToNetwork(
-      network->path(), base::Bind(&StartConnectSuccessCallback, callback),
+      path, base::Bind(&StartConnectSuccessCallback, callback),
       base::Bind(&StartConnectFailureCallback, callback), false);
 }
 
 void ArcNetHostImpl::StartDisconnect(const mojo::String& guid,
                                      const StartDisconnectCallback& callback) {
-  const chromeos::NetworkState* network =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
-
-  if (!network) {
+  std::string path;
+  if (!GetNetworkPathFromGuid(guid, &path)) {
     callback.Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
   GetNetworkConnectionHandler()->DisconnectNetwork(
-      network->path(), base::Bind(&StartDisconnectSuccessCallback, callback),
+      path, base::Bind(&StartDisconnectSuccessCallback, callback),
       base::Bind(&StartDisconnectFailureCallback, callback));
 }
 
