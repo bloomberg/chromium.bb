@@ -150,6 +150,9 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
     const sync_pb::EntitySpecifics& specifics = sync_iter->GetSpecifics();
     const sync_pb::TypedUrlSpecifics& typed_url(specifics.typed_url());
 
+    if (ShouldIgnoreUrl(GURL(typed_url.url())))
+      continue;
+
     // Add url to cache of sync state. Note that this is done irrespective of
     // whether the synced url is ignored locally, so that we know what to delete
     // at a later point.
@@ -745,6 +748,12 @@ bool TypedUrlSyncableService::ShouldIgnoreUrl(const GURL& url) {
 
   // Ignore localhost URLs.
   if (net::IsLocalhost(url.host()))
+    return true;
+
+  // Ignore username and password, sonce history backend will remove user name
+  // and password in URLDatabase::GURLToDatabaseURL and send username/password
+  // removed url to sync later.
+  if (url.has_username() || url.has_password())
     return true;
 
   return false;

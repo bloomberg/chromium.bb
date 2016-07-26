@@ -1075,6 +1075,50 @@ TEST_F(TypedUrlSyncableServiceTest, MergeUrlOldSync) {
             url_specifics.visit_transitions(0));
 }
 
+// Check that there is no crash during start sync, if history backend and sync
+// have same url, but sync has username/password in it.
+// Also check sync will not accept url with username and password.
+TEST_F(TypedUrlSyncableServiceTest, MergeUrlsWithUsernameAndPassword) {
+  const char kURLWithUsernameAndPassword[] =
+      "http://username:password@pie.com/";
+
+  // Add a url to backend.
+  VisitVector visits;
+  URLRow local_row = MakeTypedUrlRow(kURL, kTitle2, 1, 3, false, &visits);
+  fake_history_backend_->SetVisitsForUrl(local_row, visits);
+
+  // Create sync data for the same url but contain username and password.
+  VisitVector server_visits;
+  URLRow server_row = MakeTypedUrlRow(kURLWithUsernameAndPassword, kTitle, 1, 3,
+                                      false, &server_visits);
+  syncer::SyncDataList initial_sync_data;
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  WriteToTypedUrlSpecifics(server_row, server_visits, typed_url);
+  syncer::SyncData data =
+      syncer::SyncData::CreateLocalData(kURL, kTitle, entity_specifics);
+
+  // Make sure there is no crash when merge two urls.
+  initial_sync_data.push_back(data);
+  StartSyncing(initial_sync_data);
+
+  // Check that the username and password url did not get merged.
+  std::set<GURL> sync_state;
+  GetSyncedUrls(&sync_state);
+  EXPECT_EQ(1U, sync_state.size());
+  EXPECT_EQ(1U, sync_state.count(GURL(kURL)));
+
+  // Notify typed url sync service of the update.
+  typed_url_sync_service_->OnURLVisited(
+      fake_history_backend_.get(), ui::PAGE_TRANSITION_TYPED, server_row,
+      RedirectList(), base::Time::FromInternalValue(7));
+
+  // Check username/password url is not synced.
+  GetSyncedUrls(&sync_state);
+  EXPECT_EQ(1U, sync_state.size());
+  EXPECT_EQ(1U, sync_state.count(GURL(kURL)));
+}
+
 // Create a remote typed URL and visit, then send to syncable service after sync
 // has started. Check that local DB is received the new URL and visit.
 TEST_F(TypedUrlSyncableServiceTest, AddUrlAndVisits) {
