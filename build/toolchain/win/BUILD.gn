@@ -192,13 +192,7 @@ template("msvc_toolchain") {
       ]
       link_output = libname
       depend_output = libname
-
-      # The new version of GN uses a runtime_outputs list rather than a
-      # runtime_link_output string. This needs to be flipped for the next GN
-      # roll.
-      # TODO(brettw) bug 631242: Swap this and remove the old one.
-      #runtime_outputs = [ dllname ]
-      runtime_link_output = dllname
+      runtime_outputs = [ dllname ]
 
       # Since the above commands only updates the .lib file when it changes, ask
       # Ninja to check if the timestamp actually changed to know if downstream
