@@ -12,19 +12,14 @@ function checkNoCrop(imageBitmap)
     ctx.drawImage(imageBitmap, 0, 0);
     var d = ctx.getImageData(0, 0, 1, 1).data;
     assert_array_equals(d, [255, 0, 0, 255], "This pixel should be red.");
-    console.log(d[0] + " " + d[1] + " " + d[2] + " " + d[3]);
     d = ctx.getImageData(39, 0, 1, 1).data;
     assert_array_equals(d, [0, 255, 0, 255], "This pixel should be green.");
-    console.log(d[0] + " " + d[1] + " " + d[2] + " " + d[3]);
     d = ctx.getImageData(0, 39, 1, 1).data;
     assert_array_equals(d, [0, 0, 255, 255], "This pixel should be blue.");
-    console.log(d[0] + " " + d[1] + " " + d[2] + " " + d[3]);
     d = ctx.getImageData(39, 39, 1, 1).data;
     assert_array_equals(d, [0, 0, 0, 255], "This pixel should be black.");
-    console.log(d[0] + " " + d[1] + " " + d[2] + " " + d[3]);
     d = ctx.getImageData(41, 41, 1, 1).data;
     assert_array_equals(d, [0, 0, 0, 0], "This pixel should be transparent black.");
-    console.log(d[0] + " " + d[1] + " " + d[2] + " " + d[3]);
 }
 
 function checkCrop(imageBitmap)
@@ -80,10 +75,10 @@ function testImageBitmap(source)
         createImageBitmap(source, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "medium"}),
         createImageBitmap(source, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "low"}),
         createImageBitmap(source, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "pixelated"}),
-        createImageBitmap(source, 10, 10, 20, 20, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "high"}),
-        createImageBitmap(source, 10, 10, 20, 20, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "medium"}),
-        createImageBitmap(source, 10, 10, 20, 20, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "low"}),
-        createImageBitmap(source, 10, 10, 20, 20, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "pixelated"}),
+        createImageBitmap(source, 5, 5, 10, 10, {resizeWidth: 20, resizeHeight: 20, resizeQuality: "high"}),
+        createImageBitmap(source, 5, 5, 10, 10, {resizeWidth: 20, resizeHeight: 20, resizeQuality: "medium"}),
+        createImageBitmap(source, 5, 5, 10, 10, {resizeWidth: 20, resizeHeight: 20, resizeQuality: "low"}),
+        createImageBitmap(source, 5, 5, 10, 10, {resizeWidth: 20, resizeHeight: 20, resizeQuality: "pixelated"}),
     ]).then(([noCropHigh, noCropMedium, noCropLow, noCropPixelated, cropHigh, cropMedium, cropLow, cropPixelated]) => {
         checkNoCrop(noCropHigh);
         checkNoCrop(noCropMedium);

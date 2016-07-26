@@ -65,25 +65,25 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options, Optional<IntRect> 
 
     int sourceWidth = sourceSize.width();
     int sourceHeight = sourceSize.height();
+    if (!cropRect) {
+        parsedOptions.cropRect = IntRect(0, 0, sourceWidth, sourceHeight);
+    } else  {
+        parsedOptions.cropRect = normalizeRect(*cropRect);
+    }
     if (!options.hasResizeWidth() && !options.hasResizeHeight()) {
-        parsedOptions.resizeWidth = sourceWidth;
-        parsedOptions.resizeHeight = sourceHeight;
+        parsedOptions.resizeWidth = parsedOptions.cropRect.width();
+        parsedOptions.resizeHeight = parsedOptions.cropRect.height();
     } else if (options.hasResizeWidth() && options.hasResizeHeight()) {
         parsedOptions.resizeWidth = options.resizeWidth();
         parsedOptions.resizeHeight = options.resizeHeight();
     } else if (options.hasResizeWidth() && !options.hasResizeHeight()) {
         parsedOptions.resizeWidth = options.resizeWidth();
-        parsedOptions.resizeHeight = ceil(static_cast<float>(options.resizeWidth()) / sourceWidth * sourceHeight);
+        parsedOptions.resizeHeight = ceil(static_cast<float>(options.resizeWidth()) / parsedOptions.cropRect.width() * parsedOptions.cropRect.height());
     } else {
         parsedOptions.resizeHeight = options.resizeHeight();
-        parsedOptions.resizeWidth = ceil(static_cast<float>(options.resizeHeight()) / sourceHeight * sourceWidth);
+        parsedOptions.resizeWidth = ceil(static_cast<float>(options.resizeHeight()) / parsedOptions.cropRect.height() * parsedOptions.cropRect.width());
     }
-    if (!cropRect) {
-        parsedOptions.cropRect = IntRect(0, 0, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
-    } else  {
-        parsedOptions.cropRect = normalizeRect(*cropRect);
-    }
-    if (static_cast<int>(parsedOptions.resizeWidth) == sourceWidth && static_cast<int>(parsedOptions.resizeHeight) == sourceHeight) {
+    if (static_cast<int>(parsedOptions.resizeWidth) == parsedOptions.cropRect.width() && static_cast<int>(parsedOptions.resizeHeight) == parsedOptions.cropRect.height()) {
         parsedOptions.shouldScaleInput = false;
         return parsedOptions;
     }
@@ -212,9 +212,9 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
     // In the case when cropRect doesn't intersect the source image and it requires a umpremul image
     // We immediately return a transparent black image with cropRect.size()
     if (srcRect.isEmpty() && !parsedOptions.premultiplyAlpha) {
-        SkImageInfo info = SkImageInfo::Make(parsedOptions.cropRect.width(), parsedOptions.cropRect.height(), kN32_SkColorType, kUnpremul_SkAlphaType);
-        std::unique_ptr<uint8_t[]> dstPixels = wrapArrayUnique(new uint8_t[parsedOptions.cropRect.width() * parsedOptions.cropRect.height() * info.bytesPerPixel()]());
-        return StaticBitmapImage::create(newSkImageFromRaster(info, std::move(dstPixels), parsedOptions.cropRect.width() * info.bytesPerPixel()));
+        SkImageInfo info = SkImageInfo::Make(parsedOptions.resizeWidth, parsedOptions.resizeHeight, kN32_SkColorType, kUnpremul_SkAlphaType);
+        std::unique_ptr<uint8_t[]> dstPixels = wrapArrayUnique(new uint8_t[info.width() * info.height() * info.bytesPerPixel()]());
+        return StaticBitmapImage::create(newSkImageFromRaster(info, std::move(dstPixels), info.width() * info.bytesPerPixel()));
     }
 
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
@@ -232,7 +232,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
             return nullptr;
     }
 
-    if (parsedOptions.cropRect == srcRect) {
+    if (parsedOptions.cropRect == srcRect && !parsedOptions.shouldScaleInput) {
         RefPtr<SkImage> croppedSkImage = fromSkSp(skiaImage->makeSubset(srcRect));
         if (parsedOptions.flipY)
             return StaticBitmapImage::create(flipSkImageVertically(croppedSkImage.get(), parsedOptions.premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
@@ -244,7 +244,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
         return StaticBitmapImage::create(croppedSkImage.release());
     }
 
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(parsedOptions.cropRect.width(), parsedOptions.cropRect.height());
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(parsedOptions.resizeWidth, parsedOptions.resizeHeight);
     if (!surface)
         return nullptr;
     if (srcRect.isEmpty())
@@ -261,10 +261,11 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
         surface->getCanvas()->scale(1, -1);
     }
     if (parsedOptions.shouldScaleInput) {
-        SkRect drawDstRect = SkRect::MakeXYWH(dstLeft, dstTop, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
+        SkRect drawSrcRect = SkRect::MakeXYWH(parsedOptions.cropRect.x(), parsedOptions.cropRect.y(), parsedOptions.cropRect.width(), parsedOptions.cropRect.height());
+        SkRect drawDstRect = SkRect::MakeXYWH(0, 0, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
         SkPaint paint;
         paint.setFilterQuality(parsedOptions.resizeQuality);
-        surface->getCanvas()->drawImageRect(skiaImage.get(), drawDstRect, &paint);
+        surface->getCanvas()->drawImageRect(skiaImage.get(), drawSrcRect, drawDstRect, &paint);
     } else {
         surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
     }
