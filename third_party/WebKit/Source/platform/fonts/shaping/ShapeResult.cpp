@@ -312,7 +312,12 @@ void ShapeResult::insertRun(std::unique_ptr<ShapeResult::RunInfo> runToInsert,
 
         // One out of x_advance and y_advance is zero, depending on
         // whether the buffer direction is horizontal or vertical.
-        float advance = harfBuzzPositionToFloat(pos.x_advance - pos.y_advance);
+        // Convert to float and negate to avoid integer-overflow for ULONG_MAX.
+        float advance;
+        if (LIKELY(pos.x_advance))
+            advance = harfBuzzPositionToFloat(pos.x_advance);
+        else
+            advance = -harfBuzzPositionToFloat(pos.y_advance);
 
         run->m_glyphData[i].characterIndex =
             glyphInfos[startGlyph + i].cluster - startCluster;
