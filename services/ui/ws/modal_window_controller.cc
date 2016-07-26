@@ -16,7 +16,7 @@ namespace {
 const ServerWindow* GetModalChildForWindowAncestor(const ServerWindow* window) {
   for (const ServerWindow* ancestor = window; ancestor;
        ancestor = ancestor->parent()) {
-    for (const auto& transient_child : ancestor->transient_children()) {
+    for (auto* transient_child : ancestor->transient_children()) {
       if (transient_child->is_modal() && transient_child->IsDrawn())
         return transient_child;
     }

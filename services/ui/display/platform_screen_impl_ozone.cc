@@ -72,7 +72,7 @@ void PlatformScreenImplOzone::OnDisplayModeChanged(
   CHECK(!callback_.is_null());
 
   gfx::Point origin;
-  for (auto display : displays) {
+  for (auto* display : displays) {
     const ui::DisplayMode* current_mode = display->current_mode();
     gfx::Rect bounds(origin, current_mode->size());
 

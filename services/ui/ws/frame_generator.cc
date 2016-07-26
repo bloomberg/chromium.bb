@@ -174,7 +174,7 @@ void FrameGenerator::DrawWindowTree(
                 bounds_at_origin /* clip_rect */, false /* is_clipped */,
                 combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
-    auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
@@ -196,7 +196,7 @@ void FrameGenerator::DrawWindowTree(
                 combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
 
-    auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,

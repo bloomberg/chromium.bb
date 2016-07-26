@@ -137,7 +137,7 @@ class ServiceManager::Instance
       parent_->RemoveChild(this);
     // |children_| will be modified during destruction.
     std::set<Instance*> children = children_;
-    for (auto child : children)
+    for (auto* child : children)
       service_manager_->OnInstanceError(child);
 
     // Shutdown all bindings before we close the runner. This way the process

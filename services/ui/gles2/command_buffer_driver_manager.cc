@@ -30,7 +30,7 @@ void CommandBufferDriverManager::RemoveDriver(CommandBufferDriver* driver) {
 uint32_t CommandBufferDriverManager::GetUnprocessedOrderNum() const {
   DCHECK(CalledOnValidThread());
   uint32_t unprocessed_order_num = 0;
-  for (auto& d : drivers_) {
+  for (auto* d : drivers_) {
     unprocessed_order_num =
       std::max(unprocessed_order_num, d->GetUnprocessedOrderNum());
   }
@@ -40,7 +40,7 @@ uint32_t CommandBufferDriverManager::GetUnprocessedOrderNum() const {
 uint32_t CommandBufferDriverManager::GetProcessedOrderNum() const {
   DCHECK(CalledOnValidThread());
   uint32_t processed_order_num = 0;
-  for (auto& d : drivers_) {
+  for (auto* d : drivers_) {
     processed_order_num =
         std::max(processed_order_num, d->GetProcessedOrderNum());
   }

@@ -1185,7 +1185,7 @@ void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
   };
 
   if (matcher->type_matcher) {
-    auto iter =
+    auto* iter =
         std::find(std::begin(event_type_whitelist),
                   std::end(event_type_whitelist), matcher->type_matcher->type);
     if (iter == std::end(event_type_whitelist)) {
