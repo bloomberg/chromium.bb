@@ -42,6 +42,7 @@ ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
       ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
+      focus_client_(nullptr),
       keyboard_controller_(nullptr),
       test_input_method_(nullptr) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
@@ -56,8 +57,8 @@ ArcImeService::~ArcImeService() {
 
   for (aura::Window* window : arc_windows_.windows())
     window->RemoveObserver(this);
-  for (aura::Window* root : observing_root_windows_.windows())
-    aura::client::GetFocusClient(root)->RemoveObserver(this);
+  if (focus_client_)
+    focus_client_->RemoveObserver(this);
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
@@ -107,9 +108,15 @@ void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
 void ArcImeService::OnWindowAddedToRootWindow(aura::Window* window) {
   aura::Window* root = window->GetRootWindow();
   aura::client::FocusClient* focus_client = aura::client::GetFocusClient(root);
-  if (focus_client && !observing_root_windows_.Contains(root)) {
-    focus_client->AddObserver(this);
-    observing_root_windows_.Add(root);
+  if (!focus_client)
+    return;
+
+  if (focus_client_) {
+    // Root windows share the same FocusClient in Ash.
+    DCHECK_EQ(focus_client_, focus_client);
+  } else {
+    focus_client_ = focus_client;
+    focus_client_->AddObserver(this);
   }
 }
 

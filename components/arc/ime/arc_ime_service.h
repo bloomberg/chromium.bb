@@ -22,6 +22,10 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
+namespace client {
+class FocusClient;
+}
+
 class Window;
 }
 
@@ -114,10 +118,10 @@ class ArcImeService : public ArcService,
   gfx::Rect cursor_rect_;
   bool has_composition_text_;
 
-  aura::WindowTracker observing_root_windows_;
   aura::WindowTracker arc_windows_;
   aura::WindowTracker focused_arc_window_;
 
+  aura::client::FocusClient* focus_client_;
   keyboard::KeyboardController* keyboard_controller_;
 
   ui::InputMethod* test_input_method_;
