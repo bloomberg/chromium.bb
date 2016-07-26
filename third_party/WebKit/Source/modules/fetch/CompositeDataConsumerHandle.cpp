@@ -37,16 +37,16 @@ public:
     static PassRefPtr<Context> create(std::unique_ptr<WebDataConsumerHandle> handle) { return adoptRef(new Context(std::move(handle))); }
     ~Context()
     {
-        ASSERT(!m_readerThread);
-        ASSERT(!m_reader);
-        ASSERT(!m_client);
+        DCHECK(!m_readerThread);
+        DCHECK(!m_reader);
+        DCHECK(!m_client);
     }
     std::unique_ptr<ReaderImpl> obtainReader(Client* client)
     {
         MutexLocker locker(m_mutex);
-        ASSERT(!m_readerThread);
-        ASSERT(!m_reader);
-        ASSERT(!m_client);
+        DCHECK(!m_readerThread);
+        DCHECK(!m_reader);
+        DCHECK(!m_client);
         ++m_token;
         m_client = client;
         m_readerThread = Platform::current()->currentThread();
@@ -56,11 +56,11 @@ public:
     void detachReader()
     {
         MutexLocker locker(m_mutex);
-        ASSERT(m_readerThread);
-        ASSERT(m_readerThread->isCurrentThread());
-        ASSERT(m_reader);
-        ASSERT(!m_isInTwoPhaseRead);
-        ASSERT(!m_isUpdateWaitingForEndRead);
+        DCHECK(m_readerThread);
+        DCHECK(m_readerThread->isCurrentThread());
+        DCHECK(m_reader);
+        DCHECK(!m_isInTwoPhaseRead);
+        DCHECK(!m_isUpdateWaitingForEndRead);
         ++m_token;
         m_reader = nullptr;
         m_readerThread = nullptr;
@@ -80,21 +80,21 @@ public:
 
     Result read(void* data, size_t size, Flags flags, size_t* readSize)
     {
-        ASSERT(m_readerThread && m_readerThread->isCurrentThread());
+        DCHECK(m_readerThread && m_readerThread->isCurrentThread());
         return m_reader->read(data, size, flags, readSize);
     }
     Result beginRead(const void** buffer, Flags flags, size_t* available)
     {
-        ASSERT(m_readerThread && m_readerThread->isCurrentThread());
-        ASSERT(!m_isInTwoPhaseRead);
+        DCHECK(m_readerThread && m_readerThread->isCurrentThread());
+        DCHECK(!m_isInTwoPhaseRead);
         Result r = m_reader->beginRead(buffer, flags, available);
         m_isInTwoPhaseRead = (r == Ok);
         return r;
     }
     Result endRead(size_t readSize)
     {
-        ASSERT(m_readerThread && m_readerThread->isCurrentThread());
-        ASSERT(m_isInTwoPhaseRead);
+        DCHECK(m_readerThread && m_readerThread->isCurrentThread());
+        DCHECK(m_isInTwoPhaseRead);
         Result r = m_reader->endRead(readSize);
         m_isInTwoPhaseRead = false;
         if (m_isUpdateWaitingForEndRead) {
@@ -128,8 +128,8 @@ private:
             // This request is not fresh. Ignore it.
             return;
         }
-        ASSERT(m_readerThread);
-        ASSERT(m_reader);
+        DCHECK(m_readerThread);
+        DCHECK(m_reader);
         if (m_readerThread->isCurrentThread()) {
             if (m_isInTwoPhaseRead) {
                 // We are waiting for the two-phase read completion.
@@ -186,7 +186,7 @@ Result CompositeDataConsumerHandle::ReaderImpl::endRead(size_t readSize)
 
 CompositeDataConsumerHandle::Updater::Updater(PassRefPtr<Context> context)
     : m_context(context)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_thread(Platform::current()->currentThread())
 #endif
 {
@@ -196,8 +196,10 @@ CompositeDataConsumerHandle::Updater::~Updater() {}
 
 void CompositeDataConsumerHandle::Updater::update(std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT(handle);
-    ASSERT(m_thread->isCurrentThread());
+    DCHECK(handle);
+#if DCHECK_IS_ON()
+    DCHECK(m_thread->isCurrentThread());
+#endif
     m_context->update(std::move(handle));
 }
 

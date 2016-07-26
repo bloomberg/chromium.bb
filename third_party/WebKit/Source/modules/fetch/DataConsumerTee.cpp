@@ -160,8 +160,8 @@ public:
 
     void setResult(Result r)
     {
-        ASSERT(r != WebDataConsumerHandle::Ok);
-        ASSERT(r != WebDataConsumerHandle::ShouldWait);
+        DCHECK(r != WebDataConsumerHandle::Ok);
+        DCHECK(r != WebDataConsumerHandle::ShouldWait);
         {
             MutexLocker locker(m_mutex);
             if (m_result != WebDataConsumerHandle::ShouldWait) {
@@ -183,7 +183,7 @@ public:
                 // No client is registered.
                 return;
             }
-            ASSERT(m_readerThread);
+            DCHECK(m_readerThread);
             if (!m_readerThread->isCurrentThread()) {
                 m_readerThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&DestinationContext::notify, wrapPassRefPtr(this)));
                 return;
@@ -200,14 +200,14 @@ public:
     // caller.
     void attachReader(WebDataConsumerHandle::Client* client)
     {
-        ASSERT(!m_readerThread);
-        ASSERT(!m_client);
+        DCHECK(!m_readerThread);
+        DCHECK(!m_client);
         m_readerThread = Platform::current()->currentThread();
         m_client = client;
     }
     void detachReader()
     {
-        ASSERT(m_readerThread && m_readerThread->isCurrentThread());
+        DCHECK(m_readerThread && m_readerThread->isCurrentThread());
         m_readerThread = nullptr;
         m_client = nullptr;
     }
@@ -217,8 +217,8 @@ public:
     void consume(size_t size)
     {
         const auto& top = m_queue.first();
-        ASSERT(m_offset <= m_offset + size);
-        ASSERT(m_offset + size <= top->size());
+        DCHECK(m_offset <= m_offset + size);
+        DCHECK(m_offset + size <= top->size());
         if (top->size() <= m_offset + size) {
             m_offset = 0;
             m_queue.removeFirst();
@@ -241,8 +241,8 @@ private:
     void detach()
     {
         MutexLocker locker(m_mutex);
-        ASSERT(!m_client);
-        ASSERT(!m_readerThread);
+        DCHECK(!m_client);
+        DCHECK(!m_readerThread);
         m_queue.clear();
     }
 
@@ -350,7 +350,7 @@ public:
 
     void didGetReadable() override
     {
-        ASSERT(m_reader);
+        DCHECK(m_reader);
         Result r = WebDataConsumerHandle::Ok;
         while (true) {
             const void* buffer = nullptr;
