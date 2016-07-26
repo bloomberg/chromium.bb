@@ -195,6 +195,43 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             shell()->web_contents()->GetMainFrame()->GetLastCommittedURL());
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CrossDomainResourceRequestLoadDataWithBaseUrl) {
+  const GURL base_url("foobar://");
+  const GURL history_url("http://historyurl");
+  const std::string data = "<html><body></body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Load data and commit.
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    shell()->LoadDataWithBaseURL(history_url, data, base_url);
+    same_tab_observer.Wait();
+    EXPECT_EQ(1, controller.GetEntryCount());
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+    EXPECT_EQ(history_url, entry->GetVirtualURL());
+    EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+    EXPECT_EQ(data_url, entry->GetURL());
+  }
+
+  // Now make an XHR request and check that the renderer isn't killed.
+  std::string script =
+      "var url = 'http://www.example.com';\n"
+      "var xhr = new XMLHttpRequest();\n"
+      "xhr.open('GET', url);\n"
+      "xhr.send();\n";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  // The renderer may not be killed immediately (if it is indeed killed), so
+  // reload, block and verify its liveness.
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_TRUE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
+}
+
 #if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        LoadDataWithInvalidBaseURL) {

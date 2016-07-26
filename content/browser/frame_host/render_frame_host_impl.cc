@@ -2872,9 +2872,11 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
         GetProcess()->GetID(), common_params.url);
     if (common_params.url.SchemeIs(url::kDataScheme) &&
-        common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
-      // If 'data:' is used, and we have a 'file:' base url, grant access to
-      // local files.
+        !common_params.base_url_for_data_url.is_empty()) {
+      // When there's a base URL specified for the data URL, we also need to
+      // grant access to the base URL. This allows file: and other unexpected
+      // schemes to be accepted at commit time and during CORS checks (e.g., for
+      // font requests).
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
           GetProcess()->GetID(), common_params.base_url_for_data_url);
     }
