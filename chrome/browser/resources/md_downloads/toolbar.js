@@ -111,9 +111,3 @@ cr.define('downloads', function() {
 
   return {Toolbar: Toolbar};
 });
-
-// TODO(dbeam): https://github.com/PolymerElements/iron-dropdown/pull/16/files
-/** @suppress {checkTypes} */
-(function() {
-Polymer.IronDropdownScrollManager.pushScrollLock = function() {};
-})();

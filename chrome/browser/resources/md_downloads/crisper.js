@@ -11760,12 +11760,6 @@ cr.define('downloads', function() {
 
   return {Toolbar: Toolbar};
 });
-
-// TODO(dbeam): https://github.com/PolymerElements/iron-dropdown/pull/16/files
-/** @suppress {checkTypes} */
-(function() {
-Polymer.IronDropdownScrollManager.pushScrollLock = function() {};
-})();
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.

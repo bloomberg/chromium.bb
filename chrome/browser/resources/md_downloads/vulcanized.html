@@ -2636,7 +2636,7 @@ paper-button {
     </div>
     <div id="search">
       <cr-search-field id="search-input" label="$i18n{search}" clear-label="$i18n{clearSearch}" on-search-changed="onSearchChanged_"></cr-search-field>
-      <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
+      <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]" allow-outside-scroll="">
         <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
           <paper-item class="clear-all" on-tap="onClearAllTap_" on-blur="onItemBlur_">
