@@ -10998,14 +10998,14 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
   gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
 
-  // TODO(erikchen): Pass through filter effects. https://crbug.com/581526.
-  ca_layer_filter_effects_.clear();
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
       ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,
       ca_layer_shared_state_->opacity, filter);
+  params.filter_effects.swap(ca_layer_filter_effects_);
+
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");

@@ -69,6 +69,8 @@ struct GL_EXPORT CARendererLayerParams {
     float amount = 0;
     gfx::Point drop_shadow_offset;
     SkColor drop_shadow_color = 0;
+
+    bool operator==(const FilterEffect& rhs) const;
   };
   using FilterEffects = std::vector<FilterEffect>;
 
