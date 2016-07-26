@@ -292,8 +292,10 @@ class Target : public Item {
   const OutputFile& dependency_output_file() const {
     return dependency_output_file_;
   }
-  const OutputFile& runtime_link_output_file() const {
-    return runtime_link_output_file_;
+
+  // The subset of computed_outputs that are considered runtime outputs.
+  const std::vector<OutputFile>& runtime_outputs() const {
+    return runtime_outputs_;
   }
 
   // Computes the set of output files resulting from compiling the given source
@@ -392,7 +394,7 @@ class Target : public Item {
   std::vector<OutputFile> computed_outputs_;
   OutputFile link_output_file_;
   OutputFile dependency_output_file_;
-  OutputFile runtime_link_output_file_;
+  std::vector<OutputFile> runtime_outputs_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

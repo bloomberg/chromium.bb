@@ -257,6 +257,7 @@
         'function_get_target_outputs_unittest.cc',
         'function_process_file_template_unittest.cc',
         'function_rebase_path_unittest.cc',
+        'function_toolchain_unittest.cc',
         'function_write_file_unittest.cc',
         'functions_target_unittest.cc',
         'functions_unittest.cc',

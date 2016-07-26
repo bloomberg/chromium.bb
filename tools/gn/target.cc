@@ -557,6 +557,14 @@ void Target::FillOutputFiles() {
       dependency_output_file_ =
           SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
               this, tool, tool->outputs().list()[0]);
+
+      if (tool->runtime_outputs().list().empty()) {
+        // Default to the first output for the runtime output.
+        runtime_outputs_.push_back(dependency_output_file_);
+      } else {
+        SubstitutionWriter::ApplyListToLinkerAsOutputFile(
+            this, tool, tool->runtime_outputs(), &runtime_outputs_);
+      }
       break;
     case STATIC_LIBRARY:
       // Static libraries both have dependencies and linking going off of the
@@ -588,12 +596,12 @@ void Target::FillOutputFiles() {
                   this, tool, tool->depend_output());
         }
       }
-      if (tool->runtime_link_output().empty()) {
-        runtime_link_output_file_ = link_output_file_;
+      if (tool->runtime_outputs().list().empty()) {
+        // Default to the link output for the runtime output.
+        runtime_outputs_.push_back(link_output_file_);
       } else {
-          runtime_link_output_file_ =
-              SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
-                  this, tool, tool->runtime_link_output());
+        SubstitutionWriter::ApplyListToLinkerAsOutputFile(
+            this, tool, tool->runtime_outputs(), &runtime_outputs_);
       }
       break;
     case UNKNOWN:

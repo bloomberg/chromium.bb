@@ -562,12 +562,14 @@ TEST(Target, LinkAndDepOutputs) {
 
   EXPECT_EQ("./liba.so", target.link_output_file().value());
   EXPECT_EQ("./liba.so.TOC", target.dependency_output_file().value());
-  EXPECT_EQ("./liba.so", target.runtime_link_output_file().value());
+
+  ASSERT_EQ(1u, target.runtime_outputs().size());
+  EXPECT_EQ("./liba.so", target.runtime_outputs()[0].value());
 }
 
-// Tests that runtime_link output works without an explicit link_output for
+// Tests that runtime_outputs works without an explicit link_output for
 // solink tools.
-TEST(Target, RuntimeLinkOuput) {
+TEST(Target, RuntimeOuputs) {
   TestWithScope setup;
   Err err;
 
@@ -577,20 +579,23 @@ TEST(Target, RuntimeLinkOuput) {
   solink_tool->set_output_prefix("");
   solink_tool->set_default_output_extension(".dll");
 
+  // Say the linker makes a DLL< an import library, and a symbol file we want
+  // to treat as a runtime output.
   const char kLibPattern[] =
       "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib";
-  SubstitutionPattern lib_output =
-      SubstitutionPattern::MakeForTest(kLibPattern);
-
   const char kDllPattern[] =
       "{{root_out_dir}}/{{target_output_name}}{{output_extension}}";
-  SubstitutionPattern dll_output =
-      SubstitutionPattern::MakeForTest(kDllPattern);
+  const char kPdbPattern[] =
+      "{{root_out_dir}}/{{target_output_name}}.pdb";
+  SubstitutionPattern pdb_pattern =
+      SubstitutionPattern::MakeForTest(kPdbPattern);
 
   solink_tool->set_outputs(
-      SubstitutionList::MakeForTest(kLibPattern, kDllPattern));
+      SubstitutionList::MakeForTest(kLibPattern, kDllPattern, kPdbPattern));
 
-  solink_tool->set_runtime_link_output(dll_output);
+  // Say we only want the DLL and symbol file treaded as runtime outputs.
+  solink_tool->set_runtime_outputs(SubstitutionList::MakeForTest(
+      kDllPattern, kPdbPattern));
 
   toolchain.SetTool(Toolchain::TYPE_SOLINK, std::move(solink_tool));
 
@@ -601,7 +606,10 @@ TEST(Target, RuntimeLinkOuput) {
 
   EXPECT_EQ("./a.dll.lib", target.link_output_file().value());
   EXPECT_EQ("./a.dll.lib", target.dependency_output_file().value());
-  EXPECT_EQ("./a.dll", target.runtime_link_output_file().value());
+
+  ASSERT_EQ(2u, target.runtime_outputs().size());
+  EXPECT_EQ("./a.dll", target.runtime_outputs()[0].value());
+  EXPECT_EQ("./a.pdb", target.runtime_outputs()[1].value());
 }
 
 // Shared libraries should be inherited across public shared liobrary

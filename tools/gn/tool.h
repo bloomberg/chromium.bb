@@ -14,6 +14,7 @@
 #include "tools/gn/substitution_list.h"
 #include "tools/gn/substitution_pattern.h"
 
+class ParseNode;
 class Pool;
 
 class Tool {
@@ -32,6 +33,9 @@ class Tool {
   Tool();
   ~Tool();
 
+  const ParseNode* defined_from() const { return defined_from_; }
+  void set_defined_from(const ParseNode* df) { defined_from_ = df; }
+
   // Getters/setters ----------------------------------------------------------
   //
   // After the tool has had its attributes set, the caller must call
@@ -41,36 +45,36 @@ class Tool {
   const SubstitutionPattern& command() const {
     return command_;
   }
-  void set_command(const SubstitutionPattern& cmd) {
+  void set_command(SubstitutionPattern cmd) {
     DCHECK(!complete_);
-    command_ = cmd;
+    command_ = std::move(cmd);
   }
 
   // Should include a leading "." if nonempty.
   const std::string& default_output_extension() const {
     return default_output_extension_;
   }
-  void set_default_output_extension(const std::string& ext) {
+  void set_default_output_extension(std::string ext) {
     DCHECK(!complete_);
     DCHECK(ext.empty() || ext[0] == '.');
-    default_output_extension_ = ext;
+    default_output_extension_ = std::move(ext);
   }
 
   const SubstitutionPattern& default_output_dir() const {
     return default_output_dir_;
   }
-  void set_default_output_dir(const SubstitutionPattern& dir) {
+  void set_default_output_dir(SubstitutionPattern dir) {
     DCHECK(!complete_);
-    default_output_dir_ = dir;
+    default_output_dir_ = std::move(dir);
   }
 
   // Dependency file (if supported).
   const SubstitutionPattern& depfile() const {
     return depfile_;
   }
-  void set_depfile(const SubstitutionPattern& df) {
+  void set_depfile(SubstitutionPattern df) {
     DCHECK(!complete_);
-    depfile_ = df;
+    depfile_ = std::move(df);
   }
 
   DepsFormat depsformat() const {
@@ -91,66 +95,66 @@ class Tool {
   const SubstitutionPattern& description() const {
     return description_;
   }
-  void set_description(const SubstitutionPattern& desc) {
+  void set_description(SubstitutionPattern desc) {
     DCHECK(!complete_);
-    description_ = desc;
+    description_ = std::move(desc);
   }
 
   const std::string& lib_switch() const {
     return lib_switch_;
   }
-  void set_lib_switch(const std::string& s) {
+  void set_lib_switch(std::string s) {
     DCHECK(!complete_);
-    lib_switch_ = s;
+    lib_switch_ = std::move(s);
   }
 
   const std::string& lib_dir_switch() const {
     return lib_dir_switch_;
   }
-  void set_lib_dir_switch(const std::string& s) {
+  void set_lib_dir_switch(std::string s) {
     DCHECK(!complete_);
-    lib_dir_switch_ = s;
+    lib_dir_switch_ = std::move(s);
   }
 
   const SubstitutionList& outputs() const {
     return outputs_;
   }
-  void set_outputs(const SubstitutionList& out) {
+  void set_outputs(SubstitutionList out) {
     DCHECK(!complete_);
-    outputs_ = out;
+    outputs_ = std::move(out);
   }
 
   // Should match files in the outputs() if nonempty.
   const SubstitutionPattern& link_output() const {
     return link_output_;
   }
-  void set_link_output(const SubstitutionPattern& link_out) {
+  void set_link_output(SubstitutionPattern link_out) {
     DCHECK(!complete_);
-    link_output_ = link_out;
+    link_output_ = std::move(link_out);
   }
 
   const SubstitutionPattern& depend_output() const {
     return depend_output_;
   }
-  void set_depend_output(const SubstitutionPattern& dep_out) {
+  void set_depend_output(SubstitutionPattern dep_out) {
     DCHECK(!complete_);
-    depend_output_ = dep_out;
+    depend_output_ = std::move(dep_out);
   }
 
-  const SubstitutionPattern& runtime_link_output() const {
-    return runtime_link_output_;
+  const SubstitutionList& runtime_outputs() const {
+    return runtime_outputs_;
   }
-  void set_runtime_link_output(const SubstitutionPattern& run_out) {
+  void set_runtime_outputs(SubstitutionList run_out) {
     DCHECK(!complete_);
-    runtime_link_output_ = run_out;
+    runtime_outputs_ = std::move(run_out);
   }
 
   const std::string& output_prefix() const {
     return output_prefix_;
   }
-  void set_output_prefix(const std::string& s) {
+  void set_output_prefix(std::string s) {
     DCHECK(!complete_);
-    output_prefix_ = s;
+    output_prefix_ = std::move(s);
   }
 
   bool restat() const {
@@ -164,21 +168,21 @@ class Tool {
   const SubstitutionPattern& rspfile() const {
     return rspfile_;
   }
-  void set_rspfile(const SubstitutionPattern& rsp) {
+  void set_rspfile(SubstitutionPattern rsp) {
     DCHECK(!complete_);
-    rspfile_ = rsp;
+    rspfile_ = std::move(rsp);
   }
 
   const SubstitutionPattern& rspfile_content() const {
     return rspfile_content_;
   }
-  void set_rspfile_content(const SubstitutionPattern& content) {
+  void set_rspfile_content(SubstitutionPattern content) {
     DCHECK(!complete_);
-    rspfile_content_ = content;
+    rspfile_content_ = std::move(content);
   }
 
   const LabelPtrPair<Pool>& pool() const { return pool_; }
-  void set_pool(const LabelPtrPair<Pool>& pool) { pool_ = pool; }
+  void set_pool(LabelPtrPair<Pool> pool) { pool_ = std::move(pool); }
 
   // Other functions ----------------------------------------------------------
 
@@ -201,6 +205,8 @@ class Tool {
   bool OnResolved(Err* err);
 
  private:
+  const ParseNode* defined_from_;
+
   SubstitutionPattern command_;
   std::string default_output_extension_;
   SubstitutionPattern default_output_dir_;
@@ -213,7 +219,7 @@ class Tool {
   SubstitutionList outputs_;
   SubstitutionPattern link_output_;
   SubstitutionPattern depend_output_;
-  SubstitutionPattern runtime_link_output_;
+  SubstitutionList runtime_outputs_;
   std::string output_prefix_;
   bool restat_;
   SubstitutionPattern rspfile_;

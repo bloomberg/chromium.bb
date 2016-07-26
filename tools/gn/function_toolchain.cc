@@ -47,7 +47,7 @@ bool ReadBool(Scope* scope,
 bool ReadString(Scope* scope,
                 const char* var,
                 Tool* tool,
-                void (Tool::*set)(const std::string&),
+                void (Tool::*set)(std::string),
                 Err* err) {
   const Value* v = scope->GetValue(var, true);
   if (!v)
@@ -64,9 +64,8 @@ bool ReadString(Scope* scope,
 bool ReadLabel(Scope* scope,
                const char* var,
                Tool* tool,
-               const ParseNode* origin,
                const Label& current_toolchain,
-               void (Tool::*set)(const LabelPtrPair<Pool>&),
+               void (Tool::*set)(LabelPtrPair<Pool>),
                Err* err) {
   const Value* v = scope->GetValue(var, true);
   if (!v)
@@ -78,9 +77,9 @@ bool ReadLabel(Scope* scope,
     return false;
 
   LabelPtrPair<Pool> pair(label);
-  pair.origin = origin;
+  pair.origin = tool->defined_from();
 
-  (tool->*set)(pair);
+  (tool->*set)(std::move(pair));
   return true;
 }
 
@@ -105,7 +104,7 @@ bool ReadPattern(Scope* scope,
                  const char* name,
                  bool (*validate)(SubstitutionType),
                  Tool* tool,
-                 void (Tool::*set)(const SubstitutionPattern&),
+                 void (Tool::*set)(SubstitutionPattern),
                  Err* err) {
   const Value* value = scope->GetValue(name, true);
   if (!value)
@@ -119,7 +118,31 @@ bool ReadPattern(Scope* scope,
   if (!ValidateSubstitutionList(pattern.required_types(), validate, value, err))
     return false;
 
-  (tool->*set)(pattern);
+  (tool->*set)(std::move(pattern));
+  return true;
+}
+
+bool ReadPatternList(Scope* scope,
+                     const char* name,
+                     bool (*validate)(SubstitutionType),
+                     Tool* tool,
+                     void (Tool::*set)(SubstitutionList),
+                     Err* err) {
+  const Value* value = scope->GetValue(name, true);
+  if (!value)
+    return true;  // Not present is fine.
+  if (!value->VerifyTypeIs(Value::LIST, err))
+    return false;
+
+  SubstitutionList list;
+  if (!list.Parse(*value, err))
+    return false;
+
+  // Validate the right kinds of patterns are used.
+  if (!ValidateSubstitutionList(list.required_types(), validate, value, err))
+    return false;
+
+  (tool->*set)(std::move(list));
   return true;
 }
 
@@ -182,35 +205,6 @@ bool ReadDepsFormat(Scope* scope, Tool* tool, Err* err) {
   return true;
 }
 
-bool ReadOutputs(Scope* scope,
-                 const FunctionCallNode* tool_function,
-                 bool (*validate)(SubstitutionType),
-                 Tool* tool,
-                 Err* err) {
-  const Value* value = scope->GetValue("outputs", true);
-  if (!value) {
-    *err = Err(tool_function, "\"outputs\" must be specified for this tool.");
-    return false;
-  }
-
-  SubstitutionList list;
-  if (!list.Parse(*value, err))
-    return false;
-
-  // Validate the right kinds of patterns are used.
-  if (!ValidateSubstitutionList(list.required_types(), validate, value, err))
-    return false;
-
-  // There should always be at least one output.
-  if (list.list().empty()) {
-    *err = Err(*value, "Outputs list is empty.", "I need some outputs.");
-    return false;
-  }
-
-  tool->set_outputs(list);
-  return true;
-}
-
 bool IsCompilerTool(Toolchain::ToolType type) {
   return type == Toolchain::TYPE_CC ||
          type == Toolchain::TYPE_CXX ||
@@ -236,6 +230,68 @@ bool IsPatternInOutputList(const SubstitutionList& output_list,
       return true;
   }
   return false;
+}
+
+
+bool ValidateOutputs(const Tool* tool, Err* err) {
+  if (tool->outputs().list().empty()) {
+    *err = Err(tool->defined_from(),
+               "\"outputs\" must be specified for this tool.");
+    return false;
+  }
+  return true;
+}
+
+// Validates either link_output or depend_output. To generalize to either, pass
+// the associated pattern, and the variable name that should appear in error
+// messages.
+bool ValidateLinkAndDependOutput(const Tool* tool,
+                                 Toolchain::ToolType tool_type,
+                                 const SubstitutionPattern& pattern,
+                                 const char* variable_name,
+                                 Err* err) {
+  if (pattern.empty())
+    return true;  // Empty is always OK.
+
+  // It should only be specified for certain tool types.
+  if (tool_type != Toolchain::TYPE_SOLINK &&
+      tool_type != Toolchain::TYPE_SOLINK_MODULE) {
+    *err = Err(tool->defined_from(),
+        "This tool specifies a " + std::string(variable_name) + ".",
+        "This is only valid for solink and solink_module tools.");
+    return false;
+  }
+
+  if (!IsPatternInOutputList(tool->outputs(), pattern)) {
+    *err = Err(tool->defined_from(), "This tool's link_output is bad.",
+               "It must match one of the outputs.");
+    return false;
+  }
+
+  return true;
+}
+
+bool ValidateRuntimeOutputs(const Tool* tool,
+                            Toolchain::ToolType tool_type,
+                            Err* err) {
+  if (tool->runtime_outputs().list().empty())
+    return true;  // Empty is always OK.
+
+  if (!IsLinkerTool(tool_type)) {
+    *err = Err(tool->defined_from(), "This tool specifies runtime_outputs.",
+        "This is only valid for linker tools (alink doesn't count).");
+    return false;
+  }
+
+  for (const SubstitutionPattern& pattern : tool->runtime_outputs().list()) {
+    if (!IsPatternInOutputList(tool->outputs(), pattern)) {
+      *err = Err(tool->defined_from(), "This tool's runtime_outputs is bad.",
+                 "It must be a subset of the outputs. The bad one is:\n  " +
+                  pattern.AsString());
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -527,9 +583,7 @@ const char kTool_Help[] =
     "\n"
     "        If you specify more than one output for shared library links,\n"
     "        you should consider setting link_output, depend_output, and\n"
-    "        runtime_link_output. Otherwise, the first entry in the\n"
-    "        outputs list should always be the main output which will be\n"
-    "        linked to.\n"
+    "        runtime_outputs.\n"
     "\n"
     "        Example for a compiler tool that produces .obj files:\n"
     "          outputs = [\n"
@@ -555,16 +609,14 @@ const char kTool_Help[] =
     "\n"
     "    link_output  [string with substitutions]\n"
     "    depend_output  [string with substitutions]\n"
-    "    runtime_link_output  [string with substitutions]\n"
     "        Valid for: \"solink\" only (optional)\n"
     "\n"
-    "        These three files specify which of the outputs from the solink\n"
+    "        These two files specify which of the outputs from the solink\n"
     "        tool should be used for linking and dependency tracking. These\n"
     "        should match entries in the \"outputs\". If unspecified, the\n"
     "        first item in the \"outputs\" array will be used for all. See\n"
     "        \"Separate linking and dependencies for shared libraries\"\n"
-    "        below for more. If link_output is set but runtime_link_output\n"
-    "        is not set, runtime_link_output defaults to link_output.\n"
+    "        below for more.\n"
     "\n"
     "        On Windows, where the tools produce a .dll shared library and\n"
     "        a .lib import library, you will want the first two to be the\n"
@@ -641,6 +693,14 @@ const char kTool_Help[] =
     "            rspfile = \"{{output}}.rsp\"\n"
     "            rspfile_content = \"{{inputs}} {{solibs}} {{libs}}\"\n"
     "          }\n"
+    "\n"
+    "    runtime_outputs  [string list with substitutions]\n"
+    "        Valid for: linker tools\n"
+    "\n"
+    "        If specified, this list is the subset of the outputs that should\n"
+    "        be added to runtime deps (see \"gn help runtime_deps\"). By\n"
+    "        default (if runtime_outputs is empty or unspecified), it will be\n"
+    "        the link_output.\n"
     "\n"
     "Expansions for tool variables\n"
     "\n"
@@ -915,6 +975,7 @@ Value RunTool(Scope* scope,
   }
 
   std::unique_ptr<Tool> tool(new Tool);
+  tool->set_defined_from(function);
 
   if (!ReadPattern(&block_scope, "command", subst_validator, tool.get(),
                    &Tool::set_command, err) ||
@@ -932,8 +993,8 @@ Value RunTool(Scope* scope,
                    &Tool::set_link_output, err) ||
       !ReadPattern(&block_scope, "depend_output", subst_validator, tool.get(),
                    &Tool::set_depend_output, err) ||
-      !ReadPattern(&block_scope, "runtime_link_output", subst_validator,
-                   tool.get(), &Tool::set_runtime_link_output, err) ||
+      !ReadPatternList(&block_scope, "runtime_outputs", subst_validator,
+                       tool.get(), &Tool::set_runtime_outputs, err) ||
       !ReadString(&block_scope, "output_prefix", tool.get(),
                   &Tool::set_output_prefix, err) ||
       !ReadPattern(&block_scope, "default_output_dir", subst_validator,
@@ -944,7 +1005,7 @@ Value RunTool(Scope* scope,
                    &Tool::set_rspfile, err) ||
       !ReadPattern(&block_scope, "rspfile_content", subst_validator, tool.get(),
                    &Tool::set_rspfile_content, err) ||
-      !ReadLabel(&block_scope, "pool", tool.get(), function, toolchain->label(),
+      !ReadLabel(&block_scope, "pool", tool.get(), toolchain->label(),
                  &Tool::set_pool, err)) {
     return Value();
   }
@@ -955,58 +1016,26 @@ Value RunTool(Scope* scope,
       tool_type != Toolchain::TYPE_COMPILE_XCASSETS) {
     // All tools should have outputs, except the copy, stamp, copy_bundle_data
     // and compile_xcassets tools that generate their outputs internally.
-    if (!ReadOutputs(&block_scope, function, subst_output_validator,
-                     tool.get(), err))
+    if (!ReadPatternList(&block_scope, "outputs", subst_output_validator,
+                         tool.get(), &Tool::set_outputs, err) ||
+        !ValidateOutputs(tool.get(), err))
       return Value();
   }
+  if (!ValidateRuntimeOutputs(tool.get(), tool_type, err))
+    return Value();
 
-  // Validate that the link_output, depend_output, and runtime_link_output
-  // refer to items in the outputs and aren't defined for irrelevant tool
-  // types.
-  if (!tool->link_output().empty()) {
-    if (tool_type != Toolchain::TYPE_SOLINK &&
-        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
-      *err = Err(function, "This tool specifies a link_output.",
-          "This is only valid for solink and solink_module tools.");
-      return Value();
-    }
-    if (!IsPatternInOutputList(tool->outputs(), tool->link_output())) {
-      *err = Err(function, "This tool's link_output is bad.",
-                 "It must match one of the outputs.");
-      return Value();
-    }
-  }
-  if (!tool->depend_output().empty()) {
-    if (tool_type != Toolchain::TYPE_SOLINK &&
-        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
-      *err = Err(function, "This tool specifies a depend_output.",
-          "This is only valid for solink and solink_module tools.");
-      return Value();
-    }
-    if (!IsPatternInOutputList(tool->outputs(), tool->depend_output())) {
-      *err = Err(function, "This tool's depend_output is bad.",
-                 "It must match one of the outputs.");
-      return Value();
-    }
-  }
+  // Validate link_output and depend_output.
+  if (!ValidateLinkAndDependOutput(tool.get(), tool_type, tool->link_output(),
+                                   "link_output", err))
+    return Value();
+  if (!ValidateLinkAndDependOutput(tool.get(), tool_type, tool->depend_output(),
+                                   "depend_output", err))
+    return Value();
   if ((!tool->link_output().empty() && tool->depend_output().empty()) ||
       (tool->link_output().empty() && !tool->depend_output().empty())) {
     *err = Err(function, "Both link_output and depend_output should either "
         "be specified or they should both be empty.");
     return Value();
-  }
-  if (!tool->runtime_link_output().empty()) {
-    if (tool_type != Toolchain::TYPE_SOLINK &&
-        tool_type != Toolchain::TYPE_SOLINK_MODULE) {
-      *err = Err(function, "This tool specifies a runtime_link_output.",
-          "This is only valid for solink and solink_module tools.");
-      return Value();
-    }
-    if (!IsPatternInOutputList(tool->outputs(), tool->runtime_link_output())) {
-      *err = Err(function, "This tool's runtime_link_output is bad.",
-                 "It must match one of the outputs.");
-      return Value();
-    }
   }
 
   // Make sure there weren't any vars set in this tool that were unused.

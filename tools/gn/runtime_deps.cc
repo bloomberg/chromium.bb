@@ -50,14 +50,6 @@ void AddIfNew(const std::string& str,
   AddIfNew(output_file, source, deps, found_file);
 }
 
-// Returns the output file that the runtime deps considers for the given
-// targets. This is weird only for shared libraries.
-const OutputFile& GetMainOutput(const Target* target) {
-  if (target->output_type() == Target::SHARED_LIBRARY)
-    return target->runtime_link_output_file();
-  return target->dependency_output_file();
-}
-
 // To avoid duplicate traversals of targets, or duplicating output files that
 // might be listed by more than one target, the set of targets and output files
 // that have been found so far is passed. The "value" of the seen_targets map
@@ -86,8 +78,10 @@ void RecursiveCollectRuntimeDeps(const Target* target,
   // loadable modules.
   if (target->output_type() == Target::EXECUTABLE ||
       target->output_type() == Target::LOADABLE_MODULE ||
-      target->output_type() == Target::SHARED_LIBRARY)
-    AddIfNew(GetMainOutput(target), target, deps, found_files);
+      target->output_type() == Target::SHARED_LIBRARY) {
+    for (const auto& runtime_output : target->runtime_outputs())
+      AddIfNew(runtime_output, target, deps, found_files);
+  }
 
   // Add all data files.
   for (const auto& file : target->data())
@@ -173,8 +167,19 @@ bool CollectRuntimeDepsFromFlag(const Builder& builder,
       return false;
     }
 
-    OutputFile output_file =
-        OutputFile(GetMainOutput(target).value() + ".runtime_deps");
+    OutputFile output_file;
+    const char extension[] = ".runtime_deps";
+    if (target->output_type() == Target::SHARED_LIBRARY ||
+        target->output_type() == Target::LOADABLE_MODULE) {
+      // Force the first output for shared-library-type linker outputs since
+      // the dependency output files might not be the main output.
+      CHECK(!target->computed_outputs().empty());
+      output_file =
+          OutputFile(target->computed_outputs()[0].value() + extension);
+    } else {
+      output_file =
+          OutputFile(target->dependency_output_file().value() + extension);
+    }
     files_to_write->push_back(std::make_pair(output_file, target));
   }
   return true;
@@ -262,11 +267,9 @@ const char kRuntimeDeps_Help[] =
     "\n"
     "Multiple outputs\n"
     "\n"
-    "  When a tool produces more than one output, only the first output\n"
-    "  is considered. For example, a shared library target may produce a\n"
-    "  .dll and a .lib file on Windows. Only the .dll file will be considered\n"
-    "  a runtime dependency. This applies only to linker tools. Scripts and\n"
-    "  copy steps with multiple outputs will get all outputs listed.\n";
+    "  Linker tools can specify which of their outputs should be considered\n"
+    "  when computing the runtime deps by setting runtime_outputs. If this\n"
+    "  is unset on the tool, the default will be the first output only.\n";
 
 RuntimeDepsVector ComputeRuntimeDeps(const Target* target) {
   RuntimeDepsVector result;
