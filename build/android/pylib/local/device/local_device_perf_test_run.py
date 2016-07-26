@@ -344,7 +344,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
           str(self._devices[shard_id]), self._env.blacklist):
         logging.warning('Device %s is not active. Will not create shard %s.',
                         str(self._devices[shard_id]), shard_id)
-        return []
+        return None
       s = TestShard(self._env, self._test_instance, self._devices[shard_id],
                     shard_id, self._test_buckets[shard_id],
                     retries=self._env.max_tries, timeout=self._timeout)
