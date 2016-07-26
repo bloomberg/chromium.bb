@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="accessibility-pane-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.showAccessibilityView().then((view) => {
+        InspectorTest.selectNodeAndWaitForAccessibility("inspected")
+                     .then(() => {
+                         editAriaChecked(); });
+                     });
+
+    function editAriaChecked()
+    {
+        InspectorTest.addResult("=== Before attribute modification ===");
+        InspectorTest.dumpSelectedElementAccessibilityNode();
+        var treeElement = InspectorTest.findARIAAttributeTreeElement("aria-checked");
+        treeElement._startEditing();
+        treeElement._prompt._element.textContent = "false";
+        InspectorTest.waitForAccessibilityNodeUpdate().then(() => { editRole(); });
+        treeElement._prompt._element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    }
+
+    function editRole()
+    {
+        InspectorTest.addResult("=== After attribute modification ===");
+        InspectorTest.dumpSelectedElementAccessibilityNode();
+        var treeElement = InspectorTest.findARIAAttributeTreeElement("role");
+        treeElement._startEditing();
+        treeElement._prompt._element.textContent = "radio";
+        InspectorTest.waitForAccessibilityNodeUpdate().then(() => { postRoleChange(); });
+        treeElement._prompt._element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    }
+
+    function postRoleChange()
+    {
+        InspectorTest.addResult("=== After role modification ===");
+        InspectorTest.dumpSelectedElementAccessibilityNode();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that writing an ARIA attribute causes the accessibility node to be updated.
+</p>
+
+<button id="inspected" role="checkbox" aria-checked="true">ARIA checkbox</button>
+
+</body>
+</html>
