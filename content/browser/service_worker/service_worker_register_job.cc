@@ -152,10 +152,10 @@ ServiceWorkerRegisterJob::Internal::Internal() {}
 ServiceWorkerRegisterJob::Internal::~Internal() {}
 
 void ServiceWorkerRegisterJob::set_registration(
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(phase_ == START || phase_ == REGISTER) << phase_;
   DCHECK(!internal_.registration.get());
-  internal_.registration = std::move(registration);
+  internal_.registration = registration;
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() {
@@ -209,7 +209,7 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
 // Throughout this file, comments in quotes are excerpts from the spec.
 void ServiceWorkerRegisterJob::ContinueWithRegistration(
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> existing_registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration) {
   DCHECK_EQ(REGISTRATION_JOB, job_type_);
   if (status != SERVICE_WORKER_ERROR_NOT_FOUND && status != SERVICE_WORKER_OK) {
     Complete(status);
@@ -248,7 +248,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
 
 void ServiceWorkerRegisterJob::ContinueWithUpdate(
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> existing_registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration) {
   DCHECK_EQ(UPDATE_JOB, job_type_);
   if (status != SERVICE_WORKER_OK) {
     Complete(status);
@@ -294,7 +294,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
 }
 
 void ServiceWorkerRegisterJob::ContinueWithUninstallingRegistration(
-    scoped_refptr<ServiceWorkerRegistration> existing_registration,
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
     Complete(status);
@@ -306,7 +306,7 @@ void ServiceWorkerRegisterJob::ContinueWithUninstallingRegistration(
 }
 
 void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
-    scoped_refptr<ServiceWorkerRegistration> existing_registration,
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
     Complete(status);

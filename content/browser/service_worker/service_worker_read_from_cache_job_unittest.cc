@@ -47,7 +47,7 @@ void DidFindRegistration(
     ServiceWorkerStatusCode* status_out,
     const base::Closure& quit_closure,
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   *status_out = status;
   quit_closure.Run();
 }

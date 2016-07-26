@@ -1284,7 +1284,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     bool is_browser_startup_complete,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   scoped_refptr<ServiceWorkerRegistration> protect = registration;
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // When the registration has already been deleted from the storage but its
@@ -1654,7 +1654,7 @@ void ServiceWorkerVersion::MarkIfStale() {
 
 void ServiceWorkerVersion::FoundRegistrationForUpdate(
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (!context_)
     return;
 

@@ -39,7 +39,7 @@ void RunSoon(const tracked_objects::Location& from_here,
 }
 
 void CompleteFindNow(
-    scoped_refptr<ServiceWorkerRegistration> registration,
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
     ServiceWorkerStatusCode status,
     const ServiceWorkerStorage::FindRegistrationCallback& callback) {
   if (registration && registration->is_deleted()) {
@@ -47,16 +47,16 @@ void CompleteFindNow(
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
     return;
   }
-  callback.Run(status, std::move(registration));
+  callback.Run(status, registration);
 }
 
 void CompleteFindSoon(
     const tracked_objects::Location& from_here,
-    scoped_refptr<ServiceWorkerRegistration> registration,
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
     ServiceWorkerStatusCode status,
     const ServiceWorkerStorage::FindRegistrationCallback& callback) {
-  RunSoon(from_here, base::Bind(&CompleteFindNow, std::move(registration),
-                                status, callback));
+  RunSoon(from_here,
+          base::Bind(&CompleteFindNow, registration, status, callback));
 }
 
 const base::FilePath::CharType kDatabaseName[] =
@@ -167,7 +167,9 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
         TRACE_EVENT_SCOPE_THREAD,
         "URL", document_url.spec(),
         "Status", ServiceWorkerStatusToString(status));
-    CompleteFindNow(std::move(installing_registration), status, callback);
+    CompleteFindNow(installing_registration,
+                    status,
+                    callback);
     return;
   }
 
@@ -212,11 +214,10 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    ServiceWorkerStatusCode installing_status =
-        installing_registration ? SERVICE_WORKER_OK
-                                : SERVICE_WORKER_ERROR_NOT_FOUND;
-    CompleteFindSoon(FROM_HERE, std::move(installing_registration),
-                     installing_status, callback);
+    CompleteFindSoon(FROM_HERE, installing_registration,
+                     installing_registration ? SERVICE_WORKER_OK
+                                             : SERVICE_WORKER_ERROR_NOT_FOUND,
+                     callback);
     return;
   }
 
@@ -276,7 +277,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
   if (registration) {
-    CompleteFindNow(std::move(registration), SERVICE_WORKER_OK, callback);
+    CompleteFindNow(registration, SERVICE_WORKER_OK, callback);
     return;
   }
 
@@ -895,7 +896,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     ServiceWorkerStatusCode installing_status =
         installing_registration ? SERVICE_WORKER_OK
                                 : SERVICE_WORKER_ERROR_NOT_FOUND;
-    callback.Run(installing_status, std::move(installing_registration));
+    callback.Run(installing_status, installing_registration);
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument",
@@ -932,10 +933,9 @@ void ServiceWorkerStorage::DidFindRegistrationForPattern(
   if (status == ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    ServiceWorkerStatusCode installing_status =
-        installing_registration ? SERVICE_WORKER_OK
-                                : SERVICE_WORKER_ERROR_NOT_FOUND;
-    callback.Run(installing_status, std::move(installing_registration));
+    callback.Run(installing_registration ? SERVICE_WORKER_OK
+                                         : SERVICE_WORKER_ERROR_NOT_FOUND,
+                 installing_registration);
     return;
   }
 
@@ -973,7 +973,7 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
   DCHECK(!resources.empty());
   scoped_refptr<ServiceWorkerRegistration> registration =
       GetOrCreateRegistration(data, resources);
-  CompleteFindNow(std::move(registration), SERVICE_WORKER_OK, callback);
+  CompleteFindNow(registration, SERVICE_WORKER_OK, callback);
 }
 
 void ServiceWorkerStorage::DidGetRegistrations(
@@ -1012,7 +1012,7 @@ void ServiceWorkerStorage::DidGetRegistrations(
     }
   }
 
-  callback.Run(SERVICE_WORKER_OK, std::move(registrations));
+  callback.Run(SERVICE_WORKER_OK, registrations);
 }
 
 void ServiceWorkerStorage::DidGetRegistrationsInfos(

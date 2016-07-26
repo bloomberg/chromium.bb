@@ -174,7 +174,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
 void ForeignFetchRequestHandler::DidFindRegistration(
     const base::WeakPtr<ServiceWorkerURLRequestJob>& job,
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (!job || job.get() != job_.get()) {
     // No more job to handle, or job changed somehow, so just return.
     return;

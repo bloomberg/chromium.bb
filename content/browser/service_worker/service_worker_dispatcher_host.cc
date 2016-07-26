@@ -1285,7 +1285,7 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
     int provider_id,
     int request_id,
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistration",
       request_id, "Status", status, "Registration ID",

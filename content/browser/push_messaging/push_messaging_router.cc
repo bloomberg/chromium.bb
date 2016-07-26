@@ -73,7 +73,8 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback,
     ServiceWorkerStatusCode service_worker_status,
-    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
+    const scoped_refptr<ServiceWorkerRegistration>&
+        service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): UMA logging.
   if (service_worker_status != SERVICE_WORKER_OK) {

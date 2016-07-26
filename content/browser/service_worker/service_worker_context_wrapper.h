@@ -212,10 +212,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidFindRegistrationForFindReady(
       const FindRegistrationCallback& callback,
       ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   void OnStatusChangedForFindReadyRegistration(
       const FindRegistrationCallback& callback,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
 
@@ -229,7 +229,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
-      scoped_refptr<content::ServiceWorkerRegistration> registration);
+      const scoped_refptr<content::ServiceWorkerRegistration>& registration);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after

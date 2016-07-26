@@ -94,7 +94,8 @@ void DispatchNotificationEventOnRegistration(
     const NotificationOperationCallback& dispatch_event_action,
     const NotificationDispatchCompleteCallback& dispatch_error_callback,
     ServiceWorkerStatusCode service_worker_status,
-    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
+    const scoped_refptr<ServiceWorkerRegistration>&
+        service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(OS_ANDROID)
   // This LOG(INFO) deliberately exists to help track down the cause of

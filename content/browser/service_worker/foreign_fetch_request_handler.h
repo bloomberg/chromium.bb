@@ -96,7 +96,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   void DidFindRegistration(
       const base::WeakPtr<ServiceWorkerURLRequestJob>& job,
       ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // ServiceWorkerURLRequestJob::Delegate implementation:
   void OnPrepareToRestart() override;

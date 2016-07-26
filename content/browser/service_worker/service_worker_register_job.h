@@ -96,7 +96,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
     scoped_refptr<ServiceWorkerVersion> new_version;
   };
 
-  void set_registration(scoped_refptr<ServiceWorkerRegistration> registration);
+  void set_registration(
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   ServiceWorkerRegistration* registration();
   void set_new_version(ServiceWorkerVersion* version);
   ServiceWorkerVersion* new_version();
@@ -106,16 +107,16 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void StartImpl();
   void ContinueWithRegistration(
       ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   void ContinueWithUpdate(
       ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   void RegisterAndContinue();
   void ContinueWithUninstallingRegistration(
-      scoped_refptr<ServiceWorkerRegistration> existing_registration,
+      const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
       ServiceWorkerStatusCode status);
   void ContinueWithRegistrationForSameScriptUrl(
-      scoped_refptr<ServiceWorkerRegistration> existing_registration,
+      const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
       ServiceWorkerStatusCode status);
   void UpdateAndContinue();
   void OnStartWorkerFinished(ServiceWorkerStatusCode status);

@@ -58,10 +58,10 @@ void SaveFoundRegistrationCallback(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration,
     ServiceWorkerStatusCode status,
-    scoped_refptr<ServiceWorkerRegistration> result) {
+    const scoped_refptr<ServiceWorkerRegistration>& result) {
   EXPECT_EQ(expected_status, status);
   *called = true;
-  *registration = std::move(result);
+  *registration = result;
 }
 
 // Creates a callback which both keeps track of if it's been called,

@@ -269,7 +269,7 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
     const std::string& tag,
     bool last_chance,
     ServiceWorkerStatusCode status,
-    scoped_refptr<content::ServiceWorkerRegistration> registration) {
+    const scoped_refptr<content::ServiceWorkerRegistration>& registration) {
   if (status != SERVICE_WORKER_OK || !registration->active_version())
     return;
   BackgroundSyncManager* background_sync_manager =
@@ -279,7 +279,7 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
   // Keep the registration while dispatching the sync event.
   background_sync_manager->EmulateDispatchSyncEvent(
       tag, std::move(version), last_chance,
-      base::Bind(&StatusNoOpKeepingRegistration, std::move(registration)));
+      base::Bind(&StatusNoOpKeepingRegistration, registration));
 }
 
 void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
