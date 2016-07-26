@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +26,7 @@ import org.chromium.chrome.browser.util.MathUtils;
  *   limit.
  *
  * - When peeking, tapping on cards will make them request a scroll up (see
- *   {@link NewTabPageRecyclerView#showCardsFrom(int)}). Tap events in non-peeking state will be
+ *   {@link NewTabPageRecyclerView#scrollToFirstCard(int)}). Tap events in non-peeking state will be
  *   routed through {@link #onCardTapped()} for subclasses to override.
  *
  * - Cards will get some lateral margins when the viewport is sufficiently wide.
@@ -36,6 +37,8 @@ import org.chromium.chrome.browser.util.MathUtils;
  */
 public class CardViewHolder extends NewTabPageViewHolder {
     private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
+
+    private static final Interpolator TRANSITION_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     /** Value used for max peeking card height and padding. */
     private final int mMaxPeekPadding;
@@ -54,13 +57,10 @@ public class CardViewHolder extends NewTabPageViewHolder {
     private final DisplayStyleObserverAdapter mDisplayStyleObserverAdapter;
 
     /**
-     * Current padding value. The padding and the margins are manipulated together to create the
-     * shrunk/peeking appearance of the cards. When the padding is low, the margins are high and
-     * the background is visible around the cards. When the padding is maximum
-     * (see {{@link #mMaxPeekPadding}}), the card spans from an edge of the parent to the other,
-     * and is not peeking anymore.
+     * To what extent the card is "peeking". 0 means the card is not peeking at all and spans the
+     * full width of its parent. 1 means it is fully peeking and will be shown with a margin.
      */
-    private int mPeekPadding;
+    private float mPeekingPercentage;
 
     /**
      * @param layoutId resource id of the layout to inflate and to use as card.
@@ -78,16 +78,14 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
         mMaxPeekPadding = recyclerView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
-        mPeekPadding = mMaxPeekPadding;
 
         mRecyclerView = recyclerView;
 
         itemView.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 if (isPeeking()) {
-                    recyclerView.showCardsFrom(mPeekPadding);
+                    recyclerView.scrollToFirstCard();
                 } else {
                     onCardTapped();
                 }
@@ -107,7 +105,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
     @Override
     public void onBindViewHolder(NewTabPageListItem item) {
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
-        setPeekingStateForPadding(mMaxPeekPadding);
+        setPeekingPercentage(0f);
 
         // Reset the transparency in case a faded card is being recycled.
         itemView.setAlpha(1f);
@@ -131,22 +129,28 @@ public class CardViewHolder extends NewTabPageViewHolder {
     /**
      * Change the width, padding and child opacity of the card to give a smooth transition as the
      * user scrolls.
-     * @param viewportHeight The height of the containing viewport, i.e. the area inside the
-     *          containing view that is available for drawing.
      */
-    public void updatePeek(int viewportHeight) {
-        // The peeking card's resting position is |mMaxPeekPadding| from the bottom of the screen
-        // hence |viewportHeight - mMaxPeekPadding|, and it grows the further it gets from this.
-        // Also, make sure the |padding| is between 0 and |mMaxPeekPadding|.
-        setPeekingStateForPadding(MathUtils.clamp(
-                viewportHeight - mMaxPeekPadding - itemView.getTop(), 0, mMaxPeekPadding));
+    public void updatePeek() {
+        float peekingPercentage;
+        if (canPeek()) {
+            // How much of the (top of the) card is visible?
+            int visible = mRecyclerView.getHeight() - itemView.getTop();
+
+            // If 1 padding unit (|mMaxPeekPadding|) is visible, the card is fully peeking. This is
+            // reduced as the card is scrolled up, until 2 padding units are visible and the card is
+            // not peeking anymore at all. Anything not between 0 and 1 is clamped.
+            peekingPercentage = MathUtils.clamp(2f - (float) visible / mMaxPeekPadding, 0f, 1f);
+        } else {
+            peekingPercentage = 0f;
+        }
+        setPeekingPercentage(peekingPercentage);
     }
 
     /**
      * @return Whether the card is peeking.
      */
     public boolean isPeeking() {
-        return mPeekPadding < mMaxPeekPadding;
+        return mPeekingPercentage > 0f;
     }
 
     /**
@@ -172,18 +176,24 @@ public class CardViewHolder extends NewTabPageViewHolder {
      */
     protected void onCardTapped() {}
 
-    private void setPeekingStateForPadding(int padding) {
-        // TODO(mcwilliams): Change the 'padding' value to a percentage of what the transition
-        // should be which can be used for alpha and bleed.
-        mPeekPadding = canPeek() ? padding : mMaxPeekPadding;
+    private void setPeekingPercentage(float peekingPercentage) {
+        if (mPeekingPercentage == peekingPercentage) return;
+
+        mPeekingPercentage = peekingPercentage;
+
+        int peekPadding = (int) (mMaxPeekPadding
+                * TRANSITION_INTERPOLATOR.getInterpolation(1f - peekingPercentage));
 
         // Modify the padding so as the margin increases, the padding decreases, keeping the card's
         // contents in the same position. The top and bottom remain the same.
         int lateralPadding;
         int lateralMargin;
         if (mDisplayStyleObserverAdapter.getDisplayStyle() != UiConfig.DISPLAY_STYLE_WIDE) {
-            lateralPadding = mPeekPadding;
-            lateralMargin = mMaxPeekPadding - (mPeekPadding + mCards9PatchAdjustment);
+            lateralPadding = peekPadding;
+
+            // Adjust the padding by |mCards9PatchAdjustment| so the card width
+            // is the actual width not including the elevation shadow, so we can have full bleed.
+            lateralMargin = mMaxPeekPadding - (peekPadding + mCards9PatchAdjustment);
         } else {
             lateralPadding = mMaxPeekPadding;
             lateralMargin = mWideMarginSizePixels;
@@ -191,8 +201,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
         itemView.setPadding(lateralPadding, mMaxPeekPadding, lateralPadding, mMaxPeekPadding);
 
-        // This mCards9PatchAdjustment value will be used to adjust the padding so the card width
-        // is the actual width not including the elevation shadow so we can have full bleed.
         RecyclerView.LayoutParams params = getParams();
         params.leftMargin = lateralMargin;
         params.rightMargin = lateralMargin;
@@ -201,7 +209,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
         int itemViewChildCount = ((ViewGroup) itemView).getChildCount();
         for (int i = 0; i < itemViewChildCount; ++i) {
             View snippetChild = ((ViewGroup) itemView).getChildAt(i);
-            snippetChild.setAlpha(mPeekPadding / (float) mMaxPeekPadding);
+            snippetChild.setAlpha(peekPadding / (float) mMaxPeekPadding);
         }
     }
 

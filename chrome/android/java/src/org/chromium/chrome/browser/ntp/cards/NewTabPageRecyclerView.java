@@ -117,12 +117,12 @@ public class NewTabPageRecyclerView extends RecyclerView {
     }
 
     /** Scroll up from the cards' current position and snap to present the first one. */
-    public void showCardsFrom(int cardCurrentScroll) {
+    public void scrollToFirstCard() {
         // Offset the target scroll by the height of the omnibox (the top padding).
         final int targetScroll = mAboveTheFoldView.getHeight() - mAboveTheFoldView.getPaddingTop();
         // If (somehow) the peeking card is tapped while midway through the transition,
         // we need to account for how much we have already scrolled.
-        smoothScrollBy(0, targetScroll - cardCurrentScroll);
+        smoothScrollBy(0, targetScroll - computeVerticalScrollOffset());
     }
 
     /**
@@ -187,7 +187,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         if (firstCard == null) return;
 
         if (firstCard.itemView.isShown()) {
-            firstCard.updatePeek(getHeight());
+            firstCard.updatePeek();
         }
     }
 
@@ -272,7 +272,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * scroll to. It returns whether the view was scrolled.
      */
     private boolean scrollOutOfRegion(int regionStart, int flipPoint, int regionEnd) {
-        // This function is only called when we are using the RecyclerView.
         final int currentScroll = computeVerticalScrollOffset();
 
         if (currentScroll < regionStart || currentScroll > regionEnd) return false;
