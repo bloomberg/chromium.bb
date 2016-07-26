@@ -21,12 +21,12 @@ class Target;
 class EclipseWriter {
  public:
   static bool RunAndWriteFile(const BuildSettings* build_settings,
-                              const Builder* builder,
+                              const Builder& builder,
                               Err* err);
 
  private:
   EclipseWriter(const BuildSettings* build_settings,
-                const Builder* builder,
+                const Builder& builder,
                 std::ostream& out);
   ~EclipseWriter();
 
@@ -47,7 +47,7 @@ class EclipseWriter {
   void WriteCDTSettings();
 
   const BuildSettings* build_settings_;
-  const Builder* builder_;
+  const Builder& builder_;
 
   // The output stream for the settings file.
   std::ostream& out_;

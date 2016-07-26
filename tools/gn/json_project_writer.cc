@@ -82,7 +82,7 @@ bool FilterTargets(const BuildSettings* build_settings,
 }
 
 std::string RenderJSON(const BuildSettings* build_settings,
-                       const Builder* builder,
+                       const Builder& builder,
                        std::vector<const Target*>& all_targets) {
   Label default_toolchain_label;
 
@@ -167,7 +167,7 @@ bool InvokePython(const BuildSettings* build_settings,
 
 bool JSONProjectWriter::RunAndWriteFiles(
     const BuildSettings* build_settings,
-    const Builder* builder,
+    const Builder& builder,
     const std::string& file_name,
     const std::string& exec_script,
     const std::string& exec_script_extra_args,
@@ -182,7 +182,7 @@ bool JSONProjectWriter::RunAndWriteFiles(
 
   base::FilePath output_path = build_settings->GetFullPath(output_file);
 
-  std::vector<const Target*> all_targets = builder->GetAllResolvedTargets();
+  std::vector<const Target*> all_targets = builder.GetAllResolvedTargets();
   std::vector<const Target*> targets;
   if (!FilterTargets(build_settings, all_targets, &targets, dir_filter_string,
                      err)) {

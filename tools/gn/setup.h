@@ -82,7 +82,7 @@ class Setup {
   }
 
   BuildSettings& build_settings() { return build_settings_; }
-  Builder* builder() { return builder_.get(); }
+  Builder& builder() { return builder_; }
   LoaderImpl* loader() { return loader_.get(); }
 
   // Name of the file in the root build directory that contains the build
@@ -128,7 +128,7 @@ class Setup {
 
   BuildSettings build_settings_;
   scoped_refptr<LoaderImpl> loader_;
-  scoped_refptr<Builder> builder_;
+  Builder builder_;
 
   SourceFile root_build_file_;
 

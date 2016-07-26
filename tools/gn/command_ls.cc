@@ -97,10 +97,10 @@ int RunLs(const std::vector<std::string>& args) {
                    target_matches.begin(), target_matches.end());
   } else if (all_toolchains) {
     // List all resolved targets.
-    matches = setup->builder()->GetAllResolvedTargets();
+    matches = setup->builder().GetAllResolvedTargets();
   } else {
     // List all resolved targets in the default toolchain.
-    for (auto* target : setup->builder()->GetAllResolvedTargets()) {
+    for (auto* target : setup->builder().GetAllResolvedTargets()) {
       if (target->settings()->is_default())
         matches.push_back(target);
     }

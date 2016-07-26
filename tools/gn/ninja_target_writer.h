@@ -24,7 +24,14 @@ class NinjaTargetWriter {
   NinjaTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaTargetWriter();
 
-  static void RunAndWriteFile(const Target* target);
+  // Returns the build line to be written to the toolchain build file.
+  //
+  // Some targets have their rules written to separate files, and some can have
+  // their rules coalesced in the main build file. For the coalesced case, this
+  // function will return the rules as a string. For the separate file case,
+  // the separate ninja file will be written and the return string will be the
+  // subninja command to load that file.
+  static std::string RunAndWriteFile(const Target* target);
 
   virtual void Run() = 0;
 

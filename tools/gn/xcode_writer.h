@@ -48,7 +48,7 @@ class XcodeWriter {
                                const std::string& ninja_extra_args,
                                const std::string& dir_filters_string,
                                const BuildSettings* build_settings,
-                               Builder* builder,
+                               const Builder& builder,
                                Err* err);
 
  private:

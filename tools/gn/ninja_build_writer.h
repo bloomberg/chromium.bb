@@ -6,12 +6,13 @@
 #define TOOLS_GN_NINJA_BUILD_WRITER_H_
 
 #include <iosfwd>
-#include <set>
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
 #include "tools/gn/path_output.h"
 
+class Builder;
 class BuildSettings;
 class Err;
 class Pool;
@@ -24,22 +25,24 @@ class Toolchain;
 // build itself.
 class NinjaBuildWriter {
  public:
-  static bool RunAndWriteFile(
+  NinjaBuildWriter(
       const BuildSettings* settings,
-      const std::vector<const Settings*>& all_settings,
+      const std::map<const Settings*, const Toolchain*>& used_toolchains,
       const Toolchain* default_toolchain,
       const std::vector<const Target*>& default_toolchain_targets,
-      const std::vector<const Pool*>& all_pools,
-      Err* err);
-
-  NinjaBuildWriter(const BuildSettings* settings,
-                   const std::vector<const Settings*>& all_settings,
-                   const Toolchain* default_toolchain,
-                   const std::vector<const Target*>& default_toolchain_targets,
-                   const std::vector<const Pool*>& all_pools,
-                   std::ostream& out,
-                   std::ostream& dep_out);
+      std::ostream& out,
+      std::ostream& dep_out);
   ~NinjaBuildWriter();
+
+  // The design of this class is that this static factory function takes the
+  // Builder, extracts the relevant information, and passes it to the class
+  // constructor. The class itself doesn't depend on the Builder at all which
+  // makes testing much easier (tests integrating various functions along with
+  // the Builder get very complicated).
+  static bool RunAndWriteFile(
+      const BuildSettings* settings,
+      const Builder& builder,
+      Err* err);
 
   bool Run(Err* err);
 
@@ -47,15 +50,17 @@ class NinjaBuildWriter {
   void WriteNinjaRules();
   void WriteAllPools();
   void WriteSubninjas();
-  bool WritePhonyAndAllRules(Err* err);
+  bool WritePhonyAndAllRules(
+      Err* err);
 
   void WritePhonyRule(const Target* target, const std::string& phony_name);
 
   const BuildSettings* build_settings_;
-  std::vector<const Settings*> all_settings_;
+
+  const std::map<const Settings*, const Toolchain*>& used_toolchains_;
   const Toolchain* default_toolchain_;
-  std::vector<const Target*> default_toolchain_targets_;
-  std::vector<const Pool*> all_pools_;
+  const std::vector<const Target*>& default_toolchain_targets_;
+
   std::ostream& out_;
   std::ostream& dep_out_;
   PathOutput path_output_;

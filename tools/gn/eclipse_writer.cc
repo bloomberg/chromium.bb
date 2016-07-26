@@ -36,7 +36,7 @@ std::string EscapeForXML(const std::string& unescaped) {
 }  // namespace
 
 EclipseWriter::EclipseWriter(const BuildSettings* build_settings,
-                             const Builder* builder,
+                             const Builder& builder,
                              std::ostream& out)
     : build_settings_(build_settings), builder_(builder), out_(out) {
   languages_.push_back("C++ Source File");
@@ -52,7 +52,7 @@ EclipseWriter::~EclipseWriter() {}
 // static
 bool EclipseWriter::RunAndWriteFile(
     const BuildSettings* build_settings,
-    const Builder* builder,
+    const Builder& builder,
     Err* err) {
   base::FilePath file = build_settings->GetFullPath(build_settings->build_dir())
                             .AppendASCII("eclipse-cdt-settings.xml");
@@ -77,7 +77,7 @@ void EclipseWriter::Run() {
 }
 
 void EclipseWriter::GetAllIncludeDirs() {
-  std::vector<const Target*> targets = builder_->GetAllResolvedTargets();
+  std::vector<const Target*> targets = builder_.GetAllResolvedTargets();
   for (const Target* target : targets) {
     if (!UsesDefaultToolchain(target))
       continue;
@@ -92,7 +92,7 @@ void EclipseWriter::GetAllIncludeDirs() {
 }
 
 void EclipseWriter::GetAllDefines() {
-  std::vector<const Target*> targets = builder_->GetAllResolvedTargets();
+  std::vector<const Target*> targets = builder_.GetAllResolvedTargets();
   for (const Target* target : targets) {
     if (!UsesDefaultToolchain(target))
       continue;
@@ -116,7 +116,7 @@ void EclipseWriter::GetAllDefines() {
 
 bool EclipseWriter::UsesDefaultToolchain(const Target* target) const {
   return target->toolchain()->label() ==
-         builder_->loader()->GetDefaultToolchain();
+         builder_.loader()->GetDefaultToolchain();
 }
 
 void EclipseWriter::WriteCDTSettings() {

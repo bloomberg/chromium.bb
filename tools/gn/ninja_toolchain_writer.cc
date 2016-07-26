@@ -27,11 +27,9 @@ const char kIndent[] = "  ";
 NinjaToolchainWriter::NinjaToolchainWriter(
     const Settings* settings,
     const Toolchain* toolchain,
-    const std::vector<const Target*>& targets,
     std::ostream& out)
     : settings_(settings),
       toolchain_(toolchain),
-      targets_(targets),
       out_(out),
       path_output_(settings_->build_settings()->build_dir(),
                    settings_->build_settings()->root_path_utf8(),
@@ -41,16 +39,27 @@ NinjaToolchainWriter::NinjaToolchainWriter(
 NinjaToolchainWriter::~NinjaToolchainWriter() {
 }
 
-void NinjaToolchainWriter::Run() {
-  WriteRules();
-  WriteSubninjas();
+void NinjaToolchainWriter::Run(
+    const std::vector<NinjaWriter::TargetRulePair>& rules) {
+  std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
+
+  for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
+    Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
+    const Tool* tool = toolchain_->GetTool(tool_type);
+    if (tool)
+      WriteToolRule(tool_type, tool, rule_prefix);
+  }
+  out_ << std::endl;
+
+  for (const auto& pair : rules)
+    out_ << pair.second;
 }
 
 // static
 bool NinjaToolchainWriter::RunAndWriteFile(
     const Settings* settings,
     const Toolchain* toolchain,
-    const std::vector<const Target*>& targets) {
+    const std::vector<NinjaWriter::TargetRulePair>& rules) {
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       GetNinjaFileForToolchain(settings)));
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, FilePathToUTF8(ninja_file));
@@ -63,21 +72,9 @@ bool NinjaToolchainWriter::RunAndWriteFile(
   if (file.fail())
     return false;
 
-  NinjaToolchainWriter gen(settings, toolchain, targets, file);
-  gen.Run();
+  NinjaToolchainWriter gen(settings, toolchain, file);
+  gen.Run(rules);
   return true;
-}
-
-void NinjaToolchainWriter::WriteRules() {
-  std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
-
-  for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
-    Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
-    const Tool* tool = toolchain_->GetTool(tool_type);
-    if (tool)
-      WriteToolRule(tool_type, tool, rule_prefix);
-  }
-  out_ << std::endl;
 }
 
 void NinjaToolchainWriter::WriteToolRule(const Toolchain::ToolType type,
@@ -131,17 +128,5 @@ void NinjaToolchainWriter::WriteRulePattern(const char* name,
     return;
   out_ << kIndent << name << " = ";
   SubstitutionWriter::WriteWithNinjaVariables(pattern, options, out_);
-  out_ << std::endl;
-}
-
-void NinjaToolchainWriter::WriteSubninjas() {
-  // Write subninja commands for each generated target.
-  for (auto* target : targets_) {
-    OutputFile ninja_file(target->settings()->build_settings(),
-                          GetNinjaFileForTarget(target));
-    out_ << "subninja ";
-    path_output_.WriteFile(out_, ninja_file);
-    out_ << std::endl;
-  }
   out_ << std::endl;
 }

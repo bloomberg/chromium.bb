@@ -32,47 +32,57 @@ TEST(NinjaBuildWriter, TwoTargets) {
   target_bar.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target_bar.OnResolved(&err));
 
-  Pool swiming_pool(setup.settings(),
-                    Label(SourceDir("//swiming/"), "pool",
-                          SourceDir("//other/"), "toolchain"));
-  swiming_pool.set_depth(42);
+  // Make a secondary toolchain that references a pool.
+  Label other_toolchain_label(SourceDir("//other/"), "toolchain");
+  Pool other_pool(setup.settings(),
+                    Label(SourceDir("//other/"), "pool",
+                          other_toolchain_label.dir(),
+                          other_toolchain_label.name()));
+  other_pool.set_depth(42);
+  Toolchain other_toolchain(setup.settings(), other_toolchain_label);
+  TestWithScope::SetupToolchain(&other_toolchain);
+  other_toolchain.GetTool(Toolchain::TYPE_LINK)->set_pool(
+      LabelPtrPair<Pool>(&other_pool));
+
+  // Settings to go with the other toolchain.
+  Settings other_settings(setup.build_settings(), "toolchain/");
+  other_settings.set_toolchain_label(other_toolchain_label);
+
+  std::map<const Settings*, const Toolchain*> used_toolchains;
+  used_toolchains[setup.settings()] = setup.toolchain();
+  used_toolchains[&other_settings] = &other_toolchain;
+
+  std::vector<const Target*> targets = { &target_foo, &target_bar };
 
   std::ostringstream ninja_out;
   std::ostringstream depfile_out;
-  std::vector<const Settings*> all_settings = {setup.settings()};
-  std::vector<const Target*> targets = {&target_foo, &target_bar};
-  std::vector<const Pool*> all_pools = {&swiming_pool};
-  NinjaBuildWriter writer(setup.build_settings(), all_settings,
-                          setup.toolchain(), targets, all_pools, ninja_out,
-                          depfile_out);
+
+  NinjaBuildWriter writer(setup.build_settings(), used_toolchains,
+                          setup.toolchain(), targets, ninja_out, depfile_out);
   ASSERT_TRUE(writer.Run(&err));
 
   const char expected_rule_gn[] = "rule gn\n";
   const char expected_build_ninja[] =
       "build build.ninja: gn\n"
       "  generator = 1\n"
-      "  depfile = build.ninja.d\n"
-      "\n";
+      "  depfile = build.ninja.d\n";
   const char expected_link_pool[] =
       "pool link_pool\n"
-      "  depth = 0\n"
-      "\n"
-      "pool other_toolchain_swiming_pool\n"
-      "  depth = 42\n"
-      "\n";
+      "  depth = 0\n";
+  const char expected_other_pool[] =
+      "pool other_toolchain_other_pool\n"
+      "  depth = 42\n";
   const char expected_toolchain[] =
-      "subninja toolchain.ninja\n"
-      "\n";
+      "subninja toolchain.ninja\n";
   const char expected_targets[] =
       "build bar: phony obj/bar/bar.stamp\n"
       "build foo$:bar: phony obj/foo/bar.stamp\n"
-      "build bar$:bar: phony obj/bar/bar.stamp\n"
-      "\n";
+      "build bar$:bar: phony obj/bar/bar.stamp\n";
   const char expected_root_target[] =
       "build all: phony $\n"
       "    obj/foo/bar.stamp $\n"
-      "    obj/bar/bar.stamp\n"
-      "\n"
+      "    obj/bar/bar.stamp\n";
+  const char expected_default[] =
       "default all\n";
   std::string out_str = ninja_out.str();
 #define EXPECT_SNIPPET(expected) \
@@ -82,9 +92,11 @@ TEST(NinjaBuildWriter, TwoTargets) {
   EXPECT_SNIPPET(expected_rule_gn);
   EXPECT_SNIPPET(expected_build_ninja);
   EXPECT_SNIPPET(expected_link_pool);
+  EXPECT_SNIPPET(expected_other_pool);
   EXPECT_SNIPPET(expected_toolchain);
   EXPECT_SNIPPET(expected_targets);
   EXPECT_SNIPPET(expected_root_target);
+  EXPECT_SNIPPET(expected_default);
 #undef EXPECT_SNIPPET
 }
 
@@ -109,14 +121,13 @@ TEST(NinjaBuildWriter, DuplicateOutputs) {
   target_bar.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target_bar.OnResolved(&err));
 
+  std::map<const Settings*, const Toolchain*> used_toolchains;
+  used_toolchains[setup.settings()] = setup.toolchain();
+  std::vector<const Target*> targets = { &target_foo, &target_bar };
   std::ostringstream ninja_out;
   std::ostringstream depfile_out;
-  std::vector<const Settings*> all_settings = { setup.settings() };
-  std::vector<const Target*> targets = { &target_foo, &target_bar };
-  std::vector<const Pool*> all_pools;
-  NinjaBuildWriter writer(setup.build_settings(), all_settings,
-                          setup.toolchain(), targets, all_pools, ninja_out,
-                          depfile_out);
+  NinjaBuildWriter writer(setup.build_settings(), used_toolchains,
+                          setup.toolchain(), targets, ninja_out, depfile_out);
   ASSERT_FALSE(writer.Run(&err));
 
   const char expected_help_test[] =

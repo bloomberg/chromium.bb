@@ -66,6 +66,15 @@ class Toolchain : public Item {
   static const char* kToolCopyBundleData;
   static const char* kToolCompileXCAssets;
 
+  // The Settings of an Item is always the context in which the Item was
+  // defined. For a toolchain this is confusing because this is NOT the
+  // settings object that applies to the things in the toolchain.
+  //
+  // To get the Settings object corresponding to objects loaded in the context
+  // of this toolchain (probably what you want instead), see
+  // Loader::GetToolchainSettings(). Many toolchain objects may be created in a
+  // given build, but only a few might be used, and the Loader is in charge of
+  // this process.
   Toolchain(const Settings* settings, const Label& label);
   ~Toolchain() override;
 

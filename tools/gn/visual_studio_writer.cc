@@ -166,12 +166,12 @@ base::StringPiece FindParentDir(const std::string* path) {
 }
 
 bool FilterTargets(const BuildSettings* build_settings,
-                   Builder* builder,
+                   const Builder& builder,
                    const std::string& dir_filters,
                    std::vector<const Target*>* targets,
                    Err* err) {
   if (dir_filters.empty()) {
-    *targets = builder->GetAllResolvedTargets();
+    *targets = builder.GetAllResolvedTargets();
     return true;
   }
 
@@ -180,7 +180,7 @@ bool FilterTargets(const BuildSettings* build_settings,
                                           err))
     return false;
 
-  commands::FilterTargetsByPatterns(builder->GetAllResolvedTargets(), filters,
+  commands::FilterTargetsByPatterns(builder.GetAllResolvedTargets(), filters,
                                     targets);
 
   std::set<Label> labels;
@@ -269,7 +269,7 @@ VisualStudioWriter::~VisualStudioWriter() {
 
 // static
 bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
-                                          Builder* builder,
+                                          const Builder& builder,
                                           Version version,
                                           const std::string& sln_name,
                                           const std::string& dir_filters,

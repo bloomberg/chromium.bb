@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "tools/gn/builder_record.h"
 #include "tools/gn/label.h"
 #include "tools/gn/label_ptr.h"
@@ -19,11 +18,14 @@ class Err;
 class Loader;
 class ParseNode;
 
-class Builder : public base::RefCountedThreadSafe<Builder> {
+// The builder assembles the dependency tree. It is not threadsafe and runs on
+// the main thread only. See also BuilderRecord.
+class Builder {
  public:
   typedef base::Callback<void(const BuilderRecord*)> ResolvedCallback;
 
   explicit Builder(Loader* loader);
+  ~Builder();
 
   // The resolved callback is called whenever a target has been resolved. This
   // will be executed only on the main thread.
@@ -53,10 +55,6 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
   bool CheckForBadItems(Err* err) const;
 
  private:
-  friend class base::RefCountedThreadSafe<Builder>;
-
-  virtual ~Builder();
-
   bool TargetDefined(BuilderRecord* record, Err* err);
   bool ConfigDefined(BuilderRecord* record, Err* err);
   bool ToolchainDefined(BuilderRecord* record, Err* err);

@@ -39,6 +39,10 @@ class Settings {
 
   const BuildSettings* build_settings() const { return build_settings_; }
 
+  // The actual Toolchain object pointer is not available on the settings
+  // object because it might not be resolved yet. Code running after the
+  // load is complete can ask the Builder for the Toolchain corresponding to
+  // this label.
   const Label& toolchain_label() const { return toolchain_label_; }
   void set_toolchain_label(const Label& l) { toolchain_label_ = l; }
 

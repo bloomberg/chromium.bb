@@ -19,13 +19,13 @@ class BuildSettings;
 class QtCreatorWriter {
  public:
   static bool RunAndWriteFile(const BuildSettings* build_settings,
-                              const Builder* builder,
+                              const Builder& builder,
                               Err* err,
                               const std::string& root_target);
 
  private:
   QtCreatorWriter(const BuildSettings* build_settings,
-                  const Builder* builder,
+                  const Builder& builder,
                   const base::FilePath& project_prefix,
                   const std::string& root_target_name);
   ~QtCreatorWriter();
@@ -41,7 +41,7 @@ class QtCreatorWriter {
                     const std::set<std::string>& items);
 
   const BuildSettings* build_settings_;
-  const Builder* builder_;
+  const Builder& builder_;
   base::FilePath project_prefix_;
   std::string root_target_name_;
   std::set<const Target*> targets_;

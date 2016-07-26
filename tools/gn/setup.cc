@@ -142,11 +142,14 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
 // Called on any thread. Post the item to the builder on the main thread.
 void ItemDefinedCallback(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<Builder> builder,
+    Builder* builder_call_on_main_thread_only,
     std::unique_ptr<Item> item) {
   DCHECK(item);
-  task_runner->PostTask(FROM_HERE, base::Bind(&Builder::ItemDefined, builder,
-                                              base::Passed(&item)));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&Builder::ItemDefined,
+                 base::Unretained(builder_call_on_main_thread_only),
+                 base::Passed(&item)));
 }
 
 void DecrementWorkCount() {
@@ -251,7 +254,7 @@ const char Setup::kBuildArgFileName[] = "args.gn";
 Setup::Setup()
     : build_settings_(),
       loader_(new LoaderImpl(&build_settings_)),
-      builder_(new Builder(loader_.get())),
+      builder_(loader_.get()),
       root_build_file_("//BUILD.gn"),
       check_public_headers_(false),
       dotfile_settings_(&build_settings_, std::string()),
@@ -259,7 +262,7 @@ Setup::Setup()
       fill_arguments_(true) {
   dotfile_settings_.set_toolchain_label(Label());
   build_settings_.set_item_defined_callback(
-      base::Bind(&ItemDefinedCallback, scheduler_.task_runner(), builder_));
+      base::Bind(&ItemDefinedCallback, scheduler_.task_runner(), &builder_));
 
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
   // The scheduler's task runner wasn't created when the Loader was created, so
@@ -329,7 +332,7 @@ void Setup::RunPreMessageLoop() {
 bool Setup::RunPostMessageLoop() {
   Err err;
   if (build_settings_.check_for_bad_items()) {
-    if (!builder_->CheckForBadItems(&err)) {
+    if (!builder_.CheckForBadItems(&err)) {
       err.PrintToStdout();
       return false;
     }
@@ -347,7 +350,7 @@ bool Setup::RunPostMessageLoop() {
   }
 
   if (check_public_headers_) {
-    std::vector<const Target*> all_targets = builder_->GetAllResolvedTargets();
+    std::vector<const Target*> all_targets = builder_.GetAllResolvedTargets();
     std::vector<const Target*> to_check;
     if (check_patterns()) {
       commands::FilterTargetsByPatterns(all_targets, *check_patterns(),

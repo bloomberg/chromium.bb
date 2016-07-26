@@ -39,50 +39,82 @@ NinjaTargetWriter::~NinjaTargetWriter() {
 }
 
 // static
-void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
+std::string NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   const Settings* settings = target->settings();
 
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE,
                     target->label().GetUserVisibleName(false));
   trace.SetToolchain(settings->toolchain_label());
 
-  base::FilePath ninja_file(settings->build_settings()->GetFullPath(
-      GetNinjaFileForTarget(target)));
-
   if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Writing", FilePathToUTF8(ninja_file));
-
-  base::CreateDirectory(ninja_file.DirName());
+    g_scheduler->Log("Computing", target->label().GetUserVisibleName(true));
 
   // It's ridiculously faster to write to a string and then write that to
   // disk in one operation than to use an fstream here.
-  std::stringstream file;
+  std::stringstream rules;
 
-  // Call out to the correct sub-type of writer.
+  // Call out to the correct sub-type of writer. Binary targets need to be
+  // written to separate files for compiler flag scoping, but other target
+  // types can have their rules coalesced.
+  //
+  // In ninja, if a rule uses a variable (like $include_dirs) it will use
+  // the value set by indenting it under the build line or it takes the value
+  // from the end of the invoking scope (otherwise the current file). It does
+  // not copy the value from what it was when the build line was encountered.
+  // To avoid writing lots of duplicate rules for defines and cflags, etc. on
+  // each source file build line, we use separate .ninja files with the shared
+  // variables set at the top.
+  //
+  // Groups and actions don't use this type of flag, they make unique rules
+  // or write variables scoped under each build line. As a result, they don't
+  // need the separate files.
+  bool needs_file_write = false;
   if (target->output_type() == Target::BUNDLE_DATA) {
-    NinjaBundleDataTargetWriter writer(target, file);
+    NinjaBundleDataTargetWriter writer(target, rules);
     writer.Run();
   } else if (target->output_type() == Target::CREATE_BUNDLE) {
-    NinjaCreateBundleTargetWriter writer(target, file);
+    NinjaCreateBundleTargetWriter writer(target, rules);
     writer.Run();
   } else if (target->output_type() == Target::COPY_FILES) {
-    NinjaCopyTargetWriter writer(target, file);
+    NinjaCopyTargetWriter writer(target, rules);
     writer.Run();
   } else if (target->output_type() == Target::ACTION ||
              target->output_type() == Target::ACTION_FOREACH) {
-    NinjaActionTargetWriter writer(target, file);
+    NinjaActionTargetWriter writer(target, rules);
     writer.Run();
   } else if (target->output_type() == Target::GROUP) {
-    NinjaGroupTargetWriter writer(target, file);
+    NinjaGroupTargetWriter writer(target, rules);
     writer.Run();
   } else if (target->IsBinary()) {
-    NinjaBinaryTargetWriter writer(target, file);
+    needs_file_write = true;
+    NinjaBinaryTargetWriter writer(target, rules);
     writer.Run();
   } else {
     CHECK(0) << "Output type of target not handled.";
   }
 
-  WriteFileIfChanged(ninja_file, file.str(), nullptr);
+  if (needs_file_write) {
+    // Write the ninja file.
+    SourceFile ninja_file = GetNinjaFileForTarget(target);
+    base::FilePath full_ninja_file =
+        settings->build_settings()->GetFullPath(ninja_file);
+    base::CreateDirectory(full_ninja_file.DirName());
+    WriteFileIfChanged(full_ninja_file, rules.str(), nullptr);
+
+    EscapeOptions options;
+    options.mode = ESCAPE_NINJA;
+
+    // Return the subninja command to load the rules file.
+    std::string result = "subninja ";
+    result.append(EscapeString(
+        OutputFile(target->settings()->build_settings(), ninja_file).value(),
+                   options, nullptr));
+    result.push_back('\n');
+    return result;
+  }
+
+  // No separate file required, just return the rules.
+  return rules.str();
 }
 
 void NinjaTargetWriter::WriteEscapedSubstitution(SubstitutionType type) {

@@ -5,6 +5,7 @@
 #ifndef TOOLS_GN_NINJA_WRITER_H_
 #define TOOLS_GN_NINJA_WRITER_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,37 +18,34 @@ class Err;
 class Pool;
 class Settings;
 class Target;
+class Toolchain;
 
 class NinjaWriter {
  public:
-  // On failure will populate |err| and will return false.
-  static bool RunAndWriteFiles(const BuildSettings* build_settings,
-                               Builder* builder,
-                               Err* err);
+  // Combines a target and the computed build rule for it.
+  using TargetRulePair = std::pair<const Target*, std::string>;
 
-  // Writes only the toolchain.ninja files, skipping the root buildfile. The
-  // settings for the files written will be added to the vector.
-  static bool RunAndWriteToolchainFiles(
+  // Associates the build rules with each toolchain.
+  using PerToolchainRules =
+      std::map<const Toolchain*, std::vector<TargetRulePair>>;
+
+  // On failure will populate |err| and will return false.  The map contains
+  // the per-toolchain set of rules collected to write to the toolchain build
+  // files.
+  static bool RunAndWriteFiles(
       const BuildSettings* build_settings,
-      Builder* builder,
-      std::vector<const Settings*>* all_settings,
+      const Builder& builder,
+      const PerToolchainRules& per_toolchain_rules,
       Err* err);
 
  private:
-  NinjaWriter(const BuildSettings* build_settings, Builder* builder);
+  NinjaWriter(const Builder& builder);
   ~NinjaWriter();
 
-  bool WriteToolchains(std::vector<const Settings*>* all_settings,
-                       std::vector<const Target*>* default_targets,
-                       std::vector<const Pool*>* all_pools,
+  bool WriteToolchains(const PerToolchainRules& per_toolchain_rules,
                        Err* err);
-  bool WriteRootBuildfiles(const std::vector<const Settings*>& all_settings,
-                           const std::vector<const Target*>& default_targets,
-                           const std::vector<const Pool*>& all_pools,
-                           Err* err);
 
-  const BuildSettings* build_settings_;
-  Builder* builder_;
+  const Builder& builder_;
 
   DISALLOW_COPY_AND_ASSIGN(NinjaWriter);
 };

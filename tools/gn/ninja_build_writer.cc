@@ -18,10 +18,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/builder.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file_manager.h"
+#include "tools/gn/loader.h"
 #include "tools/gn/ninja_utils.h"
 #include "tools/gn/pool.h"
 #include "tools/gn/scheduler.h"
@@ -127,17 +129,15 @@ Err GetDuplicateOutputError(const std::vector<const Target*>& all_targets,
 
 NinjaBuildWriter::NinjaBuildWriter(
     const BuildSettings* build_settings,
-    const std::vector<const Settings*>& all_settings,
+    const std::map<const Settings*, const Toolchain*>& used_toolchains,
     const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets,
-    const std::vector<const Pool*>& all_pools,
     std::ostream& out,
     std::ostream& dep_out)
     : build_settings_(build_settings),
-      all_settings_(all_settings),
+      used_toolchains_(used_toolchains),
       default_toolchain_(default_toolchain),
       default_toolchain_targets_(default_toolchain_targets),
-      all_pools_(all_pools),
       out_(out),
       dep_out_(dep_out),
       path_output_(build_settings->build_dir(),
@@ -157,17 +157,42 @@ bool NinjaBuildWriter::Run(Err* err) {
 // static
 bool NinjaBuildWriter::RunAndWriteFile(
     const BuildSettings* build_settings,
-    const std::vector<const Settings*>& all_settings,
-    const Toolchain* default_toolchain,
-    const std::vector<const Target*>& default_toolchain_targets,
-    const std::vector<const Pool*>& all_pools,
+    const Builder& builder,
     Err* err) {
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
 
+  std::vector<const Target*> all_targets = builder.GetAllResolvedTargets();
+  std::map<const Settings*, const Toolchain*> used_toolchains;
+
+  // Find the default toolchain info.
+  Label default_toolchain_label = builder.loader()->GetDefaultToolchain();
+  const Settings* default_toolchain_settings =
+      builder.loader()->GetToolchainSettings(default_toolchain_label);
+  const Toolchain* default_toolchain =
+      builder.GetToolchain(default_toolchain_label);
+
+  // Most targets will be in the default toolchain. Add it at the beginning and
+  // skip adding it to the list every time in the loop.
+  used_toolchains[default_toolchain_settings] = default_toolchain;
+
+  std::vector<const Target*> default_toolchain_targets;
+  default_toolchain_targets.reserve(all_targets.size());
+  for (const Target* target : all_targets) {
+    if (target->settings() == default_toolchain_settings) {
+      default_toolchain_targets.push_back(target);
+      // The default toolchain will already have been added to the used
+      // settings array.
+    } else if (used_toolchains.find(target->settings()) ==
+               used_toolchains.end()) {
+      used_toolchains[target->settings()] =
+          builder.GetToolchain(target->settings()->toolchain_label());
+    }
+  }
+
   std::stringstream file;
   std::stringstream depfile;
-  NinjaBuildWriter gen(build_settings, all_settings, default_toolchain,
-                       default_toolchain_targets, all_pools, file, depfile);
+  NinjaBuildWriter gen(build_settings, used_toolchains, default_toolchain,
+                       default_toolchain_targets, file, depfile);
   if (!gen.Run(err))
     return false;
 
@@ -233,7 +258,18 @@ void NinjaBuildWriter::WriteAllPools() {
        << "  depth = " << default_toolchain_->concurrent_links() << std::endl
        << std::endl;
 
-  for (const Pool* pool : all_pools_) {
+  // Compute the pools referenced by all tools of all used toolchains.
+  std::set<const Pool*> used_pools;
+  for (const auto& pair : used_toolchains_) {
+    for (int j = Toolchain::TYPE_NONE + 1; j < Toolchain::TYPE_NUMTYPES; j++) {
+      Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(j);
+      const Tool* tool = pair.second->GetTool(tool_type);
+      if (tool && tool->pool().ptr)
+        used_pools.insert(tool->pool().ptr);
+    }
+  }
+
+  for (const Pool* pool : used_pools) {
     std::string pool_name = pool->GetNinjaName(default_toolchain_->label());
     out_ << "pool " << pool_name << std::endl
          << "  depth = " << pool->depth() << std::endl
@@ -242,9 +278,9 @@ void NinjaBuildWriter::WriteAllPools() {
 }
 
 void NinjaBuildWriter::WriteSubninjas() {
-  for (auto* elem : all_settings_) {
+  for (const auto& pair : used_toolchains_) {
     out_ << "subninja ";
-    path_output_.WriteFile(out_, GetNinjaFileForToolchain(elem));
+    path_output_.WriteFile(out_, GetNinjaFileForToolchain(pair.first));
     out_ << std::endl;
   }
   out_ << std::endl;

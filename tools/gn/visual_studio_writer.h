@@ -37,7 +37,7 @@ class VisualStudioWriter {
   // of generated projects. Only matching targets will be included to the
   // solution. On failure will populate |err| and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings,
-                               Builder* builder,
+                               const Builder& builder,
                                Version version,
                                const std::string& sln_name,
                                const std::string& dir_filters,

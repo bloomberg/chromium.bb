@@ -11,14 +11,8 @@
 TEST(NinjaToolchainWriter, WriteToolRule) {
   TestWithScope setup;
 
-  //Target target(setup.settings(), Label(SourceDir("//foo/"), "target"));
-  //target.set_output_type(Target::EXECUTABLE);
-  //target.SetToolchain(setup.toolchain());
-
   std::ostringstream stream;
-
-  NinjaToolchainWriter writer(setup.settings(), setup.toolchain(),
-                              std::vector<const Target*>(), stream);
+  NinjaToolchainWriter writer(setup.settings(), setup.toolchain(), stream);
   writer.WriteToolRule(Toolchain::TYPE_CC,
                        setup.toolchain()->GetTool(Toolchain::TYPE_CC),
                        std::string("prefix_"));

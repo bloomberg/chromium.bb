@@ -56,7 +56,7 @@ bool ResolveTargetsFromCommandLinePattern(
 
   std::vector<LabelPattern> pattern_vector;
   pattern_vector.push_back(pattern);
-  FilterTargetsByPatterns(setup->builder()->GetAllResolvedTargets(),
+  FilterTargetsByPatterns(setup->builder().GetAllResolvedTargets(),
                           pattern_vector, matches);
   return true;
 }
@@ -102,7 +102,7 @@ bool ResolveStringFromCommandLineInput(
     return true;
   }
 
-  const Item* item = setup->builder()->GetItem(label);
+  const Item* item = setup->builder().GetItem(label);
   if (item) {
     if (const Config* as_config = item->AsConfig())
       config_matches->push_back(as_config);
@@ -391,7 +391,7 @@ const Target* ResolveTargetFromCommandLineString(
     return nullptr;
   }
 
-  const Item* item = setup->builder()->GetItem(label);
+  const Item* item = setup->builder().GetItem(label);
   if (!item) {
     Err(Location(), "Label not found.",
         label.GetUserVisibleName(false) + " not found.").PrintToStdout();

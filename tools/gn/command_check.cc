@@ -184,7 +184,7 @@ int RunCheck(const std::vector<std::string>& args) {
     return 1;
 
   std::vector<const Target*> all_targets =
-      setup->builder()->GetAllResolvedTargets();
+      setup->builder().GetAllResolvedTargets();
 
   bool filtered_by_build_config = false;
   std::vector<const Target*> targets_to_check;
