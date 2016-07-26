@@ -96,6 +96,8 @@
         'test/fake_remote_host_info_fetcher.h',
         'test/fake_socket_factory.cc',
         'test/fake_socket_factory.h',
+        'test/frame_generator_util.cc',
+        'test/frame_generator_util.h',
         'test/host_info.cc',
         'test/host_info.h',
         'test/host_list_fetcher.cc',

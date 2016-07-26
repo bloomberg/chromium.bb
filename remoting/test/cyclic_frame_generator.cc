@@ -4,57 +4,13 @@
 
 #include "remoting/test/cyclic_frame_generator.h"
 
-#include "base/base_paths.h"
-#include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/time/default_tick_clock.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "remoting/test/frame_generator_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace remoting {
 namespace test {
-
-namespace {
-
-const int kBarcodeCellWidth = 8;
-const int kBarcodeCellHeight = 8;
-const int kBarcodeBits = 10;
-const int kBarcodeBlackThreshold = 85;
-const int kBarcodeWhiteThreshold = 170;
-
-std::unique_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
-    const base::FilePath& file_path) {
-  std::string file_content;
-  if (!base::ReadFileToString(file_path, &file_content))
-    LOG(FATAL) << "Failed to read " << file_path.MaybeAsASCII()
-               << ". Please run remoting/test/data/download.sh";
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(reinterpret_cast<const uint8_t*>(file_content.data()),
-                        file_content.size(), &bitmap);
-  std::unique_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
-      webrtc::DesktopSize(bitmap.width(), bitmap.height())));
-  bitmap.copyPixelsTo(frame->data(),
-                      frame->stride() * frame->size().height(),
-                      frame->stride());
-  return frame;
-}
-
-void DrawRect(webrtc::DesktopFrame* frame,
-              webrtc::DesktopRect rect,
-              uint32_t color) {
-  for (int y = rect.top(); y < rect.bottom(); ++y) {
-    uint32_t* data = reinterpret_cast<uint32_t*>(
-        frame->data() + y * frame->stride() +
-        rect.left() * webrtc::DesktopFrame::kBytesPerPixel);
-    for (int x = 0; x < rect.width(); ++x) {
-      data[x] = color;
-    }
-  }
-}
-
-}  // namespace
 
 CyclicFrameGenerator::ChangeInfo::ChangeInfo() = default;
 CyclicFrameGenerator::ChangeInfo::ChangeInfo(ChangeType type,
@@ -63,17 +19,9 @@ CyclicFrameGenerator::ChangeInfo::ChangeInfo(ChangeType type,
 
 // static
 scoped_refptr<CyclicFrameGenerator> CyclicFrameGenerator::Create() {
-  base::FilePath test_data_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &test_data_path);
-  test_data_path = test_data_path.Append(FILE_PATH_LITERAL("remoting"));
-  test_data_path = test_data_path.Append(FILE_PATH_LITERAL("test"));
-  test_data_path = test_data_path.Append(FILE_PATH_LITERAL("data"));
-
   std::vector<std::unique_ptr<webrtc::DesktopFrame>> frames;
-  frames.push_back(
-      LoadDesktopFrameFromPng(test_data_path.AppendASCII("test_frame1.png")));
-  frames.push_back(
-      LoadDesktopFrameFromPng(test_data_path.AppendASCII("test_frame2.png")));
+  frames.push_back(LoadDesktopFrameFromPng("test_frame1.png"));
+  frames.push_back(LoadDesktopFrameFromPng("test_frame2.png"));
   return new CyclicFrameGenerator(std::move(frames));
 }
 
@@ -132,23 +80,8 @@ std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     last_frame_type_ = ChangeType::NO_CHANGES;
   }
 
-  // Render barcode.
-  if (draw_barcode_) {
-    uint32_t value = static_cast<uint32_t>(frame_id);
-    CHECK(value < (1U << kBarcodeBits));
-    for (int i = 0; i < kBarcodeBits; ++i) {
-      DrawRect(frame.get(), webrtc::DesktopRect::MakeXYWH(i * kBarcodeCellWidth,
-                                                          0, kBarcodeCellWidth,
-                                                          kBarcodeCellHeight),
-               (value & 1) ? 0xffffffff : 0xff000000);
-      value >>= 1;
-    }
-
-    if (frame_id != last_frame_id_) {
-      frame->mutable_updated_region()->AddRect(webrtc::DesktopRect::MakeXYWH(
-          0, 0, kBarcodeCellWidth * kBarcodeBits, kBarcodeCellHeight));
-    }
-  }
+  if (draw_barcode_)
+    DrawBarcode(frame_id, frame_id != last_frame_id_, frame.get());
 
   last_reference_frame_ = reference_frame;
   last_cursor_state_ = cursor_state;
@@ -160,31 +93,7 @@ std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
 CyclicFrameGenerator::ChangeInfoList CyclicFrameGenerator::GetChangeList(
     webrtc::DesktopFrame* frame) {
   CHECK(draw_barcode_);
-  int frame_id = 0;
-  for (int i = kBarcodeBits - 1; i >= 0; --i) {
-    // Sample barcode in the center of the cell for each bit.
-    int x = i * kBarcodeCellWidth + kBarcodeCellWidth / 2;
-    int y = kBarcodeCellHeight / 2;
-    uint8_t* data = (frame->data() + y * frame->stride() +
-                     x * webrtc::DesktopFrame::kBytesPerPixel);
-    int b = data[0];
-    int g = data[1];
-    int r = data[2];
-    bool bit = 0;
-    if (b > kBarcodeWhiteThreshold && g > kBarcodeWhiteThreshold &&
-        r > kBarcodeWhiteThreshold) {
-      bit = 1;
-    } else if (b < kBarcodeBlackThreshold && g < kBarcodeBlackThreshold &&
-        r < kBarcodeBlackThreshold) {
-      bit = 0;
-    } else {
-      LOG(FATAL) << "Invalid barcode.";
-    }
-    frame_id <<= 1;
-    if (bit)
-      frame_id |= 1;
-  }
-
+  int frame_id = ReadBarcode(*frame);
   CHECK_GE(frame_id, last_identifier_frame_);
 
   ChangeInfoList result;
