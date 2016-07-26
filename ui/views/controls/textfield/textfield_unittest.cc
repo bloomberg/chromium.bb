@@ -378,6 +378,9 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void TearDown() override {
     if (widget_)
       widget_->Close();
+    // Clear kill buffer used for "Yank" text editing command so that no state
+    // persists between tests.
+    TextfieldModel::ClearKillBuffer();
     ViewsTestBase::TearDown();
   }
 
@@ -1838,8 +1841,9 @@ TEST_F(TextfieldTest, UndoRedoTest) {
 }
 
 // Most platforms support Ctrl+Y as an alternative to Ctrl+Shift+Z, but on Mac
-// that is bound to "Show full history", so is not mapped as an editing
-// command. So, on Mac, send Cmd+Shift+Z.
+// Ctrl+Y is bound to "Yank" and Cmd+Y is bound to "Show full history". So, on
+// Mac, Cmd+Shift+Z is sent for the tests above and the Ctrl+Y test below is
+// skipped.
 #if !defined(OS_MACOSX)
 
 // Test that Ctrl+Y works for Redo, as well as Ctrl+Shift+Z.
@@ -1858,6 +1862,56 @@ TEST_F(TextfieldTest, RedoWithCtrlY) {
 }
 
 #endif  // !defined(OS_MACOSX)
+
+// Non-Mac platforms don't have a key binding for Yank. Since this test is only
+// run on Mac, it uses some Mac specific key bindings.
+#if defined(OS_MACOSX)
+
+TEST_F(TextfieldTest, Yank) {
+  InitTextfields(2);
+  textfield_->SetText(ASCIIToUTF16("abcdef"));
+  textfield_->SelectRange(gfx::Range(2, 4));
+
+  // Press Ctrl+Y to yank.
+  SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
+
+  // Initially the kill buffer should be empty. Hence yanking should delete the
+  // selected text.
+  EXPECT_STR_EQ("abef", textfield_->text());
+  EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
+
+  // Press Ctrl+K to delete to end of paragraph. This should place the deleted
+  // text in the kill buffer.
+  SendKeyPress(ui::VKEY_K, ui::EF_CONTROL_DOWN);
+
+  EXPECT_STR_EQ("ab", textfield_->text());
+  EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
+
+  // Yank twice.
+  SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
+  SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
+  EXPECT_STR_EQ("abefef", textfield_->text());
+  EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
+
+  // Verify pressing backspace does not modify the kill buffer.
+  SendKeyEvent(ui::VKEY_BACK);
+  SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
+  EXPECT_STR_EQ("abefeef", textfield_->text());
+  EXPECT_EQ(gfx::Range(7), textfield_->GetSelectedRange());
+
+  // Move focus to next textfield.
+  widget_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(2, GetFocusedView()->id());
+  Textfield* textfield2 = static_cast<Textfield*>(GetFocusedView());
+  EXPECT_TRUE(textfield2->text().empty());
+
+  // Verify yanked text persists across multiple textfields.
+  SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
+  EXPECT_STR_EQ("ef", textfield2->text());
+  EXPECT_EQ(gfx::Range(2), textfield2->GetSelectedRange());
+}
+
+#endif  // defined(OS_MACOSX)
 
 TEST_F(TextfieldTest, CutCopyPaste) {
   InitTextfield();

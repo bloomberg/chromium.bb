@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -263,6 +264,24 @@ gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
   return gfx::Range::InvalidRange();
 }
 
+// Returns a pointer to the kill buffer which holds the text to be inserted on
+// executing yank command. Singleton since it needs to be persisted across
+// multiple textfields.
+// On Mac, the size of the kill ring (no. of buffers) is controlled by
+// NSTextKillRingSize, a text system default. However to keep things simple,
+// the default kill ring size of 1 (i.e. a single buffer) is assumed.
+base::string16* GetKillBuffer() {
+  CR_DEFINE_STATIC_LOCAL(base::string16, kill_buffer, ());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  return &kill_buffer;
+}
+
+// Helper method to set the kill buffer.
+void SetKillBuffer(const base::string16& buffer) {
+  base::string16* kill_buffer = GetKillBuffer();
+  *kill_buffer = buffer;
+}
+
 }  // namespace
 
 using internal::Edit;
@@ -325,13 +344,15 @@ void TextfieldModel::Append(const base::string16& new_text) {
   ClearSelection();
 }
 
-bool TextfieldModel::Delete() {
+bool TextfieldModel::Delete(bool add_to_kill_buffer) {
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
     return true;
   }
   if (HasSelection()) {
+    if (add_to_kill_buffer)
+      SetKillBuffer(GetSelectedText());
     DeleteSelection();
     return true;
   }
@@ -339,28 +360,36 @@ bool TextfieldModel::Delete() {
     size_t cursor_position = GetCursorPosition();
     size_t next_grapheme_index = render_text_->IndexOfAdjacentGrapheme(
         cursor_position, gfx::CURSOR_FORWARD);
-    ExecuteAndRecordDelete(gfx::Range(cursor_position, next_grapheme_index),
-                           true);
+    gfx::Range range_to_delete(cursor_position, next_grapheme_index);
+    if (add_to_kill_buffer)
+      SetKillBuffer(GetTextFromRange(range_to_delete));
+    ExecuteAndRecordDelete(range_to_delete, true);
     return true;
   }
   return false;
 }
 
-bool TextfieldModel::Backspace() {
+bool TextfieldModel::Backspace(bool add_to_kill_buffer) {
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
     return true;
   }
   if (HasSelection()) {
+    if (add_to_kill_buffer)
+      SetKillBuffer(GetSelectedText());
     DeleteSelection();
     return true;
   }
   size_t cursor_position = GetCursorPosition();
   if (cursor_position > 0) {
     // Delete one code point, which may be two UTF-16 words.
-    size_t previous_char = gfx::UTF16OffsetToIndex(text(), cursor_position, -1);
-    ExecuteAndRecordDelete(gfx::Range(cursor_position, previous_char), true);
+    size_t previous_grapheme_index =
+        gfx::UTF16OffsetToIndex(text(), cursor_position, -1);
+    gfx::Range range_to_delete(cursor_position, previous_grapheme_index);
+    if (add_to_kill_buffer)
+      SetKillBuffer(GetTextFromRange(range_to_delete));
+    ExecuteAndRecordDelete(range_to_delete, true);
     return true;
   }
   return false;
@@ -555,6 +584,15 @@ bool TextfieldModel::Transpose() {
 
   InsertTextInternal(transposed_text, false);
   return true;
+}
+
+bool TextfieldModel::Yank() {
+  const base::string16* kill_buffer = GetKillBuffer();
+  if (!kill_buffer->empty() || HasSelection()) {
+    InsertTextInternal(*kill_buffer, false);
+    return true;
+  }
+  return false;
 }
 
 bool TextfieldModel::HasSelection() const {
@@ -808,6 +846,11 @@ void TextfieldModel::ModifyText(size_t delete_from,
     render_text_->SetText(old_text.insert(new_text_insert_at, new_text));
   render_text_->SetCursorPosition(new_cursor_pos);
   // TODO(oshima): Select text that was just undone, like Mac (but not GTK).
+}
+
+// static
+void TextfieldModel::ClearKillBuffer() {
+  SetKillBuffer(base::string16());
 }
 
 }  // namespace views

@@ -1493,6 +1493,8 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::TRANSPOSE:
       return editable && !model_->HasSelection() &&
              !model_->HasCompositionText();
+    case ui::TextEditCommand::YANK:
+      return editable;
     case ui::TextEditCommand::MOVE_DOWN:
     case ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::MOVE_PAGE_DOWN:
@@ -1543,21 +1545,24 @@ base::string16 Textfield::GetSelectionClipboardText() const {
 void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   DestroyTouchSelection();
 
+  bool add_to_kill_buffer = false;
+
   // Some codepaths may bypass GetCommandForKeyEvent, so any selection-dependent
   // modifications of the command should happen here.
-  if (HasSelection()) {
-    switch (command) {
-      case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
-      case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
-      case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
-      case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
-      case ui::TextEditCommand::DELETE_WORD_BACKWARD:
-      case ui::TextEditCommand::DELETE_WORD_FORWARD:
+  switch (command) {
+    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
+    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
+    case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
+    case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
+      add_to_kill_buffer = true;
+    // Fall through.
+    case ui::TextEditCommand::DELETE_WORD_BACKWARD:
+    case ui::TextEditCommand::DELETE_WORD_FORWARD:
+      if (HasSelection())
         command = ui::TextEditCommand::DELETE_FORWARD;
-        break;
-      default:
-        break;
-    }
+      break;
+    default:
+      break;
   }
 
   // We only execute the commands enabled in Textfield::IsTextEditCommandEnabled
@@ -1575,28 +1580,28 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnBeforeUserAction();
   switch (command) {
     case ui::TextEditCommand::DELETE_BACKWARD:
-      text_changed = cursor_changed = model_->Backspace();
+      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_FORWARD:
-      text_changed = cursor_changed = model_->Delete();
+      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
       model_->MoveCursor(gfx::LINE_BREAK, begin, true);
-      text_changed = cursor_changed = model_->Backspace();
+      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       model_->MoveCursor(gfx::LINE_BREAK, end, true);
-      text_changed = cursor_changed = model_->Delete();
+      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
       model_->MoveCursor(gfx::WORD_BREAK, begin, true);
-      text_changed = cursor_changed = model_->Backspace();
+      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
       model_->MoveCursor(gfx::WORD_BREAK, end, true);
-      text_changed = cursor_changed = model_->Delete();
+      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::MOVE_BACKWARD:
       model_->MoveCursor(gfx::CHARACTER_BREAK, begin, false);
@@ -1688,6 +1693,9 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       break;
     case ui::TextEditCommand::TRANSPOSE:
       text_changed = cursor_changed = model_->Transpose();
+      break;
+    case ui::TextEditCommand::YANK:
+      text_changed = cursor_changed = model_->Yank();
       break;
     case ui::TextEditCommand::MOVE_DOWN:
     case ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:

@@ -55,6 +55,14 @@ class TextfieldModelTest : public ViewsTestBase,
         composition_text_confirmed_or_cleared_(false) {
   }
 
+  // ::testing::Test:
+  void TearDown() override {
+    // Clear kill buffer used for "Yank" text editing command so that no state
+    // persists between tests.
+    TextfieldModel::ClearKillBuffer();
+    ViewsTestBase::TearDown();
+  }
+
   void OnCompositionTextConfirmedOrCleared() override {
     composition_text_confirmed_or_cleared_ = true;
   }
@@ -1651,6 +1659,54 @@ TEST_F(TextfieldModelTest, Transpose) {
       EXPECT_EQ(test_case.expected_selection, model.render_text()->selection());
     }
   }
+}
+
+TEST_F(TextfieldModelTest, Yank) {
+  TextfieldModel model(nullptr);
+  model.SetText(base::ASCIIToUTF16("abcde"));
+  model.SelectRange(gfx::Range(1, 3));
+
+  // Delete selection but don't add to kill buffer.
+  model.Delete(false);
+  EXPECT_STR_EQ("ade", model.text());
+
+  // Since the kill buffer is empty, yank should cause no change.
+  model.Yank();
+  EXPECT_STR_EQ("ade", model.text());
+
+  // Delete selection and add to kill buffer.
+  model.SelectRange(gfx::Range(0, 1));
+  model.Delete(true);
+  EXPECT_STR_EQ("de", model.text());
+
+  // Yank twice.
+  model.Yank();
+  model.Yank();
+  EXPECT_STR_EQ("aade", model.text());
+
+  // Ensure an empty deletion does not modify the kill buffer.
+  model.SelectRange(gfx::Range(4));
+  model.Delete(true);
+  model.Yank();
+  EXPECT_STR_EQ("aadea", model.text());
+
+  // Backspace twice but don't add to kill buffer.
+  model.Backspace(false);
+  model.Backspace(false);
+  EXPECT_STR_EQ("aad", model.text());
+
+  // Ensure kill buffer is not modified.
+  model.Yank();
+  EXPECT_STR_EQ("aada", model.text());
+
+  // Backspace twice, each time modifying the kill buffer.
+  model.Backspace(true);
+  model.Backspace(true);
+  EXPECT_STR_EQ("aa", model.text());
+
+  // Ensure yanking inserts the modified kill buffer text.
+  model.Yank();
+  EXPECT_STR_EQ("aad", model.text());
 }
 
 }  // namespace views

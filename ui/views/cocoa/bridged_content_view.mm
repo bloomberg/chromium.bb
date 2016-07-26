@@ -1073,6 +1073,13 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   [self deleteToEndOfLine:sender];
 }
 
+- (void)yank:(id)sender {
+  [self handleAction:ui::TextEditCommand::YANK
+             keyCode:ui::VKEY_Y
+             domCode:ui::DomCode::US_Y
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
 // Cancellation.
 
 - (void)cancelOperation:(id)sender {

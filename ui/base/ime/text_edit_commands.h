@@ -60,6 +60,7 @@ enum class TextEditCommand {
   PASTE,
   SELECT_ALL,
   TRANSPOSE,
+  YANK,
   INSERT_TEXT,
   SET_MARK,
   UNSELECT,

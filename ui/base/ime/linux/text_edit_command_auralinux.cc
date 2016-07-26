@@ -115,6 +115,8 @@ std::string TextEditCommandAuraLinux::GetCommandString() const {
       return "SelectAll";
     case TextEditCommand::TRANSPOSE:
       return "Transpose";
+    case TextEditCommand::YANK:
+      return "Yank";
     case TextEditCommand::INSERT_TEXT:
       return "InsertText";
     case TextEditCommand::SET_MARK:

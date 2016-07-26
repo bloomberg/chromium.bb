@@ -37,6 +37,10 @@ enum MergeType {
 
 }  // namespace internal
 
+namespace test {
+class BridgedNativeWidgetTest;
+}  // namsespace test
+
 // A model that represents text content for a views::Textfield.
 // It supports editing, selection and cursor manipulation.
 class VIEWS_EXPORT TextfieldModel {
@@ -95,15 +99,17 @@ class VIEWS_EXPORT TextfieldModel {
 
   // Deletes the first character after the current cursor position (as if, the
   // the user has pressed delete key in the textfield). Returns true if
-  // the deletion is successful.
+  // the deletion is successful. If |add_to_kill_buffer| is true, the deleted
+  // text is copied to the kill buffer.
   // If there is composition text, it'll be deleted instead.
-  bool Delete();
+  bool Delete(bool add_to_kill_buffer = false);
 
   // Deletes the first character before the current cursor position (as if, the
   // the user has pressed backspace key in the textfield). Returns true if
-  // the removal is successful.
+  // the removal is successful. If |add_to_kill_buffer| is true, the deleted
+  // text is copied to the kill buffer.
   // If there is composition text, it'll be deleted instead.
-  bool Backspace();
+  bool Backspace(bool add_to_kill_buffer = false);
 
   // Cursor related methods.
 
@@ -182,6 +188,10 @@ class VIEWS_EXPORT TextfieldModel {
   // changed.
   bool Transpose();
 
+  // Pastes text from the kill buffer at the current cursor position. Returns
+  // true if the text has changed after yanking.
+  bool Yank();
+
   // Tells if any text is selected, even if the selection is in composition
   // text.
   bool HasSelection() const;
@@ -225,6 +235,9 @@ class VIEWS_EXPORT TextfieldModel {
 
  private:
   friend class internal::Edit;
+  friend class test::BridgedNativeWidgetTest;
+  friend class TextfieldModelTest;
+  friend class TextfieldTest;
 
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_BasicTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_CutCopyPasteTest);
@@ -268,6 +281,9 @@ class VIEWS_EXPORT TextfieldModel {
                   size_t new_cursor_pos);
 
   void ClearComposition();
+
+  // Clears the kill buffer. Used to clear global state between tests.
+  static void ClearKillBuffer();
 
   // The TextfieldModel::Delegate instance should be provided by the owner.
   Delegate* delegate_;

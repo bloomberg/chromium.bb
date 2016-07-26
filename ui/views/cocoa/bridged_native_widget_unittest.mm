@@ -25,6 +25,7 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
@@ -113,7 +114,7 @@ NSArray* const kDeleteActions = @[
 ];
 
 NSArray* const kMiscActions =
-    @[ @"insertText:", @"cancelOperation:", @"transpose:" ];
+    @[ @"insertText:", @"cancelOperation:", @"transpose:", @"yank:" ];
 
 // Empty range shortcut for readibility.
 NSRange EmptyRange() {
@@ -449,6 +450,9 @@ void BridgedNativeWidgetTest::SetUp() {
 }
 
 void BridgedNativeWidgetTest::TearDown() {
+  // Clear kill buffer so that no state persists between tests.
+  TextfieldModel::ClearKillBuffer();
+
   if (bridge())
     bridge()->SetRootView(nullptr);
   view_.reset();
@@ -483,6 +487,12 @@ void BridgedNativeWidgetTest::TestDeleteBeginning(SEL sel) {
   EXPECT_NSEQ_3(@" bar ", GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(5, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
+
+  // Verify yanking inserts the deleted text.
+  PerformCommand(@selector(yank:));
+  EXPECT_NSEQ_3(@" bar baz", GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(8, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
 }
 
 void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
@@ -510,6 +520,12 @@ void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
   // Verify only the selection is deleted so that the state is "|bar".
   EXPECT_NSEQ_3(@"bar", GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+
+  // Verify yanking inserts the deleted text.
+  PerformCommand(@selector(yank:));
+  EXPECT_NSEQ_3(@"foo bar", GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(4, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
 }
 
@@ -897,6 +913,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteBackward) {
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
 
+  // Verify that deletion did not modify the kill buffer.
+  PerformCommand(@selector(yank:));
+  EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+
   // Try to delete again on an empty string.
   PerformCommand(@selector(deleteBackward:));
   EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
@@ -919,6 +941,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteForward) {
   // Should succeed after moving left first.
   PerformCommand(@selector(moveLeft:));
   PerformCommand(@selector(deleteForward:));
+  EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+
+  // Verify that deletion did not modify the kill buffer.
+  PerformCommand(@selector(yank:));
   EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
@@ -951,6 +979,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteWordForward) {
   EXPECT_NSEQ_3(@"o b baz", GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
+
+  // Verify that deletion did not modify the kill buffer.
+  PerformCommand(@selector(yank:));
+  EXPECT_NSEQ_3(@"o b baz", GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
 }
 
 // Test backward word deletion using text input protocol.
@@ -979,6 +1013,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteWordBackward) {
   SetSelectionRange(NSMakeRange(1, 6));
   PerformCommand(@selector(deleteWordBackward:));
   // Verify only the selection is deleted and state is "f|az"
+  EXPECT_NSEQ_3(@"faz", GetExpectedText(), GetActualText());
+  EXPECT_EQ_RANGE_3(NSMakeRange(1, 0), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+
+  // Verify that deletion did not modify the kill buffer.
+  PerformCommand(@selector(yank:));
   EXPECT_NSEQ_3(@"faz", GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(1, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
