@@ -10,7 +10,9 @@
 namespace blink {
 
 class Document;
+class ExecutionContext;
 class LocalFrame;
+class ScriptState;
 class WebTaskRunner;
 
 class TaskRunnerHelper final {
@@ -22,6 +24,8 @@ public:
     static WebTaskRunner* getUnthrottledTaskRunner(Document*);
     static WebTaskRunner* getTimerTaskRunner(Document*);
     static WebTaskRunner* getLoadingTaskRunner(Document*);
+    static WebTaskRunner* getUnthrottledTaskRunner(ExecutionContext*);
+    static WebTaskRunner* getUnthrottledTaskRunner(ScriptState*);
 };
 
 } // namespace blink

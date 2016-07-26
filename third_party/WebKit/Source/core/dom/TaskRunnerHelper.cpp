@@ -43,4 +43,14 @@ WebTaskRunner* TaskRunnerHelper::getLoadingTaskRunner(Document* document)
     return getLoadingTaskRunner(document ? document->frame() : nullptr);
 }
 
+WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(ExecutionContext* executionContext)
+{
+    return getUnthrottledTaskRunner(executionContext && executionContext->isDocument() ? static_cast<Document*>(executionContext) : nullptr);
+}
+
+WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(ScriptState* scriptState)
+{
+    return getUnthrottledTaskRunner(scriptState ? scriptState->getExecutionContext() : nullptr);
+}
+
 } // namespace blink
