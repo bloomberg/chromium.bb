@@ -11,7 +11,6 @@
 namespace blink {
 
 class Element;
-class DOMRectReadOnly;
 class ClientRect;
 class LayoutSize;
 
@@ -24,6 +23,7 @@ public:
     Element* target() const { return m_target; }
     // FIXME(atotic): should return DOMRectReadOnly once https://crbug.com/388780 lands
     ClientRect* contentRect() const { return m_contentRect; }
+    LayoutSize contentSize() const;
 
     DECLARE_VIRTUAL_TRACE();
 
