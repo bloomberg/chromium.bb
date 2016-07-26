@@ -345,10 +345,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // true before calling this.
   void PruneAllButLastCommittedInternal();
 
-  // Returns true if the navigation is likley to be automatic rather than
-  // user-initiated.
-  bool IsLikelyAutoNavigation(base::TimeTicks now);
-
   // Inserts up to |max_index| entries from |source| into this. This does NOT
   // adjust any of the members that reference entries_
   // (last_committed_entry_index_, pending_entry_index_ or
