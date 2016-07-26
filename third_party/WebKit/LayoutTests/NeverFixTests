@@ -172,3 +172,6 @@ crbug.com/551843 [ Linux Win ] fast/text/emoji-font-weight-mac.html [ WontFix ]
 # pass in the virtual test suite version.
 webkit.org/b/49629 compositing/lots-of-img-layers.html [ WontFix ]
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
+
+# Only Windows supports Symbol CMAP encoded fonts.
+crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
