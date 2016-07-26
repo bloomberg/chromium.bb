@@ -20,17 +20,12 @@ v8::Local<v8::Value> toV8(DOMWindow* window, v8::Local<v8::Object> creationConte
 
     if (UNLIKELY(!window))
         return v8::Null(isolate);
-
-    // TODO(yukishiino): There must be no case to return undefined.
-    // 'window', 'frames' and 'self' attributes in Window interface return
-    // the WindowProxy object of the browsing context, which never be undefined.
-    // 'top' and 'parent' attributes return the same when detached.  Therefore,
-    // there must be no case to return undefined.
-    // See http://crbug.com/621730 and http://crbug.com/621577 .
-    if (!window->isCurrentlyDisplayedInFrame())
+    // Initializes environment of a frame, and return the global object
+    // of the frame.
+    Frame * frame = window->frame();
+    if (!frame)
         return v8Undefined();
 
-    Frame* frame = window->frame();
     return frame->windowProxy(DOMWrapperWorld::current(isolate))->globalIfNotDetached();
 }
 
