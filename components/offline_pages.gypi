@@ -89,6 +89,24 @@
       ],
     },
     {
+      # GN: //components/offline_pages/downloads:offline_pages_ui_adapter
+      'target_name': 'offline_pages_ui_adapter',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'offline_pages/downloads/download_ui_adapter.cc',
+        'offline_pages/downloads/download_ui_adapter.h',
+        'offline_pages/downloads/download_ui_item.cc',
+        'offline_pages/downloads/download_ui_item.h',
+      ],
+    },
+    {
       # GN version: //components/offline_pages:test_support
       'target_name': 'offline_pages_test_support',
       'type': 'static_library',

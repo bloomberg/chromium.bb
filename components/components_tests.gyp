@@ -442,6 +442,9 @@
       'offline_pages/background/request_queue_unittest.cc',
       'offline_pages/background/save_page_request_unittest.cc',
     ],
+    'offline_pages_downloads_unittest_sources': [
+      'offline_pages/downloads/download_ui_adapter_unittest.cc',
+    ],
     'offline_pages_unittest_sources': [
       'offline_pages/archive_manager_unittest.cc',
       'offline_pages/client_policy_controller_unittest.cc',
