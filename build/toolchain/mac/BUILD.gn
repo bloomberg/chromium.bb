@@ -92,7 +92,7 @@ template("mac_toolchain") {
         "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
 
-    if (is_ios && additional_toolchains != []) {
+    if (invoker.toolchain_os == "ios" && additional_toolchains != []) {
       # For a fat build, the generation of dSYM needs to be performed after the
       # generation of the fat binaries using "lipo". So disable the generation
       # of the dSYM for intermediate architecture specific binaries.
@@ -114,7 +114,7 @@ template("mac_toolchain") {
 
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (_enable_dsyms) {
-      dsym_switch = " -Wcrl,dsym," + rebase_path(root_out_dir) + " "
+      dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
       _dsym_output =
           "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/"
     } else {

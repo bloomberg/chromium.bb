@@ -210,7 +210,6 @@ template("ios_app_bundle") {
     }
 
     _link_executable = _target_name + "_executable"
-    _executable_path = "$target_out_dir/$_output_name"
 
     if (ios_enable_code_signing) {
       _link_executable_visibility = [ ":$_target_name" ]
@@ -230,8 +229,6 @@ template("ios_app_bundle") {
       _link_executable_visibility = []
       _link_executable_visibility = [ ":$_lipo_executable" ]
       _link_executable = _target_name + "_arch_executable"
-
-      _arch_executable_path = "$target_out_dir/$current_cpu/$_output_name"
     }
 
     executable(_link_executable) {
@@ -253,11 +250,12 @@ template("ios_app_bundle") {
 
       visibility = _link_executable_visibility
 
+      output_name = _output_name
       output_prefix_override = true
       if (_is_fat_build) {
-        output_name = rebase_path(_arch_executable_path, root_build_dir)
+        output_dir = "$target_out_dir/$current_cpu"
       } else {
-        output_name = rebase_path(_executable_path, root_build_dir)
+        output_dir = target_out_dir
       }
 
       if (!defined(libs)) {
@@ -279,10 +277,10 @@ template("ios_app_bundle") {
         visibility = _lipo_executable_visibility
         script = "//build/toolchain/mac/linker_driver.py"
         outputs = [
-          _executable_path,
+          "$target_out_dir/$_output_name",
         ]
         inputs = [
-          _arch_executable_path,
+          "$target_out_dir/$current_cpu/$_output_name",
         ]
         deps = [
           ":$_link_executable",
@@ -993,7 +991,6 @@ template("ios_xctest_test") {
     }
 
     _xctest_loadable_module_target = _xctest_target + "_loadable_module"
-    _xctest_loadable_module_path = "$target_out_dir/$_xctest_output"
 
     if (!ios_enable_code_signing) {
       _xctest_loadable_module_bundle =
@@ -1008,8 +1005,6 @@ template("ios_xctest_test") {
       _xctest_lipo_loadable_module_target = _xctest_loadable_module_target
       _xctest_lipo_loadable_module_visibility =
           _xctest_loadable_module_visibility
-      _arch_xctest_loadable_module_path =
-          "$target_out_dir/$current_cpu/$_xctest_output"
 
       _xctest_loadable_module_visibility = []
       _xctest_loadable_module_visibility =
@@ -1025,12 +1020,12 @@ template("ios_xctest_test") {
       configs += [ "//build/config/ios:xctest_config" ]
 
       if (_is_fat_build) {
-        output_name =
-            rebase_path(_arch_xctest_loadable_module_path, root_out_dir)
+        output_dir = "$target_out_dir/$current_cpu"
       } else {
-        output_name = rebase_path(_xctest_loadable_module_path, root_out_dir)
+        output_dir = target_out_dir
       }
 
+      output_name = _xctest_output
       output_prefix_override = true
       output_extension = ""
     }
@@ -1040,10 +1035,10 @@ template("ios_xctest_test") {
         visibility = _xctest_lipo_loadable_module_visibility
         script = "//build/toolchain/mac/linker_driver.py"
         outputs = [
-          _xctest_loadable_module_path,
+          "$target_out_dir/$_xctest_output",
         ]
         inputs = [
-          _arch_xctest_loadable_module_path,
+          "$target_out_dir/$current_cpu/$_xctest_output",
         ]
         deps = [
           ":$_xctest_loadable_module_target",
