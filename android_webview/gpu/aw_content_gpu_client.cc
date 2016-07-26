@@ -12,9 +12,6 @@ AwContentGpuClient::AwContentGpuClient(
 
 AwContentGpuClient::~AwContentGpuClient() {}
 
-void AwContentGpuClient::ExposeInterfacesToBrowser(
-    shell::InterfaceRegistry* registry) {}
-
 gpu::SyncPointManager* AwContentGpuClient::GetSyncPointManager() {
   return sync_point_manager_callback_.Run();
 }

@@ -28,7 +28,8 @@ class ArcGpuVideoDecodeAccelerator
       public media::VideoDecodeAccelerator::Client,
       public base::SupportsWeakPtr<ArcGpuVideoDecodeAccelerator> {
  public:
-  ArcGpuVideoDecodeAccelerator();
+  explicit ArcGpuVideoDecodeAccelerator(
+      const gpu::GpuPreferences& gpu_preferences);
   ~ArcGpuVideoDecodeAccelerator() override;
 
   // Implementation of the ArcVideoAccelerator interface.

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/gpu/arc_video_accelerator.h"
 #include "components/arc/common/video_accelerator.mojom.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace chromeos {
@@ -24,9 +25,10 @@ namespace arc {
 class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
                            public ArcVideoAccelerator::Client {
  public:
-  explicit GpuArcVideoService(
-      ::arc::mojom::VideoAcceleratorServiceRequest request);
-  GpuArcVideoService();
+  GpuArcVideoService(
+      ::arc::mojom::VideoAcceleratorServiceRequest request,
+      const gpu::GpuPreferences& gpu_preferences);
+  explicit GpuArcVideoService(const gpu::GpuPreferences& gpu_preferences);
   ~GpuArcVideoService() override;
 
   // Connects to VideoAcceleratorServiceClient.
@@ -75,6 +77,7 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
 
   base::ThreadChecker thread_checker_;
 
+  gpu::GpuPreferences gpu_preferences_;
   std::unique_ptr<ArcVideoAccelerator> accelerator_;
   ::arc::mojom::VideoAcceleratorServiceClientPtr client_;
 

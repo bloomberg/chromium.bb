@@ -10,6 +10,7 @@
 
 namespace gpu {
 class SyncPointManager;
+struct GpuPreferences;
 }
 
 namespace shell {
@@ -30,7 +31,9 @@ class CONTENT_EXPORT ContentGpuClient {
 
   // Allows the client to expose interfaces from the GPU process to the browser
   // process via |registry|.
-  virtual void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) {}
+  virtual void ExposeInterfacesToBrowser(
+      shell::InterfaceRegistry* registry,
+      const gpu::GpuPreferences& gpu_preferences) {}
 
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.

@@ -6,6 +6,9 @@ static_library("gpu") {
   deps = [
     "//content/public/common",
     "//content/public/gpu",
+    "//gpu/command_buffer/service",
+    "//media",
+    "//media/gpu",
   ]
 
   sources = [

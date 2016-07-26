@@ -19,7 +19,6 @@ class AwContentGpuClient : public content::ContentGpuClient {
   ~AwContentGpuClient() override;
 
   // content::ContentGpuClient implementation.
-  void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) override;
   gpu::SyncPointManager* GetSyncPointManager() override;
 
  private:

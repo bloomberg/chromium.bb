@@ -3,6 +3,7 @@ include_rules = [
   "+content/public/gpu",
   "+media/video",
   "+media/base/video_frame.h",
+  "+media/gpu",
   "+mojo/edk/embedder",
   "+services/shell/public/cpp",
 ]

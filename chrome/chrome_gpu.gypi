@@ -19,6 +19,7 @@
       'dependencies': [
         '../content/content.gyp:content_common',
         '../content/content.gyp:content_gpu',
+        '../media/media.gyp:media_gpu',
       ],
       'conditions': [
         ['chromeos==1', {

@@ -30,9 +30,6 @@ class GLES2Decoder;
 
 namespace media {
 
-// TODO(posciak): this class should be an implementation of
-// content::GpuVideoDecodeAcceleratorFactory, however that can only be achieved
-// once this is moved out of content/common, see crbug.com/597150 and related.
 class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactoryImpl {
  public:
   ~GpuVideoDecodeAcceleratorFactoryImpl();

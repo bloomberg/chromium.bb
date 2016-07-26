@@ -132,11 +132,15 @@ struct TypeConverter<chromeos::arc::ArcVideoAccelerator::DmabufPlane,
 namespace chromeos {
 namespace arc {
 
-GpuArcVideoService::GpuArcVideoService() : binding_(this) {}
+GpuArcVideoService::GpuArcVideoService(
+    const gpu::GpuPreferences& gpu_preferences)
+    : gpu_preferences_(gpu_preferences), binding_(this) {}
 
 GpuArcVideoService::GpuArcVideoService(
-    ::arc::mojom::VideoAcceleratorServiceRequest request)
-    : accelerator_(new ArcGpuVideoDecodeAccelerator()),
+    ::arc::mojom::VideoAcceleratorServiceRequest request,
+    const gpu::GpuPreferences& gpu_preferences)
+    : gpu_preferences_(gpu_preferences),
+      accelerator_(new ArcGpuVideoDecodeAccelerator(gpu_preferences_)),
       binding_(this, std::move(request)) {
   DVLOG(2) << "GpuArcVideoService connected";
   binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
@@ -154,7 +158,7 @@ void GpuArcVideoService::Connect(
       request.PassMessagePipe(), 0u));
   client_.set_connection_error_handler(base::Bind(&OnConnectionError));
 
-  accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
+  accelerator_.reset(new ArcGpuVideoDecodeAccelerator(gpu_preferences_));
 
   ::arc::mojom::VideoAcceleratorServicePtr service;
   binding_.Bind(GetProxy(&service));

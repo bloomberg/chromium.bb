@@ -58,10 +58,6 @@ class GpuChildThread : public ChildThreadImpl,
  public:
   typedef std::queue<IPC::Message*> DeferredMessages;
 
-  // Returns the one gpu thread for this process. Note that this can only
-  // be accessed when running on the gpu thread itself.
-  static GpuChildThread* current();
-
   GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
