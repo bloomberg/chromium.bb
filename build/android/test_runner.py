@@ -821,6 +821,11 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
+  # pylint: disable=protected-access
+  if os.path.exists(ports._TEST_SERVER_PORT_LOCKFILE):
+    os.unlink(ports._TEST_SERVER_PORT_LOCKFILE)
+  # pylint: enable=protected-access
+
   def get_devices():
     return _GetAttachedDevices(args.blacklist_file, args.test_device,
                                args.enable_device_cache, args.num_retries)
