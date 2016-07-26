@@ -62,7 +62,7 @@ $ out/libfuzzer/$FUZZER_NAME /path/to/repro
 
 ```bash
 # The gclient sync is necessary to pull in instrumented libraries.
-$ GYP_DEFINES='use_prebuilt_instrumented_libraries=1' gclient sync
+$ GYP_DEFINES='msan=1 use_prebuilt_instrumented_libraries=1' gclient sync
 $ gn gen out/libfuzzer '--args=use_libfuzzer=true is_msan=true msan_track_origins=2 use_prebuilt_instrumented_libraries=true enable_nacl=false proprietary_codecs=true'
 $ ninja -C out/libfuzzer $FUZZER_NAME
 $ out/libfuzzer/$FUZZER_NAME /path/to/repro
