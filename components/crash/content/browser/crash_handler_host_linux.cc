@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
@@ -54,6 +55,12 @@ const size_t kControlMsgSize =
     CMSG_SPACE(kNumFDs * sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
 // The length of the regular payload:
 const size_t kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
+
+// Crashing thread might be in "running" state, i.e. after sys_sendmsg() and
+// before sys_read(). Retry 3 times with interval of 100 ms when translating
+// TID.
+const int kNumAttemptsTranslatingTid = 3;
+const int kRetryIntervalTranslatingTidInMs = 100;
 
 // Handles the crash dump and frees the allocated BreakpadInfo struct.
 void CrashDumpTask(CrashHandlerHostLinux* handler,
@@ -280,11 +287,60 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // but we just check syscall_number through arg3.
   base::StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
                       SYS_read, tid_fd, tid_buf_addr);
+
+  FindCrashingThreadAndDump(crashing_pid,
+                            expected_syscall_data,
+                            std::move(crash_context),
+                            std::move(crash_keys),
+#if defined(ADDRESS_SANITIZER)
+                            std::move(asan_report),
+#endif
+                            uptime,
+                            oom_size,
+                            signal_fd.release(),
+                            0);
+}
+
+void CrashHandlerHostLinux::FindCrashingThreadAndDump(
+    pid_t crashing_pid,
+    const std::string& expected_syscall_data,
+    std::unique_ptr<char[]> crash_context,
+    std::unique_ptr<CrashKeyStorage> crash_keys,
+#if defined(ADDRESS_SANITIZER)
+    std::unique_ptr<char[]> asan_report,
+#endif
+    uint64_t uptime,
+    size_t oom_size,
+    int signal_fd,
+    int attempt) {
   bool syscall_supported = false;
-  pid_t crashing_tid =
-      base::FindThreadIDWithSyscall(crashing_pid,
-                                    expected_syscall_data,
-                                    &syscall_supported);
+  pid_t crashing_tid = base::FindThreadIDWithSyscall(
+      crashing_pid, expected_syscall_data, &syscall_supported);
+  ++attempt;
+  if (crashing_tid == -1 && syscall_supported &&
+      attempt <= kNumAttemptsTranslatingTid) {
+    LOG(WARNING) << "Could not translate tid, attempt = " << attempt
+                 << " retry ...";
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CrashHandlerHostLinux::FindCrashingThreadAndDump,
+                 base::Unretained(this),
+                 crashing_pid,
+                 expected_syscall_data,
+                 base::Passed(&crash_context),
+                 base::Passed(&crash_keys),
+#if defined(ADDRESS_SANITIZER)
+                 base::Passed(&asan_report),
+#endif
+                 uptime,
+                 oom_size,
+                 signal_fd,
+                 attempt),
+      base::TimeDelta::FromMilliseconds(kRetryIntervalTranslatingTidInMs));
+    return;
+  }
+
+
   if (crashing_tid == -1) {
     // We didn't find the thread we want. Maybe it didn't reach
     // sys_read() yet or the thread went away.  We'll just take a
@@ -338,7 +394,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
                  base::Passed(&info),
                  base::Passed(&crash_context),
                  crashing_pid,
-                 signal_fd.release()));
+                 signal_fd));
 }
 
 void CrashHandlerHostLinux::WriteDumpFile(std::unique_ptr<BreakpadInfo> info,

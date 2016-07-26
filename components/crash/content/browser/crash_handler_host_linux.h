@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/crash/content/app/breakpad_linux_impl.h"
 
 namespace base {
 class Thread;
@@ -70,6 +71,19 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
   void QueueCrashDumpTask(std::unique_ptr<BreakpadInfo> info, int signal_fd);
+
+  // Find crashing thread (may delay and retry) and dump on IPC thread.
+  void FindCrashingThreadAndDump(pid_t crashing_pid,
+                                 const std::string& expected_syscall_data,
+                                 std::unique_ptr<char[]> crash_context,
+                                 std::unique_ptr<CrashKeyStorage> crash_keys,
+#if defined(ADDRESS_SANITIZER)
+                                 std::unique_ptr<char[]> asan_report,
+#endif
+                                 uint64_t uptime,
+                                 size_t oom_size,
+                                 int signal_fd,
+                                 int attempt);
 
   std::string process_type_;
   base::FilePath dumps_path_;
