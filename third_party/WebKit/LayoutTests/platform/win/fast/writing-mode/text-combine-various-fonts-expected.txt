@@ -74,28 +74,28 @@ layer at (271,0) size 529x600
           LayoutText {#text} at (1,128) size 17x16
             text run at (1,128) width 16: "\x{56FD}"
         LayoutBlockFlow {DIV} at (57,0) size 19x584
-          LayoutText {#text} at (-1,0) size 21x16
-            text run at (-1,0) width 16: "\x{56FD}"
-          LayoutInline {SPAN} at (0,0) size 21x16
-            LayoutTextCombine {#text} at (-1,16) size 21x16
-              text run at (-1,16) width 16: "1"
-          LayoutText {#text} at (-1,32) size 21x16
-            text run at (-1,32) width 16: "\x{56FD}"
-          LayoutInline {SPAN} at (0,0) size 21x16
-            LayoutTextCombine {#text} at (-1,48) size 21x16
-              text run at (-1,48) width 16: "23"
-          LayoutText {#text} at (-1,64) size 21x16
-            text run at (-1,64) width 16: "\x{56FD}"
-          LayoutInline {SPAN} at (0,0) size 21x16
-            LayoutTextCombine {#text} at (-1,80) size 21x16
-              text run at (-1,80) width 16: "2016"
-          LayoutText {#text} at (-1,96) size 21x16
-            text run at (-1,96) width 16: "\x{56FD}"
-          LayoutInline {SPAN} at (0,0) size 21x16
-            LayoutTextCombine {#text} at (-1,112) size 21x16
-              text run at (-1,112) width 16: "45674567"
-          LayoutText {#text} at (-1,128) size 21x16
-            text run at (-1,128) width 16: "\x{56FD}"
+          LayoutText {#text} at (1,0) size 17x16
+            text run at (1,0) width 16: "\x{56FD}"
+          LayoutInline {SPAN} at (0,0) size 17x16
+            LayoutTextCombine {#text} at (1,16) size 17x16
+              text run at (1,16) width 16: "1"
+          LayoutText {#text} at (1,32) size 17x16
+            text run at (1,32) width 16: "\x{56FD}"
+          LayoutInline {SPAN} at (0,0) size 17x16
+            LayoutTextCombine {#text} at (1,48) size 17x16
+              text run at (1,48) width 16: "23"
+          LayoutText {#text} at (1,64) size 17x16
+            text run at (1,64) width 16: "\x{56FD}"
+          LayoutInline {SPAN} at (0,0) size 17x16
+            LayoutTextCombine {#text} at (1,80) size 17x16
+              text run at (1,80) width 16: "2016"
+          LayoutText {#text} at (1,96) size 17x16
+            text run at (1,96) width 16: "\x{56FD}"
+          LayoutInline {SPAN} at (0,0) size 17x16
+            LayoutTextCombine {#text} at (1,112) size 17x16
+              text run at (1,112) width 16: "45674567"
+          LayoutText {#text} at (1,128) size 17x16
+            text run at (1,128) width 16: "\x{56FD}"
         LayoutBlockFlow {DIV} at (76,0) size 19x584
           LayoutText {#text} at (1,0) size 17x16
             text run at (1,0) width 16: "\x{56FD}"
@@ -259,28 +259,28 @@ layer at (271,0) size 529x600
             LayoutText {#text} at (1,256) size 36x32
               text run at (1,256) width 32: "\x{56FD}"
           LayoutBlockFlow {DIV} at (114,0) size 38x584
-            LayoutText {#text} at (-2,0) size 42x32
-              text run at (-2,0) width 32: "\x{56FD}"
-            LayoutInline {SPAN} at (0,0) size 42x32
-              LayoutTextCombine {#text} at (-2,32) size 42x32
-                text run at (-2,32) width 32: "1"
-            LayoutText {#text} at (-2,64) size 42x32
-              text run at (-2,64) width 32: "\x{56FD}"
-            LayoutInline {SPAN} at (0,0) size 42x32
-              LayoutTextCombine {#text} at (-2,96) size 42x32
-                text run at (-2,96) width 32: "23"
-            LayoutText {#text} at (-2,128) size 42x32
-              text run at (-2,128) width 32: "\x{56FD}"
-            LayoutInline {SPAN} at (0,0) size 42x32
-              LayoutTextCombine {#text} at (-2,160) size 42x32
-                text run at (-2,160) width 32: "2016"
-            LayoutText {#text} at (-2,192) size 42x32
-              text run at (-2,192) width 32: "\x{56FD}"
-            LayoutInline {SPAN} at (0,0) size 42x32
-              LayoutTextCombine {#text} at (-2,224) size 42x32
-                text run at (-2,224) width 32: "45674567"
-            LayoutText {#text} at (-2,256) size 42x32
-              text run at (-2,256) width 32: "\x{56FD}"
+            LayoutText {#text} at (1,0) size 36x32
+              text run at (1,0) width 32: "\x{56FD}"
+            LayoutInline {SPAN} at (0,0) size 36x32
+              LayoutTextCombine {#text} at (1,32) size 36x32
+                text run at (1,32) width 32: "1"
+            LayoutText {#text} at (1,64) size 36x32
+              text run at (1,64) width 32: "\x{56FD}"
+            LayoutInline {SPAN} at (0,0) size 36x32
+              LayoutTextCombine {#text} at (1,96) size 36x32
+                text run at (1,96) width 32: "23"
+            LayoutText {#text} at (1,128) size 36x32
+              text run at (1,128) width 32: "\x{56FD}"
+            LayoutInline {SPAN} at (0,0) size 36x32
+              LayoutTextCombine {#text} at (1,160) size 36x32
+                text run at (1,160) width 32: "2016"
+            LayoutText {#text} at (1,192) size 36x32
+              text run at (1,192) width 32: "\x{56FD}"
+            LayoutInline {SPAN} at (0,0) size 36x32
+              LayoutTextCombine {#text} at (1,224) size 36x32
+                text run at (1,224) width 32: "45674567"
+            LayoutText {#text} at (1,256) size 36x32
+              text run at (1,256) width 32: "\x{56FD}"
           LayoutBlockFlow {DIV} at (152,0) size 38x584
             LayoutText {#text} at (1,0) size 36x32
               text run at (1,0) width 32: "\x{56FD}"

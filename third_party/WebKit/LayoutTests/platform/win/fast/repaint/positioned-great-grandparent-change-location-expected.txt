@@ -1,0 +1,65 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 200, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 100, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [100, 200, 41, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [100, 100, 41, 17],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'Target'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

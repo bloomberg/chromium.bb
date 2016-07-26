@@ -10,7 +10,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [8, 17, 199, 19],
+          "rect": [8, 17, 199, 18],
           "reason": "bounds change"
         }
       ]

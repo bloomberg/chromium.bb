@@ -46,12 +46,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [108, 116, 436, 18],
+          "rect": [108, 116, 436, 17],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 16, 436, 18],
+          "rect": [8, 16, 436, 17],
           "reason": "forced by layout"
         }
       ]

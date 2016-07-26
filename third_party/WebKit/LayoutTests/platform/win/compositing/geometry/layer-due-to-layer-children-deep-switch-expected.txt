@@ -56,9 +56,9 @@ Second dump layer tree:
                   "children": [
                     {
                       "name": "LayoutBlockFlow (relative positioned) DIV id='greatgrandchild'",
-                      "position": [99, 0],
-                      "transformOrigin": [126, 50],
-                      "bounds": [251, 100],
+                      "position": [100, 0],
+                      "bounds": [250, 100],
+                      "contentsOpaque": true,
                       "drawsContent": true,
                       "backgroundColor": "#008000",
                       "transform": [

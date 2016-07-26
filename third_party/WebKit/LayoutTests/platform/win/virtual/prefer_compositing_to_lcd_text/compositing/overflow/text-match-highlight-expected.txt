@@ -34,7 +34,7 @@
                   "paintInvalidations": [
                     {
                       "object": "LayoutSVGInlineText #text",
-                      "rect": [10, 72, 228, 18],
+                      "rect": [10, 72, 228, 17],
                       "reason": "full"
                     },
                     {

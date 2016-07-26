@@ -149,43 +149,88 @@
           "reason": "full"
         },
         {
+          "object": "LayoutSVGContainer g id='text1g'",
+          "rect": [0, 0, 8, 2],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 2],
+          "rect": [0, 0, 8, 2],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 2],
+          "rect": [0, 0, 8, 2],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 3, 7, 2],
+          "rect": [0, 0, 8, 2],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [0, 3, 7, 2],
+          "rect": [0, 0, 8, 2],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 3, 7, 2],
+          "rect": [0, 0, 8, 2],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [9, 3, 5, 2],
+          "rect": [0, 3, 7, 3],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 3, 7, 3],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 3, 7, 3],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [0, 3, 7, 3],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [9, 3, 5, 2],
+          "rect": [0, 3, 7, 3],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [9, 3, 5, 3],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [9, 3, 5, 3],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [9, 3, 5, 2],
+          "rect": [9, 3, 5, 3],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 0, 5, 2],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 0, 5, 2],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [0, 0, 5, 2],
           "reason": "bounds change"
         },
         {
@@ -207,11 +252,6 @@
           "object": "LayoutBlockFlow P",
           "rect": [0, 0, 1, 1],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='text1g'",
-          "rect": [0, 0, 1, 1],
-          "reason": "full"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",

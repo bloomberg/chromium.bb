@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (44,0) size 7x27
             chunk 1 text run 1 at (69.40,275.00) startOffset 0 endOffset 1 width 6.60: " "
           LayoutSVGTSpan {tspan} at (0,0) size 53x27
-            LayoutSVGInlineText {#text} at (50,0) size 52x27
+            LayoutSVGInlineText {#text} at (50,0) size 53x27
               chunk 1 text run 1 at (76.00,275.00) startOffset 0 endOffset 4 width 51.60: "word"
           LayoutSVGInlineText {#text} at (102,0) size 7x27
             chunk 1 text run 1 at (127.60,275.00) startOffset 0 endOffset 1 width 6.60: " "

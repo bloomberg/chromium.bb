@@ -15,12 +15,12 @@
         },
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 108, 181, 104],
+          "rect": [112, 108, 181, 103],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [112, 194, 181, 18],
+          "rect": [112, 194, 181, 17],
           "reason": "layoutObject removal"
         },
         {
