@@ -244,9 +244,16 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         // Create an intent to launch a new ChromeTabbedActivity.
         Intent intent = createChromeTabbedActivityIntent(mActivity1);
 
-        // Save state and destroy both activities.
-        mActivity1.saveState();
-        mActivity2.saveState();
+        // Save state.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mActivity1.saveState();
+                mActivity2.saveState();
+            }
+        });
+
+        // Destroy both activities.
         mActivity1.finishAndRemoveTask();
         mActivity2.finishAndRemoveTask();
         CriteriaHelper.pollUiThread(new Criteria() {
