@@ -320,8 +320,12 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
   UIView* CreateMockWebView() {
     id result = [[OCMockObject mockForClass:[WKWebView class]] retain];
 
-    // Called by resetInjectedWebView
-    [[result stub] certificateChain];
+    if (base::ios::IsRunningOnIOS10OrLater()) {
+      [[result stub] serverTrust];
+    } else {
+      [[result stub] certificateChain];
+    }
+
     [[result stub] backForwardList];
     [[[result stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
