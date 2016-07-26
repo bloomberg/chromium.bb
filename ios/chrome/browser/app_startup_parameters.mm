@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,6 @@
 
 @synthesize launchVoiceSearch = _launchVoiceSearch;
 @synthesize launchInIncognito = _launchInIncognito;
-@synthesize launchQRScanner = _launchQRScanner;
 
 - (const GURL&)externalURL {
   return _externalURL;
@@ -52,6 +52,16 @@
   return [NSString stringWithFormat:@"ExternalURL: %s \nXCallbackParams: %@",
                                     _externalURL.spec().c_str(),
                                     _xCallbackParameters.get()];
+}
+
+#pragma mark Property implementation.
+
+- (BOOL)launchQRScanner {
+  return _launchQRScanner && experimental_flags::IsQRCodeReaderEnabled();
+}
+
+- (void)setLaunchQRScanner:(BOOL)launch {
+  _launchQRScanner = launch;
 }
 
 @end
