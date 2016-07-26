@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdate) {
   cmdline.AppendSwitchASCII("--component-updater", "fast-update");
   config.reset(new ConfiguratorImpl(&cmdline, nullptr, false));
   CHECK_EQ(10, config->InitialDelay());
-  CHECK_EQ(kDelayOneMinute, config->NextCheckDelay());
+  CHECK_EQ(6 * kDelayOneHour, config->NextCheckDelay());
   CHECK_EQ(1, config->StepDelay());
   CHECK_EQ(2, config->OnDemandDelay());
   CHECK_EQ(10, config->UpdateDelay());

@@ -33,8 +33,8 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
 
   const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
 
-  ASSERT_EQ(10, config->InitialDelay());
-  CHECK_EQ(60, config->NextCheckDelay());
+  CHECK_EQ(10, config->InitialDelay());
+  CHECK_EQ(6 * 60 * 60, config->NextCheckDelay());
   CHECK_EQ(1, config->StepDelay());
   CHECK_EQ(2, config->OnDemandDelay());
   CHECK_EQ(10, config->UpdateDelay());
