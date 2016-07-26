@@ -61,7 +61,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     // image smoothing
     [ImplementedAs=imageSmoothingEnabled, DeprecateAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled; // (default True)
-    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles (see also the CanvasDrawingStyles interface)
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

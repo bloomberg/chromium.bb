@@ -437,6 +437,7 @@ interface CanvasRenderingContext2D
     getter globalAlpha
     getter globalCompositeOperation
     getter imageSmoothingEnabled
+    getter imageSmoothingQuality
     getter lineCap
     getter lineDashOffset
     getter lineJoin
@@ -497,6 +498,7 @@ interface CanvasRenderingContext2D
     setter globalAlpha
     setter globalCompositeOperation
     setter imageSmoothingEnabled
+    setter imageSmoothingQuality
     setter lineCap
     setter lineDashOffset
     setter lineJoin
