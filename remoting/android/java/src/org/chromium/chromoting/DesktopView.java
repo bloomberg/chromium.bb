@@ -225,10 +225,12 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
 
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, Point pos) {
-        if (feedbackToShow != InputFeedbackType.NONE) {
-            FeedbackAnimator.startAnimation(this, pos, feedbackToShow);
-            requestRepaint();
+        float radius = getFeedbackRadius(feedbackToShow);
+        if (radius <= 0.0f) {
+            return;
         }
+        FeedbackAnimator.startAnimation(this, pos, radius);
+        requestRepaint();
     }
 
     @Override

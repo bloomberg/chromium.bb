@@ -5,4 +5,6 @@
 
 <resources>
     <dimen name="toolbar_content_inset_start">72dp</dimen>
+    <dimen name="feedback_animation_radius_small">15dp</dimen>
+    <dimen name="feedback_animation_radius_large">45dp</dimen>
 </resources>

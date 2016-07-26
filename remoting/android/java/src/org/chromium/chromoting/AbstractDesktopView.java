@@ -38,6 +38,9 @@ public abstract class AbstractDesktopView extends SurfaceView {
     protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
 
+    protected final int mSmallFeedbackPixelRadius;
+    protected final int mLargeFeedbackPixelRadius;
+
     /** The parent Desktop activity. */
     private final Desktop mDesktop;
 
@@ -54,6 +57,12 @@ public abstract class AbstractDesktopView extends SurfaceView {
 
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
         setFocusableInTouchMode(true);
+
+        mSmallFeedbackPixelRadius = getResources()
+                .getDimensionPixelSize(R.dimen.feedback_animation_radius_small);
+
+        mLargeFeedbackPixelRadius = getResources()
+                .getDimensionPixelSize(R.dimen.feedback_animation_radius_large);
     }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
@@ -109,6 +118,25 @@ public abstract class AbstractDesktopView extends SurfaceView {
         TouchEventParameter parameter = new TouchEventParameter(event);
         mOnTouch.raise(parameter);
         return parameter.handled;
+    }
+
+    /**
+     * Returns the radius of the given feedback type.
+     * 0.0f will be returned if no feedback should be shown.
+     */
+    protected final float getFeedbackRadius(InputFeedbackType feedbackToShow) {
+        switch (feedbackToShow) {
+            case NONE:
+                return 0.0f;
+            case SMALL_ANIMATION:
+                return mSmallFeedbackPixelRadius;
+            case LARGE_ANIMATION:
+                return mLargeFeedbackPixelRadius;
+            default:
+                // Unreachable, but required by Google Java style and findbugs.
+                assert false : "Unreached";
+                return 0.0f;
+        }
     }
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */

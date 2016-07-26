@@ -36,28 +36,12 @@ public final class FeedbackAnimator
     /** Begins a new animation sequence at position (|pos|). */
     public static void startAnimation(DesktopView view,
                                       Point pos,
-                                      DesktopView.InputFeedbackType feedbackType) {
-        if (feedbackType == DesktopView.InputFeedbackType.NONE) {
+                                      float feedbackRadius) {
+        if (feedbackRadius <= 0.0f) {
             return;
         }
 
-        view.onPaint().addSelfRemovable(new FeedbackAnimator(
-                getInputFeedbackSizeInPixels(feedbackType), pos));
-    }
-
-    private static float getInputFeedbackSizeInPixels(DesktopView.InputFeedbackType feedbackType) {
-        switch (feedbackType) {
-            case SMALL_ANIMATION:
-                return 40.0f;
-
-            case LARGE_ANIMATION:
-                return 160.0f;
-
-            default:
-                // Unreachable, but required by Google Java style and findbugs.
-                assert false : "Unreached";
-                return 0.0f;
-        }
+        view.onPaint().addSelfRemovable(new FeedbackAnimator(feedbackRadius, pos));
     }
 
     @Override
