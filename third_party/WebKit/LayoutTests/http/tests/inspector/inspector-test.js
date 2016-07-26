@@ -962,6 +962,7 @@ WebInspector.targetManager.observeTargets({
 
         InspectorTest.consoleModel = target.consoleModel;
         InspectorTest.networkManager = WebInspector.NetworkManager.fromTarget(target);
+        InspectorTest.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(target);
         InspectorTest.resourceTreeModel = target.resourceTreeModel;
         InspectorTest.networkLog = WebInspector.NetworkLog.fromTarget(target);
         InspectorTest.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);

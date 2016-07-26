@@ -98,6 +98,13 @@ InspectorTest.addIDBValue = function(frameId, databaseName, objectStoreName, val
 {
     InspectorTest.evaluateWithCallback(frameId, "addIDBValue", [databaseName, objectStoreName, value, key], callback)
 };
+
+InspectorTest.createIndexedDBModel = function()
+{
+    var indexedDBModel = new WebInspector.IndexedDBModel(WebInspector.targetManager.mainTarget(), InspectorTest.securityOriginManager);
+    indexedDBModel.enable();
+    return indexedDBModel;
+};
 };
 
 function dispatchCallback(callbackId)

@@ -17,6 +17,8 @@ function test()
 
         for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
             InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
+        for (var eventName in WebInspector.SecurityOriginManager.EventTypes)
+            InspectorTest.securityOriginManager.addEventListener(WebInspector.SecurityOriginManager.EventTypes[eventName], eventHandler.bind(this, eventName));
 
         function eventHandler(eventName, event)
         {
