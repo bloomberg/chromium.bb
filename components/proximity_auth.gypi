@@ -31,6 +31,8 @@
         "proximity_auth/ble/bluetooth_low_energy_connection_finder.h",
         "proximity_auth/ble/bluetooth_low_energy_device_whitelist.cc",
         "proximity_auth/ble/bluetooth_low_energy_device_whitelist.h",
+	"proximity_auth/ble/bluetooth_low_energy_weave_client_connection.cc",
+	"proximity_auth/ble/bluetooth_low_energy_weave_client_connection.h",
 	"proximity_auth/ble/bluetooth_low_energy_weave_defines.h",
 	"proximity_auth/ble/bluetooth_low_energy_weave_packet_generator.cc",
 	"proximity_auth/ble/bluetooth_low_energy_weave_packet_generator.h",
