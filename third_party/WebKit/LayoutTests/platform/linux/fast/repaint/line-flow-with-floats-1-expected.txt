@@ -10,27 +10,27 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [14, 240, 407, 139],
+          "rect": [13, 240, 408, 139],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 80, 407, 119],
+          "rect": [13, 500, 408, 99],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 500, 407, 99],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [14, 180, 407, 59],
+          "rect": [14, 80, 406, 119],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 180, 406, 79],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [13, 440, 356, 59],
           "reason": "forced by layout"
         },
         {
@@ -65,12 +65,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [303, 420, 67, 19],
+          "rect": [303, 420, 66, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [244, 420, 65, 19],
+          "rect": [244, 420, 64, 19],
           "reason": "forced by layout"
         },
         {

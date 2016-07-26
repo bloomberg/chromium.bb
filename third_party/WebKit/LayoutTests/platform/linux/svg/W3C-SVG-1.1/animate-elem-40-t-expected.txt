@@ -141,8 +141,8 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (138,168) size 54x54 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-40.00] [y=-40.00] [width=50.00] [height=50.00]
         LayoutSVGRect {rect} at (139,169) size 82x22 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=80.00] [height=20.00]
         LayoutSVGRect {rect} at (139,169) size 22x82 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=20.00] [height=80.00]
-        LayoutSVGText {text} at (-36,45) size 72x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 72x19
+        LayoutSVGText {text} at (-37,45) size 73x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 73x19
             chunk 1 (middle anchor) text run 1 at (-36.00,60.00) startOffset 0 endOffset 12 width 72.00: "width/height"
         LayoutSVGText {text} at (-36,60) size 72x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 72x19
@@ -152,8 +152,8 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (258,168) size 54x54 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-40.00] [y=-40.00] [width=50.00] [height=50.00]
         LayoutSVGRect {rect} at (259,169) size 82x22 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=80.00] [height=20.00]
         LayoutSVGRect {rect} at (259,169) size 22x82 [stroke={[type=SOLID] [color=#FFB400]}] [x=-40.00] [y=-40.00] [width=20.00] [height=80.00]
-        LayoutSVGText {text} at (-36,45) size 72x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 72x19
+        LayoutSVGText {text} at (-37,45) size 73x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 73x19
             chunk 1 (middle anchor) text run 1 at (-36.00,60.00) startOffset 0 endOffset 12 width 72.00: "width/height"
         LayoutSVGText {text} at (-30,60) size 60x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 60x19

@@ -15,12 +15,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 404, 355, 36],
+          "rect": [14, 404, 355, 35],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 386, 303, 36],
+          "rect": [65, 386, 303, 35],
           "reason": "forced by layout"
         }
       ]

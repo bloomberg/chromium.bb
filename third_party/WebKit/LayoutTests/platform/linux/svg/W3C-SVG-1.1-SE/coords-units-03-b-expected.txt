@@ -10,23 +10,23 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (125,8) size 182x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 182x15
           chunk 1 text run 1 at (125.00,20.00) startOffset 0 endOffset 35 width 182.00: "Initial viewport and CSS units test"
-      LayoutSVGContainer {g} at (20,65) size 386x198 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
-        LayoutSVGText {text} at (20,5) size 21x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 21x16
+      LayoutSVGContainer {g} at (19,65) size 387x198 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
+        LayoutSVGText {text} at (19,5) size 22x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 22x16
             chunk 1 text run 1 at (20.00,18.00) startOffset 0 endOffset 3 width 21.00: "200"
         LayoutSVGText {text} at (230,7) size 176x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 176x16
             chunk 1 text run 1 at (230.00,20.00) startOffset 0 endOffset 31 width 176.00: "User space units (no specifier)"
         LayoutSVGRect {rect} at (20,80) size 200x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=20.00] [width=200.00] [height=1.00]
-        LayoutSVGText {text} at (20,25) size 39x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 39x16
+        LayoutSVGText {text} at (19,25) size 40x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 40x16
             chunk 1 text run 1 at (20.00,38.00) startOffset 0 endOffset 6 width 39.00: "200 px"
         LayoutSVGText {text} at (230,27) size 62x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 62x16
             chunk 1 text run 1 at (230.00,40.00) startOffset 0 endOffset 11 width 62.00: "Pixels (px)"
         LayoutSVGRect {rect} at (20,100) size 200x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=40.00] [width=200.00] [height=1.00]
-        LayoutSVGText {text} at (20,45) size 188x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 188x16
+        LayoutSVGText {text} at (19,45) size 189x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 189x16
             chunk 1 text run 1 at (20.00,58.00) startOffset 0 endOffset 31 width 188.00: "20 em = 200 px (font-size=10px)"
         LayoutSVGText {text} at (230,47) size 143x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 143x16
@@ -55,15 +55,15 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 60x16
             chunk 1 text run 1 at (230.00,120.00) startOffset 0 endOffset 11 width 60.00: "Inches (in)"
         LayoutSVGRect {rect} at (20,180) size 96x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=120.00] [width=96.00] [height=1.00]
-        LayoutSVGText {text} at (20,125) size 84x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 84x16
+        LayoutSVGText {text} at (19,125) size 85x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 85x16
             chunk 1 text run 1 at (20.00,138.00) startOffset 0 endOffset 14 width 84.00: "2.54 cm = 1 in"
         LayoutSVGText {text} at (230,127) size 100x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 100x16
             chunk 1 text run 1 at (230.00,140.00) startOffset 0 endOffset 16 width 100.00: "Centimeters (cm)"
         LayoutSVGRect {rect} at (20,200) size 96x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=140.00] [width=96.00] [height=1.00]
-        LayoutSVGText {text} at (20,145) size 88x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 88x16
+        LayoutSVGText {text} at (19,145) size 89x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 89x16
             chunk 1 text run 1 at (20.00,158.00) startOffset 0 endOffset 14 width 88.00: "25.4 mm = 1 in"
         LayoutSVGText {text} at (230,147) size 97x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 97x16

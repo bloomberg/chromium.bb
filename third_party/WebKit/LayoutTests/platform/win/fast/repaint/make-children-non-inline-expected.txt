@@ -25,22 +25,22 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 250, 114, 17],
+          "rect": [8, 250, 113, 17],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 150, 114, 17],
+          "rect": [8, 150, 113, 17],
           "reason": "layoutObject removal"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 132, 81, 17],
+          "rect": [8, 132, 80, 17],
           "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 132, 81, 17],
+          "rect": [8, 132, 80, 17],
           "reason": "layoutObject removal"
         },
         {

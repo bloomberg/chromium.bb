@@ -65,8 +65,8 @@ layer at (0,0) size 800x600
           LayoutSVGTSpan {tspan} at (0,0) size 93x16
             LayoutSVGInlineText {#text} at (0,0) size 93x16
               chunk 1 (middle anchor) text run 1 at (228.92,322.20) startOffset 0 endOffset 19 width 92.16: "This is a multiline"
-          LayoutSVGTSpan {tspan} at (0,0) size 79x16
-            LayoutSVGInlineText {#text} at (7,13) size 79x16
+          LayoutSVGTSpan {tspan} at (0,0) size 81x16
+            LayoutSVGInlineText {#text} at (5,13) size 80x16
               chunk 1 (middle anchor) text run 1 at (235.96,335.40) startOffset 0 endOffset 15 width 78.08: "textbutton with"
           LayoutSVGTSpan {tspan} at (0,0) size 74x16
             LayoutSVGInlineText {#text} at (9,26) size 73x16

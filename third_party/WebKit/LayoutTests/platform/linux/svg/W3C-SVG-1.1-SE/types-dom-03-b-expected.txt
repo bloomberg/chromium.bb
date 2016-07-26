@@ -8,8 +8,8 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 343x21
           chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 40 width 343.00: "Test that getBBox() works before SVGLoad"
       LayoutSVGRect {rect} at (10,40) size 50x50 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=40.00] [width=50.00] [height=50.00]
-      LayoutSVGText {text} at (1000,983) size 30x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 30x21
+      LayoutSVGText {text} at (999,983) size 31x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 31x21
           chunk 1 text run 1 at (1000.00,1000.00) startOffset 0 endOffset 3 width 30.00: "Abc"
     LayoutSVGContainer {g} at (10,311) size 228x36
       LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)

@@ -53,13 +53,13 @@ layer at (0,0) size 480x360
         LayoutSVGContainer {g} at (20,70) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,40.00)}]
           LayoutSVGRect {rect} at (20,70) size 40x40 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=40.00] [height=40.00]
             [filter="default"] LayoutSVGResourceFilter {filter} at (0,0) size 40x40
-        LayoutSVGText {text} at (14,101) size 43x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 43x12
+        LayoutSVGText {text} at (13,101) size 44x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 44x12
             chunk 1 (middle anchor) text run 1 at (14.08,110.00) startOffset 0 endOffset 10 width 42.84: "Viewport 1"
         LayoutSVGContainer {g} at (10,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
           LayoutSVGRect {rect} at (10,150) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
-        LayoutSVGText {text} at (14,171) size 43x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 43x12
+        LayoutSVGText {text} at (13,171) size 44x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 44x12
             chunk 1 (middle anchor) text run 1 at (14.08,180.00) startOffset 0 endOffset 10 width 42.84: "Viewport 2"
         LayoutSVGContainer {g} at (20,220) size 30x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,190.00)}]
           LayoutSVGRect {rect} at (20,220) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]

@@ -10,32 +10,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [13, 80, 407, 108],
+          "rect": [14, 242, 406, 125],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 170, 407, 72],
+          "rect": [14, 224, 406, 125],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [13, 188, 407, 71],
+          "rect": [14, 80, 406, 107],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 242, 406, 126],
+          "rect": [14, 476, 406, 89],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 224, 406, 126],
+          "rect": [14, 188, 406, 71],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 476, 406, 90],
+          "rect": [14, 170, 406, 71],
           "reason": "forced by layout"
         },
         {
@@ -45,27 +45,27 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 404, 355, 36],
+          "rect": [14, 404, 355, 35],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [14, 386, 354, 36],
+          "rect": [14, 386, 354, 35],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 368, 304, 18],
+          "rect": [65, 368, 304, 17],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 350, 146, 18],
+          "rect": [178, 350, 146, 17],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 350, 145, 18],
+          "rect": [65, 350, 145, 17],
           "reason": "forced by layout"
         },
         {

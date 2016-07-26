@@ -70,14 +70,14 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (453,142) size 684x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 684x17
               chunk 1 text run 1 at (453.00,159.00) startOffset 0 endOffset 71 width 683.33: "http://prismstandard.org/vocabularies/1.0/resourcetype.xml#illustration"
-          LayoutSVGText {text} at (604,196) size 167x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 167x17
+          LayoutSVGText {text} at (604,196) size 184x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 184x17
               chunk 1 text run 1 at (604.00,213.00) startOffset 0 endOffset 13 width 166.67: "image/svg+xml"
-          LayoutSVGText {text} at (530,250) size 367x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 367x17
+          LayoutSVGText {text} at (530,250) size 384x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 384x17
               chunk 1 text run 1 at (530.00,267.00) startOffset 0 endOffset 44 width 366.67: "Line drawing of woman in antique attire, ..."
-          LayoutSVGText {text} at (177,196) size 67x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 67x17
+          LayoutSVGText {text} at (177,196) size 84x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 84x17
               chunk 1 text run 1 at (177.00,213.00) startOffset 0 endOffset 7 width 66.67: "online:"
           LayoutSVGText {text} at (601,304) size 167x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 167x17
@@ -86,11 +86,11 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (256,141) size 317x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 317x17
               chunk 1 text run 1 at (256.00,158.00) startOffset 0 endOffset 36 width 316.67: "http://purl.org/dc/elements/1.1/type"
-          LayoutSVGText {text} at (250,189) size 317x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 317x17
+          LayoutSVGText {text} at (250,189) size 334x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 334x17
               chunk 1 text run 1 at (250.00,206.00) startOffset 0 endOffset 38 width 316.67: "http://purl.org/dc/elements/1.1/format"
-          LayoutSVGText {text} at (250,259) size 350x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 350x17
+          LayoutSVGText {text} at (250,259) size 367x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 367x17
               chunk 1 text run 1 at (250.00,276.00) startOffset 0 endOffset 39 width 350.00: "http://purl.org/dc/elements/1.1/subject"
           LayoutSVGText {text} at (256,88) size 317x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 317x17

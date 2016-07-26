@@ -10,7 +10,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [441, 522, 336, 5],
+          "rect": [441, 523, 336, 4],
           "reason": "incremental"
         },
         {

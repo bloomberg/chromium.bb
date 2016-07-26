@@ -22,8 +22,8 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (25.00,275.00) startOffset 0 endOffset 3 width 46.00: "One"
           LayoutSVGInlineText {#text} at (46,0) size 7x27
             chunk 1 text run 1 at (71.00,275.00) startOffset 0 endOffset 1 width 7.00: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 52x27
-            LayoutSVGInlineText {#text} at (53,0) size 52x27
+          LayoutSVGTSpan {tspan} at (0,0) size 53x27
+            LayoutSVGInlineText {#text} at (52,0) size 53x27
               chunk 1 text run 1 at (78.00,275.00) startOffset 0 endOffset 4 width 52.00: "word"
           LayoutSVGInlineText {#text} at (105,0) size 7x27
             chunk 1 text run 1 at (130.00,275.00) startOffset 0 endOffset 1 width 7.00: " "

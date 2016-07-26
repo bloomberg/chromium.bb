@@ -10,17 +10,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [14, 242, 406, 126],
+          "rect": [14, 242, 406, 125],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 368, 304, 18],
+          "rect": [65, 368, 304, 17],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [178, 350, 146, 18],
+          "rect": [178, 350, 146, 17],
           "reason": "forced by layout"
         },
         {

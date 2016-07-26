@@ -1,10 +1,10 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (2,44) size 439x279
-    LayoutSVGText {text} at (2,44) size 342x79 contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (0,0) size 342x79
-        LayoutSVGInlineText {#text} at (0,0) size 342x79
+  LayoutSVGRoot {svg} at (2,43) size 439x280
+    LayoutSVGText {text} at (2,43) size 342x80 contains 1 chunk(s)
+      LayoutSVGTSpan {tspan} at (0,0) size 342x80
+        LayoutSVGInlineText {#text} at (0,0) size 342x80
           chunk 1 text run 1 at (25.00,100.00) startOffset 0 endOffset 1 width 33.00: "R"
           chunk 1 text run 2 at (58.00,100.00) startOffset 1 endOffset 2 width 26.00: "o"
           chunk 1 text run 3 at (84.00,100.00) startOffset 2 endOffset 3 width 15.00: "t"

@@ -62,6 +62,6 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (20,355) size 573x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 573x19
               chunk 1 text run 1 at (20.00,370.00) startOffset 0 endOffset 69 width 572.13: "type: gamma amplitude=1 exponent=2 offset=0 -- Result should compress"
-          LayoutSVGText {text} at (20,375) size 92x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 92x19
+          LayoutSVGText {text} at (20,375) size 93x19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 93x19
               chunk 1 text run 1 at (20.00,390.00) startOffset 0 endOffset 12 width 91.86: "the gradient"

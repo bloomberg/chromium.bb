@@ -17,11 +17,6 @@
           "object": "LayoutText #text",
           "rect": [297, 420, 72, 19],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [303, 420, 67, 19],
-          "reason": "style change"
         }
       ]
     }

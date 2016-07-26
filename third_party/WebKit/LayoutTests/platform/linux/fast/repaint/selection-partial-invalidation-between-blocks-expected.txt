@@ -20,12 +20,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [82, 35, 3, 19],
+          "rect": [81, 35, 4, 19],
           "reason": "incremental"
         },
         {
           "object": "LayoutText #text",
-          "rect": [63, 11, 3, 19],
+          "rect": [62, 11, 4, 19],
           "reason": "incremental"
         }
       ]

@@ -11,15 +11,15 @@ layer at (0,0) size 480x360
       LayoutSVGRect {rect} at (10,80) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=80.00] [width=30.00] [height=30.00]
       LayoutSVGRect {rect} at (10,120) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=120.00] [width=30.00] [height=30.00]
       LayoutSVGRect {rect} at (10,160) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=160.00] [width=30.00] [height=30.00]
-      LayoutSVGContainer {g} at (50,46) size 178x137
-        LayoutSVGText {text} at (50,46) size 168x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 168x17
+      LayoutSVGContainer {g} at (49,46) size 179x137
+        LayoutSVGText {text} at (49,46) size 169x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 169x17
             chunk 1 text run 1 at (50.00,60.00) startOffset 0 endOffset 25 width 167.89: "Valid string on SVGLength"
         LayoutSVGText {text} at (50,86) size 178x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 178x17
             chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 27 width 178.00: "Invalid string on SVGLength"
-        LayoutSVGText {text} at (50,126) size 160x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 160x17
+        LayoutSVGText {text} at (49,126) size 161x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 161x17
             chunk 1 text run 1 at (50.00,140.00) startOffset 0 endOffset 24 width 159.89: "Valid string on SVGAngle"
         LayoutSVGText {text} at (50,166) size 170x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 170x17

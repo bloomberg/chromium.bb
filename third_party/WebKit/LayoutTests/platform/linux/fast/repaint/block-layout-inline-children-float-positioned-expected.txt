@@ -9,23 +9,23 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [162, 37, 279, 19],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [162, 37, 278, 20],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutText #text",
-          "rect": [324, 37, 278, 19],
+          "rect": [162, 37, 278, 19],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutBlockFlow (floating) SPAN",
           "rect": [324, 37, 277, 20],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [324, 37, 277, 19],
           "reason": "layoutObject insertion"
         }
       ]

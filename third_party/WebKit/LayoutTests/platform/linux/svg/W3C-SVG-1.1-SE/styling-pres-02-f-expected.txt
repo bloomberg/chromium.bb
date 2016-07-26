@@ -76,8 +76,8 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 93x16
             chunk 1 text run 1 at (280.00,160.00) startOffset 0 endOffset 17 width 93.00: "fill-rule on stop"
         LayoutSVGRect {rect} at (250,175) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=175.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (280,177) size 162x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 162x16
+        LayoutSVGText {text} at (279,177) size 163x16 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 163x16
             chunk 1 text run 1 at (280.00,190.00) startOffset 0 endOffset 28 width 162.00: "visibility on radialGradient"
         LayoutSVGRect {rect} at (250,205) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=250.00] [y=205.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (280,207) size 155x16 contains 1 chunk(s)

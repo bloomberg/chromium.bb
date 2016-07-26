@@ -20,7 +20,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 138, 289, 159],
+          "rect": [9, 138, 290, 159],
           "reason": "forced by layout"
         },
         {
@@ -40,7 +40,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 138, 240, 179],
+          "rect": [9, 138, 240, 179],
           "reason": "forced by layout"
         },
         {

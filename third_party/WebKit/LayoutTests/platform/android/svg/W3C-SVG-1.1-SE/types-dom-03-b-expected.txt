@@ -1,0 +1,18 @@
+layer at (0,0) size 480x360
+  LayoutView at (0,0) size 480x360
+layer at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGContainer {g} at (10,13) size 470x347
+      LayoutSVGText {text} at (10,13) size 343x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 343x21
+          chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 40 width 343.00: "Test that getBBox() works before SVGLoad"
+      LayoutSVGRect {rect} at (10,40) size 50x50 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=40.00] [width=50.00] [height=50.00]
+      LayoutSVGText {text} at (1000,983) size 30x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 30x21
+          chunk 1 text run 1 at (1000.00,1000.00) startOffset 0 endOffset 3 width 30.00: "Abc"
+    LayoutSVGContainer {g} at (10,311) size 228x36
+      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 228x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.7 $"
+    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

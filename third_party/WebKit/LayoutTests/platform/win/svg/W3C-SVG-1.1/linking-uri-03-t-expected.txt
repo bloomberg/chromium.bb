@@ -36,8 +36,8 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (275,189) size 160x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 160x12
           chunk 1 text run 1 at (275.00,199.00) startOffset 0 endOffset 38 width 159.82: "xlink:title=\"TOC of Linking BE tests.\""
-      LayoutSVGText {text} at (275,200) size 54x12 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 54x12
+      LayoutSVGText {text} at (274,200) size 55x12 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 55x12
           chunk 1 text run 1 at (275.00,210.00) startOffset 0 endOffset 14 width 53.82: "target=\"_self\""
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45

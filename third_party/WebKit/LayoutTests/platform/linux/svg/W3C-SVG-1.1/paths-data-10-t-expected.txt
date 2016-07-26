@@ -73,8 +73,8 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (125,39) size 86x21 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 86x21
             chunk 1 text run 1 at (125.00,56.00) startOffset 0 endOffset 9 width 86.00: "cap=round"
-        LayoutSVGText {text} at (125,57) size 47x21 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 47x21
+        LayoutSVGText {text} at (125,57) size 46x21 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 46x21
             chunk 1 text run 1 at (125.00,74.00) startOffset 0 endOffset 7 width 46.00: "m, l, z"
         LayoutSVGContainer {g} at (242,108) size 111x94
           LayoutSVGPath {path} at (242,108) size 111x94 [stroke={[type=SOLID] [color=#FF0000] [stroke width=15.00] [line cap=ROUND] [line join=BEVEL]}] [fill={[type=SOLID] [color=#008000]}] [data="m 0 0 l 100 40 l -100 40 Z"]

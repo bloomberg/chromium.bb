@@ -90,12 +90,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 295, 41, 19],
+          "rect": [23, 295, 40, 19],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [23, 111, 41, 19],
+          "rect": [23, 111, 40, 19],
           "reason": "forced by layout"
         },
         {

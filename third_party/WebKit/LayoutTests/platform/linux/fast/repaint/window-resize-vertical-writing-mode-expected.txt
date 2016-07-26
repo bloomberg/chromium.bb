@@ -51,7 +51,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [507, 8, 423, 470],
+          "rect": [507, 7, 423, 471],
           "reason": "forced by layout"
         },
         {

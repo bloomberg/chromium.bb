@@ -7,10 +7,10 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (288,18) size 59x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 59x14
             chunk 1 text run 1 at (288.00,30.00) startOffset 0 endOffset 11 width 58.90: "M, H, V, H,"
-        LayoutSVGText {text} at (288,34) size 56x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 56x14
+        LayoutSVGText {text} at (287,34) size 57x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 57x14
             chunk 1 text run 1 at (288.00,46.00) startOffset 0 endOffset 11 width 55.58: "V. H, V, H,"
-        LayoutSVGText {text} at (304,50) size 22x15 contains 1 chunk(s)
+        LayoutSVGText {text} at (303,50) size 23x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 22x14
             chunk 1 text run 1 at (304.00,62.00) startOffset 0 endOffset 4 width 21.12: "V, Z"
         LayoutSVGPath {path} at (71,99) size 164x165 [stroke={[type=SOLID] [color=#000000]}] [data="M 240 56 H 270 V 86 H 300 V 116 H 330 V 146 H 240 V 56 Z"]

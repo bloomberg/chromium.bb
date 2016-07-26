@@ -9,16 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [305, 35, 297, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [153, 35, 297, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutBlockFlow (floating) SPAN",
           "rect": [305, 35, 296, 18],
           "reason": "layoutObject insertion"
@@ -26,6 +16,16 @@
         {
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [153, 35, 296, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [305, 35, 296, 17],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [153, 35, 296, 17],
           "reason": "layoutObject insertion"
         }
       ]

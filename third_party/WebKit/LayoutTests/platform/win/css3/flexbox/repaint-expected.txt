@@ -20,7 +20,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [137, 116, 653, 90],
+          "rect": [138, 116, 652, 89],
           "reason": "forced by layout"
         },
         {
@@ -45,17 +45,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [147, 116, 633, 108],
+          "rect": [148, 116, 632, 107],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [147, 116, 633, 108],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [399, 116, 393, 162],
+          "rect": [148, 116, 632, 107],
           "reason": "forced by layout"
         },
         {
@@ -72,6 +67,11 @@
           "object": "LayoutBlockFlow DIV id='left'",
           "rect": [8, 224, 392, 54],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [400, 116, 391, 161],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",

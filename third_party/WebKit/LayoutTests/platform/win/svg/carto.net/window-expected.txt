@@ -450,12 +450,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [41, 524, 99, 11],
+          "rect": [41, 524, 98, 11],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [41, 524, 99, 11],
+          "rect": [41, 524, 98, 11],
           "reason": "layoutObject insertion"
         },
         {
@@ -530,12 +530,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [616, 152, 13, 82],
+          "rect": [616, 153, 13, 81],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [616, 152, 13, 82],
+          "rect": [616, 153, 13, 81],
           "reason": "layoutObject insertion"
         },
         {
