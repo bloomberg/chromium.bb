@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import collections
 import re
 import urllib2
 
@@ -38,6 +39,16 @@ from webkitpy.common.system.logutils import get_logger
 RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
 
 _log = get_logger(__file__)
+
+
+class Build(collections.namedtuple('TryJob', ('builder_name', 'build_number'))):
+    """Represents a combination of builder and build number.
+
+    If build number is None, this represents the latest build
+    for a given builder.
+    """
+    def __new__(cls, builder_name, build_number=None):
+        return super(Build, cls).__new__(cls, builder_name, build_number)
 
 
 class BuildBot(object):

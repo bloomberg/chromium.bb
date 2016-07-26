@@ -39,6 +39,7 @@ import urllib2
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.memoized import memoized
+from webkitpy.common.net.buildbot import Build
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
@@ -47,33 +48,6 @@ from webkitpy.tool.commands.command import Command
 
 
 _log = logging.getLogger(__name__)
-
-
-class Build(object):
-    """Represents a combination of builder and build number.
-
-    If build number is None, this represents the latest build
-    for a given builder.
-
-    TODO(qyearsley): Move this somewhere else; note it's very similar to TryJob,
-    and it seems like it might belong in the buildbot module.
-    TODO(qyearsley): Make this a subclass of namedtuple so that __hash__,
-    __eq__ and __cmp__ don't need to be explicitly added.
-    """
-    def __init__(self, builder_name, build_number=None):
-        self.builder_name = builder_name
-        self.build_number = build_number
-
-    # Having __hash__ and __eq__ allow instances of this class to be used
-    # as keys in dictionaries.
-    def __hash__(self):
-        return hash((self.builder_name, self.build_number))
-
-    def __eq__(self, other):
-        return (self.builder_name, self.build_number) == (other.builder_name, other.build_number)
-
-    def __cmp__(self, other):
-        return cmp((self.builder_name, self.build_number), (other.builder_name, other.build_number))
 
 
 class AbstractRebaseliningCommand(Command):

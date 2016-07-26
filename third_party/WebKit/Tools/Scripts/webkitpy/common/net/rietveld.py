@@ -9,15 +9,16 @@ import json
 import logging
 import urllib2
 
+from webkitpy.common.net.buildbot import Build
+
 
 _log = logging.getLogger(__name__)
 
 BASE_CODEREVIEW_URL = 'https://codereview.chromium.org/api'
 
-TryJob = collections.namedtuple('TryJob', ('builder_name', 'build_number'))
 
 def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
-    """Returns a list of TryJob objects for jobs on the latest patchset.
+    """Returns a list of Build objects for jobs on the latest patchset.
 
     Args:
         issue_number: A Rietveld issue number.
@@ -27,7 +28,7 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
         patchset_number: Use a specific patchset instead of the latest one.
 
     Returns:
-        A list of TryJob objects for the latest job for each builder, on the
+        A list of Build objects for the latest job for each builder, on the
         latest patchset. If none were found, an empty list is returned.
     """
     try:
@@ -42,7 +43,7 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
     for job in patchset_data['try_job_results']:
         if job['builder'] not in builder_names:
             continue
-        jobs.append(TryJob(
+        jobs.append(Build(
             builder_name=job['builder'],
             build_number=job['buildnumber']))
     return filter_latest_jobs(jobs)
@@ -85,10 +86,10 @@ def filter_latest_jobs(jobs):
     """Filters out the list of jobs to include only the latest for each builder.
 
     Args:
-        jobs: A list of TryJob objects.
+        jobs: A list of Build objects.
 
     Returns:
-        A list of TryJob objects such that only the latest job for each builder
+        A list of Build objects such that only the latest job for each builder
         is kept.
     """
     builder_to_highest_number = {}

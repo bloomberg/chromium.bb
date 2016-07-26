@@ -10,7 +10,7 @@ import urllib2
 from webkitpy.common.net.rietveld import filter_latest_jobs
 from webkitpy.common.net.rietveld import get_latest_try_job_results
 from webkitpy.common.net.rietveld import latest_try_jobs
-from webkitpy.common.net.rietveld import TryJob
+from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 
@@ -59,7 +59,7 @@ class RietveldTest(unittest.TestCase):
     def test_latest_try_jobs(self):
         self.assertEqual(
             latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web),
-            [TryJob('bar-builder', 60)])
+            [Build('bar-builder', 60)])
 
     def test_latest_try_jobs_http_error(self):
         def raise_error(_):
@@ -85,7 +85,7 @@ class RietveldTest(unittest.TestCase):
     def test_latest_try_jobs_with_patchset(self):
         self.assertEqual(
             latest_try_jobs(11112222, ('bar-builder', 'other-builder'), self.web, patchset_number=2),
-            [TryJob('bar-builder', 50)])
+            [Build('bar-builder', 50)])
 
     def test_latest_try_jobs_no_relevant_builders(self):
         self.assertEqual(latest_try_jobs(11112222, ('foo', 'bar'), self.web), [])
@@ -99,23 +99,23 @@ class RietveldTest(unittest.TestCase):
     def test_filter_latest_jobs_higher_build_first(self):
         self.assertEqual(
             filter_latest_jobs([
-                TryJob('foo', 5),
-                TryJob('foo', 3),
-                TryJob('bar', 5),
+                Build('foo', 5),
+                Build('foo', 3),
+                Build('bar', 5),
             ]),
             [
-                TryJob('foo', 5),
-                TryJob('bar', 5),
+                Build('foo', 5),
+                Build('bar', 5),
             ])
 
     def test_filter_latest_jobs_higher_build_last(self):
         self.assertEqual(
             filter_latest_jobs([
-                TryJob('foo', 3),
-                TryJob('bar', 5),
-                TryJob('foo', 5),
+                Build('foo', 3),
+                Build('bar', 5),
+                Build('foo', 5),
             ]),
             [
-                TryJob('bar', 5),
-                TryJob('foo', 5),
+                Build('bar', 5),
+                Build('foo', 5),
             ])
