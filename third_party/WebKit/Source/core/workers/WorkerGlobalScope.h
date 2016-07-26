@@ -75,7 +75,7 @@ public:
     virtual CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
 
     KURL completeURL(const String&) const;
-    void dispose();
+    void dispose() final;
     void exceptionUnhandled(const String& errorMessage, std::unique_ptr<SourceLocation>);
 
     void registerEventListener(V8AbstractEventListener*);
@@ -120,11 +120,7 @@ public:
         return const_cast<WorkerGlobalScope*>(this);
     }
 
-    // Returns true when the WorkerGlobalScope is closing (e.g. via close()
-    // method). If this returns true, the worker is going to be shutdown after
-    // the current task execution. Workers that don't support close operation
-    // should always return false.
-    bool isClosing() const { return m_closing; }
+    bool isClosing() const final { return m_closing; }
 
     const KURL& url() const { return m_url; }
     WorkerThread* thread() const { return m_thread; }

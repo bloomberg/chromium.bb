@@ -30,12 +30,14 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
@@ -119,16 +121,16 @@ public:
     void willProcessTask() override
     {
         // No tasks should get executed after we have closed.
-        DCHECK(!m_workerThread->workerGlobalScope() || !m_workerThread->workerGlobalScope()->isClosing());
+        DCHECK(!m_workerThread->globalScope() || !m_workerThread->globalScope()->isClosing());
     }
 
     void didProcessTask() override
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
-        if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
-            if (WorkerOrWorkletScriptController* scriptController = globalScope->scriptController())
+        if (WorkerOrWorkletGlobalScope* global = m_workerThread->globalScope()) {
+            if (WorkerOrWorkletScriptController* scriptController = global->scriptController())
                 scriptController->getRejectedPromises()->processQueue();
-            if (globalScope->isClosing()) {
+            if (global->isClosing()) {
                 // |m_workerThread| will eventually be requested to terminate.
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
 
@@ -246,7 +248,7 @@ void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<Ex
         return;
     if (isInstrumented) {
         DCHECK(isCurrentThread());
-        InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
+        InspectorInstrumentation::asyncTaskScheduled(globalScope(), "Worker task", task.get());
     }
     workerBackingThread().backingThread().postTask(location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task)), isInstrumented));
 }
@@ -289,10 +291,10 @@ void WorkerThread::stopRunningDebuggerTasksOnPauseOnWorkerThread()
     m_pausedInDebugger = false;
 }
 
-WorkerGlobalScope* WorkerThread::workerGlobalScope()
+WorkerOrWorkletGlobalScope* WorkerThread::globalScope()
 {
     DCHECK(isCurrentThread());
-    return m_workerGlobalScope.get();
+    return m_globalScope.get();
 }
 
 bool WorkerThread::terminated()
@@ -346,7 +348,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
         // termination via the global scope racing each other.
         MutexLocker lock(m_threadStateMutex);
 
-        hasBeenInitialized = m_workerGlobalScope;
+        hasBeenInitialized = m_globalScope;
 
         // If terminate has already been called.
         if (m_terminated) {
@@ -426,8 +428,8 @@ void WorkerThread::terminateInternal(TerminationMode mode)
 
 void WorkerThread::forciblyTerminateExecution()
 {
-    DCHECK(m_workerGlobalScope);
-    m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
+    DCHECK(m_globalScope);
+    m_globalScope->scriptController()->willScheduleExecutionTermination();
     isolate()->TerminateExecution();
 }
 
@@ -460,9 +462,9 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         if (m_terminated) {
             DCHECK_EQ(ExitCode::GracefullyTerminated, m_exitCode);
 
-            // Notify the proxy that the WorkerGlobalScope has been disposed of.
-            // This can free this thread object, hence it must not be touched
-            // afterwards.
+            // Notify the proxy that the WorkerOrWorkletGlobalScope has been
+            // disposed of. This can free this thread object, hence it must not
+            // be touched afterwards.
             m_workerReportingProxy.workerThreadTerminated();
 
             // Notify the main thread that it is safe to deallocate our
@@ -481,19 +483,21 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
 
         // Optimize for memory usage instead of latency for the worker isolate.
         isolate()->IsolateInBackgroundNotification();
-        m_workerGlobalScope = createWorkerGlobalScope(std::move(startupData));
-        m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
+        m_globalScope = createWorkerGlobalScope(std::move(startupData));
+        if (m_globalScope->isWorkerGlobalScope())
+            toWorkerGlobalScope(m_globalScope)->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
-        // Notify proxy that a new WorkerGlobalScope has been created and started.
-        m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
+        // Notify proxy that a new WorkerOrWorkletGlobalScope has been created
+        // and started.
+        m_workerReportingProxy.workerGlobalScopeStarted(m_globalScope.get());
 
-        WorkerOrWorkletScriptController* scriptController = m_workerGlobalScope->scriptController();
+        WorkerOrWorkletScriptController* scriptController = m_globalScope->scriptController();
         if (!scriptController->isExecutionForbidden()) {
             scriptController->initializeContextIfNeeded();
 
             // If Origin Trials have been registered before the V8 context was ready,
             // then inject them into the context now
-            ExecutionContext* executionContext = m_workerGlobalScope->getExecutionContext();
+            ExecutionContext* executionContext = m_globalScope;
             if (executionContext) {
                 OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext);
                 if (originTrialContext)
@@ -512,16 +516,19 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
             return;
     }
 
-    if (m_workerGlobalScope->scriptController()->isContextInitialized()) {
+    if (m_globalScope->scriptController()->isContextInitialized()) {
         m_workerReportingProxy.didInitializeWorkerContext();
         v8::HandleScope handleScope(isolate());
-        Platform::current()->workerContextCreated(m_workerGlobalScope->scriptController()->context());
+        Platform::current()->workerContextCreated(m_globalScope->scriptController()->context());
     }
 
-    CachedMetadataHandler* handler = workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get());
-    bool success = m_workerGlobalScope->scriptController()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler, v8CacheOptions);
-    m_workerGlobalScope->didEvaluateWorkerScript();
-    m_workerReportingProxy.didEvaluateWorkerScript(success);
+    if (m_globalScope->isWorkerGlobalScope()) {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(m_globalScope);
+        CachedMetadataHandler* handler = workerGlobalScope->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get());
+        bool success = workerGlobalScope->scriptController()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler, v8CacheOptions);
+        workerGlobalScope->didEvaluateWorkerScript();
+        m_workerReportingProxy.didEvaluateWorkerScript(success);
+    }
 
     postInitialize();
 }
@@ -540,8 +547,8 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
 
     m_inspectorTaskRunner->kill();
     workerReportingProxy().willDestroyWorkerGlobalScope();
-    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
-    workerGlobalScope()->dispose();
+    InspectorInstrumentation::allAsyncTasksCanceled(globalScope());
+    globalScope()->dispose();
     workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
 
@@ -561,8 +568,8 @@ void WorkerThread::performShutdownOnWorkerThread()
     // because no other thread will run GC or otherwise destroy them. If Oilpan
     // is enabled, we detach of the context/global scope, with the final heap
     // cleanup below sweeping it out.
-    m_workerGlobalScope->notifyContextDestroyed();
-    m_workerGlobalScope = nullptr;
+    m_globalScope->notifyContextDestroyed();
+    m_globalScope = nullptr;
 
     if (isOwningBackingThread())
         workerBackingThread().shutdown();
@@ -570,8 +577,8 @@ void WorkerThread::performShutdownOnWorkerThread()
 
     m_microtaskRunner = nullptr;
 
-    // Notify the proxy that the WorkerGlobalScope has been disposed of.
-    // This can free this thread object, hence it must not be touched
+    // Notify the proxy that the WorkerOrWorkletGlobalScope has been disposed
+    // of. This can free this thread object, hence it must not be touched
     // afterwards.
     workerReportingProxy().workerThreadTerminated();
 
@@ -584,19 +591,19 @@ void WorkerThread::performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTas
     if (isInShutdown())
         return;
 
-    WorkerGlobalScope* globalScope = workerGlobalScope();
+    WorkerOrWorkletGlobalScope* global = globalScope();
     // If the thread is terminated before it had a chance initialize (see
     // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
-    if (!globalScope) {
+    if (!global) {
         DCHECK(terminated());
         return;
     }
 
-    InspectorInstrumentation::AsyncTask asyncTask(globalScope, task.get(), isInstrumented);
+    InspectorInstrumentation::AsyncTask asyncTask(global, task.get(), isInstrumented);
     {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
         ScopedUsHistogramTimer timer(scopedUsCounter);
-        task->performTask(globalScope);
+        task->performTask(global);
     }
 }
 

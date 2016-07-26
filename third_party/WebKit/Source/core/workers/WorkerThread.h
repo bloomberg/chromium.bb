@@ -30,7 +30,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
@@ -43,10 +42,11 @@
 
 namespace blink {
 
+class ConsoleMessageStorage;
 class InspectorTaskRunner;
 class WorkerBackingThread;
-class WorkerGlobalScope;
 class WorkerInspectorController;
+class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
 class WorkerThreadStartupData;
 
@@ -109,6 +109,7 @@ public:
     static void terminateAndWaitForAllWorkers();
 
     virtual WorkerBackingThread& workerBackingThread() = 0;
+    virtual ConsoleMessageStorage* consoleMessageStorage() = 0;
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();
 
@@ -134,9 +135,9 @@ public:
     void startRunningDebuggerTasksOnPauseOnWorkerThread();
     void stopRunningDebuggerTasksOnPauseOnWorkerThread();
 
-    // Can be called only on the worker thread, WorkerGlobalScope is not thread
-    // safe.
-    WorkerGlobalScope* workerGlobalScope();
+    // Can be called only on the worker thread, WorkerOrWorkletGlobalScope is
+    // not thread safe.
+    WorkerOrWorkletGlobalScope* globalScope();
 
     // Called for creating WorkerThreadLifecycleObserver on both the main thread
     // and the worker thread.
@@ -159,7 +160,7 @@ protected:
 
     // Factory method for creating a new worker context for the thread.
     // Called on the worker thread.
-    virtual WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) = 0;
+    virtual WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) = 0;
 
     // Returns true when this WorkerThread owns the associated
     // WorkerBackingThread exclusively. If this function returns true, the
@@ -232,12 +233,11 @@ private:
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|,
-    // |m_readyToShutdown|, |m_runningDebuggerTask|, |m_exitCode| and
-    // |m_microtaskRunner|.
+    // This lock protects |m_globalScope|, |m_terminated|, |m_readyToShutdown|,
+    // |m_runningDebuggerTask|, |m_exitCode| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
-    Persistent<WorkerGlobalScope> m_workerGlobalScope;
+    Persistent<WorkerOrWorkletGlobalScope> m_globalScope;
 
     // Signaled when the thread starts termination on the main thread.
     std::unique_ptr<WaitableEvent> m_terminationEvent;

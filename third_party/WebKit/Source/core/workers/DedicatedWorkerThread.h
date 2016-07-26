@@ -44,10 +44,11 @@ public:
     ~DedicatedWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    ConsoleMessageStorage* consoleMessageStorage() final;
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 protected:
-    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
     void postInitialize() override;
 
 private:

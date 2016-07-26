@@ -25,6 +25,9 @@ public:
     void evaluateScript(const String& source, const KURL& scriptURL) final;
     void terminateWorkletGlobalScope() final;
 
+    // WorkerOrWorkletGlobalScope
+    bool isClosing() const final { return false; }
+
     using LocalFrameLifecycleObserver::frame;
     void addConsoleMessage(ConsoleMessage*) final;
     void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) final;

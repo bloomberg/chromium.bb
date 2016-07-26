@@ -79,7 +79,7 @@ public:
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void didEvaluateWorkerScript(bool success) override { }
-    void workerGlobalScopeStarted(WorkerGlobalScope*) override;
+    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override;
     void workerGlobalScopeClosed() override;
     void workerThreadTerminated() override;
     void willDestroyWorkerGlobalScope() override { }

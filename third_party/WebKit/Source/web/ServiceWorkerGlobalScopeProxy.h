@@ -89,7 +89,7 @@ public:
     void postMessageToPageInspector(const String&) override;
     void didEvaluateWorkerScript(bool success) override;
     void didInitializeWorkerContext() override;
-    void workerGlobalScopeStarted(WorkerGlobalScope*) override;
+    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override;
     void workerGlobalScopeClosed() override;
     void willDestroyWorkerGlobalScope() override;
     void workerThreadTerminated() override;

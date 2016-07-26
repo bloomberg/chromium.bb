@@ -44,6 +44,7 @@
 #include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "wtf/WTF.h"

@@ -32,7 +32,9 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -68,7 +70,7 @@ void WorkerThreadDebugger::reportConsoleMessage(ExecutionContext* context, Conso
 {
     if (!context)
         return;
-    DCHECK(context == m_workerThread->workerGlobalScope());
+    DCHECK(context == m_workerThread->globalScope());
     m_workerThread->workerReportingProxy().reportConsoleMessage(message);
 }
 
@@ -76,13 +78,13 @@ int WorkerThreadDebugger::contextGroupId(ExecutionContext* context)
 {
     if (!context)
         return 0;
-    DCHECK(context == m_workerThread->workerGlobalScope());
+    DCHECK(context == m_workerThread->globalScope());
     return workerContextGroupId;
 }
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", "", false));
+    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->globalScope()->url().getString(), "", "", false));
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)
@@ -92,7 +94,7 @@ void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context
 
 void WorkerThreadDebugger::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
-    if (m_workerThread->workerGlobalScope()->consoleMessageStorage()->isMuted())
+    if (m_workerThread->consoleMessageStorage()->isMuted())
         return;
     debugger()->exceptionThrown(workerContextGroupId, errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
     m_workerThread->workerReportingProxy().reportConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
@@ -117,19 +119,19 @@ void WorkerThreadDebugger::quitMessageLoopOnPause()
 void WorkerThreadDebugger::muteWarningsAndDeprecations(int contextGroupId)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    m_workerThread->workerGlobalScope()->consoleMessageStorage()->mute();
+    m_workerThread->consoleMessageStorage()->mute();
 }
 
 void WorkerThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    m_workerThread->workerGlobalScope()->consoleMessageStorage()->unmute();
+    m_workerThread->consoleMessageStorage()->unmute();
 }
 
 v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)
 {
     ASSERT(contextGroupId == workerContextGroupId);
-    ScriptState* scriptState = m_workerThread->workerGlobalScope()->scriptController()->getScriptState();
+    ScriptState* scriptState = m_workerThread->globalScope()->scriptController()->getScriptState();
     return scriptState ? scriptState->context() : v8::Local<v8::Context>();
 }
 

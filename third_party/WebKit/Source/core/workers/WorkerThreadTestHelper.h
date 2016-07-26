@@ -9,6 +9,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -62,7 +63,7 @@ public:
     MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
-    MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerGlobalScope*));
+    MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerOrWorkletGlobalScope*));
     MOCK_METHOD0(workerGlobalScopeClosed, void());
     MOCK_METHOD0(workerThreadTerminated, void());
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
@@ -92,8 +93,9 @@ public:
     ~WorkerThreadForTest() override { }
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    ConsoleMessageStorage* consoleMessageStorage() final { return toWorkerGlobalScope(globalScope())->consoleMessageStorage(); }
 
-    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
 
     void waitUntilScriptLoaded()
     {
@@ -172,7 +174,7 @@ private:
     WorkerThreadForTest* m_thread;
 };
 
-inline WorkerGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+inline WorkerOrWorkletGlobalScope* WorkerThreadForTest::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, std::move(startupData->m_starterOriginPrivilegeData), std::move(startupData->m_workerClients));
 }

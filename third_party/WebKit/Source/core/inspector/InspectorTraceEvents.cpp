@@ -22,6 +22,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/TracedValue.h"

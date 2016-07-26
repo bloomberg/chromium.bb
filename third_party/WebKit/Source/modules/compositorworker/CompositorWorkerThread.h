@@ -20,6 +20,7 @@ public:
 
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     WorkerBackingThread& workerBackingThread() override;
+    ConsoleMessageStorage* consoleMessageStorage() final;
     bool shouldAttachThreadDebugger() const override { return false; }
 
     static void ensureSharedBackingThread();
@@ -30,7 +31,7 @@ public:
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
 
-    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
     bool isOwningBackingThread() const override { return false; }
 
 private:

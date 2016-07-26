@@ -40,7 +40,7 @@ namespace blink {
 
 class ConsoleMessage;
 class SourceLocation;
-class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 
 // APIs used by workers to report console and worker activity.
 class CORE_EXPORT WorkerReportingProxy {
@@ -59,7 +59,7 @@ public:
     virtual void didInitializeWorkerContext() { }
 
     // Invoked when the new WorkerGlobalScope is started.
-    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) = 0;
+    virtual void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) = 0;
 
     // Invoked when close() is invoked on the worker context.
     virtual void workerGlobalScopeClosed() = 0;

@@ -31,6 +31,7 @@
 #include "core/workers/InProcessWorkerObjectProxy.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

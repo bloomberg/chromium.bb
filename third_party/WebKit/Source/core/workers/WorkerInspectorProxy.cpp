@@ -10,6 +10,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerInspectorController.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
@@ -101,8 +102,11 @@ void WorkerInspectorProxy::addConsoleMessageFromWorker(ConsoleMessage* consoleMe
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
-        inspector->connectFrontend();
+    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
+    if (globalScope->isWorkerGlobalScope()) {
+        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
+            inspector->connectFrontend();
+    }
 }
 
 void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspector* pageInspector)
@@ -116,8 +120,11 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
-        inspector->disconnectFrontend();
+    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
+    if (globalScope->isWorkerGlobalScope()) {
+        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
+            inspector->disconnectFrontend();
+    }
 }
 
 void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageInspector* pageInspector)
@@ -130,8 +137,11 @@ void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageIns
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
 {
-    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
-        inspector->dispatchMessageFromFrontend(message);
+    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
+    if (globalScope->isWorkerGlobalScope()) {
+        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
+            inspector->dispatchMessageFromFrontend(message);
+    }
 }
 
 void WorkerInspectorProxy::sendMessageToInspector(const String& message)

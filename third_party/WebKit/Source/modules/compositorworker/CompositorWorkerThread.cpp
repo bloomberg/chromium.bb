@@ -130,10 +130,15 @@ WorkerBackingThread& CompositorWorkerThread::workerBackingThread()
     return *BackingThreadHolder::instance().thread();
 }
 
-WorkerGlobalScope*CompositorWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+WorkerOrWorkletGlobalScope* CompositorWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorWorkerThread::createWorkerGlobalScope");
     return CompositorWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
+}
+
+ConsoleMessageStorage* CompositorWorkerThread::consoleMessageStorage()
+{
+    return toWorkerGlobalScope(globalScope())->consoleMessageStorage();
 }
 
 void CompositorWorkerThread::ensureSharedBackingThread()

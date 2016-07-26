@@ -286,9 +286,9 @@ private:
         // ThreadableLoader::create() determines whether it should create
         // a DocumentThreadableLoader or WorkerThreadableLoader based on
         // isWorkerGlobalScope().
-        ASSERT(m_workerThread->workerGlobalScope()->isWorkerGlobalScope());
+        DCHECK(m_workerThread->globalScope()->isWorkerGlobalScope());
 
-        m_loader = ThreadableLoader::create(*m_workerThread->workerGlobalScope(), client, options, resourceLoaderOptions);
+        m_loader = ThreadableLoader::create(*m_workerThread->globalScope(), client, options, resourceLoaderOptions);
         ASSERT(m_loader);
         event->signal();
     }

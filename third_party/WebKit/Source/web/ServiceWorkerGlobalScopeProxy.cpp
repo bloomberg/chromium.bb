@@ -256,7 +256,7 @@ void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
     client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context());
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
+void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerOrWorkletGlobalScope* workerGlobalScope)
 {
     DCHECK(!m_workerGlobalScope);
     m_workerGlobalScope = static_cast<ServiceWorkerGlobalScope*>(workerGlobalScope);

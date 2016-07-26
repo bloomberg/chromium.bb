@@ -45,9 +45,10 @@ public:
     ~ServiceWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    ConsoleMessageStorage* consoleMessageStorage() final;
 
 protected:
-    WorkerGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
 
 private:
     ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);

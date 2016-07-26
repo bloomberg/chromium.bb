@@ -7,12 +7,14 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/CompositorProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -43,7 +45,7 @@ public:
     void postMessageToPageInspector(const String&) override {}
 
     void didEvaluateWorkerScript(bool success) override {}
-    void workerGlobalScopeStarted(WorkerGlobalScope*) override {}
+    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override {}
     void workerGlobalScopeClosed() override {}
     void workerThreadTerminated() override {}
     void willDestroyWorkerGlobalScope() override {}
@@ -144,7 +146,7 @@ public:
 private:
     void executeScriptInWorker(WorkerThread* worker, WaitableEvent* waitEvent)
     {
-        WorkerOrWorkletScriptController* scriptController = worker->workerGlobalScope()->scriptController();
+        WorkerOrWorkletScriptController* scriptController = worker->globalScope()->scriptController();
         bool evaluateResult = scriptController->evaluate(ScriptSourceCode("var counter = 0; ++counter;"));
         ASSERT_UNUSED(evaluateResult, evaluateResult);
         waitEvent->signal();

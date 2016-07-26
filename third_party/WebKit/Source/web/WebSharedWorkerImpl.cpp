@@ -251,7 +251,7 @@ void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
     terminateWorkerThread();
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
+void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*)
 {
 }
 

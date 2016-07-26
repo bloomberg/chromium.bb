@@ -54,9 +54,14 @@ SharedWorkerThread::~SharedWorkerThread()
 {
 }
 
-WorkerGlobalScope* SharedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+WorkerOrWorkletGlobalScope* SharedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     return SharedWorkerGlobalScope::create(m_name, this, std::move(startupData));
+}
+
+ConsoleMessageStorage* SharedWorkerThread::consoleMessageStorage()
+{
+    return toWorkerGlobalScope(globalScope())->consoleMessageStorage();
 }
 
 } // namespace blink

@@ -56,9 +56,14 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 {
 }
 
-WorkerGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
+WorkerOrWorkletGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
+}
+
+ConsoleMessageStorage* DedicatedWorkerThread::consoleMessageStorage()
+{
+    return toWorkerGlobalScope(globalScope())->consoleMessageStorage();
 }
 
 void DedicatedWorkerThread::postInitialize()

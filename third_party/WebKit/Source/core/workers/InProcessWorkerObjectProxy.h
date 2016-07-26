@@ -44,6 +44,7 @@ class ConsoleMessage;
 class ExecutionContext;
 class ExecutionContextTask;
 class InProcessWorkerMessagingProxy;
+class WorkerOrWorkletGlobalScope;
 
 // A proxy to talk to the worker object. This object is created on the
 // parent context thread (i.e. usually the main thread), passed on to
@@ -68,7 +69,7 @@ public:
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void didEvaluateWorkerScript(bool success) override { }
-    void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
+    void workerGlobalScopeStarted(WorkerOrWorkletGlobalScope*) override { }
     void workerGlobalScopeClosed() override;
     void workerThreadTerminated() override;
     void willDestroyWorkerGlobalScope() override { }
