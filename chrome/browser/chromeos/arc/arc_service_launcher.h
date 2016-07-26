@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/arc/arc_service_manager.h"
 
 namespace arc {
@@ -23,11 +22,7 @@ class ArcServiceLauncher {
   void Shutdown();
 
  private:
-  // DBus callback.
-  void OnArcAvailable(bool available);
-
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  base::WeakPtrFactory<ArcServiceLauncher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceLauncher);
 };

@@ -121,7 +121,6 @@ void ArcAppTest::SetUp(Profile* profile) {
 
   // Check initial conditions.
   EXPECT_EQ(bridge_service_.get(), arc::ArcBridgeService::Get());
-  EXPECT_TRUE(!arc::ArcBridgeService::Get()->available());
   EXPECT_FALSE(arc::ArcBridgeService::Get()->ready());
 
   // At this point we should have ArcAppListPrefs as observer of service.

@@ -72,17 +72,16 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
   DCHECK(CalledOnValidThread());
   VLOG(1) << "Prerequisites changed. "
           << "state=" << static_cast<uint32_t>(state())
-          << ", available=" << available()
           << ", session_started=" << session_started_;
   if (state() == State::STOPPED) {
-    if (!available() || !session_started_)
+    if (!session_started_)
       return;
     VLOG(0) << "Prerequisites met, starting ARC";
     SetStopReason(StopReason::SHUTDOWN);
     SetState(State::CONNECTING);
     bootstrap_->Start();
   } else {
-    if (available() && session_started_)
+    if (session_started_)
       return;
     VLOG(0) << "Prerequisites stopped being met, stopping ARC";
     StopInstance();
@@ -105,15 +104,6 @@ void ArcBridgeServiceImpl::StopInstance() {
 
   // We were explicitly asked to stop, so do not reconnect.
   reconnect_ = false;
-}
-
-void ArcBridgeServiceImpl::SetDetectedAvailability(bool arc_available) {
-  DCHECK(CalledOnValidThread());
-  if (available() == arc_available)
-    return;
-  VLOG(1) << "ARC available: " << arc_available;
-  SetAvailable(arc_available);
-  PrerequisitesChanged();
 }
 
 void ArcBridgeServiceImpl::OnConnectionEstablished(

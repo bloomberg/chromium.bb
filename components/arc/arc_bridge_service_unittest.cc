@@ -84,7 +84,6 @@ TEST_F(ArcBridgeTest, Basic) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 
-  service_->SetAvailable(true);
   service_->HandleStartup();
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
@@ -93,23 +92,11 @@ TEST_F(ArcBridgeTest, Basic) {
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
-// If not all pre-requisites are met, the instance is not started.
-TEST_F(ArcBridgeTest, Prerequisites) {
-  ASSERT_FALSE(ready());
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
-  service_->SetAvailable(true);
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
-  service_->SetAvailable(false);
-  service_->HandleStartup();
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
-}
-
 // If the ArcBridgeService is shut down, it should be stopped, even
 // mid-startup.
 TEST_F(ArcBridgeTest, ShutdownMidStartup) {
   ASSERT_FALSE(ready());
 
-  service_->SetAvailable(true);
   service_->HandleStartup();
   // WaitForInitCall() omitted.
   ASSERT_EQ(ArcBridgeService::State::READY, state());
@@ -123,7 +110,6 @@ TEST_F(ArcBridgeTest, Restart) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(0, instance_->init_calls());
 
-  service_->SetAvailable(true);
   service_->HandleStartup();
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
@@ -146,7 +132,6 @@ TEST_F(ArcBridgeTest, OnBridgeStopped) {
   ASSERT_FALSE(ready());
 
   service_->DisableReconnectDelayForTesting();
-  service_->SetAvailable(true);
   service_->HandleStartup();
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::State::READY, state());

@@ -73,7 +73,6 @@ class ArcAuthServiceTest : public testing::Test {
 
     // Check initial conditions.
     EXPECT_EQ(bridge_service_.get(), ArcBridgeService::Get());
-    EXPECT_FALSE(ArcBridgeService::Get()->available());
     EXPECT_TRUE(ArcBridgeService::Get()->stopped());
 
     const AccountId account_id(

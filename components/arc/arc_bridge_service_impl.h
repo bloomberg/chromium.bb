@@ -31,8 +31,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   explicit ArcBridgeServiceImpl(std::unique_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
 
-  void SetDetectedAvailability(bool available) override;
-
   void HandleStartup() override;
 
   void Shutdown() override;

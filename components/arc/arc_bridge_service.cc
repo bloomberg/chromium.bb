@@ -17,8 +17,7 @@ namespace arc {
 ArcBridgeService* g_arc_bridge_service = nullptr;
 
 ArcBridgeService::ArcBridgeService()
-    : available_(false),
-      state_(State::STOPPED),
+    : state_(State::STOPPED),
       stop_reason_(StopReason::SHUTDOWN),
       weak_factory_(this) {}
 
@@ -63,13 +62,6 @@ void ArcBridgeService::SetState(State state) {
     FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeReady());
   else if (state == State::STOPPED)
     FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeStopped(stop_reason_));
-}
-
-void ArcBridgeService::SetAvailable(bool available) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(available_, available);
-  available_ = available;
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnAvailableChanged(available_));
 }
 
 void ArcBridgeService::SetStopReason(StopReason stop_reason) {

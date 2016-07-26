@@ -19,10 +19,6 @@ FakeArcBridgeService::~FakeArcBridgeService() {
   SetStopped();
 }
 
-void FakeArcBridgeService::SetDetectedAvailability(bool availability) {
-  SetAvailable(availability);
-}
-
 void FakeArcBridgeService::HandleStartup() {
   SetReady();
 }
