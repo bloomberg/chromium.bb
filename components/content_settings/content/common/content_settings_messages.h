@@ -17,10 +17,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ContentSettingsType,
 //-----------------------------------------------------------------------------
 // These are messages sent from the browser to the renderer process.
 
-// Sent in response to FrameHostMsg_DidBlockDisplayingInsecureContent.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowDisplayingInsecureContent,
-                    bool /* allowed */)
-
 // Sent in response to FrameHostMsg_DidBlockRunningInsecureContent.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)

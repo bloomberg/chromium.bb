@@ -100,7 +100,6 @@ class ContentSettingsObserver
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetAsInterstitial();
-  void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnReloadFrame();
   void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);

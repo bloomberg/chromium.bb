@@ -65,8 +65,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kNoReferrers, prefs::kEnableReferrers, false },
       { switches::kAllowRunningInsecureContent,
         prefs::kWebKitAllowRunningInsecureContent, true },
-      { switches::kNoDisplayingInsecureContent,
-        prefs::kWebKitAllowDisplayingInsecureContent, false },
       { switches::kAllowCrossOriginAuthPrompt,
         prefs::kAllowCrossOriginAuthPrompt, true },
       { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },

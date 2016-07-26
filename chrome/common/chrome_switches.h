@@ -185,7 +185,6 @@ extern const char kMetricsRecordingOnly[];
 extern const char kMonitoringDestinationID[];
 extern const char kNetLogCaptureMode[];
 extern const char kNoDefaultBrowserCheck[];
-extern const char kNoDisplayingInsecureContent[];
 extern const char kNoExperiments[];
 extern const char kNoFirstRun[];
 extern const char kNoPings[];

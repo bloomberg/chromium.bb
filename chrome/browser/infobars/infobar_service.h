@@ -75,10 +75,6 @@ class InfoBarService : public infobars::InfoBarManager,
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
   void WebContentsDestroyed() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Message handlers.
-  void OnDidBlockDisplayingInsecureContent();
 
   // See description in set_ignore_next_reload().
   bool ignore_next_reload_;

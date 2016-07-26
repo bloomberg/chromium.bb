@@ -289,8 +289,6 @@
       'browser/infobars/infobar_responder.h',
       'browser/infobars/infobar_service.cc',
       'browser/infobars/infobar_service.h',
-      'browser/infobars/insecure_content_infobar_delegate.cc',
-      'browser/infobars/insecure_content_infobar_delegate.h',
       'browser/install_verification/win/install_verification.cc',
       'browser/install_verification/win/install_verification.h',
       'browser/install_verification/win/loaded_module_verification.cc',

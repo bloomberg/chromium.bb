@@ -676,10 +676,6 @@ const char kNetLogCaptureMode[]             = "net-log-capture-mode";
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";
 
-// By default, an https page can load images, fonts or frames from an http
-// page. This switch overrides this to block this lesser mixed-content problem.
-const char kNoDisplayingInsecureContent[]   = "no-displaying-insecure-content";
-
 // Disables all experiments set on about:flags. Does not disable about:flags
 // itself. Useful if an experiment makes chrome crash at startup: One can start
 // chrome with --no-experiments, disable the problematic lab at about:flags and

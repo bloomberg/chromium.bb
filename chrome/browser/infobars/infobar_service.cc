@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/infobars/core/infobar.h"
@@ -113,20 +112,6 @@ void InfoBarService::WebContentsDestroyed() {
   web_contents()->RemoveUserData(UserDataKey());
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
-}
-
-bool InfoBarService::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(InfoBarService, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockDisplayingInsecureContent,
-                        OnDidBlockDisplayingInsecureContent)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void InfoBarService::OnDidBlockDisplayingInsecureContent() {
-  InsecureContentInfoBarDelegate::Create(this);
 }
 
 void InfoBarService::OpenURL(const GURL& url,
