@@ -15,8 +15,8 @@ class RelocatablePositionTest : public EditingTestBase {
 TEST_F(RelocatablePositionTest, position)
 {
     setBodyContent("<b>foo</b><textarea>bar</textarea>");
-    Node* boldface = document().querySelector("b", ASSERT_NO_EXCEPTION);
-    Node* textarea = document().querySelector("textarea", ASSERT_NO_EXCEPTION);
+    Node* boldface = document().querySelector("b");
+    Node* textarea = document().querySelector("textarea");
 
     RelocatablePosition relocatablePosition(Position(textarea, PositionAnchorType::BeforeAnchor));
     textarea->remove();

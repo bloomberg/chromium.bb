@@ -56,7 +56,7 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     setShadowContent(shadowContent, "host");
 
     Element* body = document().body();
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    Element* one = body->querySelector("#one");
 
     IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePosition(Position(one, 0)));
     IntRect boundsInFlatTree = absoluteCaretBoundsOf(createVisiblePosition(PositionInFlatTree(one, 0)));
@@ -164,10 +164,10 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement)
     const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
     setBodyContent(bodyContent);
 
-    Node* one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
-    Node* two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
-    Node* three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
-    Node* four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    Node* one = document().querySelector("#one");
+    Node* two = document().querySelector("#two");
+    Node* three = document().querySelector("#three");
+    Node* four = document().querySelector("#four");
     Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
     // Move two, three and four into second html element.
     html->appendChild(two);
@@ -579,10 +579,10 @@ TEST_F(VisibleUnitsTest, inSameLine)
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
 
     Element* body = document().body();
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    Element* two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    Element* four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
-    Element* five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    Element* one = body->querySelector("#one");
+    Element* two = body->querySelector("#two");
+    Element* four = shadowRoot->querySelector("#s4");
+    Element* five = shadowRoot->querySelector("#s5");
 
     EXPECT_TRUE(inSameLine(positionWithAffinityInDOMTree(*one, 0), positionWithAffinityInDOMTree(*two, 0)));
     EXPECT_TRUE(inSameLine(positionWithAffinityInDOMTree(*one->firstChild(), 0), positionWithAffinityInDOMTree(*two->firstChild(), 0)));
@@ -705,10 +705,10 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement)
     const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
     setBodyContent(bodyContent);
 
-    Node* one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
-    Node* two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
-    Node* three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
-    Node* four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    Node* one = document().querySelector("#one");
+    Node* two = document().querySelector("#two");
+    Node* three = document().querySelector("#three");
+    Node* four = document().querySelector("#four");
     Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
     // Move two, three and four into second html element.
     html->appendChild(two);
@@ -1307,7 +1307,7 @@ TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithInvisibleChil
     const char* bodyContent = "<button> </button><script>document.designMode = 'on'</script>";
     setBodyContent(bodyContent);
 
-    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    Node* button = document().querySelector("button");
     EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
 }
 
@@ -1317,7 +1317,7 @@ TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithEmptyLayoutCh
     const char* bodyContent = "<button><rt><script>document.designMode = 'on'</script></rt></button>";
     setBodyContent(bodyContent);
 
-    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    Node* button = document().querySelector("button");
     EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
 }
 

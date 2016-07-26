@@ -62,7 +62,7 @@ protected:
         Document& document = this->document();
 
         document.write("<video>");
-        HTMLVideoElement& video = toHTMLVideoElement(*document.querySelector("video", ASSERT_NO_EXCEPTION));
+        HTMLVideoElement& video = toHTMLVideoElement(*document.querySelector("video"));
         m_mediaControls = video.mediaControls();
 
         // If scripts are not enabled, controls will always be shown.

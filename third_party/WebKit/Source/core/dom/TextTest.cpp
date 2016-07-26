@@ -31,7 +31,7 @@ TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter)
 {
     setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
-    Element* pre = document().querySelector("pre", ASSERT_NO_EXCEPTION);
+    Element* pre = document().querySelector("pre");
     Text* text = toText(pre->firstChild());
 
     Range* range = Range::create(document(), text, 0, text, 2);

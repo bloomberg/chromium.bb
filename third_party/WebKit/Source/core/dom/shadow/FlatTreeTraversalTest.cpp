@@ -116,16 +116,16 @@ TEST_F(FlatTreeTraversalTest, childAt)
     setupSampleHTML(mainHTML, shadowHTML, 0);
 
     Element* body = document().body();
-    Element* m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
-    Element* m00 = m0->querySelector("#m00", ASSERT_NO_EXCEPTION);
-    Element* m01 = m0->querySelector("#m01", ASSERT_NO_EXCEPTION);
+    Element* m0 = body->querySelector("#m0");
+    Element* m00 = m0->querySelector("#m00");
+    Element* m01 = m0->querySelector("#m01");
 
     Element* shadowHost = m0;
     ShadowRoot* shadowRoot = shadowHost->openShadowRoot();
-    Element* s00 = shadowRoot->querySelector("#s00", ASSERT_NO_EXCEPTION);
-    Element* s02 = shadowRoot->querySelector("#s02", ASSERT_NO_EXCEPTION);
-    Element* s03 = shadowRoot->querySelector("#s03", ASSERT_NO_EXCEPTION);
-    Element* s04 = shadowRoot->querySelector("#s04", ASSERT_NO_EXCEPTION);
+    Element* s00 = shadowRoot->querySelector("#s00");
+    Element* s02 = shadowRoot->querySelector("#s02");
+    Element* s03 = shadowRoot->querySelector("#s03");
+    Element* s04 = shadowRoot->querySelector("#s04");
 
     const unsigned numberOfChildNodes = 5;
     Node* expectedChildNodes[5] = { s00, m01, s02, s03, s04 };
@@ -191,24 +191,24 @@ TEST_F(FlatTreeTraversalTest, commonAncestor)
         "<a id='s14'>s14</a>";
     setupSampleHTML(mainHTML, shadowHTML, 1);
     Element* body = document().body();
-    Element* m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
-    Element* m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
-    Element* m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
+    Element* m0 = body->querySelector("#m0");
+    Element* m1 = body->querySelector("#m1");
+    Element* m2 = body->querySelector("#m2");
 
-    Element* m00 = body->querySelector("#m00", ASSERT_NO_EXCEPTION);
-    Element* m01 = body->querySelector("#m01", ASSERT_NO_EXCEPTION);
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
-    Element* m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
-    Element* m12 = body->querySelector("#m12", ASSERT_NO_EXCEPTION);
-    Element* m20 = body->querySelector("#m20", ASSERT_NO_EXCEPTION);
-    Element* m21 = body->querySelector("#m21", ASSERT_NO_EXCEPTION);
+    Element* m00 = body->querySelector("#m00");
+    Element* m01 = body->querySelector("#m01");
+    Element* m10 = body->querySelector("#m10");
+    Element* m11 = body->querySelector("#m11");
+    Element* m12 = body->querySelector("#m12");
+    Element* m20 = body->querySelector("#m20");
+    Element* m21 = body->querySelector("#m21");
 
     ShadowRoot* shadowRoot = m1->openShadowRoot();
-    Element* s10 = shadowRoot->querySelector("#s10", ASSERT_NO_EXCEPTION);
-    Element* s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
-    Element* s12 = shadowRoot->querySelector("#s12", ASSERT_NO_EXCEPTION);
-    Element* s13 = shadowRoot->querySelector("#s13", ASSERT_NO_EXCEPTION);
-    Element* s14 = shadowRoot->querySelector("#s14", ASSERT_NO_EXCEPTION);
+    Element* s10 = shadowRoot->querySelector("#s10");
+    Element* s11 = shadowRoot->querySelector("#s11");
+    Element* s12 = shadowRoot->querySelector("#s12");
+    Element* s13 = shadowRoot->querySelector("#s13");
+    Element* s14 = shadowRoot->querySelector("#s14");
 
     testCommonAncestor(body, *m0, *m1);
     testCommonAncestor(body, *m1, *m2);
@@ -262,17 +262,17 @@ TEST_F(FlatTreeTraversalTest, nextSkippingChildren)
     setupSampleHTML(mainHTML, shadowHTML, 1);
 
     Element* body = document().body();
-    Element* m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
-    Element* m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
-    Element* m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
+    Element* m0 = body->querySelector("#m0");
+    Element* m1 = body->querySelector("#m1");
+    Element* m2 = body->querySelector("#m2");
 
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
-    Element* m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
+    Element* m10 = body->querySelector("#m10");
+    Element* m11 = body->querySelector("#m11");
 
     ShadowRoot* shadowRoot = m1->openShadowRoot();
-    Element* s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
-    Element* s12 = shadowRoot->querySelector("#s12", ASSERT_NO_EXCEPTION);
-    Element* s120 = shadowRoot->querySelector("#s120", ASSERT_NO_EXCEPTION);
+    Element* s11 = shadowRoot->querySelector("#s11");
+    Element* s12 = shadowRoot->querySelector("#s12");
+    Element* s120 = shadowRoot->querySelector("#s120");
 
     // Main tree node to main tree node
     EXPECT_EQ(*m1, FlatTreeTraversal::nextSkippingChildren(*m0));
@@ -320,15 +320,15 @@ TEST_F(FlatTreeTraversalTest, lastWithin)
     setupSampleHTML(mainHTML, shadowHTML, 1);
 
     Element* body = document().body();
-    Element* m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
-    Element* m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
-    Element* m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
+    Element* m0 = body->querySelector("#m0");
+    Element* m1 = body->querySelector("#m1");
+    Element* m2 = body->querySelector("#m2");
 
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
+    Element* m10 = body->querySelector("#m10");
 
     ShadowRoot* shadowRoot = m1->openShadowRoot();
-    Element* s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
-    Element* s12 = shadowRoot->querySelector("#s12", ASSERT_NO_EXCEPTION);
+    Element* s11 = shadowRoot->querySelector("#s11");
+    Element* s12 = shadowRoot->querySelector("#s12");
 
     EXPECT_EQ(m0->firstChild(), FlatTreeTraversal::lastWithin(*m0));
     EXPECT_EQ(*m0->firstChild(), FlatTreeTraversal::lastWithinOrSelf(*m0));
@@ -365,17 +365,17 @@ TEST_F(FlatTreeTraversalTest, previousPostOrder)
     setupSampleHTML(mainHTML, shadowHTML, 1);
 
     Element* body = document().body();
-    Element* m0 = body->querySelector("#m0", ASSERT_NO_EXCEPTION);
-    Element* m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
-    Element* m2 = body->querySelector("#m2", ASSERT_NO_EXCEPTION);
+    Element* m0 = body->querySelector("#m0");
+    Element* m1 = body->querySelector("#m1");
+    Element* m2 = body->querySelector("#m2");
 
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
-    Element* m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
+    Element* m10 = body->querySelector("#m10");
+    Element* m11 = body->querySelector("#m11");
 
     ShadowRoot* shadowRoot = m1->openShadowRoot();
-    Element* s11 = shadowRoot->querySelector("#s11", ASSERT_NO_EXCEPTION);
-    Element* s12 = shadowRoot->querySelector("#s12", ASSERT_NO_EXCEPTION);
-    Element* s120 = shadowRoot->querySelector("#s120", ASSERT_NO_EXCEPTION);
+    Element* s11 = shadowRoot->querySelector("#s11");
+    Element* s12 = shadowRoot->querySelector("#s12");
+    Element* s120 = shadowRoot->querySelector("#s120");
 
     EXPECT_EQ(*m0->firstChild(), FlatTreeTraversal::previousPostOrder(*m0));
     EXPECT_EQ(*s12, FlatTreeTraversal::previousPostOrder(*m1));
@@ -408,7 +408,7 @@ TEST_F(FlatTreeTraversalTest, nextSiblingNotInDocumentFlatTree)
     setupSampleHTML(mainHTML, shadowHTML, 1);
 
     Element* body = document().body();
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
+    Element* m10 = body->querySelector("#m10");
 
     EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*m10));
     EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*m10));
@@ -437,23 +437,23 @@ TEST_F(FlatTreeTraversalTest, redistribution)
         "</div>";
 
     Element* body = document().body();
-    Element* m1 = body->querySelector("#m1", ASSERT_NO_EXCEPTION);
-    Element* m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
+    Element* m1 = body->querySelector("#m1");
+    Element* m10 = body->querySelector("#m10");
 
     ShadowRoot* shadowRoot1 = m1->openShadowRoot();
-    Element* s1 = shadowRoot1->querySelector("#s1", ASSERT_NO_EXCEPTION);
+    Element* s1 = shadowRoot1->querySelector("#s1");
 
     attachV0ShadowRoot(*s1, shadowHTML2);
 
     ShadowRoot* shadowRoot2 = s1->openShadowRoot();
-    Element* s21 = shadowRoot2->querySelector("#s21", ASSERT_NO_EXCEPTION);
+    Element* s21 = shadowRoot2->querySelector("#s21");
 
     EXPECT_EQ(s21, FlatTreeTraversal::nextSibling(*m10));
     EXPECT_EQ(m10, FlatTreeTraversal::previousSibling(*s21));
 
     // FlatTreeTraversal::traverseSiblings does not work for a node which is not in a document flat tree.
     // e.g. The following test fails. The result of FlatTreeTraversal::previousSibling(*m11)) will be #m10, instead of nullptr.
-    // Element* m11 = body->querySelector("#m11", ASSERT_NO_EXCEPTION);
+    // Element* m11 = body->querySelector("#m11");
     // EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*m11));
 }
 
@@ -472,16 +472,16 @@ TEST_F(FlatTreeTraversalTest, v1Simple)
 
     setupDocumentTree(mainHTML);
     Element* body = document().body();
-    Element* host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
-    Element* child1 = body->querySelector("#child1", ASSERT_NO_EXCEPTION);
-    Element* child2 = body->querySelector("#child2", ASSERT_NO_EXCEPTION);
+    Element* host = body->querySelector("#host");
+    Element* child1 = body->querySelector("#child1");
+    Element* child2 = body->querySelector("#child2");
 
     attachOpenShadowRoot(*host, shadowHTML);
     ShadowRoot* shadowRoot = host->openShadowRoot();
-    Element* slot1 = shadowRoot->querySelector("[name=slot1]", ASSERT_NO_EXCEPTION);
-    Element* slot2 = shadowRoot->querySelector("[name=slot2]", ASSERT_NO_EXCEPTION);
-    Element* shadowChild1 = shadowRoot->querySelector("#shadow-child1", ASSERT_NO_EXCEPTION);
-    Element* shadowChild2 = shadowRoot->querySelector("#shadow-child2", ASSERT_NO_EXCEPTION);
+    Element* slot1 = shadowRoot->querySelector("[name=slot1]");
+    Element* slot2 = shadowRoot->querySelector("[name=slot2]");
+    Element* shadowChild1 = shadowRoot->querySelector("#shadow-child1");
+    Element* shadowChild2 = shadowRoot->querySelector("#shadow-child2");
 
     EXPECT_TRUE(slot1);
     EXPECT_TRUE(slot2);
@@ -519,29 +519,29 @@ TEST_F(FlatTreeTraversalTest, v1Redistribution)
     setupDocumentTree(mainHTML);
 
     Element* body = document().body();
-    Element* d1 = body->querySelector("#d1", ASSERT_NO_EXCEPTION);
-    Element* d2 = body->querySelector("#d2", ASSERT_NO_EXCEPTION);
-    Element* d3 = body->querySelector("#d3", ASSERT_NO_EXCEPTION);
-    Element* d4 = body->querySelector("#d4", ASSERT_NO_EXCEPTION);
-    Element* d5 = body->querySelector("#d5", ASSERT_NO_EXCEPTION);
-    Element* d6 = body->querySelector("#d6", ASSERT_NO_EXCEPTION);
+    Element* d1 = body->querySelector("#d1");
+    Element* d2 = body->querySelector("#d2");
+    Element* d3 = body->querySelector("#d3");
+    Element* d4 = body->querySelector("#d4");
+    Element* d5 = body->querySelector("#d5");
+    Element* d6 = body->querySelector("#d6");
 
     attachOpenShadowRoot(*d1, shadowHTML1);
     ShadowRoot* shadowRoot1 = d1->openShadowRoot();
-    Element* d11 = shadowRoot1->querySelector("#d1-1", ASSERT_NO_EXCEPTION);
-    Element* d12 = shadowRoot1->querySelector("#d1-2", ASSERT_NO_EXCEPTION);
-    Element* d13 = shadowRoot1->querySelector("#d1-3", ASSERT_NO_EXCEPTION);
-    Element* d14 = shadowRoot1->querySelector("#d1-4", ASSERT_NO_EXCEPTION);
-    Element* d1s0 = shadowRoot1->querySelector("#d1-s0", ASSERT_NO_EXCEPTION);
-    Element* d1s1 = shadowRoot1->querySelector("[name=d1-s1]", ASSERT_NO_EXCEPTION);
-    Element* d1s2 = shadowRoot1->querySelector("[name=d1-s2]", ASSERT_NO_EXCEPTION);
+    Element* d11 = shadowRoot1->querySelector("#d1-1");
+    Element* d12 = shadowRoot1->querySelector("#d1-2");
+    Element* d13 = shadowRoot1->querySelector("#d1-3");
+    Element* d14 = shadowRoot1->querySelector("#d1-4");
+    Element* d1s0 = shadowRoot1->querySelector("#d1-s0");
+    Element* d1s1 = shadowRoot1->querySelector("[name=d1-s1]");
+    Element* d1s2 = shadowRoot1->querySelector("[name=d1-s2]");
 
     attachOpenShadowRoot(*d11, shadowHTML2);
     ShadowRoot* shadowRoot2 = d11->openShadowRoot();
-    Element* d111 = shadowRoot2->querySelector("#d1-1-1", ASSERT_NO_EXCEPTION);
-    Element* d112 = shadowRoot2->querySelector("#d1-1-2", ASSERT_NO_EXCEPTION);
-    Element* d11s1 = shadowRoot2->querySelector("[name=d1-1-s1]", ASSERT_NO_EXCEPTION);
-    Element* d11s2 = shadowRoot2->querySelector("[name=d1-1-s2]", ASSERT_NO_EXCEPTION);
+    Element* d111 = shadowRoot2->querySelector("#d1-1-1");
+    Element* d112 = shadowRoot2->querySelector("#d1-1-2");
+    Element* d11s1 = shadowRoot2->querySelector("[name=d1-1-s1]");
+    Element* d11s2 = shadowRoot2->querySelector("[name=d1-1-s2]");
 
     EXPECT_TRUE(d5);
     EXPECT_TRUE(d12);

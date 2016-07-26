@@ -174,9 +174,9 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
 
     Element* body = document().body();
-    Element* host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    Element* six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
+    Element* host = body->querySelector("#host");
+    Element* one = body->querySelector("#one");
+    Element* six = shadowRoot->querySelector("#s6");
 
     VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(host));
@@ -195,9 +195,9 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
 
     Element* body = document().body();
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    Element* two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    Element* five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    Element* one = body->querySelector("#one");
+    Element* two = body->querySelector("#two");
+    Element* five = shadowRoot->querySelector("#s5");
 
     VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(two));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(two));
@@ -226,9 +226,9 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     //    <span id="s6">66</span>
     //  </p>
     Element* body = document().body();
-    Element* host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    Element* eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
+    Element* host = body->querySelector("#host");
+    Element* one = body->querySelector("#one");
+    Element* eight = shadowRoot2->querySelector("#s8");
 
     VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot2));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::afterNode(eight));

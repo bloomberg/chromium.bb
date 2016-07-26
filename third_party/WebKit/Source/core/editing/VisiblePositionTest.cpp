@@ -20,10 +20,10 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes)
     ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
 
     Element* body = document().body();
-    Element* one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    Element* two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    Element* four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
-    Element* five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    Element* one = body->querySelector("#one");
+    Element* two = body->querySelector("#two");
+    Element* four = shadowRoot->querySelector("#s4");
+    Element* five = shadowRoot->querySelector("#s5");
 
     EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
     EXPECT_EQ(Position(one->firstChild(), 0), createVisiblePosition(Position(one, 0)).deepEquivalent());

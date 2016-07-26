@@ -18,7 +18,7 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash)
 {
     setBodyContent("<input placeholder='placeholder'>abc");
     updateAllLifecyclePhases();
-    Element* input = document().querySelector("input", ASSERT_NO_EXCEPTION);
+    Element* input = document().querySelector("input");
     input->focus();
     document().settings()->setUnifiedTextCheckerEnabled(true);
     // Do not crash in AdvanceToNextMisspelling command.
