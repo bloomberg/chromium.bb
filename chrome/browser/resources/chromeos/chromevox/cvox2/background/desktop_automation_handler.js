@@ -359,8 +359,12 @@ DesktopAutomationHandler.prototype = {
 
       this.lastValueChanged_ = new Date();
 
-      new Output().format('$value', evt.target)
-          .go();
+      var output = new Output();
+
+      if (t.root.role == RoleType.desktop)
+        output.withQueueMode(cvox.QueueMode.FLUSH);
+
+      output.format('$value', evt.target).go();
     }
   },
 
