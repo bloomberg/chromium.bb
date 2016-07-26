@@ -74,11 +74,9 @@ cr.define('downloads', function() {
       if (menu.items.indexOf(e.relatedTarget) >= 0)
         return;
 
-      // This can be this.$.more.restoreFocusOnClose = false when this lands:
-      // https://github.com/PolymerElements/paper-menu-button/pull/94
-      this.$.more.$.dropdown.restoreFocusOnClose = false;
+      this.$.more.restoreFocusOnClose = false;
       this.closeMoreActions_();
-      this.$.more.$.dropdown.restoreFocusOnClose = true;
+      this.$.more.restoreFocusOnClose = true;
     },
 
     /** @private */
