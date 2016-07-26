@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import collections
 import contextlib
+import ctypes
 import errno
 import functools
 import multiprocessing
@@ -808,3 +809,30 @@ def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
         queue.put((idx, input_args))
 
     return [x[1] for x in sorted(out_queue.get() for _ in range(len(inputs)))]
+
+
+PR_SET_PDEATHSIG = 1
+
+
+def ExitWithParent(sig=signal.SIGHUP):
+  """Sets this process to receive |sig| when the parent dies.
+
+  Note: this uses libc, so it only works on linux.
+
+  Args:
+    sig: Signal to recieve. Defaults to SIGHUP.
+
+  Returns:
+    Whether we were successful in setting the deathsignal flag
+  """
+  libc_name = ctypes.util.find_library('c')
+  if not libc_name:
+    return False
+  try:
+    libc = ctypes.CDLL(libc_name)
+    libc.prctl(PR_SET_PDEATHSIG, sig)
+    return True
+  # We might not be able to load the library (OSError), or prctl might be
+  # missing (AttributeError)
+  except (OSError, AttributeError):
+    return False

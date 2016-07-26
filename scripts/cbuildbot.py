@@ -1015,11 +1015,13 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    ts_mon_config.SetupTsMonGlobalState('cbuildbot')
+    context = ts_mon_config.SetupTsMonGlobalState('cbuildbot', indirect=True)
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
+    context = ts_mon_config.TrivialContextManager()
   else:
     cidb.CIDBConnectionFactory.SetupNoCidb()
+    context = ts_mon_config.TrivialContextManager()
 
   db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
   topology.FetchTopologyFromCIDB(db)
@@ -1033,6 +1035,8 @@ def _SetupConnections(options, build_config):
   else:
     graphite.ESMetadataFactory.SetupReadOnly()
     graphite.StatsFactory.SetupMock()
+
+  return context
 
 
 def _FetchInitialBootstrapConfigRepo(repo_url, branch_name):
@@ -1120,9 +1124,9 @@ def main(argv):
       _ConfirmRemoteBuildbotRun()
 
     print('Submitting tryjob...')
-    _SetupConnections(options, build_config)
-    tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
-    tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
+    with _SetupConnections(options, build_config):
+      tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
+      tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
     print('Tryjob submitted!')
     print(('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink()))
@@ -1246,8 +1250,7 @@ def main(argv):
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)
 
-    _SetupConnections(options, build_config)
-    stack.Add(ts_mon_config.TsMonFlusher)
+    stack.Add(_SetupConnections, options, build_config)
     retry_stats.SetupStats()
 
     timeout_display_message = None
