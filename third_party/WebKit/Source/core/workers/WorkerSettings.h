@@ -12,8 +12,7 @@ namespace blink {
 
 class CORE_EXPORT WorkerSettings {
 public:
-    WorkerSettings(Settings*);
-    virtual ~WorkerSettings() {}
+    explicit WorkerSettings(Settings*);
 
     bool disableReadingFromCanvas() const { return m_disableReadingFromCanvas; }
 
