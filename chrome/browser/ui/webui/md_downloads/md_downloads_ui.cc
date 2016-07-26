@@ -116,6 +116,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("constants.js", IDR_MD_DOWNLOADS_CONSTANTS_JS);
   source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
   source->AddResourcePath("i18n_setup.html", IDR_MD_DOWNLOADS_I18N_SETUP_HTML);
+  source->AddResourcePath("icons.html", IDR_MD_DOWNLOADS_ICONS_HTML);
   source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
