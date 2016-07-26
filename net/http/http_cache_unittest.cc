@@ -63,6 +63,8 @@ using base::Time;
 
 namespace net {
 
+using CacheEntryStatus = HttpResponseInfo::CacheEntryStatus;
+
 namespace {
 
 // Tests the load timing values of a request that goes through a
@@ -1060,6 +1062,8 @@ TEST(HttpCache, SimpleGET_NetworkAccessed_Network) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_NOT_IN_CACHE,
+            response_info.cache_entry_status);
 }
 
 // Confirm if we have a fresh entry in cache, it isn't marked as
@@ -1082,6 +1086,7 @@ TEST(HttpCache, SimpleGET_NetworkAccessed_Cache) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_FALSE(response_info.server_data_unavailable);
   EXPECT_FALSE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_USED, response_info.cache_entry_status);
 }
 
 TEST(HttpCache, SimpleGET_LoadBypassCache) {
@@ -8008,6 +8013,93 @@ TEST(HttpCache, RevalidationUpdatesSSLInfo) {
   // The new SSL state is reported.
   EXPECT_EQ(status2, response_info.ssl_info.connection_status);
   EXPECT_TRUE(cert2->Equals(response_info.ssl_info.cert.get()));
+}
+
+TEST(HttpCache, CacheEntryStatusOther) {
+  MockHttpCache cache;
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kRangeGET_Transaction,
+                                     &response_info);
+
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_OTHER, response_info.cache_entry_status);
+}
+
+TEST(HttpCache, CacheEntryStatusNotInCache) {
+  MockHttpCache cache;
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
+                                     &response_info);
+
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_NOT_IN_CACHE,
+            response_info.cache_entry_status);
+}
+
+TEST(HttpCache, CacheEntryStatusUsed) {
+  MockHttpCache cache;
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
+                                     &response_info);
+
+  EXPECT_TRUE(response_info.was_cached);
+  EXPECT_FALSE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_USED, response_info.cache_entry_status);
+}
+
+TEST(HttpCache, CacheEntryStatusValidated) {
+  MockHttpCache cache;
+  RunTransactionTest(cache.http_cache(), kETagGET_Transaction);
+
+  ScopedMockTransaction still_valid(kETagGET_Transaction);
+  still_valid.load_flags = LOAD_VALIDATE_CACHE;  // Force a validation.
+  still_valid.handler = ETagGet_ConditionalRequest_Handler;
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), still_valid,
+                                     &response_info);
+
+  EXPECT_TRUE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_VALIDATED,
+            response_info.cache_entry_status);
+}
+
+TEST(HttpCache, CacheEntryStatusUpdated) {
+  MockHttpCache cache;
+  RunTransactionTest(cache.http_cache(), kETagGET_Transaction);
+
+  ScopedMockTransaction update(kETagGET_Transaction);
+  update.load_flags = LOAD_VALIDATE_CACHE;  // Force a validation.
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), update,
+                                     &response_info);
+
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_UPDATED, response_info.cache_entry_status);
+}
+
+TEST(HttpCache, CacheEntryStatusCantConditionalize) {
+  MockHttpCache cache;
+  cache.FailConditionalizations();
+  RunTransactionTest(cache.http_cache(), kTypicalGET_Transaction);
+
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(),
+                                     kTypicalGET_Transaction, &response_info);
+
+  EXPECT_FALSE(response_info.was_cached);
+  EXPECT_TRUE(response_info.network_accessed);
+  EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
+            response_info.cache_entry_status);
 }
 
 }  // namespace net

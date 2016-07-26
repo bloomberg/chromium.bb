@@ -106,6 +106,7 @@ enum {
 
 HttpResponseInfo::HttpResponseInfo()
     : was_cached(false),
+      cache_entry_status(CacheEntryStatus::ENTRY_UNDEFINED),
       server_data_unavailable(false),
       network_accessed(false),
       was_fetched_via_spdy(false),
@@ -118,6 +119,7 @@ HttpResponseInfo::HttpResponseInfo()
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
     : was_cached(rhs.was_cached),
+      cache_entry_status(rhs.cache_entry_status),
       server_data_unavailable(rhs.server_data_unavailable),
       network_accessed(rhs.network_accessed),
       was_fetched_via_spdy(rhs.was_fetched_via_spdy),
@@ -144,6 +146,7 @@ HttpResponseInfo::~HttpResponseInfo() {
 
 HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   was_cached = rhs.was_cached;
+  cache_entry_status = rhs.cache_entry_status;
   server_data_unavailable = rhs.server_data_unavailable;
   network_accessed = rhs.network_accessed;
   was_fetched_via_spdy = rhs.was_fetched_via_spdy;
