@@ -319,6 +319,11 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHea
     contentSecurityPolicy()->bindToExecutionContext(getExecutionContext());
 }
 
+void WorkerGlobalScope::setWorkerSettings(std::unique_ptr<WorkerSettings> workerSettings)
+{
+    m_workerSettings = std::move(workerSettings);
+}
+
 void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());

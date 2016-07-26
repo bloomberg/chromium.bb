@@ -417,6 +417,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     KURL scriptURL = m_mainScriptLoader->url();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
+    std::unique_ptr<WorkerSettings> workerSettings = wrapUnique(new WorkerSettings(document->settings()));
 
     std::unique_ptr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         scriptURL,
@@ -430,6 +431,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         workerClients,
         m_mainScriptLoader->responseAddressSpace(),
         m_mainScriptLoader->originTrialTokens(),
+        std::move(workerSettings),
         static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();

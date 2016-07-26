@@ -24,7 +24,7 @@ public:
 
         CanvasRenderingContext* create(ScriptState* scriptState, OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs) override
         {
-            return new OffscreenCanvasRenderingContext2D(canvas, attrs);
+            return new OffscreenCanvasRenderingContext2D(scriptState, canvas, attrs);
         }
 
         CanvasRenderingContext::ContextType getContextType() const override
@@ -75,7 +75,7 @@ public:
     ImageBitmap* transferToImageBitmap(ExceptionState&) final;
 
 protected:
-    OffscreenCanvasRenderingContext2D(OffscreenCanvas*, const CanvasContextCreationAttributes& attrs);
+    OffscreenCanvasRenderingContext2D(ScriptState*, OffscreenCanvas*, const CanvasContextCreationAttributes& attrs);
     DECLARE_VIRTUAL_TRACE();
 
 private:

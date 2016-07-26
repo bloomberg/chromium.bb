@@ -2290,6 +2290,8 @@
             'workers/WorkerReportingProxy.h',
             'workers/WorkerScriptLoader.cpp',
             'workers/WorkerScriptLoader.h',
+            'workers/WorkerSettings.cpp',
+            'workers/WorkerSettings.h',
             'workers/WorkerThread.cpp',
             'workers/WorkerThread.h',
             'workers/WorkerThreadLifecycleObserver.cpp',

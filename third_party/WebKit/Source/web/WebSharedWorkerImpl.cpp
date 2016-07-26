@@ -337,6 +337,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
     ContentSecurityPolicy* contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
+    std::unique_ptr<WorkerSettings> workerSettings = wrapUnique(new WorkerSettings(document->settings()));
     std::unique_ptr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
         m_loadingDocument->userAgent(),
@@ -348,7 +349,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         starterOrigin,
         workerClients,
         m_mainScriptLoader->responseAddressSpace(),
-        m_mainScriptLoader->originTrialTokens());
+        m_mainScriptLoader->originTrialTokens(),
+        std::move(workerSettings));
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());

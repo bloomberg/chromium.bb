@@ -36,7 +36,7 @@
 
 namespace blink {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const String& referrerPolicy, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const String& referrerPolicy, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, std::unique_ptr<WorkerSettings> workerSettings, V8CacheOptions v8CacheOptions)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
@@ -46,6 +46,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const St
     , m_starterOriginPrivilegeData(starterOrigin ? starterOrigin->createPrivilegeData() : nullptr)
     , m_workerClients(workerClients)
     , m_addressSpace(addressSpace)
+    , m_workerSettings(std::move(workerSettings))
     , m_v8CacheOptions(v8CacheOptions)
 {
     m_contentSecurityPolicyHeaders = wrapUnique(new Vector<CSPHeaderAndType>());

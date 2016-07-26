@@ -46,6 +46,8 @@ public:
 
     bool originClean() const;
     void setOriginTainted() { m_originClean = false; }
+    // TODO(crbug.com/630356): apply the flag to WebGL context as well
+    void setDisableReadingFromCanvasTrue() { m_disableReadingFromCanvas = true; }
 
     void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce)
     {
@@ -72,6 +74,7 @@ private:
     bool m_isNeutered = false;
 
     bool m_originClean;
+    bool m_disableReadingFromCanvas = false;
 
     // cc::SurfaceId is broken into three integer components as this can be used
     // in transfer of OffscreenCanvas across threads

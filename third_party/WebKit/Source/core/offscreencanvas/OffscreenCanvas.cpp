@@ -106,9 +106,7 @@ void OffscreenCanvas::registerRenderingContextFactory(std::unique_ptr<CanvasRend
 
 bool OffscreenCanvas::originClean() const
 {
-    // TODO(crbug.com/607575): Make Settings accessable in worker and use
-    // disableReadingFromCanvas to determine originClean value.
-    return m_originClean;
+    return m_originClean && !m_disableReadingFromCanvas;
 }
 
 DEFINE_TRACE(OffscreenCanvas)

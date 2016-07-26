@@ -186,6 +186,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebugge
         nullptr, /* workerClients */
         WebAddressSpaceLocal,
         nullptr /* originTrialToken */,
+        nullptr /* WorkerSettings */,
         V8CacheOptionsDefault);
     m_workerThread->start(std::move(startupData));
 

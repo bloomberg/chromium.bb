@@ -6,6 +6,9 @@
 
 #include "bindings/modules/v8/OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext.h"
 #include "core/frame/ImageBitmap.h"
+#include "core/frame/Settings.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerSettings.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "wtf/Assertions.h"
@@ -18,10 +21,20 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D()
 {
 }
 
-OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs)
+OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(ScriptState* scriptState, OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs)
     : CanvasRenderingContext(nullptr, canvas)
     , m_hasAlpha(attrs.alpha())
 {
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    if (executionContext->isDocument()) {
+        if (toDocument(executionContext)->settings()->disableReadingFromCanvas())
+            canvas->setDisableReadingFromCanvasTrue();
+        return;
+    }
+
+    WorkerSettings* workerSettings = toWorkerGlobalScope(executionContext)->workerSettings();
+    if (workerSettings && workerSettings->disableReadingFromCanvas())
+        canvas->setDisableReadingFromCanvasTrue();
 }
 
 DEFINE_TRACE(OffscreenCanvasRenderingContext2D)

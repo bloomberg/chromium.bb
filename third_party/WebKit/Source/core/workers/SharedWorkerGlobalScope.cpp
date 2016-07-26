@@ -57,6 +57,7 @@ SharedWorkerGlobalScope* SharedWorkerGlobalScope::create(const String& name, Sha
     // passed along to the created 'context'.
     SharedWorkerGlobalScope* context = new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, std::move(startupData->m_starterOriginPrivilegeData), startupData->m_workerClients.release());
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
+    context->setWorkerSettings(std::move(startupData->m_workerSettings));
     if (!startupData->m_referrerPolicy.isNull())
         context->parseAndSetReferrerPolicy(startupData->m_referrerPolicy);
     context->setAddressSpace(startupData->m_addressSpace);
