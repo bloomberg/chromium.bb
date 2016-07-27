@@ -118,3 +118,14 @@ class CppChecker(object):
     handled by this checker.
     """
     return os.path.splitext(file_path)[1] in CppChecker.EXTENSIONS
+
+  def ShouldCheck(self, file_path):
+    """Check if the new #include file path should be presubmit checked.
+
+    Args:
+      file_path: file path to be checked
+
+    Return:
+      bool: True if the file should be checked; False otherwise.
+    """
+    return self.IsCppFile(file_path)
