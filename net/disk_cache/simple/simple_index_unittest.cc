@@ -30,7 +30,7 @@ namespace {
 
 const base::Time kTestLastUsedTime =
     base::Time::UnixEpoch() + base::TimeDelta::FromDays(20);
-const uint64_t kTestEntrySize = 789;
+const uint32_t kTestEntrySize = 789;
 
 }  // namespace
 
@@ -143,7 +143,8 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
                                  base::Time last_used_time,
                                  int entry_size) {
     index_file_->load_result()->entries.insert(std::make_pair(
-        hash_key, EntryMetadata(last_used_time, entry_size)));
+        hash_key, EntryMetadata(last_used_time,
+                                base::checked_cast<uint32_t>(entry_size))));
   }
 
   void ReturnIndexFile() {
@@ -219,11 +220,11 @@ TEST_F(EntryMetadataTest, Serialize) {
 TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   index()->SetMaxSize(100);
   index()->Insert(hashes_.at<2>());
-  index()->UpdateEntrySize(hashes_.at<2>(), 2);
+  index()->UpdateEntrySize(hashes_.at<2>(), 2u);
   index()->Insert(hashes_.at<3>());
-  index()->UpdateEntrySize(hashes_.at<3>(), 3);
+  index()->UpdateEntrySize(hashes_.at<3>(), 3u);
   index()->Insert(hashes_.at<4>());
-  index()->UpdateEntrySize(hashes_.at<4>(), 4);
+  index()->UpdateEntrySize(hashes_.at<4>(), 4u);
   EXPECT_EQ(9U, index()->cache_size_);
   {
     std::unique_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
@@ -236,10 +237,10 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
     result->did_load = true;
     const uint64_t new_hash_key = hashes_.at<11>();
     result->entries.insert(
-        std::make_pair(new_hash_key, EntryMetadata(base::Time::Now(), 11)));
+        std::make_pair(new_hash_key, EntryMetadata(base::Time::Now(), 11u)));
     const uint64_t redundant_hash_key = hashes_.at<4>();
-    result->entries.insert(std::make_pair(redundant_hash_key,
-                                          EntryMetadata(base::Time::Now(), 4)));
+    result->entries.insert(std::make_pair(
+        redundant_hash_key, EntryMetadata(base::Time::Now(), 4u)));
     index()->MergeInitializingSet(std::move(result));
   }
   EXPECT_EQ(2U + 3U + 4U + 11U, index()->cache_size_);
@@ -541,7 +542,7 @@ TEST_F(SimpleIndexTest, BasicEviction) {
                             now - base::TimeDelta::FromDays(2),
                             475u);
   index()->Insert(hashes_.at<2>());
-  index()->UpdateEntrySize(hashes_.at<2>(), 475);
+  index()->UpdateEntrySize(hashes_.at<2>(), 475u);
   ReturnIndexFile();
 
   WaitForTimeChange();
@@ -558,7 +559,7 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   // TODO(rdsmith): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
-  index()->UpdateEntrySize(hashes_.at<3>(), 475);
+  index()->UpdateEntrySize(hashes_.at<3>(), 475u);
   EXPECT_EQ(1, doom_entries_calls());
   EXPECT_EQ(1, index()->GetEntryCount());
   EXPECT_FALSE(index()->Has(hashes_.at<1>()));
@@ -585,7 +586,7 @@ TEST_F(SimpleIndexTest, DiskWriteQueued) {
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
   index()->write_to_disk_timer_.Stop();
 
-  index()->UpdateEntrySize(kHash1, 20);
+  index()->UpdateEntrySize(kHash1, 20u);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
   index()->write_to_disk_timer_.Stop();
 
@@ -602,7 +603,7 @@ TEST_F(SimpleIndexTest, DiskWriteExecuted) {
 
   const uint64_t kHash1 = hashes_.at<1>();
   index()->Insert(kHash1);
-  index()->UpdateEntrySize(kHash1, 20);
+  index()->UpdateEntrySize(kHash1, 20u);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
   base::Closure user_task(index()->write_to_disk_timer_.user_task());
   index()->write_to_disk_timer_.Stop();
@@ -630,7 +631,7 @@ TEST_F(SimpleIndexTest, DiskWritePostponed) {
   EXPECT_FALSE(index()->write_to_disk_timer_.IsRunning());
 
   index()->Insert(hashes_.at<1>());
-  index()->UpdateEntrySize(hashes_.at<1>(), 20);
+  index()->UpdateEntrySize(hashes_.at<1>(), 20u);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
   base::TimeTicks expected_trigger(
       index()->write_to_disk_timer_.desired_run_time());
@@ -638,7 +639,7 @@ TEST_F(SimpleIndexTest, DiskWritePostponed) {
   WaitForTimeChange();
   EXPECT_EQ(expected_trigger, index()->write_to_disk_timer_.desired_run_time());
   index()->Insert(hashes_.at<2>());
-  index()->UpdateEntrySize(hashes_.at<2>(), 40);
+  index()->UpdateEntrySize(hashes_.at<2>(), 40u);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
   EXPECT_LT(expected_trigger, index()->write_to_disk_timer_.desired_run_time());
   index()->write_to_disk_timer_.Stop();

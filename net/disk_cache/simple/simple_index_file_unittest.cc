@@ -170,7 +170,9 @@ TEST_F(SimpleIndexFileTest, Serialize) {
       static_cast<uint64_t>(kNumHashes), 456);
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64_t hash = kHashes[i];
-    metadata_entries[i] = EntryMetadata(Time(), hash);
+    // TODO(eroman): Should restructure the test so no casting here (and same
+    //               elsewhere where a hash is cast to an entry size).
+    metadata_entries[i] = EntryMetadata(Time(), static_cast<uint32_t>(hash));
     SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
@@ -240,7 +242,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
   EntryMetadata metadata_entries[kNumHashes];
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64_t hash = kHashes[i];
-    metadata_entries[i] = EntryMetadata(Time(), hash);
+    metadata_entries[i] = EntryMetadata(Time(), static_cast<uint32_t>(hash));
     SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
@@ -387,7 +389,7 @@ TEST_F(SimpleIndexFileTest, OverwritesStaleTempFile) {
 
   // Write the index file.
   SimpleIndex::EntrySet entries;
-  SimpleIndex::InsertInEntrySet(11, EntryMetadata(Time(), 11), &entries);
+  SimpleIndex::InsertInEntrySet(11, EntryMetadata(Time(), 11u), &entries);
   net::TestClosure closure;
   simple_index_file.WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
                                 entries, 120U, base::TimeTicks(), false,

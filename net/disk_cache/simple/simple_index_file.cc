@@ -152,16 +152,17 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
   if (last_used_time.is_null())
     last_used_time = file_info.last_modified;
 
-  int64_t file_size = file_info.size;
   SimpleIndex::EntrySet::iterator it = entries->find(hash_key);
+  base::CheckedNumeric<uint32_t> total_entry_size = file_info.size;
+
   if (it == entries->end()) {
     SimpleIndex::InsertInEntrySet(
-        hash_key,
-        EntryMetadata(last_used_time, file_size),
+        hash_key, EntryMetadata(last_used_time, total_entry_size.ValueOrDie()),
         entries);
   } else {
     // Summing up the total size of the entry through all the *_[0-1] files
-    it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
+    total_entry_size += it->second.GetEntrySize();
+    it->second.SetEntrySize(total_entry_size.ValueOrDie());
   }
 }
 

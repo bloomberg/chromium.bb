@@ -83,9 +83,9 @@ EntryMetadata::EntryMetadata()
     entry_size_(0) {
 }
 
-EntryMetadata::EntryMetadata(base::Time last_used_time, uint64_t entry_size)
-    : last_used_time_seconds_since_epoch_(0),
-      entry_size_(base::checked_cast<int32_t>(entry_size)) {
+EntryMetadata::EntryMetadata(base::Time last_used_time,
+                             base::StrictNumeric<uint32_t> entry_size)
+    : last_used_time_seconds_since_epoch_(0), entry_size_(entry_size) {
   SetLastUsedTime(last_used_time);
 }
 
@@ -112,12 +112,12 @@ void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
     last_used_time_seconds_since_epoch_ = 1;
 }
 
-uint64_t EntryMetadata::GetEntrySize() const {
+uint32_t EntryMetadata::GetEntrySize() const {
   return entry_size_;
 }
 
-void EntryMetadata::SetEntrySize(uint64_t entry_size) {
-  entry_size_ = base::checked_cast<int32_t>(entry_size);
+void EntryMetadata::SetEntrySize(base::StrictNumeric<uint32_t> entry_size) {
+  entry_size_ = entry_size;
 }
 
 void EntryMetadata::Serialize(base::Pickle* pickle) const {
@@ -132,11 +132,10 @@ bool EntryMetadata::Deserialize(base::PickleIterator* it) {
   int64_t tmp_last_used_time;
   uint64_t tmp_entry_size;
   if (!it->ReadInt64(&tmp_last_used_time) || !it->ReadUInt64(&tmp_entry_size) ||
-      tmp_entry_size >
-          static_cast<uint64_t>(std::numeric_limits<int32_t>::max()))
+      tmp_entry_size > std::numeric_limits<decltype(entry_size_)>::max())
     return false;
   SetLastUsedTime(base::Time::FromInternalValue(tmp_last_used_time));
-  entry_size_ = static_cast<int32_t>(tmp_entry_size);
+  entry_size_ = static_cast<uint32_t>(tmp_entry_size);
   return true;
 }
 
@@ -254,8 +253,8 @@ void SimpleIndex::Insert(uint64_t entry_hash) {
   // Upon insert we don't know yet the size of the entry.
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
-  InsertInEntrySet(
-      entry_hash, EntryMetadata(base::Time::Now(), 0), &entries_set_);
+  InsertInEntrySet(entry_hash, EntryMetadata(base::Time::Now(), 0u),
+                   &entries_set_);
   if (!initialized_)
     removed_entries_.erase(entry_hash);
   PostponeWritingToDisk();
@@ -265,7 +264,7 @@ void SimpleIndex::Remove(uint64_t entry_hash) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   EntrySet::iterator it = entries_set_.find(entry_hash);
   if (it != entries_set_.end()) {
-    UpdateEntryIteratorSize(&it, 0);
+    UpdateEntryIteratorSize(&it, 0u);
     entries_set_.erase(it);
   }
 
@@ -342,7 +341,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
                                                    AsWeakPtr()));
 }
 
-bool SimpleIndex::UpdateEntrySize(uint64_t entry_hash, int64_t entry_size) {
+bool SimpleIndex::UpdateEntrySize(uint64_t entry_hash,
+                                  base::StrictNumeric<uint32_t> entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   EntrySet::iterator it = entries_set_.find(entry_hash);
   if (it == entries_set_.end())
@@ -387,13 +387,14 @@ void SimpleIndex::PostponeWritingToDisk() {
       FROM_HERE, base::TimeDelta::FromMilliseconds(delay), write_to_disk_cb_);
 }
 
-void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
-                                          int64_t entry_size) {
+void SimpleIndex::UpdateEntryIteratorSize(
+    EntrySet::iterator* it,
+    base::StrictNumeric<uint32_t> entry_size) {
   // Update the total cache size with the new entry size.
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_GE(cache_size_, (*it)->second.GetEntrySize());
   cache_size_ -= (*it)->second.GetEntrySize();
-  cache_size_ += entry_size;
+  cache_size_ += static_cast<uint32_t>(entry_size);
   (*it)->second.SetEntrySize(entry_size);
 }
 

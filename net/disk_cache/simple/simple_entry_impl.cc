@@ -1392,8 +1392,10 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
     data_size_[i] = entry_stat.data_size(i);
   }
   sparse_data_size_ = entry_stat.sparse_data_size();
-  if (!doomed_ && backend_.get())
-    backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
+  if (!doomed_ && backend_.get()) {
+    backend_->index()->UpdateEntrySize(
+        entry_hash_, base::checked_cast<uint32_t>(GetDiskUsage()));
+  }
 }
 
 int64_t SimpleEntryImpl::GetDiskUsage() const {
