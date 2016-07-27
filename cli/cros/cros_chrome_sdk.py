@@ -626,6 +626,7 @@ class ChromeSDKCommand(command.CliCommand):
     if not options.fastbuild:
       # Enable debug fission for GYP. linux_use_debug_fission cannot be used
       # because it doesn't have effect on Release builds.
+      # TODO: Get rid of this once we remove support for GYP.
       env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
       env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
 
@@ -743,9 +744,12 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cxx'] = env['CXX']
     gn_args['cros_target_ld'] = env['LD']
     # We need to reset extra C/CXX flags to remove references to
-    # EBUILD_CFLAGS, EBUILD_CXXFLAGS
-    gn_args['cros_target_extra_cflags'] = env['CFLAGS']
-    gn_args['cros_target_extra_cxxflags'] = env['CXXFLAGS']
+    # EBUILD_CFLAGS, EBUILD_CXXFLAGS. We also need to remove redundant
+    # -gsplit-dwarf (only needed while we still support GYP).
+    gn_args['cros_target_extra_cflags'] = env['CFLAGS'].replace(
+        '-gsplit-dwarf', '')
+    gn_args['cros_target_extra_cxxflags'] = env['CXXFLAGS'].replace(
+        '-gsplit-dwarf', '')
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
