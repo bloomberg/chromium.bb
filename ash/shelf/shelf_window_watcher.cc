@@ -7,23 +7,20 @@
 #include <memory>
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/shelf/shelf_util.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
-#include "ash/shell.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/wm/public/activation_client.h"
 
+namespace ash {
 namespace {
 
 // Sets ShelfItem property by using the value of |details|.
@@ -37,121 +34,104 @@ void SetShelfItemDetailsForShelfItem(ash::ShelfItem* item,
 }
 
 // Returns true if |window| has a ShelfItem added by ShelfWindowWatcher.
-bool HasShelfItemForWindow(aura::Window* window) {
-  if (ash::GetShelfItemDetailsForWindow(window) != NULL &&
-      ash::GetShelfIDForWindow(window) != ash::kInvalidShelfID)
-    return true;
-  return false;
-}
-
-// Returns true if |window| is in the process of being dragged.
-bool IsDragging(aura::Window* window) {
-  return ash::wm::GetWindowState(window)->is_dragged();
+bool HasShelfItemForWindow(WmWindow* window) {
+  return window->GetShelfItemDetails() &&
+         window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID;
 }
 
 }  // namespace
 
-namespace ash {
-
-ShelfWindowWatcher::RootWindowObserver::RootWindowObserver(
+ShelfWindowWatcher::ContainerWindowObserver::ContainerWindowObserver(
     ShelfWindowWatcher* window_watcher)
     : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::RootWindowObserver::~RootWindowObserver() {}
+ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() {}
 
-void ShelfWindowWatcher::RootWindowObserver::OnWindowDestroying(
-    aura::Window* window) {
-  window_watcher_->OnRootWindowRemoved(window);
+void ShelfWindowWatcher::ContainerWindowObserver::OnWindowTreeChanged(
+    WmWindow* window,
+    const TreeChangeParams& params) {
+  if (!params.old_parent && params.new_parent &&
+      params.new_parent->GetShellWindowId() ==
+          kShellWindowId_DefaultContainer) {
+    // A new window was created in the default container.
+    window_watcher_->OnUserWindowAdded(params.target);
+  }
 }
 
-ShelfWindowWatcher::RemovedWindowObserver::RemovedWindowObserver(
+void ShelfWindowWatcher::ContainerWindowObserver::OnWindowDestroying(
+    WmWindow* window) {
+  window_watcher_->OnContainerWindowDestroying(window);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ShelfWindowWatcher::UserWindowObserver::UserWindowObserver(
     ShelfWindowWatcher* window_watcher)
     : window_watcher_(window_watcher) {}
 
-ShelfWindowWatcher::RemovedWindowObserver::~RemovedWindowObserver() {}
+ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() {}
 
-void ShelfWindowWatcher::RemovedWindowObserver::OnWindowParentChanged(
-    aura::Window* window,
-    aura::Window* parent) {
-  // When |parent| is NULL, this |window| will be destroyed. In that case, its
-  // item will be removed at OnWindowDestroyed().
-  if (!parent)
-    return;
-
-  // When |parent| is changed from default container to docked container
-  // during the dragging, |window|'s item should not be removed because it will
-  // be re-parented to default container again after finishing the dragging.
-  // We don't need to check |parent| is default container because this observer
-  // is already removed from |window| when |window| is re-parented to default
-  // container.
-  if (IsDragging(window) && parent->id() == kShellWindowId_DockedContainer)
-    return;
-
-  // When |window| is re-parented to other containers or |window| is re-parented
-  // not to |docked_container| during the dragging, its item should be removed
-  // and stop observing this |window|.
-  window_watcher_->FinishObservingRemovedWindow(window);
+void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
+    WmWindow* window,
+    WmWindowProperty property) {
+  if (property == WmWindowProperty::SHELF_ITEM_DETAILS)
+    window_watcher_->OnUserWindowShelfItemDetailsChanged(window);
 }
 
-void ShelfWindowWatcher::RemovedWindowObserver::OnWindowDestroyed(
-    aura::Window* window) {
-  DCHECK(HasShelfItemForWindow(window));
-  window_watcher_->FinishObservingRemovedWindow(window);
+void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
+    WmWindow* window) {
+  window_watcher_->OnUserWindowDestroying(window);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
     : model_(model),
-      root_window_observer_(this),
-      removed_window_observer_(this),
-      observed_windows_(this),
-      observed_root_windows_(&root_window_observer_),
-      observed_removed_windows_(&removed_window_observer_) {
-  Shell::GetInstance()->activation_client()->AddObserver(this);
-  for (aura::Window* root : Shell::GetAllRootWindows())
-    OnRootWindowAdded(WmWindowAura::Get(root));
+      container_window_observer_(this),
+      user_window_observer_(this),
+      observed_container_windows_(&container_window_observer_),
+      observed_user_windows_(&user_window_observer_) {
+  WmShell::Get()->AddActivationObserver(this);
+  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+    observed_container_windows_.Add(
+        root->GetChildByShellWindowId(kShellWindowId_DefaultContainer));
+  }
 
   display::Screen::GetScreen()->AddObserver(this);
 }
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  WmShell::Get()->RemoveActivationObserver(this);
 }
 
-void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
-  const ShelfItemDetails* item_details = GetShelfItemDetailsForWindow(window);
+void ShelfWindowWatcher::AddShelfItem(WmWindow* window) {
+  const ShelfItemDetails* item_details = window->GetShelfItemDetails();
   ShelfItem item;
   ShelfID id = model_->next_id();
-  item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE : STATUS_RUNNING;
+  item.status = window->IsActive() ? STATUS_ACTIVE : STATUS_RUNNING;
   SetShelfItemDetailsForShelfItem(&item, *item_details);
-  SetShelfIDForWindow(id, window);
+  window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window));
   model_->SetShelfItemDelegate(id, std::move(item_delegate));
   model_->Add(item);
 }
 
-void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
-  model_->RemoveItemAt(model_->ItemIndexByID(GetShelfIDForWindow(window)));
-  SetShelfIDForWindow(kInvalidShelfID, window);
+void ShelfWindowWatcher::RemoveShelfItem(WmWindow* window) {
+  int shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  DCHECK_NE(shelf_id, kInvalidShelfID);
+  int index = model_->ItemIndexByID(shelf_id);
+  DCHECK_GE(index, 0);
+  model_->RemoveItemAt(index);
+  window->SetIntProperty(WmWindowProperty::SHELF_ID, kInvalidShelfID);
 }
 
-void ShelfWindowWatcher::OnRootWindowAdded(WmWindow* root_window_wm) {
-  aura::Window* root_window = WmWindowAura::GetAuraWindow(root_window_wm);
-  observed_root_windows_.Add(root_window);
-
-  aura::Window* default_container =
-      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
-  observed_windows_.Add(default_container);
-  for (size_t i = 0; i < default_container->children().size(); ++i)
-    observed_windows_.Add(default_container->children()[i]);
+void ShelfWindowWatcher::OnContainerWindowDestroying(WmWindow* container) {
+  observed_container_windows_.Remove(container);
 }
 
-void ShelfWindowWatcher::OnRootWindowRemoved(aura::Window* root_window) {
-  observed_root_windows_.Remove(root_window);
-}
-
-void ShelfWindowWatcher::UpdateShelfItemStatus(aura::Window* window,
+void ShelfWindowWatcher::UpdateShelfItemStatus(WmWindow* window,
                                                bool is_active) {
   int index = GetShelfItemIndexForWindow(window);
   DCHECK_GE(index, 0);
@@ -161,75 +141,39 @@ void ShelfWindowWatcher::UpdateShelfItemStatus(aura::Window* window,
   model_->Set(index, item);
 }
 
-int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
-  return model_->ItemIndexByID(GetShelfIDForWindow(window));
+int ShelfWindowWatcher::GetShelfItemIndexForWindow(WmWindow* window) const {
+  return model_->ItemIndexByID(
+      window->GetIntProperty(WmWindowProperty::SHELF_ID));
 }
 
-void ShelfWindowWatcher::StartObservingRemovedWindow(aura::Window* window) {
-  observed_removed_windows_.Add(window);
-}
-
-void ShelfWindowWatcher::FinishObservingRemovedWindow(aura::Window* window) {
-  observed_removed_windows_.Remove(window);
-  RemoveShelfItem(window);
-}
-
-void ShelfWindowWatcher::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  if (gained_active && HasShelfItemForWindow(gained_active))
-    UpdateShelfItemStatus(gained_active, true);
-  if (lost_active && HasShelfItemForWindow(lost_active))
-    UpdateShelfItemStatus(lost_active, false);
-}
-
-void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {
-  observed_windows_.Add(window);
-
-  if (observed_removed_windows_.IsObserving(window)) {
-    // When |window| is added and it is already observed by
-    // |dragged_window_observer_|, |window| already has its item.
-    DCHECK(HasShelfItemForWindow(window));
-    observed_removed_windows_.Remove(window);
+void ShelfWindowWatcher::OnUserWindowAdded(WmWindow* window) {
+  // The window may already be tracked from when it was added to a different
+  // display or because an existing window added ShelfItemDetails to itself.
+  if (observed_user_windows_.IsObserving(window))
     return;
-  }
+
+  observed_user_windows_.Add(window);
 
   // Add ShelfItem if |window| already has a ShelfItemDetails when it is
-  // created. Don't make a new ShelfItem for the re-parented |window| that
-  // already has a ShelfItem.
-  if (GetShelfIDForWindow(window) == kInvalidShelfID &&
-      GetShelfItemDetailsForWindow(window))
+  // created.
+  if (window->GetShelfItemDetails() &&
+      window->GetIntProperty(WmWindowProperty::SHELF_ID) == kInvalidShelfID) {
     AddShelfItem(window);
+  }
 }
 
-void ShelfWindowWatcher::OnWillRemoveWindow(aura::Window* window) {
-  // Remove a child window of default container.
-  if (observed_windows_.IsObserving(window))
-    observed_windows_.Remove(window);
+void ShelfWindowWatcher::OnUserWindowDestroying(WmWindow* window) {
+  if (observed_user_windows_.IsObserving(window))
+    observed_user_windows_.Remove(window);
 
-  // Don't remove |window| item immediately. Instead, defer handling of removing
-  // |window|'s item to RemovedWindowObserver because |window| could be added
-  // again to default container.
   if (HasShelfItemForWindow(window))
-    StartObservingRemovedWindow(window);
+    RemoveShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnWindowDestroying(aura::Window* window) {
-  // Remove the default container.
-  if (observed_windows_.IsObserving(window))
-    observed_windows_.Remove(window);
-}
-
-void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
-                                                 const void* key,
-                                                 intptr_t old) {
-  if (key != kShelfItemDetailsKey)
-    return;
-
-  if (GetShelfItemDetailsForWindow(window) == NULL) {
+void ShelfWindowWatcher::OnUserWindowShelfItemDetailsChanged(WmWindow* window) {
+  if (!window->GetShelfItemDetails()) {
     // Removes ShelfItem for |window| when it has a ShelfItem.
-    if (reinterpret_cast<ShelfItemDetails*>(old) != NULL)
+    if (window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID)
       RemoveShelfItem(window);
     return;
   }
@@ -239,7 +183,7 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
     int index = GetShelfItemIndexForWindow(window);
     DCHECK_GE(index, 0);
     ShelfItem item = model_->items()[index];
-    const ShelfItemDetails* details = GetShelfItemDetailsForWindow(window);
+    const ShelfItemDetails* details = window->GetShelfItemDetails();
     SetShelfItemDetailsForShelfItem(&item, *details);
     model_->Set(index, item);
     return;
@@ -249,23 +193,26 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
   AddShelfItem(window);
 }
 
+void ShelfWindowWatcher::OnWindowActivated(WmWindow* gained_active,
+                                           WmWindow* lost_active) {
+  if (gained_active && HasShelfItemForWindow(gained_active))
+    UpdateShelfItemStatus(gained_active, true);
+  if (lost_active && HasShelfItemForWindow(lost_active))
+    UpdateShelfItemStatus(lost_active, false);
+}
+
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  // Add a new RootWindow and its ActivationClient to observed list.
-  aura::Window* root_window = Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(new_display.id());
+  WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(new_display.id());
 
   // When the primary root window's display get removed, the existing root
   // window is taken over by the new display and the observer is already set.
-  if (!observed_root_windows_.IsObserving(root_window))
-    OnRootWindowAdded(WmWindowAura::Get(root_window));
+  WmWindow* container =
+      root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
+  if (!observed_container_windows_.IsObserving(container))
+    observed_container_windows_.Add(container);
 }
 
 void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
-  // When this is called, RootWindow of |old_display| is already removed.
-  // Instead, we remove an observer from RootWindow and ActivationClient in the
-  // OnRootWindowDestroyed().
-  // Do nothing here.
 }
 
 void ShelfWindowWatcher::OnDisplayMetricsChanged(const display::Display&,

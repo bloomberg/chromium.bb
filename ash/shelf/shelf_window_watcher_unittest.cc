@@ -47,6 +47,20 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
     return id;
   }
 
+  // Creates a window with ShelfItemDetails and adds it to the default window
+  // container.
+  std::unique_ptr<aura::Window> CreateWindowWithShelfItemDetails() {
+    std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
+    window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window->Init(ui::LAYER_TEXTURED);
+    window->Show();
+
+    CreateShelfItem(window.get());
+
+    ParentWindowInPrimaryRootWindow(window.get());
+    return window;
+  }
+
  protected:
   ShelfModel* model_;
 
@@ -54,12 +68,33 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcherTest);
 };
 
-TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
+// Tests that shelf items are added and removed as windows are opened and
+// closed.
+TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
+  // Adding windows with ShelfItemDetails properties adds shelf items.
+  std::unique_ptr<aura::Window> w1(CreateWindowWithShelfItemDetails());
+  EXPECT_EQ(2, model_->item_count());
+  std::unique_ptr<aura::Window> w2(CreateWindowWithShelfItemDetails());
+  EXPECT_EQ(3, model_->item_count());
+
+  // Each ShelfItem is removed when the associated window is destroyed.
+  w1.reset();
+  EXPECT_EQ(2, model_->item_count());
+  w2.reset();
+  EXPECT_EQ(1, model_->item_count());
+}
+
+TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemDetails) {
+  // ShelfModel only has an APP_LIST item.
+  EXPECT_EQ(1, model_->item_count());
+
+  // Creating windows without ShelfItemDetails does not add items.
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
+  EXPECT_EQ(1, model_->item_count());
 
   // Create a ShelfItem for w1.
   ShelfID id_w1 = CreateShelfItem(w1.get());
@@ -75,12 +110,12 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
-  // ShelfItem is removed when assoicated window is destroyed.
+  // ShelfItem is removed when its window property is cleared.
   ClearShelfItemDetailsForWindow(w1.get());
   EXPECT_EQ(2, model_->item_count());
   ClearShelfItemDetailsForWindow(w2.get());
   EXPECT_EQ(1, model_->item_count());
-  // Clears twice doesn't do anything.
+  // Clearing twice doesn't do anything.
   ClearShelfItemDetailsForWindow(w2.get());
   EXPECT_EQ(1, model_->item_count());
 }
@@ -173,8 +208,8 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   EXPECT_EQ(id, model_->items()[index].id);
 }
 
-// Check that an item is removed when its associated Window is re-parented.
-TEST_F(ShelfWindowWatcherTest, ReparentWindow) {
+// Check that an item is maintained when its associated Window is docked.
+TEST_F(ShelfWindowWatcherTest, DockWindow) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -193,18 +228,17 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindow) {
       Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
   EXPECT_EQ(default_container, window->parent());
 
-  aura::Window* new_parent =
-      Shell::GetContainer(root_window, kShellWindowId_PanelContainer);
+  aura::Window* docked_container =
+      Shell::GetContainer(root_window, kShellWindowId_DockedContainer);
 
-  // Check |window|'s item is removed when it is re-parented to |new_parent|
-  // which is not default container.
-  new_parent->AddChild(window.get());
-  EXPECT_EQ(1, model_->item_count());
-
-  // Check |window|'s item is added when it is re-parented to
-  // |default_container|.
-  default_container->AddChild(window.get());
+  // Check |window|'s item is not removed when it is re-parented to the dock.
+  docked_container->AddChild(window.get());
   EXPECT_EQ(2, model_->item_count());
+
+  // The shelf item is removed when the window is closed, even if it is in the
+  // docked container at the time.
+  window.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 // Check |window|'s item is not changed during the dragging.
@@ -233,49 +267,6 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // Index and id are not changed after dragging a |window|.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
-}
-
-// Check |window|'s item is removed when it is re-parented not to default
-// container during the dragging.
-TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
-  // ShelfModel only has an APP_LIST item.
-  EXPECT_EQ(1, model_->item_count());
-
-  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  window->set_owned_by_parent(false);
-
-  // Create a ShelfItem for |window|.
-  ShelfID id = CreateShelfItem(window.get());
-  EXPECT_EQ(2, model_->item_count());
-  int index = model_->ItemIndexByID(id);
-  EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
-
-  aura::Window* root_window = window->GetRootWindow();
-  aura::Window* default_container =
-      Shell::GetContainer(root_window, kShellWindowId_DefaultContainer);
-  EXPECT_EQ(default_container, window->parent());
-
-  aura::Window* new_parent =
-      Shell::GetContainer(root_window, kShellWindowId_PanelContainer);
-
-  // Simulate re-parenting to |new_parent| during the dragging.
-  {
-    std::unique_ptr<WindowResizer> resizer(
-        CreateWindowResizer(WmWindowAura::Get(window.get()), gfx::Point(),
-                            HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(gfx::Point(50, 50), 0);
-    resizer->CompleteDrag();
-    EXPECT_EQ(2, model_->item_count());
-
-    // Item should be removed when |window| is re-parented not to default
-    // container before fininshing the dragging.
-    EXPECT_TRUE(wm::GetWindowState(window.get())->is_dragged());
-    new_parent->AddChild(window.get());
-    EXPECT_EQ(1, model_->item_count());
-  }
-  EXPECT_FALSE(wm::GetWindowState(window.get())->is_dragged());
-  EXPECT_EQ(1, model_->item_count());
 }
 
 }  // namespace ash

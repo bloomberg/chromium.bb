@@ -345,6 +345,20 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
   return 0;
 }
 
+void WmWindowMus::SetIntProperty(WmWindowProperty key, int value) {
+  if (key == WmWindowProperty::SHELF_ID) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  NOTREACHED();
+}
+
+ShelfItemDetails* WmWindowMus::GetShelfItemDetails() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 const wm::WindowState* WmWindowMus::GetWindowState() const {
   return window_state_.get();
 }

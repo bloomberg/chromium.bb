@@ -17,6 +17,9 @@ enum class WmWindowProperty {
   // Type int.
   SHELF_ID,
 
+  // Type ShelfItemDetails.
+  SHELF_ITEM_DETAILS,
+
   // Type int. See aura::client::kTopViewInset for details.
   TOP_VIEW_INSET,
 

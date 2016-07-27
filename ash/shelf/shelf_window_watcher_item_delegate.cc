@@ -5,31 +5,24 @@
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
-#include "ash/wm/window_state_aura.h"
-#include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
+#include "ui/events/event.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
-ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(
-    aura::Window* window)
+ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(WmWindow* window)
     : window_(window) {}
 
 ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() {}
 
-void ShelfWindowWatcherItemDelegate::Close() {
-  views::Widget::GetWidgetForNativeWindow(window_)->Close();
-}
-
 ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
     const ui::Event& event) {
-  wm::WindowState* window_state = wm::GetWindowState(window_);
+  wm::WindowState* window_state = window_->GetWindowState();
   if (window_state->IsActive()) {
     if (event.type() & ui::ET_KEY_RELEASED) {
-      ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+      window_->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
       return kNoAction;
     } else {
       window_state->Minimize();
@@ -42,7 +35,7 @@ ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
 }
 
 base::string16 ShelfWindowWatcherItemDelegate::GetTitle() {
-  return GetShelfItemDetailsForWindow(window_)->title;
+  return window_->GetShelfItemDetails()->title;
 }
 
 ShelfMenuModel* ShelfWindowWatcherItemDelegate::CreateApplicationMenu(
@@ -60,6 +53,10 @@ bool ShelfWindowWatcherItemDelegate::CanPin() const {
 
 bool ShelfWindowWatcherItemDelegate::ShouldShowTooltip() {
   return true;
+}
+
+void ShelfWindowWatcherItemDelegate::Close() {
+  window_->CloseWidget();
 }
 
 }  // namespace ash

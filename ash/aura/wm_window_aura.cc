@@ -278,6 +278,19 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   return 0;
 }
 
+void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
+  if (key == WmWindowProperty::SHELF_ID) {
+    SetShelfIDForWindow(value, window_);
+    return;
+  }
+
+  NOTREACHED();
+}
+
+ShelfItemDetails* WmWindowAura::GetShelfItemDetails() {
+  return window_->GetProperty(kShelfItemDetailsKey);
+}
+
 const wm::WindowState* WmWindowAura::GetWindowState() const {
   return ash::wm::GetWindowState(window_);
 }
@@ -710,6 +723,8 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;
   } else if (key == kShelfID) {
     wm_property = WmWindowProperty::SHELF_ID;
+  } else if (key == kShelfItemDetailsKey) {
+    wm_property = WmWindowProperty::SHELF_ITEM_DETAILS;
   } else if (key == aura::client::kTopViewInset) {
     wm_property = WmWindowProperty::TOP_VIEW_INSET;
   } else if (key == aura::client::kExcludeFromMruKey) {

@@ -6,19 +6,16 @@
 #define ASH_SHELF_SHELF_WINDOW_WATCHER_ITEM_DELEGATE_H_
 
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
+
+class WmWindow;
 
 // ShelfItemDelegate for the items created by ShelfWindowWatcher.
 class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
  public:
-  explicit ShelfWindowWatcherItemDelegate(aura::Window* window);
+  explicit ShelfWindowWatcherItemDelegate(WmWindow* window);
   ~ShelfWindowWatcherItemDelegate() override;
 
  private:
@@ -32,8 +29,8 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   bool ShouldShowTooltip() override;
   void Close() override;
 
-  // Stores a Window associated with this item. Not owned.
-  aura::Window* window_;
+  // The window associated with this item. Not owned.
+  WmWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcherItemDelegate);
 };
