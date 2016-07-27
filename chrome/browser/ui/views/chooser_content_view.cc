@@ -18,7 +18,7 @@ const int kChooserWidth = 330;
 
 const int kChooserHeight = 220;
 
-const int kThrobberDiameter = 50;
+const int kThrobberDiameter = 24;
 
 }  // namespace
 
@@ -158,7 +158,7 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
          !table_view_->selection_model().empty();
 }
 
-views::View* ChooserContentView::CreateExtraView() {
+views::Link* ChooserContentView::CreateExtraView() {
   discovery_state_ = new views::Link(chooser_controller_->GetStatus());
   discovery_state_->SetHandlesTooltips(false);
   discovery_state_->SetUnderline(false);

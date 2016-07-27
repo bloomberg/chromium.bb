@@ -1382,6 +1382,7 @@
       'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
       'browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc',
       'browser/ui/views/desktop_media_picker_views_deprecated_unittest.cc',
+      'browser/ui/views/extensions/chooser_dialog_view_unittest.cc',
       'browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc',
       'browser/ui/views/first_run_bubble_unittest.cc',
       'browser/ui/views/frame/browser_view_layout_unittest.cc',

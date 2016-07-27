@@ -694,7 +694,6 @@
       'browser/ui/views/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
       'browser/ui/views/collected_cookies_views_browsertest.cc',
       'browser/ui/views/extensions/bookmark_override_browsertest.cc',
-      'browser/ui/views/extensions/chooser_dialog_view_browsertest.cc',
       'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
       'browser/ui/views/extensions/extension_message_bubble_view_browsertest.cc',
       'browser/ui/views/frame/browser_non_client_frame_view_browsertest.cc',

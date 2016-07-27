@@ -62,7 +62,7 @@ class ChooserContentView : public views::View,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
   // Ownership of the view is passed to the caller.
-  views::View* CreateExtraView();
+  views::Link* CreateExtraView();
   // Ownership of the view is passed to the caller.
   views::StyledLabel* CreateFootnoteView();
   void Accept();
@@ -71,7 +71,7 @@ class ChooserContentView : public views::View,
   void UpdateTableView();
 
   views::TableView* table_view_for_test() const { return table_view_; }
-  views::StyledLabel* styled_label_for_test() const { return styled_label_; }
+  views::Throbber* throbber_for_test() const { return throbber_; }
 
  private:
   std::unique_ptr<ChooserController> chooser_controller_;

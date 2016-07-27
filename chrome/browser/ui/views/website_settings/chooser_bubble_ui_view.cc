@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_controller.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_client_view.h"

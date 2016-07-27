@@ -4,22 +4,26 @@
 
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 MockChooserController::MockChooserController(content::RenderFrameHost* owner)
     : ChooserController(owner,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
-                        IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME) {}
+                        IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
+      no_options_text_(l10n_util::GetStringUTF16(
+          IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT)) {}
 
 MockChooserController::~MockChooserController() {}
 
 base::string16 MockChooserController::GetNoOptionsText() const {
-  return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+  return no_options_text_;
 }
 
 base::string16 MockChooserController::GetOkButtonLabel() const {
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_USB_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
 }
 
 size_t MockChooserController::NumOptions() const {
@@ -30,10 +34,57 @@ base::string16 MockChooserController::GetOption(size_t index) const {
   return option_names_[index];
 }
 
-void MockChooserController::RefreshOptions() {}
-
 base::string16 MockChooserController::GetStatus() const {
-  return base::string16();
+  return status_text_;
+}
+
+void MockChooserController::OnAdapterPresenceChanged(
+    content::BluetoothChooser::AdapterPresence presence) {
+  ClearAllOptions();
+  switch (presence) {
+    case content::BluetoothChooser::AdapterPresence::ABSENT:
+      NOTREACHED();
+      break;
+    case content::BluetoothChooser::AdapterPresence::POWERED_OFF:
+      no_options_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF);
+      status_text_ = base::string16();
+      if (view())
+        view()->OnAdapterEnabledChanged(false /* Adapter is turned off */);
+      break;
+    case content::BluetoothChooser::AdapterPresence::POWERED_ON:
+      no_options_text_ =
+          l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
+      if (view())
+        view()->OnAdapterEnabledChanged(true /* Adapter is turned on */);
+      break;
+  }
+}
+
+void MockChooserController::OnDiscoveryStateChanged(
+    content::BluetoothChooser::DiscoveryState state) {
+  switch (state) {
+    case content::BluetoothChooser::DiscoveryState::DISCOVERING:
+      ClearAllOptions();
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING);
+      if (view()) {
+        view()->OnRefreshStateChanged(
+            true /* Refreshing options is in progress */);
+      }
+      break;
+    case content::BluetoothChooser::DiscoveryState::IDLE:
+    case content::BluetoothChooser::DiscoveryState::FAILED_TO_START:
+      status_text_ =
+          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
+      if (view()) {
+        view()->OnRefreshStateChanged(
+            false /* Refreshing options is complete */);
+      }
+      break;
+  }
 }
 
 void MockChooserController::OptionAdded(const base::string16 option_name) {
@@ -52,4 +103,8 @@ void MockChooserController::OptionRemoved(const base::string16 option_name) {
       return;
     }
   }
+}
+
+void MockChooserController::ClearAllOptions() {
+  option_names_.clear();
 }
