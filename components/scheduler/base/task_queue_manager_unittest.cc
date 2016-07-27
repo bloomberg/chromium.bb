@@ -1627,6 +1627,31 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   manager_->UnregisterTimeDomain(domain_b.get());
 }
 
+TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+  std::unique_ptr<VirtualTimeDomain> domain_a(
+      new VirtualTimeDomain(nullptr, start_time));
+  std::unique_ptr<VirtualTimeDomain> domain_b(
+      new VirtualTimeDomain(nullptr, start_time));
+  manager_->RegisterTimeDomain(domain_a.get());
+  manager_->RegisterTimeDomain(domain_b.get());
+
+  runners_[0]->SetTimeDomain(domain_a.get());
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->SetTimeDomain(domain_b.get());
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1));
+
+  runners_[0]->UnregisterTaskQueue();
+
+  manager_->UnregisterTimeDomain(domain_a.get());
+  manager_->UnregisterTimeDomain(domain_b.get());
+}
+
 namespace {
 void ChromiumRunloopInspectionTask(
     scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner) {

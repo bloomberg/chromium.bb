@@ -47,7 +47,11 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(destination_time_domain);
-  UnregisterAsUpdatableTaskQueue(queue);
+
+  // Make sure we remember to update |queue| if it's got incoming immediate
+  // work.
+  if (UnregisterAsUpdatableTaskQueue(queue))
+    destination_time_domain->updatable_queue_set_.insert(queue);
 
   base::TimeTicks destination_now = destination_time_domain->Now();
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
@@ -89,11 +93,11 @@ void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
     observer_->OnTimeDomainHasImmediateWork();
 }
 
-void TimeDomain::UnregisterAsUpdatableTaskQueue(
+bool TimeDomain::UnregisterAsUpdatableTaskQueue(
     internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  updatable_queue_set_.erase(queue);
+  bool was_updatable = updatable_queue_set_.erase(queue) != 0;
 
   base::AutoLock lock(newly_updatable_lock_);
   // Remove all copies of |queue| from |newly_updatable_|.
@@ -102,10 +106,12 @@ void TimeDomain::UnregisterAsUpdatableTaskQueue(
       // Move last element into slot #i and then compact.
       newly_updatable_[i] = newly_updatable_.back();
       newly_updatable_.pop_back();
+      was_updatable = true;
     } else {
       i++;
     }
   }
+  return was_updatable;
 }
 
 void TimeDomain::UpdateWorkQueues(

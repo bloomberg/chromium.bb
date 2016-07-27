@@ -89,8 +89,8 @@ class SCHEDULER_EXPORT TimeDomain {
   void RegisterQueue(internal::TaskQueueImpl* queue);
 
   // Removes |queue| from the set of task queues that UpdateWorkQueues calls
-  // UpdateWorkQueue on.
-  void UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
+  // UpdateWorkQueue on. Returns true if |queue| was updatable.
+  bool UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
   // Removes |queue| from all internal data structures.
   void UnregisterQueue(internal::TaskQueueImpl* queue);
