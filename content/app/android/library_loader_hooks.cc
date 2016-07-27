@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
+#include "device/geolocation/android/geolocation_jni_registrar.h"
 #include "device/power_save_blocker/power_save_blocker_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
@@ -77,6 +78,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterBluetoothJni(env))
+      return false;
+
+    if (!device::android::RegisterGeolocationJni(env))
       return false;
 
     if (!device::android::RegisterPowerSaveBlockerJni(env))

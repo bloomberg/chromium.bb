@@ -16,12 +16,6 @@
       # by other embedders).
       'browser/download/mock_download_file.cc',
       'browser/download/mock_download_file.h',
-      'browser/geolocation/fake_access_token_store.cc',
-      'browser/geolocation/fake_access_token_store.h',
-      'browser/geolocation/mock_location_arbitrator.cc',
-      'browser/geolocation/mock_location_arbitrator.h',
-      'browser/geolocation/mock_location_provider.cc',
-      'browser/geolocation/mock_location_provider.h',
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
       'public/test/background_sync_test_util.cc',
@@ -241,6 +235,7 @@
       'browser/loader/reload_cache_control_browsertest.cc',
       'browser/loader/resource_dispatcher_host_browsertest.cc',
       'browser/manifest/manifest_browsertest.cc',
+      'browser/media/android/browser_media_session_manager_browsertest.cc',
       'browser/media/encrypted_media_browsertest.cc',
       'browser/media/media_browsertest.cc',
       'browser/media/media_browsertest.h',
@@ -248,7 +243,6 @@
       'browser/media/media_redirect_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
       'browser/media/midi_browsertest.cc',
-      'browser/media/android/browser_media_session_manager_browsertest.cc',
       'browser/media/session/media_session_browsertest.cc',
       'browser/media/session/media_session_delegate_default_browsertest.cc',
       'browser/media/session/media_session_visibility_browsertest.cc',
@@ -479,16 +473,9 @@
       'browser/frame_host/render_frame_host_manager_unittest.cc',
       'browser/frame_host/render_widget_host_view_child_frame_unittest.cc',
       'browser/frame_host/render_widget_host_view_guest_unittest.cc',
-      'browser/gamepad/gamepad_service_unittest.cc',
       'browser/gamepad/gamepad_service_test_helpers.cc',
       'browser/gamepad/gamepad_service_test_helpers.h',
-      'browser/geolocation/geolocation_provider_impl_unittest.cc',
-      'browser/geolocation/location_arbitrator_impl_unittest.cc',
-      'browser/geolocation/network_location_provider_unittest.cc',
-      'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
-      'browser/geolocation/wifi_data_provider_common_unittest.cc',
-      'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-      'browser/geolocation/wifi_data_provider_win_unittest.cc',
+      'browser/gamepad/gamepad_service_unittest.cc',
       'browser/gpu/gpu_data_manager_impl_private_unittest.cc',
       'browser/gpu/shader_disk_cache_unittest.cc',
       'browser/host_zoom_map_impl_unittest.cc',
@@ -784,7 +771,6 @@
     # WebRTC-specific sources. Put WebRTC plugin-related stuff further below.
     'content_unittests_webrtc_sources': [
       'browser/media/webrtc/webrtc_internals_unittest.cc',
-      'browser/media/webrtc/webrtc_internals_message_handler_unittest.cc',
       'browser/media/webrtc/webrtc_eventlog_host_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
@@ -1172,9 +1158,6 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
           ],
-          'sources!': [
-            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-          ],
         }],
         ['use_aura==1', {
           'dependencies': [
@@ -1196,8 +1179,6 @@
         ['OS == "android"', {
           'sources': [ '<@(content_unittests_android_sources)' ],
           'sources!': [
-            'browser/geolocation/network_location_provider_unittest.cc',
-            'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/power_usage_monitor_impl_unittest.cc',
             'browser/webui/url_data_manager_backend_unittest.cc',
             'renderer/media/audio_track_recorder_unittest.cc',
@@ -1231,11 +1212,6 @@
         ['use_aura!=1 and OS!="android"', {
           'sources!': [
             'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
-          ],
-        }],
-        ['use_dbus==0', {
-          'sources!': [
-            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
         }],
         ['OS!="win" and OS!="mac"', {

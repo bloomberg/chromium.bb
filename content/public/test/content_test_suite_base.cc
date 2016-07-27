@@ -33,6 +33,7 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/browser_jni_registrar.h"
 #include "content/common/android/common_jni_registrar.h"
+#include "device/geolocation/android/geolocation_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/capture/video/android/capture_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
@@ -88,6 +89,7 @@ void ContentTestSuiteBase::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();
   content::android::RegisterCommonJni(env);
   content::android::RegisterBrowserJni(env);
+  device::android::RegisterGeolocationJni(env);
   gfx::android::RegisterJni(env);
   media::RegisterCaptureJni(env);
   media::RegisterJni(env);

@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/access_token_store.h"
+#include "device/geolocation/access_token_store.h"
 
 class PrefRegistrySimple;
 
 // Creates a new access token store backed by the global chome prefs.
-class ChromeAccessTokenStore : public content::AccessTokenStore {
+class ChromeAccessTokenStore : public device::AccessTokenStore {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
