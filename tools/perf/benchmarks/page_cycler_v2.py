@@ -32,7 +32,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
 
     tbm_options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
-    tbm_options.SetTimelineBasedMetrics(['firstPaintMetric'])
+    tbm_options.SetTimelineBasedMetrics(['loadingMetric'])
     return tbm_options
 
   @classmethod
