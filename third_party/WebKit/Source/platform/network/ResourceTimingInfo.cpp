@@ -19,6 +19,7 @@ std::unique_ptr<ResourceTimingInfo> ResourceTimingInfo::adopt(std::unique_ptr<Cr
     info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
     for (auto& responseData : data->m_redirectChain)
         info->m_redirectChain.append(ResourceResponse(responseData.get()));
+    info->m_transferSize = data->m_transferSize;
     return info;
 }
 
