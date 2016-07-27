@@ -346,7 +346,6 @@ void ImageResource::notifyObservers(const IntRect* changeRect)
 
 void ImageResource::clear()
 {
-    prune();
     clearImage();
     m_data.clear();
     setEncodedSize(0);
