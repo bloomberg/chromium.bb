@@ -24,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
-#include "components/network_session_configurator/switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

@@ -12,15 +12,12 @@ extern const char kDisableQuicPortSelection[];
 extern const char kDisableQuic[];
 extern const char kEnableQuicPortSelection[];
 extern const char kEnableQuic[];
-extern const char kIgnoreCertificateErrors[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kOriginToForceQuicOn[];
 extern const char kQuicConnectionOptions[];
 extern const char kQuicHostWhitelist[];
 extern const char kQuicMaxPacketLength[];
 extern const char kQuicVersion[];
-extern const char kTestingFixedHttpPort[];
-extern const char kTestingFixedHttpsPort[];
 
 }  // namespace switches
 

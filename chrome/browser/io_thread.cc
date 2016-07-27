@@ -239,6 +239,16 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
   return std::move(remapped_resolver);
 }
 
+int GetSwitchValueAsInt(const base::CommandLine& command_line,
+                        const std::string& switch_name) {
+  int value;
+  if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
+                         &value)) {
+    return 0;
+  }
+  return value;
+}
+
 }  // namespace
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -631,6 +641,18 @@ void IOThread::Init() {
   quic_user_agent_id.append(content::BuildOSCpuInfo());
   network_session_configurator::ParseFieldTrialsAndCommandLine(
       is_quic_allowed_by_policy_, quic_user_agent_id, &params_);
+
+  // Parameters only controlled by command line.
+  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
+    params_.ignore_certificate_errors = true;
+  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+    params_.testing_fixed_http_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
+  }
+  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+    params_.testing_fixed_https_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
+  }
 
   bool always_enable_tfo_if_supported =
       command_line.HasSwitch(switches::kEnableTcpFastOpen);

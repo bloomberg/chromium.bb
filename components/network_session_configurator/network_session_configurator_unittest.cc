@@ -56,27 +56,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.enable_quic);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, IgnoreCertificateErrors) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      "ignore-certificate-errors");
-
-  ParseFieldTrialsAndCommandLine();
-
-  EXPECT_TRUE(params_.ignore_certificate_errors);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, TestingFixedPort) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "testing-fixed-http-port", "42");
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "testing-fixed-https-port", "1234");
-
-  ParseFieldTrialsAndCommandLine();
-
-  EXPECT_EQ(42u, params_.testing_fixed_http_port);
-  EXPECT_EQ(1234u, params_.testing_fixed_https_port);
-}
-
 TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialHttp2Disable) {
   base::FieldTrialList::CreateFieldTrial("HTTP2", "Disable");
 

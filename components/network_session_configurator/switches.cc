@@ -23,9 +23,6 @@ const char kEnableQuic[] = "enable-quic";
 // This only has an effect if the QUIC protocol is enabled.
 const char kEnableQuicPortSelection[] = "enable-quic-port-selection";
 
-// Ignores certificate-related errors.
-const char kIgnoreCertificateErrors[] = "ignore-certificate-errors";
-
 // Causes net::URLFetchers to ignore requests for SSL client certificates,
 // causing them to attempt an unauthenticated SSL/TLS session. This is intended
 // for use when testing various service URLs (eg: kPromoServerURL, kSbURLPrefix,
@@ -47,9 +44,5 @@ const char kQuicMaxPacketLength[] = "quic-max-packet-length";
 
 // Specifies the version of QUIC to use.
 const char kQuicVersion[] = "quic-version";
-
-// Allows for forcing socket connections to http/https to use fixed ports.
-const char kTestingFixedHttpPort[] = "testing-fixed-http-port";
-const char kTestingFixedHttpsPort[] = "testing-fixed-https-port";
 
 }  // namespace switches

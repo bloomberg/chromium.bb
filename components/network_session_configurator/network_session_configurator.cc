@@ -36,16 +36,6 @@ const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kHttp2FieldTrialName[] = "HTTP2";
 const char kHttp2FieldTrialDisablePrefix[] = "Disable";
 
-int GetSwitchValueAsInt(const base::CommandLine& command_line,
-                        const std::string& switch_name) {
-  int value;
-  if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
-                         &value)) {
-    return 0;
-  }
-  return value;
-}
-
 // Returns the value associated with |key| in |params| or "" if the
 // key is not present in the map.
 const std::string& GetVariationParam(
@@ -440,18 +430,6 @@ void ParseFieldTrialsAndCommandLineInternal(
     bool is_quic_allowed_by_policy,
     const std::string& quic_user_agent_id,
     net::HttpNetworkSession::Params* params) {
-  // Parameters only controlled by command line.
-  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
-    params->ignore_certificate_errors = true;
-  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    params->testing_fixed_http_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
-  }
-  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    params->testing_fixed_https_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
-  }
-
   // Always fetch the field trial groups to ensure they are reported correctly.
   // The command line flags will be associated with a group that is reported so
   // long as trial is actually queried.

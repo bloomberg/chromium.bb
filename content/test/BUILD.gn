@@ -424,7 +424,6 @@ test("content_browsertests") {
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
     "//components/memory_coordinator/browser",
-    "//components/network_session_configurator",
     "//components/scheduler",
     "//content:resources",
     "//content/app:both_for_content_tests",

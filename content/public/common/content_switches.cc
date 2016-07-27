@@ -597,6 +597,9 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 // Passes gpu vendor_id from browser process to GPU process.
 const char kGpuVendorID[]                   = "gpu-vendor-id";
 
+// Ignores certificate-related errors.
+const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
+
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
@@ -837,6 +840,10 @@ const char kStartFullscreen[] = "start-fullscreen";
 // that needs to access the provided statistics.
 const char kStatsCollectionController[] =
     "enable-stats-collection-bindings";
+
+// Allows for forcing socket connections to http/https to use fixed ports.
+const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
+const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
