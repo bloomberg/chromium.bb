@@ -36,9 +36,13 @@ from webkitpy.tool.mock_tool import MockWebKitPatch, MockOptions
 
 class PrintExpectationsTest(unittest.TestCase):
 
-    def run_test(self, tests, expected_stdout, platform='test-win-win7', **args):
-        options = MockOptions(all=False, csv=False, full=False, platform=platform,
-                              include_keyword=[], exclude_keyword=[], paths=False).update(**args)
+    def run_test(self, tests, expected_stdout, platform='test-win-win7', **kwargs):
+        options_defaults = {
+            'all': False, 'csv': False, 'full': False, 'platform': platform,
+            'include_keyword': [], 'exclude_keyword': [], 'paths': False,
+        }
+        options_defaults.update(kwargs)
+        options = MockOptions(**options_defaults)
         tool = MockWebKitPatch()
         tool.port_factory.all_port_names = lambda: [
             'test-linux-trusty', 'test-linux-precise',

@@ -26,29 +26,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import optparse
+
 from webkitpy.common.host_mock import MockHost
 
 
-# FIXME: We should just replace this with optparse.Values(default=kwargs)
-class MockOptions(object):
-    """Mock implementation of optparse.Values."""
+# TODO(qyearsley): Replace uses of this with using optparse.Values directly (crbug.com/626679).
+class MockOptions(optparse.Values):
 
     def __init__(self, **kwargs):
-        # The caller can set option values using keyword arguments. We don't
-        # set any values by default because we don't know how this
-        # object will be used. Generally speaking unit tests should
-        # subclass this or provider wrapper functions that set a common
-        # set of options.
-        self.update(**kwargs)
-
-    def update(self, **kwargs):
-        self.__dict__.update(**kwargs)
-        return self
-
-    def ensure_value(self, key, value):
-        if getattr(self, key, None) is None:
-            self.__dict__[key] = value
-        return self.__dict__[key]
+        # Not using super because optparse.Values is an old-style class.
+        optparse.Values.__init__(self, defaults=kwargs)
 
 
 class MockWebKitPatch(MockHost):
