@@ -80,7 +80,7 @@ test test test
 |         class="editing"
 |         id="test"
 |         "
-test test <#selection-anchor>test<#selection-focus>"
+test test <#selection-anchor>test<#selection-focus>"
 |       " "
 |       "
 "
@@ -112,7 +112,7 @@ test test
 |       <li>
 |         "execPasteCommand: 
 <div id="test" class="editing">
-test&nbsp;test&nbsp;test</div>&nbsp;
+test test&nbsp;test</div>&nbsp;
 "
 |     "
 
