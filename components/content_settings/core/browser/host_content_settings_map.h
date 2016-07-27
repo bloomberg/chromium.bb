@@ -280,8 +280,12 @@ class HostContentSettingsMap : public content_settings::Observer,
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
-  friend class HostContentSettingsMapTest_MigrateDomainScopedSettings_Test;
-  friend class HostContentSettingsMapTest_MigrateKeygenSettings_Test;
+
+  FRIEND_TEST_ALL_PREFIXES(HostContentSettingsMapTest,
+                           DomainToOriginMigrationStatus);
+  FRIEND_TEST_ALL_PREFIXES(HostContentSettingsMapTest,
+                           MigrateDomainScopedSettings);
+  FRIEND_TEST_ALL_PREFIXES(HostContentSettingsMapTest, MigrateKeygenSettings);
 
   friend class content_settings::TestUtils;
 
@@ -316,9 +320,12 @@ class HostContentSettingsMap : public content_settings::Observer,
   // ContentSettingsTypes which are domain scoped. Only narrow down ALLOW
   // domain settings to origins so that this will not cause privacy/security
   // issues.
+  //
+  // |after_sync| will be false when called upon construction of this object and
+  // true when called by the sync layer after sync is completed.
   // TODO(lshang): https://crbug.com/621398 Remove this when clients have
   // migrated (~M56).
-  void MigrateDomainScopedSettings();
+  void MigrateDomainScopedSettings(bool after_sync);
 
   // Collect UMA data about the number of exceptions.
   void RecordNumberOfExceptions();

@@ -58,6 +58,23 @@ const ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"default", content_settings::SETTING_SOURCE_USER},
 };
 
+// Enum describing the status of domain to origin migration of content settings.
+// Migration will be done twice: once upon construction of the
+// HostContentSettingsMap (before syncing any content settings) and once after
+// sync has finished. We always migrate before sync to ensure that settings will
+// get migrated even if a user doesn't have sync enabled. We migrate after sync
+// to ensure that any sync'd settings will be migrated. Once these events have
+// occurred, we won't perform migration again.
+enum DomainToOriginMigrationStatus {
+  // Haven't been migrated at all.
+  NOT_MIGRATED,
+  // Have done migration in the constructor of HostContentSettingsMap.
+  MIGRATED_BEFORE_SYNC,
+  // Have done migration both in HostContentSettingsMap construction and and
+  // after sync is finished. No migration will happen after this point.
+  MIGRATED_AFTER_SYNC,
+};
+
 static_assert(
     arraysize(kProviderNamesSourceMap) ==
         HostContentSettingsMap::NUM_PROVIDER_TYPES,
@@ -183,6 +200,8 @@ void HostContentSettingsMap::RegisterProfilePrefs(
   content_settings::ContentSettingsRegistry::GetInstance();
 
   registry->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
+  registry->RegisterIntegerPref(prefs::kDomainToOriginMigrationStatus,
+                                NOT_MIGRATED);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterProfilePrefs(registry);
@@ -497,7 +516,16 @@ void HostContentSettingsMap::MigrateKeygenSettings() {
   }
 }
 
-void HostContentSettingsMap::MigrateDomainScopedSettings() {
+void HostContentSettingsMap::MigrateDomainScopedSettings(bool after_sync) {
+  DomainToOriginMigrationStatus status =
+      static_cast<DomainToOriginMigrationStatus>(
+          prefs_->GetInteger(prefs::kDomainToOriginMigrationStatus));
+  if (status == MIGRATED_AFTER_SYNC)
+    return;
+  if (status == MIGRATED_BEFORE_SYNC && !after_sync)
+    return;
+  DCHECK(status != NOT_MIGRATED || !after_sync);
+
   const ContentSettingsType kDomainScopedTypes[] = {
       CONTENT_SETTINGS_TYPE_COOKIES,
       CONTENT_SETTINGS_TYPE_IMAGES,
@@ -561,6 +589,14 @@ void HostContentSettingsMap::MigrateDomainScopedSettings() {
             ContentSettingsPattern::Wildcard(), type, std::string(),
             CONTENT_SETTING_ALLOW);
     }
+  }
+
+  if (status == NOT_MIGRATED) {
+    prefs_->SetInteger(prefs::kDomainToOriginMigrationStatus,
+                       MIGRATED_BEFORE_SYNC);
+  } else if (status == MIGRATED_BEFORE_SYNC) {
+    prefs_->SetInteger(prefs::kDomainToOriginMigrationStatus,
+                       MIGRATED_AFTER_SYNC);
   }
 }
 

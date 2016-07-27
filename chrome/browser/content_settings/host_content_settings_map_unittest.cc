@@ -1426,7 +1426,7 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
               "https://[*.]example.com:443");
   EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
 
-  host_content_settings_map->MigrateDomainScopedSettings();
+  host_content_settings_map->MigrateDomainScopedSettings(false);
 
   // After migration, settings only affect origins.
   EXPECT_EQ(
@@ -1462,6 +1462,106 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
   EXPECT_TRUE(settings[0].primary_pattern.ToString() ==
               "https://example.com:443");
   EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
+}
+
+// Ensure that migration only happens once upon construction of the HCSM and
+// once after syncing (even when these events occur multiple times).
+TEST_F(HostContentSettingsMapTest, DomainToOriginMigrationStatus) {
+  TestingProfile profile;
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL http_host("http://example.com/");
+  GURL http_host_narrower("http://a.example.com/");
+
+  // Change default setting to BLOCK.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  // Set domain scoped settings.
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(http_host),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  // Settings apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  // Do migration before sync.
+  host_content_settings_map->MigrateDomainScopedSettings(false);
+
+  // Settings only apply to origins. Migration got executed.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  GURL https_host("https://example.com/");
+  GURL https_host_narrower("https://a.example.com/");
+
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(https_host),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                https_host, https_host, CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+  // Settings apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                https_host_narrower, https_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  // Try to do migration again before sync.
+  host_content_settings_map->MigrateDomainScopedSettings(false);
+
+  // Settings still apply to subdomains. Migration didn't get executed.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                https_host_narrower, https_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  // Do migration after sync.
+  host_content_settings_map->MigrateDomainScopedSettings(true);
+
+  // Settings only apply to origins. Migration got executed.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                https_host_narrower, https_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  GURL http1_host("http://google.com/");
+  GURL http1_host_narrower("http://a.google.com/");
+
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(http1_host),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http1_host, http1_host, CONTENT_SETTINGS_TYPE_COOKIES,
+                std::string()));
+  // Settings apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http1_host_narrower, http1_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  // Try to do migration again after sync.
+  host_content_settings_map->MigrateDomainScopedSettings(true);
+
+  // Settings still apply to subdomains. Migration didn't get executed.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http1_host_narrower, http1_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 }
 
 TEST_F(HostContentSettingsMapTest, InvalidPattern) {
