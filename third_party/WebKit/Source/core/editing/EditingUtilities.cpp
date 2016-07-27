@@ -959,7 +959,7 @@ TextDirection primaryDirectionOf(const Node& node)
     return primaryDirection;
 }
 
-String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfParagraph, bool endIsEndOfParagraph)
+String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfParagraph, bool shouldEmitNBSPbeforeEnd)
 {
     unsigned length = string.length();
 
@@ -975,7 +975,8 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
             continue;
         }
 
-        if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == length && endIsEndOfParagraph)) {
+        // We need to ensure there is no next sibling text node. See http://crbug.com/310149
+        if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == length && shouldEmitNBSPbeforeEnd)) {
             rebalancedString.append(noBreakSpaceCharacter);
             previousCharacterWasSpace = false;
         } else {

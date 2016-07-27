@@ -134,7 +134,7 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 |       <div>
 |         class="editing"
 |         id="test"
-|         "There is a tide in the affairs of men,"
+|         "There is a tide in the affairs of men,"
 |         <div>
 |           class="editing"
 |           "Which taken at the flood leads on to fortune."
@@ -197,7 +197,7 @@ runDumpAsTextEditingTest(true);
 "
 |       <li>
 |         "execPasteCommand: 
-<div id="test" class="editing">There&nbsp;is a tide in the affairs of men,<div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing"><div class="editing">Omitted, all the voyage of their life,
+<div id="test" class="editing">There is a tide in the affairs of men,<div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing"><div class="editing">Omitted, all the voyage of their life,
 <div class="editing">Is bound in shallows and in miseries.
 </div>
 </div>
@@ -206,7 +206,7 @@ runDumpAsTextEditingTest(true);
 "
 |       <li>
 |         "execPasteCommand: 
-<div id="test" class="editing">There&nbsp;is a tide in the affairs of men,<div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing"><div class="editing">Omittedis a tide in the affairs of men,</div><div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing">Omitted, all the voyage of their life,
+<div id="test" class="editing">There is a tide in the affairs of men,<div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing"><div class="editing">Omittedis a tide in the affairs of men,</div><div class="editing">Which taken at the flood leads on to fortune.</div><div class="editing">Omitted, all the voyage of their life,
 <div class="editing">Is bound in shallows and in miseries.
 </div>
 </div>

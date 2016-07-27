@@ -1,0 +1,24 @@
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+test(() => assert_selection(
+  '<div contenteditable><p>A|B</p></div>',
+  'insertText \ ',
+  '<div contenteditable><p>A |B</p></div>'),
+  'insert a plain space in the middle of text node');
+
+test(() => assert_selection(
+  '<div contenteditable><p id="para"></p></div>',
+  selection => {
+    var para = selection.document.getElementById('para');
+    para.appendChild(selection.document.createTextNode('A'));
+    para.appendChild(selection.document.createTextNode('B'));
+    selection.collapse(para.firstChild, 1);
+
+    selection.document.execCommand('insertText', false, ' ');
+  },
+  '<div contenteditable><p id="para">A |B</p></div>'),
+  'insert a plain space between two inserted text nodes');
+</script>

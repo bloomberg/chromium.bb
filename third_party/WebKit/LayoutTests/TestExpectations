@@ -1370,3 +1370,8 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scrol
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
 
 crbug.com/630996 [ Win7 Win10 Linux ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Skip ]
+
+crbug.com/310149 editing/execCommand/find-after-replace.html [ NeedsRebaseline ]
+crbug.com/310149 editing/pasteboard/5028447.html [ NeedsRebaseline ]
+crbug.com/310149 editing/pasteboard/unrendered-br.html [ NeedsRebaseline ]
+crbug.com/310149 [ Win ] editing/pasteboard/smart-paste-003.html [ NeedsRebaseline ]
