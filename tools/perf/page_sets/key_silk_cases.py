@@ -560,6 +560,13 @@ class Page26(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def PerformPageInteractions(self, action_runner):
+    # Add a touch-action: none because this page prevent defaults all
+    # touch moves.
+    action_runner.ExecuteJavaScript('''
+        var style = document.createElement("style");
+        document.head.appendChild(style);
+        style.sheet.insertRule("body { touch-action: none }", 0);
+        ''')
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage(distance=5000)
 
