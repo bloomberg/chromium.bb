@@ -34,6 +34,7 @@
 
 .clear-browser-data-counter {
   color: #999;
+  line-height: 1.4em;
 }
 
 .clear-browser-data-counter:not(:empty)::before {
