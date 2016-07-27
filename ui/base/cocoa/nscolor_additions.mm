@@ -20,8 +20,8 @@
   const NSInteger numberOfComponents = [self numberOfComponents];
   std::vector<CGFloat> components(numberOfComponents, 0.0);
   [self getComponents:components.data()];
-  auto color = CGColorCreate([[self colorSpace] CGColorSpace],
-                             components.data());
+  auto* color =
+      CGColorCreate([[self colorSpace] CGColorSpace], components.data());
   base::mac::CFTypeRefToNSObjectAutorelease(color);
   return color;
 }
