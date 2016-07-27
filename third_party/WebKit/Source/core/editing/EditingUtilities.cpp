@@ -387,9 +387,9 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
     return highestRoot;
 }
 
-ContainerNode* highestEditableRoot(const PositionInFlatTree& position, EditableType editableType)
+ContainerNode* highestEditableRoot(const PositionInFlatTree& position)
 {
-    return highestEditableRoot(toPositionInDOMTree(position), editableType);
+    return highestEditableRoot(toPositionInDOMTree(position), ContentIsEditable);
 }
 
 bool isEditablePosition(const Position& position)
@@ -450,9 +450,9 @@ Element* rootEditableElementOf(const Position& p, EditableType editableType)
     return rootEditableElement(*node, editableType);
 }
 
-Element* rootEditableElementOf(const PositionInFlatTree& p, EditableType editableType)
+Element* rootEditableElementOf(const PositionInFlatTree& p)
 {
-    return rootEditableElementOf(toPositionInDOMTree(p), editableType);
+    return rootEditableElementOf(toPositionInDOMTree(p), ContentIsEditable);
 }
 
 // TODO(yosin) This does not handle [table, 0] correctly.

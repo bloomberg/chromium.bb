@@ -85,7 +85,7 @@ CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
 // defiance of editing boundaries. This returns a Document if designMode="on"
 // and the specified Position is not in the <body>.
 CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
-ContainerNode* highestEditableRoot(const PositionInFlatTree&, EditableType = ContentIsEditable);
+ContainerNode* highestEditableRoot(const PositionInFlatTree&);
 
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
     EditingBoundaryCrossingRule = CannotCrossEditingBoundary, Node* stayWithin = nullptr);
@@ -315,7 +315,7 @@ HTMLSpanElement* createTabSpanElement(Document&);
 HTMLSpanElement* createTabSpanElement(Document&, const String& tabText);
 
 Element* rootEditableElementOf(const Position&, EditableType = ContentIsEditable);
-Element* rootEditableElementOf(const PositionInFlatTree&, EditableType = ContentIsEditable);
+Element* rootEditableElementOf(const PositionInFlatTree&);
 Element* rootEditableElementOf(const VisiblePosition&);
 Element* unsplittableElementForPosition(const Position&);
 
