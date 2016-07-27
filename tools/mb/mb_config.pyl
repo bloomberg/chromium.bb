@@ -634,6 +634,13 @@
       'WinClang64 (dbg)': 'win_clang_debug_bot',
     },
 
+    'internal.client.kitchensync': {
+      'Linux Canary': 'swarming_gn_debug_bot',
+      'Linux Dev': 'swarming_gn_debug_bot',
+      'Mac Dev': 'swarming_gn_debug_bot',
+      'Windows Dev': 'swarming_gn_debug_bot_minimal_symbols_x64',
+    },
+
     'official.desktop': {
       'blimp-engine': '//build/args/bots/official.desktop/blimp-engine.gn',
       'mac64': 'gn_official',
