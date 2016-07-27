@@ -679,12 +679,14 @@ if (is_win) {
       "//chrome/common:version_header",
     ]
 
-    ldflags = [
-      # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Conents/MacOS/
-      # so set rpath up to the base.
-      "-rpath",
-      "@loader_path/../../../../../../..",
-    ]
+    if (is_component_build) {
+      ldflags = [
+        # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Conents/MacOS/
+        # so set rpath up to the base.
+        "-rpath",
+        "@loader_path/../../../../../../..",
+      ]
+    }
 
     # Remove the default strip configuration (which strips all symbols) so that
     # a saves file can be specified.
