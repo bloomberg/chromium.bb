@@ -252,6 +252,12 @@
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
     },
 
+    'chromium.goma': {
+      'Chromium Linux Goma Staging': 'gn_release_bot',
+      'Chromium Mac Goma Staging': 'gn_release_bot',
+      'CrWinGomaStaging': 'gn_release_bot_minimal_symbols_x86',
+    },
+
     'chromium.gpu': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
       'GPU Mac Builder': 'swarming_gpu_tests_gn_release_trybot',
