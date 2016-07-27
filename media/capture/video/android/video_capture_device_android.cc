@@ -43,6 +43,7 @@ VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
 }
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   StopAndDeAllocate();
 }
 
@@ -59,7 +60,7 @@ bool VideoCaptureDeviceAndroid::Init() {
 void VideoCaptureDeviceAndroid::AllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
-  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
     if (state_ != kIdle)
@@ -79,7 +80,6 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
     return;
   }
 
-  // Store current width and height.
   capture_format_.frame_size.SetSize(
       Java_VideoCapture_queryWidth(env, j_capture_.obj()),
       Java_VideoCapture_queryHeight(env, j_capture_.obj()));
@@ -97,9 +97,9 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
         capture_format_.frame_rate);
   }
 
-  DVLOG(1) << "VideoCaptureDeviceAndroid::Allocate: queried frame_size="
-           << capture_format_.frame_size.ToString()
-           << ", frame_rate=" << capture_format_.frame_rate;
+  DVLOG(1) << __FUNCTION__ << " requested ("
+           << capture_format_.frame_size.ToString() << ")@ "
+           << capture_format_.frame_rate << "fps";
 
   ret = Java_VideoCapture_startCapture(env, j_capture_.obj());
   if (!ret) {
@@ -114,7 +114,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
 }
 
 void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
-  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
     if (state_ != kCapturing && state_ != kError)
@@ -123,7 +123,7 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 
   JNIEnv* env = AttachCurrentThread();
 
-  jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_.obj());
+  const jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_.obj());
   if (!ret) {
     SetErrorState(FROM_HERE, "failed to stop capture");
     return;
@@ -139,7 +139,7 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 }
 
 void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
-  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     base::AutoLock lock(lock_);
     if (state_ != kCapturing)
@@ -165,6 +165,7 @@ void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
 
 void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
     GetPhotoCapabilitiesCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = AttachCurrentThread();
 
   PhotoCapabilities caps(
@@ -199,6 +200,7 @@ void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
 void VideoCaptureDeviceAndroid::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = AttachCurrentThread();
   // |width| and/or |height| are kept for the next TakePhoto()s.
   if (settings->has_width || settings->has_height)
@@ -223,11 +225,11 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     const JavaParamRef<jbyteArray>& data,
     jint length,
     jint rotation) {
-  DVLOG(3) << __FUNCTION__ << " length =" << length;
-
-  base::AutoLock lock(lock_);
-  if (state_ != kCapturing || !client_.get())
-    return;
+  {
+    base::AutoLock lock(lock_);
+    if (state_ != kCapturing || !client_)
+      return;
+  }
 
   jbyte* buffer = env->GetByteArrayElements(data, NULL);
   if (!buffer) {
@@ -250,6 +252,9 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
 
     // TODO(qiangchen): Investigate how to get raw timestamp for Android,
     // rather than using reference time to calculate timestamp.
+    base::AutoLock lock(lock_);
+    if (!client_)
+      return;
     client_->OnIncomingCapturedData(reinterpret_cast<uint8_t*>(buffer), length,
                                     capture_format_, rotation, current_time,
                                     current_time - first_ref_time_);
@@ -269,6 +274,12 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
                                                      jint width,
                                                      jint height,
                                                      jint rotation) {
+  {
+    base::AutoLock lock(lock_);
+    if (state_ != kCapturing || !client_)
+      return;
+  }
+
   const base::TimeTicks current_time = base::TimeTicks::Now();
   if (!got_first_frame_) {
     // Set aside one frame allowance for fluctuation.
@@ -304,6 +315,9 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
 
     // TODO(qiangchen): Investigate how to get raw timestamp for Android,
     // rather than using reference time to calculate timestamp.
+    base::AutoLock lock(lock_);
+    if (!client_)
+      return;
     client_->OnIncomingCapturedData(buffer.get(), buffer_length,
                                     capture_format_, rotation, current_time,
                                     current_time - first_ref_time_);
@@ -370,8 +384,10 @@ void VideoCaptureDeviceAndroid::SetErrorState(
   {
     base::AutoLock lock(lock_);
     state_ = kError;
+    if (!client_)
+      return;
+    client_->OnError(from_here, reason);
   }
-  client_->OnError(from_here, reason);
 }
 
 }  // namespace media

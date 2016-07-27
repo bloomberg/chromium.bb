@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
@@ -103,15 +104,18 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   void SetErrorState(const tracked_objects::Location& from_here,
                      const std::string& reason);
 
+  base::ThreadChecker thread_checker_;
+
   // Prevent racing on accessing |state_| and |client_| since both could be
   // accessed from different threads.
   base::Lock lock_;
   InternalState state_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
+
   bool got_first_frame_;
   base::TimeTicks expected_next_frame_time_;
   base::TimeTicks first_ref_time_;
   base::TimeDelta frame_interval_;
-  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   // List of |photo_callbacks_| in flight, being served in Java side.
   base::Lock photo_callbacks_lock_;
