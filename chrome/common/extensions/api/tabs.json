@@ -907,6 +907,34 @@
             ]
           }
         ]
+      },
+      {
+        "name": "discard",
+        "type": "function",
+        "description": "Discards a tab from memory. Discarded tabs are still visible on the tab strip and are reloaded when activated.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "optional": true,
+            "minimum": 0,
+            "description": "The ID of the tab to be discarded. If specified, the tab will be discarded unless it's active or already discarded. If omitted, the browser will discard the least important tab. This can fail if no discardable tabs exist."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after the operation is completed.",
+            "parameters": [
+              {
+                "name": "tab",
+                "$ref": "Tab",
+                "optional": true,
+                "description": "Discarded tab if it was successfully discarded. Undefined otherwise."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

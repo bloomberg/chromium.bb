@@ -294,6 +294,13 @@ WebContents* TabManager::DiscardTabById(int64_t target_web_contents_id) {
   return DiscardWebContentsAt(index, model);
 }
 
+WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
+  if (contents)
+    return DiscardTabById(reinterpret_cast<int64_t>(contents));
+
+  return DiscardTabImpl();
+}
+
 void TabManager::LogMemoryAndDiscardTab() {
   LogMemory("Tab Discards Memory details",
             base::Bind(&TabManager::PurgeMemoryAndDiscardTab));
@@ -841,21 +848,23 @@ void TabManager::DoChildProcessDispatch() {
 // TODO(jamescook): This should consider tabs with references to other tabs,
 // such as tabs created with JavaScript window.open(). Potentially consider
 // discarding the entire set together, or use that in the priority computation.
-bool TabManager::DiscardTabImpl() {
+content::WebContents* TabManager::DiscardTabImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats = GetTabStats();
 
   if (stats.empty())
-    return false;
+    return nullptr;
   // Loop until a non-discarded tab to kill is found.
   for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
        stats_rit != stats.rend(); ++stats_rit) {
     int64_t least_important_tab_id = stats_rit->tab_contents_id;
-    if (CanDiscardTab(least_important_tab_id) &&
-        DiscardTabById(least_important_tab_id))
-      return true;
+    if (CanDiscardTab(least_important_tab_id)) {
+      WebContents* new_contents = DiscardTabById(least_important_tab_id);
+      if (new_contents)
+        return new_contents;
+    }
   }
-  return false;
+  return nullptr;
 }
 
 // Check the variation parameter to see if a tab can be discarded only once or
@@ -913,6 +922,11 @@ void TabManager::OnDiscardedStateChange(content::WebContents* contents,
                                         bool is_discarded) {
   FOR_EACH_OBSERVER(TabManagerObserver, observers_,
                     OnDiscardedStateChange(contents, is_discarded));
+}
+
+void TabManager::set_minimum_protection_time_for_tests(
+    base::TimeDelta minimum_protection_time) {
+  minimum_protection_time_ = minimum_protection_time;
 }
 
 void TabManager::OnAutoDiscardableStateChange(content::WebContents* contents,

@@ -2168,4 +2168,42 @@ bool TabsGetZoomSettingsFunction::RunAsync() {
   return true;
 }
 
+ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
+  std::unique_ptr<tabs::Discard::Params> params(
+      tabs::Discard::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  WebContents* contents = nullptr;
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  // If |tab_id| is given, find the web_contents respective to it.
+  // Otherwise invoke discard function in TabManager with null web_contents
+  // that will discard the least important tab.
+  if (params->tab_id) {
+    int tab_id = *params->tab_id;
+    if (!GetTabById(tab_id, profile, include_incognito(), nullptr, nullptr,
+                    &contents, nullptr, &error_)) {
+      return RespondNow(Error(error_));
+    }
+  }
+  // Discard the tab.
+  contents =
+      g_browser_process->GetTabManager()->DiscardTabByExtension(contents);
+
+  // Create the Tab object and return it in case of success.
+  if (contents) {
+    return RespondNow(ArgumentList(tabs::Discard::Results::Create(
+        *ExtensionTabUtil::CreateTabObject(contents))));
+  }
+
+  // Return appropriate error message otherwise.
+  return RespondNow(Error(
+      params->tab_id
+          ? ErrorUtils::FormatErrorMessage(keys::kCannotDiscardTab,
+                                           base::IntToString(*params->tab_id))
+          : keys::kCannotFindTabToDiscard));
+}
+
+TabsDiscardFunction::TabsDiscardFunction() {}
+TabsDiscardFunction::~TabsDiscardFunction() {}
+
 }  // namespace extensions

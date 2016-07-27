@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/api/web_contents_capture_client.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
@@ -136,7 +137,7 @@ class TabsHighlightFunction : public ChromeSyncExtensionFunction {
   bool RunSync() override;
   bool HighlightTab(TabStripModel* tabstrip,
                     ui::ListSelectionModel* selection,
-                    int *active_index,
+                    int* active_index,
                     int index);
   DECLARE_EXTENSION_FUNCTION("tabs.highlight", TABS_HIGHLIGHT)
 };
@@ -320,6 +321,21 @@ class TabsGetZoomSettingsFunction : public ZoomAPIFunction {
   bool RunAsync() override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.getZoomSettings", TABS_GETZOOMSETTINGS)
+};
+
+class TabsDiscardFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("tabs.discard", TABS_DISCARD)
+
+  TabsDiscardFunction();
+
+ private:
+  ~TabsDiscardFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(TabsDiscardFunction);
 };
 
 }  // namespace extensions

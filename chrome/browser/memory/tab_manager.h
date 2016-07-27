@@ -104,9 +104,15 @@ class TabManager : public TabStripModelObserver {
 
   // Discards a tab with the given unique ID. The tab still exists in the
   // tab-strip; clicking on it will reload it. Returns null if the tab cannot
-  // be found or cannot be discarded. Otherwise returns the old web_contents
-  // that got discarded. This value is mostly useful during testing.
+  // be found or cannot be discarded. Otherwise returns the new web_contents
+  // of the discarded tab.
   content::WebContents* DiscardTabById(int64_t target_web_contents_id);
+
+  // Method used by the extensions API to discard tabs. If |contents| is null,
+  // discards the least important tab using DiscardTab(). Otherwise discards
+  // the given contents. Returns the new web_contents or null if no tab
+  // was discarded.
+  content::WebContents* DiscardTabByExtension(content::WebContents* contents);
 
   // Log memory statistics for the running processes, then discards a tab.
   // Tab discard happens sometime later, as collecting the statistics touches
@@ -126,6 +132,10 @@ class TabManager : public TabStripModelObserver {
 
   void AddObserver(TabManagerObserver* observer);
   void RemoveObserver(TabManagerObserver* observer);
+
+  // Used in tests to change the protection time of the tabs.
+  void set_minimum_protection_time_for_tests(
+      base::TimeDelta minimum_protection_time);
 
   // Returns the auto-discardable state of the tab. When true, the tab is
   // eligible to be automatically discarded when critical memory pressure hits,
@@ -271,8 +281,9 @@ class TabManager : public TabStripModelObserver {
   // schedules another call to itself as long as memory pressure continues.
   void DoChildProcessDispatch();
 
-  // Implementation of DiscardTab.
-  bool DiscardTabImpl();
+  // Implementation of DiscardTab. Returns null if no tab was discarded.
+  // Otherwise returns the new web_contents of the discarded tab.
+  content::WebContents* DiscardTabImpl();
 
   // Returns true if tabs can be discarded only once.
   bool CanOnlyDiscardOnce();

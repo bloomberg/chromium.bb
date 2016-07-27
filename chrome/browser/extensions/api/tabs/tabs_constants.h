@@ -85,6 +85,8 @@ extern const char kPerOriginOnlyInAutomaticError[];
 extern const char kWindowNotFoundError[];
 extern const char kTabIndexNotFoundError[];
 extern const char kTabNotFoundError[];
+extern const char kCannotDiscardTab[];
+extern const char kCannotFindTabToDiscard[];
 extern const char kTabStripNotEditableError[];
 extern const char kNoHighlightedTabError[];
 extern const char kNoSelectedTabError[];

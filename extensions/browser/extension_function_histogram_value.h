@@ -1202,6 +1202,7 @@ enum HistogramValue {
   QUICKUNLOCKPRIVATE_GETACTIVEMODES,
   QUICKUNLOCKPRIVATE_GETAVAILABLEMODES,
   WEBSTOREPRIVATE_ISPENDINGCUSTODIANAPPROVAL,
+  TABS_DISCARD,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

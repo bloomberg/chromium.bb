@@ -37,6 +37,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -1437,6 +1438,142 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
         RunQueryFunction("[{\"discarded\": true}]"));
     EXPECT_EQ(1u, result->GetSize());
   }
+}
+
+// Tests chrome.tabs.discard(tabId).
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
+  // Create an aditional tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Set up the function with an extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<TabsDiscardFunction> discard(new TabsDiscardFunction());
+  discard->set_extension(extension.get());
+
+  // Run function passing the tab id as argument.
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  std::unique_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          discard.get(), base::StringPrintf("[%u]", tab_id), browser())));
+
+  // Confirms that TabManager sees the tab as discarded.
+  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(web_contents));
+
+  // Make sure the returned tab is the one discarded and its discarded state is
+  // correct.
+  tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  EXPECT_EQ(tab_id, api_test_utils::GetInteger(result.get(), "id"));
+  EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "discarded"));
+
+  // Tests chrome.tabs.discard(tabId) with an already discarded tab. It has to
+  // return the error stating that the tab couldn't be discarded.
+  scoped_refptr<TabsDiscardFunction> discarded(new TabsDiscardFunction());
+  discarded->set_extension(extension.get());
+  std::string error = utils::RunFunctionAndReturnError(
+      discarded.get(), base::StringPrintf("[%u]", tab_id), browser());
+  EXPECT_TRUE(base::MatchPattern(error, keys::kCannotDiscardTab));
+}
+
+// Tests chrome.tabs.discard(invalidId).
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithInvalidId) {
+  // Create an aditional tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Set up the function with an extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<TabsDiscardFunction> discard(new TabsDiscardFunction());
+  discard->set_extension(extension.get());
+
+  // Run function passing an invalid id as argument.
+  int tab_invalid_id = ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+  tab_invalid_id = std::max(
+      tab_invalid_id, ExtensionTabUtil::GetTabId(
+                          browser()->tab_strip_model()->GetWebContentsAt(1)));
+  tab_invalid_id++;
+
+  std::string error = utils::RunFunctionAndReturnError(
+      discard.get(), base::StringPrintf("[%u]", tab_invalid_id), browser());
+
+  // Discarded state should still be false as no tab was discarded.
+  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
+      browser()->tab_strip_model()->GetWebContentsAt(1)));
+
+  // Check error message.
+  EXPECT_TRUE(base::MatchPattern(error, keys::kTabNotFoundError));
+}
+
+// Tests chrome.tabs.discard().
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
+  // Create an aditional tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Set up the function with an extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<TabsDiscardFunction> discard(new TabsDiscardFunction());
+  discard->set_extension(extension.get());
+
+  // Disable protection time to discard the tab without passing id.
+  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromSeconds(0));
+
+  // Run without passing an id.
+  std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
+      utils::RunFunctionAndReturnSingleResult(discard.get(), "[]", browser())));
+
+  // Confirms that TabManager sees the tab as discarded.
+  web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(web_contents));
+
+  // Make sure the returned tab is the one discarded and its discarded state is
+  // correct.
+  EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contents),
+            api_test_utils::GetInteger(result.get(), "id"));
+  EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "discarded"));
+}
+
+// Tests chrome.tabs.discard() without disabling protection time.
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
+  // Create an aditional tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Make sure protection time isn't disabled.
+  g_browser_process->GetTabManager()->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(10));
+
+  // Set up the function with an extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<TabsDiscardFunction> discard(new TabsDiscardFunction());
+  discard->set_extension(extension.get());
+
+  // Run without passing an id. In this case the tab couldn't be discarded
+  // because of protection time.
+  std::string error =
+      utils::RunFunctionAndReturnError(discard.get(), "[]", browser());
+
+  // Discarded state should be false for both tabs as no tab was discarded.
+  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
+      browser()->tab_strip_model()->GetWebContentsAt(1)));
+  EXPECT_FALSE(g_browser_process->GetTabManager()->IsTabDiscarded(
+      browser()->tab_strip_model()->GetWebContentsAt(0)));
+
+  // Check error message.
+  EXPECT_TRUE(base::MatchPattern(error, keys::kCannotFindTabToDiscard));
 }
 
 // Tester class for the tabs.zoom* api functions.
