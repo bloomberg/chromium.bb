@@ -34,9 +34,8 @@ public:
         GammaSRGB = 1,
         Gamma2Dot2 = 2,
         GammaNonStandard = 3,
-        GammaEmpty = 4,
-        GammaNull = 5,
-        GammaFail = 6,
+        GammaNull = 4,
+        GammaFail = 5,
         GammaEnd = GammaFail + 1,
     };
 
