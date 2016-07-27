@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
+#include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -49,6 +50,12 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(chooser_content_view_);
     table_view_ = [chooser_content_view_ tableView];
     ASSERT_TRUE(table_view_);
+    spinner_ = [chooser_content_view_ spinner];
+    ASSERT_TRUE(spinner_);
+    status_ = [chooser_content_view_ status];
+    ASSERT_TRUE(status_);
+    rescan_button_ = [chooser_content_view_ rescanButton];
+    ASSERT_TRUE(rescan_button_);
     connect_button_ = [chooser_content_view_ connectButton];
     ASSERT_TRUE(connect_button_);
     cancel_button_ = [chooser_content_view_ cancelButton];
@@ -63,6 +70,9 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   ChooserDialogCocoaController* chooser_dialog_controller_;
   ChooserContentViewCocoa* chooser_content_view_;
   NSTableView* table_view_;
+  SpinnerView* spinner_;
+  NSTextField* status_;
+  NSButton* rescan_button_;
   NSButton* connect_button_;
   NSButton* cancel_button_;
   NSButton* help_button_;
@@ -351,6 +361,119 @@ TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndPressCancelButton) {
   EXPECT_CALL(*chooser_controller_, Select(testing::_)).Times(0);
   EXPECT_CALL(*chooser_controller_, Cancel()).Times(1);
   [cancel_button_ performClick:chooser_dialog_controller_];
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
+  CreateChooserDialog();
+
+  chooser_controller_->OnAdapterPresenceChanged(
+      content::BluetoothChooser::AdapterPresence::POWERED_ON);
+  EXPECT_FALSE(table_view_.hidden);
+  // There is no option shown now. But since "No devices found."
+  // needs to be displayed on the |table_view_|, the number of rows is 1.
+  EXPECT_EQ(1, table_view_.numberOfRows);
+  // |table_view_| should be disabled since there is no option shown.
+  ASSERT_FALSE(table_view_.enabled);
+  // No option selected.
+  EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_TRUE(status_.hidden);
+  EXPECT_FALSE(rescan_button_.hidden);
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  // Add options
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(3, table_view_.numberOfRows);
+  // Select option 1.
+  [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
+           byExtendingSelection:NO];
+  EXPECT_EQ(1, table_view_.selectedRow);
+  ASSERT_TRUE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  chooser_controller_->OnAdapterPresenceChanged(
+      content::BluetoothChooser::AdapterPresence::POWERED_OFF);
+  EXPECT_FALSE(table_view_.hidden);
+  // Since "Bluetooth turned off." needs to be displayed on the |table_view_|,
+  // the number of rows is 1.
+  EXPECT_EQ(1, table_view_.numberOfRows);
+  // |table_view_| should be disabled since there is no option shown.
+  EXPECT_FALSE(table_view_.enabled);
+  // No option selected.
+  EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(rescan_button_.hidden);
+  // Since the adapter is turned off, the previously selected option
+  // becomes invalid, the OK button is disabled.
+  EXPECT_EQ(0u, chooser_controller_->NumOptions());
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  chooser_controller_->OnAdapterPresenceChanged(
+      content::BluetoothChooser::AdapterPresence::POWERED_ON);
+  EXPECT_EQ(0u, chooser_controller_->NumOptions());
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndIdle) {
+  CreateChooserDialog();
+
+  // Add options
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  EXPECT_FALSE(table_view_.hidden);
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(3, table_view_.numberOfRows);
+  // Select option 1.
+  [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
+           byExtendingSelection:NO];
+  EXPECT_EQ(1, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_TRUE(status_.hidden);
+  EXPECT_TRUE(rescan_button_.hidden);
+  ASSERT_TRUE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::DISCOVERING);
+  EXPECT_TRUE(table_view_.hidden);
+  EXPECT_FALSE(spinner_.hidden);
+  EXPECT_FALSE(status_.hidden);
+  EXPECT_TRUE(rescan_button_.hidden);
+  // OK button is disabled since the chooser is refreshing options.
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::IDLE);
+  EXPECT_FALSE(table_view_.hidden);
+  // There is no option shown now. But since "No devices found."
+  // needs to be displayed on the |table_view_|, the number of rows is 1.
+  EXPECT_EQ(1, table_view_.numberOfRows);
+  // |table_view_| should be disabled since there is no option shown.
+  ASSERT_FALSE(table_view_.enabled);
+  // No option selected.
+  EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_TRUE(status_.hidden);
+  EXPECT_FALSE(rescan_button_.hidden);
+  // OK button is disabled since the chooser refreshed options.
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, PressRescanButton) {
+  CreateChooserDialog();
+
+  EXPECT_CALL(*chooser_controller_, RefreshOptions()).Times(1);
+  [rescan_button_ performClick:chooser_dialog_controller_];
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, PressHelpButton) {

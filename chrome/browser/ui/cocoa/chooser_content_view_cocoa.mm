@@ -408,6 +408,18 @@ void ChooserContentViewController::UpdateTableView() {
   return tableView_.get();
 }
 
+- (SpinnerView*)spinner {
+  return spinner_.get();
+}
+
+- (NSTextField*)status {
+  return status_.get();
+}
+
+- (NSButton*)rescanButton {
+  return rescanButton_.get();
+}
+
 - (NSButton*)connectButton {
   return connectButton_.get();
 }

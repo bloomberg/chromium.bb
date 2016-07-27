@@ -64,6 +64,15 @@ class ChooserContentViewController;
 // Gets the table view for the chooser.
 - (NSTableView*)tableView;
 
+// Gets the spinner.
+- (SpinnerView*)spinner;
+
+// Gets the status text field.
+- (NSTextField*)status;
+
+// Gets the "Re-scan" button.
+- (NSButton*)rescanButton;
+
 // Gets the "Connect" button.
 - (NSButton*)connectButton;
 
