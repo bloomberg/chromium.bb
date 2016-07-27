@@ -22,12 +22,24 @@ def FuzzParameters(test_file_data):
       parameters replaced.
     """
 
-    test_file_data = FillInParameter('TRANSFORM_REQUEST_DEVICE_OPTIONS',
-                                     constraints.GetRequestDeviceOptions,
+    test_file_data = FillInParameter('TRANSFORM_BASIC_BASE',
+                                     constraints.GetBasicBase,
                                      test_file_data)
 
-    test_file_data = FillInParameter('TRANSFORM_FAKE_ADAPTER',
-                                     constraints.GetFakeAdapter,
+    test_file_data = FillInParameter('TRANSFORM_DEVICE_DISCOVERY_BASE',
+                                     constraints.GetDeviceDiscoveryBase,
+                                     test_file_data)
+
+    test_file_data = FillInParameter('TRANSFORM_CONNECTABLE_BASE',
+                                     constraints.GetConnectableBase,
+                                     test_file_data)
+
+    test_file_data = FillInParameter('TRANSFORM_SERVICE_RETRIEVED_BASE',
+                                     constraints.GetServiceRetrievedBase,
+                                     test_file_data)
+
+    test_file_data = FillInParameter('TRANSFORM_REQUEST_DEVICE_OPTIONS',
+                                     constraints.GetRequestDeviceOptions,
                                      test_file_data)
 
     return test_file_data

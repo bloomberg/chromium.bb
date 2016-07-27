@@ -7,18 +7,66 @@
 import random
 from fuzzer_helpers import FillInParameter
 
+# Contains the different types of base tokens used when generating a test case.
+BASE_TOKENS = [
+    'TRANSFORM_BASIC_BASE',
+    'TRANSFORM_DEVICE_DISCOVERY_BASE',
+    'TRANSFORM_CONNECTABLE_BASE',
+    'TRANSFORM_SERVICE_RETRIEVED_BASE',
+]
+
 # Contains strings that represent calls to the Web Bluetooth API. These
 # strings can be sequentially placed together to generate sequences of
 # calls to the API. These strings are separated by line and placed so
 # that indentation can be performed more easily.
 TOKENS = [
     [
-        '  requestDeviceWithKeyDown(TRANSFORM_REQUEST_DEVICE_OPTIONS);',
+        '})',
+        '.catch(e => console.log(e.name + \': \' + e.message))',
+        '.then(() => {',
+    ],
+    # Request Device Tokens
+    [
+        '  requestDeviceWithKeyDown(TRANSFORM_REQUEST_DEVICE_OPTIONS);'
     ],
     [
         '  return requestDeviceWithKeyDown(TRANSFORM_REQUEST_DEVICE_OPTIONS);',
         '})',
         '.then(device => {',
+    ],
+    # Connect Tokens
+    [
+        '  device.gatt.connect();',
+    ],
+    [
+        '  return device.gatt.connect();',
+        '})'
+        '.then(gatt => {',
+    ],
+    [
+        '  gatt.connect();',
+    ],
+    [
+        '  return gatt.connect();',
+        '})'
+        '.then(gatt => {',
+    ],
+    # GetPrimaryService(s) Tokens
+    [
+        '  device.gatt.getPrimaryServices();',
+    ],
+    [
+        '  gatt.getPrimaryServices();',
+    ],
+    [
+        '  return device.gatt.getPrimaryServices();',
+        '})'
+        '.then(services => {',
+    ],
+    [
+        '  return gatt.getPrimaryServices();',
+        '})'
+        '.then(services => {',
     ],
 ]
 
@@ -41,7 +89,8 @@ def _GenerateSequenceOfRandomTokens():
     Returns:
       A string containing a sequence of calls to the Web Bluetooth API.
     """
-    result = ''
+    result = random.choice(BASE_TOKENS)
+
     for _ in xrange(random.randint(1, MAX_NUM_OF_TOKENS)):
         # Get random token.
         token = random.choice(TOKENS)
@@ -51,6 +100,7 @@ def _GenerateSequenceOfRandomTokens():
             result += INDENT + line + BREAK
 
     result += INDENT + END_TOKEN
+
     return result
 
 

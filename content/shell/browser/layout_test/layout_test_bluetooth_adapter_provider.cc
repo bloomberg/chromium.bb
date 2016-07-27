@@ -653,6 +653,10 @@ LayoutTestBluetoothAdapterProvider::GetBaseDevice(
       .WillByDefault(
           Invoke(device.get(), &MockBluetoothDevice::GetMockService));
 
+  ON_CALL(*device, CreateGattConnection(_, _))
+      .WillByDefault(RunCallback<1 /* error_callback */>(
+          BluetoothDevice::ERROR_UNSUPPORTED_DEVICE));
+
   return device;
 }
 

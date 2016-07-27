@@ -366,6 +366,9 @@ class LayoutTestBluetoothAdapterProvider {
   //      Returns: device_name.
   //  - IsPaired:
   //      Returns true.
+  //  - ConnectGatt:
+  //      Calls error callback with
+  //      BluetoothDevice::ConnectErrorCode::ERROR_UNSUPPORTED_DEVICE.
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetBaseDevice(device::MockBluetoothAdapter* adapter,
                 const std::string& device_name = "Base Device",

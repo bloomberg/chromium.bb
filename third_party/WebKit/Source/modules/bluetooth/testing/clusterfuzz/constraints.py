@@ -20,48 +20,35 @@ from resources import utils
 from resources import fuzzy_types
 
 import gatt_aliases
+import wbt_fakes
 
 
-# List of services that are included in our fake adapters.
-FAKE_SERVICES = [
-    'generic_access',
-    'glucose',
-    'heart_rate',
-    'battery_service',
-    'human_interface_device',
-    '000000a0-97e5-4cd7-b9f1-f5a427670c59',  # Error UUID
-    'device_information',
-    '611c954a-263b-4f4a-aab6-01ddb953f985',  # Blacklisted
-    '01d7d889-7451-419f-aeb8-d65e7b9277af',  # Request Disconnection
-]
+# Strings that are used to generate the beginning of a test. The replacement
+# fields are replaced by Get*Base() functions below to generate valid test
+# cases.
+BASIC_BASE = \
+    '  return setBluetoothFakeAdapter({fake_adapter_name})\n'\
+    '    .then(() => {{\n'
 
-# List of available fake adapters.
-FAKE_ADAPTERS = [
-    'BaseAdapter',
-    'NotPresentAdapter',
-    'NotPoweredAdapter',
-    'EmptyAdapter',
-    'FailStartDiscoveryAdapter',
-    'GlucoseHeartRateAdapter',
-    'UnicodeDeviceAdapter',
-    'MissingServiceHeartRateAdapter',
-    'MissingCharacteristicHeartRateAdapter',
-    'HeartRateAdapter',
-    'TwoHeartRateServicesAdapter',
-    'DisconnectingHeartRateAdapter',
-    'BlacklistTestAdapter',
-    'FailingConnectionsAdapter',
-    'FailingGATTOperationsAdapter',
-    'DelayedServicesDiscoveryAdapter',
-]
+DEVICE_DISCOVERY_BASE = BASIC_BASE + \
+    '      return requestDeviceWithKeyDown({{\n'\
+    '        filters: [{{services: [{service_uuid}]}}]}});\n'\
+    '    }})\n'\
+    '    .then(device => {{\n'
+
+CONNECTABLE_BASE = DEVICE_DISCOVERY_BASE + \
+    '      return device.gatt.connect();\n'\
+    '    }})\n'\
+    '    .then(gatt => {{\n'
+
+SERVICE_RETRIEVED_BASE = CONNECTABLE_BASE + \
+    '      return gatt.getPrimaryService({service_uuid});\n'\
+    '    }})\n'\
+    '    .then(service => {{\n'
 
 
 def _ToJsStr(s):
     return u'\'{}\''.format(s)
-
-
-def GetFakeAdapter():
-    return _ToJsStr(random.choice(FAKE_ADAPTERS))
 
 
 def _GetFuzzedJsString(s):
@@ -84,9 +71,9 @@ def _GetFuzzedJsString(s):
             return _ToJsStr(fuzzed_string)
 
 
-def GetServiceUUIDFromFakes():
+def GetAdvertisedServiceUUIDFromFakes():
     """Returns a random service string from the list of fake services."""
-    return _ToJsStr(random.choice(FAKE_SERVICES))
+    return _ToJsStr(random.choice(wbt_fakes.ADVERTISED_SERVICES))
 
 
 def GetValidServiceAlias():
@@ -111,7 +98,7 @@ def GetRandomUUID():
             return _GetFuzzedJsString(alias)
 
 
-def GetServiceUUID():
+def GetAdvertisedServiceUUID():
     """Generates a random Service UUID from a set of functions.
 
     See GetServiceUUIDFromFakes(), GetValidServiceAlias() and GetRandomUUID()
@@ -127,7 +114,7 @@ def GetServiceUUID():
     """
     roll = random.random()
     if roll < 0.8:
-        return GetServiceUUIDFromFakes()
+        return GetAdvertisedServiceUUIDFromFakes()
     elif roll < 0.9:
         return GetValidServiceAlias()
     else:
@@ -138,4 +125,48 @@ def GetRequestDeviceOptions():
     """Returns an object used by navigator.bluetooth.requestDevice."""
     # TODO(ortuno): Randomize the members, number of filters, services, etc.
 
-    return '{filters: [{services: [ %s ]}]}' % GetServiceUUID()
+    return '{filters: [{services: [ %s ]}]}' % GetAdvertisedServiceUUID()
+
+
+def GetBasicBase():
+    """Returns a string that sets a random fake adapter."""
+    adapter = _ToJsStr(random.choice(wbt_fakes.ALL_ADAPTERS))
+    return BASIC_BASE.format(fake_adapter_name=adapter)
+
+
+def GetDeviceDiscoveryBase():
+    """Generates a string that contains all steps to find a device."""
+    adapter, services = random.choice(wbt_fakes.ADAPTERS_WITH_DEVICES)
+    return DEVICE_DISCOVERY_BASE.format(
+        fake_adapter_name=_ToJsStr(adapter),
+        service_uuid=_ToJsStr(random.choice(services)))
+
+
+def GetConnectableBase():
+    """Generates a string that contains all steps to connect to a device.
+
+    Returns: A string that:
+      1. Sets an adapter to a fake adapter with a connectable device.
+      2. Looks for the connectable device.
+      3. Connects to it.
+    """
+    adapter, services = random.choice(wbt_fakes.ADAPTERS_WITH_DEVICES)
+    return DEVICE_DISCOVERY_BASE.format(
+        fake_adapter_name=_ToJsStr(adapter),
+        service_uuid=_ToJsStr(random.choice(services)))
+
+
+def GetServiceRetrievedBase():
+    """Returns a string that contains all steps to retrieve a service.
+
+    Returns: A string that:
+      1. Sets an adapter to a fake adapter with a connectable device with
+         services.
+      2. Use one of the device's services to look for that device.
+      3. Connects to it.
+      4. Retrieve the device's service used in 2.
+    """
+    adapter, services = random.choice(wbt_fakes.ADAPTERS_WITH_SERVICES)
+    return SERVICE_RETRIEVED_BASE.format(
+        fake_adapter_name=_ToJsStr(adapter),
+        service_uuid=_ToJsStr(random.choice(services)))
