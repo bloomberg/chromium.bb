@@ -189,8 +189,6 @@ private:
     inline bool is##thisType(const Node& node) { return node.isHTMLElement() ? is##thisType(toHTMLElement(node)) : false; } \
     inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
     inline bool is##thisType(const Element* element) { return element && is##thisType(*element); } \
-    template<typename T> inline bool is##thisType(const PassRefPtr<T>& node) { return is##thisType(node.get()); } \
-    template<typename T> inline bool is##thisType(const RefPtr<T>& node) { return is##thisType(node.get()); } \
     template <> inline bool isElementOfType<const thisType>(const HTMLElement& element) { return is##thisType(element); } \
     DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 

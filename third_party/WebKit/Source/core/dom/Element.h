@@ -763,7 +763,6 @@ template<typename T> inline const T* toElement(const Node* node)
     ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
     return static_cast<const T*>(node);
 }
-template<typename T, typename U> inline T* toElement(const RefPtr<U>& node) { return toElement<T>(node.get()); }
 
 inline bool isDisabledFormControl(const Node* node)
 {

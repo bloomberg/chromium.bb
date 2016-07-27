@@ -101,7 +101,6 @@ private:
 };
 
 #define DEFINE_ELEMENT_DATA_TYPE_CASTS(thisType,  pointerPredicate, referencePredicate) \
-    template<typename T> inline thisType* to##thisType(const RefPtr<T>& data) { return to##thisType(data.get()); } \
     DEFINE_TYPE_CASTS(thisType, ElementData, data, pointerPredicate, referencePredicate)
 
 #if COMPILER(MSVC)
