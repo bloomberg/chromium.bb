@@ -30,13 +30,13 @@ namespace mus {
 
 // Provides the non-client frame for mus Windows.
 class NonClientFrameController : public views::WidgetDelegateView,
-                                 public ::ui::WindowObserver {
+                                 public ui::WindowObserver {
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
   static void Create(shell::Connector* connector,
-                     ::ui::Window* parent,
-                     ::ui::Window* window,
-                     ::ui::WindowManagerClient* window_manager_client);
+                     ui::Window* parent,
+                     ui::Window* window,
+                     ui::WindowManagerClient* window_manager_client);
 
   // Returns the preferred client area insets.
   static gfx::Insets GetPreferredClientAreaInsets();
@@ -45,13 +45,13 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // title bar.
   static int GetMaxTitleBarButtonWidth();
 
-  ::ui::Window* window() { return window_; }
+  ui::Window* window() { return window_; }
 
  private:
   NonClientFrameController(shell::Connector* connector,
-                           ::ui::Window* parent,
-                           ::ui::Window* window,
-                           ::ui::WindowManagerClient* window_manager_client);
+                           ui::Window* parent,
+                           ui::Window* window,
+                           ui::WindowManagerClient* window_manager_client);
   ~NonClientFrameController() override;
 
   // views::WidgetDelegateView:
@@ -65,20 +65,20 @@ class NonClientFrameController : public views::WidgetDelegateView,
 
   // ui::WindowObserver:
   void OnWindowSharedPropertyChanged(
-      ::ui::Window* window,
+      ui::Window* window,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
-  void OnWindowLocalPropertyChanged(::ui::Window* window,
+  void OnWindowLocalPropertyChanged(ui::Window* window,
                                     const void* key,
                                     intptr_t old) override;
-  void OnWindowDestroyed(::ui::Window* window) override;
+  void OnWindowDestroyed(ui::Window* window) override;
 
   views::Widget* widget_;
 
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.
-  ::ui::Window* window_;
+  ui::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };

@@ -27,7 +27,7 @@ class WindowManager;
 // connection. This manages its own lifetime, and destroys itself when the
 // AcceleratorRegistrar and all its AcceleratorHandlers are disconnected. Upon
 // destruction, it calls the DestroyCallback.
-class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
+class AcceleratorRegistrarImpl : public ui::mojom::AcceleratorRegistrar,
                                  public WindowManagerObserver,
                                  public AcceleratorHandler,
                                  public ui::AcceleratorTarget {
@@ -57,13 +57,13 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
   // If |matcher| identifies a key-binding accelerator registers it and
   // returns true, returns false otherwise.
   bool AddAcceleratorForKeyBinding(uint32_t accelerator_id,
-                                   const ::ui::mojom::EventMatcher& matcher,
+                                   const ui::mojom::EventMatcher& matcher,
                                    const AddAcceleratorCallback& callback);
 
-  // ::ui::mojom::AcceleratorRegistrar:
-  void SetHandler(::ui::mojom::AcceleratorHandlerPtr handler) override;
+  // ui::mojom::AcceleratorRegistrar:
+  void SetHandler(ui::mojom::AcceleratorHandlerPtr handler) override;
   void AddAccelerator(uint32_t accelerator_id,
-                      ::ui::mojom::EventMatcherPtr matcher,
+                      ui::mojom::EventMatcherPtr matcher,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t accelerator_id) override;
 
@@ -79,7 +79,7 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
   bool CanHandleAccelerators() const override;
 
   WindowManager* window_manager_;
-  ::ui::mojom::AcceleratorHandlerPtr accelerator_handler_;
+  ui::mojom::AcceleratorHandlerPtr accelerator_handler_;
   mojo::Binding<AcceleratorRegistrar> binding_;
   uint16_t accelerator_namespace_;
   // Only contains non-keyboard accelerators.

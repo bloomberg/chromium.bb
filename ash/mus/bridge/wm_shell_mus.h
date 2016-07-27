@@ -33,7 +33,7 @@ class WmRootWindowControllerMus;
 class WmWindowMus;
 
 // WmShell implementation for mus.
-class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
+class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
              WindowManager* window_manager);
@@ -46,7 +46,7 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
 
   // Returns the ancestor of |window| (including |window|) that is considered
   // toplevel. |window| may be null.
-  static WmWindowMus* GetToplevelAncestor(::ui::Window* window);
+  static WmWindowMus* GetToplevelAncestor(ui::Window* window);
 
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
 
@@ -95,15 +95,15 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
 #endif
 
  private:
-  ::ui::WindowTreeClient* window_tree_client();
+  ui::WindowTreeClient* window_tree_client();
 
   // Returns true if |window| is a window that can have active children.
-  static bool IsActivationParent(::ui::Window* window);
+  static bool IsActivationParent(ui::Window* window);
 
-  // ::ui::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
-                                ::ui::Window* lost_focus) override;
-  void OnDidDestroyClient(::ui::WindowTreeClient* client) override;
+  // ui::WindowTreeClientObserver:
+  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                ui::Window* lost_focus) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
 
   WindowManager* window_manager_;
 

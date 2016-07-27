@@ -88,7 +88,7 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 }
 
 void WindowManagerApplication::InitWindowManager(
-    ::ui::WindowTreeClient* window_tree_client) {
+    ui::WindowTreeClient* window_tree_client) {
   InitializeComponents();
 
   window_manager_->Init(window_tree_client);
@@ -96,7 +96,7 @@ void WindowManagerApplication::InitWindowManager(
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
-  ::ui::GpuService::Initialize(connector());
+  ui::GpuService::Initialize(connector());
   window_manager_.reset(new WindowManager(connector()));
 
   aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
@@ -104,7 +104,7 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 
   tracing_.Initialize(connector(), identity.name());
 
-  ::ui::WindowTreeClient* window_tree_client = new ::ui::WindowTreeClient(
+  ui::WindowTreeClient* window_tree_client = new ui::WindowTreeClient(
       window_manager_.get(), window_manager_.get(), nullptr);
   window_tree_client->ConnectAsWindowManager(connector());
 
@@ -114,7 +114,7 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 bool WindowManagerApplication::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::ShelfLayout>(this);
   connection->AddInterface<mojom::UserWindowController>(this);
-  connection->AddInterface<::ui::mojom::AcceleratorRegistrar>(this);
+  connection->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session") {
     connection->GetInterface(&session_);
     session_->AddScreenlockStateListener(
@@ -147,7 +147,7 @@ void WindowManagerApplication::Create(
 
 void WindowManagerApplication::Create(
     const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request) {
+    mojo::InterfaceRequest<ui::mojom::AcceleratorRegistrar> request) {
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.
 

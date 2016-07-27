@@ -31,11 +31,11 @@ class WmRootWindowControllerMus : public WmRootWindowController {
                             RootWindowController* root_window_controller);
   ~WmRootWindowControllerMus() override;
 
-  static WmRootWindowControllerMus* Get(::ui::Window* window) {
+  static WmRootWindowControllerMus* Get(ui::Window* window) {
     return const_cast<WmRootWindowControllerMus*>(
-        Get(const_cast<const ::ui::Window*>(window)));
+        Get(const_cast<const ui::Window*>(window)));
   }
-  static const WmRootWindowControllerMus* Get(const ::ui::Window* window);
+  static const WmRootWindowControllerMus* Get(const ui::Window* window);
 
   RootWindowController* root_window_controller() {
     return root_window_controller_;

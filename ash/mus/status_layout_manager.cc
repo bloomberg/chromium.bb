@@ -12,11 +12,11 @@
 namespace ash {
 namespace mus {
 
-StatusLayoutManager::StatusLayoutManager(::ui::Window* owner)
+StatusLayoutManager::StatusLayoutManager(ui::Window* owner)
     : LayoutManager(owner),
       alignment_(mash::shelf::mojom::Alignment::BOTTOM),
       auto_hide_behavior_(mash::shelf::mojom::AutoHideBehavior::NEVER) {
-  AddLayoutProperty(::ui::mojom::WindowManager::kPreferredSize_Property);
+  AddLayoutProperty(ui::mojom::WindowManager::kPreferredSize_Property);
 }
 
 StatusLayoutManager::~StatusLayoutManager() {}
@@ -25,7 +25,7 @@ StatusLayoutManager::~StatusLayoutManager() {}
 // layout as the number of children can vary when the application providing the
 // status area restarts.
 
-void StatusLayoutManager::LayoutWindow(::ui::Window* window) {
+void StatusLayoutManager::LayoutWindow(ui::Window* window) {
   if (GetAshWindowType(window) != mojom::AshWindowType::STATUS_AREA) {
     // TODO(jamescook): Layout for notifications and other windows.
     NOTIMPLEMENTED() << "Non-status-area window needs layout.";
@@ -52,7 +52,7 @@ void StatusLayoutManager::SetAlignment(
     return;
 
   alignment_ = alignment;
-  for (::ui::Window* window : owner()->children())
+  for (ui::Window* window : owner()->children())
     LayoutWindow(window);
 }
 

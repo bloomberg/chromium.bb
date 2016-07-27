@@ -44,7 +44,7 @@ class WindowManagerApplication
     : public shell::Service,
       public shell::InterfaceFactory<mojom::ShelfLayout>,
       public shell::InterfaceFactory<mojom::UserWindowController>,
-      public shell::InterfaceFactory<::ui::mojom::AcceleratorRegistrar>,
+      public shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener,
       public WindowManagerObserver {
  public:
@@ -61,7 +61,7 @@ class WindowManagerApplication
 
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
-  void InitWindowManager(::ui::WindowTreeClient* window_tree_client);
+  void InitWindowManager(ui::WindowTreeClient* window_tree_client);
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
@@ -77,9 +77,9 @@ class WindowManagerApplication
       mojo::InterfaceRequest<mojom::UserWindowController> request) override;
 
   // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
-  void Create(const shell::Identity& remote_identity,
-              mojo::InterfaceRequest<::ui::mojom::AcceleratorRegistrar> request)
-      override;
+  void Create(
+      const shell::Identity& remote_identity,
+      mojo::InterfaceRequest<ui::mojom::AcceleratorRegistrar> request) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

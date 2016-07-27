@@ -25,9 +25,9 @@ namespace mus {
 // has no such hook. To ensure SetChildBounds() is called correctly all bounds
 // changes to ui::Windows must be routed through WmWindowMus. WmWindowMus
 // ensures WmLayoutManager::SetChildBounds() is called appropriately.
-class MusLayoutManagerAdapter : public ::ui::WindowObserver {
+class MusLayoutManagerAdapter : public ui::WindowObserver {
  public:
-  MusLayoutManagerAdapter(::ui::Window* window,
+  MusLayoutManagerAdapter(ui::Window* window,
                           std::unique_ptr<WmLayoutManager> layout_manager);
   ~MusLayoutManagerAdapter() override;
 
@@ -37,14 +37,14 @@ class MusLayoutManagerAdapter : public ::ui::WindowObserver {
   // WindowObserver attached to child windows. A separate class is used to
   // easily differentiate WindowObserver calls on the ui::Window associated
   // with the MusLayoutManagerAdapter, vs children.
-  class ChildWindowObserver : public ::ui::WindowObserver {
+  class ChildWindowObserver : public ui::WindowObserver {
    public:
     explicit ChildWindowObserver(MusLayoutManagerAdapter* adapter);
     ~ChildWindowObserver() override;
 
    private:
     // ui::WindowObserver:
-    void OnWindowVisibilityChanged(::ui::Window* window) override;
+    void OnWindowVisibilityChanged(ui::Window* window) override;
 
     MusLayoutManagerAdapter* adapter_;
 
@@ -54,11 +54,11 @@ class MusLayoutManagerAdapter : public ::ui::WindowObserver {
   // ui::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnWindowBoundsChanged(::ui::Window* window,
+  void OnWindowBoundsChanged(ui::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  ::ui::Window* window_;
+  ui::Window* window_;
   ChildWindowObserver child_window_observer_;
   std::unique_ptr<WmLayoutManager> layout_manager_;
 

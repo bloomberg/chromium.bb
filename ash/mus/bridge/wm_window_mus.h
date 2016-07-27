@@ -30,9 +30,9 @@ class WmRootWindowControllerMus;
 
 // WmWindow implementation for mus.
 //
-// WmWindowMus is tied to the life of the underlying ::ui::Window (it is stored
+// WmWindowMus is tied to the life of the underlying ui::Window (it is stored
 // as an owned property).
-class WmWindowMus : public WmWindow, public ::ui::WindowObserver {
+class WmWindowMus : public WmWindow, public ui::WindowObserver {
  public:
   // Indicates the source of the widget creation.
   enum class WidgetCreationType {
@@ -50,24 +50,24 @@ class WmWindowMus : public WmWindow, public ::ui::WindowObserver {
     FOR_CLIENT,
   };
 
-  explicit WmWindowMus(::ui::Window* window);
+  explicit WmWindowMus(ui::Window* window);
   // NOTE: this class is owned by the corresponding window. You shouldn't delete
   // TODO(sky): friend deleter and make private.
   ~WmWindowMus() override;
 
   // Returns a WmWindow for an ui::Window, creating if necessary.
-  static WmWindowMus* Get(::ui::Window* window);
+  static WmWindowMus* Get(ui::Window* window);
 
   static WmWindowMus* Get(views::Widget* widget);
 
-  static ::ui::Window* GetMusWindow(WmWindow* wm_window) {
-    return const_cast<::ui::Window*>(
+  static ui::Window* GetMusWindow(WmWindow* wm_window) {
+    return const_cast<ui::Window*>(
         GetMusWindow(const_cast<const WmWindow*>(wm_window)));
   }
-  static const ::ui::Window* GetMusWindow(const WmWindow* wm_window);
+  static const ui::Window* GetMusWindow(const WmWindow* wm_window);
 
   static std::vector<WmWindow*> FromMusWindows(
-      const std::vector<::ui::Window*>& mus_windows);
+      const std::vector<ui::Window*>& mus_windows);
 
   // Sets the widget associated with the window. The widget is used to query
   // state, such as min/max size. The widget is not owned by the WmWindowMus.
@@ -76,8 +76,8 @@ class WmWindowMus : public WmWindow, public ::ui::WindowObserver {
     widget_creation_type_ = type;
   }
 
-  ::ui::Window* mus_window() { return window_; }
-  const ::ui::Window* mus_window() const { return window_; }
+  ui::Window* mus_window() { return window_; }
+  const ui::Window* mus_window() const { return window_; }
 
   WmRootWindowControllerMus* GetRootWindowControllerMus() {
     return const_cast<WmRootWindowControllerMus*>(
@@ -223,21 +223,21 @@ class WmWindowMus : public WmWindow, public ::ui::WindowObserver {
   // ui::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnTreeChanged(const TreeChangeParams& params) override;
-  void OnWindowReordered(::ui::Window* window,
-                         ::ui::Window* relative_window,
-                         ::ui::mojom::OrderDirection direction) override;
+  void OnWindowReordered(ui::Window* window,
+                         ui::Window* relative_window,
+                         ui::mojom::OrderDirection direction) override;
   void OnWindowSharedPropertyChanged(
-      ::ui::Window* window,
+      ui::Window* window,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
-  void OnWindowBoundsChanged(::ui::Window* window,
+  void OnWindowBoundsChanged(ui::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-  void OnWindowDestroying(::ui::Window* window) override;
-  void OnWindowDestroyed(::ui::Window* window) override;
+  void OnWindowDestroying(ui::Window* window) override;
+  void OnWindowDestroyed(ui::Window* window) override;
 
-  ::ui::Window* window_;
+  ui::Window* window_;
 
   // The shell window id of this window. Shell window ids are defined in
   // ash/common/shell_window_ids.h.

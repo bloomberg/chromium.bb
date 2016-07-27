@@ -14,8 +14,8 @@ namespace mus {
 namespace {
 
 // Returns the first ancestor of |from| (including |from|) that has a shadow.
-::ui::Window* FindAncestorWithShadow(::ui::Window* from) {
-  ::ui::Window* result = from;
+ui::Window* FindAncestorWithShadow(ui::Window* from) {
+  ui::Window* result = from;
   while (result && !GetShadow(result))
     result = result->parent();
   // Small shadows never change.
@@ -25,7 +25,7 @@ namespace {
 
 }  // namespace
 
-ShadowController::ShadowController(::ui::WindowTreeClient* window_tree)
+ShadowController::ShadowController(ui::WindowTreeClient* window_tree)
     : window_tree_(window_tree), active_window_(nullptr) {
   window_tree_->AddObserver(this);
   SetActiveWindow(FindAncestorWithShadow(window_tree_->GetFocusedWindow()));
@@ -37,7 +37,7 @@ ShadowController::~ShadowController() {
     active_window_->RemoveObserver(this);
 }
 
-void ShadowController::SetActiveWindow(::ui::Window* window) {
+void ShadowController::SetActiveWindow(ui::Window* window) {
   if (window == active_window_)
     return;
 
@@ -53,12 +53,12 @@ void ShadowController::SetActiveWindow(::ui::Window* window) {
   }
 }
 
-void ShadowController::OnWindowTreeFocusChanged(::ui::Window* gained_focus,
-                                                ::ui::Window* lost_focus) {
+void ShadowController::OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                                ui::Window* lost_focus) {
   SetActiveWindow(FindAncestorWithShadow(gained_focus));
 }
 
-void ShadowController::OnWindowDestroying(::ui::Window* window) {
+void ShadowController::OnWindowDestroying(ui::Window* window) {
   DCHECK_EQ(window, active_window_);
   SetActiveWindow(nullptr);
 }

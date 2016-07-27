@@ -16,7 +16,7 @@ namespace mus {
 // notifications.
 class StatusLayoutManager : public LayoutManager {
  public:
-  explicit StatusLayoutManager(::ui::Window* owner);
+  explicit StatusLayoutManager(ui::Window* owner);
   ~StatusLayoutManager() override;
 
   void SetAlignment(mash::shelf::mojom::Alignment alignment);
@@ -24,7 +24,7 @@ class StatusLayoutManager : public LayoutManager {
 
  private:
   // Overridden from LayoutManager:
-  void LayoutWindow(::ui::Window* window) override;
+  void LayoutWindow(ui::Window* window) override;
 
   mash::shelf::mojom::Alignment alignment_;
   mash::shelf::mojom::AutoHideBehavior auto_hide_behavior_;

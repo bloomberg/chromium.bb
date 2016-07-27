@@ -22,7 +22,7 @@ namespace mus {
 namespace {
 
 void CallAddAcceleratorCallback(
-    const ::ui::mojom::AcceleratorRegistrar::AddAcceleratorCallback& callback,
+    const ui::mojom::AcceleratorRegistrar::AddAcceleratorCallback& callback,
     bool result) {
   callback.Run(result);
 }
@@ -129,7 +129,7 @@ void AcceleratorRegistrarImpl::RemoveAllAccelerators() {
 
 bool AcceleratorRegistrarImpl::AddAcceleratorForKeyBinding(
     uint32_t accelerator_id,
-    const ::ui::mojom::EventMatcher& matcher,
+    const ui::mojom::EventMatcher& matcher,
     const AddAcceleratorCallback& callback) {
   if (!IsMatcherForKeyAccelerator(matcher))
     return false;
@@ -163,7 +163,7 @@ bool AcceleratorRegistrarImpl::AddAcceleratorForKeyBinding(
 }
 
 void AcceleratorRegistrarImpl::SetHandler(
-    ::ui::mojom::AcceleratorHandlerPtr handler) {
+    ui::mojom::AcceleratorHandlerPtr handler) {
   accelerator_handler_ = std::move(handler);
   accelerator_handler_.set_connection_error_handler(base::Bind(
       &AcceleratorRegistrarImpl::OnHandlerGone, base::Unretained(this)));
@@ -171,7 +171,7 @@ void AcceleratorRegistrarImpl::SetHandler(
 
 void AcceleratorRegistrarImpl::AddAccelerator(
     uint32_t accelerator_id,
-    ::ui::mojom::EventMatcherPtr matcher,
+    ui::mojom::EventMatcherPtr matcher,
     const AddAcceleratorCallback& callback) {
   if (!accelerator_handler_ || accelerator_id > 0xFFFF) {
     // The |accelerator_id| is too large, and it can't be handled correctly.

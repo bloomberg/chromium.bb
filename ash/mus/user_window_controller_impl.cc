@@ -31,14 +31,14 @@ namespace mus {
 namespace {
 
 // Returns |window|, or an ancestor thereof, parented to |container|, or null.
-::ui::Window* GetTopLevelWindow(::ui::Window* window, ::ui::Window* container) {
+ui::Window* GetTopLevelWindow(ui::Window* window, ui::Window* container) {
   while (window && window->parent() != container)
     window = window->parent();
   return window;
 }
 
 // Get a UserWindow struct from a ui::Window.
-mojom::UserWindowPtr GetUserWindow(::ui::Window* window) {
+mojom::UserWindowPtr GetUserWindow(ui::Window* window) {
   mojom::UserWindowPtr user_window(mojom::UserWindow::New());
   DCHECK_NE(0u, window->GetLocalProperty(kUserWindowIdKey));
   user_window->window_id = window->GetLocalProperty(kUserWindowIdKey);
@@ -46,7 +46,7 @@ mojom::UserWindowPtr GetUserWindow(::ui::Window* window) {
   user_window->window_app_icon = GetWindowAppIcon(window);
   user_window->window_app_id = mojo::String::From(GetAppID(window));
   user_window->ignored_by_shelf = GetWindowIgnoredByShelf(window);
-  ::ui::Window* focused = window->window_tree()->GetFocusedWindow();
+  ui::Window* focused = window->window_tree()->GetFocusedWindow();
   focused = GetTopLevelWindow(focused, window->parent());
   user_window->window_has_focus = focused == window;
   return user_window;
@@ -57,7 +57,7 @@ mojom::UserWindowPtr GetUserWindow(::ui::Window* window) {
 // Observes property changes on user windows. UserWindowControllerImpl uses
 // this separate observer to avoid observing duplicate tree change
 // notifications.
-class WindowPropertyObserver : public ::ui::WindowObserver {
+class WindowPropertyObserver : public ui::WindowObserver {
  public:
   explicit WindowPropertyObserver(UserWindowControllerImpl* controller)
       : controller_(controller) {}
@@ -66,17 +66,17 @@ class WindowPropertyObserver : public ::ui::WindowObserver {
  private:
   // ui::WindowObserver:
   void OnWindowSharedPropertyChanged(
-      ::ui::Window* window,
+      ui::Window* window,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override {
     if (!controller_->user_window_observer())
       return;
-    if (name == ::ui::mojom::WindowManager::kWindowTitle_Property) {
+    if (name == ui::mojom::WindowManager::kWindowTitle_Property) {
       controller_->user_window_observer()->OnUserWindowTitleChanged(
           window->GetLocalProperty(kUserWindowIdKey),
           mojo::String::From(GetWindowTitle(window)));
-    } else if (name == ::ui::mojom::WindowManager::kWindowAppIcon_Property) {
+    } else if (name == ui::mojom::WindowManager::kWindowAppIcon_Property) {
       controller_->user_window_observer()->OnUserWindowAppIconChanged(
           window->GetLocalProperty(kUserWindowIdKey),
           new_data ? mojo::Array<uint8_t>::From(*new_data)
@@ -95,7 +95,7 @@ UserWindowControllerImpl::~UserWindowControllerImpl() {
   if (!root_controller_)
     return;
 
-  ::ui::Window* user_container = GetUserWindowContainer();
+  ui::Window* user_container = GetUserWindowContainer();
   if (!user_container)
     return;
 
@@ -110,33 +110,33 @@ void UserWindowControllerImpl::Initialize(
   GetUserWindowContainer()->AddObserver(this);
   GetUserWindowContainer()->window_tree()->AddObserver(this);
   window_property_observer_.reset(new WindowPropertyObserver(this));
-  for (::ui::Window* window : GetUserWindowContainer()->children()) {
+  for (ui::Window* window : GetUserWindowContainer()->children()) {
     AssignIdIfNecessary(window);
     window->AddObserver(window_property_observer_.get());
   }
 }
 
-void UserWindowControllerImpl::AssignIdIfNecessary(::ui::Window* window) {
+void UserWindowControllerImpl::AssignIdIfNecessary(ui::Window* window) {
   if (window->GetLocalProperty(kUserWindowIdKey) == 0u)
     window->SetLocalProperty(kUserWindowIdKey, next_id_++);
 }
 
-void UserWindowControllerImpl::RemoveObservers(::ui::Window* user_container) {
+void UserWindowControllerImpl::RemoveObservers(ui::Window* user_container) {
   user_container->RemoveObserver(this);
   user_container->window_tree()->RemoveObserver(this);
   for (auto* iter : user_container->children())
     iter->RemoveObserver(window_property_observer_.get());
 }
 
-::ui::Window* UserWindowControllerImpl::GetUserWindowById(uint32_t id) {
-  for (::ui::Window* window : GetUserWindowContainer()->children()) {
+ui::Window* UserWindowControllerImpl::GetUserWindowById(uint32_t id) {
+  for (ui::Window* window : GetUserWindowContainer()->children()) {
     if (window->GetLocalProperty(kUserWindowIdKey) == id)
       return window;
   }
   return nullptr;
 }
 
-::ui::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
+ui::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
   WmWindowMus* window = root_controller_->GetWindowByShellWindowId(
       kShellWindowId_DefaultContainer);
   return window ? window->mus_window() : nullptr;
@@ -157,14 +157,14 @@ void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {
   }
 }
 
-void UserWindowControllerImpl::OnWindowDestroying(::ui::Window* window) {
+void UserWindowControllerImpl::OnWindowDestroying(ui::Window* window) {
   if (window == GetUserWindowContainer())
     RemoveObservers(window);
 }
 
 void UserWindowControllerImpl::OnWindowTreeFocusChanged(
-    ::ui::Window* gained_focus,
-    ::ui::Window* lost_focus) {
+    ui::Window* gained_focus,
+    ui::Window* lost_focus) {
   if (!user_window_observer_)
     return;
 
@@ -189,7 +189,7 @@ void UserWindowControllerImpl::AddUserWindowObserver(
   // TODO(msw): Support multiple observers.
   user_window_observer_ = std::move(observer);
 
-  const ::ui::Window::Children& windows = GetUserWindowContainer()->children();
+  const ui::Window::Children& windows = GetUserWindowContainer()->children();
   mojo::Array<mojom::UserWindowPtr> user_windows =
       mojo::Array<mojom::UserWindowPtr>::New(windows.size());
   for (size_t i = 0; i < windows.size(); ++i)
@@ -198,7 +198,7 @@ void UserWindowControllerImpl::AddUserWindowObserver(
 }
 
 void UserWindowControllerImpl::ActivateUserWindow(uint32_t window_id) {
-  ::ui::Window* window = GetUserWindowById(window_id);
+  ui::Window* window = GetUserWindowById(window_id);
   if (window) {
     window->SetVisible(true);
     window->SetFocus();

@@ -57,21 +57,21 @@ class WindowStateMus : public wm::WindowState {
   DISALLOW_COPY_AND_ASSIGN(WindowStateMus);
 };
 
-ui::WindowShowState UIWindowShowStateFromMojom(::ui::mojom::ShowState state) {
+ui::WindowShowState UIWindowShowStateFromMojom(ui::mojom::ShowState state) {
   switch (state) {
-    case ::ui::mojom::ShowState::DEFAULT:
+    case ui::mojom::ShowState::DEFAULT:
       return ui::SHOW_STATE_DEFAULT;
-    case ::ui::mojom::ShowState::NORMAL:
+    case ui::mojom::ShowState::NORMAL:
       return ui::SHOW_STATE_NORMAL;
-    case ::ui::mojom::ShowState::MINIMIZED:
+    case ui::mojom::ShowState::MINIMIZED:
       return ui::SHOW_STATE_MINIMIZED;
-    case ::ui::mojom::ShowState::MAXIMIZED:
+    case ui::mojom::ShowState::MAXIMIZED:
       return ui::SHOW_STATE_MAXIMIZED;
-    case ::ui::mojom::ShowState::INACTIVE:
+    case ui::mojom::ShowState::INACTIVE:
       return ui::SHOW_STATE_INACTIVE;
-    case ::ui::mojom::ShowState::FULLSCREEN:
+    case ui::mojom::ShowState::FULLSCREEN:
       return ui::SHOW_STATE_FULLSCREEN;
-    case ::ui::mojom::ShowState::DOCKED:
+    case ui::mojom::ShowState::DOCKED:
       return ui::SHOW_STATE_DOCKED;
     default:
       break;
@@ -79,31 +79,31 @@ ui::WindowShowState UIWindowShowStateFromMojom(::ui::mojom::ShowState state) {
   return ui::SHOW_STATE_DEFAULT;
 }
 
-::ui::mojom::ShowState MojomWindowShowStateFromUI(ui::WindowShowState state) {
+ui::mojom::ShowState MojomWindowShowStateFromUI(ui::WindowShowState state) {
   switch (state) {
     case ui::SHOW_STATE_DEFAULT:
-      return ::ui::mojom::ShowState::DEFAULT;
+      return ui::mojom::ShowState::DEFAULT;
     case ui::SHOW_STATE_NORMAL:
-      return ::ui::mojom::ShowState::NORMAL;
+      return ui::mojom::ShowState::NORMAL;
     case ui::SHOW_STATE_MINIMIZED:
-      return ::ui::mojom::ShowState::MINIMIZED;
+      return ui::mojom::ShowState::MINIMIZED;
     case ui::SHOW_STATE_MAXIMIZED:
-      return ::ui::mojom::ShowState::MAXIMIZED;
+      return ui::mojom::ShowState::MAXIMIZED;
     case ui::SHOW_STATE_INACTIVE:
-      return ::ui::mojom::ShowState::INACTIVE;
+      return ui::mojom::ShowState::INACTIVE;
     case ui::SHOW_STATE_FULLSCREEN:
-      return ::ui::mojom::ShowState::FULLSCREEN;
+      return ui::mojom::ShowState::FULLSCREEN;
     case ui::SHOW_STATE_DOCKED:
-      return ::ui::mojom::ShowState::DOCKED;
+      return ui::mojom::ShowState::DOCKED;
     default:
       break;
   }
-  return ::ui::mojom::ShowState::DEFAULT;
+  return ui::mojom::ShowState::DEFAULT;
 }
 
 }  // namespace
 
-WmWindowMus::WmWindowMus(::ui::Window* window)
+WmWindowMus::WmWindowMus(ui::Window* window)
     : window_(window),
       // Matches aura, see aura::Window for details.
       observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
@@ -117,7 +117,7 @@ WmWindowMus::~WmWindowMus() {
 }
 
 // static
-WmWindowMus* WmWindowMus::Get(::ui::Window* window) {
+WmWindowMus* WmWindowMus::Get(ui::Window* window) {
   if (!window)
     return nullptr;
 
@@ -134,13 +134,13 @@ WmWindowMus* WmWindowMus::Get(views::Widget* widget) {
 }
 
 // static
-const ::ui::Window* WmWindowMus::GetMusWindow(const WmWindow* wm_window) {
+const ui::Window* WmWindowMus::GetMusWindow(const WmWindow* wm_window) {
   return static_cast<const WmWindowMus*>(wm_window)->mus_window();
 }
 
 // static
 std::vector<WmWindow*> WmWindowMus::FromMusWindows(
-    const std::vector<::ui::Window*>& mus_windows) {
+    const std::vector<ui::Window*>& mus_windows) {
   std::vector<WmWindow*> result(mus_windows.size());
   for (size_t i = 0; i < mus_windows.size(); ++i)
     result[i] = Get(mus_windows[i]);
@@ -176,16 +176,16 @@ WmShell* WmWindowMus::GetShell() const {
 void WmWindowMus::SetName(const char* name) {
   if (name) {
     window_->SetSharedProperty<std::string>(
-        ::ui::mojom::WindowManager::kName_Property, std::string(name));
+        ui::mojom::WindowManager::kName_Property, std::string(name));
   } else {
-    window_->ClearSharedProperty(::ui::mojom::WindowManager::kName_Property);
+    window_->ClearSharedProperty(ui::mojom::WindowManager::kName_Property);
   }
 }
 
 std::string WmWindowMus::GetName() const {
-  return window_->HasSharedProperty(::ui::mojom::WindowManager::kName_Property)
+  return window_->HasSharedProperty(ui::mojom::WindowManager::kName_Property)
              ? window_->GetSharedProperty<std::string>(
-                   ::ui::mojom::WindowManager::kName_Property)
+                   ui::mojom::WindowManager::kName_Property)
              : std::string();
 }
 
@@ -226,10 +226,10 @@ int WmWindowMus::GetNonClientComponent(const gfx::Point& location) {
 
 gfx::Point WmWindowMus::ConvertPointToTarget(const WmWindow* target,
                                              const gfx::Point& point) const {
-  const ::ui::Window* target_window = GetMusWindow(target);
+  const ui::Window* target_window = GetMusWindow(target);
   if (target_window->Contains(window_)) {
     gfx::Point result(point);
-    const ::ui::Window* window = window_;
+    const ui::Window* window = window_;
     while (window != target_window) {
       result += window->bounds().origin().OffsetFromOrigin();
       window = window->parent();
@@ -591,12 +591,12 @@ void WmWindowMus::StackChildAtBottom(WmWindow* child) {
 
 void WmWindowMus::StackChildAbove(WmWindow* child, WmWindow* target) {
   GetMusWindow(child)->Reorder(GetMusWindow(target),
-                               ::ui::mojom::OrderDirection::ABOVE);
+                               ui::mojom::OrderDirection::ABOVE);
 }
 
 void WmWindowMus::StackChildBelow(WmWindow* child, WmWindow* target) {
   GetMusWindow(child)->Reorder(GetMusWindow(target),
-                               ::ui::mojom::OrderDirection::BELOW);
+                               ui::mojom::OrderDirection::BELOW);
 }
 
 void WmWindowMus::SetAlwaysOnTop(bool value) {
@@ -637,7 +637,7 @@ bool WmWindowMus::IsFocused() const {
 }
 
 bool WmWindowMus::IsActive() const {
-  ::ui::Window* focused = window_->window_tree()->GetFocusedWindow();
+  ui::Window* focused = window_->window_tree()->GetFocusedWindow();
   return focused && window_->Contains(focused);
 }
 
@@ -657,15 +657,15 @@ void WmWindowMus::Deactivate() {
 }
 
 void WmWindowMus::SetFullscreen() {
-  SetWindowShowState(window_, ::ui::mojom::ShowState::FULLSCREEN);
+  SetWindowShowState(window_, ui::mojom::ShowState::FULLSCREEN);
 }
 
 void WmWindowMus::Maximize() {
-  SetWindowShowState(window_, ::ui::mojom::ShowState::MAXIMIZED);
+  SetWindowShowState(window_, ui::mojom::ShowState::MAXIMIZED);
 }
 
 void WmWindowMus::Minimize() {
-  SetWindowShowState(window_, ::ui::mojom::ShowState::MINIMIZED);
+  SetWindowShowState(window_, ui::mojom::ShowState::MINIMIZED);
 }
 
 void WmWindowMus::Unminimize() {
@@ -684,7 +684,7 @@ std::vector<WmWindow*> WmWindowMus::GetChildren() {
 WmWindow* WmWindowMus::GetChildByShellWindowId(int id) {
   if (id == shell_window_id_)
     return this;
-  for (::ui::Window* child : window_->children()) {
+  for (ui::Window* child : window_->children()) {
     WmWindow* result = Get(child)->GetChildByShellWindowId(id);
     if (result)
       return result;
@@ -781,23 +781,23 @@ void WmWindowMus::OnTreeChanged(const TreeChangeParams& params) {
                     OnWindowTreeChanged(this, wm_params));
 }
 
-void WmWindowMus::OnWindowReordered(::ui::Window* window,
-                                    ::ui::Window* relative_window,
-                                    ::ui::mojom::OrderDirection direction) {
+void WmWindowMus::OnWindowReordered(ui::Window* window,
+                                    ui::Window* relative_window,
+                                    ui::mojom::OrderDirection direction) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_,
                     OnWindowStackingChanged(this));
 }
 
 void WmWindowMus::OnWindowSharedPropertyChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
-  if (name == ::ui::mojom::WindowManager::kShowState_Property) {
+  if (name == ui::mojom::WindowManager::kShowState_Property) {
     GetWindowState()->OnWindowShowStateChanged();
     return;
   }
-  if (name == ::ui::mojom::WindowManager::kAlwaysOnTop_Property) {
+  if (name == ui::mojom::WindowManager::kAlwaysOnTop_Property) {
     FOR_EACH_OBSERVER(
         WmWindowObserver, observers_,
         OnWindowPropertyChanged(this, WmWindowProperty::ALWAYS_ON_TOP));
@@ -808,18 +808,18 @@ void WmWindowMus::OnWindowSharedPropertyChanged(
   NOTIMPLEMENTED();
 }
 
-void WmWindowMus::OnWindowBoundsChanged(::ui::Window* window,
+void WmWindowMus::OnWindowBoundsChanged(ui::Window* window,
                                         const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_,
                     OnWindowBoundsChanged(this, old_bounds, new_bounds));
 }
 
-void WmWindowMus::OnWindowDestroying(::ui::Window* window) {
+void WmWindowMus::OnWindowDestroying(ui::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroying(this));
 }
 
-void WmWindowMus::OnWindowDestroyed(::ui::Window* window) {
+void WmWindowMus::OnWindowDestroyed(ui::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroyed(this));
 }
 

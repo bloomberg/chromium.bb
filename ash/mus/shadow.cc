@@ -144,7 +144,7 @@ void Shadow::SetStyle(Style style) {
   }
 }
 
-void Shadow::Install(::ui::Window* window) {
+void Shadow::Install(ui::Window* window) {
   SetShadow(window, this);
   window_ = window;
   window_->AddObserver(this);
@@ -217,7 +217,7 @@ void Shadow::UpdateLayerBounds() {
   shadow_layer_->UpdateNinePatchOcclusion(content_bounds);
 }
 
-void Shadow::OnWindowDestroyed(::ui::Window* window) {
+void Shadow::OnWindowDestroyed(ui::Window* window) {
   DCHECK_EQ(window_, window);
   window_ = nullptr;
 }

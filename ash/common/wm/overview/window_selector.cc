@@ -74,10 +74,10 @@ const float kTextFilterTopScreenProportion = 0.02f;
 const int kTextFilterWidthMD = 280;
 
 // The font style used for text filtering textbox.
-static const ::ui::ResourceBundle::FontStyle kTextFilterFontStyle =
-    ::ui::ResourceBundle::FontStyle::MediumFont;
-static const ::ui::ResourceBundle::FontStyle kTextFilterFontStyleMD =
-    ::ui::ResourceBundle::FontStyle::BaseFont;
+static const ui::ResourceBundle::FontStyle kTextFilterFontStyle =
+    ui::ResourceBundle::FontStyle::MediumFont;
+static const ui::ResourceBundle::FontStyle kTextFilterFontStyleMD =
+    ui::ResourceBundle::FontStyle::BaseFont;
 
 // The color of the text and its background in the text filtering textbox.
 const SkColor kTextFilterTextColor = SK_ColorWHITE;
@@ -217,7 +217,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
       material ? kTextFilterCornerRadiusMD : kTextFilterCornerRadius,
       material ? kTextFilterBackgroundColorMD : kTextFilterBackgroundColor);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  const ::ui::ResourceBundle::FontStyle font_style =
+  const ui::ResourceBundle::FontStyle font_style =
       material ? kTextFilterFontStyleMD : kTextFilterFontStyle;
   const int text_height =
       std::max(kTextFilterIconSize, bundle.GetFontList(font_style).GetHeight());

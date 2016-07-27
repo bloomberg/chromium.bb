@@ -14,12 +14,12 @@ namespace mus {
 // Lays out the shelf within shelf containers.
 class ScreenlockLayout : public LayoutManager {
  public:
-  explicit ScreenlockLayout(::ui::Window* owner);
+  explicit ScreenlockLayout(ui::Window* owner);
   ~ScreenlockLayout() override;
 
  private:
   // Overridden from LayoutManager:
-  void LayoutWindow(::ui::Window* window) override;
+  void LayoutWindow(ui::Window* window) override;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockLayout);
 };

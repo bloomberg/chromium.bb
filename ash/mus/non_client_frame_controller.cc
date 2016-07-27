@@ -112,11 +112,9 @@ class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
-                    ::ui::Window* window,
-                    ::ui::WindowManagerClient* window_manager_client)
-      : NativeWidgetMus(delegate,
-                        window,
-                        ::ui::mojom::SurfaceType::UNDERLAY),
+                    ui::Window* window,
+                    ui::WindowManagerClient* window_manager_client)
+      : NativeWidgetMus(delegate, window, ui::mojom::SurfaceType::UNDERLAY),
         window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetMus() override {}
 
@@ -166,7 +164,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
 
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 
-  ::ui::WindowManagerClient* window_manager_client_;
+  ui::WindowManagerClient* window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
@@ -200,9 +198,9 @@ class ClientViewMus : public views::ClientView {
 // static
 void NonClientFrameController::Create(
     shell::Connector* connector,
-    ::ui::Window* parent,
-    ::ui::Window* window,
-    ::ui::WindowManagerClient* window_manager_client) {
+    ui::Window* parent,
+    ui::Window* window,
+    ui::WindowManagerClient* window_manager_client) {
   new NonClientFrameController(connector, parent, window,
                                window_manager_client);
 }
@@ -219,9 +217,9 @@ int NonClientFrameController::GetMaxTitleBarButtonWidth() {
 
 NonClientFrameController::NonClientFrameController(
     shell::Connector* connector,
-    ::ui::Window* parent,
-    ::ui::Window* window,
-    ::ui::WindowManagerClient* window_manager_client)
+    ui::Window* parent,
+    ui::Window* window,
+    ui::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
   WmWindowMus* wm_window = WmWindowMus::Get(window);
   wm_window->set_widget(widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
@@ -260,12 +258,12 @@ NonClientFrameController::~NonClientFrameController() {
 
 base::string16 NonClientFrameController::GetWindowTitle() const {
   if (!window_->HasSharedProperty(
-          ::ui::mojom::WindowManager::kWindowTitle_Property)) {
+          ui::mojom::WindowManager::kWindowTitle_Property)) {
     return base::string16();
   }
 
   base::string16 title = window_->GetSharedProperty<base::string16>(
-      ::ui::mojom::WindowManager::kWindowTitle_Property);
+      ui::mojom::WindowManager::kWindowTitle_Property);
 
   if (IsWindowJanky(window_))
     title += base::ASCIIToUTF16(" !! Not responding !!");
@@ -279,20 +277,20 @@ views::View* NonClientFrameController::GetContentsView() {
 
 bool NonClientFrameController::CanResize() const {
   return window_ &&
-         (GetResizeBehavior(window_) & ::ui::mojom::kResizeBehaviorCanResize) !=
+         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanResize) !=
              0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
   return window_ &&
-         (GetResizeBehavior(window_) &
-          ::ui::mojom::kResizeBehaviorCanMaximize) != 0;
+         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanMaximize) !=
+             0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
   return window_ &&
-         (GetResizeBehavior(window_) &
-          ::ui::mojom::kResizeBehaviorCanMinimize) != 0;
+         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanMinimize) !=
+             0;
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {
@@ -307,27 +305,26 @@ views::ClientView* NonClientFrameController::CreateClientView(
 }
 
 void NonClientFrameController::OnWindowSharedPropertyChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
-  if (name == ::ui::mojom::WindowManager::kResizeBehavior_Property)
+  if (name == ui::mojom::WindowManager::kResizeBehavior_Property)
     widget_->OnSizeConstraintsChanged();
-  else if (name == ::ui::mojom::WindowManager::kWindowTitle_Property)
+  else if (name == ui::mojom::WindowManager::kWindowTitle_Property)
     widget_->UpdateWindowTitle();
 }
 
-void NonClientFrameController::OnWindowLocalPropertyChanged(
-    ::ui::Window* window,
-    const void* key,
-    intptr_t old) {
+void NonClientFrameController::OnWindowLocalPropertyChanged(ui::Window* window,
+                                                            const void* key,
+                                                            intptr_t old) {
   if (IsWindowJankyProperty(key)) {
     widget_->UpdateWindowTitle();
     widget_->non_client_view()->frame_view()->SchedulePaint();
   }
 }
 
-void NonClientFrameController::OnWindowDestroyed(::ui::Window* window) {
+void NonClientFrameController::OnWindowDestroyed(ui::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
 }

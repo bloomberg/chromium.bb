@@ -15,7 +15,7 @@ namespace mus {
 
 class TestLayoutManager : public LayoutManager {
  public:
-  explicit TestLayoutManager(::ui::Window* window)
+  explicit TestLayoutManager(ui::Window* window)
       : LayoutManager(window), layout_called_(false) {}
   ~TestLayoutManager() override {}
 
@@ -27,7 +27,7 @@ class TestLayoutManager : public LayoutManager {
 
  private:
   // LayoutManager:
-  void LayoutWindow(::ui::Window* window) override { layout_called_ = true; }
+  void LayoutWindow(ui::Window* window) override { layout_called_ = true; }
 
   bool layout_called_;
 
@@ -36,8 +36,8 @@ class TestLayoutManager : public LayoutManager {
 
 // Tests that owning window can be destroyed before the layout manager.
 TEST(LayoutManagerTest, OwningWindowDestroyedFirst) {
-  std::unique_ptr<::ui::TestWindow> parent(new ::ui::TestWindow(1));
-  ::ui::TestWindow child(2);
+  std::unique_ptr<ui::TestWindow> parent(new ui::TestWindow(1));
+  ui::TestWindow child(2);
   TestLayoutManager layout_manager(parent.get());
   parent->AddChild(&child);
   EXPECT_TRUE(layout_manager.GetAndResetLayoutCalled());
@@ -47,8 +47,8 @@ TEST(LayoutManagerTest, OwningWindowDestroyedFirst) {
 
 // Tests that the layout manager can be destroyed before the owning window.
 TEST(LayoutManagerTest, LayoutManagerDestroyedFirst) {
-  ::ui::TestWindow parent(1);
-  ::ui::TestWindow child(2);
+  ui::TestWindow parent(1);
+  ui::TestWindow child(2);
   std::unique_ptr<TestLayoutManager> layout_manager(
       new TestLayoutManager(&parent));
   parent.AddChild(&child);

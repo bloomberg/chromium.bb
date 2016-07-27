@@ -28,57 +28,55 @@ class Shadow;
 // Utility functions to read values from properties & convert them to the
 // appropriate types.
 
-void SetWindowShowState(::ui::Window* window,
-                        ::ui::mojom::ShowState show_state);
-::ui::mojom::ShowState GetWindowShowState(const ::ui::Window* window);
+void SetWindowShowState(ui::Window* window, ui::mojom::ShowState show_state);
+ui::mojom::ShowState GetWindowShowState(const ui::Window* window);
 
-void SetWindowUserSetBounds(::ui::Window* window, const gfx::Rect& bounds);
-gfx::Rect GetWindowUserSetBounds(const ::ui::Window* window);
+void SetWindowUserSetBounds(ui::Window* window, const gfx::Rect& bounds);
+gfx::Rect GetWindowUserSetBounds(const ui::Window* window);
 
-void SetWindowPreferredSize(::ui::Window* window, const gfx::Size& size);
-gfx::Size GetWindowPreferredSize(const ::ui::Window* window);
+void SetWindowPreferredSize(ui::Window* window, const gfx::Size& size);
+gfx::Size GetWindowPreferredSize(const ui::Window* window);
 
 // If |window| has the |kWindowContainer_Property| set as a property, then
 // the value of |kWindowContainer_Property| is set in |container| and true is
 // returned. Otherwise false is returned.
-bool GetRequestedContainer(const ::ui::Window* window,
+bool GetRequestedContainer(const ui::Window* window,
                            mojom::Container* container);
 
 // Returns a bitfield of kResizeBehavior* values from
 // window_manager_constants.mojom.
-int32_t GetResizeBehavior(const ::ui::Window* window);
+int32_t GetResizeBehavior(const ui::Window* window);
 
-void SetRestoreBounds(::ui::Window* window, const gfx::Rect& bounds);
-gfx::Rect GetRestoreBounds(const ::ui::Window* window);
+void SetRestoreBounds(ui::Window* window, const gfx::Rect& bounds);
+gfx::Rect GetRestoreBounds(const ui::Window* window);
 
-void SetShadow(::ui::Window* window, Shadow* shadow);
-Shadow* GetShadow(const ::ui::Window* window);
+void SetShadow(ui::Window* window, Shadow* shadow);
+Shadow* GetShadow(const ui::Window* window);
 
-::ui::mojom::WindowType GetWindowType(const ::ui::Window* window);
-::ui::mojom::WindowType GetWindowType(
-    const ::ui::Window::SharedProperties& window);
+ui::mojom::WindowType GetWindowType(const ui::Window* window);
+ui::mojom::WindowType GetWindowType(const ui::Window::SharedProperties& window);
 
-ui::wm::WindowType GetWmWindowType(const ::ui::Window* window);
+ui::wm::WindowType GetWmWindowType(const ui::Window* window);
 
-mojom::AshWindowType GetAshWindowType(const ::ui::Window* window);
+mojom::AshWindowType GetAshWindowType(const ui::Window* window);
 
-base::string16 GetWindowTitle(const ::ui::Window* window);
+base::string16 GetWindowTitle(const ui::Window* window);
 
-mojo::Array<uint8_t> GetWindowAppIcon(const ::ui::Window* window);
+mojo::Array<uint8_t> GetWindowAppIcon(const ui::Window* window);
 
-void SetAppID(::ui::Window* window, const base::string16& app_id);
-base::string16 GetAppID(const ::ui::Window* window);
+void SetAppID(ui::Window* window, const base::string16& app_id);
+base::string16 GetAppID(const ui::Window* window);
 
-bool GetWindowIgnoredByShelf(::ui::Window* window);
+bool GetWindowIgnoredByShelf(ui::Window* window);
 
-void SetWindowIsJanky(::ui::Window* window, bool janky);
-bool IsWindowJanky(::ui::Window* window);
+void SetWindowIsJanky(ui::Window* window, bool janky);
+bool IsWindowJanky(ui::Window* window);
 bool IsWindowJankyProperty(const void* key);
 
-void SetAlwaysOnTop(::ui::Window* window, bool value);
-bool IsAlwaysOnTop(::ui::Window* window);
+void SetAlwaysOnTop(ui::Window* window, bool value);
+bool IsAlwaysOnTop(ui::Window* window);
 
-bool ShouldRemoveStandardFrame(::ui::Window* window);
+bool ShouldRemoveStandardFrame(ui::Window* window);
 
 }  // namespace mus
 }  // namespace ash

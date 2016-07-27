@@ -22,8 +22,8 @@ class RootWindowController;
 class WindowPropertyObserver;
 
 class UserWindowControllerImpl : public mojom::UserWindowController,
-                                 public ::ui::WindowObserver,
-                                 public ::ui::WindowTreeClientObserver {
+                                 public ui::WindowObserver,
+                                 public ui::WindowTreeClientObserver {
  public:
   UserWindowControllerImpl();
   ~UserWindowControllerImpl() override;
@@ -35,24 +35,24 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
   void Initialize(RootWindowController* root_controller);
 
  private:
-  void AssignIdIfNecessary(::ui::Window* window);
+  void AssignIdIfNecessary(ui::Window* window);
 
   // Removes observers from the window and client.
-  void RemoveObservers(::ui::Window* user_container);
+  void RemoveObservers(ui::Window* user_container);
 
   // Returns the window with the specified user id.
-  ::ui::Window* GetUserWindowById(uint32_t id);
+  ui::Window* GetUserWindowById(uint32_t id);
 
   // A helper to get the container for user windows.
-  ::ui::Window* GetUserWindowContainer() const;
+  ui::Window* GetUserWindowContainer() const;
 
   // ui::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
-  void OnWindowDestroying(::ui::Window* window) override;
+  void OnWindowDestroying(ui::Window* window) override;
 
   // ui::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
-                                ::ui::Window* lost_focus) override;
+  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                ui::Window* lost_focus) override;
 
   // mojom::UserWindowController:
   void AddUserWindowObserver(mojom::UserWindowObserverPtr observer) override;

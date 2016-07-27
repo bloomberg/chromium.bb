@@ -18,24 +18,24 @@ MusLayoutManagerAdapter::ChildWindowObserver::ChildWindowObserver(
 MusLayoutManagerAdapter::ChildWindowObserver::~ChildWindowObserver() {}
 
 void MusLayoutManagerAdapter::ChildWindowObserver::OnWindowVisibilityChanged(
-    ::ui::Window* window) {
+    ui::Window* window) {
   adapter_->layout_manager_->OnChildWindowVisibilityChanged(
       WmWindowMus::Get(window), window->visible());
 }
 
 MusLayoutManagerAdapter::MusLayoutManagerAdapter(
-    ::ui::Window* window,
+    ui::Window* window,
     std::unique_ptr<WmLayoutManager> layout_manager)
     : window_(window),
       child_window_observer_(this),
       layout_manager_(std::move(layout_manager)) {
   window_->AddObserver(this);
-  for (::ui::Window* child : window_->children())
+  for (ui::Window* child : window_->children())
     child->AddObserver(&child_window_observer_);
 }
 
 MusLayoutManagerAdapter::~MusLayoutManagerAdapter() {
-  for (::ui::Window* child : window_->children())
+  for (ui::Window* child : window_->children())
     child->RemoveObserver(&child_window_observer_);
 
   window_->RemoveObserver(this);
@@ -59,7 +59,7 @@ void MusLayoutManagerAdapter::OnTreeChanged(const TreeChangeParams& params) {
 }
 
 void MusLayoutManagerAdapter::OnWindowBoundsChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   layout_manager_->OnWindowResized();

@@ -44,8 +44,8 @@ class WmTestBase : public testing::Test {
   // See test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_spec);
 
-  ::ui::Window* GetPrimaryRootWindow();
-  ::ui::Window* GetSecondaryRootWindow();
+  ui::Window* GetPrimaryRootWindow();
+  ui::Window* GetSecondaryRootWindow();
 
   display::Display GetPrimaryDisplay();
   display::Display GetSecondaryDisplay();
@@ -54,14 +54,14 @@ class WmTestBase : public testing::Test {
   // NOTE: you can explicitly destroy the returned value if necessary, but it
   // will also be automatically destroyed when the WindowTreeClient is
   // destroyed.
-  ::ui::Window* CreateTestWindow(const gfx::Rect& bounds);
-  ::ui::Window* CreateTestWindow(const gfx::Rect& bounds,
-                                 ui::wm::WindowType window_type);
-  ::ui::Window* CreateFullscreenTestWindow();
+  ui::Window* CreateTestWindow(const gfx::Rect& bounds);
+  ui::Window* CreateTestWindow(const gfx::Rect& bounds,
+                               ui::wm::WindowType window_type);
+  ui::Window* CreateFullscreenTestWindow();
 
   // Creates a window parented to |parent|. The returned window is visible.
-  ::ui::Window* CreateChildTestWindow(::ui::Window* parent,
-                                      const gfx::Rect& bounds);
+  ui::Window* CreateChildTestWindow(ui::Window* parent,
+                                    const gfx::Rect& bounds);
 
  protected:
   // testing::Test:

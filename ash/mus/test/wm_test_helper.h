@@ -45,7 +45,7 @@ class WmTestHelper {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  ::ui::TestWindowTreeClientSetup window_tree_client_setup_;
+  ui::TestWindowTreeClientSetup window_tree_client_setup_;
   WindowManagerApplication window_manager_app_;
   WmTestScreen* screen_ = nullptr;  // Owned by |window_manager_app_|.
 

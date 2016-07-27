@@ -24,57 +24,55 @@ MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(bool, kWindowIsJankyProperty, false);
 namespace ash {
 namespace mus {
 
-void SetWindowShowState(::ui::Window* window,
-                        ::ui::mojom::ShowState show_state) {
+void SetWindowShowState(ui::Window* window, ui::mojom::ShowState show_state) {
   window->SetSharedProperty<int32_t>(
-      ::ui::mojom::WindowManager::kShowState_Property,
+      ui::mojom::WindowManager::kShowState_Property,
       static_cast<uint32_t>(show_state));
 }
 
-::ui::mojom::ShowState GetWindowShowState(const ::ui::Window* window) {
+ui::mojom::ShowState GetWindowShowState(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kShowState_Property)) {
-    return static_cast<::ui::mojom::ShowState>(
-        window->GetSharedProperty<int32_t>(
-            ::ui::mojom::WindowManager::kShowState_Property));
+          ui::mojom::WindowManager::kShowState_Property)) {
+    return static_cast<ui::mojom::ShowState>(window->GetSharedProperty<int32_t>(
+        ui::mojom::WindowManager::kShowState_Property));
   }
-  return ::ui::mojom::ShowState::DEFAULT;
+  return ui::mojom::ShowState::DEFAULT;
 }
 
-void SetWindowUserSetBounds(::ui::Window* window, const gfx::Rect& bounds) {
+void SetWindowUserSetBounds(ui::Window* window, const gfx::Rect& bounds) {
   if (bounds.IsEmpty()) {
     window->ClearSharedProperty(
-        ::ui::mojom::WindowManager::kUserSetBounds_Property);
+        ui::mojom::WindowManager::kUserSetBounds_Property);
   } else {
     window->SetSharedProperty<gfx::Rect>(
-        ::ui::mojom::WindowManager::kUserSetBounds_Property, bounds);
+        ui::mojom::WindowManager::kUserSetBounds_Property, bounds);
   }
 }
 
-gfx::Rect GetWindowUserSetBounds(const ::ui::Window* window) {
+gfx::Rect GetWindowUserSetBounds(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kUserSetBounds_Property)) {
+          ui::mojom::WindowManager::kUserSetBounds_Property)) {
     return window->GetSharedProperty<gfx::Rect>(
-        ::ui::mojom::WindowManager::kUserSetBounds_Property);
+        ui::mojom::WindowManager::kUserSetBounds_Property);
   }
   return gfx::Rect();
 }
 
-void SetWindowPreferredSize(::ui::Window* window, const gfx::Size& size) {
+void SetWindowPreferredSize(ui::Window* window, const gfx::Size& size) {
   window->SetSharedProperty<gfx::Size>(
-      ::ui::mojom::WindowManager::kPreferredSize_Property, size);
+      ui::mojom::WindowManager::kPreferredSize_Property, size);
 }
 
-gfx::Size GetWindowPreferredSize(const ::ui::Window* window) {
+gfx::Size GetWindowPreferredSize(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kPreferredSize_Property)) {
+          ui::mojom::WindowManager::kPreferredSize_Property)) {
     return window->GetSharedProperty<gfx::Size>(
-        ::ui::mojom::WindowManager::kPreferredSize_Property);
+        ui::mojom::WindowManager::kPreferredSize_Property);
   }
   return gfx::Size();
 }
 
-bool GetRequestedContainer(const ::ui::Window* window,
+bool GetRequestedContainer(const ui::Window* window,
                            mojom::Container* container) {
   if (!window->HasSharedProperty(mojom::kWindowContainer_Property))
     return false;
@@ -84,86 +82,86 @@ bool GetRequestedContainer(const ::ui::Window* window,
   return true;
 }
 
-int32_t GetResizeBehavior(const ::ui::Window* window) {
+int32_t GetResizeBehavior(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kResizeBehavior_Property)) {
+          ui::mojom::WindowManager::kResizeBehavior_Property)) {
     return window->GetSharedProperty<int32_t>(
-        ::ui::mojom::WindowManager::kResizeBehavior_Property);
+        ui::mojom::WindowManager::kResizeBehavior_Property);
   }
-  return ::ui::mojom::kResizeBehaviorNone;
+  return ui::mojom::kResizeBehaviorNone;
 }
 
-void SetRestoreBounds(::ui::Window* window, const gfx::Rect& bounds) {
+void SetRestoreBounds(ui::Window* window, const gfx::Rect& bounds) {
   window->SetSharedProperty<gfx::Rect>(
-      ::ui::mojom::WindowManager::kRestoreBounds_Property, bounds);
+      ui::mojom::WindowManager::kRestoreBounds_Property, bounds);
 }
 
-gfx::Rect GetRestoreBounds(const ::ui::Window* window) {
+gfx::Rect GetRestoreBounds(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kRestoreBounds_Property)) {
+          ui::mojom::WindowManager::kRestoreBounds_Property)) {
     return window->GetSharedProperty<gfx::Rect>(
-        ::ui::mojom::WindowManager::kRestoreBounds_Property);
+        ui::mojom::WindowManager::kRestoreBounds_Property);
   }
   return gfx::Rect();
 }
 
-void SetShadow(::ui::Window* window, Shadow* shadow) {
+void SetShadow(ui::Window* window, Shadow* shadow) {
   window->SetLocalProperty(kLocalShadowProperty, shadow);
 }
 
-Shadow* GetShadow(const ::ui::Window* window) {
+Shadow* GetShadow(const ui::Window* window) {
   return window->GetLocalProperty(kLocalShadowProperty);
 }
 
-::ui::mojom::WindowType GetWindowType(const ::ui::Window* window) {
+ui::mojom::WindowType GetWindowType(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kWindowType_Property)) {
-    return static_cast<::ui::mojom::WindowType>(
+          ui::mojom::WindowManager::kWindowType_Property)) {
+    return static_cast<ui::mojom::WindowType>(
         window->GetSharedProperty<int32_t>(
-            ::ui::mojom::WindowManager::kWindowType_Property));
+            ui::mojom::WindowManager::kWindowType_Property));
   }
-  return ::ui::mojom::WindowType::POPUP;
+  return ui::mojom::WindowType::POPUP;
 }
 
-::ui::mojom::WindowType GetWindowType(
-    const ::ui::Window::SharedProperties& properties) {
+ui::mojom::WindowType GetWindowType(
+    const ui::Window::SharedProperties& properties) {
   const auto iter =
-      properties.find(::ui::mojom::WindowManager::kWindowType_Property);
+      properties.find(ui::mojom::WindowManager::kWindowType_Property);
   if (iter != properties.end()) {
-    return static_cast<::ui::mojom::WindowType>(
+    return static_cast<ui::mojom::WindowType>(
         mojo::ConvertTo<int32_t>(iter->second));
   }
-  return ::ui::mojom::WindowType::POPUP;
+  return ui::mojom::WindowType::POPUP;
 }
 
-ui::wm::WindowType GetWmWindowType(const ::ui::Window* window) {
+ui::wm::WindowType GetWmWindowType(const ui::Window* window) {
   switch (GetWindowType(window)) {
-    case ::ui::mojom::WindowType::WINDOW:
+    case ui::mojom::WindowType::WINDOW:
       return ui::wm::WINDOW_TYPE_NORMAL;
 
-    case ::ui::mojom::WindowType::PANEL:
+    case ui::mojom::WindowType::PANEL:
       return ui::wm::WINDOW_TYPE_PANEL;
 
-    case ::ui::mojom::WindowType::CONTROL:
+    case ui::mojom::WindowType::CONTROL:
       return ui::wm::WINDOW_TYPE_CONTROL;
 
-    case ::ui::mojom::WindowType::WINDOW_FRAMELESS:
-    case ::ui::mojom::WindowType::POPUP:
-    case ::ui::mojom::WindowType::BUBBLE:
-    case ::ui::mojom::WindowType::DRAG:
+    case ui::mojom::WindowType::WINDOW_FRAMELESS:
+    case ui::mojom::WindowType::POPUP:
+    case ui::mojom::WindowType::BUBBLE:
+    case ui::mojom::WindowType::DRAG:
       return ui::wm::WINDOW_TYPE_POPUP;
 
-    case ::ui::mojom::WindowType::MENU:
+    case ui::mojom::WindowType::MENU:
       return ui::wm::WINDOW_TYPE_MENU;
 
-    case ::ui::mojom::WindowType::TOOLTIP:
+    case ui::mojom::WindowType::TOOLTIP:
       return ui::wm::WINDOW_TYPE_TOOLTIP;
   }
 
   return ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
-mojom::AshWindowType GetAshWindowType(const ::ui::Window* window) {
+mojom::AshWindowType GetAshWindowType(const ui::Window* window) {
   if (!window->HasSharedProperty(mojom::kAshWindowType_Property))
     return mojom::AshWindowType::COUNT;
 
@@ -171,51 +169,51 @@ mojom::AshWindowType GetAshWindowType(const ::ui::Window* window) {
       window->GetSharedProperty<int32_t>(mojom::kAshWindowType_Property));
 }
 
-base::string16 GetWindowTitle(const ::ui::Window* window) {
+base::string16 GetWindowTitle(const ui::Window* window) {
   if (!window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kWindowTitle_Property)) {
+          ui::mojom::WindowManager::kWindowTitle_Property)) {
     return base::string16();
   }
 
   return window->GetSharedProperty<base::string16>(
-      ::ui::mojom::WindowManager::kWindowTitle_Property);
+      ui::mojom::WindowManager::kWindowTitle_Property);
 }
 
-mojo::Array<uint8_t> GetWindowAppIcon(const ::ui::Window* window) {
+mojo::Array<uint8_t> GetWindowAppIcon(const ui::Window* window) {
   if (window->HasSharedProperty(
-          ::ui::mojom::WindowManager::kWindowAppIcon_Property)) {
+          ui::mojom::WindowManager::kWindowAppIcon_Property)) {
     return mojo::Array<uint8_t>::From(
         window->GetSharedProperty<std::vector<uint8_t>>(
-            ::ui::mojom::WindowManager::kWindowAppIcon_Property));
+            ui::mojom::WindowManager::kWindowAppIcon_Property));
   }
   return mojo::Array<uint8_t>();
 }
 
-void SetAppID(::ui::Window* window, const base::string16& app_id) {
+void SetAppID(ui::Window* window, const base::string16& app_id) {
   window->SetSharedProperty<base::string16>(
-      ::ui::mojom::WindowManager::kAppID_Property, app_id);
+      ui::mojom::WindowManager::kAppID_Property, app_id);
 }
 
-base::string16 GetAppID(const ::ui::Window* window) {
-  if (!window->HasSharedProperty(::ui::mojom::WindowManager::kAppID_Property))
+base::string16 GetAppID(const ui::Window* window) {
+  if (!window->HasSharedProperty(ui::mojom::WindowManager::kAppID_Property))
     return base::string16();
 
   return window->GetSharedProperty<base::string16>(
-      ::ui::mojom::WindowManager::kAppID_Property);
+      ui::mojom::WindowManager::kAppID_Property);
 }
 
-bool GetWindowIgnoredByShelf(::ui::Window* window) {
+bool GetWindowIgnoredByShelf(ui::Window* window) {
   return window->HasSharedProperty(
-             ::ui::mojom::WindowManager::kWindowIgnoredByShelf_Property) &&
+             ui::mojom::WindowManager::kWindowIgnoredByShelf_Property) &&
          window->GetSharedProperty<bool>(
-             ::ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+             ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
 }
 
-void SetWindowIsJanky(::ui::Window* window, bool janky) {
+void SetWindowIsJanky(ui::Window* window, bool janky) {
   window->SetLocalProperty(kWindowIsJankyProperty, janky);
 }
 
-bool IsWindowJanky(::ui::Window* window) {
+bool IsWindowJanky(ui::Window* window) {
   return window->GetLocalProperty(kWindowIsJankyProperty);
 }
 
@@ -223,23 +221,23 @@ bool IsWindowJankyProperty(const void* key) {
   return key == kWindowIsJankyProperty;
 }
 
-void SetAlwaysOnTop(::ui::Window* window, bool value) {
+void SetAlwaysOnTop(ui::Window* window, bool value) {
   window->SetSharedProperty<bool>(
-      ::ui::mojom::WindowManager::kAlwaysOnTop_Property, value);
+      ui::mojom::WindowManager::kAlwaysOnTop_Property, value);
 }
 
-bool IsAlwaysOnTop(::ui::Window* window) {
+bool IsAlwaysOnTop(ui::Window* window) {
   return window->HasSharedProperty(
-             ::ui::mojom::WindowManager::kAlwaysOnTop_Property) &&
+             ui::mojom::WindowManager::kAlwaysOnTop_Property) &&
          window->GetSharedProperty<bool>(
-             ::ui::mojom::WindowManager::kAlwaysOnTop_Property);
+             ui::mojom::WindowManager::kAlwaysOnTop_Property);
 }
 
-bool ShouldRemoveStandardFrame(::ui::Window* window) {
+bool ShouldRemoveStandardFrame(ui::Window* window) {
   return window->HasSharedProperty(
-             ::ui::mojom::WindowManager::kRemoveStandardFrame_Property) &&
+             ui::mojom::WindowManager::kRemoveStandardFrame_Property) &&
          window->GetSharedProperty<bool>(
-             ::ui::mojom::WindowManager::kRemoveStandardFrame_Property);
+             ui::mojom::WindowManager::kRemoveStandardFrame_Property);
 }
 
 }  // namespace mus

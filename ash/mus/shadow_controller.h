@@ -16,24 +16,24 @@ class WindowTreeClient;
 namespace ash {
 namespace mus {
 
-class ShadowController : public ::ui::WindowTreeClientObserver,
-                         public ::ui::WindowObserver {
+class ShadowController : public ui::WindowTreeClientObserver,
+                         public ui::WindowObserver {
  public:
-  explicit ShadowController(::ui::WindowTreeClient* window_tree);
+  explicit ShadowController(ui::WindowTreeClient* window_tree);
   ~ShadowController() override;
 
  private:
-  void SetActiveWindow(::ui::Window* window);
+  void SetActiveWindow(ui::Window* window);
 
   // ui::WindowTreeClientObserver:
-  void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
-                                ::ui::Window* lost_focus) override;
+  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                ui::Window* lost_focus) override;
 
   // ui::WindowObserver:
-  void OnWindowDestroying(::ui::Window* window) override;
+  void OnWindowDestroying(ui::Window* window) override;
 
-  ::ui::WindowTreeClient* window_tree_;
-  ::ui::Window* active_window_;
+  ui::WindowTreeClient* window_tree_;
+  ui::Window* active_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };

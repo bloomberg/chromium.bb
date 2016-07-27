@@ -37,7 +37,7 @@ namespace mus {
 class NonClientFrameViewMash::HeaderView : public views::View {
  public:
   // |frame| is the widget that the caption buttons act on.
-  HeaderView(views::Widget* frame, ::ui::Window* window);
+  HeaderView(views::Widget* frame, ui::Window* window);
   ~HeaderView() override;
 
   // Schedules a repaint for the entire title.
@@ -75,13 +75,13 @@ class NonClientFrameViewMash::HeaderView : public views::View {
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
 
-  ::ui::Window* window_;
+  ui::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };
 
 NonClientFrameViewMash::HeaderView::HeaderView(views::Widget* frame,
-                                               ::ui::Window* window)
+                                               ui::Window* window)
     : frame_(frame),
       header_painter_(new DefaultHeaderPainter),
       caption_button_container_(nullptr),
@@ -131,8 +131,7 @@ void NonClientFrameViewMash::HeaderView::Layout() {
 }
 
 void NonClientFrameViewMash::HeaderView::OnPaint(gfx::Canvas* canvas) {
-  const ::ui::Window* focused_window =
-      window_->window_tree()->GetFocusedWindow();
+  const ui::Window* focused_window = window_->window_tree()->GetFocusedWindow();
   const bool paint_as_active =
       focused_window && window_->Contains(focused_window);
   caption_button_container_->SetPaintAsActive(paint_as_active);
@@ -161,7 +160,7 @@ void NonClientFrameViewMash::HeaderView::ChildPreferredSizeChanged(
 const char NonClientFrameViewMash::kViewClassName[] = "NonClientFrameViewMash";
 
 NonClientFrameViewMash::NonClientFrameViewMash(views::Widget* frame,
-                                               ::ui::Window* window)
+                                               ui::Window* window)
     : frame_(frame),
       window_(window),
       header_view_(new HeaderView(frame, window)) {
@@ -307,7 +306,7 @@ void NonClientFrameViewMash::PaintChildren(const ui::PaintContext& context) {
 }
 
 void NonClientFrameViewMash::OnWindowClientAreaChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const gfx::Insets& old_client_area,
     const std::vector<gfx::Rect>& old_additional_client_area) {
   // Only the insets effect the rendering.
@@ -322,18 +321,18 @@ void NonClientFrameViewMash::OnWindowClientAreaChanged(
   SchedulePaint();
 }
 
-void NonClientFrameViewMash::OnWindowDestroyed(::ui::Window* window) {
+void NonClientFrameViewMash::OnWindowDestroyed(ui::Window* window) {
   RemoveObservers();
 }
 
 void NonClientFrameViewMash::OnWindowSharedPropertyChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
-  if (name == ::ui::mojom::WindowManager::kResizeBehavior_Property)
+  if (name == ui::mojom::WindowManager::kResizeBehavior_Property)
     header_view_->SizeConstraintsChanged();
-  else if (name == ::ui::mojom::WindowManager::kWindowTitle_Property)
+  else if (name == ui::mojom::WindowManager::kWindowTitle_Property)
     header_view_->SchedulePaintForTitle();
 }
 
@@ -357,9 +356,8 @@ void NonClientFrameViewMash::RemoveObservers() {
   window_ = nullptr;
 }
 
-void NonClientFrameViewMash::OnWindowTreeFocusChanged(
-    ::ui::Window* gained_focus,
-    ::ui::Window* lost_focus) {
+void NonClientFrameViewMash::OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                                      ui::Window* lost_focus) {
   const bool had_focus = lost_focus && window_->Contains(lost_focus);
   const bool has_focus = gained_focus && window_->Contains(gained_focus);
   if (had_focus != has_focus)

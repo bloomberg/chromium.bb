@@ -17,7 +17,7 @@ LayoutManager::~LayoutManager() {
   Uninstall();
 }
 
-LayoutManager::LayoutManager(::ui::Window* owner) : owner_(owner) {
+LayoutManager::LayoutManager(ui::Window* owner) : owner_(owner) {
   owner_->AddObserver(this);
   DCHECK(owner->children().empty());
 }
@@ -32,7 +32,7 @@ void LayoutManager::Uninstall() {
 }
 
 void LayoutManager::OnTreeChanged(
-    const ::ui::WindowObserver::TreeChangeParams& params) {
+    const ui::WindowObserver::TreeChangeParams& params) {
   DCHECK(params.target);
   if (params.new_parent == owner_) {
     // params.target was added to the layout.
@@ -46,12 +46,12 @@ void LayoutManager::OnTreeChanged(
   }
 }
 
-void LayoutManager::OnWindowDestroying(::ui::Window* window) {
+void LayoutManager::OnWindowDestroying(ui::Window* window) {
   if (owner_ == window)
     Uninstall();
 }
 
-void LayoutManager::OnWindowBoundsChanged(::ui::Window* window,
+void LayoutManager::OnWindowBoundsChanged(ui::Window* window,
                                           const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   if (window != owner_)
@@ -63,7 +63,7 @@ void LayoutManager::OnWindowBoundsChanged(::ui::Window* window,
 }
 
 void LayoutManager::OnWindowSharedPropertyChanged(
-    ::ui::Window* window,
+    ui::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
@@ -75,8 +75,8 @@ void LayoutManager::OnWindowSharedPropertyChanged(
     LayoutWindow(window);
 }
 
-void LayoutManager::WindowAdded(::ui::Window* window) {}
-void LayoutManager::WindowRemoved(::ui::Window* window) {}
+void LayoutManager::WindowAdded(ui::Window* window) {}
+void LayoutManager::WindowRemoved(ui::Window* window) {}
 
 void LayoutManager::AddLayoutProperty(const std::string& name) {
   layout_properties_.insert(name);

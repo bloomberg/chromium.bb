@@ -166,7 +166,7 @@ void WmShellMus::RemoveRootWindowController(
 }
 
 // static
-WmWindowMus* WmShellMus::GetToplevelAncestor(::ui::Window* window) {
+WmWindowMus* WmShellMus::GetToplevelAncestor(ui::Window* window) {
   while (window) {
     if (IsActivationParent(window->parent()))
       return WmWindowMus::Get(window);
@@ -339,19 +339,19 @@ void WmShellMus::ToggleIgnoreExternalKeyboard() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-::ui::WindowTreeClient* WmShellMus::window_tree_client() {
+ui::WindowTreeClient* WmShellMus::window_tree_client() {
   return window_manager_->window_tree_client();
 }
 
 // static
-bool WmShellMus::IsActivationParent(::ui::Window* window) {
+bool WmShellMus::IsActivationParent(ui::Window* window) {
   return window && IsActivatableShellWindowId(
                        WmWindowMus::Get(window)->GetShellWindowId());
 }
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
-void WmShellMus::OnWindowTreeFocusChanged(::ui::Window* gained_focus,
-                                          ::ui::Window* lost_focus) {
+void WmShellMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                          ui::Window* lost_focus) {
   WmWindowMus* gained_active = GetToplevelAncestor(gained_focus);
   WmWindowMus* lost_active = GetToplevelAncestor(gained_focus);
   if (gained_active == lost_active)
@@ -361,7 +361,7 @@ void WmShellMus::OnWindowTreeFocusChanged(::ui::Window* gained_focus,
                     OnWindowActivated(gained_active, lost_active));
 }
 
-void WmShellMus::OnDidDestroyClient(::ui::WindowTreeClient* client) {
+void WmShellMus::OnDidDestroyClient(ui::WindowTreeClient* client) {
   DCHECK_EQ(window_tree_client(), client);
   client->RemoveObserver(this);
 }

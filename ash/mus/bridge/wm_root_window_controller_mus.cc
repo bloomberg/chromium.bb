@@ -48,7 +48,7 @@ WmRootWindowControllerMus::~WmRootWindowControllerMus() {
 
 // static
 const WmRootWindowControllerMus* WmRootWindowControllerMus::Get(
-    const ::ui::Window* window) {
+    const ui::Window* window) {
   if (!window)
     return nullptr;
 
@@ -121,12 +121,12 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
       WmWindowMus::Get(root_window_controller_->root())
           ->GetChildByShellWindowId(shell_container_id));
   DCHECK(init_params->parent_mus);
-  ::ui::Window* new_window =
+  ui::Window* new_window =
       root_window_controller_->root()->window_tree()->NewWindow();
   WmWindowMus::Get(new_window)
       ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
   init_params->native_widget = new views::NativeWidgetMus(
-      widget, new_window, ::ui::mojom::SurfaceType::DEFAULT);
+      widget, new_window, ui::mojom::SurfaceType::DEFAULT);
 }
 
 WmWindow* WmRootWindowControllerMus::FindEventTarget(

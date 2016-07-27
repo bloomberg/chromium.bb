@@ -13,15 +13,14 @@
 namespace ash {
 namespace mus {
 
-ScreenlockLayout::ScreenlockLayout(::ui::Window* owner)
-    : LayoutManager(owner) {}
+ScreenlockLayout::ScreenlockLayout(ui::Window* owner) : LayoutManager(owner) {}
 ScreenlockLayout::~ScreenlockLayout() {}
 
 // We explicitly don't make assertions about the number of children in this
 // layout as the number of children can vary when the application providing the
 // screenlock restarts.
 
-void ScreenlockLayout::LayoutWindow(::ui::Window* window) {
+void ScreenlockLayout::LayoutWindow(ui::Window* window) {
   gfx::Rect bounds = owner()->bounds();
   bounds.Inset(-25, -25);
   window->SetBounds(bounds);

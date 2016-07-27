@@ -73,7 +73,7 @@ WindowManager::~WindowManager() {
   delete window_tree_client_;
 }
 
-void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
+void WindowManager::Init(ui::WindowTreeClient* window_tree_client) {
   DCHECK(!window_tree_client_);
   window_tree_client_ = window_tree_client;
 
@@ -82,8 +82,8 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   // The insets are roughly what is needed by CustomFrameView. The expectation
   // is at some point we'll write our own NonClientFrameView and get the insets
   // from it.
-  ::ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
-      ::ui::mojom::FrameDecorationValues::New();
+  ui::mojom::FrameDecorationValuesPtr frame_decoration_values =
+      ui::mojom::FrameDecorationValues::New();
   const gfx::Insets client_area_insets =
       NonClientFrameController::GetPreferredClientAreaInsets();
   frame_decoration_values->normal_client_area_insets = client_area_insets;
@@ -110,7 +110,7 @@ void WindowManager::SetScreenLocked(bool is_locked) {
   }
 }
 
-::ui::Window* WindowManager::NewTopLevelWindow(
+ui::Window* WindowManager::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): need to maintain active as well as allowing specifying display.
   RootWindowController* root_window_controller =
@@ -154,7 +154,7 @@ void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
 }
 
 RootWindowController* WindowManager::CreateRootWindowController(
-    ::ui::Window* window,
+    ui::Window* window,
     const display::Display& display) {
   // TODO(sky): there is timing issues with using ScreenMus.
   if (!screen_) {
@@ -175,7 +175,7 @@ RootWindowController* WindowManager::CreateRootWindowController(
   return root_window_controller;
 }
 
-void WindowManager::OnWindowDestroying(::ui::Window* window) {
+void WindowManager::OnWindowDestroying(ui::Window* window) {
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
     if ((*it)->root() == window) {
@@ -187,7 +187,7 @@ void WindowManager::OnWindowDestroying(::ui::Window* window) {
   NOTREACHED();
 }
 
-void WindowManager::OnWindowDestroyed(::ui::Window* window) {
+void WindowManager::OnWindowDestroyed(ui::Window* window) {
   window->RemoveObserver(this);
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
@@ -199,12 +199,12 @@ void WindowManager::OnWindowDestroyed(::ui::Window* window) {
   NOTREACHED();
 }
 
-void WindowManager::OnEmbed(::ui::Window* root) {
+void WindowManager::OnEmbed(ui::Window* root) {
   // WindowManager should never see this, instead OnWmNewDisplay() is called.
   NOTREACHED();
 }
 
-void WindowManager::OnDidDestroyClient(::ui::WindowTreeClient* client) {
+void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
   // Destroying the roots should result in removal from
   // |root_window_controllers_|.
   DCHECK(root_window_controllers_.empty());
@@ -221,15 +221,15 @@ void WindowManager::OnDidDestroyClient(::ui::WindowTreeClient* client) {
 }
 
 void WindowManager::OnEventObserved(const ui::Event& event,
-                                    ::ui::Window* target) {
+                                    ui::Window* target) {
   // Does not use EventObservers.
 }
 
-void WindowManager::SetWindowManagerClient(::ui::WindowManagerClient* client) {
+void WindowManager::SetWindowManagerClient(ui::WindowManagerClient* client) {
   window_manager_client_ = client;
 }
 
-bool WindowManager::OnWmSetBounds(::ui::Window* window, gfx::Rect* bounds) {
+bool WindowManager::OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
   WmWindowMus::Get(window)->SetBounds(*bounds);
@@ -238,38 +238,38 @@ bool WindowManager::OnWmSetBounds(::ui::Window* window, gfx::Rect* bounds) {
 }
 
 bool WindowManager::OnWmSetProperty(
-    ::ui::Window* window,
+    ui::Window* window,
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed
   // values.
-  return name == ::ui::mojom::WindowManager::kShowState_Property ||
-         name == ::ui::mojom::WindowManager::kPreferredSize_Property ||
-         name == ::ui::mojom::WindowManager::kResizeBehavior_Property ||
-         name == ::ui::mojom::WindowManager::kWindowAppIcon_Property ||
-         name == ::ui::mojom::WindowManager::kWindowTitle_Property;
+  return name == ui::mojom::WindowManager::kShowState_Property ||
+         name == ui::mojom::WindowManager::kPreferredSize_Property ||
+         name == ui::mojom::WindowManager::kResizeBehavior_Property ||
+         name == ui::mojom::WindowManager::kWindowAppIcon_Property ||
+         name == ui::mojom::WindowManager::kWindowTitle_Property;
 }
 
-::ui::Window* WindowManager::OnWmCreateTopLevelWindow(
+ui::Window* WindowManager::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   return NewTopLevelWindow(properties);
 }
 
 void WindowManager::OnWmClientJankinessChanged(
-    const std::set<::ui::Window*>& client_windows,
+    const std::set<ui::Window*>& client_windows,
     bool janky) {
   for (auto* window : client_windows)
     SetWindowIsJanky(window, janky);
 }
 
-void WindowManager::OnWmNewDisplay(::ui::Window* window,
+void WindowManager::OnWmNewDisplay(ui::Window* window,
                                    const display::Display& display) {
   CreateRootWindowController(window, display);
 }
 
 void WindowManager::OnWmPerformMoveLoop(
-    ::ui::Window* window,
-    ::ui::mojom::MoveLoopSource source,
+    ui::Window* window,
+    ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
     const base::Callback<void(bool)>& on_done) {
   WmWindowMus* child_window = WmWindowMus::Get(window);
@@ -281,13 +281,13 @@ void WindowManager::OnWmPerformMoveLoop(
 
   DCHECK(!handler->IsDragInProgress());
   aura::client::WindowMoveSource aura_source =
-      source == ::ui::mojom::MoveLoopSource::MOUSE
+      source == ui::mojom::MoveLoopSource::MOUSE
           ? aura::client::WINDOW_MOVE_SOURCE_MOUSE
           : aura::client::WINDOW_MOVE_SOURCE_TOUCH;
   handler->AttemptToStartDrag(cursor_location, HTCAPTION, aura_source, on_done);
 }
 
-void WindowManager::OnWmCancelMoveLoop(::ui::Window* window) {
+void WindowManager::OnWmCancelMoveLoop(ui::Window* window) {
   WmWindowMus* child_window = WmWindowMus::Get(window);
   MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
   if (handler)

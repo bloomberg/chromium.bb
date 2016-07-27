@@ -42,20 +42,20 @@ class WmTestHelper;
 // WindowTreeClientDelegate for mash. WindowManager creates (and owns)
 // a RootWindowController per Display. WindowManager takes ownership of
 // the WindowTreeClient.
-class WindowManager : public ::ui::WindowManagerDelegate,
-                      public ::ui::WindowObserver,
-                      public ::ui::WindowTreeClientDelegate {
+class WindowManager : public ui::WindowManagerDelegate,
+                      public ui::WindowObserver,
+                      public ui::WindowTreeClientDelegate {
  public:
   explicit WindowManager(shell::Connector* connector);
   ~WindowManager() override;
 
-  void Init(::ui::WindowTreeClient* window_tree_client);
+  void Init(ui::WindowTreeClient* window_tree_client);
 
   WmShellMus* shell() { return shell_.get(); }
 
-  ::ui::WindowTreeClient* window_tree_client() { return window_tree_client_; }
+  ui::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
-  ::ui::WindowManagerClient* window_manager_client() {
+  ui::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
 
@@ -64,7 +64,7 @@ class WindowManager : public ::ui::WindowManagerDelegate,
   void SetScreenLocked(bool is_locked);
 
   // Creates a new top level window.
-  ::ui::Window* NewTopLevelWindow(
+  ui::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   std::set<RootWindowController*> GetRootWindowControllers();
@@ -83,44 +83,44 @@ class WindowManager : public ::ui::WindowManagerDelegate,
   friend class WmTestHelper;
 
   RootWindowController* CreateRootWindowController(
-      ::ui::Window* window,
+      ui::Window* window,
       const display::Display& display);
 
-  // ::ui::WindowObserver:
-  void OnWindowDestroying(::ui::Window* window) override;
-  void OnWindowDestroyed(::ui::Window* window) override;
+  // ui::WindowObserver:
+  void OnWindowDestroying(ui::Window* window) override;
+  void OnWindowDestroyed(ui::Window* window) override;
 
   // WindowTreeClientDelegate:
-  void OnEmbed(::ui::Window* root) override;
-  void OnDidDestroyClient(::ui::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, ::ui::Window* target) override;
+  void OnEmbed(ui::Window* root) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
 
   // WindowManagerDelegate:
-  void SetWindowManagerClient(::ui::WindowManagerClient* client) override;
-  bool OnWmSetBounds(::ui::Window* window, gfx::Rect* bounds) override;
+  void SetWindowManagerClient(ui::WindowManagerClient* client) override;
+  bool OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(
-      ::ui::Window* window,
+      ui::Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  ::ui::Window* OnWmCreateTopLevelWindow(
+  ui::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<::ui::Window*>& client_windows,
+  void OnWmClientJankinessChanged(const std::set<ui::Window*>& client_windows,
                                   bool not_responding) override;
-  void OnWmNewDisplay(::ui::Window* window,
+  void OnWmNewDisplay(ui::Window* window,
                       const display::Display& display) override;
-  void OnWmPerformMoveLoop(::ui::Window* window,
-                           ::ui::mojom::MoveLoopSource source,
+  void OnWmPerformMoveLoop(ui::Window* window,
+                           ui::mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(::ui::Window* window) override;
+  void OnWmCancelMoveLoop(ui::Window* window) override;
   ui::mojom::EventResult OnAccelerator(uint32_t id,
                                        const ui::Event& event) override;
 
   shell::Connector* connector_;
 
-  ::ui::WindowTreeClient* window_tree_client_ = nullptr;
+  ui::WindowTreeClient* window_tree_client_ = nullptr;
 
-  ::ui::WindowManagerClient* window_manager_client_ = nullptr;
+  ui::WindowManagerClient* window_manager_client_ = nullptr;
 
   std::unique_ptr<ShadowController> shadow_controller_;
 

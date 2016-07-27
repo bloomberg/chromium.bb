@@ -11,13 +11,13 @@ namespace ash {
 namespace mus {
 namespace {
 
-bool IsContainer(::ui::Window* window) {
+bool IsContainer(ui::Window* window) {
   return WmWindowMus::Get(window)->IsContainer();
 }
 
 }  // namespace
 
-DisconnectedAppHandler::DisconnectedAppHandler(::ui::Window* root_window) {
+DisconnectedAppHandler::DisconnectedAppHandler(ui::Window* root_window) {
   WmWindowMus* root = WmWindowMus::Get(root_window);
   for (int shell_window_id = kShellWindowId_Min;
        shell_window_id < kShellWindowId_Max; ++shell_window_id) {
@@ -40,7 +40,7 @@ DisconnectedAppHandler::DisconnectedAppHandler(::ui::Window* root_window) {
 
     // Add any pre-existing windows in the container to
     // |disconnected_app_handler_|.
-    for (::ui::Window* child : container->mus_window()->children()) {
+    for (ui::Window* child : container->mus_window()->children()) {
       if (!IsContainer(child))
         Add(child);
     }
@@ -50,7 +50,7 @@ DisconnectedAppHandler::DisconnectedAppHandler(::ui::Window* root_window) {
 DisconnectedAppHandler::~DisconnectedAppHandler() {}
 
 void DisconnectedAppHandler::OnWindowEmbeddedAppDisconnected(
-    ::ui::Window* window) {
+    ui::Window* window) {
   if (!IsContainer(window))
     window->Destroy();
 }
@@ -62,7 +62,7 @@ void DisconnectedAppHandler::OnTreeChanging(const TreeChangeParams& params) {
   if (params.new_parent == params.receiver && IsContainer(params.new_parent))
     Add(params.target);
 
-  ::ui::WindowTracker::OnTreeChanging(params);
+  ui::WindowTracker::OnTreeChanging(params);
 }
 
 }  // namespace mus
