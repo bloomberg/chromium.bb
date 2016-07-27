@@ -87,13 +87,13 @@
       [is='action-link']:active,
       [is='action-link']:hover,
       [is='action-link']:visited,
-      paper-button.primary-button,
-      paper-button.tertiary-button {
+      .primary-button,
+      .tertiary-button {
         color: var(--google-blue-700);
       }
 
-      paper-button.primary-button,
-      paper-button.tertiary-button {
+      .primary-button,
+      .tertiary-button {
         --paper-button-flat-keyboard-focus: {
           background-color: rgba(51, 103, 214, .12);  /* --google-blue-700 */
         };
@@ -108,7 +108,7 @@
        * "delete") while the secondary is often a "Cancel" button. A tertiary
        * button may be used to get more information or similar, that we expect
        * most users will not need. */
-      paper-button.primary-button {
+      .primary-button {
         --paper-button: {
           font-weight: 500;
           text-align: start;
@@ -116,7 +116,7 @@
       }
 
       /* See notes in .primary-button. */
-      paper-button.secondary-button {
+      .secondary-button {
         --paper-button: {
           color: var(--paper-grey-600);
           text-decoration: none;
@@ -128,16 +128,16 @@
       }
 
       /* See notes in .primary-button. */
-      paper-button.tertiary-button {
+      .tertiary-button {
         --paper-button: {
           font-weight: 400;
           text-decoration: none;
         };
       }
 
-      .settings-box paper-button.primary-button,
-      .settings-box paper-button.secondary-button,
-      .settings-box paper-button.secondary-button {
+      .settings-box .primary-button,
+      .settings-box .secondary-button,
+      .settings-box .secondary-button {
         margin-left: -12px;
         margin-right: -12px;
         padding-left: 12px;
