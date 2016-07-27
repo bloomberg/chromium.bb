@@ -165,14 +165,15 @@ def chromium_bare(c):
   p['parent_got_webrtc_revision'] = 'webrtc_revision'
 
   p = c.patch_projects
-  p['v8'] = ('src/v8', 'HEAD')
-  p['buildtools'] = ('src/buildtools', 'HEAD')
   p['angle/angle'] = ('src/third_party/angle', None)
   p['blink'] = ('src/third_party/WebKit', None)
+  p['buildtools'] = ('src/buildtools', 'HEAD')
   p['catapult'] = ('src/third_party/catapult', 'HEAD')
+  p['flac'] = ('src/third_party/flac', 'HEAD')
+  p['icu'] = ('src/third_party/icu', 'HEAD')
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
   p['skia'] = ('src/third_party/skia', 'HEAD')
-  p['flac'] = ('src/third_party/flac', 'HEAD')
+  p['v8'] = ('src/v8', 'HEAD')
   p['webrtc'] = ('src/third_party/webrtc', 'HEAD')
 
 @config_ctx(includes=['chromium_bare'])
