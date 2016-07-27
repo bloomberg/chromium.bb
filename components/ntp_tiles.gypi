@@ -37,6 +37,11 @@
             'safe_json',
           ],
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            'ntp_tiles_jni_headers',
+          ],
+        }],
       ],
     },
   ],
@@ -54,6 +59,30 @@
           'includes': [
             '../build/android/java_cpp_enum.gypi'
           ],
+        },
+        {
+          # GN version: //components/ntp_tiles/android:ntp_tiles_java
+          'target_name': 'ntp_tiles_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': 'ntp_tiles/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          # GN version: //components/ntp_tiles:jni
+          'target_name': 'ntp_tiles_jni_headers',
+          'type': 'none',
+          'sources': [
+            'ntp_tiles/android/java/src/org/chromium/components/ntptiles/MostVisitedSites.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'ntp_tiles',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
         },
       ],
     }],

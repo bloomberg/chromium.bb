@@ -490,6 +490,7 @@
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:investigated_scenario_java',
             '../components/components.gyp:ntp_tiles_enums_java',
+            '../components/components.gyp:ntp_tiles_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:offline_page_model_enums_java',
             '../components/components.gyp:policy_java',

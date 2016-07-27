@@ -161,6 +161,10 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   ~MostVisitedSites() override;
 
+#if defined(OS_ANDROID)
+  static bool Register(JNIEnv* env);
+#endif
+
   // Does not take ownership of |observer|, which must outlive this object and
   // must not be null.
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);

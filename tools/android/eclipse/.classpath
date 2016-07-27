@@ -49,6 +49,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/invalidation/impl/android/javatests/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/junit/src"/>
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
+    <classpathentry kind="src" path="components/ntp_tiles/android/java/src"/>
     <classpathentry kind="src" path="components/policy/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>

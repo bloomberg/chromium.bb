@@ -235,6 +235,7 @@ android_library("chrome_java") {
       "//components/invalidation/impl:java",
       "//components/location/android:location_java",
       "//components/navigation_interception/android:navigation_interception_java",
+      "//components/ntp_tiles/android:ntp_tiles_java",
       "//components/policy/android:policy_java",
       "//components/precache/android:precache_java",
       "//components/safe_json/android:safe_json_java",
