@@ -389,7 +389,8 @@ void PermissionUmaUtil::RecordPermissionAction(PermissionType permission,
     g_browser_process->safe_browsing_service()
         ->ui_manager()
         ->ReportPermissionAction(requesting_origin, permission, action,
-                                 source_ui, false /* user_gesture */);
+                                 source_ui,
+                                 PermissionRequestGestureType::UNKNOWN);
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

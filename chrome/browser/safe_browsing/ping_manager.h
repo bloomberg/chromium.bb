@@ -14,6 +14,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "components/safe_browsing_db/hit_report.h"
@@ -69,7 +70,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                               content::PermissionType permission,
                               PermissionAction action,
                               PermissionSourceUI source_ui,
-                              bool user_gesture);
+                              PermissionRequestGestureType gesture_type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,

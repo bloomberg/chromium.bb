@@ -24,8 +24,8 @@ message PermissionReport {
   // The platform.
   optional PlatformType platform_type = 3;
 
-  // When the request was initiated.
-  repeated RequestTrigger request_trigger = 4;
+  // Whether the action was after a user gesture.
+  optional GestureType gesture = 4;
 
   // The action the user took. Required.
   optional Action action = 5;
@@ -43,11 +43,11 @@ message PermissionReport {
     ANDROID_PLATFORM = 2;
   }
 
-  // Various request triggers we want to record, e.g. on page load.
-  enum RequestTrigger {
-    REQUEST_TRIGGER_UNSPECIFIED = 0;
-    ONLOAD = 1;
-    AFTER_GESTURE = 2;
+  // Whether the action occurred after a user gesture.
+  enum GestureType {
+    GESTURE_TYPE_UNSPECIFIED = 0;
+    GESTURE = 1;
+    NO_GESTURE = 2;
   }
 
   // User Permission Actions. This enum is intentionally different with 

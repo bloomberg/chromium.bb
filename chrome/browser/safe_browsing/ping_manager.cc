@@ -140,9 +140,9 @@ void SafeBrowsingPingManager::ReportPermissionAction(
     content::PermissionType permission,
     PermissionAction action,
     PermissionSourceUI source_ui,
-    bool user_gesture) {
+    PermissionRequestGestureType gesture_type) {
   permission_reporter_->SendReport(origin, permission, action, source_ui,
-                                   user_gesture);
+                                   gesture_type);
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(

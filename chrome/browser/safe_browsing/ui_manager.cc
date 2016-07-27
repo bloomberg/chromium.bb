@@ -285,12 +285,12 @@ void SafeBrowsingUIManager::ReportPermissionAction(
     content::PermissionType permission,
     PermissionAction action,
     PermissionSourceUI source_ui,
-    bool user_gesture) {
+    PermissionRequestGestureType gesture_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingUIManager::ReportPermissionActionOnIOThread, this,
-                 origin, permission, action, source_ui, user_gesture));
+                 origin, permission, action, source_ui, gesture_type));
 }
 
 void SafeBrowsingUIManager::AddObserver(Observer* observer) {
@@ -320,7 +320,7 @@ void SafeBrowsingUIManager::ReportPermissionActionOnIOThread(
     content::PermissionType permission,
     PermissionAction action,
     PermissionSourceUI source_ui,
-    bool user_gesture) {
+    PermissionRequestGestureType gesture_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The service may delete the ping manager (i.e. when user disabling service,
@@ -329,7 +329,7 @@ void SafeBrowsingUIManager::ReportPermissionActionOnIOThread(
     return;
 
   sb_service_->ping_manager()->ReportPermissionAction(
-      origin, permission, action, source_ui, user_gesture);
+      origin, permission, action, source_ui, gesture_type);
 }
 
 // If the user had opted-in to send ThreatDetails, this gets called
