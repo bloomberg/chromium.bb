@@ -862,7 +862,11 @@ CPP_VALUE_TO_V8_VALUE = {
     'StringOrNull': '{cpp_value}.isNull() ? v8::Local<v8::Value>(v8::Null({isolate})) : v8String({isolate}, {cpp_value})',
     # Special cases
     'Dictionary': '{cpp_value}.v8Value()',
-    'EventHandler': '{cpp_value} ? v8::Local<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(impl->getExecutionContext())) : v8::Local<v8::Value>(v8::Null({isolate}))',
+    'EventHandler': (
+        '{cpp_value} ? ' +
+        'V8AbstractEventListener::cast({cpp_value})->getListenerOrNull(' +
+        '{isolate}, impl->getExecutionContext()) : ' +
+        'v8::Null({isolate}).As<v8::Value>()'),
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Local<v8::Value>(v8::Null({isolate}))',
     # General

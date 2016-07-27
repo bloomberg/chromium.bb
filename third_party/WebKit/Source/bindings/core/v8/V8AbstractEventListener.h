@@ -74,6 +74,12 @@ public:
     void handleEvent(ExecutionContext*, Event*) final;
     virtual void handleEvent(ScriptState*, Event*);
 
+    v8::Local<v8::Value> getListenerOrNull(v8::Isolate* isolate, ExecutionContext* executionContext)
+    {
+        v8::Local<v8::Object> listener = getListenerObject(executionContext);
+        return listener.IsEmpty() ? v8::Null(isolate).As<v8::Value>() : listener.As<v8::Value>();
+    }
+
     // Returns the listener object, either a function or an object, or the empty
     // handle if the user script is not compilable.  No exception will be thrown
     // even if the user script is not compilable.

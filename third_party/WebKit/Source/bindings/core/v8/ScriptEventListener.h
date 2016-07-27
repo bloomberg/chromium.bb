@@ -38,7 +38,7 @@
 namespace blink {
 
 class EventListener;
-class ExecutiionContext;
+class ExecutionContext;
 class LocalFrame;
 class Node;
 class QualifiedName;
