@@ -88620,13 +88620,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="QuicConnectionMigrationStatus" type="int">
-  <int value="1" label="NO_MIGRATABLE_STREAMS"/>
-  <int value="2" label="ALREADY_MIGRATED"/>
-  <int value="3" label="INTERNAL_ERROR"/>
-  <int value="4" label="TOO_MANY_CHANGES"/>
-  <int value="5" label="SUCCESS"/>
-  <int value="6" label="NON_MIGRATABLE_STREAM"/>
-  <int value="7" label="DISABLED"/>
+  <int value="0" label="NO_MIGRATABLE_STREAMS"/>
+  <int value="1" label="ALREADY_MIGRATED"/>
+  <int value="2" label="INTERNAL_ERROR"/>
+  <int value="3" label="TOO_MANY_CHANGES"/>
+  <int value="4" label="SUCCESS"/>
+  <int value="5" label="NON_MIGRATABLE_STREAM"/>
+  <int value="6" label="DISABLED"/>
 </enum>
 
 <enum name="QuicDisabledReason" type="int">
