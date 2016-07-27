@@ -283,4 +283,28 @@ TEST(HTTPParsersTest, SuboriginParseInvalidPolicy)
     expectParsePolicyFail("Valid policy and then policy that is a single quote", "foobar 'unsafe-postmessage-send' '");
 }
 
+TEST(HTTPParsersTest, ParseHTTPRefresh)
+{
+    double delay;
+    String url;
+    EXPECT_FALSE(parseHTTPRefresh("", true, delay, url));
+    EXPECT_FALSE(parseHTTPRefresh(" ", true, delay, url));
+
+    EXPECT_TRUE(parseHTTPRefresh("123 ", true, delay, url));
+    EXPECT_EQ(123.0, delay);
+    EXPECT_TRUE(url.isEmpty());
+
+    EXPECT_TRUE(parseHTTPRefresh("1 ; url=dest", true, delay, url));
+    EXPECT_EQ(1.0, delay);
+    EXPECT_EQ("dest", url);
+
+    EXPECT_TRUE(parseHTTPRefresh("1 url=dest", true, delay, url));
+    EXPECT_EQ(1.0, delay);
+    EXPECT_EQ("dest", url);
+
+    EXPECT_TRUE(parseHTTPRefresh("10\nurl=dest", true, delay, url));
+    EXPECT_EQ(10, delay);
+    EXPECT_EQ("dest", url);
+}
+
 } // namespace blink

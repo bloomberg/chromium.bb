@@ -50,6 +50,13 @@ static bool isWhitespace(UChar chr)
     return (chr == ' ') || (chr == '\t');
 }
 
+// TODO(tkent): We should use isHTMLSpace() defined in HTMLParserIdioms.h. But
+// we can't do it because of layering violation.
+static bool isLooseHTMLSpace(UChar ch)
+{
+    return ch <= ' ';
+}
+
 // true if there is more to parse, after incrementing pos past whitespace.
 // Note: Might return pos == str.length()
 static inline bool skipWhiteSpace(const String& str, unsigned& pos, bool fromHttpEquivMeta)
@@ -57,7 +64,7 @@ static inline bool skipWhiteSpace(const String& str, unsigned& pos, bool fromHtt
     unsigned len = str.length();
 
     if (fromHttpEquivMeta) {
-        while (pos < len && str[pos] <= ' ')
+        while (pos < len && isLooseHTMLSpace(str[pos]))
             ++pos;
     } else {
         while (pos < len && isWhitespace(str[pos]))
@@ -272,7 +279,7 @@ bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& del
     if (!skipWhiteSpace(refresh, pos, fromHttpEquivMeta))
         return false;
 
-    while (pos != len && refresh[pos] != ',' && refresh[pos] != ';')
+    while (pos != len && refresh[pos] != ',' && refresh[pos] != ';' && !isLooseHTMLSpace(refresh[pos]))
         ++pos;
 
     if (pos == len) { // no URL
@@ -286,7 +293,9 @@ bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& del
         if (!ok)
             return false;
 
-        ++pos;
+        skipWhiteSpace(refresh, pos, fromHttpEquivMeta);
+        if (pos < len && (refresh[pos] == ',' || refresh[pos] == ';'))
+            ++pos;
         skipWhiteSpace(refresh, pos, fromHttpEquivMeta);
         unsigned urlStartPos = pos;
         if (refresh.find("url", urlStartPos, TextCaseInsensitive) == urlStartPos) {
