@@ -6,7 +6,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -18,7 +17,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -45,13 +43,12 @@ class DockedWindowResizerTest
     : public test::AshTestBase,
       public testing::WithParamInterface<ui::wm::WindowType> {
  public:
-  DockedWindowResizerTest() : model_(NULL), window_type_(GetParam()) {}
+  DockedWindowResizerTest() : window_type_(GetParam()) {}
   virtual ~DockedWindowResizerTest() {}
 
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
-    model_ = WmShell::Get()->shelf_model();
   }
 
   void TearDown() override { AshTestBase::TearDown(); }
@@ -234,7 +231,6 @@ class DockedWindowResizerTest
 
  private:
   std::unique_ptr<WindowResizer> resizer_;
-  ShelfModel* model_;
   ui::wm::WindowType window_type_;
   aura::test::TestWindowDelegate delegate_;
 

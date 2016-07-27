@@ -6,13 +6,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
-#include <string>
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
-#include "ash/common/accelerators/accelerator_commands.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -20,43 +15,35 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_shell.h"
-#include "ash/root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "ui/aura/client/cursor_client.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
@@ -137,7 +124,7 @@ void ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
   shelf_->UpdateAutoHideForGestureEvent(event);
 }
 
-// ShelfLayoutManager:UpdateShelfObserver --------------------------------------
+// ShelfLayoutManager::UpdateShelfObserver -------------------------------------
 
 // UpdateShelfObserver is used to delay updating the background until the
 // animation completes.
@@ -181,8 +168,16 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
  public:
   explicit RootWindowControllerObserverImpl(
       ShelfLayoutManager* shelf_layout_manager)
-      : shelf_layout_manager_(shelf_layout_manager) {}
-  ~RootWindowControllerObserverImpl() override {}
+      : shelf_layout_manager_(shelf_layout_manager),
+        root_window_controller_(
+            WmLookup::Get()
+                ->GetWindowForWidget(shelf_layout_manager->shelf_widget())
+                ->GetRootWindowController()) {
+    root_window_controller_->AddObserver(this);
+  }
+  ~RootWindowControllerObserverImpl() override {
+    root_window_controller_->RemoveObserver(this);
+  }
 
   // WmRootWindowControllerObserver:
   void OnShelfAlignmentChanged() override {
@@ -191,6 +186,7 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
 
  private:
   ShelfLayoutManager* shelf_layout_manager_;
+  WmRootWindowController* root_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowControllerObserverImpl);
 };
@@ -211,18 +207,12 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL),
       chromevox_panel_height_(0),
-      duration_override_in_ms_(0) {
+      duration_override_in_ms_(0),
+      root_window_controller_observer_(
+          new RootWindowControllerObserverImpl(this)) {
   WmShell::Get()->AddShellObserver(this);
-
-  if (!Shell::GetInstance()->in_mus()) {
-    root_window_controller_observer_.reset(
-        new RootWindowControllerObserverImpl(this));
-    WmWindowAura::Get(root_window_)
-        ->GetRootWindowController()
-        ->AddObserver(root_window_controller_observer_.get());
-  }
   WmShell::Get()->AddLockStateObserver(this);
-  aura::client::GetActivationClient(root_window_)->AddObserver(this);
+  WmShell::Get()->AddActivationObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 }
 
@@ -234,13 +224,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
                     WillDeleteShelfLayoutManager());
   WmShell::Get()->RemoveShellObserver(this);
   WmShell::Get()->RemoveLockStateObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
-      this);
-  if (root_window_controller_observer_) {
-    WmWindowAura::Get(root_window_)
-        ->GetRootWindowController()
-        ->RemoveObserver(root_window_controller_observer_.get());
-  }
+  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
@@ -250,9 +234,8 @@ void ShelfLayoutManager::PrepareForShutdown() {
   set_workspace_controller(NULL);
   auto_hide_event_filter_.reset();
   bezel_event_filter_.reset();
-  // Stop observing window change, otherwise we can attempt to update a
-  // partially destructed shelf.
-  aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+  // Stop observing changes to avoid updating a partially destructed shelf.
+  WmShell::Get()->RemoveActivationObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -320,11 +303,10 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         workspace_controller_->GetWindowState());
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
-        const aura::Window* fullscreen_window =
-            GetRootWindowController(root_window_)->GetWindowForFullscreenMode();
+        const WmWindow* fullscreen_window = wm::GetWindowForFullscreenMode(
+            WmLookup::Get()->GetWindowForWidget(shelf_widget_));
         if (fullscreen_window &&
-            wm::GetWindowState(fullscreen_window)
-                ->hide_shelf_when_fullscreen()) {
+            fullscreen_window->GetWindowState()->hide_shelf_when_fullscreen()) {
           SetState(SHELF_HIDDEN);
         } else {
           // The shelf is sometimes not hidden when in immersive fullscreen.
@@ -558,10 +540,8 @@ void ShelfLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
+void ShelfLayoutManager::OnWindowActivated(WmWindow* gained_active,
+                                           WmWindow* lost_active) {
   UpdateAutoHideStateNow();
 }
 
@@ -1031,15 +1011,17 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       !shelf_widget_->shelf())
     return SHELF_AUTO_HIDE_HIDDEN;
 
+  const int64_t shelf_display_id = WmLookup::Get()
+                                       ->GetWindowForWidget(shelf_widget_)
+                                       ->GetDisplayNearestWindow()
+                                       .id();
+
   // Unhide the shelf only on the active screen when the AppList is shown
   // (crbug.com/312445).
   if (WmShell::Get()->GetAppListTargetVisibility()) {
-    aura::Window* active_window = wm::GetActiveWindow();
-    aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-    if (active_window && shelf_window &&
-        active_window->GetRootWindow() == shelf_window->GetRootWindow()) {
+    WmWindow* window = WmShell::Get()->GetActiveWindow();
+    if (window && window->GetDisplayNearestWindow().id() == shelf_display_id)
       return SHELF_AUTO_HIDE_SHOWN;
-    }
   }
 
   if (shelf_widget_->status_area_widget() &&
@@ -1068,8 +1050,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     for (size_t i = 0; i < windows.size(); ++i) {
       if (windows[i] && windows[i]->IsVisible() &&
           !windows[i]->GetWindowState()->IsMinimized() &&
-          root_window_ ==
-              WmWindowAura::GetAuraWindow(windows[i]->GetRootWindow())) {
+          windows[i]->GetDisplayNearestWindow().id() == shelf_display_id) {
         visible_window = true;
         break;
       }
@@ -1087,9 +1068,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_HIDDEN;
 
   // Ignore the mouse position if mouse events are disabled.
-  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
-      shelf_widget_->GetNativeWindow()->GetRootWindow());
-  if (!cursor_client->IsMouseEventsEnabled())
+  if (!shelf_widget_->IsMouseEventsEnabled())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   gfx::Rect shelf_region = shelf_widget_->GetWindowBoundsInScreen();

@@ -6,52 +6,38 @@
 #define ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 
 #include <memory>
-#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_observer.h"
-#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "ash/common/wm/workspace/workspace_types.h"
-#include "ash/shelf/shelf.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
-
-namespace aura {
-class RootWindow;
-}
 
 namespace ui {
-class GestureEvent;
 class ImplicitAnimationObserver;
 }
 
 namespace ash {
+
 class PanelLayoutManagerTest;
-class ScreenAsh;
 class ShelfBezelEventFilter;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
-class StatusAreaWidget;
 class WorkspaceController;
-FORWARD_DECLARE_TEST(AshPopupAlignmentDelegateTest, AutoHide);
-FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -61,8 +47,8 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
 // closely with ShelfLayoutManager.
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
-    : public ash::ShellObserver,
-      public aura::client::ActivationChangeObserver,
+    : public ShellObserver,
+      public WmActivationObserver,
       public DockedWindowLayoutManagerObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
@@ -150,25 +136,23 @@ class ASH_EXPORT ShelfLayoutManager
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from ash::ShellObserver:
+  // Overridden from ShellObserver:
   void OnLockStateChanged(bool locked) override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
 
-  // Overriden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // Overridden from WmActivationObserver:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
-  // Overridden from ash::LockStateObserver:
+  // Overridden from LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
-  // Overridden from ash::SessionStateObserver:
+  // Overridden from SessionStateObserver:
   void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
@@ -207,13 +191,8 @@ class ASH_EXPORT ShelfLayoutManager
   class AutoHideEventFilter;
   class RootWindowControllerObserverImpl;
   class UpdateShelfObserver;
-  friend class AshPopupAlignmentDelegateTest;
-  friend class ash::ScreenAsh;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
-  friend class ToastManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(ash::AshPopupAlignmentDelegateTest, AutoHide);
-  FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest, PopupAndFullscreen);
 
   struct TargetBounds {
     TargetBounds();
