@@ -3,7 +3,6 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/sources-test.js"></script>
-<script src="debugger/resources/obfuscated.js"></script>
 
 <script>
 
@@ -28,6 +27,12 @@ function test()
         {
             var mappingQueries = ["onStart", "delay", "1000", "belay", "activeElement"];
             testJSFormatter("var onStart = function() {}, delay=1000, belay=document.activeElement;", mappingQueries, next);
+        },
+
+        function continueStatementFormatting(next)
+        {
+            var mappingQueries = ["function", "1", "continue", "test"];
+            testJSFormatter("function foo(){while(1){if (a)continue;test();}}", mappingQueries, next);
         },
     ]);
 }

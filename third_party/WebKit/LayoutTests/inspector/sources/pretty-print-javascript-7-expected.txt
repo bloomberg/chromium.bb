@@ -44,3 +44,19 @@ Correct mapping for <1000>
 Correct mapping for <belay>
 Correct mapping for <activeElement>
 
+Running: continueStatementFormatting
+====== 8< ------
+function foo() {
+    while (1) {
+        if (a)
+            continue;
+        test();
+    }
+}
+
+------ >8 ======
+Correct mapping for <function>
+Correct mapping for <1>
+Correct mapping for <continue>
+Correct mapping for <test>
+
