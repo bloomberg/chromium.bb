@@ -39046,6 +39046,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PaymentRequest.CheckoutFunnel.Completed" enum="BooleanHit">
+  <owner>sebsg@chromium.org</owner>
+  <summary>When the merchant has processed the user's Payment Request.</summary>
+</histogram>
+
+<histogram name="PaymentRequest.CheckoutFunnel.Initiated" enum="BooleanHit">
+  <owner>sebsg@chromium.org</owner>
+  <summary>When a Payment Request gets initiated by the user.</summary>
+</histogram>
+
+<histogram name="PaymentRequest.CheckoutFunnel.PayClicked" enum="BooleanHit">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    When the user clicks the &quot;pay&quot; button in the Payment Request UI.
+  </summary>
+</histogram>
+
+<histogram name="PaymentRequest.CheckoutFunnel.ReceivedInstrumentDetails"
+    enum="BooleanHit">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    When the browser retrieves the instrument details from the payment app to
+    complete a purchase.
+  </summary>
+</histogram>
+
+<histogram name="PaymentRequest.CheckoutFunnel.Shown" enum="BooleanHit">
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    When the Payment Request UI gets shown after initialization.
+  </summary>
+</histogram>
+
 <histogram name="PDF.DocumentFeature" enum="PDFFeatures">
   <owner>tsergeant@chromium.org</owner>
   <summary>

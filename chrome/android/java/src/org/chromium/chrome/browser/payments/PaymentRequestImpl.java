@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -192,6 +193,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mAddressEditor = new AddressEditor();
         mCardEditor = new CardEditor(webContents, mAddressEditor, sObserverForTest);
+
+        recordSuccessFunnelHistograms("Initiated");
     }
 
     /**
@@ -342,6 +345,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mAddressEditor.setEditorView(mUI.getEditorView());
         mCardEditor.setEditorView(mUI.getCardEditorView());
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
+
+        recordSuccessFunnelHistograms("Shown");
     }
 
     private static Map<String, JSONObject> getValidatedMethodData(
@@ -804,6 +809,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mPaymentAppRunning = true;
         instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
                 mMethodData.get(instrument.getMethodName()), this);
+        recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);
     }
 
@@ -847,6 +853,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void complete(int result) {
+        recordSuccessFunnelHistograms("Completed");
         closeUI(PaymentComplete.FAIL != result);
     }
 
@@ -1005,6 +1012,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mUI.showProcessingMessage();
         mClient.onPaymentResponse(response);
+
+        recordSuccessFunnelHistograms("ReceivedInstrumentDetails");
     }
 
     /**
@@ -1049,5 +1058,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @VisibleForTesting
     public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
+    }
+
+    /**
+     * Records specific histograms related to the different steps of a successful checkout.
+     */
+    private void recordSuccessFunnelHistograms(String funnelPart) {
+        RecordHistogram.recordBooleanHistogram(
+                "PaymentRequest.CheckoutFunnel." + funnelPart, true);
     }
 }
