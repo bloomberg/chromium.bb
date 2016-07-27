@@ -13,6 +13,12 @@ using offline_pages::OfflinePageItem;
 
 namespace ntp_snippets {
 
+namespace {
+
+const int kMaxSuggestionsCount = 5;
+
+}  // namespace
+
 OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
     OfflinePageModel* offline_page_model)
     : ContentSuggestionsProvider({ContentSuggestionsCategory::OFFLINE_PAGES}),
@@ -97,6 +103,9 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
 
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem& item : result) {
+    // TODO(pke): Make sure the URL is actually opened as an offline URL.
+    // Currently, the browser opens the offline URL and then immediately
+    // redirects to the online URL if the device is online.
     ContentSuggestion suggestion(
         MakeUniqueID(ContentSuggestionsCategory::OFFLINE_PAGES,
                      base::IntToString(item.offline_id)),
@@ -110,6 +119,8 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     suggestion.set_publish_date(item.creation_time);
     suggestion.set_publisher_name(item.url.host());
     suggestions.emplace_back(std::move(suggestion));
+    if (suggestions.size() == kMaxSuggestionsCount)
+      break;
   }
 
   observer_->OnNewSuggestions(ContentSuggestionsCategory::OFFLINE_PAGES,

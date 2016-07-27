@@ -149,19 +149,30 @@ void NTPSnippetsBridge::OnNewSuggestions() {
   std::vector<int64_t> timestamps;
   std::vector<std::string> publishers;
   std::vector<float> scores;
-  for (const ntp_snippets::ContentSuggestion& suggestion :
-       content_suggestions_service_->GetSuggestionsForCategory(
-           ContentSuggestionsCategory::ARTICLES)) {
-    ids.push_back(suggestion.id());
-    titles.push_back(suggestion.title());
-    // The url from source_info is a url for a site that is one of the
-    // HOST_RESTRICT parameters, so this is preferred.
-    urls.push_back(suggestion.url().spec());
-    amp_urls.push_back(suggestion.amp_url().spec());
-    snippets.push_back(suggestion.snippet_text());
-    timestamps.push_back(suggestion.publish_date().ToJavaTime());
-    publishers.push_back(suggestion.publisher_name());
-    scores.push_back(suggestion.score());
+
+  // Show all suggestions from all categories, even though we currently display
+  // them in a single section on the UI.
+  // TODO(pke): This is only for debugging new sections and will be replaced
+  // with proper multi-section UI support.
+  for (ContentSuggestionsCategory category :
+       content_suggestions_service_->GetCategories()) {
+    if (content_suggestions_service_->GetCategoryStatus(category) !=
+        ContentSuggestionsCategoryStatus::AVAILABLE) {
+      continue;
+    }
+    for (const ntp_snippets::ContentSuggestion& suggestion :
+         content_suggestions_service_->GetSuggestionsForCategory(category)) {
+      ids.push_back(suggestion.id());
+      titles.push_back(suggestion.title());
+      // The url from source_info is a url for a site that is one of the
+      // HOST_RESTRICT parameters, so this is preferred.
+      urls.push_back(suggestion.url().spec());
+      amp_urls.push_back(suggestion.amp_url().spec());
+      snippets.push_back(suggestion.snippet_text());
+      timestamps.push_back(suggestion.publish_date().ToJavaTime());
+      publishers.push_back(suggestion.publisher_name());
+      scores.push_back(suggestion.score());
+    }
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
