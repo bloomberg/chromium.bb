@@ -1,5 +1,5 @@
 /* -LICENSE-START-
-** Copyright (c) 2015 Blackmagic Design
+** Copyright (c) 2016 Blackmagic Design
 **
 ** Permission is hereby granted, free of charge, to any person or organization
 ** obtaining a copy of the software and accompanying documentation covered by
@@ -43,7 +43,7 @@
 // Interface ID Declarations
 
 BMD_CONST REFIID IID_IDeckLinkConfiguration                       = /* CB71734A-FE37-4E8D-8E13-802133A1C3F2 */ {0xCB,0x71,0x73,0x4A,0xFE,0x37,0x4E,0x8D,0x8E,0x13,0x80,0x21,0x33,0xA1,0xC3,0xF2};
-BMD_CONST REFIID IID_IDeckLinkEncoderConfiguration                = /* 67455668-0848-45DF-8D8E-350A77C9A028 */ {0x67,0x45,0x56,0x68,0x08,0x48,0x45,0xDF,0x8D,0x8E,0x35,0x0A,0x77,0xC9,0xA0,0x28};
+BMD_CONST REFIID IID_IDeckLinkEncoderConfiguration                = /* 138050E5-C60A-4552-BF3F-0F358049327E */ {0x13,0x80,0x50,0xE5,0xC6,0x0A,0x45,0x52,0xBF,0x3F,0x0F,0x35,0x80,0x49,0x32,0x7E};
 
 /* Enum BMDDeckLinkConfigurationID - DeckLink Configuration ID */
 
@@ -63,6 +63,7 @@ enum _BMDDeckLinkConfigurationID {
     bmdDeckLinkConfigHDMI3DPackingFormat                         = '3dpf',
     bmdDeckLinkConfigBypass                                      = 'byps',
     bmdDeckLinkConfigClockTimingAdjustment                       = 'ctad',
+    bmdDeckLinkConfigDuplexMode                                  = 'dupx',
 
     /* Audio Input/Output Flags */
 
@@ -182,7 +183,20 @@ enum _BMDDeckLinkEncoderConfigurationID {
 
     /* HEVC/H.265 Encoder Integers */
 
-    bmdDeckLinkEncoderConfigH265TargetBitrate                    = 'htbr'
+    bmdDeckLinkEncoderConfigH265TargetBitrate                    = 'htbr',
+
+    /* DNxHR/DNxHD Compression ID */
+
+    bmdDeckLinkEncoderConfigDNxHRCompressionID                   = 'dcid',
+
+    /* DNxHR/DNxHD Level */
+
+    bmdDeckLinkEncoderConfigDNxHRLevel                           = 'dlev',
+
+    /* Encoded Sample Decriptions */
+
+    bmdDeckLinkEncoderConfigMPEG4SampleDescription               = 'stsE',	// Full MPEG4 sample description (aka SampleEntry of an 'stsd' atom-box). Useful for MediaFoundation, QuickTime, MKV and more
+    bmdDeckLinkEncoderConfigMPEG4CodecSpecificDesc               = 'esds'	// Sample description extensions only (atom stream, each with size and fourCC header). Useful for AVFoundation, VideoToolbox, MKV and more
 };
 
 // Forward Declarations
@@ -222,7 +236,7 @@ public:
     virtual HRESULT GetFloat (/* in */ BMDDeckLinkEncoderConfigurationID cfgID, /* out */ double *value) = 0;
     virtual HRESULT SetString (/* in */ BMDDeckLinkEncoderConfigurationID cfgID, /* in */ CFStringRef value) = 0;
     virtual HRESULT GetString (/* in */ BMDDeckLinkEncoderConfigurationID cfgID, /* out */ CFStringRef *value) = 0;
-    virtual HRESULT GetDecoderConfigurationInfo (/* out */ void *buffer, /* in */ long bufferSize, /* out */ long *returnedSize) = 0;
+    virtual HRESULT GetBytes (/* in */ BMDDeckLinkEncoderConfigurationID cfgID, /* out */ void *buffer /* optional */, /* in, out */ uint32_t *bufferSize) = 0;
 
 protected:
     virtual ~IDeckLinkEncoderConfiguration () {} // call Release method to drop reference count

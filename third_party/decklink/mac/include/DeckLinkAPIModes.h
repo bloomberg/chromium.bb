@@ -1,5 +1,5 @@
 /* -LICENSE-START-
-** Copyright (c) 2015 Blackmagic Design
+** Copyright (c) 2016 Blackmagic Design
 **
 ** Permission is hereby granted, free of charge, to any person or organization
 ** obtaining a copy of the software and accompanying documentation covered by
@@ -136,7 +136,11 @@ enum _BMDPixelFormat {
     bmdFormat12BitRGBLE                                          = 'R12L',	// Little-endian RGB 12-bit per component with full range (0-4095). Packed as 12-bit per component
     bmdFormat10BitRGBXLE                                         = 'R10l',	// Little-endian 10-bit RGB with SMPTE video levels (64-940)
     bmdFormat10BitRGBX                                           = 'R10b',	// Big-endian 10-bit RGB with SMPTE video levels (64-940)
-    bmdFormatH265                                                = 'hev1'	// High Efficiency Video Coding (HEVC/h.265)
+    bmdFormatH265                                                = 'hev1',	// High Efficiency Video Coding (HEVC/h.265)
+
+    /* AVID DNxHR */
+
+    bmdFormatDNxHR                                               = 'AVdh'
 };
 
 /* Enum BMDDisplayModeFlags - Flags to describe the characteristics of an IDeckLinkDisplayMode. */
