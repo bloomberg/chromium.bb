@@ -24,7 +24,7 @@ public:
         : m_paintController(PaintController::create())
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
-    IntRect visualRect(const PaintArtifact& paintArtifact, unsigned index)
+    IntRect visualRect(const PaintArtifact& paintArtifact, size_t index)
     {
         return paintArtifact.getDisplayItemList().visualRect(index);
     }

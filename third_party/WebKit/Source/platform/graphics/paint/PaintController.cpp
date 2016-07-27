@@ -76,13 +76,6 @@ bool PaintController::useCachedDrawingIfPossible(const DisplayItemClient& client
 
 bool PaintController::useCachedSubsequenceIfPossible(const DisplayItemClient& client)
 {
-    // TODO(crbug.com/596983): Implement subsequence caching for spv2.
-    // The problem is in copyCachedSubsequence() which fails to handle PaintChunkProperties
-    // of chunks containing cached display items. We need to find the previous
-    // PaintChunkProperties and ensure they are valid in the current paint property tree.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return false;
-
     if (displayItemConstructionIsDisabled() || subsequenceCachingIsDisabled())
         return false;
 
@@ -180,6 +173,9 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     }
 #endif
 
+    if (isSkippingCache())
+        displayItem.setSkippedCache();
+
 #if DCHECK_IS_ON()
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItemList.size() >= 2 && displayItem.isEnd()) {
@@ -187,12 +183,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
         if (beginDisplayItem.isBegin() && beginDisplayItem.getType() != DisplayItem::Subsequence && !beginDisplayItem.drawsContent())
             DCHECK(!displayItem.isEndAndPairedWith(beginDisplayItem.getType()));
     }
-#endif
 
-    if (isSkippingCache())
-        displayItem.setSkippedCache();
-
-#if DCHECK_IS_ON()
     size_t index = findMatchingItemFromIndex(displayItem.getId(), m_newDisplayItemIndicesByClient, m_newDisplayItemList);
     if (index != kNotFound) {
 #ifndef NDEBUG
@@ -353,6 +344,15 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
 #endif
 
     DisplayItem::Id endSubsequenceId(cachedItem->client(), DisplayItem::EndSubsequence);
+    Vector<PaintChunk>::const_iterator cachedChunk;
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        cachedChunk = m_currentPaintArtifact.findChunkByDisplayItemIndex(cachedItemIndex);
+        updateCurrentPaintChunkProperties(cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
+    } else {
+        // This is to avoid compilation error about uninitialized variable on Windows.
+        cachedChunk = m_currentPaintArtifact.paintChunks().begin();
+    }
+
     while (true) {
         DCHECK(cachedItem->hasValidClient());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
@@ -360,8 +360,15 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
 #endif
         ++m_numCachedNewItems;
         bool metEndSubsequence = cachedItem->getId() == endSubsequenceId;
-        if (!DCHECK_IS_ON() || !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        if (!DCHECK_IS_ON() || !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && cachedItemIndex == cachedChunk->endIndex) {
+                ++cachedChunk;
+                updateCurrentPaintChunkProperties(cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
+            }
             processNewItem(m_newDisplayItemList.appendByMoving(*cachedItem));
+            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                DCHECK((!m_newPaintChunks.lastChunk().id && !cachedChunk->id) || m_newPaintChunks.lastChunk().matches(*cachedChunk));
+        }
 
         ++cachedItemIndex;
         if (metEndSubsequence)
@@ -429,6 +436,11 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
     resetCurrentListIndices();
     m_outOfOrderItemIndices.clear();
+
+    for (const auto& chunk : m_currentPaintArtifact.paintChunks()) {
+        if (chunk.id)
+            chunk.id->client.setDisplayItemsCached(m_currentCacheGeneration);
+    }
 
     // We'll allocate the initial buffer when we start the next paint.
     m_newDisplayItemList = DisplayItemList(0);

@@ -10,17 +10,28 @@
 
 namespace blink {
 
+struct PaintLayerPainterTestParam {
+    PaintLayerPainterTestParam(FrameSettingOverrideFunction frameSettingOverride, bool slimmingPaintV2)
+        : frameSettingOverride(frameSettingOverride), slimmingPaintV2(slimmingPaintV2) { }
+
+    FrameSettingOverrideFunction frameSettingOverride;
+    bool slimmingPaintV2;
+};
+
 class PaintLayerPainterTest
-    : public PaintControllerPaintTest
-    , public testing::WithParamInterface<FrameSettingOverrideFunction> {
+    : public PaintControllerPaintTestBase
+    , public testing::WithParamInterface<PaintLayerPainterTestParam> {
     USING_FAST_MALLOC(PaintLayerPainterTest);
 public:
-    FrameSettingOverrideFunction settingOverrider() const override { return GetParam(); }
+    PaintLayerPainterTest() : PaintControllerPaintTestBase(GetParam().slimmingPaintV2) { }
+    FrameSettingOverrideFunction settingOverrider() const override { return GetParam().frameSettingOverride; }
 };
 
 INSTANTIATE_TEST_CASE_P(All, PaintLayerPainterTest, ::testing::Values(
-    nullptr,
-    RootLayerScrollsFrameSettingOverride));
+    PaintLayerPainterTestParam(nullptr, false), // non-root-layer-scrolls, slimming-paint-v1
+    PaintLayerPainterTestParam(nullptr, true), // non-root-layer-scrolls, slimming-paint-v2
+    PaintLayerPainterTestParam(RootLayerScrollsFrameSettingOverride, false), // root-layer-scrolls, slimming-paint-v1
+    PaintLayerPainterTestParam(RootLayerScrollsFrameSettingOverride, true))); // root-layer-scrolls, slimming-paint-v2
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence)
 {
@@ -78,6 +89,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 {
+    // TODO(wangxianzhu): SPv2 deals with interest rect differently, so disable this test for SPv2 temporarily.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
@@ -136,7 +151,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // because it was fully painted before;
     // Container2's intersection with the interest rect changes;
     // Content2b is out of the interest rect and outputs nothing;
-    // Container3 becomes out of the interest rect and outputs empty subsequence pair..
+    // Container3 becomes out of the interest rect and outputs empty subsequence pair.
     EXPECT_EQ(7, numCachedNewItems());
 
     commit();

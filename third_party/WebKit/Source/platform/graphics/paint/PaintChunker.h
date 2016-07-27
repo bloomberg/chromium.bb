@@ -33,6 +33,8 @@ public:
     void incrementDisplayItemIndex(const DisplayItem&);
     void decrementDisplayItemIndex();
 
+    const PaintChunk& lastChunk() const { return m_chunks.last(); }
+
     void clear();
 
     // Releases the generated paint chunk list and resets the state of this

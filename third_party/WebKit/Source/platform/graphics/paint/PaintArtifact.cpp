@@ -77,6 +77,20 @@ PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source)
     return *this;
 }
 
+static bool compareChunkAndIndex(const PaintChunk& chunk, size_t index)
+{
+    return chunk.endIndex <= index;
+}
+
+Vector<PaintChunk>::const_iterator PaintArtifact::findChunkByDisplayItemIndex(size_t index) const
+{
+    auto chunkIt = std::lower_bound(m_paintChunks.begin(), m_paintChunks.end(), index, compareChunkAndIndex);
+    DCHECK(chunkIt != m_paintChunks.end());
+    DCHECK(index >= chunkIt->beginIndex);
+    DCHECK(index < chunkIt->endIndex);
+    return chunkIt;
+}
+
 void PaintArtifact::reset()
 {
     m_displayItemList.clear();
@@ -99,7 +113,7 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const
 void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-    unsigned visualRectIndex = 0;
+    size_t visualRectIndex = 0;
     for (const DisplayItem& displayItem : m_displayItemList) {
         displayItem.appendToWebDisplayItemList(m_displayItemList.visualRect(visualRectIndex), list);
         visualRectIndex++;

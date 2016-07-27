@@ -23,14 +23,14 @@ namespace blink {
 struct PaintChunk {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     PaintChunk() : beginIndex(0), endIndex(0), knownToBeOpaque(false) { }
-    PaintChunk(unsigned begin, unsigned end, const DisplayItem::Id* chunkId, const PaintChunkProperties& props)
+    PaintChunk(size_t begin, size_t end, const DisplayItem::Id* chunkId, const PaintChunkProperties& props)
         : beginIndex(begin), endIndex(end), properties(props), knownToBeOpaque(false)
     {
         if (chunkId)
             id.emplace(*chunkId);
     }
 
-    unsigned size() const
+    size_t size() const
     {
         ASSERT(endIndex >= beginIndex);
         return endIndex - beginIndex;
@@ -55,11 +55,11 @@ struct PaintChunk {
     }
 
     // Index of the first drawing in this chunk.
-    unsigned beginIndex;
+    size_t beginIndex;
 
     // Index of the first drawing not in this chunk, so that there are
     // |endIndex - beginIndex| drawings in the chunk.
-    unsigned endIndex;
+    size_t endIndex;
 
     // Identifier of this chunk. If it has a value, it should be unique.
     // It's used to match a new chunk to a cached old chunk to track changes of chunk
