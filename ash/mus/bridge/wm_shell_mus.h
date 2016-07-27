@@ -27,6 +27,8 @@ namespace ash {
 namespace mus {
 
 class AcceleratorControllerDelegateMus;
+class AcceleratorControllerRegistrar;
+class WindowManager;
 class WmRootWindowControllerMus;
 class WmWindowMus;
 
@@ -34,7 +36,7 @@ class WmWindowMus;
 class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
-             ::ui::WindowTreeClient* client);
+             WindowManager* window_manager);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -47,6 +49,10 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
   static WmWindowMus* GetToplevelAncestor(::ui::Window* window);
 
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
+
+  AcceleratorControllerDelegateMus* accelerator_controller_delegate() {
+    return accelerator_controller_delegate_.get();
+  }
 
   // WmShell:
   WmWindow* NewContainerWindow() override;
@@ -89,22 +95,24 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
 #endif
 
  private:
+  ::ui::WindowTreeClient* window_tree_client();
+
   // Returns true if |window| is a window that can have active children.
   static bool IsActivationParent(::ui::Window* window);
-
-  void RemoveClientObserver();
 
   // ::ui::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(::ui::Window* gained_focus,
                                 ::ui::Window* lost_focus) override;
   void OnDidDestroyClient(::ui::WindowTreeClient* client) override;
 
-  ::ui::WindowTreeClient* client_;
+  WindowManager* window_manager_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 
   std::unique_ptr<AcceleratorControllerDelegateMus>
       accelerator_controller_delegate_;
+  std::unique_ptr<AcceleratorControllerRegistrar>
+      accelerator_controller_registrar_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
 
   base::ObserverList<WmActivationObserver> activation_observers_;

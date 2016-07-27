@@ -10,7 +10,6 @@
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/accelerators/accelerator_delegate.h"
-#include "ash/accelerators/focus_manager_factory.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -104,7 +103,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
-#include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/accelerator_filter.h"
@@ -576,8 +574,6 @@ Shell::~Shell() {
 
   wm_shell_->delegate()->PreShutdown();
 
-  views::FocusManagerFactory::Install(nullptr);
-
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
   // See bug crbug.com/134502.
@@ -822,10 +818,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   display_manager_->RefreshFontParams();
 
-  // Install the custom factory first so that views::FocusManagers for Tray,
-  // Shelf, and WallPaper could be created by the factory.
-  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
-
   aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
 
   // The WindowModalityController needs to be at the front of the input event
@@ -863,7 +855,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateAura);
   wm_shell_->SetAcceleratorController(base::MakeUnique<AcceleratorController>(
-      accelerator_controller_delegate_.get()));
+      accelerator_controller_delegate_.get(), nullptr));
   wm_shell_->CreateMaximizeModeController();
 
   AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());

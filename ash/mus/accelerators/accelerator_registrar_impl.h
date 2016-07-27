@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace ash {
 namespace mus {
@@ -28,7 +29,8 @@ class WindowManager;
 // destruction, it calls the DestroyCallback.
 class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
                                  public WindowManagerObserver,
-                                 public AcceleratorHandler {
+                                 public AcceleratorHandler,
+                                 public ui::AcceleratorTarget {
  public:
   using DestroyCallback = base::Callback<void(AcceleratorRegistrarImpl*)>;
   AcceleratorRegistrarImpl(WindowManager* window_manager,
@@ -52,6 +54,12 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
 
   void RemoveAllAccelerators();
 
+  // If |matcher| identifies a key-binding accelerator registers it and
+  // returns true, returns false otherwise.
+  bool AddAcceleratorForKeyBinding(uint32_t accelerator_id,
+                                   const ::ui::mojom::EventMatcher& matcher,
+                                   const AddAcceleratorCallback& callback);
+
   // ::ui::mojom::AcceleratorRegistrar:
   void SetHandler(::ui::mojom::AcceleratorHandlerPtr handler) override;
   void AddAccelerator(uint32_t accelerator_id,
@@ -66,12 +74,21 @@ class AcceleratorRegistrarImpl : public ::ui::mojom::AcceleratorRegistrar,
   // WindowManagerObserver:
   void OnWindowTreeClientDestroyed() override;
 
+  // AcceleratorTarget:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
+
   WindowManager* window_manager_;
   ::ui::mojom::AcceleratorHandlerPtr accelerator_handler_;
   mojo::Binding<AcceleratorRegistrar> binding_;
   uint16_t accelerator_namespace_;
+  // Only contains non-keyboard accelerators.
   std::set<uint32_t> accelerators_;
   DestroyCallback destroy_callback_;
+
+  // Used only for keyboard accelerators.
+  std::map<ui::Accelerator, uint16_t> keyboard_accelerator_to_id_;
+  std::map<uint16_t, ui::Accelerator> id_to_keyboard_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorRegistrarImpl);
 };

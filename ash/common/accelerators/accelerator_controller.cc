@@ -328,9 +328,10 @@ void HandleVolumeUp(const ui::Accelerator& accelerator) {
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController(
-    AcceleratorControllerDelegate* delegate)
+    AcceleratorControllerDelegate* delegate,
+    ui::AcceleratorManagerDelegate* manager_delegate)
     : delegate_(delegate),
-      accelerator_manager_(new ui::AcceleratorManager),
+      accelerator_manager_(new ui::AcceleratorManager(manager_delegate)),
       accelerator_history_(new ui::AcceleratorHistory) {
   Init();
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/focus_manager_factory.h"
+#include "ash/common/accelerators/ash_focus_manager_factory.h"
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/wm_shell.h"

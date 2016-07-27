@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
-#define ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
+#ifndef ASH_COMMON_ACCELERATORS_ASH_FOCUS_MANAGER_FACTORY_H_
+#define ASH_COMMON_ACCELERATORS_ASH_FOCUS_MANAGER_FACTORY_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -36,4 +35,4 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
 
 }  // namespace ash
 
-#endif  // ASH_ACCELERATORS_FOCUS_MANAGER_FACTORY_H_
+#endif  // ASH_COMMON_ACCELERATORS_ASH_FOCUS_MANAGER_FACTORY_H_

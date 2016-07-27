@@ -22,6 +22,7 @@
 
 namespace ui {
 class AcceleratorManager;
+class AcceleratorManagerDelegate;
 }
 
 namespace ash {
@@ -36,7 +37,8 @@ class ImeControlDelegate;
 // also implements several handlers as an accelerator target.
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
  public:
-  explicit AcceleratorController(AcceleratorControllerDelegate* delegate);
+  AcceleratorController(AcceleratorControllerDelegate* delegate,
+                        ui::AcceleratorManagerDelegate* manager_delegate);
   ~AcceleratorController() override;
 
   // A list of possible ways in which an accelerator should be restricted before

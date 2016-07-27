@@ -12,6 +12,8 @@ source_set("lib") {
   sources = [
     "accelerators/accelerator_controller_delegate_mus.cc",
     "accelerators/accelerator_controller_delegate_mus.h",
+    "accelerators/accelerator_controller_registrar.cc",
+    "accelerators/accelerator_controller_registrar.h",
     "accelerators/accelerator_handler.h",
     "accelerators/accelerator_ids.h",
     "accelerators/accelerator_registrar_impl.cc",

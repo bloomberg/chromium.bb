@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accelerators/ash_focus_manager_factory.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
@@ -30,6 +31,7 @@
 #include "base/logging.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/display/display.h"
+#include "ui/views/focus/focus_manager_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
@@ -61,6 +63,10 @@ void WmShell::Initialize() {
 
   // Create the app list item in the shelf data model.
   AppListShelfItemDelegate::CreateAppListItemAndDelegate(shelf_model_.get());
+
+  // Install the custom factory early on so that views::FocusManagers for Tray,
+  // Shelf, and WallPaper could be created by the factory.
+  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 }
 
 void WmShell::Shutdown() {
@@ -71,6 +77,9 @@ void WmShell::Shutdown() {
   shelf_model_->DestroyItemDelegates();
   // Must be destroyed before FocusClient.
   shelf_delegate_.reset();
+
+  // Balances the Install() in Initialize().
+  views::FocusManagerFactory::Install(nullptr);
 }
 
 void WmShell::OnMaximizeModeStarted() {
