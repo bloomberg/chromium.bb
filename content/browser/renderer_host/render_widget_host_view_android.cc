@@ -501,7 +501,8 @@ bool RenderWidgetHostViewAndroid::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
-  return !using_browser_compositor_ || HasValidFrame();
+  return !using_browser_compositor_ ||
+         (HasValidFrame() && surface_factory_.get());
 }
 
 void RenderWidgetHostViewAndroid::Show() {
@@ -891,9 +892,10 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
           dst_size_in_pixel, preferred_color_type, start_time, callback));
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
-  // Make sure the layer doesn't get deleted until we fulfill the request.
+  // Make sure the current frame doesn't get deleted until we fulfill the
+  // request.
   LockCompositingSurface();
-  view_.GetLayer()->RequestCopyOfOutput(std::move(request));
+  surface_factory_->RequestCopyOfSurface(surface_id_, std::move(request));
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
