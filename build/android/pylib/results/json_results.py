@@ -99,7 +99,7 @@ def GenerateResultsDict(test_run_results):
       iteration_data[r.GetName()].append({
           'status': status_as_string(r.GetType()),
           'elapsed_time_ms': r.GetDuration(),
-          'output_snippet': '',
+          'output_snippet': r.GetLog(),
           'losless_snippet': '',
           'output_snippet_base64:': '',
       })
