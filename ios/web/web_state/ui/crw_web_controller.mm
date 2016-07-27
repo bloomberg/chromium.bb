@@ -429,7 +429,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   base::scoped_nsobject<NSMutableSet> _injectedScriptManagers;
 
   // Script manager for setting the windowID.
-  base::scoped_nsobject<CRWJSWindowIdManager> _windowIDJSManager;
+  base::scoped_nsobject<CRWJSWindowIDManager> _windowIDJSManager;
 
   // The receiver of JavaScripts.
   base::scoped_nsobject<CRWJSInjectionReceiver> _jsInjectionReceiver;
@@ -1036,8 +1036,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _defaultURL = GURL(url::kAboutBlankURL);
     _jsInjectionReceiver.reset(
         [[CRWJSInjectionReceiver alloc] initWithEvaluator:self]);
-    _windowIDJSManager.reset([(CRWJSWindowIdManager*)[_jsInjectionReceiver
-        instanceOfClass:[CRWJSWindowIdManager class]] retain]);
     _webViewProxy.reset(
         [[CRWWebViewProxyImpl alloc] initWithWebController:self]);
     [[_webViewProxy scrollViewProxy] addObserver:self];
@@ -1597,17 +1595,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)injectWindowID {
-  if (![_windowIDJSManager hasBeenInjected]) {
-    // Default value for shouldSuppressDialogs is NO, so updating them only
-    // when necessary is a good optimization.
-    if (_shouldSuppressDialogsOnWindowIDInjection) {
-      self.shouldSuppressDialogs = YES;
-      _shouldSuppressDialogsOnWindowIDInjection = NO;
-    }
-
-    [_windowIDJSManager inject];
-    DCHECK([_windowIDJSManager hasBeenInjected]);
+  // Default value for shouldSuppressDialogs is NO, so updating them only
+  // when necessary is a good optimization.
+  if (_shouldSuppressDialogsOnWindowIDInjection) {
+    self.shouldSuppressDialogs = YES;
+    _shouldSuppressDialogsOnWindowIDInjection = NO;
   }
+
+  [_windowIDJSManager inject];
 }
 
 // Set the specified recognizer to take priority over any recognizers in the
@@ -2507,26 +2502,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {
-  // Skip evaluation if there's no content (e.g., if what's being injected is
-  // an umbrella manager).
-  if ([script length]) {
-    // Every injection except windowID requires windowID check.
-    if (JSInjectionManagerClass != [CRWJSWindowIdManager class]) {
-      script = [self scriptByAddingWindowIDCheckForScript:script];
-      web::ExecuteJavaScript(_webView, script, nil);
-    } else {
-      web::ExecuteJavaScript(_webView, script, ^(id, NSError* error) {
-        // TODO(crbug.com/628832): Refactor retry logic.
-        if (error.code == WKErrorJavaScriptExceptionOccurred) {
-          // This can happen if WKUserScript has not been injected yet.
-          // Retry if that's the case, because windowID injection is critical
-          // for the system to function.
-          [_injectedScriptManagers removeObject:JSInjectionManagerClass];
-          [self injectWindowID];
-        }
-      });
-    }
-  }
+  DCHECK(script.length);
+  // Script execution is an asynchronous operation which may pass sensitive
+  // data to the page. executeJavaScript:completionHandler makes sure that
+  // receiver page did not change by checking its window id.
+  // |[_webView evaluateJavaScript:completionHandler:]| is not used here because
+  // it does not check that page is the same.
+  [self executeJavaScript:script completionHandler:nil];
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
@@ -2633,7 +2615,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script {
   NSString* kTemplate = @"if (__gCrWeb['windowId'] === '%@') { %@; }";
   return [NSString
-      stringWithFormat:kTemplate, [_windowIDJSManager windowId], script];
+      stringWithFormat:kTemplate, [_windowIDJSManager windowID], script];
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
@@ -2655,9 +2637,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::string windowID;
   message->GetString("crwWindowId", &windowID);
   // Check for correct windowID
-  if (base::SysNSStringToUTF8([_windowIDJSManager windowId]) != windowID) {
+  if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
     DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: " <<
-        [_windowIDJSManager windowId]
+        [_windowIDJSManager windowID]
                   << " != " << base::SysUTF8ToNSString(windowID);
     return NO;
   }
@@ -4702,6 +4684,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [messageRouter setScriptMessageHandler:messageHandler
                                       name:kScriptImmediateName
                                    webView:webView];
+    _windowIDJSManager.reset(
+        [[CRWJSWindowIDManager alloc] initWithWebView:webView]);
+  } else {
+    _windowIDJSManager.reset();
   }
   [_webView setNavigationDelegate:self];
   [_webView setUIDelegate:self];

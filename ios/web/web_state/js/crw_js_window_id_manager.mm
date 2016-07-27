@@ -4,70 +4,71 @@
 
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 
+#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/random.h"
+#import "ios/web/web_state/js/page_script_util.h"
 
 namespace {
 // Number of random bytes in unique key for window ID. The length of the
 // window ID will be twice this number, as it is hexadecimal encoded.
-const NSInteger kUniqueKeyLength = 16;
+const size_t kUniqueKeyLength = 16;
 }  // namespace
 
-@interface CRWJSWindowIdManager () {
-  base::scoped_nsobject<NSString> _windowId;
+@interface CRWJSWindowIDManager () {
+  // Web view used for script evaluation to inject window ID.
+  base::scoped_nsobject<WKWebView> _webView;
+  // Backs up property with the same name.
+  base::scoped_nsobject<NSString> _windowID;
 }
 
 // Returns a string of randomized ASCII characters.
-- (NSString*)generateUniqueKey;
++ (NSString*)newUniqueKey;
 
 @end
 
-@implementation CRWJSWindowIdManager
+@implementation CRWJSWindowIDManager
 
-- (id)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
-  self = [super initWithReceiver:receiver];
-  if (self) {
-    _windowId.reset([[self generateUniqueKey] retain]);
+- (NSString*)windowID {
+  return _windowID;
+}
+
+- (instancetype)initWithWebView:(WKWebView*)webView {
+  if ((self = [super init])) {
+    _webView.reset([webView retain]);
+    _windowID.reset([[self class] newUniqueKey]);
   }
   return self;
 }
 
-- (NSString*)windowId {
-  return _windowId;
-}
+- (void)inject {
+  _windowID.reset([[self class] newUniqueKey]);
+  NSString* script = [web::GetPageScript(@"window_id")
+      stringByReplacingOccurrencesOfString:@"$(WINDOW_ID)"
+                                withString:_windowID];
 
-- (void)setWindowId:(NSString*)value {
-  _windowId.reset([value copy]);
-}
-
-#pragma mark ProtectedMethods
-
-- (NSString*)scriptPath {
-  return @"window_id";
-}
-
-- (NSString*)presenceBeacon {
-  return @"__gCrWeb.windowIdObject";
-}
-
-// It is important to recreate the injection content on every injection, because
-// it contains the randomly-generated page ID used for security checks.
-- (NSString*)injectionContent {
-  _windowId.reset([[self generateUniqueKey] retain]);
-  NSString* script = [super injectionContent];
-  return [script stringByReplacingOccurrencesOfString:@"$(WINDOW_ID)"
-                                           withString:_windowId];
+  base::WeakNSObject<CRWJSWindowIDManager> weakSelf(self);
+  [_webView evaluateJavaScript:script
+             completionHandler:^(id result, NSError* error) {
+               // TODO(crbug.com/628832): Refactor retry logic.
+               if (error.code == WKErrorJavaScriptExceptionOccurred) {
+                 // This can happen if WKUserScript has not been injected yet.
+                 // Retry if that's the case, because windowID injection is
+                 // critical for the system to function.
+                 [weakSelf inject];
+               }
+             }];
 }
 
 #pragma mark - Private
 
-- (NSString*)generateUniqueKey {
++ (NSString*)newUniqueKey {
   char randomBytes[kUniqueKeyLength];
   crypto::RandBytes(randomBytes, kUniqueKeyLength);
-  return
-      base::SysUTF8ToNSString(base::HexEncode(randomBytes, kUniqueKeyLength));
+  std::string result = base::HexEncode(randomBytes, kUniqueKeyLength);
+  return [base::SysUTF8ToNSString(result) retain];
 }
 
 @end

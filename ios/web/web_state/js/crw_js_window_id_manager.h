@@ -5,14 +5,24 @@
 #ifndef IOS_WEB_WEB_STATE_JS_CRW_JS_WINDOW_ID_MANAGER_H_
 #define IOS_WEB_WEB_STATE_JS_CRW_JS_WINDOW_ID_MANAGER_H_
 
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
+#import <Foundation/Foundation.h>
+#import <WebKit/WebKit.h>
 
-// Loads the JavaScript file window_id.js which sets __gCrWeb.windowId and
-// manages the windowId for messages.
-@interface CRWJSWindowIdManager : CRWJSInjectionManager
+// Injects the JavaScript file window_id.js which sets __gCrWeb.windowId and
+// manages the windowId for Page->Native->Page messages.
+@interface CRWJSWindowIDManager : NSObject
 
-// A unique window ID is assigned when the script is injected.
-@property(nonatomic, copy) NSString* windowId;
+// A unique window ID is assigned when the script is injected. Can not be null.
+@property(nonatomic, copy, readonly) NSString* windowID;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+// Initializes CRWJSWindowIDManager. |webView| will be used for script
+// evaluation to inject window ID and can not be null.
+- (instancetype)initWithWebView:(WKWebView*)webView NS_DESIGNATED_INITIALIZER;
+
+// Injects windowId to a web page.
+- (void)inject;
 
 @end
 

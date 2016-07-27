@@ -4,49 +4,75 @@
 
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
-#import "ios/web/public/test/crw_test_js_injection_receiver.h"
+#import <WebKit/WebKit.h>
+
 #import "ios/web/public/test/js_test_util.h"
-#include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/web_client.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 
-namespace {
-
-class JSWindowIDManagerTest : public PlatformTest {
- public:
-  JSWindowIDManagerTest() : web_client_(base::WrapUnique(new web::WebClient)) {}
-
- protected:
-  void SetUp() override {
-    PlatformTest::SetUp();
-    receiver_.reset([[CRWTestJSInjectionReceiver alloc] init]);
-    manager_.reset([[CRWJSWindowIdManager alloc] initWithReceiver:receiver_]);
-  }
-
-  // Required for CRWJSWindowIdManager creation.
-  base::scoped_nsobject<CRWTestJSInjectionReceiver> receiver_;
-  // Testable CRWJSWindowIdManager.
-  base::scoped_nsobject<CRWJSWindowIdManager> manager_;
-  // WebClient required for getting early page script, which must be injected
-  // before CRWJSWindowIdManager.
-  web::ScopedTestingWebClient web_client_;
-};
+namespace web {
 
 // Tests that window ID injection by a second manager results in a different
 // window ID.
-TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
-  [manager_ inject];
-  NSString* windowID = [manager_ windowId];
-  base::scoped_nsobject<CRWTestJSInjectionReceiver> receiver2(
-      [[CRWTestJSInjectionReceiver alloc] init]);
-  base::scoped_nsobject<CRWJSWindowIdManager> manager2(
-      [[CRWJSWindowIdManager alloc] initWithReceiver:receiver2]);
+TEST(JSWindowIDManagerTest, WindowIDDifferentManager) {
+  // Inject the first manager.
+  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+
+  CRWJSWindowIDManager* manager =
+      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+  [manager inject];
+  EXPECT_NSEQ([manager windowID],
+              EvaluateJavaScript(web_view, @"window.__gCrWeb.windowId"));
+
+  // Inject the second manager.
+  WKWebView* web_view2 = [[[WKWebView alloc] init] autorelease];
+  EvaluateJavaScript(web_view2, @"window.__gCrWeb = {};");
+
+  CRWJSWindowIDManager* manager2 =
+      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view2] autorelease];
   [manager2 inject];
-  NSString* windowID2 = [manager2 windowId];
-  EXPECT_NSNE(windowID, windowID2);
+  EXPECT_NSEQ([manager2 windowID],
+              EvaluateJavaScript(web_view2, @"window.__gCrWeb.windowId"));
+
+  // Window IDs must be different.
+  EXPECT_NSNE([manager windowID], [manager2 windowID]);
 }
 
-}  // namespace
+// Tests that injecting multiple times creates a new window ID.
+TEST(JSWindowIDManagerTest, MultipleInjections) {
+  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+
+  // First injection.
+  CRWJSWindowIDManager* manager =
+      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+  [manager inject];
+  NSString* windowID = [manager windowID];
+  EXPECT_NSEQ(windowID,
+              EvaluateJavaScript(web_view, @"window.__gCrWeb.windowId"));
+
+  // Second injection.
+  [manager inject];
+  EXPECT_NSEQ([manager windowID],
+              EvaluateJavaScript(web_view, @"window.__gCrWeb.windowId"));
+
+  EXPECT_NSNE(windowID, [manager windowID]);
+}
+
+// Tests that injection will retry if |window.__gCrWeb| is not present.
+TEST(JSWindowIDManagerTest, InjectionRetry) {
+  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+
+  CRWJSWindowIDManager* manager =
+      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+  [manager inject];
+  EXPECT_TRUE([manager windowID]);
+  EXPECT_FALSE(EvaluateJavaScript(web_view, @"window.__gCrWeb"));
+
+  // Now inject window.__gCrWeb and check if window ID injection retried.
+  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+  EXPECT_NSEQ([manager windowID],
+              EvaluateJavaScript(web_view, @"window.__gCrWeb.windowId"));
+}
+
+}  // namespace web
