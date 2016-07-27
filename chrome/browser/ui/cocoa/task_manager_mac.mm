@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {
 
@@ -511,8 +512,7 @@ class SortHelper {
 
 TaskManagerMac::TaskManagerMac(TaskManager* task_manager)
   : task_manager_(task_manager),
-    model_(task_manager->model()),
-    icon_cache_(this) {
+    model_(task_manager->model()) {
   window_controller_ =
       [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
   model_->AddObserver(this);
@@ -534,30 +534,26 @@ TaskManagerMac::~TaskManagerMac() {
 // TaskManagerMac, TaskManagerModelObserver implementation:
 
 void TaskManagerMac::OnModelChanged() {
-  icon_cache_.OnModelChanged();
   [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsChanged(int start, int length) {
-  icon_cache_.OnItemsChanged(start, length);
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsAdded(int start, int length) {
-  icon_cache_.OnItemsAdded(start, length);
   [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsRemoved(int start, int length) {
-  icon_cache_.OnItemsRemoved(start, length);
   [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
 NSImage* TaskManagerMac::GetImageForRow(int row) {
-  return icon_cache_.GetImageForRow(row);
+  return gfx::NSImageFromImageSkia(model_->GetResourceIcon(row));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -566,14 +562,6 @@ NSImage* TaskManagerMac::GetImageForRow(int row) {
 void TaskManagerMac::WindowWasClosed() {
   delete this;
   instance_ = NULL;  // |instance_| is static
-}
-
-int TaskManagerMac::RowCount() const {
-  return model_->ResourceCount();
-}
-
-gfx::ImageSkia TaskManagerMac::GetIcon(int r) const {
-  return model_->GetResourceIcon(r);
 }
 
 // static

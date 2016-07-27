@@ -1269,8 +1269,6 @@
       'browser/ui/cocoa/tab_dialogs_cocoa.mm',
       'browser/ui/cocoa/tab_modal_confirm_dialog_mac.h',
       'browser/ui/cocoa/tab_modal_confirm_dialog_mac.mm',
-      'browser/ui/cocoa/table_row_nsimage_cache.h',
-      'browser/ui/cocoa/table_row_nsimage_cache.mm',
       'browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h',
       'browser/ui/cocoa/tabs/alert_indicator_button_cocoa.mm',
       'browser/ui/cocoa/tabs/tab_controller.h',

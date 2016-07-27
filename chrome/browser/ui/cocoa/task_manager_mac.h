@@ -11,7 +11,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"
 
 @class WindowSizeAutosaver;
 class TaskManagerMac;
@@ -61,8 +60,7 @@ class ImageSkia;
 @end
 
 // This class listens to task changed events sent by chrome.
-class TaskManagerMac : public TaskManagerModelObserver,
-                       public TableRowNSImageCache::Table {
+class TaskManagerMac : public TaskManagerModelObserver {
  public:
   explicit TaskManagerMac(TaskManager* task_manager);
   ~TaskManagerMac() override;
@@ -76,10 +74,6 @@ class TaskManagerMac : public TaskManagerModelObserver,
   // Called by the cocoa window controller when its window closes and the
   // controller destroyed itself. Informs the model to stop updating.
   void WindowWasClosed();
-
-  // TableRowNSImageCache::Table
-  int RowCount() const override;
-  gfx::ImageSkia GetIcon(int r) const override;
 
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window.
@@ -107,9 +101,6 @@ class TaskManagerMac : public TaskManagerModelObserver,
   // Controller of our window, destroys itself when the task manager window
   // is closed.
   TaskManagerWindowController* window_controller_;  // weak
-
-  // Caches favicons for all rows. Needs to be initalized after |model_|.
-  TableRowNSImageCache icon_cache_;
 
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
