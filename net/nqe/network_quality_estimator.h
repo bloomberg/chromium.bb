@@ -565,6 +565,12 @@ class NET_EXPORT NetworkQualityEstimator
   nqe::internal::NetworkQuality
       default_observations_[NetworkChangeNotifier::CONNECTION_LAST + 1];
 
+  // Default thresholds for different effective connection types. The default
+  // values are used if the thresholds are unavailable from the variation
+  // params.
+  nqe::internal::NetworkQuality default_effective_connection_type_thresholds_
+      [EFFECTIVE_CONNECTION_TYPE_LAST];
+
   // Thresholds for different effective connection types obtained from field
   // trial variation params. These thresholds encode how different connection
   // types behave in general. In future, complex encodings (e.g., curve

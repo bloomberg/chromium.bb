@@ -44,6 +44,17 @@ bool NetworkQuality::operator==(const NetworkQuality& other) const {
          downstream_throughput_kbps_ == other.downstream_throughput_kbps_;
 }
 
+bool NetworkQuality::IsFaster(const NetworkQuality& other) const {
+  return (http_rtt() == InvalidRTT() || other.http_rtt() == InvalidRTT() ||
+          http_rtt() <= other.http_rtt()) &&
+         (transport_rtt() == InvalidRTT() ||
+          other.transport_rtt() == InvalidRTT() ||
+          transport_rtt() <= other.transport_rtt()) &&
+         (downstream_throughput_kbps() == kInvalidThroughput ||
+          other.downstream_throughput_kbps() == kInvalidThroughput ||
+          downstream_throughput_kbps() >= other.downstream_throughput_kbps());
+}
+
 }  // namespace internal
 }  // namespace nqe
 }  // namespace net

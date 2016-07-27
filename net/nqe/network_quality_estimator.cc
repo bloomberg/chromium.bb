@@ -145,13 +145,20 @@ base::HistogramBase* GetHistogram(
       max_limit, kBucketCount, base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
-bool GetValueForVariationParam(
+// Sets |variations_value| to the value of |parameter_name| read from
+// |variation_params|. If the value is unavailable from |variation_params|, then
+// |variations_value| is set to |default_value|.
+void GetValueForVariationParam(
     const std::map<std::string, std::string>& variation_params,
     const std::string& parameter_name,
-    int32_t* variations_value) {
+    int64_t default_value,
+    int64_t* variations_value) {
   const auto it = variation_params.find(parameter_name);
-  return it != variation_params.end() &&
-         base::StringToInt(it->second, variations_value);
+  if (it != variation_params.end() &&
+      base::StringToInt64(it->second, variations_value)) {
+    return;
+  }
+  *variations_value = default_value;
 }
 
 // Returns the variation value for |parameter_name|. If the value is
@@ -475,6 +482,28 @@ void NetworkQualityEstimator::ObtainEffectiveConnectionTypeModelParams(
     const std::map<std::string, std::string>& variation_params) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  default_effective_connection_type_thresholds_
+      [EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = nqe::internal::NetworkQuality(
+          // Set to 2010 milliseconds, which corresponds to the 33rd percentile
+          // of 2G HTTP RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(2010),
+          // Set to 1870 milliseconds, which corresponds to the 33rd percentile
+          // of 2G transport RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(1870),
+          nqe::internal::kInvalidThroughput);
+
+  default_effective_connection_type_thresholds_[EFFECTIVE_CONNECTION_TYPE_2G] =
+      nqe::internal::NetworkQuality(
+          // Set to 1420 milliseconds, which corresponds to 50th percentile of
+          // 2G
+          // HTTP RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(1420),
+          // Set to 1280 milliseconds, which corresponds to 50th percentile of
+          // 2G
+          // transport RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(1280),
+          nqe::internal::kInvalidThroughput);
+
   for (size_t i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
     EffectiveConnectionType effective_connection_type =
         static_cast<EffectiveConnectionType>(i);
@@ -490,57 +519,34 @@ void NetworkQualityEstimator::ObtainEffectiveConnectionTypeModelParams(
     std::string connection_type_name = std::string(
         GetNameForEffectiveConnectionType(effective_connection_type));
 
-    int32_t variations_value = kMinimumRTTVariationParameterMsec - 1;
-    if (GetValueForVariationParam(
-            variation_params, connection_type_name + kThresholdURLRTTMsecSuffix,
-            &variations_value) &&
-        variations_value >= kMinimumRTTVariationParameterMsec) {
-      connection_thresholds_[i].set_http_rtt(
-          base::TimeDelta(base::TimeDelta::FromMilliseconds(variations_value)));
+    int64_t variations_value;
+    GetValueForVariationParam(variation_params,
+                              connection_type_name + kThresholdURLRTTMsecSuffix,
+                              default_effective_connection_type_thresholds_[i]
+                                  .http_rtt()
+                                  .InMilliseconds(),
+                              &variations_value);
+    connection_thresholds_[i].set_http_rtt(
+        base::TimeDelta::FromMilliseconds(variations_value));
 
-      // Verify that the RTT values are in decreasing order as the network
-      // quality improves.
-      DCHECK(i == 0 ||
-             connection_thresholds_[i - 1].http_rtt() ==
-                 nqe::internal::InvalidRTT() ||
-             connection_thresholds_[i].http_rtt() <=
-                 connection_thresholds_[i - 1].http_rtt());
-    }
+    GetValueForVariationParam(
+        variation_params,
+        connection_type_name + kThresholdTransportRTTMsecSuffix,
+        default_effective_connection_type_thresholds_[i]
+            .transport_rtt()
+            .InMilliseconds(),
+        &variations_value);
+    connection_thresholds_[i].set_transport_rtt(
+        base::TimeDelta::FromMilliseconds(variations_value));
 
-    variations_value = kMinimumRTTVariationParameterMsec - 1;
-    if (GetValueForVariationParam(
-            variation_params,
-            connection_type_name + kThresholdTransportRTTMsecSuffix,
-            &variations_value) &&
-        variations_value >= kMinimumRTTVariationParameterMsec) {
-      connection_thresholds_[i].set_transport_rtt(
-          base::TimeDelta(base::TimeDelta::FromMilliseconds(variations_value)));
-
-      // Verify that the transport RTT values are in decreasing order as the
-      // network quality improves.
-      DCHECK(i == 0 ||
-             connection_thresholds_[i - 1].transport_rtt() ==
-                 nqe::internal::InvalidRTT() ||
-             connection_thresholds_[i].transport_rtt() <=
-                 connection_thresholds_[i - 1].transport_rtt());
-    }
-
-    variations_value = kMinimumThroughputVariationParameterKbps - 1;
-    if (GetValueForVariationParam(variation_params,
-                                  connection_type_name + kThresholdKbpsSuffix,
-                                  &variations_value) &&
-        variations_value >= kMinimumThroughputVariationParameterKbps) {
-      connection_thresholds_[i].set_downstream_throughput_kbps(
-          variations_value);
-
-      // Verify that the throughput values are in increasing order as the
-      // network quality improves.
-      DCHECK(i == 0 ||
-             connection_thresholds_[i - 1].downstream_throughput_kbps() ==
-                 kMinimumThroughputVariationParameterKbps ||
-             connection_thresholds_[i].downstream_throughput_kbps() >=
-                 connection_thresholds_[i - 1].downstream_throughput_kbps());
-    }
+    GetValueForVariationParam(variation_params,
+                              connection_type_name + kThresholdKbpsSuffix,
+                              default_effective_connection_type_thresholds_[i]
+                                  .downstream_throughput_kbps(),
+                              &variations_value);
+    connection_thresholds_[i].set_downstream_throughput_kbps(variations_value);
+    DCHECK(i == 0 ||
+           connection_thresholds_[i].IsFaster(connection_thresholds_[i - 1]));
   }
 }
 

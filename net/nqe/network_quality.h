@@ -43,6 +43,10 @@ class NET_EXPORT_PRIVATE NetworkQuality {
 
   bool operator==(const NetworkQuality& other) const;
 
+  // Returns true if |this| is at least as fast as |other| for all parameters
+  // (HTTP RTT, transport RTT etc.)
+  bool IsFaster(const NetworkQuality& other) const;
+
   // Returns the estimate of the round trip time at the HTTP layer.
   const base::TimeDelta& http_rtt() const { return http_rtt_; }
 
