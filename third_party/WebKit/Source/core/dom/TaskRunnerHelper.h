@@ -5,6 +5,7 @@
 #ifndef TaskRunnerHelper_h
 #define TaskRunnerHelper_h
 
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ class LocalFrame;
 class ScriptState;
 class WebTaskRunner;
 
-class TaskRunnerHelper final {
+class CORE_EXPORT TaskRunnerHelper final {
     STATIC_ONLY(TaskRunnerHelper);
 public:
     static WebTaskRunner* getUnthrottledTaskRunner(LocalFrame*);
