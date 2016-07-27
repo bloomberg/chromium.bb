@@ -1,0 +1,73 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import <EarlGrey/EarlGrey.h>
+
+#include "base/test/ios/wait_util.h"
+#include "ios/testing/earl_grey/wait_util.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/web/public/test/http_server.h"
+#include "ios/web/public/test/http_server_util.h"
+#include "ios/web/shell/test/app/navigation_test_util.h"
+#import "ios/web/shell/test/app/web_shell_test_util.h"
+#import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace {
+// URL spec for test PDF page.
+const char kTestPDFURL[] =
+    "http://ios/web/shell/test/http_server_files/testpage.pdf";
+
+// Matcher for WKWebView displaying PDF.
+id<GREYMatcher> webViewWithPdf() {
+  web::WebState* web_state = web::shell_test_util::GetCurrentWebState();
+  MatchesBlock matches = ^BOOL(UIView* view) {
+    __block BOOL did_succeed = NO;
+    NSDate* deadline =
+        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
+    while ([[NSDate date] compare:deadline] != NSOrderedDescending) {
+      if (web_state->GetContentsMimeType() == "application/pdf") {
+        did_succeed = YES;
+        break;
+      }
+      base::test::ios::SpinRunLoopWithMaxDelay(
+          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
+    }
+    return did_succeed;
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"web view with PDF"];
+  };
+
+  return grey_allOf(
+      webViewInWebState(web_state),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
+}
+
+}  // namespace
+
+using web::shell_test_util::LoadUrl;
+using web::test::HttpServer;
+
+// PDF test cases for the web shell.
+@interface PDFTest : ShellBaseTestCase
+@end
+
+@implementation PDFTest
+
+// Tests MIME type of the loaded PDF document.
+- (void)testMIMEType {
+  web::test::SetUpFileBasedHttpServer();
+  LoadUrl(HttpServer::MakeUrl(kTestPDFURL));
+  [[EarlGrey selectElementWithMatcher:webViewWithPdf()]
+      assertWithMatcher:grey_notNil()];
+}
+
+@end

@@ -10,12 +10,15 @@ ios_eg_test("ios_web_shell_test") {
     "meta_tags_egtest.mm",
     "navigation_egtest.mm",
     "page_state_egtest.mm",
+    "pdf_egtest.mm",
     "plugin_placeholder_egtest.mm",
   ]
 
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/web:earl_grey_test_support",
     "//ios/web:test_support",
     "//ios/web/shell",
     "//ios/web/shell/test:earl_grey_test_support",
@@ -67,6 +70,7 @@ bundle_data("bundle") {
   sources = [
     "http_server_files/basic_navigation_test.html",
     "http_server_files/tall_page.html",
+    "http_server_files/testpage.pdf",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +

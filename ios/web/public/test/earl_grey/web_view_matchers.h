@@ -10,6 +10,9 @@
 
 namespace web {
 
+// Shorthand for GREYMatchers::matcherForWebViewInWebState.
+id<GREYMatcher> webViewInWebState(web::WebState* webState);
+
 // Shorthand for GREYMatchers::matcherForWebViewContainingText:inWebState.
 id<GREYMatcher> webViewContainingText(const std::string& text,
                                       web::WebState* webState);
@@ -24,6 +27,9 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState);
 }  // namespace web
 
 @interface GREYMatchers (WebViewAdditions)
+
+// Matcher for WKWebView which belogs to the given |webState|.
++ (id<GREYMatcher>)matcherForWebViewInWebState:(web::WebState*)webState;
 
 // Matcher for WKWebView containing |text|.
 + (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text

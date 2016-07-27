@@ -66,6 +66,7 @@
         'shell/test/meta_tags_egtest.mm',
         'shell/test/navigation_egtest.mm',
         'shell/test/page_state_egtest.mm',
+        'shell/test/pdf_egtest.mm',
         'shell/test/plugin_placeholder_egtest.mm',
       ],
       'actions': [{

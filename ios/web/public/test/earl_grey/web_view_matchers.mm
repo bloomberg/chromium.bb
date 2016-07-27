@@ -24,22 +24,6 @@ char kGetDocumentBodyJavaScript[] =
 // Script that tests presence of css selector.
 char kTestCssSelectorJavaScriptTemplate[] = "!!document.querySelector(\"%s\");";
 
-// Matcher for WKWebView which belogs to the given |webState|.
-id<GREYMatcher> webViewInWebState(web::WebState* web_state) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    return [view isKindOfClass:[WKWebView class]] &&
-           [view isDescendantOfView:web_state->GetView()];
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"web view in web state"];
-  };
-
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
-}
-
 // Synchronously returns the result of executed JavaScript.
 std::unique_ptr<base::Value> ExecuteScript(web::WebState* web_state,
                                            const std::string& script) {
@@ -72,6 +56,10 @@ std::unique_ptr<base::Value> ExecuteScript(web::WebState* web_state,
 
 namespace web {
 
+id<GREYMatcher> webViewInWebState(web::WebState* webState) {
+  return [GREYMatchers matcherForWebViewInWebState:webState];
+}
+
 id<GREYMatcher> webViewContainingText(const std::string& text,
                                       web::WebState* webState) {
   return
@@ -91,6 +79,21 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
 }  // namespace web
 
 @implementation GREYMatchers (WebViewAdditions)
+
++ (id<GREYMatcher>)matcherForWebViewInWebState:(web::WebState*)webState {
+  MatchesBlock matches = ^BOOL(UIView* view) {
+    return [view isKindOfClass:[WKWebView class]] &&
+           [view isDescendantOfView:webState->GetView()];
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"web view in web state"];
+  };
+
+  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                               descriptionBlock:describe]
+      autorelease];
+}
 
 + (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text
                                         inWebState:(web::WebState*)webState {
