@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #import "ios/web/public/test/js_test_util.h"
+#import "ios/web/web_state/js/page_script_util.h"
 #import "testing/gtest_mac.h"
 
 namespace web {
@@ -16,7 +17,7 @@ namespace web {
 TEST(JSWindowIDManagerTest, WindowIDDifferentManager) {
   // Inject the first manager.
   WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
-  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+  EvaluateJavaScript(web_view, GetEarlyPageScript());
 
   CRWJSWindowIDManager* manager =
       [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
@@ -26,7 +27,7 @@ TEST(JSWindowIDManagerTest, WindowIDDifferentManager) {
 
   // Inject the second manager.
   WKWebView* web_view2 = [[[WKWebView alloc] init] autorelease];
-  EvaluateJavaScript(web_view2, @"window.__gCrWeb = {};");
+  EvaluateJavaScript(web_view2, GetEarlyPageScript());
 
   CRWJSWindowIDManager* manager2 =
       [[[CRWJSWindowIDManager alloc] initWithWebView:web_view2] autorelease];
@@ -41,7 +42,7 @@ TEST(JSWindowIDManagerTest, WindowIDDifferentManager) {
 // Tests that injecting multiple times creates a new window ID.
 TEST(JSWindowIDManagerTest, MultipleInjections) {
   WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
-  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+  EvaluateJavaScript(web_view, GetEarlyPageScript());
 
   // First injection.
   CRWJSWindowIDManager* manager =
@@ -70,7 +71,7 @@ TEST(JSWindowIDManagerTest, InjectionRetry) {
   EXPECT_FALSE(EvaluateJavaScript(web_view, @"window.__gCrWeb"));
 
   // Now inject window.__gCrWeb and check if window ID injection retried.
-  EvaluateJavaScript(web_view, @"window.__gCrWeb = {};");
+  EvaluateJavaScript(web_view, GetEarlyPageScript());
   EXPECT_NSEQ([manager windowID],
               EvaluateJavaScript(web_view, @"window.__gCrWeb.windowId"));
 }
