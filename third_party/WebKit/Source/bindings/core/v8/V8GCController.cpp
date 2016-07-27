@@ -382,11 +382,10 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
             // This single GC is not enough. See the above comment.
             ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
-            // Do not force a precise GC at the end of the current event loop.
-            // According to UMA stats, the collection rate of the precise GC
-            // scheduled at the end of the low memory handling is extremely low,
-            // because the above conservative GC is sufficient for collecting
-            // most objects. So we intentionally don't schedule a precise GC here.
+            // The conservative GC might have left floating garbage. Schedule
+            // precise GC to ensure that we collect all available garbage.
+            if (ThreadState::current())
+                ThreadState::current()->schedulePreciseGC();
         }
     }
 
