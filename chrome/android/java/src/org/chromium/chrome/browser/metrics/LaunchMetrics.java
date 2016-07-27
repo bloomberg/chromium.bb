@@ -71,8 +71,8 @@ public class LaunchMetrics {
         protected void commitAndClear() {
             while (mCount > 0) {
                 recordWithNative();
+                mCount--;
             }
-            mCount = 0;
         }
     }
 
