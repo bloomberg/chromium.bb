@@ -16,8 +16,8 @@ function test()
 
     function debuggerTest()
     {
-        var url = InspectorTest.resourceTreeModel.inspectedPageURL();
         var target = WebInspector.targetManager.mainTarget();
+        var url = target.inspectedURL();
         var scripts = InspectorTest.debuggerModel.scripts;
         for (var scriptId in scripts) {
             var scriptCandidate = scripts[scriptId];

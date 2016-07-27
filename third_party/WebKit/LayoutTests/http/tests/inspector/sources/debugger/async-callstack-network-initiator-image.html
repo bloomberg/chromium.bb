@@ -16,9 +16,9 @@ function test()
 {
     WebInspector.settingForTest("enableAsyncStackTraces").set(true);
     InspectorTest.evaluateInPage("testFunction()");
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, reuestFinished);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, requestFinished);
 
-    function reuestFinished(event)
+    function requestFinished(event)
     {
         if (!event.data.url.endsWith("resources/image.png"))
             return;

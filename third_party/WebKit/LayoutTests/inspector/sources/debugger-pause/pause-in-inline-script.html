@@ -24,7 +24,7 @@ f3();
 
 var test = function()
 {
-    var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
+    var testName = InspectorTest.mainTarget.inspectedURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
 
     InspectorTest.startDebuggerTest(step1);
@@ -34,7 +34,7 @@ var test = function()
         InspectorTest.addResult("Did load front-end");
         InspectorTest.addResult("Paused: " + !!InspectorTest.debuggerModel.debuggerPausedDetails());
         InspectorTest.reloadPage(didReload.bind(this));
-        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this); 
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this);
     }
 
     function didReload()

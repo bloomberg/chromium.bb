@@ -56,7 +56,7 @@ function test()
 
     function loadResource(name)
     {
-        var urlPrefix = InspectorTest.resourceTreeModel.inspectedPageURL().substr(0, InspectorTest.resourceTreeModel.inspectedPageURL().lastIndexOf("/") + 1);
+        var urlPrefix = InspectorTest.mainTarget.inspectedURL().substr(0, InspectorTest.mainTarget.inspectedURL().lastIndexOf("/") + 1);
         var url = urlPrefix + "resources/" + name;
         return loadResourcePromise(url).then(function(text) {
             resources[name] = text;

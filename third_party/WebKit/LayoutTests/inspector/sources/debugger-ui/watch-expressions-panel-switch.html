@@ -28,7 +28,7 @@ var test = function()
         watchExpressionsPane.addExpression("window.document");
         watchExpressionsPane.addExpression("windowa.document");
 
-        var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
+        var testName = InspectorTest.mainTarget.inspectedURL();
         testName = testName.substring(testName.lastIndexOf('/') + 1);
         InspectorTest.showScriptSource(testName, didShowScriptSource);
     }

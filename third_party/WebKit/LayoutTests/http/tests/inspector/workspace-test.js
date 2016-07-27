@@ -41,12 +41,12 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabili
     var MockTarget = function(name, connection, callback)
     {
         WebInspector.Target.call(this, InspectorTest.testTargetManager, name, capabilities, connection, null, callback);
+        this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
         this.consoleModel = new WebInspector.ConsoleModel(this);
         this.networkManager = new WebInspector.NetworkManager(this);
         this.runtimeModel = new WebInspector.RuntimeModel(this);
         this.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(this);
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
-        this.resourceTreeModel._inspectedPageURL = InspectorTest.resourceTreeModel._inspectedPageURL;
         this.resourceTreeModel._cachedResourcesProcessed = true;
         this.resourceTreeModel._frameAttached("42", 0);
         this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
