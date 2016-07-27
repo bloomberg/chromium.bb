@@ -1,0 +1,67 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="./styles-update-links.js"></script>
+<style>
+#pseudo::after {
+    pseudo-property: "12";
+    color: red;
+}
+
+#pseudo::after {
+    border: 1px solid black;
+}
+
+#pseudo::before {
+    color: blue;
+}
+</style>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function selectInitialNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("container", next);
+        },
+
+        function testInsertProperty(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            var treeElement = treeItem.section().addNewBlankProperty(1);
+            InspectorTest.waitForStyleApplied(onPropertyInserted);
+            treeElement.applyStyleText("PROPERTY: INSERTED;", true);
+
+            function onPropertyInserted()
+            {
+                InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                var rules = InspectorTest.getMatchedRules();
+                InspectorTest.validateRuleRanges("container", rules, next);
+            }
+        }
+    ]);
+}
+</script>
+<link rel="stylesheet" href="../styles/resources/styles-update-links-2.css"></link>
+<link rel="stylesheet" href="../styles/resources/styles-update-links.css"></link>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that links are updated properly when inserting a new property.
+</p>
+
+<div id="container" class="left-intact should-change">
+Red text here.
+</div>
+
+<div id="other"></div>
+
+<section id="pseudo"></div>
+
+</body>
+</html>
