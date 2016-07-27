@@ -27,7 +27,8 @@ public class PreferencesUtil {
     public static String findAssignerUrl(Context context) {
         String lastAssigner = getLastUsedAssigner(context);
         if (lastAssigner.isEmpty()) {
-            String[] assignerUrls = context.getResources().getStringArray(R.array.assigner_urls);
+            String[] assignerUrls = context.getResources().getStringArray(
+                    R.array.blimp_assigner_urls);
             assert assignerUrls != null && assignerUrls.length > 0;
             lastAssigner = assignerUrls[0];
             setLastUsedAssigner(context, lastAssigner);

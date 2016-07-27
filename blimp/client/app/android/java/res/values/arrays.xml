@@ -4,12 +4,14 @@
      found in the LICENSE file. -->
 
 <resources>
-  <string-array name="assigner_envs">
+  <!-- Blimp preferences for Chrome, all array names should prefix with blimp. -->
+  <!-- TODO(xingliu): Clean resources files in the future. http://crbug.com/630687 -->
+  <string-array name="blimp_assigner_envs">
     <item>Production</item>
     <item>Staging</item>
     <item>Development</item>
   </string-array>
-  <string-array name="assigner_urls">
+  <string-array name="blimp_assigner_urls">
     <item>https://blimp-pa.googleapis.com/v1/assignment</item>
     <item>https://staging-blimp-pa.sandbox.googleapis.com/v1/assignment</item>
     <item>https://dev-blimp-pa.sandbox.googleapis.com/v1/assignment</item>

@@ -147,6 +147,7 @@ if (is_android) {
 
     deps = [
       ":context_java",
+      ":settings_java",
       ":switches_java",
       "//blimp/client/core/contents:contents_java",
     ]
@@ -170,6 +171,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//blimp/client/core:settings_java",
       "//blimp/client/core/contents:contents_java",
       "//blimp/client/public:public_headers_java",
     ]
@@ -180,6 +182,21 @@ if (is_android) {
 
     java_files =
         [ "android/java/src/org/chromium/blimp/core/BlimpClientSwitches.java" ]
+  }
+
+  android_library("settings_java") {
+    visibility = [ "//blimp/client/*" ]
+
+    java_files = [ "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java" ]
+
+    # TODO(xingliu): Remove android support v7 dependency and move android resources to Chrome
+    # after Blimp merge to Chrome.
+    deps = [
+      "//base:base_java",
+      "//blimp/client:blimp_java_resources",
+      "//blimp/client/public:public_headers_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
+    ]
   }
 
   generate_jni("context_jni_headers") {

@@ -4,13 +4,10 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/about_blimp_preferences">
-    <Preference
-        android:key="application_version"
-        android:title="@string/application_version_title" />
-    <Preference
-        android:key="os_version"
-        android:title="@string/os_version_title" />
+    android:title="@string/blimp_about_blimp_preferences">
+  <SwitchPreference
+        android:key="blimp_switch"
+        android:title="@string/blimp_switch" />
     <Preference
         android:key="blimp_engine_ip"
         android:title="@string/blimp_engine_ip" />

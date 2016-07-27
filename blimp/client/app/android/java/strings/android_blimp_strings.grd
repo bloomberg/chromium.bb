@@ -175,6 +175,21 @@
       <message name="IDS_ABOUT_BLIMP_PREFERENCES" desc="About blimp preferences.">
         About Blimp
       </message>
+      <message name="IDS_RESTART_BLIMP" desc="Blimp restart message.">
+        Restart Blimp
+      </message>
+      <message name="IDS_RESTART_NOW" desc="Restart now message">
+        Restart Now
+      </message>
+
+  <!-- Blimp UI strings, should prefix with blimp  -->
+  <!-- TODO(xingliu): Clean resources files in the future. http://crbug.com/630687 -->
+      <message name="IDS_BLIMP_ABOUT_BLIMP_PREFERENCES" desc="About blimp preferences.">
+        Blimp Settings
+      </message>
+      <message name="IDS_BLIMP_SWITCH" desc="Blimp Switch.">
+        Blimp Switch
+      </message>
       <message name="IDS_BLIMP_ENGINE_IP" desc="Blimp Engine IP.">
         Engine IP
       </message>
@@ -184,13 +199,16 @@
       <message name="IDS_BLIMP_ASSIGNER_URL" desc="Blimp Assigner URL.">
         Assigner URL
       </message>
-      <message name="IDS_BLIMP_ASSIGNER_CHANGED_PLEASE_RESTART" desc="Blimp assigner changed, restart message.">
+     <message name="IDS_BLIMP_ASSIGNER_CHANGED_PLEASE_RESTART" desc="Blimp assigner changed, restart message.">
         Please restart the application to use the new assigner configuration.
       </message>
-      <message name="IDS_RESTART_BLIMP" desc="Blimp restart message.">
+      <message name="IDS_BLIMP_SWITCH_CHANGED_PLEASE_RESTART" desc="Blimp switch changed, restart message.">
+        Blimp switch changed, Please restart the application.
+      </message>
+        <message name="IDS_BLIMP_RESTART_BLIMP" desc="Blimp restart message.">
         Restart Blimp
       </message>
-      <message name="IDS_RESTART_NOW" desc="Restart now message">
+      <message name="IDS_BLIMP_RESTART_NOW" desc="Restart now message">
         Restart Now
       </message>
     </messages>

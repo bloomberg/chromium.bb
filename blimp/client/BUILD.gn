@@ -403,6 +403,7 @@ if (is_android) {
       ":blimp_java",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//blimp/client/core:settings_java",
       "//blimp/client/core/contents:contents_java",
       "//blimp/client/public:public_headers_java",
       google_play_services_library,
@@ -412,6 +413,8 @@ if (is_android) {
       "app/android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
       "app/android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
       "app/android/javatests/src/org/chromium/blimp/core/contents/BlimpContentsTest.java",
+      "app/android/javatests/src/org/chromium/blimp/core/settings/BlimpPreferencesTest.java",
+      "app/android/javatests/src/org/chromium/blimp/core/settings/MockPreferences.java",
       "app/android/javatests/src/org/chromium/blimp/BlimpNativeInstrumentationTestCase.java",
     ]
   }

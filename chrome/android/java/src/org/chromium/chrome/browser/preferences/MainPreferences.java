@@ -12,14 +12,18 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
+import org.chromium.chrome.browser.blimp.BlimpSettingsCallbacksImpl;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -103,6 +107,8 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     private void updatePreferences() {
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
         addPreferencesFromResource(R.xml.main_preferences);
+
+        addBlimpPreferences();
 
         ChromeBasePreference autofillPref =
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_SETTINGS);
@@ -227,5 +233,11 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
                 return super.isPreferenceClickDisabledByPolicy(preference);
             }
         };
+    }
+
+    private void addBlimpPreferences() {
+        BlimpClientContext blimpClientContext = BlimpClientContextFactory
+                .getBlimpClientContextForProfile(Profile.getLastUsedProfile().getOriginalProfile());
+        blimpClientContext.attachBlimpPreferences(this, new BlimpSettingsCallbacksImpl());
     }
 }

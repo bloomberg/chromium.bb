@@ -4,9 +4,12 @@
 
 package org.chromium.blimp.core;
 
+import android.preference.PreferenceFragment;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp_public.BlimpClientContext;
+import org.chromium.blimp_public.BlimpSettingsCallbacks;
 import org.chromium.blimp_public.contents.BlimpContents;
 
 /**
@@ -42,5 +45,15 @@ public class DummyBlimpClientContext implements BlimpClientContext {
     private long getNativePtr() {
         assert mNativeDummyBlimpClientContextAndroid != 0;
         return mNativeDummyBlimpClientContextAndroid;
+    }
+
+    @Override
+    public boolean isBlimpSupported() {
+        return false;
+    }
+
+    @Override
+    public void attachBlimpPreferences(PreferenceFragment fragment,
+            BlimpSettingsCallbacks callbacks) {
     }
 }

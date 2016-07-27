@@ -4,6 +4,8 @@
 
 package org.chromium.blimp_public;
 
+import android.preference.PreferenceFragment;
+
 import org.chromium.blimp_public.contents.BlimpContents;
 
 /**
@@ -19,4 +21,16 @@ public interface BlimpClientContext {
      * {@link BlimpContents#destroy()} for destruction of the BlimpContents.
      */
     BlimpContents createBlimpContents();
+
+    /**
+     * @return If Blimp is supported with this build.
+     */
+    boolean isBlimpSupported();
+
+    /**
+     * Attach blimp settings UI to a {@link PreferenceFragment}
+     * @param fragment PreferenceFragment that blimp settings UI attached to.
+     * @param callback Chrome layer callbacks that passed to Blimp.
+     */
+    void attachBlimpPreferences(PreferenceFragment fragment, BlimpSettingsCallbacks callback);
 }

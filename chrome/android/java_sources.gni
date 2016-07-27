@@ -85,6 +85,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/banners/InstallerDelegate.java",
   "java/src/org/chromium/chrome/browser/banners/SwipableOverlayView.java",
   "java/src/org/chromium/chrome/browser/blimp/BlimpClientContextFactory.java",
+  "java/src/org/chromium/chrome/browser/blimp/BlimpSettingsCallbacksImpl.java",
   "java/src/org/chromium/chrome/browser/blimp/ChromeBlimpClientContextDelegate.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkActionBar.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkActivity.java",
