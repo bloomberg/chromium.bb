@@ -13,21 +13,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace subresource_filter {
 
 class MemoryMappedRuleset;
 
 // Performs filtering of subresource loads in the scope of a given document.
-//
-// TODO(engedy): This is a placeholder implementation that treats the entire
-// ruleset as the UTF-8 representation of a string, and will disallow
-// subresource loads from URL paths having this string as a suffix if it is
-// non-empty. This enables exercising the feature end-to-end in a browsertest.
-// Replace this with the actual filtering logic.
 class DocumentSubresourceFilter
     : public blink::WebDocumentSubresourceFilter,
       public base::SupportsWeakPtr<DocumentSubresourceFilter> {
@@ -58,10 +52,10 @@ class DocumentSubresourceFilter
   size_t num_loads_disallowed() const { return num_loads_disallowed_; }
 
  private:
-  bool DoesLoadMatchFilteringRules(const GURL& resource_url);
-
   ActivationState activation_state_;
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
+  IndexedRulesetMatcher matcher_;
+  std::vector<GURL> ancestor_document_urls_;
 
   size_t num_loads_evaluated_ = 0;
   size_t num_loads_matching_rules_ = 0;

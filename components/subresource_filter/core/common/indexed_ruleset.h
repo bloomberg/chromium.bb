@@ -110,9 +110,8 @@ class IndexedRulesetMatcher {
   IndexedRulesetMatcher(const uint8_t* buffer, size_t size);
 
   // Returns whether the network request to |url| of |element_type| initiated by
-  // |initiator| is allowed to proceed.
-  // |element_type| == ELEMENT_TYPE_UNSPECIFIED denotes an unknown or irrelevant
-  // type.
+  // |initiator| is allowed to proceed. Always returns true, if the |url| is not
+  // valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
   bool IsAllowed(const GURL& url,
                  const url::Origin& initiator,
                  proto::ElementType element_type) const;

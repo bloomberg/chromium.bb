@@ -123,6 +123,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'subresource_filter_core_common',
       ],
       'include_dirs': [
         '..',

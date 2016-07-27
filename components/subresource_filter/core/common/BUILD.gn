@@ -42,6 +42,7 @@ static_library("test_support") {
     "test_ruleset_creator.h",
   ]
   deps = [
+    ":common",
     "//base",
     "//testing/gtest",
   ]

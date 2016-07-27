@@ -1162,6 +1162,7 @@ static_library("test_support") {
     "//components/prefs:test_support",
     "//components/search_engines:test_support",
     "//components/subresource_filter/core/browser:test_support",
+    "//components/subresource_filter/core/common:test_support",
     "//components/syncable_prefs:test_support",
     "//components/user_prefs/tracked:user_prefs_tracked_test_support",
     "//content/test:test_support",

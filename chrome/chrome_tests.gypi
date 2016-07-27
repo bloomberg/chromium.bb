@@ -2190,6 +2190,7 @@
         '../components/components.gyp:safe_browsing_db',
         '../components/components.gyp:ssl_config',
         '../components/components.gyp:subresource_filter_core_browser_test_support',
+        '../components/components.gyp:subresource_filter_core_common_test_support',
         '../components/components.gyp:subresource_filter_content_browser',
         '../components/components.gyp:test_database_manager',
         '../components/components.gyp:translate_core_common',

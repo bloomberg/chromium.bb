@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TEST_RULESET_CREATOR_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TEST_RULESET_CREATOR_H_
 
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -20,8 +24,16 @@ class TestRulesetCreator {
   ~TestRulesetCreator();
 
   // Creates a testing ruleset to disallow subresource loads from URL paths
-  // having the given |suffix|, and returns a read-only file handle to it in
-  // |ruleset_file|.
+  // having the given |suffix|, and replaces the |buffer| with the ruleset data.
+  //
+  // Enclose the call to this method in ASSERT_NO_FATAL_FAILURE to detect
+  // errors.
+  static void CreateRulesetToDisallowURLsWithPathSuffix(
+      base::StringPiece suffix,
+      std::vector<uint8_t>* buffer);
+
+  // Same as above, but puts the ruleset into a file and returns its read-only
+  // file handle in |ruleset_file|.
   //
   // The underlying temporary file will be deleted when the TestRulesetCreator
   // instance goes out of scope, but the |ruleset_file| handle may outlive and
@@ -29,8 +41,8 @@ class TestRulesetCreator {
   //
   // Enclose the call to this method in ASSERT_NO_FATAL_FAILURE to detect
   // errors.
-  void CreateRulesetToDisallowURLsWithPathSuffix(base::StringPiece suffix,
-                                                 base::File* ruleset_file);
+  void CreateRulesetFileToDisallowURLsWithPathSuffix(base::StringPiece suffix,
+                                                     base::File* ruleset_file);
 
  private:
   base::ScopedTempDir scoped_temp_dir_;

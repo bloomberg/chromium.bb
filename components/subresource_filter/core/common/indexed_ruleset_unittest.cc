@@ -41,7 +41,7 @@ class IndexedRulesetTest : public testing::Test {
   bool ShouldAllow(
       const char* url,
       const char* initiator = nullptr,
-      proto::ElementType element_type = proto::ELEMENT_TYPE_UNSPECIFIED) const {
+      proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER) const {
     DCHECK_NE(matcher_.get(), nullptr);
     url::Origin origin = GetOrigin(initiator);
     return matcher_->IsAllowed(GURL(url), origin, element_type);
@@ -450,6 +450,9 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
       {"ex.com", kAll & ~kFont & ~kScript, "http://ex.com/img", kImage, false},
       {"ex.com$subdocument,~subdocument", kSubdoc & ~kSubdoc,
        "http://ex.com/sub", kSubdoc, true},
+
+      {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_OTHER, false},
+      {"ex.com", kAll, "http://ex.com", proto::ELEMENT_TYPE_UNSPECIFIED, true},
   };
 
   for (const auto& test_case : kTestCases) {

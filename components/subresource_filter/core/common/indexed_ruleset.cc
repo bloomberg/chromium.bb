@@ -99,7 +99,12 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
                 "Element types can not be stored in uint16_t.");
   if ((rule.element_types() & proto::ELEMENT_TYPE_ALL) != rule.element_types())
     return false;  // Unsupported element types.
-  rule_builder.add_element_types(static_cast<uint16_t>(rule.element_types()));
+  uint16_t element_types = static_cast<uint16_t>(rule.element_types());
+  // Note: Normally we can not distinguish between the main plugin resource and
+  // any other loads it makes. We treat them both as OBJECT requests.
+  if (element_types & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
+    element_types |= proto::ELEMENT_TYPE_OBJECT;
+  rule_builder.add_element_types(element_types);
 
   static_assert(
       proto::ACTIVATION_TYPE_MAX <= std::numeric_limits<uint8_t>::max(),
@@ -382,7 +387,7 @@ IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
 bool IndexedRulesetMatcher::IsAllowed(const GURL& url,
                                       const url::Origin& initiator,
                                       proto::ElementType element_type) const {
-  if (!url.is_valid())
+  if (!url.is_valid() || element_type == proto::ELEMENT_TYPE_UNSPECIFIED)
     return true;
   const bool is_third_party = IsThirdPartyUrl(url, initiator);
   return !IsMatch(root_->blacklist_index(), url, initiator, element_type,

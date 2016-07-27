@@ -19,6 +19,7 @@
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -89,8 +90,9 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix) {
     static_assert(sizeof(char) == sizeof(uint8_t), "Assumed char was byte.");
     std::vector<uint8_t> buffer;
-    std::transform(suffix.begin(), suffix.end(), std::back_inserter(buffer),
-                   [](char c) { return static_cast<uint8_t>(c); });
+    testing::TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
+        suffix, &buffer);
+
     RulesetDistributionListener* listener = new RulesetDistributionListener();
     g_browser_process->subresource_filter_ruleset_service()
         ->RegisterDistributor(base::WrapUnique(listener));

@@ -82,7 +82,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void SetTestRulesetToDisallowURLsWithPathSuffix(base::StringPiece suffix) {
     base::File ruleset_file;
     ASSERT_NO_FATAL_FAILURE(
-        test_ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
+        test_ruleset_creator_.CreateRulesetFileToDisallowURLsWithPathSuffix(
             suffix, &ruleset_file));
     ruleset_dealer_.SetRulesetFile(std::move(ruleset_file));
   }
@@ -116,7 +116,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void ExpectLoadAllowed(base::StringPiece url_spec, bool allowed) {
     blink::WebURL url = GURL(url_spec);
     blink::WebURLRequest::RequestContext request_context =
-        blink::WebURLRequest::RequestContextUnspecified;
+        blink::WebURLRequest::RequestContextImage;
     EXPECT_EQ(allowed, agent()->filter()->allowLoad(url, request_context));
   }
 

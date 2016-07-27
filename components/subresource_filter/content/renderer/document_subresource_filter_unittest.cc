@@ -41,7 +41,7 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
   void SetTestRulesetToDisallowURLsWithPathSuffix(base::StringPiece suffix) {
     base::File ruleset_file;
     ASSERT_NO_FATAL_FAILURE(
-        test_ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
+        test_ruleset_creator_.CreateRulesetFileToDisallowURLsWithPathSuffix(
             suffix, &ruleset_file));
     ruleset_ = new MemoryMappedRuleset(std::move(ruleset_file));
   }
@@ -57,7 +57,7 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
 
 TEST_F(DocumentSubresourceFilterTest, DryRun) {
   blink::WebURLRequest::RequestContext request_context =
-      blink::WebURLRequest::RequestContextUnspecified;
+      blink::WebURLRequest::RequestContextImage;
   DocumentSubresourceFilter filter(ActivationState::DRYRUN, ruleset(),
                                    std::vector<GURL>());
   EXPECT_TRUE(filter.allowLoad(GURL(kTestFirstURL), request_context));
@@ -69,7 +69,7 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
 
 TEST_F(DocumentSubresourceFilterTest, Enabled) {
   blink::WebURLRequest::RequestContext request_context =
-      blink::WebURLRequest::RequestContextUnspecified;
+      blink::WebURLRequest::RequestContextImage;
   DocumentSubresourceFilter filter(ActivationState::ENABLED, ruleset(),
                                    std::vector<GURL>());
   EXPECT_FALSE(filter.allowLoad(GURL(kTestFirstURL), request_context));
@@ -79,17 +79,4 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
   EXPECT_EQ(1u, filter.num_loads_disallowed());
 }
 
-TEST_F(DocumentSubresourceFilterTest, EnabledButEmptySuffix) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetTestRulesetToDisallowURLsWithPathSuffix(base::StringPiece()));
-
-  blink::WebURLRequest::RequestContext request_context =
-      blink::WebURLRequest::RequestContextUnspecified;
-  DocumentSubresourceFilter filter(ActivationState::ENABLED, ruleset(),
-                                   std::vector<GURL>());
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestFirstURL), request_context));
-  EXPECT_EQ(1u, filter.num_loads_evaluated());
-  EXPECT_EQ(0u, filter.num_loads_matching_rules());
-  EXPECT_EQ(0u, filter.num_loads_disallowed());
-}
 }  // namespace subresource_filter
