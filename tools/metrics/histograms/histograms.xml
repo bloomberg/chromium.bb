@@ -43034,6 +43034,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.CacheStatus.NonPrefetch" enum="HttpCachePattern">
+  <owner>jamartin@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Like HttpCache.Pattern but only for requests not made during precaching.
+    Logged per-request.
+  </summary>
+</histogram>
+
 <histogram name="Precache.DownloadedNonPrecache" units="bytes">
   <owner>bengr@chromium.org</owner>
   <summary>

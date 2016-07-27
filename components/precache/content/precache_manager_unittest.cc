@@ -47,7 +47,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::ContainerEq;
-using ::testing::ElementsAre;
 using ::testing::UnorderedElementsAre;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -416,9 +415,11 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchHTTP) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
-              ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
-                          Pair("Precache.Latency.NonPrefetch", 1),
-                          Pair("Precache.Latency.NonPrefetch.NonTopHosts", 1)));
+              UnorderedElementsAre(
+                  Pair("Precache.DownloadedNonPrecache", 1),
+                  Pair("Precache.CacheStatus.NonPrefetch", 1),
+                  Pair("Precache.Latency.NonPrefetch", 1),
+                  Pair("Precache.Latency.NonPrefetch.NonTopHosts", 1)));
 }
 
 TEST_F(PrecacheManagerTest, RecordStatsForFetchHTTPS) {
@@ -428,9 +429,11 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchHTTPS) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
-              ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
-                          Pair("Precache.Latency.NonPrefetch", 1),
-                          Pair("Precache.Latency.NonPrefetch.NonTopHosts", 1)));
+              UnorderedElementsAre(
+                  Pair("Precache.DownloadedNonPrecache", 1),
+                  Pair("Precache.CacheStatus.NonPrefetch", 1),
+                  Pair("Precache.Latency.NonPrefetch", 1),
+                  Pair("Precache.Latency.NonPrefetch.NonTopHosts", 1)));
 }
 
 TEST_F(PrecacheManagerTest, RecordStatsForFetchInTopHosts) {
@@ -445,10 +448,12 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchInTopHosts) {
       base::TimeDelta(), base::Time(), info_, 1000);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
-              ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
-                          Pair("Precache.Latency.NonPrefetch", 1),
-                          Pair("Precache.Latency.NonPrefetch.TopHosts", 1)));
+  EXPECT_THAT(
+      histograms_.GetTotalCountsForPrefix("Precache."),
+      UnorderedElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
+                           Pair("Precache.CacheStatus.NonPrefetch", 1),
+                           Pair("Precache.Latency.NonPrefetch", 1),
+                           Pair("Precache.Latency.NonPrefetch.TopHosts", 1)));
 }
 
 TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
@@ -518,6 +523,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
                                          base::TimeDelta(), kCurrentTime, info_,
                                          1000);
   expected_histogram_count_map["Precache.Fetch.TimeToComplete"]++;
+  expected_histogram_count_map["Precache.CacheStatus.NonPrefetch"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"]++;
   expected_histogram_count_map["Precache.TimeSinceLastPrecache"] += 1;
@@ -534,6 +540,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   precache_manager_->RecordStatsForFetch(GURL("http://yesterday-fetch.com"),
                                          GURL(), base::TimeDelta(),
                                          kCurrentTime, info_, 1000);
+  expected_histogram_count_map["Precache.CacheStatus.NonPrefetch"] += 2;
   expected_histogram_count_map["Precache.Latency.NonPrefetch"] += 2;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"] += 2;
   expected_histogram_count_map["Precache.Saved"] += 2;

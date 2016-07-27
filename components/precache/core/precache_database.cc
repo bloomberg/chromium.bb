@@ -180,6 +180,9 @@ void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
                                             int host_rank,
                                             bool is_connection_cellular) {
   UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", latency);
+  UMA_HISTOGRAM_ENUMERATION("Precache.CacheStatus.NonPrefetch",
+                            info.cache_entry_status,
+                            net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
 
   if (host_rank != history::kMaxTopHosts) {
     // The resource was loaded on a page that could have been affected by

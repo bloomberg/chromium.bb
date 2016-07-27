@@ -37,6 +37,10 @@ const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
 const int64_t kSize = 5000;
 const int64_t kFreshnessBucket10K = 9089;
+// One of the possible CacheEntryStatus for when the fetch was served from the
+// network.
+const HttpResponseInfo::CacheEntryStatus kFromNetwork =
+    HttpResponseInfo::CacheEntryStatus::ENTRY_UPDATED;
 
 std::map<GURL, base::Time> BuildURLTableMap(const GURL& url,
                                             const base::Time& precache_time) {
@@ -50,6 +54,17 @@ HttpResponseInfo CreateHttpResponseInfo(bool was_cached,
   HttpResponseInfo result;
   result.was_cached = was_cached;
   result.network_accessed = network_accessed;
+  if (was_cached) {
+    if (network_accessed) {
+      result.cache_entry_status =
+          HttpResponseInfo::CacheEntryStatus::ENTRY_VALIDATED;
+    } else {
+      result.cache_entry_status =
+          HttpResponseInfo::CacheEntryStatus::ENTRY_USED;
+    }
+  } else {  // !was_cached.
+    result.cache_entry_status = kFromNetwork;
+  }
   std::string header(
       "HTTP/1.1 200 OK\n"
       "cache-control: max-age=10000\n\n");
@@ -263,6 +278,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch", kFromNetwork);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
                   kLatency.InMilliseconds());
@@ -275,6 +291,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular_TopHosts) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch", kFromNetwork);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNewSample("Precache.Latency.NonPrefetch.TopHosts",
                   kLatency.InMilliseconds());
@@ -288,6 +305,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
 
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.DownloadedNonPrecache.Cellular", kSize);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch", kFromNetwork);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
                   kLatency.InMilliseconds());
@@ -305,6 +323,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
                   kLatency.InMilliseconds());
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch", kFromNetwork);
   ExpectNoOtherSamples();
 }
 
@@ -317,6 +336,8 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch",
+                  HttpResponseInfo::CacheEntryStatus::ENTRY_USED);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Freshness", kFreshnessBucket10K);
   ExpectNoOtherSamples();
@@ -331,6 +352,8 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch",
+                  HttpResponseInfo::CacheEntryStatus::ENTRY_USED);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Cellular", kSize);
   ExpectNewSample("Precache.Saved.Freshness", kFreshnessBucket10K);
@@ -344,6 +367,8 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithoutURLTableEntry) {
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
+  ExpectNewSample("Precache.CacheStatus.NonPrefetch",
+                  HttpResponseInfo::CacheEntryStatus::ENTRY_USED);
   ExpectNoOtherSamples();
 }
 
