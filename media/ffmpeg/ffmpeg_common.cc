@@ -370,7 +370,7 @@ bool AVCodecContextToAudioDecoderConfig(
   // AVStream occasionally has invalid extra data. See http://crbug.com/517163
   if ((codec_context->extradata_size == 0) !=
       (codec_context->extradata == nullptr)) {
-    LOG(ERROR) << __FUNCTION__
+    LOG(ERROR) << __func__
                << (codec_context->extradata == nullptr ? " NULL" : " Non-NULL")
                << " extra data cannot have size of "
                << codec_context->extradata_size << ".";
@@ -520,7 +520,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   // AVStream occasionally has invalid extra data. See http://crbug.com/517163
   if ((stream->codec->extradata_size == 0) !=
       (stream->codec->extradata == nullptr)) {
-    LOG(ERROR) << __FUNCTION__
+    LOG(ERROR) << __func__
                << (stream->codec->extradata == nullptr ? " NULL" : " Non-Null")
                << " extra data cannot have size of "
                << stream->codec->extradata_size << ".";

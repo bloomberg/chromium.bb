@@ -251,7 +251,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     const String& keySystem,
     const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
 
     // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
     // When this method is invoked, the user agent must run the following steps:

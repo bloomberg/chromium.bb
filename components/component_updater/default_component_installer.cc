@@ -195,7 +195,7 @@ bool DefaultComponentInstaller::FindPreinstallation(
 }
 
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
-  VLOG(1) << __FUNCTION__ << " for " << installer_traits_->GetName();
+  VLOG(1) << __func__ << " for " << installer_traits_->GetName();
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -322,7 +322,7 @@ void DefaultComponentInstaller::UninstallOnTaskRunner() {
 void DefaultComponentInstaller::FinishRegistration(
     ComponentUpdateService* cus,
     const base::Closure& callback) {
-  VLOG(1) << __FUNCTION__ << " for " << installer_traits_->GetName();
+  VLOG(1) << __func__ << " for " << installer_traits_->GetName();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (installer_traits_->CanAutoUpdate()) {

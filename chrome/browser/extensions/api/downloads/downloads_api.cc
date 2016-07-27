@@ -1045,7 +1045,7 @@ void DownloadsDownloadFunction::OnStarted(
     DownloadItem* item,
     content::DownloadInterruptReason interrupt_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  VLOG(1) << __FUNCTION__ << " " << item << " " << interrupt_reason;
+  VLOG(1) << __func__ << " " << item << " " << interrupt_reason;
   if (item) {
     DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     SetResult(base::MakeUnique<base::FundamentalValue>(

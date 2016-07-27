@@ -147,7 +147,7 @@
 #elif COMPILER(MSVC)
 #define WTF_PRETTY_FUNCTION __FUNCSIG__
 #else
-#define WTF_PRETTY_FUNCTION __FUNCTION__
+#define WTF_PRETTY_FUNCTION __func__
 #endif
 
 /* NO_SANITIZE_UNRELATED_CAST - Disable runtime checks related to casts between

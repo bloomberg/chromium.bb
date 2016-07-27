@@ -170,8 +170,7 @@ bool MediaSourceState::Append(const uint8_t* data,
   bool result = stream_parser_->Parse(data, length);
   if (!result) {
     MEDIA_LOG(ERROR, media_log_)
-        << __FUNCTION__ << ": stream parsing failed."
-        << " Data size=" << length
+        << __func__ << ": stream parsing failed. Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
         << " append_window_end=" << append_window_end.InSecondsF();
   }
@@ -252,7 +251,7 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
                                         size_t newDataSize) {
   bool success = true;
 
-  DVLOG(3) << __FUNCTION__ << " media_time=" << media_time.InSecondsF()
+  DVLOG(3) << __func__ << " media_time=" << media_time.InSecondsF()
            << " newDataSize=" << newDataSize
            << " videoBufferedSize=" << (video_ ? video_->GetBufferedSize() : 0)
            << " audioBufferedSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
@@ -268,8 +267,8 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
     newAudioSize = newDataSize;
   }
 
-  DVLOG(3) << __FUNCTION__ << " estimated audio/video sizes: "
-           << " newVideoSize=" << newVideoSize
+  DVLOG(3) << __func__
+           << " estimated audio/video sizes: newVideoSize=" << newVideoSize
            << " newAudioSize=" << newAudioSize;
 
   if (audio_)
@@ -283,7 +282,7 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
     success = itr->second->EvictCodedFrames(media_time, 0) && success;
   }
 
-  DVLOG(3) << __FUNCTION__ << " result=" << success
+  DVLOG(3) << __func__ << " result=" << success
            << " videoBufferedSize=" << (video_ ? video_->GetBufferedSize() : 0)
            << " audioBufferedSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
 

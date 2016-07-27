@@ -169,7 +169,7 @@ void SetContentCaptureParamsFromConstraints(
     }
   }
 
-  DVLOG(1) << __FUNCTION__ << " "
+  DVLOG(1) << __func__ << " "
            << media::VideoCaptureFormat::ToString(params->requested_format)
            << " with resolution change policy "
            << params->resolution_change_policy;
@@ -312,7 +312,7 @@ void LocalVideoCapturerSource::StartCapture(
 }
 
 void LocalVideoCapturerSource::RequestRefreshFrame() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (stop_capture_cb_.is_null())
     return;  // Do not request frames if the source is stopped.
@@ -320,7 +320,7 @@ void LocalVideoCapturerSource::RequestRefreshFrame() {
 }
 
 void LocalVideoCapturerSource::StopCapture() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   // Immediately make sure we don't provide more frames.
   if (!stop_capture_cb_.is_null())
@@ -331,7 +331,7 @@ void LocalVideoCapturerSource::StopCapture() {
 }
 
 void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
-  DVLOG(3) << __FUNCTION__ << " state = " << state;
+  DVLOG(3) << __func__ << " state = " << state;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (running_callback_.is_null())
     return;
@@ -343,7 +343,7 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
 
 void LocalVideoCapturerSource::OnDeviceFormatsInUseReceived(
     const media::VideoCaptureFormats& formats_in_use) {
-  DVLOG(3) << __FUNCTION__ << ", #formats received: " << formats_in_use.size();
+  DVLOG(3) << __func__ << ", #formats received: " << formats_in_use.size();
   DCHECK(thread_checker_.CalledOnValidThread());
   // StopCapture() might have destroyed |formats_enumerated_callback_| before
   // arriving here.
@@ -366,7 +366,7 @@ void LocalVideoCapturerSource::OnDeviceFormatsInUseReceived(
 
 void LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated(
     const media::VideoCaptureFormats& formats) {
-  DVLOG(3) << __FUNCTION__ << ", #formats received: " << formats.size();
+  DVLOG(3) << __func__ << ", #formats received: " << formats.size();
   DCHECK(thread_checker_.CalledOnValidThread());
   // StopCapture() might have destroyed |formats_enumerated_callback_| before
   // arriving here.

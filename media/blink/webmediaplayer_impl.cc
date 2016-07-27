@@ -268,8 +268,8 @@ void WebMediaPlayerImpl::load(LoadType load_type,
   // Only URL or MSE blob URL is supported.
   DCHECK(source.isURL());
   blink::WebURL url = source.getAsURL();
-  DVLOG(1) << __FUNCTION__ << "(" << load_type << ", " << url << ", "
-           << cors_mode << ")";
+  DVLOG(1) << __func__ << "(" << load_type << ", " << url << ", " << cors_mode
+           << ")";
   if (!defer_load_cb_.is_null()) {
     defer_load_cb_.Run(base::Bind(
         &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), load_type, url, cors_mode));
@@ -321,7 +321,7 @@ void WebMediaPlayerImpl::exitedFullscreen() {
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
@@ -371,7 +371,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 }
 
 void WebMediaPlayerImpl::play() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -393,7 +393,7 @@ void WebMediaPlayerImpl::play() {
 }
 
 void WebMediaPlayerImpl::pause() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // We update the paused state even when casting, since we expect pause() to be
@@ -427,7 +427,7 @@ bool WebMediaPlayerImpl::supportsSave() const {
 }
 
 void WebMediaPlayerImpl::seek(double seconds) {
-  DVLOG(1) << __FUNCTION__ << "(" << seconds << "s)";
+  DVLOG(1) << __func__ << "(" << seconds << "s)";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DoSeek(base::TimeDelta::FromSecondsD(seconds), true);
 }
@@ -484,7 +484,7 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
 }
 
 void WebMediaPlayerImpl::setRate(double rate) {
-  DVLOG(1) << __FUNCTION__ << "(" << rate << ")";
+  DVLOG(1) << __func__ << "(" << rate << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // TODO(kylep): Remove when support for negatives is added. Also, modify the
@@ -509,7 +509,7 @@ void WebMediaPlayerImpl::setRate(double rate) {
 }
 
 void WebMediaPlayerImpl::setVolume(double volume) {
-  DVLOG(1) << __FUNCTION__ << "(" << volume << ")";
+  DVLOG(1) << __func__ << "(" << volume << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   volume_ = volume;
   pipeline_.SetVolume(volume_ * volume_multiplier_);
@@ -520,7 +520,7 @@ void WebMediaPlayerImpl::setSinkId(
     const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callback);
@@ -537,7 +537,7 @@ STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadMetaData,
 STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadAuto, BufferedDataSource::AUTO);
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
-  DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
+  DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   preload_ = static_cast<BufferedDataSource::Preload>(preload);
@@ -552,7 +552,7 @@ STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Aggressive,
 
 void WebMediaPlayerImpl::setBufferingStrategy(
     WebMediaPlayer::BufferingStrategy buffering_strategy) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
 #if defined(OS_ANDROID)
@@ -973,7 +973,7 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
 }
 
 void WebMediaPlayerImpl::OnError(PipelineStatus status) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(status, PIPELINE_OK);
 
@@ -995,7 +995,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnEnded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore state changes until we've completed all outstanding operations.
@@ -1012,7 +1012,7 @@ void WebMediaPlayerImpl::OnEnded() {
 }
 
 void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   pipeline_metadata_ = metadata;
@@ -1043,7 +1043,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
 }
 
 void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
-  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
+  DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore buffering state changes until we've completed all outstanding
@@ -1225,7 +1225,7 @@ void WebMediaPlayerImpl::requestRemotePlaybackControl() {
 }
 
 void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   ended_ = true;
@@ -1269,7 +1269,7 @@ void WebMediaPlayerImpl::setPoster(const blink::WebURL& poster) {
 #endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
 #if defined(OS_ANDROID)
@@ -1303,7 +1303,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 }
 
 void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   if (!is_downloading && network_state_ == WebMediaPlayer::NetworkStateLoading)
     SetNetworkState(WebMediaPlayer::NetworkStateIdle);
   else if (is_downloading && network_state_ == WebMediaPlayer::NetworkStateIdle)
@@ -1414,7 +1414,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
-  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
+  DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   network_state_ = state;
   // Always notify to ensure client has the latest value.
@@ -1422,7 +1422,7 @@ void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
 }
 
 void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
-  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
+  DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (state == WebMediaPlayer::ReadyStateHaveEnoughData && data_source_ &&

@@ -250,9 +250,8 @@ base::FilePath GetShortPathName(const base::FilePath& path) {
   DWORD length = GetShortPathName(path.value().c_str(),
                                   base::WriteInto(&short_path, MAX_PATH),
                                   MAX_PATH);
-  DWORD last_error = ::GetLastError();
-  DLOG_IF(WARNING, length == 0 && last_error != ERROR_PATH_NOT_FOUND)
-      << __FUNCTION__ << " gle=" << last_error;
+  DPLOG_IF(WARNING, length == 0 && GetLastError() != ERROR_PATH_NOT_FOUND)
+      << __func__;
   if ((length == 0) || (length > MAX_PATH)) {
     // GetShortPathName fails if the path is no longer present or cannot be
     // put in the size buffer provided.  Instead of returning an empty string,

@@ -1391,8 +1391,7 @@ bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
     if (request_ && request_->response_headers()) {
       int64_t expected_length =
           request_->response_headers()->GetContentLength();
-      VLOG(1) << __FUNCTION__ << "() "
-              << "\"" << request_->url().spec() << "\""
+      VLOG(1) << __func__ << "() \"" << request_->url().spec() << "\""
               << " content-length = " << expected_length
               << " pre total = " << prefilter_bytes_read()
               << " post total = " << postfilter_bytes_read();

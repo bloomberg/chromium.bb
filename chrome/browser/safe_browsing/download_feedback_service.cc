@@ -200,7 +200,7 @@ void DownloadFeedbackService::BeginFeedback(
 }
 
 void DownloadFeedbackService::FeedbackComplete() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!active_feedback_.empty());
   active_feedback_.pop();

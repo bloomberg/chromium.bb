@@ -161,7 +161,7 @@ bool MediaRecorderHandler::start(int timeslice) {
   media_stream_.audioTracks(audio_tracks);
 
   if (video_tracks.isEmpty() && audio_tracks.isEmpty()) {
-    LOG(WARNING) << __FUNCTION__ << ": no media tracks.";
+    LOG(WARNING) << __func__ << ": no media tracks.";
     return false;
   }
 
@@ -176,7 +176,7 @@ bool MediaRecorderHandler::start(int timeslice) {
           blink::WebMediaStreamSource::ReadyStateEnded;
 
   if (!use_video_tracks && !use_audio_tracks) {
-    LOG(WARNING) << __FUNCTION__ << ": no tracks to be recorded.";
+    LOG(WARNING) << __func__ << ": no tracks to be recorded.";
     return false;
   }
 

@@ -68,7 +68,7 @@ DecoderSelector<StreamType>::DecoderSelector(
 
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::~DecoderSelector() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!select_decoder_cb_.is_null())
@@ -86,7 +86,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
     const SelectDecoderCB& select_decoder_cb,
     const typename Decoder::OutputCB& output_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(traits);
   DCHECK(stream);
@@ -130,7 +130,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
 #if !defined(OS_ANDROID)
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
       task_runner_, media_log_, waiting_for_decryption_key_cb_));
 
@@ -143,7 +143,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (success) {
@@ -174,7 +174,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If DecryptingDemuxerStream initialization succeeded, we'll use it to do
@@ -195,7 +195,7 @@ void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!decoder_);
 
@@ -216,7 +216,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!success) {
@@ -231,7 +231,7 @@ void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::ReturnNullDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&select_decoder_cb_)
       .Run(std::unique_ptr<Decoder>(),

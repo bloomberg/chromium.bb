@@ -156,7 +156,7 @@ void PluginPrivateDataByOriginChecker::OnDirectoryRead(
     const storage::AsyncFileUtil::EntryList& file_list,
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(3) << __FUNCTION__ << " result: " << result
+  DVLOG(3) << __func__ << " result: " << result
            << ", #files: " << file_list.size();
 
   // Quit if there is an error.
@@ -173,7 +173,7 @@ void PluginPrivateDataByOriginChecker::OnDirectoryRead(
     storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
         storage::kFileSystemTypePluginPrivate);
     for (const auto& file : file_list) {
-      DVLOG(3) << __FUNCTION__ << " file: " << file.name;
+      DVLOG(3) << __func__ << " file: " << file.name;
       DCHECK(!file.is_directory);  // Nested directories not implemented.
 
       std::unique_ptr<storage::FileSystemOperationContext> operation_context =
@@ -205,7 +205,7 @@ void PluginPrivateDataByOriginChecker::OnFileInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result == base::File::FILE_OK) {
-    DVLOG(3) << __FUNCTION__ << " name: " << file_name
+    DVLOG(3) << __func__ << " name: " << file_name
              << ", size: " << file_info.size
              << ", modified: " << file_info.last_modified;
     if (file_info.last_modified >= begin_ && file_info.last_modified <= end_)

@@ -482,7 +482,7 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   uint32_t frames_skipped = buffer->params.frames_skipped;
   buffer->params.frames_skipped = 0;
 
-  DVLOG(4) << __FUNCTION__ << " pending_data:" << pending_data
+  DVLOG(4) << __func__ << " pending_data:" << pending_data
            << " frames_delayed(pre-round):" << frames_delayed
            << " frames_skipped:" << frames_skipped;
 

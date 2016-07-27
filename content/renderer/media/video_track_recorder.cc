@@ -525,7 +525,7 @@ VEAEncoder::~VEAEncoder() {
 void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
                                          const gfx::Size& input_coded_size,
                                          size_t output_buffer_size) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   vea_requested_input_size_ = input_coded_size;
@@ -547,7 +547,7 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                       size_t payload_size,
                                       bool keyframe,
                                       base::TimeDelta timestamp) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   base::SharedMemory* output_buffer =
@@ -566,7 +566,7 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
 }
 
 void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   // TODO(emircan): Notify the owner via a callback.
@@ -574,7 +574,7 @@ void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
 }
 
 void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
@@ -583,7 +583,7 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
 }
 
 void VEAEncoder::FrameFinished(std::unique_ptr<base::SharedMemory> shm) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   input_buffers_.push(std::move(shm));
 }
@@ -591,7 +591,7 @@ void VEAEncoder::FrameFinished(std::unique_ptr<base::SharedMemory> shm) {
 void VEAEncoder::EncodeOnEncodingTaskRunner(
     const scoped_refptr<VideoFrame>& frame,
     base::TimeTicks capture_timestamp) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   if (input_size_ != frame->visible_rect().size() && video_encoder_) {
@@ -679,7 +679,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
 }
 
 void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
 
@@ -1090,7 +1090,7 @@ void VideoTrackRecorder::Resume() {
 void VideoTrackRecorder::OnVideoFrameForTesting(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks timestamp) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
 
   if (!encoder_) {
     DCHECK(!initialize_encoder_callback_.is_null());
@@ -1106,7 +1106,7 @@ void VideoTrackRecorder::InitializeEncoder(
     int32_t bits_per_second,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks capture_time) {
-  DVLOG(3) << __FUNCTION__ << frame->visible_rect().size().ToString();
+  DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   MediaStreamVideoSink::DisconnectFromTrack();

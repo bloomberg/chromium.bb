@@ -196,7 +196,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
 void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom::blink::PhotoCapabilitiesPtr capabilities)
 {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     if (!m_serviceRequests.contains(resolver))
         return;
     if (capabilities.is_null()) {

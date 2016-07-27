@@ -31,7 +31,7 @@ RenderMediaClient::~RenderMediaClient() {
 
 void RenderMediaClient::AddKeySystemsInfoForUMA(
     std::vector<media::KeySystemInfoForUMA>* key_systems_info_for_uma) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 #if defined(WIDEVINE_CDM_AVAILABLE)
   key_systems_info_for_uma->push_back(media::KeySystemInfoForUMA(
       kWidevineKeySystem, kWidevineKeySystemNameForUMA));
@@ -39,7 +39,7 @@ void RenderMediaClient::AddKeySystemsInfoForUMA(
 }
 
 bool RenderMediaClient::IsKeySystemsUpdateNeeded() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Always needs update if we have never updated, regardless the
@@ -67,7 +67,7 @@ bool RenderMediaClient::IsKeySystemsUpdateNeeded() {
 void RenderMediaClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>*
         key_systems_properties) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   GetContentClient()->renderer()->AddSupportedKeySystems(

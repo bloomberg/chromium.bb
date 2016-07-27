@@ -19,7 +19,7 @@ namespace metrics {
 // is unresponsive. This makes it possible to tell from the callstack alone what
 // thread was unresponsive.
 NOINLINE void ReportThreadHang() {
-  volatile const char* inhibit_comdat = __FUNCTION__;
+  volatile const char* inhibit_comdat = __func__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
 #if defined(NDEBUG)
   base::debug::DumpWithoutCrashing();

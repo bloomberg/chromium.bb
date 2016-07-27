@@ -153,7 +153,7 @@ void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
 }
 
 OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   return audio_sink_->GetOutputDeviceInfo();
 }
 

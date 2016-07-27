@@ -91,7 +91,7 @@ AudioRendererImpl::AudioRendererImpl(
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 #if !defined(OS_ANDROID)
   if (base::PowerMonitor::Get())
@@ -107,7 +107,7 @@ AudioRendererImpl::~AudioRendererImpl() {
 }
 
 void AudioRendererImpl::StartTicking() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!rendering_);
   rendering_ = true;
@@ -123,7 +123,7 @@ void AudioRendererImpl::StartTicking() {
 }
 
 void AudioRendererImpl::StartRendering_Locked() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!sink_playing_);
@@ -137,7 +137,7 @@ void AudioRendererImpl::StartRendering_Locked() {
 }
 
 void AudioRendererImpl::StopTicking() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(rendering_);
   rendering_ = false;
@@ -166,7 +166,7 @@ void AudioRendererImpl::StopRendering_Locked() {
 }
 
 void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
-  DVLOG(1) << __FUNCTION__ << "(" << time << ")";
+  DVLOG(1) << __func__ << "(" << time << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -201,12 +201,12 @@ base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
   // It is expected that such events are transient and will be recovered as
   // rendering continues over time.
   if (current_media_time < last_media_timestamp_) {
-    DVLOG(2) << __FUNCTION__ << ": " << last_media_timestamp_
+    DVLOG(2) << __func__ << ": " << last_media_timestamp_
              << " (clamped), actual: " << current_media_time;
     return last_media_timestamp_;
   }
 
-  DVLOG(2) << __FUNCTION__ << ": " << current_media_time;
+  DVLOG(2) << __func__ << ": " << current_media_time;
   last_media_timestamp_ = current_media_time;
   return current_media_time;
 }
@@ -275,7 +275,7 @@ TimeSource* AudioRendererImpl::GetTimeSource() {
 }
 
 void AudioRendererImpl::Flush(const base::Closure& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -331,7 +331,7 @@ void AudioRendererImpl::ResetDecoderDone() {
 }
 
 void AudioRendererImpl::StartPlaying() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -348,7 +348,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    CdmContext* cdm_context,
                                    RendererClient* client,
                                    const PipelineStatusCB& init_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(client);
   DCHECK(stream);
@@ -460,7 +460,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 }
 
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
-  DVLOG(1) << __FUNCTION__ << ": " << success;
+  DVLOG(1) << __func__ << ": " << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -472,7 +472,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   }
 
   if (!audio_parameters_.IsValid()) {
-    DVLOG(1) << __FUNCTION__ << ": Invalid audio parameters: "
+    DVLOG(1) << __func__ << ": Invalid audio parameters: "
              << audio_parameters_.AsHumanReadableString();
     ChangeState_Locked(kUninitialized);
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
@@ -547,7 +547,7 @@ void AudioRendererImpl::OnResume() {
 void AudioRendererImpl::DecodedAudioReady(
     AudioBufferStream::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
-  DVLOG(2) << __FUNCTION__ << "(" << status << ")";
+  DVLOG(2) << __func__ << "(" << status << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -579,7 +579,7 @@ void AudioRendererImpl::DecodedAudioReady(
   if (expecting_config_changes_) {
     if (last_decoded_sample_rate_ &&
         buffer->sample_rate() != last_decoded_sample_rate_) {
-      DVLOG(1) << __FUNCTION__ << " Updating audio sample_rate."
+      DVLOG(1) << __func__ << " Updating audio sample_rate."
                << " ts:" << buffer->timestamp().InMicroseconds()
                << " old:" << last_decoded_sample_rate_
                << " new:" << buffer->sample_rate();
@@ -734,7 +734,7 @@ bool AudioRendererImpl::CanRead_Locked() {
 }
 
 void AudioRendererImpl::SetPlaybackRate(double playback_rate) {
-  DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
+  DVLOG(1) << __func__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
   DCHECK(sink_.get());
@@ -772,7 +772,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                               uint32_t frames_delayed,
                               uint32_t frames_skipped) {
   const int frames_requested = audio_bus->frames();
-  DVLOG(4) << __FUNCTION__ << " frames_delayed:" << frames_delayed
+  DVLOG(4) << __func__ << " frames_delayed:" << frames_delayed
            << " frames_skipped:" << frames_skipped
            << " frames_requested:" << frames_requested;
 
@@ -940,7 +940,7 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
 }
 
 void AudioRendererImpl::ChangeState_Locked(State new_state) {
-  DVLOG(1) << __FUNCTION__ << " : " << state_ << " -> " << new_state;
+  DVLOG(1) << __func__ << " : " << state_ << " -> " << new_state;
   lock_.AssertAcquired();
   state_ = new_state;
 }
@@ -963,7 +963,7 @@ void AudioRendererImpl::OnConfigChange() {
 
 void AudioRendererImpl::SetBufferingState_Locked(
     BufferingState buffering_state) {
-  DVLOG(1) << __FUNCTION__ << " : " << buffering_state_ << " -> "
+  DVLOG(1) << __func__ << " : " << buffering_state_ << " -> "
            << buffering_state;
   DCHECK_NE(buffering_state_, buffering_state);
   lock_.AssertAcquired();

@@ -551,7 +551,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
   cdm::Status status = cdm_->Decrypt(input_buffer, decrypted_block.get());
 
   if (status != cdm::kSuccess) {
-    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    DVLOG(1) << __func__ << " failed with cdm::Error " << status;
     decrypt_cb.Run(ToMediaDecryptorStatus(status), nullptr);
     return;
   }
@@ -587,7 +587,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   cdm::Status status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     // DCHECK(status == cdm::kSessionError); http://crbug.com/570486
-    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    DVLOG(1) << __func__ << " failed with cdm::Error " << status;
     init_cb.Run(false);
     return;
   }
@@ -596,7 +596,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   audio_channel_layout_ = config.channel_layout();
 
   if (status == cdm::kDeferredInitialization) {
-    DVLOG(1) << "Deferred initialization in " << __FUNCTION__;
+    DVLOG(1) << "Deferred initialization in " << __func__;
     audio_init_cb_ = init_cb;
     return;
   }
@@ -622,7 +622,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     // DCHECK(status == cdm::kSessionError); http://crbug.com/570486
-    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    DVLOG(1) << __func__ << " failed with cdm::Error " << status;
     init_cb.Run(false);
     return;
   }
@@ -630,7 +630,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   natural_size_ = config.natural_size();
 
   if (status == cdm::kDeferredInitialization) {
-    DVLOG(1) << "Deferred initialization in " << __FUNCTION__;
+    DVLOG(1) << "Deferred initialization in " << __func__;
     video_init_cb_ = init_cb;
     return;
   }
@@ -653,7 +653,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
 
   const Decryptor::AudioFrames empty_frames;
   if (status != cdm::kSuccess) {
-    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    DVLOG(1) << __func__ << " failed with cdm::Error " << status;
     audio_decode_cb.Run(ToMediaDecryptorStatus(status), empty_frames);
     return;
   }
@@ -662,7 +662,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
   DCHECK(audio_frames->FrameBuffer());
   if (!AudioFramesDataToAudioFrames(std::move(audio_frames),
                                     &audio_frame_list)) {
-    DVLOG(1) << __FUNCTION__ << " unable to convert Audio Frames";
+    DVLOG(1) << __func__ << " unable to convert Audio Frames";
     audio_decode_cb.Run(Decryptor::kError, empty_frames);
     return;
   }
@@ -674,8 +674,7 @@ void CdmAdapter::DecryptAndDecodeVideo(
     const scoped_refptr<DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(3) << __FUNCTION__
-           << " encrypted: " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << " encrypted: " << encrypted->AsHumanReadableString();
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
@@ -687,7 +686,7 @@ void CdmAdapter::DecryptAndDecodeVideo(
       cdm_->DecryptAndDecodeFrame(input_buffer, video_frame.get());
 
   if (status != cdm::kSuccess) {
-    DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
+    DVLOG(1) << __func__ << " failed with cdm::Error " << status;
     video_decode_cb.Run(ToMediaDecryptorStatus(status), nullptr);
     return;
   }
@@ -881,7 +880,7 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
                                               cdm::Status decoder_status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG_IF(1, decoder_status != cdm::kSuccess)
-      << __FUNCTION__ << " failed with cdm::Error " << decoder_status;
+      << __func__ << " failed with cdm::Error " << decoder_status;
 
   switch (stream_type) {
     case cdm::kStreamTypeAudio:

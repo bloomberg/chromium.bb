@@ -73,7 +73,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
  protected:
   ~SharedAudioRenderer() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     Stop();
   }
 

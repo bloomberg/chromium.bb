@@ -141,7 +141,7 @@ void CdmSessionAdapter::OnCdmCreated(const std::string& key_system,
                                      base::TimeTicks start_time,
                                      const scoped_refptr<MediaKeys>& cdm,
                                      const std::string& error_message) {
-  DVLOG(2) << __FUNCTION__ << ": "
+  DVLOG(2) << __func__ << ": "
            << (cdm ? "success" : "failure (" + error_message + ")");
   DCHECK(!cdm_);
 
@@ -177,7 +177,7 @@ void CdmSessionAdapter::OnSessionMessage(
     const std::vector<uint8_t>& message,
     const GURL& /* legacy_destination_url */) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+  DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;
   if (session)
     session->OnSessionMessage(message_type, message);
@@ -187,7 +187,7 @@ void CdmSessionAdapter::OnSessionKeysChange(const std::string& session_id,
                                             bool has_additional_usable_key,
                                             CdmKeysInfo keys_info) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+  DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;
   if (session)
     session->OnSessionKeysChange(has_additional_usable_key,
@@ -198,7 +198,7 @@ void CdmSessionAdapter::OnSessionExpirationUpdate(
     const std::string& session_id,
     const base::Time& new_expiry_time) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+  DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;
   if (session)
     session->OnSessionExpirationUpdate(new_expiry_time);
@@ -206,7 +206,7 @@ void CdmSessionAdapter::OnSessionExpirationUpdate(
 
 void CdmSessionAdapter::OnSessionClosed(const std::string& session_id) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
+  DLOG_IF(WARNING, !session) << __func__ << " for unknown session "
                              << session_id;
   if (session)
     session->OnSessionClosed();

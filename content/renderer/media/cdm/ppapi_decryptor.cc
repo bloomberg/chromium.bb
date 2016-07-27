@@ -116,7 +116,7 @@ void PpapiDecryptor::InitializeCdm(
 void PpapiDecryptor::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -132,7 +132,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -148,7 +148,7 @@ void PpapiDecryptor::LoadSession(
     SessionType session_type,
     const std::string& session_id,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -162,7 +162,7 @@ void PpapiDecryptor::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -175,7 +175,7 @@ void PpapiDecryptor::UpdateSession(
 void PpapiDecryptor::CloseSession(
     const std::string& session_id,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -189,7 +189,7 @@ void PpapiDecryptor::CloseSession(
 void PpapiDecryptor::RemoveSession(
     const std::string& session_id,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -222,7 +222,7 @@ void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
     return;
   }
 
-  DVLOG(3) << __FUNCTION__ << " - stream_type: " << stream_type;
+  DVLOG(3) << __func__ << " - stream_type: " << stream_type;
   switch (stream_type) {
     case kAudio:
       new_audio_key_cb_ = new_key_cb;
@@ -247,7 +247,7 @@ void PpapiDecryptor::Decrypt(
     return;
   }
 
-  DVLOG(3) << __FUNCTION__ << " - stream_type: " << stream_type;
+  DVLOG(3) << __func__ << " - stream_type: " << stream_type;
   if (!CdmDelegate() ||
       !CdmDelegate()->Decrypt(stream_type, encrypted, decrypt_cb)) {
     decrypt_cb.Run(kError, NULL);
@@ -262,7 +262,7 @@ void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
     return;
   }
 
-  DVLOG(1) << __FUNCTION__ << " - stream_type: " << stream_type;
+  DVLOG(1) << __func__ << " - stream_type: " << stream_type;
   if (CdmDelegate())
     CdmDelegate()->CancelDecrypt(stream_type);
 }
@@ -277,7 +277,7 @@ void PpapiDecryptor::InitializeAudioDecoder(
     return;
   }
 
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
@@ -301,7 +301,7 @@ void PpapiDecryptor::InitializeVideoDecoder(
     return;
   }
 
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(config.is_encrypted());
   DCHECK(config.IsValidConfig());
 
@@ -326,7 +326,7 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
     return;
   }
 
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   if (!CdmDelegate() ||
       !CdmDelegate()->DecryptAndDecodeAudio(encrypted, audio_decode_cb)) {
     audio_decode_cb.Run(kError, AudioFrames());
@@ -344,7 +344,7 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     return;
   }
 
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   if (!CdmDelegate() ||
       !CdmDelegate()->DecryptAndDecodeVideo(encrypted, video_decode_cb)) {
     video_decode_cb.Run(kError, NULL);
@@ -359,7 +359,7 @@ void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
     return;
   }
 
-  DVLOG(2) << __FUNCTION__ << " - stream_type: " << stream_type;
+  DVLOG(2) << __func__ << " - stream_type: " << stream_type;
   if (CdmDelegate())
     CdmDelegate()->ResetDecoder(stream_type);
 }
@@ -372,7 +372,7 @@ void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
     return;
   }
 
-  DVLOG(2) << __FUNCTION__ << " - stream_type: " << stream_type;
+  DVLOG(2) << __func__ << " - stream_type: " << stream_type;
   if (CdmDelegate())
     CdmDelegate()->DeinitializeDecoder(stream_type);
 }
@@ -406,7 +406,7 @@ void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
 void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          media::CdmKeysInfo keys_info) {
-  DVLOG(2) << __FUNCTION__ << ": " << has_additional_usable_key;
+  DVLOG(2) << __func__ << ": " << has_additional_usable_key;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   // TODO(jrummell): Handling resume playback should be done in the media

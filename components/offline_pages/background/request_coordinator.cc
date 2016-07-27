@@ -54,7 +54,7 @@ RequestCoordinator::~RequestCoordinator() {}
 
 bool RequestCoordinator::SavePageLater(
     const GURL& url, const ClientId& client_id, bool was_user_requested) {
-  DVLOG(2) << "URL is " << url << " " << __FUNCTION__;
+  DVLOG(2) << "URL is " << url << " " << __func__;
 
   // TODO(petewil): We need a robust scheme for allocating new IDs.  We may need
   // GUIDS for the downloads home design.
@@ -195,8 +195,8 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
 void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                                               Offliner::RequestStatus status) {
   DVLOG(2) << "offliner finished, saved: "
-           << (status == Offliner::RequestStatus::SAVED) << ", status: "
-           << (int) status << ", " << __FUNCTION__;
+           << (status == Offliner::RequestStatus::SAVED)
+           << ", status: " << static_cast<int>(status) << ", " << __func__;
   DCHECK_NE(status, Offliner::RequestStatus::UNKNOWN);
   DCHECK_NE(status, Offliner::RequestStatus::LOADED);
   event_logger_.RecordSavePageRequestUpdated(

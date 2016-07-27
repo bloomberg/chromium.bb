@@ -229,12 +229,12 @@ bool LaunchSetupAsConsoleUser(base::CommandLine* cmd_line) {
 
   DWORD console_id = ::WTSGetActiveConsoleSessionId();
   if (console_id == 0xFFFFFFFF) {
-    PLOG(ERROR) << __FUNCTION__ << " failed to get active session id";
+    PLOG(ERROR) << __func__ << " failed to get active session id";
     return false;
   }
   HANDLE user_token;
   if (!::WTSQueryUserToken(console_id, &user_token)) {
-    PLOG(ERROR) << __FUNCTION__ << " failed to get user token for console_id "
+    PLOG(ERROR) << __func__ << " failed to get user token for console_id "
                 << console_id;
     return false;
   }
@@ -244,10 +244,10 @@ bool LaunchSetupAsConsoleUser(base::CommandLine* cmd_line) {
   options.as_user = user_token;
   options.inherit_handles = true;
   options.empty_desktop_name = true;
-  VLOG(1) << __FUNCTION__ << " launching " << cmd_line->GetCommandLineString();
+  VLOG(1) << __func__ << " launching " << cmd_line->GetCommandLineString();
   base::Process process = base::LaunchProcess(*cmd_line, options);
   ::CloseHandle(user_token);
-  VLOG(1) << __FUNCTION__ << "   result: " << process.IsValid();
+  VLOG(1) << __func__ << "   result: " << process.IsValid();
   return process.IsValid();
 }
 

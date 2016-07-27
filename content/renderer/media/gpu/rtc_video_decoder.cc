@@ -673,7 +673,7 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
 }
 
 void RTCVideoDecoder::ResetInternal() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (vda_) {

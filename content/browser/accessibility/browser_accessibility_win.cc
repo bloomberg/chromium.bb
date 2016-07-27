@@ -516,8 +516,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // destruction. Possible cases where this could occur include tabs being
     // dragged to a new window, etc.
     if (!parent_obj) {
-      DVLOG(1) <<  "In Function: "
-               << __FUNCTION__
+      DVLOG(1) << "In Function: " << __func__
                << ". Parent IAccessible interface is NULL. Returning failure";
       return E_FAIL;
     }
@@ -3224,10 +3223,7 @@ BrowserAccessibilityWin::ConvertReturnedElement(
 
 STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
                                                          IUnknown** provider) {
-  DVLOG(1) << "In Function: "
-           << __FUNCTION__
-           << " for pattern id: "
-           << id;
+  DVLOG(1) << "In Function: " << __func__ << " for pattern id: " << id;
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (HasState(ui::AX_STATE_EDITABLE)) {
       DVLOG(1) << "Returning UIA text provider";
@@ -3241,10 +3237,7 @@ STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
 
 STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
                                                        VARIANT* ret) {
-  DVLOG(1) << "In Function: "
-           << __FUNCTION__
-           << " for property id: "
-           << id;
+  DVLOG(1) << "In Function: " << __func__ << " for property id: " << id;
   V_VT(ret) = VT_EMPTY;
   if (id == UIA_ControlTypePropertyId) {
     if (HasState(ui::AX_STATE_EDITABLE)) {

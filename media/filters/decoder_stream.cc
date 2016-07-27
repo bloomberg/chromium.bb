@@ -30,7 +30,7 @@ template <DemuxerStream::Type StreamType>
 static const char* GetTraceString();
 
 #define FUNCTION_DVLOG(level) \
-  DVLOG(level) << __FUNCTION__ << "<" << GetStreamTypeString() << ">"
+  DVLOG(level) << __func__ << "<" << GetStreamTypeString() << ">"
 
 template <>
 const char* GetTraceString<DemuxerStream::VIDEO>() {

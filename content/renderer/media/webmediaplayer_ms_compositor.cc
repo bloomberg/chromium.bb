@@ -182,13 +182,13 @@ base::TimeDelta WebMediaPlayerMSCompositor::GetCurrentTime() {
 }
 
 size_t WebMediaPlayerMSCompositor::total_frame_count() const {
-  DVLOG(1) << __FUNCTION__ << ", " << total_frame_count_;
+  DVLOG(1) << __func__ << ", " << total_frame_count_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return total_frame_count_;
 }
 
 size_t WebMediaPlayerMSCompositor::dropped_frame_count() const {
-  DVLOG(1) << __FUNCTION__ << ", " << dropped_frame_count_;
+  DVLOG(1) << __func__ << ", " << dropped_frame_count_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return dropped_frame_count_;
 }
@@ -299,19 +299,19 @@ bool WebMediaPlayerMSCompositor::HasCurrentFrame() {
 }
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   base::AutoLock auto_lock(current_frame_lock_);
   current_frame_used_by_compositor_ = true;
   return current_frame_;
 }
 
 void WebMediaPlayerMSCompositor::PutCurrentFrame() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
 }
 
 scoped_refptr<media::VideoFrame>
 WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   base::AutoLock auto_lock(current_frame_lock_);
   return current_frame_;
 }

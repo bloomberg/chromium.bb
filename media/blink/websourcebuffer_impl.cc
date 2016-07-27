@@ -182,7 +182,7 @@ blink::WebMediaPlayer::TrackType mediaTrackTypeToBlink(MediaTrack::Type type) {
 void WebSourceBufferImpl::InitSegmentReceived(
     std::unique_ptr<MediaTracks> tracks) {
   DCHECK(tracks.get());
-  DVLOG(1) << __FUNCTION__ << " tracks=" << tracks->tracks().size();
+  DVLOG(1) << __func__ << " tracks=" << tracks->tracks().size();
 
   std::vector<blink::WebSourceBufferClient::MediaTrackInfo> trackInfoVector;
   for (const auto& track : tracks->tracks()) {

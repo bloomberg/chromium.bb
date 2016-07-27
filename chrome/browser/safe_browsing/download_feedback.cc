@@ -144,7 +144,7 @@ void DownloadFeedbackImpl::FinishedUpload(base::Closure finish_callback,
                                           int response_code,
                                           const std::string& response_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(1) << __FUNCTION__ << " " << state << " rlen=" << response_data.size();
+  DVLOG(1) << __func__ << " " << state << " rlen=" << response_data.size();
 
   switch (state) {
     case TwoPhaseUploader::STATE_SUCCESS: {

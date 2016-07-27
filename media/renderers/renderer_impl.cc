@@ -86,7 +86,7 @@ RendererImpl::RendererImpl(
           base::TimeDelta::FromMilliseconds(kDefaultVideoUnderflowThresholdMs)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   // TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 are
   // complete.
@@ -101,7 +101,7 @@ RendererImpl::RendererImpl(
 }
 
 RendererImpl::~RendererImpl() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Tear down in opposite order of construction as |video_renderer_| can still
@@ -119,7 +119,7 @@ RendererImpl::~RendererImpl() {
 void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
                               RendererClient* client,
                               const PipelineStatusCB& init_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(!init_cb.is_null());
@@ -153,7 +153,7 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
 
 void RendererImpl::SetCdm(CdmContext* cdm_context,
                           const CdmAttachedCB& cdm_attached_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
 
@@ -179,7 +179,7 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
 }
 
 void RendererImpl::Flush(const base::Closure& flush_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(flush_cb_.is_null());
 
@@ -198,7 +198,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
 }
 
 void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ != STATE_PLAYING) {
@@ -216,8 +216,7 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
 
 void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
                                          base::TimeDelta time) {
-  DVLOG(1) << __FUNCTION__ << " stream=" << stream
-           << " time=" << time.InSecondsF();
+  DVLOG(1) << __func__ << " stream=" << stream << " time=" << time.InSecondsF();
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ != STATE_PLAYING)
     return;
@@ -248,7 +247,7 @@ void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
 
 void RendererImpl::RestartVideoRenderer(base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   video_ended_ = false;
   if (state_ == STATE_PLAYING) {
     DCHECK(video_renderer_);
@@ -258,7 +257,7 @@ void RendererImpl::RestartVideoRenderer(base::TimeDelta time) {
 
 void RendererImpl::RestartAudioRenderer(base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   audio_ended_ = false;
   if (state_ == STATE_PLAYING) {
     DCHECK(time_source_);
@@ -268,7 +267,7 @@ void RendererImpl::RestartAudioRenderer(base::TimeDelta time) {
 }
 
 void RendererImpl::SetPlaybackRate(double playback_rate) {
-  DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
+  DVLOG(1) << __func__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Playback rate changes are only carried out while playing.
@@ -289,7 +288,7 @@ void RendererImpl::SetPlaybackRate(double playback_rate) {
 }
 
 void RendererImpl::SetVolume(float volume) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_)
@@ -313,7 +312,7 @@ bool RendererImpl::HasVideo() {
 }
 
 void RendererImpl::DisableUnderflowForTesting() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
@@ -321,7 +320,7 @@ void RendererImpl::DisableUnderflowForTesting() {
 }
 
 void RendererImpl::EnableClocklessVideoPlaybackForTesting() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(underflow_disabled_for_testing_)
@@ -378,7 +377,7 @@ void RendererImpl::FinishInitialization(PipelineStatus status) {
 }
 
 void RendererImpl::InitializeAudioRenderer() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(!init_cb_.is_null());
@@ -402,7 +401,7 @@ void RendererImpl::InitializeAudioRenderer() {
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
-  DVLOG(1) << __FUNCTION__ << ": " << status;
+  DVLOG(1) << __func__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // OnError() may be fired at any time by the renderers, even if they thought
@@ -423,7 +422,7 @@ void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
 }
 
 void RendererImpl::InitializeVideoRenderer() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(!init_cb_.is_null());
@@ -447,7 +446,7 @@ void RendererImpl::InitializeVideoRenderer() {
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
-  DVLOG(1) << __FUNCTION__ << ": " << status;
+  DVLOG(1) << __func__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // OnError() may be fired at any time by the renderers, even if they thought
@@ -481,7 +480,7 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
 }
 
 void RendererImpl::FlushAudioRenderer() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
@@ -496,7 +495,7 @@ void RendererImpl::FlushAudioRenderer() {
 }
 
 void RendererImpl::OnAudioRendererFlushDone() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ == STATE_ERROR) {
@@ -517,7 +516,7 @@ void RendererImpl::OnAudioRendererFlushDone() {
 }
 
 void RendererImpl::FlushVideoRenderer() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
@@ -532,7 +531,7 @@ void RendererImpl::FlushVideoRenderer() {
 }
 
 void RendererImpl::OnVideoRendererFlushDone() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ == STATE_ERROR) {
@@ -576,8 +575,8 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
   // the other stream.
   if (type == DemuxerStream::VIDEO && restarting_video_) {
     if (new_buffering_state == BUFFERING_HAVE_ENOUGH) {
-      DVLOG(1) << __FUNCTION__ << " Got BUFFERING_HAVE_ENOUGH for video stream,"
-                                  " resuming playback.";
+      DVLOG(1) << __func__ << " Got BUFFERING_HAVE_ENOUGH for video stream,"
+                              " resuming playback.";
       restarting_video_ = false;
       if (state_ == STATE_PLAYING &&
           !deferred_video_underflow_cb_.IsCancelled()) {
@@ -601,8 +600,8 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
     if (new_buffering_state == BUFFERING_HAVE_NOTHING) {
       if (deferred_video_underflow_cb_.IsCancelled() &&
           deferred_audio_restart_underflow_cb_.IsCancelled()) {
-        DVLOG(1) << __FUNCTION__ << " Deferring BUFFERING_HAVE_NOTHING for "
-                                    "audio stream which is being restarted.";
+        DVLOG(1) << __func__ << " Deferring BUFFERING_HAVE_NOTHING for "
+                                "audio stream which is being restarted.";
         audio_buffering_state_ = new_buffering_state;
         deferred_audio_restart_underflow_cb_.Reset(
             base::Bind(&RendererImpl::OnBufferingStateChange, weak_this_, type,
@@ -617,8 +616,8 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
       DVLOG(4) << "deferred_audio_restart_underflow_cb_.Cancel()";
       deferred_audio_restart_underflow_cb_.Cancel();
     } else if (new_buffering_state == BUFFERING_HAVE_ENOUGH) {
-      DVLOG(1) << __FUNCTION__ << " Got BUFFERING_HAVE_ENOUGH for audio stream,"
-                                  " resuming playback.";
+      DVLOG(1) << __func__ << " Got BUFFERING_HAVE_ENOUGH for audio stream,"
+                              " resuming playback.";
       deferred_audio_restart_underflow_cb_.Cancel();
       // Now that we have decoded enough audio, pause playback momentarily to
       // ensure video renderer is synchronised with audio.
@@ -636,8 +635,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
                                         ? &audio_buffering_state_
                                         : &video_buffering_state_;
 
-  DVLOG(1) << __FUNCTION__
-           << (type == DemuxerStream::AUDIO ? " audio " : " video ")
+  DVLOG(1) << __func__ << (type == DemuxerStream::AUDIO ? " audio " : " video ")
            << BufferingStateStr(*buffering_state) << " -> "
            << BufferingStateStr(new_buffering_state);
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -658,7 +656,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
         audio_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         new_buffering_state == BUFFERING_HAVE_NOTHING &&
         deferred_video_underflow_cb_.IsCancelled()) {
-      DVLOG(4) << __FUNCTION__ << " Deferring HAVE_NOTHING for video stream.";
+      DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
           base::Bind(&RendererImpl::OnBufferingStateChange,
                      weak_factory_.GetWeakPtr(), type, new_buffering_state));
@@ -715,7 +713,7 @@ bool RendererImpl::WaitingForEnoughData() const {
 }
 
 void RendererImpl::PausePlayback() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case STATE_PLAYING:
@@ -749,7 +747,7 @@ void RendererImpl::PausePlayback() {
 }
 
 void RendererImpl::StartPlayback() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING);
   DCHECK(!time_ticking_);
@@ -762,8 +760,7 @@ void RendererImpl::StartPlayback() {
 }
 
 void RendererImpl::OnRendererEnded(DemuxerStream::Type type) {
-  DVLOG(1) << __FUNCTION__
-           << (type == DemuxerStream::AUDIO ? " audio" : " video");
+  DVLOG(1) << __func__ << (type == DemuxerStream::AUDIO ? " audio" : " video");
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
 
@@ -796,7 +793,7 @@ bool RendererImpl::PlaybackHasEnded() const {
 }
 
 void RendererImpl::RunEndedCallbackIfNeeded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!PlaybackHasEnded())
@@ -809,7 +806,7 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
 }
 
 void RendererImpl::OnError(PipelineStatus error) {
-  DVLOG(1) << __FUNCTION__ << "(" << error << ")";
+  DVLOG(1) << __func__ << "(" << error << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
 

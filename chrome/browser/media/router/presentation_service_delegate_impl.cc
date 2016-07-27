@@ -236,15 +236,15 @@ void PresentationFrame::ListenForConnectionStateChange(
         state_changed_cb) {
   auto it = presentation_id_to_route_id_.find(connection.presentation_id);
   if (it == presentation_id_to_route_id_.end()) {
-    DLOG(ERROR) << __FUNCTION__ << "route id not found for presentation: "
+    DLOG(ERROR) << __func__ << "route id not found for presentation: "
                 << connection.presentation_id;
     return;
   }
 
   const MediaRoute::Id& route_id = it->second;
   if (connection_state_subscriptions_.contains(route_id)) {
-    DLOG(ERROR) << __FUNCTION__ << "Already listening connection state change "
-                                   "for route: "
+    DLOG(ERROR) << __func__
+                << "Already listening connection state change for route: "
                 << route_id;
     return;
   }

@@ -126,7 +126,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
                                std::unique_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
-  DVLOG(1) << __FUNCTION__ << " - " << encoded_data->size() << "B";
+  DVLOG(1) << __func__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!video_track_index_) {
@@ -140,7 +140,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 
   // TODO(ajose): Support multiple tracks: http://crbug.com/528523
   if (has_audio_ && !audio_track_index_) {
-    DVLOG(1) << __FUNCTION__ << ": delaying until audio track ready.";
+    DVLOG(1) << __func__ << ": delaying until audio track ready.";
     if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
       encoded_frames_queue_.clear();
 
@@ -165,7 +165,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
                                std::unique_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp) {
-  DVLOG(2) << __FUNCTION__ << " - " << encoded_data->size() << "B";
+  DVLOG(2) << __func__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!audio_track_index_) {
@@ -177,7 +177,7 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
   // TODO(ajose): Don't drop audio data: http://crbug.com/547948
   // TODO(ajose): Support multiple tracks: http://crbug.com/528523
   if (has_video_ && !video_track_index_) {
-    DVLOG(1) << __FUNCTION__ << ": delaying until video track ready.";
+    DVLOG(1) << __func__ << ": delaying until video track ready.";
     return;
   }
 
@@ -196,14 +196,14 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
 }
 
 void WebmMuxer::Pause() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!elapsed_time_in_pause_)
     elapsed_time_in_pause_.reset(new base::ElapsedTimer());
 }
 
 void WebmMuxer::Resume() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (elapsed_time_in_pause_) {
     total_time_in_pause_ += elapsed_time_in_pause_->Elapsed();
@@ -242,7 +242,7 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
 }
 
 void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
-  DVLOG(1) << __FUNCTION__ << " " << params.AsHumanReadableString();
+  DVLOG(1) << __func__ << " " << params.AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0u, audio_track_index_)
       << "WebmMuxer audio can only be initialised once.";
@@ -267,7 +267,7 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
   WriteOpusHeader(params, opus_header);
 
   if (!audio_track->SetCodecPrivate(opus_header, OPUS_EXTRADATA_SIZE))
-    LOG(ERROR) << __FUNCTION__ << ": failed to set opus header.";
+    LOG(ERROR) << __func__ << ": failed to set opus header.";
 
   // Segment's timestamps should be in milliseconds, DCHECK it. See
   // http://www.webmproject.org/docs/container/#muxer-guidelines

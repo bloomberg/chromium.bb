@@ -75,6 +75,14 @@ with the language.</p>
 </tr>
 
 <tr>
+<td>__func__ Local Variable</td>
+<td><code>__func__</code></td>
+<td>Provides a local variable containing the name of the enclosing function</td>
+<td><a href="https://msdn.microsoft.com/en-us/library/dn919276.aspx">__func__</a></td>
+<td>Use instead of the non-standard <code>__FUNCTION__</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ojGfcgSDzHM">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Aliases</td>
 <td><code>using <i>new_alias</i> = <i>typename</i></code></td>
 <td>Allow parameterized typedefs</td>
@@ -507,14 +515,6 @@ codebase.
 <td>Object alignment</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/alignas">alignas</a>, <a href="http://en.cppreference.com/w/cpp/language/alignof">alignof</a></td>
 <td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/rwXN02jzzq0/CpUc1ZzMBQAJ">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Function Local Variable</td>
-<td><code>__func__</code></td>
-<td>Provides a local variable of the name of the enclosing function for logging purposes</td>
-<td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">The __func__ Predeclared Identifier is Coming to C++</a></td>
-<td>Reevaluate now that MSVS2015 is available. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ojGfcgSDzHM">Discussion thread</a></td>
 </tr>
 
 <tr>

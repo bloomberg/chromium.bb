@@ -739,7 +739,7 @@ bool MimeUtil::StringToCodec(const std::string& mime_type_lower_case,
   }
 #endif
 
-  DVLOG(4) << __FUNCTION__ << ": Unrecognized codec id " << codec_id;
+  DVLOG(4) << __func__ << ": Unrecognized codec id " << codec_id;
   return false;
 }
 

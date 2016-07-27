@@ -374,7 +374,7 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
     const char* operation,
     int os_error,
     DownloadInterruptReason reason) {
-  DVLOG(1) << __FUNCTION__ << "() operation:" << operation
+  DVLOG(1) << __func__ << "() operation:" << operation
            << " os_error:" << os_error
            << " reason:" << DownloadInterruptReasonToString(reason);
   bound_net_log_.AddEvent(

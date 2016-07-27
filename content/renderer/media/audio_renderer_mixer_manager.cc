@@ -201,7 +201,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       mixer_output_params, sink, base::Bind(LogMixerUmaHistogram, latency));
   AudioRendererMixerReference mixer_reference = {mixer, 1, sink.get()};
   mixers_[key] = mixer_reference;
-  DVLOG(1) << __FUNCTION__ << " mixer: " << mixer << " latency: " << latency
+  DVLOG(1) << __func__ << " mixer: " << mixer << " latency: " << latency
            << "\n input: " << input_params.AsHumanReadableString()
            << "\noutput: " << mixer_output_params.AsHumanReadableString();
   return mixer;

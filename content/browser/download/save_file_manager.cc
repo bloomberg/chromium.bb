@@ -200,8 +200,7 @@ void SaveFileManager::UpdateSaveProgress(SaveItemId save_item_id,
 void SaveFileManager::SaveFinished(SaveItemId save_item_id,
                                    SavePackageId save_package_id,
                                    bool is_success) {
-  DVLOG(20) << " " << __FUNCTION__ << "()"
-            << " save_item_id = " << save_item_id
+  DVLOG(20) << __func__ << "() save_item_id = " << save_item_id
             << " save_package_id = " << save_package_id
             << " is_success = " << is_success;
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -210,8 +209,7 @@ void SaveFileManager::SaveFinished(SaveItemId save_item_id,
   SaveFile* save_file = LookupSaveFile(save_item_id);
   if (save_file != nullptr) {
     DCHECK(save_file->InProgress());
-    DVLOG(20) << " " << __FUNCTION__ << "()"
-              << " save_file = " << save_file->DebugString();
+    DVLOG(20) << __func__ << "() save_file = " << save_file->DebugString();
     bytes_so_far = save_file->BytesSoFar();
     save_file->Finish();
     save_file->Detach();

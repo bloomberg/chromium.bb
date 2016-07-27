@@ -1042,9 +1042,8 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
 
   // Current frame is completed saving, call finish in FILE thread.
   if (end_of_data) {
-    DVLOG(20) << " " << __FUNCTION__ << "()"
-              << " save_item_id = " << save_item->id() << " url = \""
-              << save_item->url().spec() << "\"";
+    DVLOG(20) << __func__ << "() save_item_id = " << save_item->id()
+              << " url = \"" << save_item->url().spec() << "\"";
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveFileManager::SaveFinished, file_manager_,

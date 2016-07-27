@@ -60,7 +60,7 @@ void ImageHolder::CreateBitmapFetcher(const GURL& url) {
 
   if (url.is_valid()) {
     fetchers_.push_back(new chrome::BitmapFetcher(url, this));
-    DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
+    DVLOG(2) << __func__ << "Pushing bitmap " << url;
   }
 }
 
@@ -91,7 +91,7 @@ void ImageHolder::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
     if (bitmap != NULL)
       image_.AddRepresentation(gfx::ImageSkiaRep(*bitmap, 2.0));
   } else {
-    DVLOG(2) << __FUNCTION__ << "Unmatched bitmap arrived " << url;
+    DVLOG(2) << __func__ << "Unmatched bitmap arrived " << url;
   }
 
   // Notify callback of bitmap arrival.

@@ -71,7 +71,7 @@ void ResourceMultiBufferDataProvider::Start() {
   // TODO(mkwst): Split this into video/audio.
   request.setRequestContext(WebURLRequest::RequestContextVideo);
 
-  DVLOG(1) << __FUNCTION__ << " @ " << byte_pos();
+  DVLOG(1) << __func__ << " @ " << byte_pos();
   if (url_data_->length() > 0 && byte_pos() >= url_data_->length()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Terminate,

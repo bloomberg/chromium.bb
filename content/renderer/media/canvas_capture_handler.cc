@@ -155,7 +155,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
 }
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
@@ -188,7 +188,7 @@ void CanvasCaptureHandler::StartVideoCapture(
     const media::VideoCapturerSource::VideoCaptureDeliverFrameCB&
         new_frame_callback,
     const media::VideoCapturerSource::RunningCallback& running_callback) {
-  DVLOG(3) << __FUNCTION__ << " requested "
+  DVLOG(3) << __func__ << " requested "
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(params.requested_format.IsValid());
@@ -202,7 +202,7 @@ void CanvasCaptureHandler::StartVideoCapture(
 }
 
 void CanvasCaptureHandler::RequestRefreshFrame() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (last_frame_ && delegate_) {
     io_task_runner_->PostTask(
@@ -215,14 +215,14 @@ void CanvasCaptureHandler::RequestRefreshFrame() {
 }
 
 void CanvasCaptureHandler::StopVideoCapture() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   ask_for_new_frame_ = false;
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
 void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
-  DVLOG(4) << __FUNCTION__;
+  DVLOG(4) << __func__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(image);
 

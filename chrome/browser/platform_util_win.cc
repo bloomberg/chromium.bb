@@ -62,7 +62,7 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
     // the process.
     HMODULE shell32_base = GetModuleHandle(L"shell32.dll");
     if (!shell32_base) {
-      NOTREACHED() << " " << __FUNCTION__ << "(): Can't open shell32.dll";
+      NOTREACHED() << " " << __func__ << "(): Can't open shell32.dll";
       return;
     }
     open_folder_and_select_itemsPtr =
@@ -105,7 +105,7 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
     if (hr == ERROR_FILE_NOT_FOUND) {
       ShellExecute(NULL, L"open", dir.value().c_str(), NULL, NULL, SW_SHOW);
     } else {
-      LOG(WARNING) << " " << __FUNCTION__ << "(): Can't open full_path = \""
+      LOG(WARNING) << " " << __func__ << "(): Can't open full_path = \""
                    << full_path.value() << "\""
                    << " hr = " << logging::SystemErrorCodeToString(hr);
     }

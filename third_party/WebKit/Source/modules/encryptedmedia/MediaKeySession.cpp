@@ -325,7 +325,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     , m_closedPromise(new ClosedPromise(scriptState->getExecutionContext(), this, ClosedPromise::Closed))
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
     ThreadState::current()->registerPreFinalizer(this);
 
     // Create the matching Chromium object. It will not be usable until
@@ -368,7 +368,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
 
 MediaKeySession::~MediaKeySession()
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 }
 
 void MediaKeySession::dispose()
@@ -395,7 +395,7 @@ MediaKeyStatusMap* MediaKeySession::keyStatuses()
 
 ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataTypeString, const DOMArrayPiece& initData)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") " << initDataTypeString;
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") " << initDataTypeString;
 
     // From https://w3c.github.io/encrypted-media/#generateRequest:
     // Generates a request based on the initData. When this method is invoked,
@@ -459,7 +459,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
 
 ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sessionId)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") " << sessionId;
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") " << sessionId;
 
     // From https://w3c.github.io/encrypted-media/#load:
     // Loads the data stored for the specified session into this object. When
@@ -513,7 +513,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
 
 ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPiece& response)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
     DCHECK(!m_isClosed);
 
     // From https://w3c.github.io/encrypted-media/#update:
@@ -551,7 +551,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPi
 
 ScriptPromise MediaKeySession::close(ScriptState* scriptState)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
     // From https://w3c.github.io/encrypted-media/#close:
     // Indicates that the application no longer needs the session and the CDM
@@ -584,7 +584,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState)
 
 ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
     // From https://w3c.github.io/encrypted-media/#remove:
     // Removes stored session data associated with this object. When this
@@ -641,7 +641,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
         switch (action->getType()) {
         case PendingAction::GenerateRequest:
             // NOTE: Continue step 9 of MediaKeySession::generateRequest().
-            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") GenerateRequest";
+            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") GenerateRequest";
 
             // initializeNewSession() in Chromium will execute steps 9.1 to 9.7.
             m_session->initializeNewSession(action->initDataType(), static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), m_sessionType, action->result()->result());
@@ -652,7 +652,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
         case PendingAction::Load:
             // NOTE: Continue step 8 of MediaKeySession::load().
-            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") Load";
+            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") Load";
 
             // 8.1 Let sanitized session ID be a validated and/or sanitized
             //     version of sessionId. The user agent should thoroughly
@@ -687,7 +687,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
         case PendingAction::Update:
             // NOTE: Continue step 5 of MediaKeySession::update().
-            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") Update";
+            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") Update";
 
             // update() in Chromium will execute steps 5.1 through 5.8.
             m_session->update(static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), action->result()->result());
@@ -698,7 +698,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
         case PendingAction::Close:
             // NOTE: Continue step 4 of MediaKeySession::close().
-            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") Close";
+            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") Close";
 
             // close() in Chromium will execute steps 4.1 through 4.2.
             m_session->close(action->result()->result());
@@ -709,7 +709,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 
         case PendingAction::Remove:
             // NOTE: Continue step 5 of MediaKeySession::remove().
-            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") Remove";
+            DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") Remove";
 
             // remove() in Chromium will execute steps 5.1 through 5.3.
             m_session->remove(action->result()->result());
@@ -779,7 +779,7 @@ void MediaKeySession::finishLoad()
 // Queue a task to fire a simple event named keymessage at the new object.
 void MediaKeySession::message(MessageType messageType, const unsigned char* message, size_t messageLength)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
     // Verify that 'message' not fired before session initialization is complete.
     DCHECK(m_isCallable);
@@ -813,7 +813,7 @@ void MediaKeySession::message(MessageType messageType, const unsigned char* mess
 
 void MediaKeySession::close()
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
     // From https://w3c.github.io/encrypted-media/#session-close:
     // The following steps are run:
@@ -829,7 +829,7 @@ void MediaKeySession::close()
 
 void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") " << updatedExpiryTimeInMS;
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") " << updatedExpiryTimeInMS;
 
     // From https://w3c.github.io/encrypted-media/#update-expiration:
     // The following steps are run:
@@ -850,7 +850,7 @@ void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 
 void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>& keys, bool hasAdditionalUsableKey)
 {
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") with " << keys.size() << " keys and hasAdditionalUsableKey is " << (hasAdditionalUsableKey ? "true" : "false");
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ") with " << keys.size() << " keys and hasAdditionalUsableKey is " << (hasAdditionalUsableKey ? "true" : "false");
 
     // From https://w3c.github.io/encrypted-media/#update-key-statuses:
     // The following steps are run:
@@ -900,7 +900,7 @@ bool MediaKeySession::hasPendingActivity() const
 {
     // Remain around if there are pending events or MediaKeys is still around
     // and we're not closed.
-    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")"
+    DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")"
         << (!m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "")
         << (m_asyncEventQueue->hasPendingEvents() ? " m_asyncEventQueue->hasPendingEvents()" : "")
         << ((m_mediaKeys && !m_isClosed) ? " m_mediaKeys && !m_isClosed" : "");

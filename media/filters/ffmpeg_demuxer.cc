@@ -1532,7 +1532,7 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == audio_stream);
     enabled = true;
   }
-  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+  DVLOG(1) << __func__ << ": " << (enabled ? "enabling" : "disabling")
            << " audio stream";
   audio_stream->set_enabled(enabled, currTime);
 }
@@ -1548,7 +1548,7 @@ void FFmpegDemuxer::OnSelectedVideoTrackChanged(
     DCHECK(track_id_to_demux_stream_map_[track_ids[0]] == video_stream);
     enabled = true;
   }
-  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+  DVLOG(1) << __func__ << ": " << (enabled ? "enabling" : "disabling")
            << " video stream";
   video_stream->set_enabled(enabled, currTime);
 }
@@ -1591,7 +1591,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   // - either underlying ffmpeg returned an error
   // - or FFMpegDemuxer reached the maximum allowed memory usage.
   if (result < 0 || IsMaxMemoryUsageReached()) {
-    LOG(ERROR) << __FUNCTION__ << " result=" << result
+    LOG(ERROR) << __func__ << " result=" << result
                << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
     // Update the duration based on the highest elapsed time across all streams
     // if it was previously unknown.

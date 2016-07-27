@@ -105,8 +105,8 @@ void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   net::URLRequestStatus status = source->GetStatus();
   int response_code = source->GetResponseCode();
 
-  DVLOG(1) << __FUNCTION__ << " " << source->GetURL().spec()
-           << " " << status.status() << " " << response_code;
+  DVLOG(1) << __func__ << " " << source->GetURL().spec() << " "
+           << status.status() << " " << response_code;
 
   if (!status.is_success()) {
     LOG(ERROR) << "URLFetcher failed, status=" << status.status()
@@ -158,8 +158,8 @@ void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
     int64_t current,
     int64_t total) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(3) << __FUNCTION__ << " " << source->GetURL().spec()
-           << " " << current << "/" << total;
+  DVLOG(3) << __func__ << " " << source->GetURL().spec() << " " << current
+           << "/" << total;
   if (state_ == UPLOAD_FILE && !progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }

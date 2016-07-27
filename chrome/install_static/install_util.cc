@@ -191,11 +191,11 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
   DWORD file_attributes = ::GetFileAttributes(full_path_str);
   if (file_attributes != INVALID_FILE_ATTRIBUTES) {
     if ((file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-      Trace(L"%hs( %ls directory exists )\n", __FUNCTION__, full_path_str);
+      Trace(L"%hs( %ls directory exists )\n", __func__, full_path_str);
       return true;
     }
-    Trace(L"%hs( %ls directory conflicts with an existing file. )\n",
-          __FUNCTION__, full_path_str);
+    Trace(L"%hs( %ls directory conflicts with an existing file. )\n", __func__,
+          full_path_str);
     return false;
   }
 

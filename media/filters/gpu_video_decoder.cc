@@ -229,14 +229,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = output_cb;
 
   if (config.is_encrypted() && !supports_deferred_initialization_) {
-    DVLOG(1) << __FUNCTION__
+    DVLOG(1) << __func__
              << " Encrypted stream requires deferred initialialization.";
     bound_init_cb.Run(false);
     return;
   }
 
   if (previously_initialized) {
-    DVLOG(3) << __FUNCTION__
+    DVLOG(3) << __func__
              << " Expecting initialized VDA to detect in-stream config change.";
     // Reinitialization with a different config (but same codec and profile).
     // VDA should handle it by detecting this in-stream by itself,
@@ -314,7 +314,7 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
 }
 
 void GpuVideoDecoder::NotifyInitializationComplete(bool success) {
-  DVLOG_IF(1, !success) << __FUNCTION__ << " Deferred initialization failed.";
+  DVLOG_IF(1, !success) << __func__ << " Deferred initialization failed.";
   DCHECK(!init_cb_.is_null());
 
   base::ResetAndReturn(&init_cb_).Run(success);
@@ -352,7 +352,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(pending_reset_cb_.is_null());
 
-  DVLOG(3) << __FUNCTION__ << " " << buffer->AsHumanReadableString();
+  DVLOG(3) << __func__ << " " << buffer->AsHumanReadableString();
 
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
@@ -376,7 +376,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK_EQ(state_, kNormal);
 
   if (buffer->end_of_stream()) {
-    DVLOG(3) << __FUNCTION__ << " Initiating Flush for EOS.";
+    DVLOG(3) << __func__ << " Initiating Flush for EOS.";
     state_ = kDrainingDecoder;
     eos_decode_cb_ = bound_decode_cb;
     vda_->Flush();
@@ -566,7 +566,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
     // requesting new PictureBuffers. Sending a Picture of unmatched size is
     // the signal that we should update the size of our PictureBuffer.
     DCHECK(pb.size() != picture.visible_rect().size());
-    DVLOG(3) << __FUNCTION__ << " Updating size of PictureBuffer[" << pb.id()
+    DVLOG(3) << __func__ << " Updating size of PictureBuffer[" << pb.id()
              << "] from:" << pb.size().ToString()
              << " to:" << picture.visible_rect().size().ToString();
     pb.set_size(picture.visible_rect().size());
@@ -731,7 +731,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (vda_)

@@ -169,7 +169,7 @@ base::string16 GetCachedBstrValue(IUIAutomationElement* element,
 
   if (V_VT(var.ptr()) != VT_BSTR) {
     LOG_IF(ERROR, V_VT(var.ptr()) != VT_UNKNOWN)
-        << __FUNCTION__ << " property is not a BSTR: " << V_VT(var.ptr());
+        << __func__ << " property is not a BSTR: " << V_VT(var.ptr());
     return base::string16();
   }
 
@@ -224,7 +224,7 @@ bool GetCachedBoolValue(IUIAutomationElement* element, PROPERTYID property_id) {
 
   if (V_VT(var.ptr()) != VT_BOOL) {
     LOG_IF(ERROR, V_VT(var.ptr()) != VT_UNKNOWN)
-        << __FUNCTION__ << " property is not a BOOL: " << V_VT(var.ptr());
+        << __func__ << " property is not a BOOL: " << V_VT(var.ptr());
     return false;
   }
 
@@ -246,7 +246,7 @@ int32_t GetCachedInt32Value(IUIAutomationElement* element,
 
   if (V_VT(var.ptr()) != VT_I4) {
     LOG_IF(ERROR, V_VT(var.ptr()) != VT_UNKNOWN)
-        << __FUNCTION__ << " property is not an I4: " << V_VT(var.ptr());
+        << __func__ << " property is not an I4: " << V_VT(var.ptr());
     return false;
   }
 
@@ -269,7 +269,7 @@ std::vector<int32_t> GetCachedInt32ArrayValue(IUIAutomationElement* element,
 
   if (V_VT(var.ptr()) != (VT_I4 | VT_ARRAY)) {
     LOG_IF(ERROR, V_VT(var.ptr()) != VT_UNKNOWN)
-        << __FUNCTION__ << " property is not an I4 array: " << V_VT(var.ptr());
+        << __func__ << " property is not an I4 array: " << V_VT(var.ptr());
     return values;
   }
 

@@ -495,7 +495,7 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
 void SafeBrowsingBlockingPage::ShowBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     const UnsafeResource& unsafe_resource) {
-  DVLOG(1) << __FUNCTION__ << " " << unsafe_resource.url.spec();
+  DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = tab_util::GetWebContentsByFrameID(
       unsafe_resource.render_process_host_id, unsafe_resource.render_frame_id);
 

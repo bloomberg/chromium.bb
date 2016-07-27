@@ -266,8 +266,7 @@ DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
 }
 
 void DownloadManagerImpl::Shutdown() {
-  DVLOG(20) << __FUNCTION__ << "()"
-            << " shutdown_needed_ = " << shutdown_needed_;
+  DVLOG(20) << __func__ << "() shutdown_needed_ = " << shutdown_needed_;
   if (!shutdown_needed_)
     return;
   shutdown_needed_ = false;
@@ -305,8 +304,8 @@ void DownloadManagerImpl::StartDownload(
   // |stream| is only non-nil if the download request was successful.
   DCHECK((info->result == DOWNLOAD_INTERRUPT_REASON_NONE && stream.get()) ||
          (info->result != DOWNLOAD_INTERRUPT_REASON_NONE && !stream.get()));
-  DVLOG(20) << __FUNCTION__ << "()"
-            << " result=" << DownloadInterruptReasonToString(info->result);
+  DVLOG(20) << __func__
+            << "() result=" << DownloadInterruptReasonToString(info->result);
   uint32_t download_id = info->download_id;
   const bool new_download = (download_id == content::DownloadItem::kInvalidId);
   base::Callback<void(uint32_t)> got_id(base::Bind(
@@ -638,7 +637,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   downloads_[id] = item;
   downloads_by_guid_[guid] = item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));
-  DVLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
+  DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
   return item;
 }
 

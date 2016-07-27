@@ -158,7 +158,7 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
 }
 
 DecryptingAudioDecoder::~DecryptingAudioDecoder() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ == kUninitialized)

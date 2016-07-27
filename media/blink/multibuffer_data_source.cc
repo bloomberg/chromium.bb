@@ -230,7 +230,7 @@ void MultibufferDataSource::OnRedirect(
 }
 
 void MultibufferDataSource::SetPreload(Preload preload) {
-  DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
+  DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   preload_ = preload;
   UpdateBufferSizes();
@@ -509,7 +509,7 @@ void MultibufferDataSource::StartCallback() {
 }
 
 void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
-  DVLOG(1) << __FUNCTION__ << "(" << begin << ", " << end << ")";
+  DVLOG(1) << __func__ << "(" << begin << ", " << end << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (assume_fully_buffered())
@@ -529,7 +529,7 @@ void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
 }
 
 void MultibufferDataSource::UpdateLoadingState(bool force_loading) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   if (assume_fully_buffered())
     return;
   // Update loading state.
@@ -547,7 +547,7 @@ void MultibufferDataSource::UpdateLoadingState(bool force_loading) {
 }
 
 void MultibufferDataSource::UpdateBufferSizes() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   if (!reader_)
     return;
 

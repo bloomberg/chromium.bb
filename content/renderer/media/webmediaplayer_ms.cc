@@ -70,7 +70,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       volume_(1.0),
       volume_multiplier_(1.0),
       should_play_upon_shown_(false) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(client);
   if (delegate_)
     delegate_id_ = delegate_->AddObserver(this);
@@ -80,7 +80,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
 }
 
 WebMediaPlayerMS::~WebMediaPlayerMS() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Destruct compositor resources in the proper order.
@@ -108,7 +108,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
 void WebMediaPlayerMS::load(LoadType load_type,
                             const blink::WebMediaPlayerSource& source,
                             CORSMode /*cors_mode*/) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(acolwell): Change this to DCHECK_EQ(load_type, LoadTypeMediaStream)
@@ -162,7 +162,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
 }
 
 void WebMediaPlayerMS::play() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
@@ -190,7 +190,7 @@ void WebMediaPlayerMS::play() {
 }
 
 void WebMediaPlayerMS::pause() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   should_play_upon_shown_ = false;
@@ -227,7 +227,7 @@ void WebMediaPlayerMS::setRate(double rate) {
 }
 
 void WebMediaPlayerMS::setVolume(double volume) {
-  DVLOG(1) << __FUNCTION__ << "(volume=" << volume << ")";
+  DVLOG(1) << __func__ << "(volume=" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   volume_ = volume;
   if (audio_renderer_.get())
@@ -238,7 +238,7 @@ void WebMediaPlayerMS::setSinkId(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   const media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callback);
@@ -300,13 +300,13 @@ double WebMediaPlayerMS::currentTime() const {
 }
 
 blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::getNetworkState() const {
-  DVLOG(1) << __FUNCTION__ << ", state:" << network_state_;
+  DVLOG(1) << __func__ << ", state:" << network_state_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return network_state_;
 }
 
 blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::getReadyState() const {
-  DVLOG(1) << __FUNCTION__ << ", state:" << ready_state_;
+  DVLOG(1) << __func__ << ", state:" << ready_state_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return ready_state_;
 }
@@ -334,7 +334,7 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
                              const blink::WebRect& rect,
                              unsigned char alpha,
                              SkXfermode::Mode mode) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const scoped_refptr<media::VideoFrame> frame =
@@ -483,7 +483,7 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
 
 void WebMediaPlayerMS::OnFrameAvailable(
     const scoped_refptr<media::VideoFrame>& frame) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (render_frame_suspended_)
@@ -519,7 +519,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   get_client()->repaint();
 }

@@ -463,7 +463,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
     return;
   }
 
-  DVLOG(2) << __FUNCTION__ << ": sink id: " << sink_id
+  DVLOG(2) << __func__ << ": sink id: " << sink_id
            << ", cast mode: " << cast_mode_num;
 
   // TODO(haibinlu): Pass additional parameters into the CreateRoute request,

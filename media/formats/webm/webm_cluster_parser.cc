@@ -563,7 +563,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
     DCHECK(encoded_duration > base::TimeDelta());
     buffer->set_duration(encoded_duration);
 
-    DVLOG(3) << __FUNCTION__ << " : "
+    DVLOG(3) << __func__ << " : "
              << "Using encoded duration " << encoded_duration.InSecondsF();
 
     if (block_duration_time_delta != kNoTimestamp) {
@@ -633,7 +633,7 @@ void WebMClusterParser::Track::ExtractReadyBuffers(
   if (buffers_.back()->GetDecodeTimestamp() < before_timestamp) {
     // All of |buffers_| are ready.
     ready_buffers_.swap(buffers_);
-    DVLOG(3) << __FUNCTION__ << " : " << track_num_ << " All "
+    DVLOG(3) << __func__ << " : " << track_num_ << " All "
              << ready_buffers_.size() << " are ready: before upper bound ts "
              << before_timestamp.InSecondsF();
     return;
@@ -650,7 +650,7 @@ void WebMClusterParser::Track::ExtractReadyBuffers(
     DCHECK(!buffers_.empty());
   }
 
-  DVLOG(3) << __FUNCTION__ << " : " << track_num_ << " Only "
+  DVLOG(3) << __func__ << " : " << track_num_ << " Only "
            << ready_buffers_.size() << " ready, " << buffers_.size()
            << " at or after upper bound ts " << before_timestamp.InSecondsF();
 }
@@ -714,7 +714,7 @@ void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
          "BlockGroups with BlockDurations at the end of each Track in a "
          "Cluster to avoid estimation.";
 
-  DVLOG(2) << __FUNCTION__ << " new dur : ts "
+  DVLOG(2) << __func__ << " new dur : ts "
            << last_added_buffer_missing_duration_->timestamp().InSecondsF()
            << " dur "
            << last_added_buffer_missing_duration_->duration().InSecondsF()
@@ -795,9 +795,9 @@ bool WebMClusterParser::Track::QueueBuffer(
 base::TimeDelta WebMClusterParser::Track::GetDurationEstimate() {
   base::TimeDelta duration = estimated_next_frame_duration_;
   if (duration != kNoTimestamp) {
-    DVLOG(3) << __FUNCTION__ << " : using estimated duration";
+    DVLOG(3) << __func__ << " : using estimated duration";
   } else {
-    DVLOG(3) << __FUNCTION__ << " : using hardcoded default duration";
+    DVLOG(3) << __func__ << " : using hardcoded default duration";
     if (is_video_) {
       duration = base::TimeDelta::FromMilliseconds(
           kDefaultVideoBufferDurationInMs);

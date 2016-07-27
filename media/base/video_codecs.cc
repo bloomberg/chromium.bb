@@ -95,7 +95,7 @@ bool ParseAVCCodecId(const std::string& codec_id,
   uint32_t elem = 0;
   if (codec_id.size() != 11 ||
       !base::HexStringToUInt(base::StringPiece(codec_id).substr(5), &elem)) {
-    DVLOG(4) << __FUNCTION__ << ": invalid avc codec id (" << codec_id << ")";
+    DVLOG(4) << __func__ << ": invalid avc codec id (" << codec_id << ")";
     return false;
   }
 
@@ -106,8 +106,7 @@ bool ParseAVCCodecId(const std::string& codec_id,
   // Check that the lower two bits of |constraints_byte| are zero (those are
   // reserved and must be zero according to ISO IEC 14496-10).
   if (constraints_byte & 3) {
-    DVLOG(4) << __FUNCTION__ << ": non-zero reserved bits in codec id "
-             << codec_id;
+    DVLOG(4) << __func__ << ": non-zero reserved bits in codec id " << codec_id;
     return false;
   }
 
@@ -196,7 +195,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
       18;  // up to 6 constraint bytes, bytes are dot-separated and hex-encoded.
 
   if (codec_id.size() > kMaxHevcCodecIdLength) {
-    DVLOG(4) << __FUNCTION__ << ": Codec id is too long (" << codec_id << ")";
+    DVLOG(4) << __func__ << ": Codec id is too long (" << codec_id << ")";
     return false;
   }
 
@@ -205,7 +204,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
   DCHECK(elem[0] == "hev1" || elem[0] == "hvc1");
 
   if (elem.size() < 4) {
-    DVLOG(4) << __FUNCTION__ << ": invalid HEVC codec id " << codec_id;
+    DVLOG(4) << __func__ << ": invalid HEVC codec id " << codec_id;
     return false;
   }
 
@@ -220,13 +219,13 @@ bool ParseHEVCCodecId(const std::string& codec_id,
   unsigned general_profile_idc = 0;
   if (!base::StringToUint(elem[1], &general_profile_idc) ||
       general_profile_idc > 0x1f) {
-    DVLOG(4) << __FUNCTION__ << ": invalid general_profile_idc=" << elem[1];
+    DVLOG(4) << __func__ << ": invalid general_profile_idc=" << elem[1];
     return false;
   }
 
   uint32_t general_profile_compatibility_flags = 0;
   if (!base::HexStringToUInt(elem[2], &general_profile_compatibility_flags)) {
-    DVLOG(4) << __FUNCTION__
+    DVLOG(4) << __func__
              << ": invalid general_profile_compatibility_flags=" << elem[2];
     return false;
   }
@@ -250,7 +249,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
     general_tier_flag = (elem[3][0] == 'L') ? 0 : 1;
     elem[3].erase(0, 1);
   } else {
-    DVLOG(4) << __FUNCTION__ << ": invalid general_tier_flag=" << elem[3];
+    DVLOG(4) << __func__ << ": invalid general_tier_flag=" << elem[3];
     return false;
   }
   DCHECK(general_tier_flag == 0 || general_tier_flag == 1);
@@ -258,7 +257,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
   unsigned general_level_idc = 0;
   if (!base::StringToUint(elem[3], &general_level_idc) ||
       general_level_idc > 0xff) {
-    DVLOG(4) << __FUNCTION__ << ": invalid general_level_idc=" << elem[3];
+    DVLOG(4) << __func__ << ": invalid general_level_idc=" << elem[3];
     return false;
   }
 
@@ -269,14 +268,14 @@ bool ParseHEVCCodecId(const std::string& codec_id,
   memset(constraint_flags, 0, sizeof(constraint_flags));
 
   if (elem.size() > 10) {
-    DVLOG(4) << __FUNCTION__ << ": unexpected number of trailing bytes in HEVC "
+    DVLOG(4) << __func__ << ": unexpected number of trailing bytes in HEVC "
              << "codec id " << codec_id;
     return false;
   }
   for (size_t i = 4; i < elem.size(); ++i) {
     unsigned constr_byte = 0;
     if (!base::HexStringToUInt(elem[i], &constr_byte) || constr_byte > 0xFF) {
-      DVLOG(4) << __FUNCTION__ << ": invalid constraint byte=" << elem[i];
+      DVLOG(4) << __func__ << ": invalid constraint byte=" << elem[i];
       return false;
     }
     constraint_flags[i] = constr_byte;

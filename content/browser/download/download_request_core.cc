@@ -250,7 +250,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
 bool DownloadRequestCore::OnResponseStarted(
     const std::string& override_mime_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(20) << __FUNCTION__ << "()" << DebugString();
+  DVLOG(20) << __func__ << "() " << DebugString();
   download_start_time_ = base::TimeTicks::Now();
 
   DownloadInterruptReason result =
@@ -337,7 +337,7 @@ bool DownloadRequestCore::OnResponseStarted(
 }
 
 bool DownloadRequestCore::OnRequestRedirected() {
-  DVLOG(20) << __FUNCTION__ << "() " << DebugString();
+  DVLOG(20) << __func__ << "() " << DebugString();
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
     // middle box. Trigger another interruption so that the DownloadItem can
@@ -405,7 +405,7 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
 }
 
 void DownloadRequestCore::OnWillAbort(DownloadInterruptReason reason) {
-  DVLOG(20) << __FUNCTION__ << "() reason=" << reason << " " << DebugString();
+  DVLOG(20) << __func__ << "() reason=" << reason << " " << DebugString();
   DCHECK(!started_);
   abort_reason_ = reason;
 }
@@ -414,7 +414,7 @@ void DownloadRequestCore::OnResponseCompleted(
     const net::URLRequestStatus& status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
-  DVLOG(20) << __FUNCTION__ << "()" << DebugString()
+  DVLOG(20) << __func__ << "() " << DebugString()
             << " status.status() = " << status.status()
             << " status.error() = " << status.error()
             << " response_code = " << response_code;

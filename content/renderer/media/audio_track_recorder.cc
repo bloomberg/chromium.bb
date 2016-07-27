@@ -161,7 +161,7 @@ AudioTrackRecorder::AudioEncoder::~AudioEncoder() {
 
 void AudioTrackRecorder::AudioEncoder::OnSetFormat(
     const media::AudioParameters& input_params) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
   if (input_params_.Equals(input_params))
     return;
@@ -228,7 +228,7 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
 void AudioTrackRecorder::AudioEncoder::EncodeAudio(
     std::unique_ptr<media::AudioBus> input_bus,
     const base::TimeTicks& capture_time) {
-  DVLOG(3) << __FUNCTION__ << ", #frames " << input_bus->frames();
+  DVLOG(3) << __func__ << ", #frames " << input_bus->frames();
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(input_bus->channels(), input_params_.channels());
   DCHECK(!capture_time.is_null());

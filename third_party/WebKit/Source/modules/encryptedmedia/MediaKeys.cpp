@@ -133,17 +133,17 @@ MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMedi
     , m_reservedForMediaElement(false)
     , m_timer(this, &MediaKeys::timerFired)
 {
-    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
 }
 
 MediaKeys::~MediaKeys()
 {
-    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
 }
 
 MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String& sessionTypeString, ExceptionState& exceptionState)
 {
-    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") " << sessionTypeString;
+    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ") " << sessionTypeString;
 
     // From http://w3c.github.io/encrypted-media/#createSession
 
@@ -253,7 +253,7 @@ void MediaKeys::timerFired(Timer<MediaKeys>*)
 
     while (!pendingActions.isEmpty()) {
         PendingAction* action = pendingActions.takeFirst();
-        DVLOG(MEDIA_KEYS_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") Certificate";
+        DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ") Certificate";
 
         // 5.1 Let cdm be the cdm during the initialization of this object.
         WebContentDecryptionModule* cdm = contentDecryptionModule();
@@ -291,7 +291,7 @@ void MediaKeys::contextDestroyed()
 bool MediaKeys::hasPendingActivity() const
 {
     // Remain around if there are pending events.
-    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")"
+    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")"
         << (!m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "")
         << (m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
 

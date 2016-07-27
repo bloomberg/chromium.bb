@@ -45,7 +45,7 @@ std::string DecryptingDemuxerStream::GetDisplayName() const {
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
                                          CdmContext* cdm_context,
                                          const PipelineStatusCB& status_cb) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(stream);
@@ -77,7 +77,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 }
 
 void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kIdle) << state_;
   DCHECK(!read_cb.is_null());
@@ -90,7 +90,7 @@ void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
 }
 
 void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
-  DVLOG(2) << __FUNCTION__ << " - state: " << state_;
+  DVLOG(2) << __func__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
   DCHECK(reset_cb_.is_null());
@@ -167,7 +167,7 @@ void DecryptingDemuxerStream::SetStreamRestartedCB(
 }
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
-  DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
+  DVLOG(2) << __func__ << " : state_ = " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ == kUninitialized)
@@ -189,7 +189,7 @@ DecryptingDemuxerStream::~DecryptingDemuxerStream() {
 void DecryptingDemuxerStream::DecryptBuffer(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDemuxerRead) << state_;
   DCHECK(!read_cb_.is_null());
@@ -267,7 +267,7 @@ void DecryptingDemuxerStream::DecryptPendingBuffer() {
 void DecryptingDemuxerStream::DeliverBuffer(
     Decryptor::Status status,
     const scoped_refptr<DecoderBuffer>& decrypted_buffer) {
-  DVLOG(3) << __FUNCTION__ << " - status: " << status;
+  DVLOG(3) << __func__ << " - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
   DCHECK_NE(status, Decryptor::kNeedMoreData);

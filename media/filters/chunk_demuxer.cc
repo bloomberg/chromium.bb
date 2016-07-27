@@ -354,29 +354,27 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
       switch (stream_->GetNextBuffer(&buffer)) {
         case SourceBufferStream::kSuccess:
           status = DemuxerStream::kOk;
-          DVLOG(2) << __FUNCTION__ << ": returning kOk, type " << type_
-                   << ", dts " << buffer->GetDecodeTimestamp().InSecondsF()
-                   << ", pts " << buffer->timestamp().InSecondsF()
-                   << ", dur " << buffer->duration().InSecondsF()
-                   << ", key " << buffer->is_key_frame();
+          DVLOG(2) << __func__ << ": returning kOk, type " << type_ << ", dts "
+                   << buffer->GetDecodeTimestamp().InSecondsF() << ", pts "
+                   << buffer->timestamp().InSecondsF() << ", dur "
+                   << buffer->duration().InSecondsF() << ", key "
+                   << buffer->is_key_frame();
           break;
         case SourceBufferStream::kNeedBuffer:
           // Return early without calling |read_cb_| since we don't have
           // any data to return yet.
-          DVLOG(2) << __FUNCTION__ << ": returning kNeedBuffer, type "
-                   << type_;
+          DVLOG(2) << __func__ << ": returning kNeedBuffer, type " << type_;
           return;
         case SourceBufferStream::kEndOfStream:
           status = DemuxerStream::kOk;
           buffer = StreamParserBuffer::CreateEOSBuffer();
-          DVLOG(2) << __FUNCTION__ << ": returning kOk with EOS buffer, type "
+          DVLOG(2) << __func__ << ": returning kOk with EOS buffer, type "
                    << type_;
           break;
         case SourceBufferStream::kConfigChange:
           status = kConfigChanged;
           buffer = NULL;
-          DVLOG(2) << __FUNCTION__ << ": returning kConfigChange, type "
-                   << type_;
+          DVLOG(2) << __func__ << ": returning kConfigChange, type " << type_;
           break;
       }
       break;
@@ -386,13 +384,12 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
       // because they are associated with the seek.
       status = DemuxerStream::kAborted;
       buffer = NULL;
-      DVLOG(2) << __FUNCTION__ << ": returning kAborted, type " << type_;
+      DVLOG(2) << __func__ << ": returning kAborted, type " << type_;
       break;
     case SHUTDOWN:
       status = DemuxerStream::kOk;
       buffer = StreamParserBuffer::CreateEOSBuffer();
-      DVLOG(2) << __FUNCTION__ << ": returning kOk with EOS buffer, type "
-               << type_;
+      DVLOG(2) << __func__ << ": returning kOk with EOS buffer, type " << type_;
       break;
   }
 
@@ -662,7 +659,7 @@ void ChunkDemuxer::OnEnabledAudioTracksChanged(
 #endif
     enabled = true;
   }
-  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+  DVLOG(1) << __func__ << ": " << (enabled ? "enabling" : "disabling")
            << " audio stream";
   audio_stream->set_enabled(enabled, currTime);
 }
@@ -683,7 +680,7 @@ void ChunkDemuxer::OnSelectedVideoTrackChanged(
 #endif
     enabled = true;
   }
-  DVLOG(1) << __FUNCTION__ << ": " << (enabled ? "enabling" : "disabling")
+  DVLOG(1) << __func__ << ": " << (enabled ? "enabling" : "disabling")
            << " video stream";
   video_stream->set_enabled(enabled, currTime);
 }
@@ -691,7 +688,7 @@ void ChunkDemuxer::OnSelectedVideoTrackChanged(
 bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
                                     base::TimeDelta currentMediaTime,
                                     size_t newDataSize) {
-  DVLOG(1) << __FUNCTION__ << "(" << id << ")"
+  DVLOG(1) << __func__ << "(" << id << ")"
            << " media_time=" << currentMediaTime.InSecondsF()
            << " newDataSize=" << newDataSize;
   base::AutoLock auto_lock(lock_);
@@ -705,7 +702,7 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
   DCHECK(!id.empty());
   MediaSourceStateMap::const_iterator itr = source_state_map_.find(id);
   if (itr == source_state_map_.end()) {
-    LOG(WARNING) << __FUNCTION__ << " stream " << id << " not found";
+    LOG(WARNING) << __func__ << " stream " << id << " not found";
     return false;
   }
   return itr->second->EvictCodedFrames(media_time_dts, newDataSize);
@@ -1189,8 +1186,8 @@ void ChunkDemuxer::IncreaseDurationIfNecessary(TimeDelta new_duration) {
   if (new_duration <= duration_)
     return;
 
-  DVLOG(2) << __FUNCTION__ << ": Increasing duration: "
-           << duration_.InSecondsF() << " -> " << new_duration.InSecondsF();
+  DVLOG(2) << __func__ << ": Increasing duration: " << duration_.InSecondsF()
+           << " -> " << new_duration.InSecondsF();
 
   UpdateDuration(new_duration);
 }
