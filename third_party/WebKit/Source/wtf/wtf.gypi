@@ -222,6 +222,7 @@
             'dtoa_test.cpp',
             'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
+            'text/IntegerToStringConversionTest.cpp',
             'text/StringBufferTest.cpp',
             'text/StringBuilderTest.cpp',
             'text/StringImplTest.cpp',

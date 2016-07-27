@@ -24,6 +24,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/Unicode.h"
 #include <limits>
 #include <type_traits>
 
