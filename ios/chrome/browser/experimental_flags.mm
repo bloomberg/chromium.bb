@@ -29,6 +29,7 @@ NSString* const kHeuristicsForPasswordGeneration =
 NSString* const kEnableReadingList = @"EnableReadingList";
 NSString* const kUpdatePasswordUIEnabled = @"UpdatePasswordUIEnabled";
 NSString* const kEnableQRCodeReader = @"EnableQRCodeReader";
+NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 }  // namespace
 
 namespace experimental_flags {
@@ -151,6 +152,14 @@ bool IsQRCodeReaderEnabled() {
   // Check if the finch experiment is turned on.
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kEnableQRCodeReader];
+}
+
+bool IsNewClearBrowsingDataUIEnabled() {
+  NSString* countersFlag = [[NSUserDefaults standardUserDefaults]
+      objectForKey:kEnableNewClearBrowsingDataUI];
+  if ([countersFlag isEqualToString:@"Enabled"])
+    return true;
+  return false;
 }
 
 }  // namespace experimental_flags
