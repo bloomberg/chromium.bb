@@ -577,7 +577,7 @@ private:
     size_t totalMemorySize();
     double heapGrowingRate();
     double partitionAllocGrowingRate();
-    bool judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold);
+    bool judgeGCThreshold(size_t allocatedObjectSizeThreshold, size_t totalMemorySizeThreshold, double heapGrowingRateThreshold);
 
     void runScheduledGC(BlinkGC::StackState);
 
