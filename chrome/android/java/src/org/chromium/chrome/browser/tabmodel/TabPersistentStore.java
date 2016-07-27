@@ -1258,13 +1258,15 @@ public class TabPersistentStore extends TabPersister {
 
             File metadataFile = new File(getStateDirectory(), getStateFileName(i));
             if (metadataFile.exists()) {
-                DataInputStream stream;
+                DataInputStream stream = null;
                 try {
                     stream = new DataInputStream(
                             new BufferedInputStream(new FileInputStream(metadataFile)));
                     readSavedStateFile(stream, null, tabIds);
                 } catch (Exception e) {
                     Log.e(TAG, "Unable to read state for " + metadataFile.getName() + ": " + e);
+                } finally {
+                    StreamUtil.closeQuietly(stream);
                 }
             }
         }
