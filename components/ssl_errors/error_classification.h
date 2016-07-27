@@ -108,7 +108,7 @@ void RecordUMAStatisticsForClockInterstitial(bool overridable,
 HostnameTokens Tokenize(const std::string& name);
 
 // Sets a clock for browser tests that check the build time. Used by
-// IsUserClockInThePast and IsUserClockInTheFuture.
+// GetClockState().
 void SetBuildTimeForTesting(const base::Time& testing_time);
 
 // Returns true if the hostname has a known Top Level Domain.
