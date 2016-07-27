@@ -545,10 +545,10 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
 }
 
-v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> TestDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    if (!toV8TestDictionary(impl, v8Object, creationContext, isolate))
+    if (!toV8TestDictionary(*this, v8Object, creationContext, isolate))
         return v8::Local<v8::Value>();
     return v8Object;
 }

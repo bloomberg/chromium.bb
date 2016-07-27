@@ -3905,6 +3905,7 @@
         'core_testing_dictionary_idl_files': [
             'testing/InternalDictionary.idl',
             'testing/InternalDictionaryDerived.idl',
+            'testing/InternalDictionaryDerivedDerived.idl',
         ],
         'webcore_testing_idl_files': [
             'testing/DictionaryTest.idl',
@@ -3937,6 +3938,8 @@
             '<(blink_core_output_dir)/testing/InternalDictionary.h',
             '<(blink_core_output_dir)/testing/InternalDictionaryDerived.cpp',
             '<(blink_core_output_dir)/testing/InternalDictionaryDerived.h',
+            '<(blink_core_output_dir)/testing/InternalDictionaryDerivedDerived.cpp',
+            '<(blink_core_output_dir)/testing/InternalDictionaryDerivedDerived.h',
         ],
         'webcore_testing_files': [
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.cpp',

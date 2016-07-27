@@ -21,6 +21,8 @@
       '<(blink_core_output_dir)/testing/InternalDictionary.h',
       '<(blink_core_output_dir)/testing/InternalDictionaryDerived.cpp',
       '<(blink_core_output_dir)/testing/InternalDictionaryDerived.h',
+      '<(blink_core_output_dir)/testing/InternalDictionaryDerivedDerived.cpp',
+      '<(blink_core_output_dir)/testing/InternalDictionaryDerivedDerived.h',
     ],
 
     'generated_bindings_core_testing_files': [
@@ -52,6 +54,8 @@
       '<(bindings_core_v8_output_dir)/V8InternalDictionary.h',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.cpp',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.h',
+      '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerivedDerived.cpp',
+      '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerivedDerived.h',
       '<(bindings_core_v8_output_dir)/V8WorkerInternals.cpp',
       '<(bindings_core_v8_output_dir)/V8WorkerInternals.h',
     ],

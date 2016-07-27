@@ -9,6 +9,7 @@
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include "bindings/core/v8/DOMDataStore.h"
+#include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -191,6 +192,11 @@ inline v8::Local<v8::Value> toV8(const Dictionary& value, v8::Local<v8::Object> 
 {
     RELEASE_NOTREACHED();
     return v8::Local<v8::Value>();
+}
+
+inline v8::Local<v8::Value> toV8(const IDLDictionaryBase& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return value.toV8Impl(creationContext, isolate);
 }
 
 // Array

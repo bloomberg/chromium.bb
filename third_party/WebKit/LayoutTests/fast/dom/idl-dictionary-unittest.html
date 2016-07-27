@@ -311,6 +311,20 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeFalse('derived.requiredBooleanMember');
     debug('');
 
+    debug('Test for triple level derived dictionary');
+    dictionaryTest.setDerivedDerived({
+        longMember: 1,
+        derivedStringMember: 'modifiedString',
+        derivedDerivedStringMember: 'modifiedString2',
+        requiredBooleanMember: false,
+    });
+    derived = dictionaryTest.getDerivedDerived();
+    shouldBe('derived.longMember', '1');
+    shouldBeEqualToString('derived.derivedStringMember', 'modifiedString');
+    shouldBeEqualToString('derived.derivedDerivedStringMember', 'modifiedString2');
+    shouldBeFalse('derived.requiredBooleanMember');
+    debug('');
+
     debug('Test for passing invalid values as derived dictionary');
     shouldThrow("dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false })");
     shouldThrow("dictionaryTest.setDerived({})"); // Missing required member.

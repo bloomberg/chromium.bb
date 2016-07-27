@@ -333,6 +333,8 @@ source_set("testing") {
     "$bindings_core_v8_output_dir/V8InternalDictionary.h",
     "$bindings_core_v8_output_dir/V8InternalDictionaryDerived.cpp",
     "$bindings_core_v8_output_dir/V8InternalDictionaryDerived.h",
+    "$bindings_core_v8_output_dir/V8InternalDictionaryDerivedDerived.cpp",
+    "$bindings_core_v8_output_dir/V8InternalDictionaryDerivedDerived.h",
     "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.cpp",
     "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.h",
     "$bindings_core_v8_output_dir/V8InternalSettings.cpp",

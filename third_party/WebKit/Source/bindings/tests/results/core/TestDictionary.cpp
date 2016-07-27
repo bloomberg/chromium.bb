@@ -45,6 +45,7 @@ DEFINE_TRACE(TestDictionary)
     visitor->trace(m_testInterfaceOrNullMember);
     visitor->trace(m_testInterfaceSequenceMember);
     visitor->trace(m_uint8ArrayMember);
+    IDLDictionaryBase::trace(visitor);
 }
 
 } // namespace blink

@@ -19,6 +19,7 @@ namespace blink {
 
 class InternalDictionary;
 class InternalDictionaryDerived;
+class InternalDictionaryDerivedDerived;
 
 class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -39,6 +40,9 @@ public:
 
     void setDerived(const InternalDictionaryDerived&);
     void getDerived(InternalDictionaryDerived&);
+
+    void setDerivedDerived(const InternalDictionaryDerivedDerived&);
+    void getDerivedDerived(InternalDictionaryDerivedDerived&);
 
     String stringFromIterable(ExecutionContext*, Dictionary iterable, ExceptionState&) const;
 
@@ -83,6 +87,7 @@ private:
     Member<EventTarget> m_eventTargetOrNullMember;
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
+    String m_derivedDerivedStringMember;
     bool m_requiredBooleanMember;
     Nullable<HashMap<String, String>> m_dictionaryMemberProperties;
 };

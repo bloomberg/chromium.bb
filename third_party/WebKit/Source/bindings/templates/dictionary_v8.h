@@ -15,7 +15,6 @@ public:
     {{exported}}static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{cpp_class}}&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 {{exported}}bool toV8{{cpp_class}}(const {{cpp_class}}&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>

@@ -7,13 +7,14 @@
 #ifndef TestPermissiveDictionary_h
 #define TestPermissiveDictionary_h
 
+#include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/Nullable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CORE_EXPORT TestPermissiveDictionary {
+class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestPermissiveDictionary();
@@ -23,6 +24,7 @@ public:
     bool booleanMember() const { return m_booleanMember.get(); }
     void setBooleanMember(bool value) { m_booleanMember = value; }
 
+    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
     DECLARE_VIRTUAL_TRACE();
 
 private:

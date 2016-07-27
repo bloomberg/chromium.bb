@@ -42,6 +42,8 @@
             'ExceptionState.h',
             'ExceptionStatePlaceholder.cpp',
             'ExceptionStatePlaceholder.h',
+            'IDLDictionaryBase.cpp',
+            'IDLDictionaryBase.h',
             'Iterable.h',
             'JSONValuesForV8.cpp',
             'JSONValuesForV8.h',

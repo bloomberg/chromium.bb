@@ -91,18 +91,19 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
 
 }
 
-v8::Local<v8::Value> toV8(const TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> TestDictionaryDerivedImplementedAs::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    if (!toV8TestDictionary(impl, v8Object, creationContext, isolate))
-        return v8::Local<v8::Value>();
-    if (!toV8TestDictionaryDerivedImplementedAs(impl, v8Object, creationContext, isolate))
+    if (!toV8TestDictionaryDerivedImplementedAs(*this, v8Object, creationContext, isolate))
         return v8::Local<v8::Value>();
     return v8Object;
 }
 
 bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    if (!toV8TestDictionary(impl, dictionary, creationContext, isolate))
+        return false;
+
     if (impl.hasDerivedStringMember()) {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "derivedStringMember"), v8String(isolate, impl.derivedStringMember()))))
             return false;

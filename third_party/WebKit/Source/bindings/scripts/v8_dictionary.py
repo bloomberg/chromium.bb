@@ -173,6 +173,10 @@ def dictionary_impl_context(dictionary, interfaces_info):
         if parent_interface_info:
             context['header_includes'].add(
                 parent_interface_info['include_path'])
+    else:
+        context['parent_cpp_class'] = 'IDLDictionaryBase'
+        context['header_includes'].add(
+            'bindings/core/v8/IDLDictionaryBase.h')
     return context
 
 

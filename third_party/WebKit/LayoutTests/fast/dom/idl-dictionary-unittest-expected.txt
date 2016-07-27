@@ -179,6 +179,12 @@ PASS derived.derivedStringMemberWithDefault is "modifiedString3"
 PASS derived.invalidMember is undefined.
 PASS derived.requiredBooleanMember is false
 
+Test for triple level derived dictionary
+PASS derived.longMember is 1
+PASS derived.derivedStringMember is "modifiedString"
+PASS derived.derivedDerivedStringMember is "modifiedString2"
+PASS derived.requiredBooleanMember is false
+
 Test for passing invalid values as derived dictionary
 PASS dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false }) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': member objectMember is not an object..
 PASS dictionaryTest.setDerived({}) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': required member requiredBooleanMember is undefined..

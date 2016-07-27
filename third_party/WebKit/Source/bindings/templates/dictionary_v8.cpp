@@ -88,20 +88,21 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% endfor %}
 }
 
-v8::Local<v8::Value> toV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> {{cpp_class}}::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    {% if parent_v8_class %}
-    if (!toV8{{parent_cpp_class}}(impl, v8Object, creationContext, isolate))
-        return v8::Local<v8::Value>();
-    {% endif %}
-    if (!toV8{{cpp_class}}(impl, v8Object, creationContext, isolate))
+    if (!toV8{{cpp_class}}(*this, v8Object, creationContext, isolate))
         return v8::Local<v8::Value>();
     return v8Object;
 }
 
 bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    {% if parent_v8_class %}
+    if (!toV8{{parent_cpp_class}}(impl, dictionary, creationContext, isolate))
+        return false;
+
+    {% endif %}
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
         {% if member.is_object %}

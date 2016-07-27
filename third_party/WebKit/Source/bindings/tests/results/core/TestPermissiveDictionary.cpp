@@ -19,6 +19,7 @@ TestPermissiveDictionary::~TestPermissiveDictionary()
 
 DEFINE_TRACE(TestPermissiveDictionary)
 {
+    IDLDictionaryBase::trace(visitor);
 }
 
 } // namespace blink

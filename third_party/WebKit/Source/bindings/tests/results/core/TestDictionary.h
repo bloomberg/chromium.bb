@@ -9,6 +9,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/TestInterface2OrUint8Array.h"
@@ -26,7 +27,7 @@
 
 namespace blink {
 
-class CORE_EXPORT TestDictionary {
+class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestDictionary();
@@ -162,6 +163,7 @@ public:
     double unrestrictedDoubleMember() const { return m_unrestrictedDoubleMember.get(); }
     void setUnrestrictedDoubleMember(double value) { m_unrestrictedDoubleMember = value; }
 
+    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
     DECLARE_VIRTUAL_TRACE();
 
 private:

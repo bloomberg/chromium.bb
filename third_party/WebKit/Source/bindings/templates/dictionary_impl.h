@@ -24,6 +24,7 @@ public:
     {% endif %}
 
     {% endfor %}
+    v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
     DECLARE_VIRTUAL_TRACE();
 
 private:

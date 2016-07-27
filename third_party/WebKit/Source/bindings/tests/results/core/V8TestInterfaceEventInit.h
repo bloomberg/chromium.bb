@@ -22,7 +22,6 @@ public:
     CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceEventInit&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterfaceEventInit&, v8::Local<v8::Object>, v8::Isolate*);
 CORE_EXPORT bool toV8TestInterfaceEventInit(const TestInterfaceEventInit&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
