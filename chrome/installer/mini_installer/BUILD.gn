@@ -53,7 +53,7 @@ source_set("lib") {
 
 process_version("version") {
   template_file = "mini_installer_exe_version.rc.version"
-  output = "$target_gen_dir/mini_installer_version.rc"
+  output = "$root_out_dir/mini_installer_exe_version.rc"
 }
 
 source_set("unit_tests") {
