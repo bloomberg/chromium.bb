@@ -117,7 +117,7 @@ void ImageResource::markClientsAndObserversFinished()
 
 void ImageResource::didAddClient(ResourceClient* client)
 {
-    DCHECK(!m_data || m_image);
+    DCHECK((m_multipartParser && isLoading()) || !m_data || m_image);
     Resource::didAddClient(client);
 }
 
@@ -130,7 +130,15 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
     if (isCacheValidator())
         return;
 
-    DCHECK(!m_data || m_image);
+    // When the response is not multipart, if |m_data| exists, |m_image| must
+    // be created. This is assured that |updateImage()| is called when
+    // |appendData()| is called.
+    //
+    // On the other hand, when the response is multipart, |updateImage()| is
+    // not called in |appendData()|, which means |m_image| might not be created
+    // even when |m_data| exists. This is intentional since creating a |m_image|
+    // on receiving data might destroy an existing image in a previous part.
+    DCHECK((m_multipartParser && isLoading()) || !m_data || m_image);
 
     if (m_image && !m_image->isNull()) {
         observer->imageChanged(this);

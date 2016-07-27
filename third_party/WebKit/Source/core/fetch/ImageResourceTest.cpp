@@ -231,6 +231,12 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_EQ(client->imageChangedCount(), 0);
     ASSERT_FALSE(client->notifyFinishedCalled());
 
+    // Add a client to check an assertion error doesn't happen
+    // (crbug.com/630983).
+    Persistent<MockImageResourceClient> client2 = new MockImageResourceClient(cachedImage);
+    ASSERT_EQ(client2->imageChangedCount(), 0);
+    ASSERT_FALSE(client2->notifyFinishedCalled());
+
     const char thirdPart[] = "--boundary";
     cachedImage->appendData(thirdPart, strlen(thirdPart));
     ASSERT_TRUE(cachedImage->resourceBuffer());
@@ -246,6 +252,8 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_EQ(cachedImage->getImage()->height(), 1);
     ASSERT_EQ(client->imageChangedCount(), 1);
     ASSERT_TRUE(client->notifyFinishedCalled());
+    ASSERT_EQ(client2->imageChangedCount(), 1);
+    ASSERT_TRUE(client2->notifyFinishedCalled());
 }
 
 TEST(ImageResourceTest, CancelOnDetach)
