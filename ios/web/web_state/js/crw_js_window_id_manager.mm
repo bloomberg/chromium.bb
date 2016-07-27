@@ -48,15 +48,26 @@ const size_t kUniqueKeyLength = 16;
   NSString* script = [web::GetPageScript(@"window_id")
       stringByReplacingOccurrencesOfString:@"$(WINDOW_ID)"
                                 withString:_windowID];
+  // WKUserScript may not be injected yet. Make windowID script return boolean
+  // indicating whether the injection was successfull.
+  NSString* scriptWithResult = [NSString
+      stringWithFormat:@"if (!window.__gCrWeb) {false; } else { %@; true; }",
+                       script];
 
   base::WeakNSObject<CRWJSWindowIDManager> weakSelf(self);
-  [_webView evaluateJavaScript:script
+  [_webView evaluateJavaScript:scriptWithResult
              completionHandler:^(id result, NSError* error) {
-               // TODO(crbug.com/628832): Refactor retry logic.
-               if (error.code == WKErrorJavaScriptExceptionOccurred) {
-                 // This can happen if WKUserScript has not been injected yet.
-                 // Retry if that's the case, because windowID injection is
-                 // critical for the system to function.
+               if (error) {
+                 DCHECK(error.code == WKErrorWebViewInvalidated ||
+                        error.code == WKErrorWebContentProcessTerminated);
+                 return;
+               }
+
+               DCHECK_EQ(CFBooleanGetTypeID(), CFGetTypeID(result));
+               if (![result boolValue]) {
+                 // WKUserScript has not been injected yet. Retry window id
+                 // injection, because it is critical for the system to
+                 // function.
                  [weakSelf inject];
                }
              }];
