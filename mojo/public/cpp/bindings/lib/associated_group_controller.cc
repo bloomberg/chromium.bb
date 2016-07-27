@@ -8,11 +8,6 @@
 
 namespace mojo {
 
-AssociatedGroupController::AssociatedGroupController(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : base::RefCountedDeleteOnMessageLoop<AssociatedGroupController>(
-          task_runner) {}
-
 AssociatedGroupController::~AssociatedGroupController() {}
 
 std::unique_ptr<AssociatedGroup>

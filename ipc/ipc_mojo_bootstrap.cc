@@ -48,8 +48,7 @@ class ChannelAssociatedGroupController
   ChannelAssociatedGroupController(
       bool set_interface_id_namespace_bit,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
-      : mojo::AssociatedGroupController(base::ThreadTaskRunnerHandle::Get()),
-        task_runner_(ipc_task_runner),
+      : task_runner_(ipc_task_runner),
         proxy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
         header_validator_(
@@ -345,6 +344,8 @@ class ChannelAssociatedGroupController
   };
 
   ~ChannelAssociatedGroupController() override {
+    DCHECK(!connector_);
+
     base::AutoLock locker(lock_);
     for (auto iter = endpoints_.begin(); iter != endpoints_.end();) {
       Endpoint* endpoint = iter->second.get();

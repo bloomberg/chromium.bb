@@ -47,6 +47,9 @@ namespace internal {
 // Some public methods are only allowed to be called on the creating thread;
 // while the others are safe to call from any threads. Please see the method
 // comments for more details.
+//
+// NOTE: CloseMessagePipe() or PassMessagePipe() MUST be called on |runner|'s
+// thread before this object is destroyed.
 class MultiplexRouter
     : public MessageReceiver,
       public AssociatedGroupController,
@@ -200,6 +203,8 @@ class MultiplexRouter
   // Whether to set the namespace bit when generating interface IDs. Please see
   // comments of kInterfaceIdNamespaceMask.
   const bool set_interface_id_namespace_bit_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   MessageHeaderValidator header_validator_;
   Connector connector_;

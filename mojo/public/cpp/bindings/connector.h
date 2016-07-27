@@ -175,28 +175,31 @@ class Connector : public MessageReceiver {
   base::Closure connection_error_handler_;
 
   ScopedMessagePipeHandle message_pipe_;
-  MessageReceiver* incoming_receiver_;
+  MessageReceiver* incoming_receiver_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Watcher handle_watcher_;
 
-  bool error_;
-  bool drop_writes_;
-  bool enforce_errors_from_incoming_receiver_;
+  bool error_ = false;
+  bool drop_writes_ = false;
+  bool enforce_errors_from_incoming_receiver_ = true;
 
-  bool paused_;
+  bool paused_ = false;
 
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.
   std::unique_ptr<base::Lock> lock_;
 
   std::unique_ptr<SyncHandleWatcher> sync_watcher_;
-  bool allow_woken_up_by_others_;
+  bool allow_woken_up_by_others_ = false;
   // If non-zero, currently the control flow is inside the sync handle watcher
   // callback.
-  size_t sync_handle_watcher_callback_count_;
+  size_t sync_handle_watcher_callback_count_ = 0;
 
   base::ThreadChecker thread_checker_;
+
+  base::Lock connected_lock_;
+  bool connected_ = true;
 
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.

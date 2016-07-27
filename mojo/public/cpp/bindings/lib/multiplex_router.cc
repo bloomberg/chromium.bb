@@ -285,8 +285,8 @@ MultiplexRouter::MultiplexRouter(
     bool set_interface_id_namesapce_bit,
     ScopedMessagePipeHandle message_pipe,
     scoped_refptr<base::SingleThreadTaskRunner> runner)
-    : AssociatedGroupController(base::ThreadTaskRunnerHandle::Get()),
-      set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
+    : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
+      task_runner_(runner),
       header_validator_(this),
       connector_(std::move(message_pipe),
                  Connector::MULTI_THREADED_SEND,
@@ -298,6 +298,7 @@ MultiplexRouter::MultiplexRouter(
       encountered_error_(false),
       paused_(false),
       testing_mode_(false) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // Always participate in sync handle watching, because even if it doesn't
   // expect sync requests during sync handle watching, it may still need to
   // dispatch messages to associated endpoints on a different thread.

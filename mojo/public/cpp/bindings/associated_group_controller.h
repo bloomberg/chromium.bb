@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -22,11 +21,8 @@ class InterfaceEndpointController;
 
 // An internal interface used to manage endpoints within an associated group.
 class AssociatedGroupController :
-    public base::RefCountedDeleteOnMessageLoop<AssociatedGroupController> {
+    public base::RefCountedThreadSafe<AssociatedGroupController> {
  public:
-  explicit AssociatedGroupController(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   // Creates a pair of interface endpoint handles. The method generates a new
   // interface ID and assigns it to the two handles. |local_endpoint| is used
   // locally; while |remote_endpoint| is sent over the message pipe.
@@ -66,8 +62,7 @@ class AssociatedGroupController :
   std::unique_ptr<AssociatedGroup> CreateAssociatedGroup();
 
  protected:
-  friend class base::RefCountedDeleteOnMessageLoop<AssociatedGroupController>;
-  friend class base::DeleteHelper<AssociatedGroupController>;
+  friend class base::RefCountedThreadSafe<AssociatedGroupController>;
 
   // Creates a new ScopedInterfaceEndpointHandle associated with this
   // controller.
@@ -76,8 +71,6 @@ class AssociatedGroupController :
       bool is_local);
 
   virtual ~AssociatedGroupController();
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedGroupController);
 };
 
 }  // namespace mojo

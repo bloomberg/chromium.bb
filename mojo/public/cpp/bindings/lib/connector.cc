@@ -47,16 +47,9 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      ConnectorConfig config,
                      scoped_refptr<base::SingleThreadTaskRunner> runner)
     : message_pipe_(std::move(message_pipe)),
-      incoming_receiver_(nullptr),
       task_runner_(std::move(runner)),
       handle_watcher_(task_runner_),
-      error_(false),
-      drop_writes_(false),
-      enforce_errors_from_incoming_receiver_(true),
-      paused_(false),
       lock_(config == MULTI_THREADED_SEND ? new base::Lock : nullptr),
-      allow_woken_up_by_others_(false),
-      sync_handle_watcher_callback_count_(0),
       weak_factory_(this) {
   weak_self_ = weak_factory_.GetWeakPtr();
   // Even though we don't have an incoming receiver, we still want to monitor
@@ -65,8 +58,14 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 }
 
 Connector::~Connector() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  {
+    // Allow for quick destruction on any thread if the pipe is already closed.
+    base::AutoLock lock(connected_lock_);
+    if (!connected_)
+      return;
+  }
 
+  DCHECK(thread_checker_.CalledOnValidThread());
   CancelWait();
 }
 
@@ -76,6 +75,9 @@ void Connector::CloseMessagePipe() {
   CancelWait();
   MayAutoLock locker(lock_.get());
   message_pipe_.reset();
+
+  base::AutoLock lock(connected_lock_);
+  connected_ = false;
 }
 
 ScopedMessagePipeHandle Connector::PassMessagePipe() {
@@ -83,7 +85,11 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
 
   CancelWait();
   MayAutoLock locker(lock_.get());
-  return std::move(message_pipe_);
+  ScopedMessagePipeHandle message_pipe = std::move(message_pipe_);
+
+  base::AutoLock lock(connected_lock_);
+  connected_ = false;
+  return message_pipe;
 }
 
 void Connector::RaiseError() {
