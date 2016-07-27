@@ -35,6 +35,15 @@ public class DisableIf {
         String product_name_includes() default "";
     }
 
+    @Target({ElementType.METHOD, ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    public static @interface Device {
+        /**
+         * @return A list of disabled types.
+         */
+        public String[] type();
+    }
+
     /* Objects of this type should not be created. */
     private DisableIf() {}
 }

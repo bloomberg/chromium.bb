@@ -16,10 +16,12 @@ import junit.framework.TestCase;
 
 import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
+import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.util.ChromeDisableIf;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.policy.test.annotations.Policies;
@@ -49,6 +51,7 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         super.addTestHooks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
         result.addSkipCheck(new ChromeRestrictionSkipCheck(getTargetContext()));
+        result.addSkipCheck(new ChromeDisableIfSkipCheck(getTargetContext()));
 
         result.addPreTestHook(Policies.getRegistrationHook());
     }
@@ -115,6 +118,32 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                 Log.e(TAG, "Couldn't find test method: " + e.toString());
             }
 
+            return false;
+        }
+    }
+
+    private class ChromeDisableIfSkipCheck extends DisableIfSkipCheck {
+
+        private final Context mTargetContext;
+
+        public ChromeDisableIfSkipCheck(Context targetContext) {
+            mTargetContext = targetContext;
+        }
+
+        @Override
+        protected boolean deviceTypeApplies(String type) {
+            if (TextUtils.equals(type, ChromeDisableIf.PHONE)
+                    && !DeviceFormFactor.isTablet(getTargetContext())) {
+                return true;
+            }
+            if (TextUtils.equals(type, ChromeDisableIf.TABLET)
+                    && DeviceFormFactor.isTablet(getTargetContext())) {
+                return true;
+            }
+            if (TextUtils.equals(type, ChromeDisableIf.LARGETABLET)
+                    && DeviceFormFactor.isLargeTablet(getTargetContext())) {
+                return true;
+            }
             return false;
         }
     }
