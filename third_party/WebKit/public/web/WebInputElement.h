@@ -77,7 +77,7 @@ public:
     BLINK_EXPORT bool isChecked() const;
     BLINK_EXPORT bool isMultiple() const;
 
-    // Associated <datalsit> options which match to the current INPUT value.
+    // Associated <datalist> options which match to the current INPUT value.
     BLINK_EXPORT WebVector<WebOptionElement> filteredDataListOptions() const;
 
     // Return the localized value for this input type.

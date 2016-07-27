@@ -208,7 +208,7 @@ public:
     HTMLDataListElement* dataList() const;
     bool hasValidDataListOptions() const;
     void listAttributeTargetChanged();
-    // Associated <datalsit> options which match to the current INPUT value.
+    // Associated <datalist> options which match to the current INPUT value.
     HeapVector<Member<HTMLOptionElement>> filteredDataListOptions() const;
 
     HTMLInputElement* checkedRadioButtonForGroup();
