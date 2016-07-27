@@ -21,6 +21,7 @@ group("all") {
     "//ios/public/provider/web",
     "//ios/testing:ocmock_support_unittest",
     "//ios/third_party/earl_grey",
+    "//ios/web:earl_grey_test_support",
     "//ios/web:ios_web_inttests",
     "//ios/web:ios_web_unittests",
     "//ios/web/shell:ios_web_shell",

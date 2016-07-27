@@ -56,7 +56,16 @@ std::unique_ptr<base::Value> ExecuteScript(web::WebState* web_state,
     return did_finish;
   });
 
-  return result;
+  // As result is marked __block, this return call does a copy and not a move
+  // (marking the variable as __block mean it is allocated in the block object
+  // and not the stack). Since the "return std::move()" pattern is discouraged
+  // use a local variable.
+  //
+  // Fixes the following compilation failure:
+  //   ../web_view_matchers.mm:ll:cc: error: call to implicitly-deleted copy
+  //       constructor of 'std::unique_ptr<base::Value>'
+  std::unique_ptr<base::Value> stack_result = std::move(result);
+  return stack_result;
 }
 
 }  // namespace
