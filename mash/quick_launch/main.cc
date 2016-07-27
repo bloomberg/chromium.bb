@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/quick_launch/quick_launch_application.h"
+#include "mash/quick_launch/quick_launch.h"
 #include "mojo/public/c/system/main.h"
 #include "services/shell/public/cpp/service_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ServiceRunner runner(
-      new mash::quick_launch::QuickLaunchApplication);
+  shell::ServiceRunner runner(new mash::quick_launch::QuickLaunch);
   return runner.Run(shell_handle);
 }

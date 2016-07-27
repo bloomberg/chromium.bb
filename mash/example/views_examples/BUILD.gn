@@ -12,9 +12,7 @@ service("views_examples") {
   testonly = true
 
   sources = [
-    "main.cc",
-    "views_examples_application_delegate.cc",
-    "views_examples_application_delegate.h",
+    "views_examples.cc",
   ]
 
   deps = [

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
-#define MASH_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
+#ifndef MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#define MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_
 
 #include <memory>
 
@@ -22,13 +22,12 @@ class WindowManagerConnection;
 namespace mash {
 namespace quick_launch {
 
-class QuickLaunchApplication
-    : public shell::Service,
-      public mojom::Launchable,
-      public shell::InterfaceFactory<mojom::Launchable> {
+class QuickLaunch : public shell::Service,
+                    public mojom::Launchable,
+                    public shell::InterfaceFactory<mojom::Launchable> {
  public:
-  QuickLaunchApplication();
-  ~QuickLaunchApplication() override;
+  QuickLaunch();
+  ~QuickLaunch() override;
 
   void RemoveWindow(views::Widget* window);
 
@@ -51,10 +50,10 @@ class QuickLaunchApplication
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuickLaunchApplication);
+  DISALLOW_COPY_AND_ASSIGN(QuickLaunch);
 };
 
 }  // namespace quick_launch
 }  // namespace mash
 
-#endif  // MASH_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
+#endif  // MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_

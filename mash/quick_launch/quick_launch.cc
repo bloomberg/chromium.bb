@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/quick_launch/quick_launch_application.h"
+#include "mash/quick_launch/quick_launch.h"
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -34,7 +34,7 @@ namespace quick_launch {
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(QuickLaunchApplication* quick_launch,
+  QuickLaunchUI(QuickLaunch* quick_launch,
                 shell::Connector* connector,
                 catalog::mojom::CatalogPtr catalog)
       : quick_launch_(quick_launch),
@@ -141,7 +141,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                                   : mojom::LaunchMode::REUSE);
   }
 
-  QuickLaunchApplication* quick_launch_;
+  QuickLaunch* quick_launch_;
   shell::Connector* connector_;
   views::Textfield* prompt_;
   std::vector<std::unique_ptr<shell::Connection>> connections_;
@@ -152,10 +152,10 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
 
-QuickLaunchApplication::QuickLaunchApplication() {}
-QuickLaunchApplication::~QuickLaunchApplication() {}
+QuickLaunch::QuickLaunch() {}
+QuickLaunch::~QuickLaunch() {}
 
-void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
+void QuickLaunch::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);
   DCHECK(it != windows_.end());
   windows_.erase(it);
@@ -163,7 +163,7 @@ void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void QuickLaunchApplication::OnStart(const shell::Identity& identity) {
+void QuickLaunch::OnStart(const shell::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   aura_init_.reset(
@@ -174,12 +174,12 @@ void QuickLaunchApplication::OnStart(const shell::Identity& identity) {
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
-bool QuickLaunchApplication::OnConnect(shell::Connection* connection) {
+bool QuickLaunch::OnConnect(shell::Connection* connection) {
   connection->AddInterface<mojom::Launchable>(this);
   return true;
 }
 
-void QuickLaunchApplication::Launch(uint32_t what, mojom::LaunchMode how) {
+void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
   bool reuse = how == mojom::LaunchMode::REUSE ||
                how == mojom::LaunchMode::DEFAULT;
   if (reuse && !windows_.empty()) {
@@ -196,8 +196,8 @@ void QuickLaunchApplication::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void QuickLaunchApplication::Create(const shell::Identity& remote_identity,
-                                    mojom::LaunchableRequest request) {
+void QuickLaunch::Create(const shell::Identity& remote_identity,
+                         mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

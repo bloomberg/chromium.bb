@@ -10,8 +10,8 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
-    "quick_launch_application.cc",
-    "quick_launch_application.h",
+    "quick_launch.cc",
+    "quick_launch.h",
   ]
 
   deps = [

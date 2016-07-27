@@ -18,7 +18,7 @@
 #include "base/process/launch.h"
 #include "content/public/common/content_switches.h"
 #include "mash/app_driver/app_driver.h"
-#include "mash/quick_launch/quick_launch_application.h"
+#include "mash/quick_launch/quick_launch.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -96,7 +96,7 @@ class DefaultService : public shell::Service,
     if (name == "mojo:ui")
       return base::WrapUnique(new ui::Service);
     if (name == "mojo:quick_launch")
-      return base::WrapUnique(new mash::quick_launch::QuickLaunchApplication);
+      return base::WrapUnique(new mash::quick_launch::QuickLaunch);
     if (name == "mojo:task_viewer")
       return base::WrapUnique(new mash::task_viewer::TaskViewer);
 #if defined(OS_LINUX)
