@@ -219,3 +219,12 @@ class ArchiveTest(cros_test_lib.TestCase):
                        DEFAULT_BOT_NAME,
                        self._VERSION))
     self.assertEqual(expected_value, value)
+
+  def testDownloadURLFileBuildbot(self):
+    value = self._GetAttributeValue('download_url_file')
+    expected_value = ('%s%s/%s/%s' %
+                      (archive_lib.gs.PRIVATE_BASE_HTTPS_URL,
+                       DEFAULT_ARCHIVE_PREFIX,
+                       DEFAULT_BOT_NAME,
+                       self._VERSION))
+    self.assertEqual(expected_value, value)

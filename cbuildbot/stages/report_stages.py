@@ -626,7 +626,7 @@ class ReportStage(generic_stages.BuilderStage,
     commands.UploadArchivedFile(
         archive_path, [archive.upload_url], os.path.basename(timeline),
         debug=self._run.debug, acl=self.acl)
-    return os.path.join(archive.download_url, timeline_file)
+    return os.path.join(archive.download_url_file, timeline_file)
 
   def GetReportMetadata(self, config=None, stage=None, final_status=None,
                         completion_instance=None):

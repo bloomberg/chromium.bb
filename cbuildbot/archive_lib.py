@@ -69,10 +69,14 @@ class Archive(object):
 
   Attributes:
     archive_path: The full local path where output from this builder is stored.
-    download_url: The URL where we can download artifacts.
+    download_url: The URL where we can download directory artifacts.
+    download_url_file: The URL where we can download file artifacts.
     upload_url: The Google Storage location where we should upload artifacts.
     version: The ChromeOS version for this archive.
   """
+  # TODO(davidriley): The use of a special download url for directories and
+  # files is a workaround for b/27653354. If that is ultimately fixed, revisit
+  # this workaround.
 
   _BUILDBOT_ARCHIVE = 'buildbot_archive'
   _TRYBOT_ARCHIVE = 'trybot_archive'
@@ -126,8 +130,20 @@ class Archive(object):
       # Translate the gs:// URI to the URL for downloading the same files.
       # TODO(akeshet): The use of a special download url is a workaround for
       # b/27653354. If that is ultimately fixed, revisit this workaround.
+      # This download link works for directories.
       return self.upload_url.replace(
           'gs://', gs.PRIVATE_BASE_HTTPS_DOWNLOAD_URL)
+    else:
+      return self.archive_path
+
+  @property
+  def download_url_file(self):
+    if self._options.buildbot or self._options.remote_trybot:
+      # Translate the gs:// URI to the URL for downloading the same files.
+      # TODO(akeshet): The use of a special download url is a workaround for
+      # b/27653354. If that is ultimately fixed, revisit this workaround.
+      # This download link works for files.
+      return self.upload_url.replace('gs://', gs.PRIVATE_BASE_HTTPS_URL)
     else:
       return self.archive_path
 
