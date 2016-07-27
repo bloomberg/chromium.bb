@@ -5,6 +5,7 @@
 #ifndef SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
 #define SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
 
+#include "base/process/kill.h"
 #include "base/process/launch.h"
 
 namespace sandbox {
@@ -120,6 +121,10 @@ enum TerminationCodes {
   SBOX_FATAL_WARMUP = 7013,           // Failed to warmup.
   SBOX_FATAL_LAST
 };
+
+static_assert(SBOX_FATAL_MEMORY_EXCEEDED ==
+                  base::win::kSandboxFatalMemoryExceeded,
+              "Value for SBOX_FATAL_MEMORY_EXCEEDED must match base.");
 
 class BrokerServices;
 class TargetServices;

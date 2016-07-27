@@ -67,7 +67,6 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -81,6 +80,7 @@
 
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/process_startup_helper.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)

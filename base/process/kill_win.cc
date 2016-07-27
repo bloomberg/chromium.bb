@@ -148,6 +148,9 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
     case kDebuggerTerminatedExitCode:  // Debugger terminated process.
     case kProcessKilledExitCode:  // Task manager kill.
       return TERMINATION_STATUS_PROCESS_WAS_KILLED;
+    case base::win::kSandboxFatalMemoryExceeded:  // Terminated process due to
+                                                  // exceeding the sandbox job
+                                                  // object memory limits.
     case base::win::kOomExceptionCode:  // Ran out of memory.
       return TERMINATION_STATUS_OOM;
     default:
