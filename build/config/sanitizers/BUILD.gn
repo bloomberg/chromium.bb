@@ -71,6 +71,10 @@ group("deps_no_options") {
       data_deps = [
         ":copy_asan_runtime",
       ]
+
+      public_deps = [
+        ":asan_runtime_bundle_data",
+      ]
     }
   }
 }
@@ -82,6 +86,16 @@ if (is_mac && using_sanitizer) {
     ]
     outputs = [
       "$root_out_dir/{{source_file_part}}",
+    ]
+  }
+
+  bundle_data("asan_runtime_bundle_data") {
+    sources = get_target_outputs(":copy_asan_runtime")
+    outputs = [
+      "{{bundle_executable_dir}}/{{source_file_part}}",
+    ]
+    public_deps = [
+      ":copy_asan_runtime",
     ]
   }
 }

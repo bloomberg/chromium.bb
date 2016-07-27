@@ -514,6 +514,7 @@ if (is_win) {
       ":chrome_app_strings_bundle_data",
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
+      "//build/config/sanitizers:deps",
       "//chrome/common:version_header",
     ]
 
@@ -676,6 +677,7 @@ if (is_win) {
     defines = [ "HELPER_EXECUTABLE" ]
 
     deps = [
+      "//build/config/sanitizers:deps",
       "//chrome/common:version_header",
     ]
 
@@ -727,6 +729,12 @@ if (is_win) {
     public_deps = [
       "//third_party/crashpad/crashpad/handler:crashpad_handler",
     ]
+
+    if (using_sanitizer) {
+      # crashpad_handler requires the ASan runtime at its @executable_path.
+      sources += [ "$root_out_dir/libclang_rt.asan_osx_dynamic.dylib" ]
+      public_deps += [ "//build/config/sanitizers:copy_asan_runtime" ]
+    }
   }
 
   bundle_data("chrome_framework_resources") {

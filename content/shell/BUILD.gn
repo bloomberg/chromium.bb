@@ -468,6 +468,7 @@ if (is_android) {
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
+      "//build/config/sanitizers:deps",
 
       # TODO(rsesek): Remove this after GYP is gone, since it only needs to
       # be here per the comment in blink_test_platform_support_mac.mm about
@@ -704,6 +705,7 @@ if (is_mac) {
     ]
     deps = [
       ":content_shell_framework+link",
+      "//build/config/sanitizers:deps",
     ]
     ldflags = [
       # The helper is in Content Shell.app/Contents/Frameworks/Content Shell Helper.app/Contents/MacOS/
