@@ -846,20 +846,6 @@ FloatPoint PaintLayer::perspectiveOrigin() const
     return FloatPoint(floatValueForLength(style.perspectiveOriginX(), borderBox.width().toFloat()), floatValueForLength(style.perspectiveOriginY(), borderBox.height().toFloat()));
 }
 
-static inline bool isContainerForFixedPositioned(PaintLayer* layer)
-{
-    return layer->isRootLayer() || layer->hasTransformRelatedProperty();
-}
-
-static inline bool isContainerForPositioned(PaintLayer* layer)
-{
-    // FIXME: This is not in sync with containingBlock.
-    // LayoutObject::canContainFixedPositionObjects() should probably be used
-    // instead.
-    LayoutBoxModelObject* layerlayoutObject = layer->layoutObject();
-    return layer->isRootLayer() || layerlayoutObject->isPositioned() || layer->hasTransformRelatedProperty() || layerlayoutObject->style()->containsPaint();
-}
-
 PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(const PaintLayer* ancestor, bool* skippedAncestor) const
 {
     ASSERT(!ancestor || skippedAncestor); // If we have specified an ancestor, surely the caller needs to know whether we skipped it.
@@ -867,7 +853,7 @@ PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(const PaintLayer* 
         *skippedAncestor = false;
     if (layoutObject()->style()->position() == FixedPosition) {
         PaintLayer* curr = parent();
-        while (curr && !isContainerForFixedPositioned(curr)) {
+        while (curr && !curr->layoutObject()->canContainFixedPositionObjects()) {
             if (skippedAncestor && curr == ancestor)
                 *skippedAncestor = true;
             curr = curr->parent();
@@ -877,7 +863,7 @@ PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(const PaintLayer* 
     }
 
     PaintLayer* curr = parent();
-    while (curr && !isContainerForPositioned(curr)) {
+    while (curr && !curr->layoutObject()->canContainAbsolutePositionObjects()) {
         if (skippedAncestor && curr == ancestor)
             *skippedAncestor = true;
         curr = curr->parent();

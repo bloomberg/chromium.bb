@@ -450,6 +450,76 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPos)
     EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, FixedPosInTransform)
+{
+    setBodyInnerHTML("<style>#container { transform: translateY(100px); position: absolute; left: 0; top: 100px; }"
+        ".fixed { position: fixed; top: 0; }"
+        ".spacer { height: 2000px; } </style>"
+        "<div id='container'><div class='fixed' id='target'></div></div>"
+        "<div class='spacer'></div>");
+
+    document().view()->setScrollPosition(DoublePoint(0.0, 50), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_EQ(50, document().view()->scrollPosition().y());
+
+    LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+    LayoutBox* body = container->parentBox();
+    LayoutBox* html = body->parentBox();
+    LayoutBox* view = html->parentBox();
+    ASSERT_TRUE(view->isLayoutView());
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, view, FloatPoint(0, 100));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, FloatPoint(0, 0));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(container, view, FloatPoint(0, 100));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, FixedPosInContainPaint)
+{
+    setBodyInnerHTML("<style>#container { contain: paint; position: absolute; left: 0; top: 100px; }"
+        ".fixed { position: fixed; top: 0; }"
+        ".spacer { height: 2000px; } </style>"
+        "<div id='container'><div class='fixed' id='target'></div></div>"
+        "<div class='spacer'></div>");
+
+    document().view()->setScrollPosition(DoublePoint(0.0, 50), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_EQ(50, document().view()->scrollPosition().y());
+
+    LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+    LayoutBox* body = container->parentBox();
+    LayoutBox* html = body->parentBox();
+    LayoutBox* view = html->parentBox();
+    ASSERT_TRUE(view->isLayoutView());
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, view, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, view, FloatPoint(0, 100));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, FloatPoint(0, 0));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(container, view, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(container, view, FloatPoint(0, 100));
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
 // TODO(chrishtr): add more multi-frame tests.
 TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled)
 {

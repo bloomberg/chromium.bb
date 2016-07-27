@@ -229,6 +229,39 @@ TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
     EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToAncestor(rect, nullptr));
 }
 
+TEST_F(LayoutGeometryMapTest, ContainsFixedPositionTest)
+{
+    registerMockedHttpURLLoad("rgm_contains_fixed_position_test.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_contains_fixed_position_test.html", true, 0, 0);
+    webView->resize(WebSize(1000, 1000));
+    webView->updateAllLifecyclePhases();
+
+    FloatRect rect(0.0f, 0.0f, 100.0f, 100.0f);
+    LayoutGeometryMap rgm;
+
+    // This fixed position element is not contained and so is attached at the top of the viewport.
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "simple-container"), 0);
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "fixed1"), getLayoutBox(webView, "simple-container"));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 50.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
+
+    // Transforms contain fixed position descendants.
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "has-transform"), 0);
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "fixed2"), getLayoutBox(webView, "has-transform"));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
+
+    // Paint containment contains fixed position descendants.
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "contains-paint"), 0);
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.pushMappingsToAncestor(getLayoutBox(webView, "fixed3"), getLayoutBox(webView, "contains-paint"));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)), rgm.mapToAncestor(rect, nullptr));
+    rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
+}
+
 TEST_F(LayoutGeometryMapTest, IframeTest)
 {
     registerMockedHttpURLLoad("rgm_iframe_test.html");

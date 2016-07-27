@@ -1024,7 +1024,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
 
     bool isInline = isLayoutInline();
     bool isFixedPos = !isInline && style()->position() == FixedPosition;
-    bool hasTransform = !isInline && hasLayer() && layer()->transform();
+    bool containsFixedPosition = canContainFixedPositionObjects();
 
     LayoutSize adjustmentForSkippedAncestor;
     if (ancestorSkipped) {
@@ -1050,8 +1050,8 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
         flags |= IsNonUniform;
     if (isFixedPos)
         flags |= IsFixedPosition;
-    if (hasTransform)
-        flags |= HasTransform;
+    if (containsFixedPosition)
+        flags |= ContainsFixedPosition;
     if (shouldUseTransformFromContainer(container)) {
         TransformationMatrix t;
         getTransformFromContainer(container, containerOffset, t);

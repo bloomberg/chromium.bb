@@ -483,6 +483,8 @@ public:
     bool hasUniquePseudoStyle() const;
     bool hasPseudoElementStyle() const;
 
+    // Note: canContainAbsolutePositionObjects should return true if canContainFixedPositionObjects.
+    // We currently never use this value directly, always OR'ing it with canContainFixedPositionObjects.
     bool canContainAbsolutePositionObjects() const { return position() != StaticPosition; }
     bool canContainFixedPositionObjects() const { return hasTransformRelatedProperty() || containsPaint();}
 

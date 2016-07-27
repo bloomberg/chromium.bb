@@ -40,7 +40,7 @@ enum GeometryInfoFlag {
     AccumulatingTransform = 1 << 0,
     IsNonUniform = 1 << 1, // Mapping depends on the input point, e.g. because of CSS columns.
     IsFixedPosition = 1 << 2,
-    HasTransform = 1 << 3,
+    ContainsFixedPosition = 1 << 3,
 };
 typedef unsigned GeometryInfoFlags;
 

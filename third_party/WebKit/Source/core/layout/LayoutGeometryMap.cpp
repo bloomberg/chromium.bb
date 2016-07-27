@@ -81,7 +81,7 @@ void LayoutGeometryMap::mapToAncestor(TransformState& transformState, const Layo
         // If this box has a transform, it acts as a fixed position container
         // for fixed descendants, which prevents the propagation of 'fixed'
         // unless the layer itself is also fixed position.
-        if (i && currentStep.m_flags & HasTransform && !(currentStep.m_flags & IsFixedPosition))
+        if (i && currentStep.m_flags & ContainsFixedPosition && !(currentStep.m_flags & IsFixedPosition))
             inFixed = false;
         else if (currentStep.m_flags & IsFixedPosition)
             inFixed = true;
@@ -120,8 +120,8 @@ void LayoutGeometryMap::dumpSteps() const
             m_mapping[i].m_layoutObject->debugName().ascii().data(),
             m_mapping[i].m_offset.width().toInt(),
             m_mapping[i].m_offset.height().toInt());
-        if (m_mapping[i].m_flags & HasTransform)
-            fprintf(stderr, " hasTransform");
+        if (m_mapping[i].m_flags & ContainsFixedPosition)
+            fprintf(stderr, " containsFixedPosition");
         fprintf(stderr, "\n");
     }
 }
@@ -175,7 +175,7 @@ static bool canMapBetweenLayoutObjects(const LayoutObject* layoutObject, const L
         if (style.position() == FixedPosition || style.isFlippedBlocksWritingMode())
             return false;
 
-        if (current->hasTransformRelatedProperty() || current->isLayoutFlowThread() || current->isSVGRoot())
+        if (current->style()->canContainFixedPositionObjects() || current->isLayoutFlowThread() || current->isSVGRoot())
             return false;
 
         if (current == ancestor)

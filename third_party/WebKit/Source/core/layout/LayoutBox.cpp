@@ -1771,10 +1771,10 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
 void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
     bool isFixedPos = style()->position() == FixedPosition;
-    bool hasTransform = hasLayer() && layer()->transform();
-    // If this box has a transform, it acts as a fixed position container for fixed descendants,
+
+    // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
     // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
-    if (hasTransform && !isFixedPos)
+    if (style()->canContainFixedPositionObjects() && !isFixedPos)
         mode &= ~IsFixed;
     else if (isFixedPos)
         mode |= IsFixed;
@@ -1788,9 +1788,9 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transfo
         return;
 
     bool isFixedPos = style()->position() == FixedPosition;
-    bool hasTransform = hasLayer() && layer()->transform();
-    if (hasTransform && !isFixedPos) {
-        // If this box has a transform, it acts as a fixed position container for fixed descendants,
+
+    if (style()->canContainFixedPositionObjects() && !isFixedPos) {
+        // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
         // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
         mode &= ~IsFixed;
     } else if (isFixedPos) {
