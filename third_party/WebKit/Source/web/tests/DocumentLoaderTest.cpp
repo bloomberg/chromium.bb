@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/loader/DocumentLoader.h"
+
+#include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderClient.h"
@@ -165,6 +168,12 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy)
     // delegate is a WebFrameClient and stack-allocated, so manually reset() the
     // WebViewHelper here.
     m_webViewHelper.reset();
+}
+
+TEST_F(DocumentLoaderTest, isCommittedButEmpty)
+{
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad("about:blank", true);
+    EXPECT_TRUE(toLocalFrame(webViewImpl->page()->mainFrame())->loader().documentLoader()->isCommittedButEmpty());
 }
 
 } // namespace blink

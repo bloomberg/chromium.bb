@@ -105,6 +105,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_request(req)
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
+    , m_dataReceived(false)
     , m_navigationType(NavigationTypeOther)
     , m_documentLoadTiming(*this)
     , m_timeOfLastDataReceived(0.0)
@@ -487,7 +488,7 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         return;
 
     if (length)
-        m_state = DataReceived;
+        m_dataReceived = true;
 
     m_writer->addData(bytes, length);
 }

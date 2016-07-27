@@ -107,7 +107,7 @@ public:
     bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
     void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
 
-    bool isCommittedButEmpty() const { return m_state == Committed; }
+    bool isCommittedButEmpty() const { return m_state >= Committed && !m_dataReceived; }
 
     void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
     bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
@@ -213,6 +213,7 @@ private:
 
     bool m_isClientRedirect;
     bool m_replacesCurrentHistoryItem;
+    bool m_dataReceived;
 
     NavigationType m_navigationType;
 
@@ -232,7 +233,6 @@ private:
         NotStarted,
         Provisional,
         Committed,
-        DataReceived,
         MainResourceDone,
         SentDidFinishLoad
     };
