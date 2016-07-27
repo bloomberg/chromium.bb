@@ -1300,10 +1300,16 @@ void DockedWindowLayoutManager::UpdateDockBounds(
   if (shelf_observer_)
     background_bounds.Subtract(shelf_observer_->shelf_bounds_in_screen());
   if (docked_width > 0) {
-    if (!background_widget_)
-      background_widget_.reset(new DockedBackgroundWidget(this));
-    background_widget_->SetBackgroundBounds(background_bounds, alignment_);
-    background_widget_->Show();
+    // TODO: |shelf_| should not be null by the time we get here, but it may
+    // be in mash as startup sequence doesn't yet match that of ash. Once
+    // |shelf_| is created at same time as ash we can remove conditional.
+    // http://crbug.com/632099
+    if (shelf_) {
+      if (!background_widget_)
+        background_widget_.reset(new DockedBackgroundWidget(this));
+      background_widget_->SetBackgroundBounds(background_bounds, alignment_);
+      background_widget_->Show();
+    }
   } else if (background_widget_) {
     background_widget_->Hide();
   }
