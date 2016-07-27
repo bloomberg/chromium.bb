@@ -94,6 +94,10 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetrusage();
 // about the state of the host OS.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
 
+// Restrict the flags argument to getrandom() to allow only no flags, or
+// GRND_NONBLOCK.
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetRandom();
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_

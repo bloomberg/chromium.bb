@@ -1263,4 +1263,8 @@
 #define __NR_seccomp (__NR_Linux + 312)
 #endif
 
+#if !defined(__NR_getrandom)
+#define __NR_getrandom (__NR_Linux + 313)
+#endif
+
 #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_

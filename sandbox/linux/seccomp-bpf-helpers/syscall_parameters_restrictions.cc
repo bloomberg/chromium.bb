@@ -351,4 +351,14 @@ ResultExpr RestrictClockID() {
       .Default(CrashSIGSYS());
 }
 
+#if !defined(GRND_NONBLOCK)
+#define GRND_NONBLOCK 1
+#endif
+
+ResultExpr RestrictGetRandom() {
+  const Arg<unsigned int> flags(2);
+  const unsigned int kGoodFlags = GRND_NONBLOCK;
+  return If((flags & ~kGoodFlags) == 0, Allow()).Else(CrashSIGSYS());
+}
+
 }  // namespace sandbox.

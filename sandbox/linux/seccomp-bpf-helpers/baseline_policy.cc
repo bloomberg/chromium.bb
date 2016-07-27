@@ -169,6 +169,10 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_getpriority || sysno ==__NR_setpriority)
     return RestrictGetSetpriority(current_pid);
 
+  if (sysno == __NR_getrandom) {
+    return RestrictGetRandom();
+  }
+
   if (sysno == __NR_madvise) {
     // Only allow MADV_DONTNEED (aka MADV_FREE).
     const Arg<int> advice(2);
