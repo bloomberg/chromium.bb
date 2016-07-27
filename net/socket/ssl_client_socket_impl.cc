@@ -518,7 +518,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       disconnected_(false),
       npn_status_(kNextProtoUnsupported),
       channel_id_sent_(false),
-      session_pending_(false),
       certificate_verified_(false),
       signature_result_(kNoPendingResult),
       transport_security_state_(context.transport_security_state),
@@ -709,7 +708,7 @@ void SSLClientSocketImpl::Disconnect() {
 
   channel_id_sent_ = false;
   tb_was_negotiated_ = false;
-  session_pending_ = false;
+  pending_session_ = nullptr;
   certificate_verified_ = false;
   channel_id_request_.Cancel();
 
@@ -806,8 +805,11 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
-  ssl_info->key_exchange_info =
-      SSL_SESSION_get_key_exchange_info(SSL_get_session(ssl_));
+  if (SSL_CIPHER_is_ECDHE(cipher)) {
+    ssl_info->key_exchange_info = SSL_get_curve_id(ssl_);
+  } else if (SSL_CIPHER_is_DHE(cipher)) {
+    ssl_info->key_exchange_info = SSL_get_dhe_group_size(ssl_);
+  }
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),
@@ -2085,25 +2087,18 @@ void SSLClientSocketImpl::MaybeCacheSession() {
   // Only cache the session once both a new session has been established and the
   // certificate has been verified. Due to False Start, these events may happen
   // in either order.
-  if (!session_pending_ || !certificate_verified_)
+  if (!pending_session_ || !certificate_verified_)
     return;
 
   SSLContext::GetInstance()->session_cache()->Insert(GetSessionCacheKey(),
-                                                     SSL_get_session(ssl_));
-  session_pending_ = false;
+                                                     pending_session_.get());
+  pending_session_ = nullptr;
 }
 
 int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
-  DCHECK_EQ(session, SSL_get_session(ssl_));
-
-  // Only sessions from the initial handshake get cached. Note this callback may
-  // be signaled on abbreviated handshakes if the ticket was renewed.
-  session_pending_ = true;
+  // OpenSSL passes a reference to |session|.
+  pending_session_.reset(session);
   MaybeCacheSession();
-
-  // OpenSSL passes a reference to |session|, but the session cache does not
-  // take this reference, so release it.
-  SSL_SESSION_free(session);
   return 1;
 }
 
