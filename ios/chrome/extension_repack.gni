@@ -19,6 +19,10 @@ import("//tools/grit/repack.gni")
 #       and Chrome does not use the same convention for naming locales
 #       with country variants).
 #
+#   copy_data_to_bundle [required]
+#       controls whether bundle_data targets are defined to  copy the repacked
+#       data into the final bundle.
+#
 #   visibility [optional]
 #       usual meaning.
 #
@@ -27,7 +31,13 @@ template("_extension_repack_one_locale") {
   assert(defined(invoker.input_locale), "Need input_locale for $target_name")
   assert(defined(invoker.output_locale), "Need output_locale for $target_name")
 
-  repack_and_bundle(target_name) {
+  if (invoker.copy_data_to_bundle) {
+    _target_type = "repack_and_bundle"
+  } else {
+    _target_type = "repack"
+  }
+
+  target(_target_type, target_name) {
     forward_variables_from(invoker, [ "visibility" ])
 
     deps = [
@@ -40,8 +50,10 @@ template("_extension_repack_one_locale") {
     ]
 
     output = "$target_gen_dir/${invoker.output_locale}.lproj/locale.pak"
-    bundle_output = "{{bundle_resources_dir}}/" +
-                    "${invoker.output_locale}.lproj/locale.pak"
+    if (invoker.copy_data_to_bundle) {
+      bundle_output = "{{bundle_resources_dir}}/" +
+                      "${invoker.output_locale}.lproj/locale.pak"
+    }
   }
 }
 
@@ -62,6 +74,10 @@ template("_extension_repack_one_locale") {
 #
 #       Must be the same length as input_locales.
 #
+#   copy_data_to_bundle [optional]
+#       controls whether bundle_data targets are defined to copy the repacked
+#       data into the final bundle (defaults to true if not defined).
+#
 #   visibility [optional]
 #       usual meaning.
 #
@@ -72,6 +88,11 @@ template("extension_repack_all_locales") {
          "Need output_locales for $target_name")
 
   _target_name = target_name
+
+  _copy_data_to_bundle = true
+  if (defined(invoker.copy_data_to_bundle)) {
+    _copy_data_to_bundle = invoker.copy_data_to_bundle
+  }
 
   # TODO(614747): GN parser does not grok invoker.output_locales[foo]. Use a
   # local variables to workaround this issue until the issue is fixed.
@@ -90,6 +111,7 @@ template("extension_repack_all_locales") {
       input_locale = _input_locale
       output_locale = _output_locale
       extension = invoker.extension
+      copy_data_to_bundle = _copy_data_to_bundle
     }
 
     _locale_targets += [ ":$_locale_target" ]
