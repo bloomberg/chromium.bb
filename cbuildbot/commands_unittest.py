@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import base64
+import datetime as dt
 import json
 import mock
 import os
@@ -1050,6 +1051,21 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     html = osutils.ReadFile(index)
     for f in files:
       self.assertIn('>%s</a>' % f, html)
+
+  def testGenerateHtmlTimeline(self):
+    """Verifies GenerateHtmlTimeline gives us something sane."""
+    timeline = os.path.join(self.tempdir, 'timeline.html')
+    now = dt.datetime.now()
+    rows = [
+        ('test1', now - dt.timedelta(0, 3600), now - dt.timedelta(0, 1800)),
+        ('test2', now - dt.timedelta(0, 3600), now - dt.timedelta(0, 600)),
+        ('test3', now - dt.timedelta(0, 1800), now - dt.timedelta(0, 1200))
+    ]
+    commands.GenerateHtmlTimeline(timeline, rows, 'my-timeline')
+    html = osutils.ReadFile(timeline)
+    self.assertIn('my-timeline', html)
+    for r in rows:
+      self.assertIn('["%s", new Date' % r[0], html)
 
   def testArchiveGeneration(self):
     """Verifies BuildStandaloneImageArchive produces correct archives"""

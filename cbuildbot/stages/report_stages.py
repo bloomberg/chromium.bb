@@ -427,6 +427,14 @@ class ReportStage(generic_stages.BuilderStage,
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
+  _TIMELINE_HTML_HEAD = """<html>
+<head>
+ <title>Build Stages Timeline: %(board)s / %(version)s</title>
+ %%(javascript)s
+</head>
+<body>
+<h2>Build Stages Timeline: %(board)s / %(version)s (%(config)s config)</h2>"""
+
   _STATS_HISTORY_DAYS = 7
 
   def __init__(self, builder_run, completion_instance, **kwargs):
@@ -578,6 +586,48 @@ class ReportStage(generic_stages.BuilderStage,
           debug=self._run.debug, acl=self.acl)
       return dict((b, archive.download_url) for b in boards)
 
+  def _UploadBuildStagesTimeline(self, builder_run, build_id, db):
+    """Upload an HTML timeline for the build stages at remote archive location.
+
+    Args:
+      builder_run: BuilderRun object for this run.
+      build_id: CIDB id for the current build.
+      db: CIDBConnection instance.
+
+    Returns:
+      If an index file is uploaded then a dict is returned where each value
+        is the same (the URL for the uploaded HTML index) and the keys are
+        the boards it applies to, including None if applicable.  If no index
+        file is uploaded then this returns None.
+    """
+    archive = builder_run.GetArchive()
+    archive_path = archive.archive_path
+
+    config = builder_run.config
+    boards = config.boards
+    if boards:
+      board_names = ' '.join(boards)
+    else:
+      boards = [None]
+      board_names = '<no board>'
+
+    timeline_file = 'timeline-stages.html'
+    timeline = os.path.join(archive_path, timeline_file)
+
+    # Gather information about this build from CIDB.
+    stages = db.GetBuildStages(build_id)
+    rows = list((s['name'], s['start_time'], s['finish_time']) for s in stages)
+
+    # Prepare html head.
+    title = ('Build Stages Timeline: %s / %s (%s config)' %
+             (board_names, builder_run.GetVersion(), config.name))
+
+    commands.GenerateHtmlTimeline(timeline, rows, title=title)
+    commands.UploadArchivedFile(
+        archive_path, [archive.upload_url], os.path.basename(timeline),
+        debug=self._run.debug, acl=self.acl)
+    return os.path.join(archive.download_url, timeline_file)
+
   def GetReportMetadata(self, config=None, stage=None, final_status=None,
                         completion_instance=None):
     """Generate ReportStage metadata.
@@ -615,12 +665,14 @@ class ReportStage(generic_stages.BuilderStage,
         config, stage, final_status, completion_instance,
         child_configs_list)
 
-  def ArchiveResults(self, final_status):
+  def ArchiveResults(self, final_status, build_id, db):
     """Archive our build results.
 
     Args:
       final_status: constants.FINAL_STATUS_PASSED or
                     constants.FINAL_STATUS_FAILED
+      build_id: CIDB id for the current build.
+      db: CIDBConnection instance.
 
     Returns:
       A dictionary with the aggregated _UploadArchiveIndex results.
@@ -642,6 +694,10 @@ class ReportStage(generic_stages.BuilderStage,
     # or multiple child builder runs.
     archive_urls = {}
     for builder_run in self._run.GetUngroupedBuilderRuns():
+      if db is not None:
+        timeline = self._UploadBuildStagesTimeline(builder_run, build_id, db)
+        logging.PrintBuildbotLink('Build stages timeline', timeline)
+
       # Generate an index for archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the index
       # is only specific to each run/config.  In theory multiple boards could
@@ -729,7 +785,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Some operations can only be performed if a valid version is available.
     try:
       self._run.GetVersionInfo()
-      archive_urls = self.ArchiveResults(final_status)
+      archive_urls = self.ArchiveResults(final_status, build_id, db)
       metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
     except cbuildbot_run.VersionNotSetError:
       logging.error('A valid version was never set for this run. '

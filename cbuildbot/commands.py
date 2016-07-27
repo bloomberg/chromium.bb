@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import base64
 import collections
+import datetime
 import fnmatch
 import glob
 import json
@@ -1644,6 +1645,99 @@ def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
   html += '</ul>' + tail
 
   osutils.WriteFile(index, html)
+
+
+def GenerateHtmlTimeline(timeline, rows, title):
+  """Generate a simple timeline.html file given a list of timings.
+
+  Args:
+    index: The file to write the html index to.
+    rows: The list of rows to generate a timeline of.  Each row should be
+          tuple of (entry, start_time, end_time)
+    title: Title of the timeline.
+  """
+
+  _HTML = """<html>
+  <head>
+    <title>%(title)s</title>
+    %(javascript)s
+  </head>
+  <body>
+    <h2>%(title)s</h2>
+    <!--Div that will hold the timeline-->
+    <div id="chart_div"></div>
+  </body>
+</html>
+"""
+
+  _JAVASCRIPT_HEAD = """
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the timeline package.
+      google.charts.load('current', {'packages':['timeline']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the timeline, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var container = document.getElementById('chart_div');
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Entry');
+        data.addColumn('datetime', 'Start Time');
+        data.addColumn('datetime', 'Finish Time');
+"""
+
+  _JAVASCRIPT_TAIL = """
+        // Set chart options
+        var height = data.getNumberOfRows() * 50 + 30;
+        var options = {'title':'timings',
+                       'width':'100%',
+                       'height':height};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.Timeline(container);
+        chart.draw(data, options);
+      }
+    </script>
+"""
+  def GenRow(row):
+    def GenDate(time):
+      # Javascript months are 0..11 instead of 1..12
+      return ('new Date(%d, %d, %d, %d, %d, %d)' %
+              (time.year, time.month - 1, time.day,
+               time.hour, time.minute, time.second))
+    # Skip stages that don't have a start time.
+    if row[0] is None or row[1] is None:
+      return None
+    # Treat stages without a finish time as ending now.
+    finish_time = row[2]
+    if finish_time is None:
+      finish_time = datetime.datetime.utcnow()
+    return ('data.addRow(["%s", %s, %s]);\n' %
+            (row[0], GenDate(row[1]), GenDate(finish_time)))
+
+  javascript = _JAVASCRIPT_HEAD
+  for r in rows:
+    line = GenRow(r)
+    if line is not None:
+      javascript += line
+  javascript += _JAVASCRIPT_TAIL
+
+  data = {
+      'javascript': javascript,
+      'title': title if title else ''
+  }
+
+  html = _HTML % data
+
+  osutils.WriteFile(timeline, html)
 
 
 @failures_lib.SetFailureType(failures_lib.GSUploadFailure)
