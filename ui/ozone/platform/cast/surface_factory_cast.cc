@@ -20,7 +20,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/platform/cast/surface_ozone_egl_cast.h"
+#include "ui/ozone/platform/cast/gl_surface_cast.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -167,6 +167,36 @@ void SurfaceFactoryCast::OnOverlayScheduled(const gfx::Rect& display_bounds) {
   overlay_bounds_ = display_bounds;
 }
 
+bool SurfaceFactoryCast::UseNewSurfaceAPI() {
+  return true;
+}
+
+scoped_refptr<gl::GLSurface> SurfaceFactoryCast::CreateViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // Verify requested widget dimensions match our current display size.
+  DCHECK_EQ(widget >> 16, display_size_.width());
+  DCHECK_EQ(widget & 0xffff, display_size_.height());
+
+  return gl::InitializeGLSurface(new GLSurfaceCast(widget, this));
+}
+
+scoped_refptr<gl::GLSurface> SurfaceFactoryCast::CreateOffscreenGLSurface(
+    gl::GLImplementation implementation,
+    const gfx::Size& size) {
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
+}
+
 std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   // Software canvas support only in headless mode
@@ -229,14 +259,6 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
   }
 }
 
-std::unique_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
-  // Verify requested widget dimensions match our current display size.
-  DCHECK_EQ(widget >> 16, display_size_.width());
-  DCHECK_EQ(widget & 0xffff, display_size_.height());
-  return base::WrapUnique<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
-}
-
 void SurfaceFactoryCast::ChildDestroyed() {
   if (egl_platform_->MultipleSurfaceUnsupported())
     DestroyWindow();
@@ -249,7 +271,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::BufferUsage usage) {
   class CastPixmap : public NativePixmap {
    public:
-    CastPixmap(SurfaceFactoryCast* parent) : parent_(parent) {}
+    explicit CastPixmap(SurfaceFactoryCast* parent) : parent_(parent) {}
 
     void* GetEGLClientBuffer() const override {
       // TODO(halliwell): try to implement this through CastEglPlatform.

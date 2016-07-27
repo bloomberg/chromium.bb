@@ -40,6 +40,8 @@
       'sources': [
         'client_native_pixmap_factory_cast.cc',
         'client_native_pixmap_factory_cast.h',
+        'gl_surface_cast.cc',
+        'gl_surface_cast.h',
         'gpu_platform_support_cast.cc',
         'gpu_platform_support_cast.h',
         'overlay_manager_cast.cc',
@@ -50,8 +52,6 @@
         'platform_window_cast.h',
         'surface_factory_cast.cc',
         'surface_factory_cast.h',
-        'surface_ozone_egl_cast.cc',
-        'surface_ozone_egl_cast.h',
       ],
       'link_settings': {
         'libraries': [

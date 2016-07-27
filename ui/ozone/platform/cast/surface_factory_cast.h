@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace chromecast {
@@ -29,11 +30,16 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   ~SurfaceFactoryCast() override;
 
   // SurfaceFactoryOzone implementation:
+  bool UseNewSurfaceAPI() override;
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gl::GLImplementation implementation,
+      gfx::AcceleratedWidget widget) override;
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      gl::GLImplementation implementation,
+      const gfx::Size& size) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   intptr_t GetNativeDisplay() override;
-  std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
-      gfx::AcceleratedWidget widget) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,
