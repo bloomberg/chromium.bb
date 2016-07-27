@@ -83,7 +83,6 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_handlingPassive(false)
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
-    , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
     , m_platformTimeStamp(platformTimeStamp)
 {
 }
@@ -341,16 +340,9 @@ EventTarget* Event::currentTarget() const
 double Event::timeStamp(ScriptState* scriptState) const
 {
     double timeStamp = 0;
-    // TODO(majidvp): Get rid of m_createTime once the flag is enabled by default;
-    if (UNLIKELY(RuntimeEnabledFeatures::hiResEventTimeStampEnabled())) {
-        // Only expose monotonic time after changing its origin to its target
-        // document's time origin.
-        if (scriptState && scriptState->domWindow()) {
-            Performance* performance = DOMWindowPerformance::performance(*scriptState->domWindow());
-            timeStamp = performance->monotonicTimeToDOMHighResTimeStamp(m_platformTimeStamp);
-        }
-    } else {
-        timeStamp = m_createTime;
+    if (scriptState && scriptState->domWindow()) {
+        Performance* performance = DOMWindowPerformance::performance(*scriptState->domWindow());
+        timeStamp = performance->monotonicTimeToDOMHighResTimeStamp(m_platformTimeStamp);
     }
 
     return timeStamp;

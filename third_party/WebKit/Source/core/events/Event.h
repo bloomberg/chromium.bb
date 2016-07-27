@@ -137,14 +137,11 @@ public:
     bool composed() const { return m_composed; }
     bool isScopedInV0() const;
 
-    // Event creation timestamp in milliseconds. If |HiResEventTimeStamp|
-    // runtime feature is enabled it returns a DOMHighResTimeStamp using the
-    // platform timestamp (see |m_platformTimeStamp|) otherwise it returns a
-    // DOMTimeStamp that represents the current object's construction time (see
-    // |m_createTime|). For more info see http://crbug.com/160524
+    // Event creation timestamp in milliseconds. It returns a DOMHighResTimeStamp
+    // using the platform timestamp (see |m_platformTimeStamp|).
+    // For more info see http://crbug.com/160524
     double timeStamp(ScriptState*) const;
     double platformTimeStamp() const { return m_platformTimeStamp; }
-    DOMTimeStamp createTime() const { return m_createTime; }
 
     void stopPropagation() { m_propagationStopped = true; }
     void stopImmediatePropagation() { m_immediatePropagationStopped = true; }
@@ -262,7 +259,6 @@ private:
     unsigned short m_eventPhase;
     Member<EventTarget> m_currentTarget;
     Member<EventTarget> m_target;
-    DOMTimeStamp m_createTime;
     Member<Event> m_underlyingEvent;
     Member<EventPath> m_eventPath;
     // The monotonic platform time in seconds, for input events it is the

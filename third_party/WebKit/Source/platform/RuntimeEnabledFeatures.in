@@ -96,7 +96,6 @@ FrameTimingSupport status=experimental
 GeometryInterfaces status=test
 GetUserMedia depends_on=MediaDevices, status=stable
 GlobalCacheStorage status=stable
-HiResEventTimeStamp status=stable
 IDBObserver status=experimental
 ImageCapture status=experimental
 ImageColorProfiles
