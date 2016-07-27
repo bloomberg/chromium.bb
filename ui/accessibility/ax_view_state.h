@@ -57,6 +57,9 @@ struct AX_EXPORT AXViewState {
   // The view's placeholder value, used only for views with editable text.
   base::string16 placeholder;
 
+  // The view's help text/description, set to the view's tooltip text (if any).
+  base::string16 description;
+
   // The selection start and end. Only applies to views with text content,
   // such as a text box or combo box; start and end should be -1 otherwise.
   int selection_start;

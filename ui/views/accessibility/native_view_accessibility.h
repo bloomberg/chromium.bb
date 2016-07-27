@@ -49,6 +49,7 @@ class VIEWS_EXPORT NativeViewAccessibility
   const ui::AXNodeData& GetData() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   gfx::Vector2d GetGlobalCoordinateOffset() override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;

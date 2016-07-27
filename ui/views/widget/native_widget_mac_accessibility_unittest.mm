@@ -14,6 +14,7 @@
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/base/ime/text_input_type.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
@@ -166,6 +167,33 @@ TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
       valueWithPoint:gfx::ScreenPointToNSPoint(new_bounds.bottom_left())];
   EXPECT_NSEQ(widget_origin,
               AttributeValueAtMidpoint(NSAccessibilityPositionAttribute));
+}
+
+// Test for NSAccessibilityHelpAttribute.
+TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
+  Label* label = new Label(base::SysNSStringToUTF16(kTestPlaceholderText));
+  label->SetSize(GetWidgetBounds().size());
+  EXPECT_NSEQ(nil, AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
+  label->SetTooltipText(base::SysNSStringToUTF16(kTestPlaceholderText));
+  widget()->GetContentsView()->AddChildView(label);
+  EXPECT_NSEQ(kTestPlaceholderText,
+              AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
+}
+
+// Test for NSAccessibilityWindowAttribute and
+// NSAccessibilityTopLevelUIElementAttribute.
+TEST_F(NativeWidgetMacAccessibilityTest, WindowAndTopLevelUIElementAttributes) {
+  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_GROUP);
+  view->SetSize(GetWidgetBounds().size());
+  widget()->GetContentsView()->AddChildView(view);
+  // Make sure it's |view| in the hit test by checking its accessibility role.
+  EXPECT_EQ(NSAccessibilityGroupRole,
+            AttributeValueAtMidpoint(NSAccessibilityRoleAttribute));
+  EXPECT_NSEQ(widget()->GetNativeWindow(),
+              AttributeValueAtMidpoint(NSAccessibilityWindowAttribute));
+  EXPECT_NSEQ(
+      widget()->GetNativeWindow(),
+      AttributeValueAtMidpoint(NSAccessibilityTopLevelUIElementAttribute));
 }
 
 // Tests for accessibility attributes on a views::Textfield.

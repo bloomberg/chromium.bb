@@ -57,9 +57,7 @@ class AuraLinuxApplication
     return platform_node_->GetNativeViewAccessible();
   }
 
-  //
-  // WidgetObserver overrides.
-  //
+  // WidgetObserver:
 
   void OnWidgetDestroying(Widget* widget) override {
     auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
@@ -67,13 +65,13 @@ class AuraLinuxApplication
       widgets_.erase(iter);
   }
 
-  //
-  // ui::AXPlatformNodeDelegate overrides.
-  //
+  // ui::AXPlatformNodeDelegate:
 
   const ui::AXNodeData& GetData() override {
     return data_;
   }
+
+  gfx::NativeWindow GetTopLevelWidget() override { return nullptr; }
 
   gfx::NativeViewAccessible GetParent() override {
     return nullptr;

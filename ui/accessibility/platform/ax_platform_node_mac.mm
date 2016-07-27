@@ -305,6 +305,9 @@ void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
     NSAccessibilityRoleDescriptionAttribute,
     NSAccessibilityEnabledAttribute,
     NSAccessibilityFocusedAttribute,
+    NSAccessibilityHelpAttribute,
+    NSAccessibilityTopLevelUIElementAttribute,
+    NSAccessibilityWindowAttribute,
   ];
 
   // Attributes required for user-editable controls.
@@ -400,10 +403,7 @@ void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
 }
 
 - (NSString*)AXRoleDescription {
-  NSString* description = [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
-  if (!description)
-    return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
-  return description;
+  return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
 }
 
 - (NSValue*)AXSize {
@@ -430,6 +430,18 @@ void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
     return [NSNumber numberWithBool:(node_->GetDelegate()->GetFocus() ==
                                      node_->GetNativeViewAccessible())];
   return [NSNumber numberWithBool:NO];
+}
+
+- (NSString*)AXHelp {
+  return [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
+}
+
+- (NSWindow*)AXTopLevelUIElement {
+  return [self AXWindow];
+}
+
+- (NSWindow*)AXWindow {
+  return node_->GetDelegate()->GetTopLevelWidget();
 }
 
 // Textfield-specific NSAccessibility attributes.

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -65,6 +66,12 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
                            base::UTF16ToUTF8(state.keyboard_shortcut));
   data_.AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
                            base::UTF16ToUTF8(state.placeholder));
+
+  if (state.description.empty() &&
+      view_->GetTooltipText(gfx::Point(), &state.description))
+    data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
+                             base::UTF16ToUTF8(state.description));
+
   data_.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, state.selection_start);
   data_.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, state.selection_end);
 
@@ -102,6 +109,12 @@ gfx::NativeViewAccessible NativeViewAccessibility::ChildAtIndex(int index) {
     return child_widget->GetRootView()->GetNativeViewAccessible();
   }
 
+  return nullptr;
+}
+
+gfx::NativeWindow NativeViewAccessibility::GetTopLevelWidget() {
+  if (view_->GetWidget())
+    return view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   return nullptr;
 }
 

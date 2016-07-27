@@ -71,6 +71,10 @@ const AXNodeData& TestAXNodeWrapper::GetData() {
   return node_->data();
 }
 
+gfx::NativeWindow TestAXNodeWrapper::GetTopLevelWidget() {
+  return nullptr;
+}
+
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
   TestAXNodeWrapper* parent_wrapper = GetOrCreate(tree_, node_->parent());
   return parent_wrapper ?
