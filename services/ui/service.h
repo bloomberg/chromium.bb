@@ -99,9 +99,7 @@ class Service
   void AddUserIfNecessary(const shell::Identity& remote_identity);
 
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // WindowServerDelegate:

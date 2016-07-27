@@ -32,11 +32,10 @@ class ShellTestClient
  public:
   explicit ShellTestClient(test::ServiceTest* test)
       : test::ServiceTestClient(test),
-        target_id_(shell::mojom::kInvalidInstanceID),
         binding_(this) {}
   ~ShellTestClient() override {}
 
-  uint32_t target_id() const { return target_id_; }
+  const Identity& target_identity() const { return target_identity_; }
 
  private:
   // test::ServiceTestClient:
@@ -53,12 +52,12 @@ class ShellTestClient
   }
 
   // test::mojom::CreateInstanceTest:
-  void SetTargetID(uint32_t target_id) override {
-    target_id_ = target_id;
+  void SetTargetIdentity(shell::mojom::IdentityPtr identity) override {
+    target_identity_ = identity.To<Identity>();
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  uint32_t target_id_;
+  shell::Identity target_identity_;
 
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
@@ -82,11 +81,10 @@ class ShellTest : public test::ServiceTest,
 
  protected:
   struct InstanceInfo {
-    InstanceInfo(uint32_t id, const std::string& name)
-        : id(id), name(name), pid(base::kNullProcessId) {}
+    explicit InstanceInfo(const Identity& identity)
+        : identity(identity), pid(base::kNullProcessId) {}
 
-    uint32_t id;
-    std::string name;
+    Identity identity;
     base::ProcessId pid;
   };
 
@@ -102,19 +100,19 @@ class ShellTest : public test::ServiceTest,
 
   bool ContainsInstanceWithName(const std::string& name) const {
     for (const auto& instance : initial_instances_) {
-      if (instance.name == name)
+      if (instance.identity.name() == name)
         return true;
     }
     for (const auto& instance : instances_) {
-      if (instance.name == name)
+      if (instance.identity.name() == name)
         return true;
     }
     return false;
   }
 
-  uint32_t target_id() const {
+  const Identity& target_identity() const {
     DCHECK(service_);
-    return service_->target_id();
+    return service_->target_identity();
   }
 
   const std::vector<InstanceInfo>& instances() const {
@@ -131,28 +129,31 @@ class ShellTest : public test::ServiceTest,
   // mojom::ServiceManagerListener:
   void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i) {
-      initial_instances_.push_back(InstanceInfo(instances[i]->id,
-                                                instances[i]->identity->name));
+      initial_instances_.push_back(
+          InstanceInfo(instances[i]->identity.To<Identity>()));
     }
 
     DCHECK(wait_for_instances_loop_);
     wait_for_instances_loop_->Quit();
   }
   void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
-    instances_.push_back(InstanceInfo(instance->id, instance->identity->name));
+    instances_.push_back(InstanceInfo(instance->identity.To<Identity>()));
   }
-  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+  void OnServiceStarted(shell::mojom::IdentityPtr identity_ptr,
+                        uint32_t pid) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto& instance : instances_) {
-      if (instance.id == id) {
+      if (instance.identity == identity) {
         instance.pid = pid;
         break;
       }
     }
   }
-  void OnServiceStopped(uint32_t id) override {
+  void OnServiceStopped(shell::mojom::IdentityPtr identity_ptr) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto& instance = *it;
-      if (instance.id == id) {
+      if (instance.identity == identity) {
         instances_.erase(it);
         break;
       }
@@ -183,8 +184,7 @@ TEST_F(ShellTest, CreateInstance) {
   base::RunLoop().Run();
 
   EXPECT_FALSE(connection->IsPending());
-  uint32_t remote_id = connection->GetRemoteInstanceID();
-  EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
+  Identity remote_identity = connection->GetRemoteIdentity();
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
@@ -196,15 +196,15 @@ TEST_F(ShellTest, CreateInstance) {
   EXPECT_EQ(2u, instances().size());
   {
     auto& instance = instances().front();
-    EXPECT_EQ(remote_id, instance.id);
-    EXPECT_EQ("exe:shell_unittest_driver", instance.name);
+    EXPECT_EQ(remote_identity, instance.identity);
+    EXPECT_EQ("exe:shell_unittest_driver", instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
   {
     auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
-    EXPECT_EQ(target_id(), instance.id);
-    EXPECT_EQ("exe:shell_unittest_target", instance.name);
+    EXPECT_EQ(target_identity(), instance.identity);
+    EXPECT_EQ("exe:shell_unittest_target", instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
 

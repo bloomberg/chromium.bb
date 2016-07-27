@@ -313,14 +313,12 @@ SysUIApplication::SysUIApplication() {}
 
 SysUIApplication::~SysUIApplication() {}
 
-void SysUIApplication::OnStart(::shell::Connector* connector,
-                               const ::shell::Identity& identity,
-                               uint32_t id) {
+void SysUIApplication::OnStart(const ::shell::Identity& identity) {
   ash_init_.reset(new AshInit());
-  ash_init_->Initialize(connector, identity);
+  ash_init_->Initialize(connector(), identity);
 
   ui::mojom::InputDeviceServerPtr server;
-  connector->ConnectToInterface("mojo:ui", &server);
+  connector()->ConnectToInterface("mojo:ui", &server);
   input_device_client_.Connect(std::move(server));
 }
 

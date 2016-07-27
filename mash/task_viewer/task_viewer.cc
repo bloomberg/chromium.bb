@@ -74,14 +74,11 @@ class TaskViewerContents : public views::WidgetDelegateView,
 
  private:
   struct InstanceInfo {
-    InstanceInfo(uint32_t id,
-                 const std::string& url,
-                 base::ProcessId pid)
-        : id(id), url(url), pid(pid) {}
-    uint32_t id;
-    std::string url;
+    InstanceInfo(const shell::Identity& identity, base::ProcessId pid)
+        : identity(identity), pid(pid) {}
+    shell::Identity identity;
     uint32_t pid;
-    std::string name;
+    std::string display_name;
   };
 
 
@@ -124,10 +121,10 @@ class TaskViewerContents : public views::WidgetDelegateView,
     switch(column_id) {
     case 0:
       DCHECK(row < static_cast<int>(instances_.size()));
-      return base::UTF8ToUTF16(instances_[row]->name);
+      return base::UTF8ToUTF16(instances_[row]->display_name);
     case 1:
       DCHECK(row < static_cast<int>(instances_.size()));
-      return base::UTF8ToUTF16(instances_[row]->url);
+      return base::UTF8ToUTF16(instances_[row]->identity.name());
     case 2:
       DCHECK(row < static_cast<int>(instances_.size()));
       return base::IntToString16(instances_[row]->pid);
@@ -157,27 +154,30 @@ class TaskViewerContents : public views::WidgetDelegateView,
     DCHECK(instances_.empty());
     mojo::Array<mojo::String> names;
     for (size_t i = 0; i < instances.size(); ++i) {
-      InsertInstance(instances[i]->id, instances[i]->identity->name,
-                     instances[i]->pid);
-      names.push_back(instances[i]->identity->name);
+      shell::Identity identity = instances[i]->identity.To<shell::Identity>();
+      InsertInstance(identity, instances[i]->pid);
+      names.push_back(identity.name());
     }
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
   void OnServiceCreated(ServiceInfoPtr instance) override {
-    DCHECK(!ContainsId(instance->id));
-    InsertInstance(instance->id, instance->identity->name, instance->pid);
+    shell::Identity identity = instance->identity.To<shell::Identity>();
+    DCHECK(!ContainsIdentity(identity));
+    InsertInstance(identity, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
     mojo::Array<mojo::String> names;
-    names.push_back(instance->identity->name);
+    names.push_back(identity.name());
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+  void OnServiceStarted(shell::mojom::IdentityPtr identity_ptr,
+                        uint32_t pid) override {
+    shell::Identity identity = identity_ptr.To<shell::Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
-      if ((*it)->id == id) {
+      if ((*it)->identity == identity) {
         (*it)->pid = pid;
         observer_->OnItemsChanged(
           static_cast<int>(it - instances_.begin()), 1);
@@ -185,9 +185,10 @@ class TaskViewerContents : public views::WidgetDelegateView,
       }
     }
   }
-  void OnServiceStopped(uint32_t id) override {
+  void OnServiceStopped(shell::mojom::IdentityPtr identity_ptr) override {
+    shell::Identity identity = identity_ptr.To<shell::Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
-      if ((*it)->id == id) {
+      if ((*it)->identity == identity) {
         observer_->OnItemsRemoved(
             static_cast<int>(it - instances_.begin()), 1);
         instances_.erase(it);
@@ -197,23 +198,24 @@ class TaskViewerContents : public views::WidgetDelegateView,
     NOTREACHED();
   }
 
-  bool ContainsId(uint32_t id) const {
+  bool ContainsIdentity(const shell::Identity& identity) const {
     for (auto& it : instances_) {
-      if (it->id == id)
+      if (it->identity == identity)
         return true;
     }
     return false;
   }
 
-  void InsertInstance(uint32_t id, const std::string& url, uint32_t pid) {
-    instances_.push_back(base::WrapUnique(new InstanceInfo(id, url, pid)));
+  void InsertInstance(const shell::Identity& identity, uint32_t pid) {
+    instances_.push_back(
+        base::WrapUnique(new InstanceInfo(identity, pid)));
   }
 
   void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       for (auto& entry : entries) {
-        if (entry->name == (*it)->url) {
-          (*it)->name = entry->display_name;
+        if (entry->name == (*it)->identity.name()) {
+          (*it)->display_name = entry->display_name;
           observer_->OnItemsChanged(
               static_cast<int>(it - instances_.begin()), 1);
           break;
@@ -283,15 +285,13 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TaskViewer::OnStart(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
-  connector_ = connector;
-  tracing_.Initialize(connector, identity.name());
+void TaskViewer::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool TaskViewer::OnConnect(shell::Connection* connection) {
@@ -308,14 +308,14 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   shell::mojom::ServiceManagerPtr service_manager;
-  connector_->ConnectToInterface("mojo:shell", &service_manager);
+  connector()->ConnectToInterface("mojo:shell", &service_manager);
 
   shell::mojom::ServiceManagerListenerPtr listener;
   shell::mojom::ServiceManagerListenerRequest request = GetProxy(&listener);
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  connector_->ConnectToInterface("mojo:catalog", &catalog);
+  connector()->ConnectToInterface("mojo:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

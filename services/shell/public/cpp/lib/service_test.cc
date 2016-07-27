@@ -16,9 +16,9 @@ namespace test {
 ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
 ServiceTestClient::~ServiceTestClient() {}
 
-void ServiceTestClient::OnStart(Connector* connector, const Identity& identity,
-                              uint32_t id) {
-  test_->OnStartCalled(connector, identity.name(), identity.user_id(), id);
+void ServiceTestClient::OnStart(const Identity& identity) {
+  test_->OnStartCalled(connector(), identity.name(),
+                       identity.user_id());
 }
 
 ServiceTest::ServiceTest() {}
@@ -40,12 +40,10 @@ std::unique_ptr<base::MessageLoop> ServiceTest::CreateMessageLoop() {
 }
 
 void ServiceTest::OnStartCalled(Connector* connector,
-                              const std::string& name,
-                              const std::string& user_id,
-                              uint32_t id) {
+                                const std::string& name,
+                                const std::string& user_id) {
   DCHECK_EQ(connector_, connector);
   initialize_name_ = name;
-  initialize_instance_id_ = id;
   initialize_userid_ = user_id;
   initialize_called_.Run();
 }
@@ -63,16 +61,15 @@ void ServiceTest::SetUp() {
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
-  service_context_.reset(new ServiceContext(
+  service_->set_context(base::WrapUnique(new ServiceContext(
       service_.get(),
-      background_shell_->CreateServiceRequest(test_name_)));
-  connector_ = service_context_->connector();
+      background_shell_->CreateServiceRequest(test_name_))));
+  connector_ = service_->connector();
 
   run_loop.Run();
 }
 
 void ServiceTest::TearDown() {
-  service_context_.reset();
   background_shell_.reset();
   message_loop_.reset();
   service_.reset();

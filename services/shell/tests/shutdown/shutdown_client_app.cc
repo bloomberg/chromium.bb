@@ -25,11 +25,6 @@ class ShutdownClientApp
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
-  }
-
   bool OnConnect(Connection* connection) override {
     connection->AddInterface<mojom::ShutdownTestClientController>(this);
     return true;
@@ -44,7 +39,8 @@ class ShutdownClientApp
   // mojom::ShutdownTestClientController:
   void ConnectAndWait(const ConnectAndWaitCallback& callback) override {
     mojom::ShutdownTestServicePtr service;
-    connector_->ConnectToInterface("mojo:shutdown_service", &service);
+    connector()->ConnectToInterface("mojo:shutdown_service",
+                                               &service);
 
     mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
 
@@ -62,7 +58,6 @@ class ShutdownClientApp
     callback.Run();
   }
 
-  Connector* connector_ = nullptr;
   mojo::BindingSet<mojom::ShutdownTestClientController> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownClientApp);

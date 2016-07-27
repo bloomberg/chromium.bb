@@ -4,8 +4,10 @@
 
 module shell.test.mojom;
 
+import "services/shell/public/interfaces/connector.mojom";
+
 interface CreateInstanceTest {
-  SetTargetID(uint32 target_id);
+  SetTargetIdentity(shell.mojom.Identity identity);
 };
 
 interface Driver {

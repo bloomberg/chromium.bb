@@ -38,7 +38,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                 shell::Connector* connector,
                 catalog::mojom::CatalogPtr catalog)
       : quick_launch_(quick_launch),
-        connector_(connector),
+    connector_(connector),
         prompt_(new views::Textfield),
         catalog_(std::move(catalog)) {
     set_background(views::Background::CreateStandardPanelBackground());
@@ -163,15 +163,13 @@ void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void QuickLaunchApplication::OnStart(shell::Connector* connector,
-                                     const shell::Identity& identity,
-                                     uint32_t id) {
-  connector_ = connector;
-  tracing_.Initialize(connector, identity.name());
+void QuickLaunchApplication::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
@@ -189,11 +187,11 @@ void QuickLaunchApplication::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  connector_->ConnectToInterface("mojo:catalog", &catalog);
+  connector()->ConnectToInterface("mojo:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(this, connector_, std::move(catalog)), nullptr,
-      gfx::Rect(10, 640, 0, 0));
+      new QuickLaunchUI(this, connector(), std::move(catalog)),
+      nullptr, gfx::Rect(10, 640, 0, 0));
   window->Show();
   windows_.push_back(window);
 }

@@ -39,10 +39,8 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::OnStart(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t id) {
-  tracing_.Initialize(connector, identity.name());
+void FileSystemApp::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 }
 
 bool FileSystemApp::OnConnect(shell::Connection* connection) {

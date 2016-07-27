@@ -24,13 +24,10 @@ void LogAndCallServiceRestartCallback(const std::string& url,
 namespace mash {
 namespace session {
 
-Session::Session() : connector_(nullptr), screen_locked_(false) {}
+Session::Session() : screen_locked_(false) {}
 Session::~Session() {}
 
-void Session::OnStart(shell::Connector* connector,
-                      const shell::Identity& identity,
-                      uint32_t id) {
-  connector_ = connector;
+void Session::OnStart(const shell::Identity& identity) {
   StartAppDriver();
   StartWindowManager();
   StartSystemUI();
@@ -46,7 +43,7 @@ void Session::Logout() {
   // TODO(beng): Notify connected listeners that login is happening, potentially
   // give them the option to stop it.
   mash::login::mojom::LoginPtr login;
-  connector_->ConnectToInterface("mojo:login", &login);
+  connector()->ConnectToInterface("mojo:login", &login);
   login->ShowLoginUI();
   // This kills the user environment.
   base::MessageLoop::current()->QuitWhenIdle();
@@ -54,7 +51,7 @@ void Session::Logout() {
 
 void Session::SwitchUser() {
   mash::login::mojom::LoginPtr login;
-  connector_->ConnectToInterface("mojo:login", &login);
+  connector()->ConnectToInterface("mojo:login", &login);
   login->SwitchUser();
 }
 
@@ -134,7 +131,8 @@ void Session::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  std::unique_ptr<shell::Connection> connection = connector_->Connect(url);
+  std::unique_ptr<shell::Connection> connection =
+      connector()->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
     connection->SetConnectionLostClosure(

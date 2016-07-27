@@ -32,9 +32,7 @@ class Session : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // mojom::Session:
@@ -62,7 +60,6 @@ class Session : public shell::Service,
   void StartRestartableService(const std::string& url,
                                const base::Closure& restart_callback);
 
-  shell::Connector* connector_;
   std::map<std::string, std::unique_ptr<shell::Connection>> connections_;
   bool screen_locked_;
   mojo::BindingSet<mojom::Session> bindings_;

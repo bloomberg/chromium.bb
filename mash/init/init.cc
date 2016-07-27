@@ -14,15 +14,11 @@
 namespace mash {
 namespace init {
 
-Init::Init()
-    : connector_(nullptr) {}
+Init::Init() {}
 Init::~Init() {}
 
-void Init::OnStart(shell::Connector* connector,
-                   const shell::Identity& identity,
-                   uint32_t id) {
-  connector_ = connector;
-  connector_->Connect("mojo:ui");
+void Init::OnStart(const shell::Identity& identity) {
+  connector()->Connect("mojo:ui");
   StartTracing();
   StartLogin();
 }
@@ -37,7 +33,7 @@ void Init::StartService(const mojo::String& name,
   if (user_services_.find(user_id) == user_services_.end()) {
     shell::Connector::ConnectParams params(shell::Identity(name, user_id));
     std::unique_ptr<shell::Connection> connection =
-        connector_->Connect(&params);
+        connector()->Connect(&params);
     connection->SetConnectionLostClosure(
         base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
     user_services_[user_id] = std::move(connection);
@@ -62,11 +58,11 @@ void Init::UserServiceQuit(const std::string& user_id) {
 }
 
 void Init::StartTracing() {
-  connector_->Connect("mojo:tracing");
+  connector()->Connect("mojo:tracing");
 }
 
 void Init::StartLogin() {
-  login_connection_ = connector_->Connect("mojo:login");
+  login_connection_ = connector()->Connect("mojo:login");
   login_connection_->AddInterface<mojom::Init>(this);
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);

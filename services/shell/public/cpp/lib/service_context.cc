@@ -60,7 +60,7 @@ void ServiceContext::OnStart(mojom::IdentityPtr identity,
   binding_.set_connection_error_handler(
       base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
 
-  service_->OnStart(connector_.get(), identity_, id);
+  service_->OnStart(identity_);
 }
 
 void ServiceContext::OnConnect(

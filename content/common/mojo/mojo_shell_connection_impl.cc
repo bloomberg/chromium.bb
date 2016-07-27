@@ -150,9 +150,7 @@ class MojoShellConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // shell::Service implementation
 
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
+  void OnStart(const shell::Identity& identity) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!initialize_handler_.is_null());
 

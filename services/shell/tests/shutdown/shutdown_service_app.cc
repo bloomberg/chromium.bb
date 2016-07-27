@@ -24,8 +24,6 @@ class ShutdownServiceApp
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {}
   bool OnConnect(Connection* connection) override {
     connection->AddInterface<mojom::ShutdownTestService>(this);
     return true;

@@ -45,9 +45,7 @@ class Driver : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
+  void OnStart(const shell::Identity& identity) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
   #if defined(OS_WIN)
@@ -84,7 +82,8 @@ class Driver : public shell::Service,
     shell::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(client),
                                          GetProxy(&receiver));
-    std::unique_ptr<shell::Connection> connection = connector->Connect(&params);
+    std::unique_ptr<shell::Connection> connection =
+        connector()->Connect(&params);
     connection->AddConnectionCompletedClosure(
         base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
 

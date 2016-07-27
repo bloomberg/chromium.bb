@@ -27,9 +27,7 @@ class Target : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
+  void OnStart(const shell::Identity& identity) override {
     identity_ = identity;
   }
   bool OnConnect(shell::Connection* connection) override {

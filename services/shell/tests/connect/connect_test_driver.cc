@@ -31,11 +31,6 @@ class Driver : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
-  }
   bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface<ClientProcessTest>(this);
     return true;
@@ -65,12 +60,11 @@ class Driver : public shell::Service,
 #endif
             shell::Identity("exe:connect_test_exe",
                             shell::mojom::kInheritUserID),
-            connector_, &process);
+            connector(), &process);
     callback.Run(static_cast<int32_t>(connection->GetResult()),
                  shell::mojom::Identity::From(connection->GetRemoteIdentity()));
   }
 
-  shell::Connector* connector_ = nullptr;
   mojo::BindingSet<ClientProcessTest> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);

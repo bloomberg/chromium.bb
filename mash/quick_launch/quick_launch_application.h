@@ -34,9 +34,7 @@ class QuickLaunchApplication
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // mojom::Launchable:
@@ -46,7 +44,6 @@ class QuickLaunchApplication
   void Create(const shell::Identity& remote_identity,
               mojom::LaunchableRequest request) override;
 
-  shell::Connector* connector_ = nullptr;
   mojo::BindingSet<mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;
 

@@ -51,8 +51,6 @@ class WindowManagerApplication
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  shell::Connector* connector() { return connector_; }
-
   WindowManager* window_manager() { return window_manager_.get(); }
 
   mash::session::mojom::Session* session() { return session_.get(); }
@@ -66,9 +64,7 @@ class WindowManagerApplication
   void InitWindowManager(::ui::WindowTreeClient* window_tree_client);
 
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::ShelfLayout>:
@@ -92,8 +88,6 @@ class WindowManagerApplication
   void OnRootWindowControllerAdded(RootWindowController* controller) override;
   void OnWillDestroyRootWindowController(
       RootWindowController* controller) override;
-
-  shell::Connector* connector_;
 
   mojo::TracingImpl tracing_;
 

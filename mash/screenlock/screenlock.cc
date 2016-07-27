@@ -75,24 +75,23 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::OnStart(shell::Connector* connector,
-                         const shell::Identity& identity,
-                         uint32_t id) {
-  tracing_.Initialize(connector, identity.name());
+void Screenlock::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 
   mash::session::mojom::SessionPtr session;
-  connector->ConnectToInterface("mojo:mash_session", &session);
+  connector()->ConnectToInterface("mojo:mash_session", &session);
   session->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = new ScreenlockView(connector);
+  params.delegate = new ScreenlockView(connector());
 
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ash::mojom::kWindowContainer_Property] =
@@ -101,7 +100,7 @@ void Screenlock::OnStart(shell::Connector* connector,
   ui::Window* window =
       views::WindowManagerConnection::Get()->NewWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
-      widget, connector, window, ui::mojom::SurfaceType::DEFAULT);
+      widget, connector(), window, ui::mojom::SurfaceType::DEFAULT);
   widget->Init(params);
   widget->Show();
 }

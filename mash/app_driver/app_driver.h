@@ -30,9 +30,7 @@ class AppDriver : public shell::Service,
   void OnAvailableCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries);
 
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
   bool OnStop() override;
 
@@ -41,7 +39,6 @@ class AppDriver : public shell::Service,
 
   void AddAccelerators();
 
-  shell::Connector* connector_;
   catalog::mojom::CatalogPtr catalog_;
   mojo::Binding<ui::mojom::AcceleratorHandler> binding_;
   base::WeakPtrFactory<AppDriver> weak_factory_;

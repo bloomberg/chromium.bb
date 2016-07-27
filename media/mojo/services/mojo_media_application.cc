@@ -19,7 +19,6 @@ MojoMediaApplication::MojoMediaApplication(
     std::unique_ptr<MojoMediaClient> mojo_media_client,
     const base::Closure& quit_closure)
     : mojo_media_client_(std::move(mojo_media_client)),
-      connector_(nullptr),
       media_log_(new MediaLog()),
       ref_factory_(quit_closure) {
   DCHECK(mojo_media_client_);
@@ -27,10 +26,7 @@ MojoMediaApplication::MojoMediaApplication(
 
 MojoMediaApplication::~MojoMediaApplication() {}
 
-void MojoMediaApplication::OnStart(shell::Connector* connector,
-                                   const shell::Identity& identity,
-                                   uint32_t /* id */) {
-  connector_ = connector;
+void MojoMediaApplication::OnStart(const shell::Identity& identity) {
   mojo_media_client_->Initialize();
 }
 

@@ -38,12 +38,11 @@ void DecrementCountAndQuitWhenZero(base::RunLoop* loop, size_t* count) {
 }
 
 struct Instance {
-  Instance() : id(mojom::kInvalidInstanceID), pid(0) {}
-  Instance(const Identity& identity, uint32_t id, uint32_t pid)
-      : identity(identity), id(id), pid(pid) {}
+  Instance() : pid(0) {}
+  Instance(const Identity& identity, uint32_t pid)
+      : identity(identity), pid(pid) {}
 
   Identity identity;
-  uint32_t id;
   uint32_t pid;
 };
 
@@ -72,8 +71,7 @@ class InstanceState : public mojom::ServiceManagerListener {
   // mojom::ServiceManagerListener:
   void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
     for (const auto& instance : instances) {
-      Instance i(instance->identity.To<Identity>(), instance->id,
-                 instance->pid);
+      Instance i(instance->identity.To<Identity>(), instance->pid);
       initial_instances_[i.identity.name()] = i;
       instances_[i.identity.name()] = i;
     }
@@ -81,20 +79,22 @@ class InstanceState : public mojom::ServiceManagerListener {
   }
   void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
     instances_[instance->identity->name] =
-        Instance(instance->identity.To<Identity>(), instance->id,
-                 instance->pid);
+        Instance(instance->identity.To<Identity>(), instance->pid);
   }
-  void OnServiceStarted(uint32_t id, uint32_t pid) override {
+  void OnServiceStarted(mojom::IdentityPtr identity_ptr,
+                        uint32_t pid) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto& instance : instances_) {
-      if (instance.second.id == id) {
+      if (instance.second.identity == identity) {
         instance.second.pid = pid;
         break;
       }
     }
   }
-  void OnServiceStopped(uint32_t id) override {
+  void OnServiceStopped(mojom::IdentityPtr identity_ptr) override {
+    Identity identity = identity_ptr.To<Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
-      if (it->second.id == id) {
+      if (it->second.identity == identity) {
         instances_.erase(it);
         break;
       }

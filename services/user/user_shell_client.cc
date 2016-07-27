@@ -88,9 +88,7 @@ UserShellClient::~UserShellClient() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void UserShellClient::OnStart(shell::Connector* connector,
-                              const shell::Identity& identity,
-                              uint32_t id) {
+void UserShellClient::OnStart(const shell::Identity& identity) {
   user_objects_.reset(new UserShellClient::UserServiceObjects(
       GetUserDirForUserId(identity.user_id())));
   leveldb_objects_.reset(

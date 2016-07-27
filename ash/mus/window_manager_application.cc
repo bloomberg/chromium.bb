@@ -65,7 +65,7 @@ void ShutdownComponents() {
 }  // namespace
 
 WindowManagerApplication::WindowManagerApplication()
-    : connector_(nullptr), screenlock_state_listener_binding_(this) {}
+    : screenlock_state_listener_binding_(this) {}
 
 WindowManagerApplication::~WindowManagerApplication() {
   // AcceleratorRegistrarImpl removes an observer in its destructor. Destroy
@@ -95,21 +95,18 @@ void WindowManagerApplication::InitWindowManager(
   window_manager_->AddObserver(this);
 }
 
-void WindowManagerApplication::OnStart(shell::Connector* connector,
-                                       const shell::Identity& identity,
-                                       uint32_t id) {
-  connector_ = connector;
-  ::ui::GpuService::Initialize(connector);
-  window_manager_.reset(new WindowManager(connector_));
+void WindowManagerApplication::OnStart(const shell::Identity& identity) {
+  ::ui::GpuService::Initialize(connector());
+  window_manager_.reset(new WindowManager(connector()));
 
-  aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));
+  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
   MaterialDesignController::Initialize();
 
-  tracing_.Initialize(connector, identity.name());
+  tracing_.Initialize(connector(), identity.name());
 
   ::ui::WindowTreeClient* window_tree_client = new ::ui::WindowTreeClient(
       window_manager_.get(), window_manager_.get(), nullptr);
-  window_tree_client->ConnectAsWindowManager(connector);
+  window_tree_client->ConnectAsWindowManager(connector());
 
   InitWindowManager(window_tree_client);
 }

@@ -31,9 +31,7 @@ class ConnectTestClassApp
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
+  void OnStart(const Identity& identity) override {
     identity_ = identity;
   }
   bool OnConnect(Connection* connection) override {
@@ -79,7 +77,6 @@ class ConnectTestClassApp
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  Connector* connector_ = nullptr;
   Identity identity_;
   std::set<Connection*> inbound_connections_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;

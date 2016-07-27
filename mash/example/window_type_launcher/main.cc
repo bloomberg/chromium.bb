@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     base::MessageLoop loop;
     WindowTypeLauncher delegate;
     shell::ServiceContext impl(&delegate,
-                                shell::GetServiceRequestFromCommandLine());
+                               shell::GetServiceRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

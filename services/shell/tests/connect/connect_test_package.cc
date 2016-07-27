@@ -61,11 +61,8 @@ class ProvidedService
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
+  void OnStart(const Identity& identity) override {
     identity_ = identity;
-    id_ = id;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
@@ -82,7 +79,6 @@ class ProvidedService
     state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
     state->connection_remote_id = remote_id;
     state->initialize_local_name = identity_.name();
-    state->initialize_id = id_;
     state->initialize_userid = identity_.user_id();
     connection->GetInterface(&caller_);
     caller_->ConnectionAccepted(std::move(state));
@@ -126,7 +122,8 @@ class ProvidedService
       mojom::IdentityPtr target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target.To<Identity>());
-    std::unique_ptr<Connection> connection = connector_->Connect(&params);
+    std::unique_ptr<Connection> connection =
+        connector()->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -150,9 +147,7 @@ class ProvidedService
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  Connector* connector_ = nullptr;
   Identity identity_;
-  uint32_t id_ = shell::mojom::kInvalidInstanceID;
   const std::string title_;
   mojom::ServiceRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -175,8 +170,7 @@ class ConnectTestService
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {
+  void OnStart(const Identity& identity) override {
     identity_ = identity;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestService::OnConnectionError,

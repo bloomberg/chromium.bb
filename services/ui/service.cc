@@ -143,13 +143,11 @@ void Service::AddUserIfNecessary(const shell::Identity& remote_identity) {
   window_server_->user_id_tracker()->AddUserId(remote_identity.user_id());
 }
 
-void Service::OnStart(shell::Connector* connector,
-                      const shell::Identity& identity,
-                      uint32_t id) {
+void Service::OnStart(const shell::Identity& identity) {
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
-  tracing_.Initialize(connector, identity.name());
+  tracing_.Initialize(connector(), identity.name());
   TRACE_EVENT0("mus", "Service::Initialize started");
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -169,7 +167,7 @@ void Service::OnStart(shell::Connector* connector,
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
 
-  InitializeResources(connector);
+  InitializeResources(connector());
 
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
@@ -177,7 +175,7 @@ void Service::OnStart(shell::Connector* connector,
   // Because GL libraries need to be initialized before entering the sandbox,
   // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitParams params;
-  params.connector = connector;
+  params.connector = connector();
   params.single_process = false;
 
   ui::OzonePlatform::InitializeForUI(params);

@@ -157,15 +157,13 @@ void Webtest::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void Webtest::OnStart(shell::Connector* connector,
-                      const shell::Identity& identity,
-                      uint32_t id) {
-  connector_ = connector;
-  tracing_.Initialize(connector, identity.name());
+void Webtest::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool Webtest::OnConnect(shell::Connection* connection) {
@@ -182,7 +180,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   navigation::mojom::ViewFactoryPtr view_factory;
-  connector_->ConnectToInterface("exe:navigation", &view_factory);
+  connector()->ConnectToInterface("exe:navigation", &view_factory);
   navigation::mojom::ViewPtr view;
   navigation::mojom::ViewClientPtr view_client;
   navigation::mojom::ViewClientRequest view_client_request =

@@ -52,11 +52,8 @@ class ConnectTestApp : public Service,
 
  private:
   // shell::Service:
-  void OnStart(Connector* connector, const Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
+  void OnStart(const Identity& identity) override {
     identity_ = identity;
-    id_ = id;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
@@ -77,7 +74,6 @@ class ConnectTestApp : public Service,
     state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
     state->connection_remote_id = remote_id;
     state->initialize_local_name = identity_.name();
-    state->initialize_id = id_;
     state->initialize_userid = identity_.user_id();
     connection->GetInterface(&caller_);
     caller_->ConnectionAccepted(std::move(state));
@@ -122,7 +118,7 @@ class ConnectTestApp : public Service,
       const ConnectToAllowedAppInBlockedPackageCallback& callback) override {
     base::RunLoop run_loop;
     std::unique_ptr<Connection> connection =
-        connector_->Connect("mojo:connect_test_a");
+        connector()->Connect("mojo:connect_test_a");
     connection->SetConnectionLostClosure(
         base::Bind(&ConnectTestApp::OnConnectionBlocked,
                    base::Unretained(this), callback, &run_loop));
@@ -142,7 +138,7 @@ class ConnectTestApp : public Service,
   void ConnectToClassInterface(
       const ConnectToClassInterfaceCallback& callback) override {
     std::unique_ptr<Connection> connection =
-        connector_->Connect("mojo:connect_test_class_app");
+        connector()->Connect("mojo:connect_test_class_app");
     test::mojom::ClassInterfacePtr class_interface;
     connection->GetInterface(&class_interface);
     std::string ping_response;
@@ -176,7 +172,8 @@ class ConnectTestApp : public Service,
       mojom::IdentityPtr target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target.To<Identity>());
-    std::unique_ptr<Connection> connection = connector_->Connect(&params);
+    std::unique_ptr<Connection> connection =
+        connector()->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -208,9 +205,7 @@ class ConnectTestApp : public Service,
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  Connector* connector_ = nullptr;
   Identity identity_;
-  uint32_t id_ = mojom::kInvalidInstanceID;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;

@@ -486,14 +486,11 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void WindowTypeLauncher::OnStart(shell::Connector* connector,
-                                 const shell::Identity& identity,
-                                 uint32_t id) {
-  connector_ = connector;
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-
+void WindowTypeLauncher::OnStart(const shell::Identity& identity) {
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool WindowTypeLauncher::OnConnect(shell::Connection* connection) {
@@ -510,7 +507,7 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   }
   views::Widget* window = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(this, connector_);
+  params.delegate = new WindowTypeLauncherView(this, connector());
   window->Init(params);
   window->Show();
   windows_.push_back(window);

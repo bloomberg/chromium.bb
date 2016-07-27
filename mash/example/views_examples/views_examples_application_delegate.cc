@@ -17,13 +17,11 @@ ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 }
 
 void ViewsExamplesApplicationDelegate::OnStart(
-    shell::Connector* connector,
-    const shell::Identity& identity,
-    uint32_t id) {
-  tracing_.Initialize(connector, identity.name());
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+    const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
+  aura_init_.reset(new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool ViewsExamplesApplicationDelegate::OnConnect(

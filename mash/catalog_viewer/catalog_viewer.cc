@@ -166,15 +166,13 @@ void CatalogViewer::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void CatalogViewer::OnStart(shell::Connector* connector,
-                            const shell::Identity& identity,
-                            uint32_t id) {
-  connector_ = connector;
-  tracing_.Initialize(connector, identity.name());
+void CatalogViewer::OnStart(const shell::Identity& identity) {
+  tracing_.Initialize(connector(), identity.name());
 
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+  aura_init_.reset(
+      new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool CatalogViewer::OnConnect(shell::Connection* connection) {
@@ -190,7 +188,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  connector_->ConnectToInterface("mojo:catalog", &catalog);
+  connector()->ConnectToInterface("mojo:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new CatalogViewerContents(this, std::move(catalog)), nullptr,

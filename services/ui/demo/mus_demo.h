@@ -35,9 +35,7 @@ class MusDemo : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // WindowTreeClientDelegate:
@@ -68,8 +66,6 @@ class MusDemo : public shell::Service,
 
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();
-
-  shell::Connector* connector_ = nullptr;
 
   Window* window_ = nullptr;
   WindowTreeClient* window_tree_client_ = nullptr;

@@ -15,6 +15,7 @@
 namespace shell {
 
 class Connector;
+class ServiceContext;
 
 // The primary contract between a Service and the Service Manager, receiving
 // lifecycle notifications and connection requests.
@@ -26,12 +27,8 @@ class Service {
   // Called once a bidirectional connection with the Service Manager has been
   // established.
   // |identity| is the identity of the service instance.
-  // |id| is a unique identifier the Service Manager uses to identify this
-  // specific instance of the service.
   // Called exactly once before any other method.
-  virtual void OnStart(Connector* connector,
-                       const Identity& identity,
-                       uint32_t id);
+  virtual void OnStart(const Identity& identity);
 
   // Called when a connection to this service is brokered by the Service
   // Manager. Override to expose interfaces to the remote service. Return true
@@ -55,7 +52,13 @@ class Service {
   virtual InterfaceProvider* GetInterfaceProviderForConnection();
   virtual InterfaceRegistry* GetInterfaceRegistryForConnection();
 
+  Connector* connector();
+  ServiceContext* context();
+  void set_context(std::unique_ptr<ServiceContext> context);
+
  private:
+  std::unique_ptr<ServiceContext> context_;
+
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 

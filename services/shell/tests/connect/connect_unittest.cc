@@ -92,18 +92,14 @@ class ConnectTest : public test::ServiceTest,
       const std::string& connection_local_name,
       const std::string& connection_remote_name,
       const std::string& connection_remote_userid,
-      uint32_t connection_remote_id,
       const std::string& initialize_local_name,
-      const std::string& initialize_userid,
-      uint32_t initialize_id) {
+      const std::string& initialize_userid) {
     EXPECT_EQ(connection_local_name, connection_state_->connection_local_name);
     EXPECT_EQ(connection_remote_name,
               connection_state_->connection_remote_name);
     EXPECT_EQ(connection_remote_userid,
               connection_state_->connection_remote_userid);
-    EXPECT_EQ(connection_remote_id, connection_state_->connection_remote_id);
     EXPECT_EQ(initialize_local_name, connection_state_->initialize_local_name);
-    EXPECT_EQ(initialize_id, connection_state_->initialize_id);
     EXPECT_EQ(initialize_userid, connection_state_->initialize_userid);
   }
 
@@ -413,7 +409,6 @@ TEST_F(ConnectTest, LocalInterface) {
     connection->GetInterface(&service);
     connection->AddInterface<test::mojom::ExposedInterface>(this);
 
-    uint32_t remote_id = mojom::kInvalidInstanceID;
     {
       base::RunLoop run_loop;
       EXPECT_TRUE(connection->IsPending());
@@ -422,8 +417,6 @@ TEST_F(ConnectTest, LocalInterface) {
           base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
       EXPECT_FALSE(connection->IsPending());
-      remote_id = connection->GetRemoteInstanceID();
-      EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
     }
 
     {
@@ -431,8 +424,8 @@ TEST_F(ConnectTest, LocalInterface) {
       set_ping_callback(base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
       CompareConnectionState(
-          kTestAppName, test_name(), test_userid(), test_instance_id(),
-          kTestAppName, connection->GetRemoteIdentity().user_id(), remote_id);
+          kTestAppName, test_name(), test_userid(), kTestAppName,
+          connection->GetRemoteIdentity().user_id());
     }
   }
 
@@ -444,7 +437,6 @@ TEST_F(ConnectTest, LocalInterface) {
     connection->GetInterface(&service_a);
     connection->AddInterface<test::mojom::ExposedInterface>(this);
 
-    uint32_t remote_id = mojom::kInvalidInstanceID;
     {
       base::RunLoop run_loop;
       EXPECT_TRUE(connection->IsPending());
@@ -453,8 +445,6 @@ TEST_F(ConnectTest, LocalInterface) {
           base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
       EXPECT_FALSE(connection->IsPending());
-      remote_id = connection->GetRemoteInstanceID();
-      EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
     }
 
     {
@@ -462,8 +452,8 @@ TEST_F(ConnectTest, LocalInterface) {
       set_ping_callback(base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
       CompareConnectionState(
-          kTestAppAName, test_name(), test_userid(), test_instance_id(),
-          kTestAppAName, connection->GetRemoteIdentity().user_id(), remote_id);
+          kTestAppAName, test_name(), test_userid(), kTestAppAName,
+          connection->GetRemoteIdentity().user_id());
     }
 
   }

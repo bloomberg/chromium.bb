@@ -59,7 +59,6 @@ class ServiceRunner {
   void Quit();
 
  private:
-  std::unique_ptr<ServiceContext> context_;
   std::unique_ptr<Service> service_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as

@@ -142,22 +142,20 @@ class Login : public shell::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    connector_->ConnectToInterface("mojo:mash_init", &init);
+    connector()->ConnectToInterface("mojo:mash_init", &init);
     init->StartService("mojo:mash_session", user_id);
   }
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
-    connector_ = connector;
+  void OnStart(const shell::Identity& identity) override {
     identity_ = identity;
-    tracing_.Initialize(connector, identity.name());
+    tracing_.Initialize(connector(), identity.name());
 
-    aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+    aura_init_.reset(
+        new views::AuraInit(connector(), "views_mus_resources.pak"));
 
-    connector_->ConnectToInterface("mojo:ui", &user_access_manager_);
+    connector()->ConnectToInterface("mojo:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
   bool OnConnect(shell::Connection* connection) override {
@@ -172,12 +170,15 @@ class Login : public shell::Service,
   }
 
   // mojom::Login:
-  void ShowLoginUI() override { UI::Show(connector_, identity_, this); }
-  void SwitchUser() override { UI::Show(connector_, identity_, this); }
+  void ShowLoginUI() override {
+    UI::Show(connector(), identity_, this);
+  }
+  void SwitchUser() override {
+    UI::Show(connector(), identity_, this);
+  }
 
   void StartWindowManager();
 
-  shell::Connector* connector_;
   shell::Identity identity_;
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;

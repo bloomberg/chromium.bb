@@ -60,13 +60,10 @@ class TouchHudUI : public views::WidgetDelegateView,
 TouchHudApplication::TouchHudApplication() : binding_(this) {}
 TouchHudApplication::~TouchHudApplication() {}
 
-void TouchHudApplication::OnStart(shell::Connector* connector,
-                                  const shell::Identity& identity,
-                                  uint32_t id) {
-  connector_ = connector;
-  aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+void TouchHudApplication::OnStart(const shell::Identity& identity) {
+  aura_init_.reset(new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
-      views::WindowManagerConnection::Create(connector, identity);
+      views::WindowManagerConnection::Create(connector(), identity);
 }
 
 bool TouchHudApplication::OnConnect(shell::Connection* connection) {
@@ -94,7 +91,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     ui::Window* window =
         window_manager_connection_.get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget_, connector_, window, ui::mojom::SurfaceType::DEFAULT);
+        widget_, connector(), window, ui::mojom::SurfaceType::DEFAULT);
     widget_->Init(params);
     widget_->Show();
   } else {

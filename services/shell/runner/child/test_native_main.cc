@@ -58,11 +58,13 @@ int TestNativeMain(shell::Service* service) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    shell::ServiceContext impl(service,
-                                shell::GetServiceRequestFromCommandLine());
+    service->set_context(base::WrapUnique(new shell::ServiceContext(
+        service, shell::GetServiceRequestFromCommandLine())));
     base::RunLoop().Run();
 
     mojo::edk::ShutdownIPCSupport();
+
+    service->set_context(std::unique_ptr<ServiceContext>());
   }
 
   return 0;

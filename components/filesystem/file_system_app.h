@@ -31,9 +31,7 @@ class FileSystemApp : public shell::Service,
   static base::FilePath GetUserDataDir();
 
   // |shell::Service| override:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // |InterfaceFactory<Files>| implementation:

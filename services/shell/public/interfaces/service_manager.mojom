@@ -28,11 +28,11 @@ interface ServiceManagerListener {
   // Called when a pid is available for the service. This could be because the
   // Service Manager created a process for it, or because an existing one was
   // assigned to it.
-  OnServiceStarted(uint32 id, uint32 pid);
+  OnServiceStarted(Identity identity, uint32 pid);
 
   // Called when the Service Manager has stopped tracking a service. (i.e. when
   // it has ended/quit).
-  OnServiceStopped(uint32 id);
+  OnServiceStopped(Identity identity);
 };
 
 interface ServiceManager {

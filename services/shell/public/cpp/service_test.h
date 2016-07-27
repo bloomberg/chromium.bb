@@ -35,9 +35,7 @@ class ServiceTestClient : public Service {
   ~ServiceTestClient() override;
 
  protected:
-  void OnStart(Connector* connector,
-               const Identity& identity,
-               uint32_t id) override;
+  void OnStart(const Identity& identity) override;
 
  private:
   ServiceTest* test_;
@@ -77,8 +75,7 @@ class ServiceTest : public testing::Test {
   // Call to set OnStart() metadata when GetService() is overridden.
   void OnStartCalled(Connector* connector,
                      const std::string& name,
-                     const std::string& userid,
-                     uint32_t id);
+                     const std::string& userid);
 
   // testing::Test:
   void SetUp() override;

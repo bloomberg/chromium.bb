@@ -64,13 +64,10 @@ MusDemo::~MusDemo() {
   delete window_tree_client_;
 }
 
-void MusDemo::OnStart(shell::Connector* connector,
-                      const shell::Identity& identity,
-                      uint32_t id) {
-  connector_ = connector;
-  GpuService::Initialize(connector_);
+void MusDemo::OnStart(const shell::Identity& identity) {
+  GpuService::Initialize(connector());
   window_tree_client_ = new WindowTreeClient(this, this, nullptr);
-  window_tree_client_->ConnectAsWindowManager(connector);
+  window_tree_client_->ConnectAsWindowManager(connector());
 }
 
 bool MusDemo::OnConnect(shell::Connection* connection) {
@@ -118,7 +115,7 @@ void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
 
   // Initialize bitmap uploader for sending frames to MUS.
   uploader_.reset(new ui::BitmapUploader(window_));
-  uploader_->Init(connector_);
+  uploader_->Init(connector());
 
   // Draw initial frame and start the timer to regularly draw frames.
   DrawFrame();

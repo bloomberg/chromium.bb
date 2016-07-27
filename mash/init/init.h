@@ -31,9 +31,7 @@ class Init : public shell::Service,
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override;
+  void OnStart(const shell::Identity& identity) override;
   bool OnConnect(shell::Connection* connection) override;
 
   // shell::InterfaceFactory<mojom::Login>:
@@ -50,7 +48,6 @@ class Init : public shell::Service,
   void StartTracing();
   void StartLogin();
 
-  shell::Connector* connector_;
   std::unique_ptr<shell::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;
   std::map<std::string, std::unique_ptr<shell::Connection>> user_services_;

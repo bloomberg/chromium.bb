@@ -4,14 +4,14 @@
 
 #include "services/shell/public/cpp/service.h"
 
+#include "services/shell/public/cpp/service_context.h"
+
 namespace shell {
 
 Service::Service() {}
 Service::~Service() {}
 
-void Service::OnStart(Connector* connector, const Identity& identity,
-                      uint32_t id) {
-}
+void Service::OnStart(const Identity& identity) {}
 
 bool Service::OnConnect(Connection* connection) {
   return false;
@@ -25,6 +25,18 @@ InterfaceProvider* Service::GetInterfaceProviderForConnection() {
 
 InterfaceRegistry* Service::GetInterfaceRegistryForConnection() {
   return nullptr;
+}
+
+Connector* Service::connector() {
+  return context_->connector();
+}
+
+ServiceContext* Service::context() {
+  return context_.get();
+}
+
+void Service::set_context(std::unique_ptr<ServiceContext> context) {
+  context_ = std::move(context);
 }
 
 }  // namespace shell

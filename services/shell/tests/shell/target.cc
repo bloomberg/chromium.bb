@@ -23,12 +23,10 @@ class Target : public shell::Service {
 
  private:
   // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) override {
+  void OnStart(const shell::Identity& identity) override {
     CreateInstanceTestPtr service;
-    connector->ConnectToInterface("mojo:shell_unittest", &service);
-    service->SetTargetID(id);
+    connector()->ConnectToInterface("mojo:shell_unittest", &service);
+    service->SetTargetIdentity(shell::mojom::Identity::From(identity));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Target);

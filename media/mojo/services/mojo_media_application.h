@@ -34,9 +34,7 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
 
  private:
   // shell::Service implementation.
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t id) final;
+  void OnStart(const shell::Identity& identity) final;
   bool OnConnect(shell::Connection* connection) final;
   bool OnStop() final;
 
@@ -49,7 +47,6 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   // a unique_ptr here.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
-  shell::Connector* connector_;
   shell::mojom::InterfaceProvider* remote_interface_provider_ = nullptr;
   scoped_refptr<MediaLog> media_log_;
   shell::ServiceContextRefFactory ref_factory_;
