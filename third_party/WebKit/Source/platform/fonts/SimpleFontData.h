@@ -186,11 +186,6 @@ private:
 
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
 {
-    if (!m_platformData.size())
-        return FloatRect();
-
-    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
-
     FloatRect boundsResult;
     if (m_glyphToBoundsMap) {
         boundsResult = m_glyphToBoundsMap->metricsForGlyph(glyph);
@@ -208,10 +203,6 @@ ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
 
 ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
 {
-    if (!m_platformData.size())
-        return 0;
-    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
-
     float width = m_glyphToWidthMap.metricsForGlyph(glyph);
     if (width != cGlyphSizeUnknown)
         return width;

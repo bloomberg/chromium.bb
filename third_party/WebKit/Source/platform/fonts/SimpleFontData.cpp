@@ -373,6 +373,11 @@ PassRefPtr<SimpleFontData> SimpleFontData::createScaledFontData(const FontDescri
 
 FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const
 {
+    if (!m_platformData.size())
+        return FloatRect();
+
+    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
+
     SkRect bounds;
     SkiaTextMetrics(&m_paint).getSkiaBoundsForGlyph(glyph, &bounds);
     return FloatRect(bounds);
@@ -380,6 +385,11 @@ FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const
 
 float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
 {
+    if (!m_platformData.size())
+        return 0;
+
+    static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
+
     return SkiaTextMetrics(&m_paint).getSkiaWidthForGlyph(glyph);
 }
 
