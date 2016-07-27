@@ -16,7 +16,6 @@
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
@@ -995,15 +994,15 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
     String16 scriptSource = toProtocolString(script->source(m_isolate));
     bool isDeprecatedSourceURL = false;
     if (!success)
-        script->setSourceURL(V8ContentSearchUtil::findSourceURL(scriptSource, false, &isDeprecatedSourceURL));
+        script->setSourceURL(findSourceURL(scriptSource, false, &isDeprecatedSourceURL));
     else if (script->hasSourceURL())
-        V8ContentSearchUtil::findSourceURL(scriptSource, false, &isDeprecatedSourceURL);
+        findSourceURL(scriptSource, false, &isDeprecatedSourceURL);
 
     bool isDeprecatedSourceMappingURL = false;
     if (!success)
-        script->setSourceMappingURL(V8ContentSearchUtil::findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL));
+        script->setSourceMappingURL(findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL));
     else if (!script->sourceMappingURL().isEmpty())
-        V8ContentSearchUtil::findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL);
+        findSourceMapURL(scriptSource, false, &isDeprecatedSourceMappingURL);
 
     bool isContentScript = script->isContentScript();
     bool isInternalScript = script->isInternalScript();

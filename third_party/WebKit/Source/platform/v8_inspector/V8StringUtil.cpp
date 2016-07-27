@@ -193,8 +193,6 @@ std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLine
     return result;
 }
 
-namespace V8ContentSearchUtil {
-
 String16 findSourceURL(const String16& content, bool multiline, bool* deprecated)
 {
     return findMagicComment(content, "sourceURL", multiline, deprecated);
@@ -204,6 +202,8 @@ String16 findSourceMapURL(const String16& content, bool multiline, bool* depreca
 {
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
+
+namespace V8ContentSearchUtil {
 
 std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
 {

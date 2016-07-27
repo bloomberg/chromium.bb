@@ -52,7 +52,6 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
-#include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
@@ -70,6 +69,68 @@ using namespace blink;
 static CSSParserContext parserContextForDocument(Document *document)
 {
     return document ? CSSParserContext(*document, nullptr) : strictCSSParserContext();
+}
+
+String findMagicComment(const String& content, const String& name)
+{
+    DCHECK(name.find("=") == kNotFound);
+
+    unsigned length = content.length();
+    unsigned nameLength = name.length();
+    const bool multiline = true;
+
+    size_t pos = length;
+    size_t equalSignPos = 0;
+    size_t closingCommentPos = 0;
+    while (true) {
+        pos = content.reverseFind(name, pos);
+        if (pos == kNotFound)
+            return emptyString();
+
+        // Check for a /\/[\/*][@#][ \t]/ regexp (length of 4) before found name.
+        if (pos < 4)
+            return emptyString();
+        pos -= 4;
+        if (content[pos] != '/')
+            continue;
+        if ((content[pos + 1] != '/' || multiline)
+            && (content[pos + 1] != '*' || !multiline))
+            continue;
+        if (content[pos + 2] != '#' && content[pos + 2] != '@')
+            continue;
+        if (content[pos + 3] != ' ' && content[pos + 3] != '\t')
+            continue;
+        equalSignPos = pos + 4 + nameLength;
+        if (equalSignPos < length && content[equalSignPos] != '=')
+            continue;
+        if (multiline) {
+            closingCommentPos = content.find("*/", equalSignPos + 1);
+            if (closingCommentPos == kNotFound)
+                return emptyString();
+        }
+
+        break;
+    }
+
+    DCHECK(equalSignPos);
+    DCHECK(!multiline || closingCommentPos);
+    size_t urlPos = equalSignPos + 1;
+    String match = multiline
+        ? content.substring(urlPos, closingCommentPos - urlPos)
+        : content.substring(urlPos);
+
+    size_t newLine = match.find("\n");
+    if (newLine != kNotFound)
+        match = match.substring(0, newLine);
+    match = match.stripWhiteSpace();
+
+    String disallowedChars("\"' \t");
+    for (unsigned i = 0; i < match.length(); ++i) {
+        if (disallowedChars.find(match[i]) != kNotFound)
+            return emptyString();
+    }
+
+    return match;
 }
 
 class StyleSheetHandler final : public CSSParserObserver {
@@ -1482,8 +1543,7 @@ String InspectorStyleSheet::sourceURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        bool deprecated = false;
-        String commentValue = V8ContentSearchUtil::findSourceURL(styleSheetText, true, &deprecated);
+        String commentValue = findMagicComment(styleSheetText, "sourceURL");
         if (!commentValue.isEmpty()) {
             m_sourceURL = commentValue;
             return commentValue;
@@ -1534,8 +1594,7 @@ String InspectorStyleSheet::sourceMapURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        bool deprecated = false;
-        String commentValue = V8ContentSearchUtil::findSourceMapURL(styleSheetText, true, &deprecated);
+        String commentValue = findMagicComment(styleSheetText, "sourceMappingURL");
         if (!commentValue.isEmpty())
             return commentValue;
     }
