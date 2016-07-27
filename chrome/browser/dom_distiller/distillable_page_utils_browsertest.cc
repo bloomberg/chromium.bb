@@ -53,6 +53,40 @@ class MockDelegate : public Holder {
   }
 };
 
+// Wait a bit to make sure there are no extra calls after the last expected
+// call. All the expected calls happen within ~1ms on linux release build,
+// so 100ms should be pretty safe to catch extra calls.
+// If there are no extra calls, changing this doesn't change the test result.
+const int kWaitAfterLastCallMs = 100;
+
+// If there are no expected calls, the test wait for a while to make sure there
+// are // no calls in this period of time. When there are expected calls, they
+// happen within 100ms after content::WaitForLoadStop() on linux release build,
+// and 10X safety margin is used.
+// If there are no extra calls, changing this doesn't change the test result.
+const int kWaitNoExpectedCallMs = 1000;
+
+// QuitWhenIdleClosure() would become no-op if it is called before
+// content::RunMessageLoop(). This timeout should be long enough to make sure
+// at least one QuitWhenIdleClosure() is called after RunMessageLoop().
+// All tests are limited by |kWaitAfterLastCall| or |kWaitNoExpectedCall|, so
+// making this longer doesn't actually make tests run for longer, unless
+// |kWaitAfterLastCall| or |kWaitNoExpectedCall| are so small or the test is so
+// slow, for example, on Dr. Memory or Android, that QuitWhenIdleClosure()
+// is called prematurely. 100X safety margin is used.
+const int kDefaultTimeoutMs = 10000;
+
+void QuitAfter(int time_ms) {
+  DCHECK_GE(time_ms, 0);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      base::TimeDelta::FromMilliseconds(time_ms));
+}
+
+void QuitSoon() {
+  QuitAfter(kWaitAfterLastCallMs);
+}
+
 }  // namespace
 
 template<const char Option[]>
@@ -72,7 +106,7 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
     setDelegate(web_contents_, holder_.GetDelegate());
   }
 
-  void NavigateAndWait(const char* url) {
+  void NavigateAndWait(const char* url, int timeout_ms) {
     GURL article_url(url);
     if (base::StartsWith(url, "/", base::CompareCase::SENSITIVE)) {
       article_url = embedded_test_server()->GetURL(url);
@@ -82,10 +116,11 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), article_url);
     content::WaitForLoadStop(web_contents_);
 
-    // Wait a bit for the message.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-        base::TimeDelta::FromMilliseconds(100));
+    QuitAfter(kDefaultTimeoutMs);
+    if (timeout_ms) {
+      // Local time-out for the tests that don't expect callbacks.
+      QuitAfter(timeout_ms);
+    }
     content::RunMessageLoop();
   }
 
@@ -99,22 +134,17 @@ using DistillablePageUtilsBrowserTestAlways =
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        TestDelegate) {
-  // Run twice to make sure the delegate object is still alive.
-  for (int i = 0; i < 2; ++i) {
-    testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
-    NavigateAndWait(kSimpleArticlePath);
-  }
   for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
-    NavigateAndWait(kAllPaths[i]);
+    EXPECT_CALL(holder_, OnResult(true, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(kAllPaths[i], 0);
   }
   // Test pages that we don't care about its distillability.
   {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(_, _)).Times(0);
-    NavigateAndWait("about:blank");
+    NavigateAndWait("about:blank", kWaitNoExpectedCallMs);
   }
 }
 
@@ -125,7 +155,7 @@ using DistillablePageUtilsBrowserTestNone =
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone,
                        TestDelegate) {
   EXPECT_CALL(holder_, OnResult(_, _)).Times(0);
-  NavigateAndWait(kSimpleArticlePath);
+  NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCallMs);
 }
 
 
@@ -136,13 +166,15 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOG,
                        TestDelegate) {
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
-    NavigateAndWait(kArticlePath);
+    EXPECT_CALL(holder_, OnResult(true, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(kArticlePath, 0);
   }
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(false, true)).Times(1);
-    NavigateAndWait(kNonArticlePath);
+    EXPECT_CALL(holder_, OnResult(false, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(kNonArticlePath, 0);
   }
 }
 
@@ -156,14 +188,16 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
   for (unsigned i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(true, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(true, true)).Times(1);
-    NavigateAndWait(paths[i]);
+    EXPECT_CALL(holder_, OnResult(true, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(paths[i], 0);
   }
   {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(false, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(false, true)).Times(1);
-    NavigateAndWait(kNonArticlePath);
+    EXPECT_CALL(holder_, OnResult(false, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(kNonArticlePath, 0);
   }
 }
 

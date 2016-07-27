@@ -85,19 +85,12 @@ CrSettingsBrowserTest.CrSettingsTest
 # https://crbug.com/550653
 CrashRecoveryBrowserTest.LoadInNewTab
 
-# https://crbug.com/561085
-DistillablePageUtilsBrowserTestAdaboost.TestDelegate
-
 # https://crbug.com/561088
 CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerSplitSectionsTest
 CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerAppSectionVisibilityTest
 
 # https://crbug.com/562434
 AppearanceSettingsBrowserTest.uiTests
-
-# https://crbug.com/571263
-DistillablePageUtilsBrowserTestAlways.TestDelegate
-DistillablePageUtilsBrowserTestOG.TestDelegate
 
 # https://crbug.com/577850
 LoginPromptBrowserTest.ShouldReplaceExistingInterstitialWhenNavigated
