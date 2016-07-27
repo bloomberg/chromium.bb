@@ -639,7 +639,13 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
+#if defined(OS_WIN)
+// This test is flaky on Windows, see https://crbug.com/629419.
+#define MAYBE_CrossSiteIframe DISABLED_CrossSiteIframe
+#else
+#define MAYBE_CrossSiteIframe CrossSiteIframe
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   NavigateToURL(shell(), main_url);
@@ -1474,7 +1480,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       DepictFrameTree(root));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
+#if defined(OS_WIN)
+// This test is flaky on Windows, see https://crbug.com/629419.
+#define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
+#else
+#define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   NavigateToURL(shell(), main_url);
@@ -3941,7 +3953,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
   EXPECT_EQ(1, GetReceivedMessages(child2));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
+#if defined(OS_WIN)
+// This test is flaky on Windows, see https://crbug.com/629419.
+#define MAYBE_RFPHDestruction DISABLED_RFPHDestruction
+#else
+#define MAYBE_RFPHDestruction RFPHDestruction
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_RFPHDestruction) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
