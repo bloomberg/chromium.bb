@@ -219,7 +219,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool never_visible_;
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
-  std::unique_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
 
   cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 

@@ -18,6 +18,8 @@
 
 namespace cc {
 
+class CopyOutputRequest;
+
 class TestDelegatingOutputSurface : public OutputSurface,
                                     public SurfaceFactoryClient,
                                     public DisplayClient {
@@ -34,6 +36,9 @@ class TestDelegatingOutputSurface : public OutputSurface,
   ~TestDelegatingOutputSurface() override;
 
   Display* display() const { return display_.get(); }
+
+  // Will be submitted with the next SwapBuffers.
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
 
   // OutputSurface implementation.
   bool BindToClient(OutputSurfaceClient* client) override;
@@ -67,6 +72,8 @@ class TestDelegatingOutputSurface : public OutputSurface,
   std::unique_ptr<Display> display_;
 
   bool bound_ = false;
+
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
   base::WeakPtrFactory<TestDelegatingOutputSurface> weak_ptrs_;
 };

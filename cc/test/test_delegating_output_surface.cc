@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/test/begin_frame_args_test.h"
 
@@ -57,7 +58,14 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
       !context_shared_with_compositor;
 }
 
-TestDelegatingOutputSurface::~TestDelegatingOutputSurface() {}
+TestDelegatingOutputSurface::~TestDelegatingOutputSurface() {
+  DCHECK(copy_requests_.empty());
+}
+
+void TestDelegatingOutputSurface::RequestCopyOfOutput(
+    std::unique_ptr<CopyOutputRequest> request) {
+  copy_requests_.push_back(std::move(request));
+}
 
 bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (!OutputSurface::BindToClient(client))
@@ -114,6 +122,11 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
       delegated_surface_id_, std::move(frame),
       base::Bind(&TestDelegatingOutputSurface::DrawCallback,
                  weak_ptrs_.GetWeakPtr()));
+
+  for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_)
+    surface_factory_->RequestCopyOfSurface(delegated_surface_id_,
+                                           std::move(copy_request));
+  copy_requests_.clear();
 
   if (!display_->has_scheduler())
     display_->DrawAndSwap();

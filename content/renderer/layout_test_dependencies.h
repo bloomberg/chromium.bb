@@ -12,7 +12,9 @@
 
 namespace cc {
 class ContextProvider;
+class CopyOutputRequest;
 class OutputSurface;
+class SwapPromise;
 }
 
 namespace gpu {
@@ -27,10 +29,16 @@ class CompositorDependencies;
 class LayoutTestDependencies {
  public:
   virtual std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       CompositorDependencies* deps) = 0;
+
+  // Returns a SwapPromise which should be queued for the next compositor frame.
+  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
+      int32_t routing_id,
+      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
 };
 
 }  // namespace content

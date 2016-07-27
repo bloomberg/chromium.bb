@@ -239,6 +239,10 @@ class CONTENT_EXPORT RenderThreadImpl
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url);
 
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+      int32_t routing_id,
+      std::unique_ptr<cc::CopyOutputRequest> request);
+
   // True if we are running layout tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and
   // short circuits size update and focus events.

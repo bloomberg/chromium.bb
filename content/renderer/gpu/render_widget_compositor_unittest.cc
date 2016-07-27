@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/test/failure_output_surface.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
@@ -61,6 +62,10 @@ class StubRenderWidgetCompositorDelegate
   void RequestScheduleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+      std::unique_ptr<cc::CopyOutputRequest> request) override {
+    return nullptr;
+  }
 };
 
 class FakeRenderWidgetCompositorDelegate

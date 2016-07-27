@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_delegating_output_surface.h"
 #include "components/scheduler/test/renderer_scheduler_test_support.h"
@@ -179,9 +180,47 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
 }
 
+namespace {
+
+// Invokes a callback on commit (on the main thread) to obtain the output
+// surface that should be used, then asks that output surface to submit the copy
+// request at SwapBuffers time.
+class CopyRequestSwapPromise : public cc::SwapPromise {
+ public:
+  using FindOutputSurfaceCallback =
+      base::Callback<cc::TestDelegatingOutputSurface*()>;
+  CopyRequestSwapPromise(std::unique_ptr<cc::CopyOutputRequest> request,
+                         FindOutputSurfaceCallback output_surface_callback)
+      : copy_request_(std::move(request)),
+        output_surface_callback_(std::move(output_surface_callback)) {}
+
+  // cc::SwapPromise implementation.
+  void OnCommit() override {
+    output_surface_from_commit_ = output_surface_callback_.Run();
+    DCHECK(output_surface_from_commit_);
+  }
+  void DidActivate() override {}
+  void DidSwap(cc::CompositorFrameMetadata*) override {
+    output_surface_from_commit_->RequestCopyOfOutput(std::move(copy_request_));
+  }
+  void DidNotSwap(DidNotSwapReason r) override {
+    // The compositor should always swap in layout test mode.
+    NOTREACHED() << "did not swap for reason " << r;
+  }
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  std::unique_ptr<cc::CopyOutputRequest> copy_request_;
+  FindOutputSurfaceCallback output_surface_callback_;
+  cc::TestDelegatingOutputSurface* output_surface_from_commit_ = nullptr;
+};
+
+}  // namespace
+
 class LayoutTestDependenciesImpl : public LayoutTestDependencies {
  public:
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
@@ -221,12 +260,42 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
         RenderWidgetCompositor::GenerateLayerTreeSettings(
             *base::CommandLine::ForCurrentProcess(), deps, 1.f);
 
-    return base::MakeUnique<cc::TestDelegatingOutputSurface>(
+    auto output_surface = base::MakeUnique<cc::TestDelegatingOutputSurface>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), std::move(display_output_surface),
         deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
         settings.renderer_settings, task_runner, synchronous_composite);
+    output_surfaces_[routing_id] = output_surface.get();
+    return std::move(output_surface);
   }
+
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
+      int32_t routing_id,
+      std::unique_ptr<cc::CopyOutputRequest> request) override {
+    // Note that we can't immediately check output_surfaces_, since it may not
+    // have been created yet. Instead, we wait until OnCommit to find the
+    // currently active OutputSurface for the given RenderWidget routing_id.
+    return base::MakeUnique<CopyRequestSwapPromise>(
+        std::move(request),
+        base::Bind(
+            &LayoutTestDependenciesImpl::FindOutputSurface,
+            // |this| will still be valid, because its lifetime is tied to
+            // RenderThreadImpl, which outlives layout test execution.
+            base::Unretained(this), routing_id));
+  }
+
+ private:
+  cc::TestDelegatingOutputSurface* FindOutputSurface(int32_t routing_id) {
+    auto it = output_surfaces_.find(routing_id);
+    return it == output_surfaces_.end() ? nullptr : it->second;
+  }
+
+  // Entries are not removed, so this map can grow. However, it is only used in
+  // layout tests, so this memory usage does not occur in production.
+  // Entries in this map will outlive the output surface, because this object is
+  // owned by RenderThreadImpl, which outlives layout test execution.
+  std::unordered_map<int32_t, cc::TestDelegatingOutputSurface*>
+      output_surfaces_;
 };
 
 void EnableRendererLayoutTestMode() {

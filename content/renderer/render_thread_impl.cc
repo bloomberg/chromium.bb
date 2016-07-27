@@ -41,6 +41,7 @@
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/output/buffer_to_texture_target_map.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/task_graph_runner.h"
@@ -1907,7 +1908,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
   if (layout_test_deps_) {
     return layout_test_deps_->CreateOutputSurface(
-        std::move(gpu_channel_host), std::move(context_provider),
+        routing_id, std::move(gpu_channel_host), std::move(context_provider),
         std::move(worker_context_provider), this);
   }
 
@@ -1923,6 +1924,14 @@ RenderThreadImpl::CreateCompositorOutputSurface(
   return base::WrapUnique(new CompositorOutputSurface(
       routing_id, output_surface_id, std::move(context_provider),
       std::move(worker_context_provider), std::move(frame_swap_message_queue)));
+}
+
+std::unique_ptr<cc::SwapPromise>
+RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
+    int32_t routing_id,
+    std::unique_ptr<cc::CopyOutputRequest> request) {
+  DCHECK(layout_test_deps_);
+  return layout_test_deps_->RequestCopyOfOutput(routing_id, std::move(request));
 }
 
 blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(

@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
@@ -815,6 +816,12 @@ void RenderWidget::WillBeginCompositorFrame() {
 
   FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
                     WillBeginCompositorFrame());
+}
+
+std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForLayoutTest(
+    std::unique_ptr<cc::CopyOutputRequest> request) {
+  return RenderThreadImpl::current()->RequestCopyOfOutputForLayoutTest(
+      routing_id_, std::move(request));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

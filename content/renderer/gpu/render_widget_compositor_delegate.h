@@ -12,7 +12,9 @@ struct WebScreenInfo;
 
 namespace cc {
 class BeginFrameSource;
+class CopyOutputRequest;
 class OutputSurface;
+class SwapPromise;
 }
 
 namespace content {
@@ -82,6 +84,11 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // to signal to flow control mechanisms that a frame is beginning, not to
   // perform actual painting work.
   virtual void WillBeginCompositorFrame() = 0;
+
+  // For use in layout test mode only, attempts to copy the full content of the
+  // compositor.
+  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
 
  protected:
   virtual ~RenderWidgetCompositorDelegate() {}
