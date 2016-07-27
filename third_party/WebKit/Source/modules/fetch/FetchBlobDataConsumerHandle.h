@@ -39,7 +39,7 @@ public:
 
 private:
     FetchBlobDataConsumerHandle(ExecutionContext*, PassRefPtr<BlobDataHandle>, LoaderFactory*);
-    Reader* obtainReaderInternal(Client*) override;
+    std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
 
     const char* debugName() const override { return "FetchBlobDataConsumerHandle"; }
 

@@ -22,7 +22,9 @@ namespace blink {
 
 namespace {
 
+using ::testing::ByMove;
 using ::testing::InSequence;
+using ::testing::Return;
 using ::testing::_;
 using ::testing::SaveArg;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
@@ -483,19 +485,17 @@ TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled
     using MockHandle = MockFetchDataConsumerHandleWithMockDestructor;
     using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
 
     Checkpoint checkpoint;
     InSequence s;
 
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(::testing::Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(*handle, destruct());
     EXPECT_CALL(checkpoint, Call(2));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), std::move(handle));
     checkpoint.Call(1);

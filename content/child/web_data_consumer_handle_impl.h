@@ -44,13 +44,12 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
     mojo::Watcher handle_watcher_;
     Client* client_;
   };
-  std::unique_ptr<Reader> ObtainReader(Client* client);
+  std::unique_ptr<Reader> obtainReader(Client* client) override;
 
   explicit WebDataConsumerHandleImpl(Handle handle);
   ~WebDataConsumerHandleImpl() override;
 
  private:
-  ReaderImpl* obtainReaderInternal(Client* client) override;
   const char* debugName() const override;
 
   scoped_refptr<Context> context_;

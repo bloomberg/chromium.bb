@@ -13,6 +13,7 @@ namespace blink {
 
 namespace {
 
+using ::testing::ByMove;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::DoAll;
@@ -41,14 +42,17 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
@@ -58,9 +62,6 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -82,13 +83,16 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| is adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
@@ -98,9 +102,6 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadFailed());
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -117,20 +118,20 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -149,22 +150,22 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(inputBlobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(checkpoint, Call(3));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -188,22 +189,22 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle("text/test");
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     RefPtr<BlobDataHandle> blobDataHandle;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(inputBlobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(checkpoint, Call(3));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -223,14 +224,17 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
     DOMArrayBuffer* arrayBuffer = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
@@ -239,9 +243,6 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedArrayBufferMock(_)).WillOnce(SaveArg<0>(&arrayBuffer));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -263,13 +264,16 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
@@ -278,9 +282,6 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadFailed());
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -297,19 +298,18 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -324,13 +324,16 @@ TEST(FetchDataLoaderTest, LoadAsString)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLength), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLength)).WillOnce(Return(kOk));
@@ -339,9 +342,6 @@ TEST(FetchDataLoaderTest, LoadAsString)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedString(String(kQuickBrownFox)));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -359,13 +359,16 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>("Quick\0brown\0fox")), SetArgPointee<2>(16), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
@@ -374,9 +377,6 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedString(String("Quick\0brown\0fox", 16)));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -394,13 +394,16 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLength), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLength)).WillOnce(Return(kOk));
@@ -409,9 +412,6 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadFailed());
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
@@ -428,19 +428,19 @@ TEST(FetchDataLoaderTest, LoadAsStringCancel)
     Checkpoint checkpoint;
 
     std::unique_ptr<MockHandle> handle = MockHandle::create();
-    std::unique_ptr<MockReader> reader = MockReader::create();
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockReader* reader = MockReader::create().release();
+
     FetchDataLoader* fetchDataLoader = FetchDataLoader::createLoaderAsString();
     MockFetchDataLoaderClient* fetchDataLoaderClient = MockFetchDataLoaderClient::create();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     checkpoint.Call(1);
     fetchDataLoader->start(handle.get(), fetchDataLoaderClient);

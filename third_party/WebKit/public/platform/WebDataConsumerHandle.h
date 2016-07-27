@@ -6,10 +6,7 @@
 #define WebDataConsumerHandle_h
 
 #include <stddef.h>
-
-#if INSIDE_BLINK
 #include <memory>
-#endif
 
 #include "public/platform/WebCommon.h"
 
@@ -103,16 +100,10 @@ public:
     // if |client| is not null.
     // If |client| is not null and the handle is not waiting, client
     // notification is called asynchronously.
-#if INSIDE_BLINK
-    std::unique_ptr<Reader> obtainReader(Client*);
-#endif
+    virtual std::unique_ptr<Reader> obtainReader(Client*) = 0;
 
     // Returns a string literal (e.g. class name) for debugging only.
     virtual const char* debugName() const = 0;
-
-private:
-    // The caller takes ownership of the returned object.
-    virtual Reader* obtainReaderInternal(Client*) = 0;
 };
 
 } // namespace blink

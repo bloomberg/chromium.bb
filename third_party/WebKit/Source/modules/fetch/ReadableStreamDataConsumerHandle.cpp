@@ -293,9 +293,9 @@ ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* 
 }
 ReadableStreamDataConsumerHandle::~ReadableStreamDataConsumerHandle() = default;
 
-FetchDataConsumerHandle::Reader* ReadableStreamDataConsumerHandle::obtainReaderInternal(Client* client)
+std::unique_ptr<FetchDataConsumerHandle::Reader> ReadableStreamDataConsumerHandle::obtainFetchDataReader(Client* client)
 {
-    return new ReadingContext::ReaderImpl(m_readingContext, client);
+    return WTF::wrapUnique(new ReadingContext::ReaderImpl(m_readingContext, client));
 }
 
 } // namespace blink

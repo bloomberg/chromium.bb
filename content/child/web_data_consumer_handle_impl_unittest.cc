@@ -79,7 +79,7 @@ class ReadDataOperation : public ReadDataOperationBase {
   void ReadData() {
     if (!client_) {
       client_.reset(new ClientImpl(this));
-      reader_ = handle_->ObtainReader(client_.get());
+      reader_ = handle_->obtainReader(client_.get());
     }
 
     Result rv = kOk;
@@ -137,7 +137,7 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
   void ReadData() {
     if (!client_) {
       client_.reset(new ClientImpl(this));
-      reader_ = handle_->ObtainReader(client_.get());
+      reader_ = handle_->obtainReader(client_.get());
     }
 
     Result rv;

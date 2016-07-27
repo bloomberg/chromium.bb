@@ -317,9 +317,13 @@ public:
         return wrapUnique(new DestinationHandle(contextProxy));
     }
 
+    std::unique_ptr<Reader> obtainReader(Client* client)
+    {
+        return wrapUnique(new DestinationReader(m_contextProxy, client));
+    }
+
 private:
     DestinationHandle(PassRefPtr<DestinationContext::Proxy> contextProxy) : m_contextProxy(contextProxy) { }
-    DestinationReader* obtainReaderInternal(Client* client) { return new DestinationReader(m_contextProxy, client); }
     const char* debugName() const override { return "DestinationHandle"; }
 
     RefPtr<DestinationContext::Proxy> m_contextProxy;
@@ -418,7 +422,7 @@ void DataConsumerTee::create(ExecutionContext* executionContext, std::unique_ptr
 
 void DataConsumerTee::create(ExecutionContext* executionContext, std::unique_ptr<FetchDataConsumerHandle> src, std::unique_ptr<FetchDataConsumerHandle>* dest1, std::unique_ptr<FetchDataConsumerHandle>* dest2)
 {
-    RefPtr<BlobDataHandle> blobDataHandle = src->obtainReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+    RefPtr<BlobDataHandle> blobDataHandle = src->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
     if (blobDataHandle) {
         *dest1 = FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle);
         *dest2 = FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle);

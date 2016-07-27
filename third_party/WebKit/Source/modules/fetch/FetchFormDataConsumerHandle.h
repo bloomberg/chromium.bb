@@ -51,7 +51,7 @@ private:
     FetchFormDataConsumerHandle(const void*, size_t);
     FetchFormDataConsumerHandle(ExecutionContext*, const PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* = nullptr);
 
-    Reader* obtainReaderInternal(Client*) override;
+    std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
 
     const char* debugName() const override { return "FetchFormDataConsumerHandle"; }
 

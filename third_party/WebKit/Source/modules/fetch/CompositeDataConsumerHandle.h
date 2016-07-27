@@ -56,9 +56,10 @@ public:
     }
     ~CompositeDataConsumerHandle() override;
 
+    std::unique_ptr<Reader> obtainReader(Client*) override;
+
 private:
     class ReaderImpl;
-    Reader* obtainReaderInternal(Client*) override;
 
     const char* debugName() const override { return "CompositeDataConsumerHandle"; }
 

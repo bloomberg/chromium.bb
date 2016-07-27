@@ -1059,6 +1059,7 @@
       'fetch/DataConsumerTee.h',
       'fetch/FetchBlobDataConsumerHandle.cpp',
       'fetch/FetchBlobDataConsumerHandle.h',
+      'fetch/FetchDataConsumerHandle.cpp',
       'fetch/FetchDataConsumerHandle.h',
       'fetch/FetchDataLoader.cpp',
       'fetch/FetchDataLoader.h',

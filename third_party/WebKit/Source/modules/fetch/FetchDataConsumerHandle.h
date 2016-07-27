@@ -63,13 +63,8 @@ public:
         virtual PassRefPtr<EncodedFormData> drainAsFormData() { return nullptr; }
     };
 
-    // TODO(yhirano): obtainReader() is currently non-virtual override, and
-    // will be changed into virtual override when we can use unique_ptr in
-    // Blink.
-    std::unique_ptr<Reader> obtainReader(Client* client) { return wrapUnique(obtainReaderInternal(client)); }
-
-private:
-    Reader* obtainReaderInternal(Client*) override = 0;
+    std::unique_ptr<WebDataConsumerHandle::Reader> obtainReader(Client*) final;
+    virtual std::unique_ptr<Reader> obtainFetchDataReader(Client*) = 0;
 };
 
 } // namespace blink

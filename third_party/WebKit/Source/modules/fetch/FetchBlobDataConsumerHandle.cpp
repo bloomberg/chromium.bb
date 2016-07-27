@@ -308,9 +308,9 @@ std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(Exe
     return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, new DefaultLoaderFactory));
 }
 
-FetchDataConsumerHandle::Reader* FetchBlobDataConsumerHandle::obtainReaderInternal(Client* client)
+std::unique_ptr<FetchDataConsumerHandle::Reader> FetchBlobDataConsumerHandle::obtainFetchDataReader(Client* client)
 {
-    return m_readerContext->obtainReader(client).release();
+    return m_readerContext->obtainReader(client);
 }
 
 } // namespace blink

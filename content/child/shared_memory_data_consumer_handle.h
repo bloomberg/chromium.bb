@@ -81,10 +81,9 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
                                  std::unique_ptr<Writer>* writer);
   ~SharedMemoryDataConsumerHandle() override;
 
-  std::unique_ptr<Reader> ObtainReader(Client* client);
+  std::unique_ptr<Reader> obtainReader(Client* client) override;
 
  private:
-  ReaderImpl* obtainReaderInternal(Client* client) override;
   const char* debugName() const override;
 
   scoped_refptr<Context> context_;

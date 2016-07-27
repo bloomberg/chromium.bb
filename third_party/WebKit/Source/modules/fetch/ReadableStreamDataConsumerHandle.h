@@ -36,10 +36,11 @@ public:
     }
     ~ReadableStreamDataConsumerHandle() override;
 
+    std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
+
 private:
     class ReadingContext;
     ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue streamReader);
-    Reader* obtainReaderInternal(Client*) override;
     const char* debugName() const override { return "ReadableStreamDataConsumerHandle"; }
 
     RefPtr<ReadingContext> m_readingContext;

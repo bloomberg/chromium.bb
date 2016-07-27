@@ -127,13 +127,8 @@ WebDataConsumerHandleImpl::~WebDataConsumerHandleImpl() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-WebDataConsumerHandleImpl::ObtainReader(Client* client) {
-  return base::WrapUnique(obtainReaderInternal(client));
-}
-
-WebDataConsumerHandleImpl::ReaderImpl*
-WebDataConsumerHandleImpl::obtainReaderInternal(Client* client) {
-  return new ReaderImpl(context_, client);
+WebDataConsumerHandleImpl::obtainReader(Client* client) {
+  return base::WrapUnique(new ReaderImpl(context_, client));
 }
 
 const char* WebDataConsumerHandleImpl::debugName() const {

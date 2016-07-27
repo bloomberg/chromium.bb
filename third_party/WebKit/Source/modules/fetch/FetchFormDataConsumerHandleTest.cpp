@@ -237,7 +237,7 @@ TEST_F(FetchFormDataConsumerHandleTest, TwoPhaseReadFromComplexFormData)
 TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromString)
 {
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<BlobDataHandle> blobDataHandle = reader->drainAsBlobDataHandle();
     ASSERT_TRUE(blobDataHandle);
 
@@ -252,7 +252,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromString)
 TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromArrayBuffer)
 {
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(DOMArrayBuffer::create("foo", 3));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<BlobDataHandle> blobDataHandle = reader->drainAsBlobDataHandle();
     ASSERT_TRUE(blobDataHandle);
 
@@ -272,7 +272,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromSimpleFormData)
     RefPtr<EncodedFormData> inputFormData = data->encodeMultiPartFormData();
 
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(getDocument(), inputFormData);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<BlobDataHandle> blobDataHandle = reader->drainAsBlobDataHandle();
     ASSERT_TRUE(blobDataHandle);
 
@@ -289,7 +289,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromComplexFormData
     RefPtr<EncodedFormData> inputFormData = complexFormData();
 
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(getDocument(), inputFormData);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<BlobDataHandle> blobDataHandle = reader->drainAsBlobDataHandle();
     ASSERT_TRUE(blobDataHandle);
 
@@ -302,7 +302,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsBlobDataHandleFromComplexFormData
 TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromString)
 {
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<EncodedFormData> formData = reader->drainAsFormData();
     ASSERT_TRUE(formData);
     EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
@@ -317,7 +317,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromString)
 TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromArrayBuffer)
 {
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(DOMArrayBuffer::create("foo", 3));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<EncodedFormData> formData = reader->drainAsFormData();
     ASSERT_TRUE(formData);
     EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
@@ -332,7 +332,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromSimpleFormData)
     RefPtr<EncodedFormData> inputFormData = data->encodeMultiPartFormData();
 
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(getDocument(), inputFormData);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<EncodedFormData> outputFormData = reader->drainAsFormData();
     ASSERT_TRUE(outputFormData);
     EXPECT_TRUE(outputFormData->isSafeToSendToAnotherThread());
@@ -345,7 +345,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromComplexFormData)
     RefPtr<EncodedFormData> inputFormData = complexFormData();
 
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(getDocument(), inputFormData);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     RefPtr<EncodedFormData> outputFormData = reader->drainAsFormData();
     ASSERT_TRUE(outputFormData);
     EXPECT_TRUE(outputFormData->isSafeToSendToAnotherThread());
@@ -356,7 +356,7 @@ TEST_F(FetchFormDataConsumerHandleTest, DrainAsFormDataFromComplexFormData)
 TEST_F(FetchFormDataConsumerHandleTest, ZeroByteReadDoesNotAffectDraining)
 {
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     size_t readSize;
     EXPECT_EQ(kOk, reader->read(nullptr, 0, kNone, &readSize));
     RefPtr<EncodedFormData> formData = reader->drainAsFormData();
@@ -369,7 +369,7 @@ TEST_F(FetchFormDataConsumerHandleTest, OneByteReadAffectsDraining)
 {
     char c;
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     size_t readSize;
     EXPECT_EQ(kOk, reader->read(&c, 1, kNone, &readSize));
     EXPECT_EQ(1u, readSize);
@@ -381,7 +381,7 @@ TEST_F(FetchFormDataConsumerHandleTest, BeginReadAffectsDraining)
 {
     const void* buffer = nullptr;
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     size_t available;
     EXPECT_EQ(kOk, reader->beginRead(&buffer, kNone, &available));
     ASSERT_TRUE(buffer);
@@ -397,7 +397,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ZeroByteReadDoesNotAffectDrainingForComp
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     size_t readSize;
     EXPECT_EQ(kShouldWait, reader->read(nullptr, 0, kNone, &readSize));
     testing::runPendingTasks();
@@ -414,7 +414,7 @@ TEST_F(FetchFormDataConsumerHandleTest, OneByteReadAffectsDrainingForComplexForm
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     char c;
     size_t readSize;
     EXPECT_EQ(kShouldWait, reader->read(&c, 1, kNone, &readSize));
@@ -432,7 +432,7 @@ TEST_F(FetchFormDataConsumerHandleTest, BeginReadAffectsDrainingForComplexFormDa
     src->add(Command(Command::Done));
     const void* buffer = nullptr;
     std::unique_ptr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
     size_t available;
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
     testing::runPendingTasks();

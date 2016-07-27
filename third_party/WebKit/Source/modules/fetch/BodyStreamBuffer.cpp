@@ -102,7 +102,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, std::unique_ptr<Fet
     : UnderlyingSourceBase(scriptState)
     , m_scriptState(scriptState)
     , m_handle(std::move(handle))
-    , m_reader(m_handle->obtainReader(this))
+    , m_reader(m_handle->obtainFetchDataReader(this))
     , m_madeFromReadableStream(false)
 {
     if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {

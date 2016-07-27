@@ -358,8 +358,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, DrainAsBlobDataHandle)
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
 
     size_t size = 0;
-    EXPECT_EQ(blobDataHandle, handle->obtainReader(nullptr)->drainAsBlobDataHandle());
-    EXPECT_FALSE(handle->obtainReader(nullptr)->drainAsFormData());
+    EXPECT_EQ(blobDataHandle, handle->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle());
+    EXPECT_FALSE(handle->obtainFetchDataReader(nullptr)->drainAsFormData());
 
     EXPECT_EQ(kDone, handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size));
 }
@@ -372,7 +372,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, DrainAsFormData)
     std::unique_ptr<FetchDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
 
-    RefPtr<EncodedFormData> formData = handle->obtainReader(nullptr)->drainAsFormData();
+    RefPtr<EncodedFormData> formData = handle->obtainFetchDataReader(nullptr)->drainAsFormData();
     ASSERT_TRUE(formData);
     EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
     ASSERT_EQ(1u, formData->elements().size());
@@ -380,9 +380,9 @@ TEST_F(FetchBlobDataConsumerHandleTest, DrainAsFormData)
     EXPECT_EQ(blobDataHandle->uuid(), formData->elements()[0].m_blobUUID);
     EXPECT_EQ(blobDataHandle, formData->elements()[0].m_optionalBlobDataHandle);
 
-    EXPECT_FALSE(handle->obtainReader(nullptr)->drainAsBlobDataHandle());
+    EXPECT_FALSE(handle->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle());
     size_t size;
-    EXPECT_EQ(kDone, handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size));
+    EXPECT_EQ(kDone, handle->obtainFetchDataReader(nullptr)->read(nullptr, 0, kNone, &size));
 }
 
 TEST_F(FetchBlobDataConsumerHandleTest, ZeroByteReadDoesNotAffectDraining)
@@ -392,7 +392,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, ZeroByteReadDoesNotAffectDraining)
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     std::unique_ptr<FetchDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
 
     size_t readSize;
     EXPECT_EQ(kShouldWait, reader->read(nullptr, 0, kNone, &readSize));
@@ -406,7 +406,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, OneByteReadAffectsDraining)
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     std::unique_ptr<FetchDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
 
     size_t readSize;
     char c;
@@ -421,7 +421,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, BeginReadAffectsDraining)
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     std::unique_ptr<FetchDataConsumerHandle> handle
         = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(nullptr);
 
     const void* buffer;
     size_t available;

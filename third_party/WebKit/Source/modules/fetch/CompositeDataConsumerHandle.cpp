@@ -211,9 +211,9 @@ CompositeDataConsumerHandle::CompositeDataConsumerHandle(std::unique_ptr<WebData
 
 CompositeDataConsumerHandle::~CompositeDataConsumerHandle() { }
 
-WebDataConsumerHandle::Reader* CompositeDataConsumerHandle::obtainReaderInternal(Client* client)
+std::unique_ptr<WebDataConsumerHandle::Reader> CompositeDataConsumerHandle::obtainReader(Client* client)
 {
-    return m_context->obtainReader(client).release();
+    return m_context->obtainReader(client);
 }
 
 } // namespace blink

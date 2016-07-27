@@ -473,13 +473,8 @@ SharedMemoryDataConsumerHandle::~SharedMemoryDataConsumerHandle() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-SharedMemoryDataConsumerHandle::ObtainReader(Client* client) {
-  return base::WrapUnique(obtainReaderInternal(client));
-}
-
-SharedMemoryDataConsumerHandle::ReaderImpl*
-SharedMemoryDataConsumerHandle::obtainReaderInternal(Client* client) {
-  return new ReaderImpl(context_, client);
+SharedMemoryDataConsumerHandle::obtainReader(Client* client) {
+  return base::WrapUnique(new ReaderImpl(context_, client));
 }
 
 const char* SharedMemoryDataConsumerHandle::debugName() const {

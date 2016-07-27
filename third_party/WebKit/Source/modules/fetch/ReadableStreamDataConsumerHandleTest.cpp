@@ -112,7 +112,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     EXPECT_CALL(*client, didGetReadable());
     EXPECT_CALL(checkpoint, Call(2));
 
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -139,7 +139,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
 
     char c;
     size_t readBytes;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -170,7 +170,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
 
     char c;
     size_t readBytes;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -213,7 +213,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
 
     char buffer[3];
     size_t readBytes;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -281,7 +281,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
 
     const void* buffer;
     size_t available;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -352,7 +352,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
 
     const void* buffer;
     size_t available;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -387,7 +387,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
 
     const void* buffer;
     size_t available;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -422,7 +422,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
 
     const void* buffer;
     size_t available;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(client);
+    std::unique_ptr<FetchDataConsumerHandle::Reader> reader = handle->obtainFetchDataReader(client);
     ASSERT_TRUE(reader);
     checkpoint.Call(1);
     testing::runPendingTasks();
@@ -456,7 +456,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
         std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);
 
-        reader = handle->obtainReader(client);
+        reader = handle->obtainFetchDataReader(client);
         ASSERT_TRUE(reader);
     }
 
@@ -498,7 +498,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading
         std::unique_ptr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);
 
-        reader = handle->obtainReader(client);
+        reader = handle->obtainFetchDataReader(client);
         ASSERT_TRUE(reader);
     }
 
@@ -523,4 +523,3 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading
 } // namespace
 
 } // namespace blink
-

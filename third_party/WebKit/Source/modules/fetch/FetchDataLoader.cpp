@@ -37,7 +37,7 @@ private:
 
         m_client = client;
         // Passing |this| here is safe because |this| owns |m_reader|.
-        m_reader = handle->obtainReader(this);
+        m_reader = handle->obtainFetchDataReader(this);
         RefPtr<BlobDataHandle> blobHandle = m_reader->drainAsBlobDataHandle();
         if (blobHandle) {
             ASSERT(blobHandle->size() != UINT64_MAX);
@@ -131,7 +131,7 @@ protected:
         ASSERT(!m_reader);
         m_client = client;
         m_rawData = wrapUnique(new ArrayBufferBuilder());
-        m_reader = handle->obtainReader(this);
+        m_reader = handle->obtainFetchDataReader(this);
     }
 
     void didGetReadable() override
@@ -220,7 +220,7 @@ protected:
         ASSERT(!m_reader);
         m_client = client;
         m_decoder = TextResourceDecoder::createAlwaysUseUTF8ForText();
-        m_reader = handle->obtainReader(this);
+        m_reader = handle->obtainFetchDataReader(this);
     }
 
     void didGetReadable() override
@@ -307,7 +307,7 @@ protected:
         ASSERT(!m_client);
         ASSERT(!m_reader);
         m_client = client;
-        m_reader = handle->obtainReader(this);
+        m_reader = handle->obtainFetchDataReader(this);
     }
 
     void didGetReadable() override

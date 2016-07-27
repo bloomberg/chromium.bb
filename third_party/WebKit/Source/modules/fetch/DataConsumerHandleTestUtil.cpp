@@ -221,9 +221,9 @@ DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle()
     m_context->detachHandle();
 }
 
-WebDataConsumerHandle::Reader* DataConsumerHandleTestUtil::ReplayingHandle::obtainReaderInternal(Client* client)
+std::unique_ptr<WebDataConsumerHandle::Reader> DataConsumerHandleTestUtil::ReplayingHandle::obtainReader(Client* client)
 {
-    return new ReaderImpl(m_context, client);
+    return WTF::wrapUnique(new ReaderImpl(m_context, client));
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::add(const Command& command)

@@ -89,9 +89,9 @@ private:
         WeakPtrFactory<EmptyDataReader> m_factory;
     };
 
-    Reader* obtainReaderInternal(Client* client) override
+    std::unique_ptr<Reader> obtainReader(Client* client) override
     {
-        return new EmptyDataReader(client);
+        return WTF::wrapUnique(new EmptyDataReader(client));
     }
     const char* debugName() const override { return "EmptyDataHandle"; }
 };

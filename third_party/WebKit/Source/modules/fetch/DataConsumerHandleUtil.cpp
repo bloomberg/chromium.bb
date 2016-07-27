@@ -34,7 +34,7 @@ private:
             return UnexpectedError;
         }
     };
-    Reader* obtainReaderInternal(Client*) override { return new ReaderImpl; }
+    std::unique_ptr<Reader> obtainReader(Client*) override { return WTF::wrapUnique(new ReaderImpl); }
 
     const char* debugName() const override { return "WaitingHandle"; }
 };
@@ -61,13 +61,13 @@ private:
 
 class DoneHandle final : public WebDataConsumerHandle {
 private:
-    Reader* obtainReaderInternal(Client* client) override { return new RepeatingReader(Done, client); }
+    std::unique_ptr<Reader> obtainReader(Client* client) override { return WTF::wrapUnique(new RepeatingReader(Done, client)); }
     const char* debugName() const override { return "DoneHandle"; }
 };
 
 class UnexpectedErrorHandle final : public WebDataConsumerHandle {
 private:
-    Reader* obtainReaderInternal(Client* client) override { return new RepeatingReader(UnexpectedError, client); }
+    std::unique_ptr<Reader> obtainReader(Client* client) override { return WTF::wrapUnique(new RepeatingReader(UnexpectedError, client)); }
     const char* debugName() const override { return "UnexpectedErrorHandle"; }
 };
 
@@ -95,7 +95,10 @@ private:
         std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
     };
 
-    Reader* obtainReaderInternal(Client* client) override { return new ReaderImpl(m_handle->obtainReader(client)); }
+    std::unique_ptr<Reader> obtainFetchDataReader(Client* client) override
+    {
+        return WTF::wrapUnique(new ReaderImpl(m_handle->obtainReader(client)));
+    }
 
     const char* debugName() const override { return m_handle->debugName(); }
 

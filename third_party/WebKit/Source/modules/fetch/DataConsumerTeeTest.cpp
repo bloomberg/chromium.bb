@@ -24,6 +24,7 @@
 namespace blink {
 namespace {
 
+using ::testing::ByMove;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -330,18 +331,17 @@ TEST(FetchDataConsumerTeeTest, Create)
 {
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
     std::unique_ptr<MockFetchDataConsumerHandle> src(MockFetchDataConsumerHandle::create());
-    std::unique_ptr<MockFetchDataConsumerReader> reader(MockFetchDataConsumerReader::create());
+
+    // |reader| will be adopted by |obtainFetchDataReader|.
+    MockFetchDataConsumerReader* reader = MockFetchDataConsumerReader::create().release();
 
     Checkpoint checkpoint;
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*src, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*src, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kAllowBlobWithInvalidSize)).WillOnce(Return(blobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(2));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     std::unique_ptr<FetchDataConsumerHandle> dest1, dest2;
     std::unique_ptr<TeeCreationThread<FetchDataConsumerHandle>> t = wrapUnique(new TeeCreationThread<FetchDataConsumerHandle>());
@@ -352,26 +352,25 @@ TEST(FetchDataConsumerTeeTest, Create)
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
-    EXPECT_EQ(blobDataHandle, dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_EQ(blobDataHandle, dest1->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_EQ(blobDataHandle, dest2->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
 }
 
 TEST(FetchDataConsumerTeeTest, CreateFromBlobWithInvalidSize)
 {
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(BlobData::create(), -1);
     std::unique_ptr<MockFetchDataConsumerHandle> src(MockFetchDataConsumerHandle::create());
-    std::unique_ptr<MockFetchDataConsumerReader> reader(MockFetchDataConsumerReader::create());
+
+    // |reader| is adopted by |obtainFetchDataReader|.
+    MockFetchDataConsumerReader* reader = MockFetchDataConsumerReader::create().release();
 
     Checkpoint checkpoint;
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*src, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
+    EXPECT_CALL(*src, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kAllowBlobWithInvalidSize)).WillOnce(Return(blobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(2));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.release());
 
     std::unique_ptr<FetchDataConsumerHandle> dest1, dest2;
     std::unique_ptr<TeeCreationThread<FetchDataConsumerHandle>> t = wrapUnique(new TeeCreationThread<FetchDataConsumerHandle>());
@@ -382,10 +381,10 @@ TEST(FetchDataConsumerTeeTest, CreateFromBlobWithInvalidSize)
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
-    EXPECT_FALSE(dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_FALSE(dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_FALSE(dest1->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
+    EXPECT_EQ(blobDataHandle, dest1->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_FALSE(dest2->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
+    EXPECT_EQ(blobDataHandle, dest2->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
 }
 
 TEST(FetchDataConsumerTeeTest, CreateDone)
@@ -401,8 +400,8 @@ TEST(FetchDataConsumerTeeTest, CreateDone)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    EXPECT_FALSE(dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_FALSE(dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_FALSE(dest1->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
+    EXPECT_FALSE(dest2->obtainFetchDataReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
 
     HandleReaderRunner<HandleReader> r1(std::move(dest1)), r2(std::move(dest2));
 

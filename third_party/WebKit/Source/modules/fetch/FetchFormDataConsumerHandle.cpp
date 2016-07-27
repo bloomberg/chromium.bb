@@ -237,7 +237,7 @@ private:
             return formData.release();
         }
     private:
-        ReaderImpl(PassRefPtr<ComplexContext> context, Client* client) : m_context(context), m_reader(m_context->m_handle->obtainReader(client)) {}
+        ReaderImpl(PassRefPtr<ComplexContext> context, Client* client) : m_context(context), m_reader(m_context->m_handle->obtainFetchDataReader(client)) {}
 
         RefPtr<ComplexContext> m_context;
         std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
@@ -330,9 +330,9 @@ FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(ExecutionContext* execu
 }
 FetchFormDataConsumerHandle::~FetchFormDataConsumerHandle() {}
 
-FetchDataConsumerHandle::Reader* FetchFormDataConsumerHandle::obtainReaderInternal(Client* client)
+std::unique_ptr<FetchDataConsumerHandle::Reader> FetchFormDataConsumerHandle::obtainFetchDataReader(Client* client)
 {
-    return m_context->obtainReader(client).release();
+    return m_context->obtainReader(client);
 }
 
 } // namespace blink

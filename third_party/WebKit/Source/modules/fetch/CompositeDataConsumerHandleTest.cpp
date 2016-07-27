@@ -21,6 +21,7 @@ namespace blink {
 
 namespace {
 
+using ::testing::ByMove;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -45,7 +46,7 @@ class MockHandle : public WebDataConsumerHandle {
 public:
     static std::unique_ptr<StrictMock<MockHandle>> create() { return wrapUnique(new StrictMock<MockHandle>); }
 
-    MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
+    MOCK_METHOD1(obtainReader, std::unique_ptr<Reader>(Client*));
 
 private:
     const char* debugName() const override { return "MockHandle in CompositeDataConsumerHandleTest"; }
@@ -279,23 +280,21 @@ TEST(CompositeDataConsumerHandleTest, Read)
 
     std::unique_ptr<MockHandle> handle1 = MockHandle::create();
     std::unique_ptr<MockHandle> handle2 = MockHandle::create();
-    std::unique_ptr<MockReader> reader1 = MockReader::create();
-    std::unique_ptr<MockReader> reader2 = MockReader::create();
+
+    // They will be adopted by |obtainReader|.
+    MockReader* reader1 = MockReader::create().release();
+    MockReader* reader2 = MockReader::create().release();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(0));
-    EXPECT_CALL(*handle1, obtainReaderInternal(&client)).WillOnce(Return(reader1.get()));
+    EXPECT_CALL(*handle1, obtainReader(&client)).WillOnce(Return(ByMove(WTF::wrapUnique(reader1))));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*reader1, read(buffer, sizeof(buffer), kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*handle2, obtainReaderInternal(&client)).WillOnce(Return(reader2.get()));
+    EXPECT_CALL(*handle2, obtainReader(&client)).WillOnce(Return(ByMove(WTF::wrapUnique(reader2))));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(*reader2, read(buffer, sizeof(buffer), kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(4));
-
-    // They are adopted by |obtainReader|.
-    ASSERT_TRUE(reader1.release());
-    ASSERT_TRUE(reader2.release());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
     std::unique_ptr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);
@@ -318,27 +317,25 @@ TEST(CompositeDataConsumerHandleTest, TwoPhaseRead)
 
     std::unique_ptr<MockHandle> handle1 = MockHandle::create();
     std::unique_ptr<MockHandle> handle2 = MockHandle::create();
-    std::unique_ptr<MockReader> reader1 = MockReader::create();
-    std::unique_ptr<MockReader> reader2 = MockReader::create();
+
+    // They are adopted by |obtainReader|.
+    MockReader* reader1 = MockReader::create().release();
+    MockReader* reader2 = MockReader::create().release();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(0));
-    EXPECT_CALL(*handle1, obtainReaderInternal(nullptr)).WillOnce(Return(reader1.get()));
+    EXPECT_CALL(*handle1, obtainReader(nullptr)).WillOnce(Return(ByMove(WTF::wrapUnique(reader1))));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*reader1, beginRead(&p, kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader1, endRead(0)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(3));
-    EXPECT_CALL(*handle2, obtainReaderInternal(nullptr)).WillOnce(Return(reader2.get()));
+    EXPECT_CALL(*handle2, obtainReader(nullptr)).WillOnce(Return(ByMove(WTF::wrapUnique(reader2))));
     EXPECT_CALL(checkpoint, Call(4));
     EXPECT_CALL(*reader2, beginRead(&p, kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(5));
     EXPECT_CALL(*reader2, endRead(0)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(6));
-
-    // They are adopted by |obtainReader|.
-    ASSERT_TRUE(reader1.release());
-    ASSERT_TRUE(reader2.release());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
     std::unique_ptr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);
@@ -366,33 +363,30 @@ TEST(CompositeDataConsumerHandleTest, HangingTwoPhaseRead)
     std::unique_ptr<MockHandle> handle1 = MockHandle::create();
     std::unique_ptr<MockHandle> handle2 = MockHandle::create();
     std::unique_ptr<MockHandle> handle3 = MockHandle::create();
-    std::unique_ptr<MockReader> reader1 = MockReader::create();
-    std::unique_ptr<MockReader> reader2 = MockReader::create();
-    std::unique_ptr<MockReader> reader3 = MockReader::create();
+
+    // They are adopted by |obtainReader|.
+    MockReader* reader1 = MockReader::create().release();
+    MockReader* reader2 = MockReader::create().release();
+    MockReader* reader3 = MockReader::create().release();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(0));
-    EXPECT_CALL(*handle1, obtainReaderInternal(nullptr)).WillOnce(Return(reader1.get()));
+    EXPECT_CALL(*handle1, obtainReader(nullptr)).WillOnce(Return(ByMove(WTF::wrapUnique(reader1))));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*reader1, beginRead(&p, kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(*reader1, endRead(0)).WillOnce(Return(kOk));
-    EXPECT_CALL(*handle2, obtainReaderInternal(nullptr)).WillOnce(Return(reader2.get()));
+    EXPECT_CALL(*handle2, obtainReader(nullptr)).WillOnce(Return(ByMove(WTF::wrapUnique(reader2))));
     EXPECT_CALL(checkpoint, Call(4));
     EXPECT_CALL(*reader2, beginRead(&p, kNone, &size)).WillOnce(Return(kShouldWait));
     EXPECT_CALL(checkpoint, Call(5));
-    EXPECT_CALL(*handle3, obtainReaderInternal(nullptr)).WillOnce(Return(reader3.get()));
+    EXPECT_CALL(*handle3, obtainReader(nullptr)).WillOnce(Return(ByMove(WTF::wrapUnique(reader3))));
     EXPECT_CALL(checkpoint, Call(6));
     EXPECT_CALL(*reader3, beginRead(&p, kNone, &size)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(7));
     EXPECT_CALL(*reader3, endRead(0)).WillOnce(Return(kOk));
     EXPECT_CALL(checkpoint, Call(8));
-
-    // They are adopted by |obtainReader|.
-    ASSERT_TRUE(reader1.release());
-    ASSERT_TRUE(reader2.release());
-    ASSERT_TRUE(reader3.release());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
     std::unique_ptr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);

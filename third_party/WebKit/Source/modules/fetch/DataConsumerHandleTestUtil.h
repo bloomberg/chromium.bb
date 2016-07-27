@@ -207,7 +207,7 @@ public:
         private:
             DataConsumerHandle(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context) { }
 
-            Reader* obtainReaderInternal(Client*) { return new ReaderImpl(m_name, m_context); }
+            std::unique_ptr<Reader> obtainReader(Client*) { return WTF::wrapUnique(new ReaderImpl(m_name, m_context)); }
             const char* debugName() const override { return "ThreadingTestBase::DataConsumerHandle"; }
 
             const String m_name;
@@ -307,7 +307,7 @@ public:
     class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
     public:
         static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerHandle>> create() { return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerHandle>); }
-        MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
+        MOCK_METHOD1(obtainFetchDataReader, std::unique_ptr<Reader>(Client*));
 
     private:
         const char* debugName() const override { return "MockFetchDataConsumerHandle"; }
@@ -428,12 +428,12 @@ public:
         };
 
         Context* getContext() { return m_context.get(); }
+        std::unique_ptr<Reader> obtainReader(Client*) override;
 
     private:
         class ReaderImpl;
 
         ReplayingHandle();
-        Reader* obtainReaderInternal(Client*) override;
         const char* debugName() const override { return "ReplayingHandle"; }
 
         RefPtr<Context> m_context;
