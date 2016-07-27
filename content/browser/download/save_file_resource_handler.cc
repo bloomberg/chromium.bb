@@ -16,13 +16,15 @@
 
 namespace content {
 
-SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
-                                                 SaveItemId save_item_id,
-                                                 SavePackageId save_package_id,
-                                                 int render_process_host_id,
-                                                 int render_frame_routing_id,
-                                                 const GURL& url,
-                                                 SaveFileManager* manager)
+SaveFileResourceHandler::SaveFileResourceHandler(
+    net::URLRequest* request,
+    SaveItemId save_item_id,
+    SavePackageId save_package_id,
+    int render_process_host_id,
+    int render_frame_routing_id,
+    const GURL& url,
+    SaveFileManager* manager,
+    AuthorizationState authorization_state)
     : ResourceHandler(request),
       save_item_id_(save_item_id),
       save_package_id_(save_package_id),
@@ -30,7 +32,8 @@ SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
       render_frame_routing_id_(render_frame_routing_id),
       url_(url),
       content_length_(0),
-      save_manager_(manager) {}
+      save_manager_(manager),
+      authorization_state_(authorization_state) {}
 
 SaveFileResourceHandler::~SaveFileResourceHandler() {
 }
@@ -57,12 +60,13 @@ bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
 }
 
 bool SaveFileResourceHandler::OnWillStart(const GURL& url, bool* defer) {
-  return true;
+  return authorization_state_ == AuthorizationState::AUTHORIZED;
 }
 
 bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
+  DCHECK_EQ(AuthorizationState::AUTHORIZED, authorization_state_);
   DCHECK(buf && buf_size);
   if (!read_buffer_.get()) {
     *buf_size = min_size < 0 ? kReadBufSize : min_size;
@@ -73,6 +77,7 @@ bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 }
 
 bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
+  DCHECK_EQ(AuthorizationState::AUTHORIZED, authorization_state_);
   DCHECK(read_buffer_.get());
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;
@@ -88,6 +93,9 @@ void SaveFileResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
+  if (authorization_state_ != AuthorizationState::AUTHORIZED)
+    DCHECK(!status.is_success());
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::SaveFinished, save_manager_, save_item_id_,

@@ -39,9 +39,6 @@ struct SaveFileCreateInfo {
     // This type indicates the save item needs to be retrieved from serializing
     // DOM.
     SAVE_FILE_FROM_DOM,
-    // This type indicates the save item needs to be retrieved from local file
-    // system.
-    SAVE_FILE_FROM_FILE
   };
 
   // Constructor for SAVE_FILE_FROM_DOM and/or SAVE_FILE_FROM_FILE.

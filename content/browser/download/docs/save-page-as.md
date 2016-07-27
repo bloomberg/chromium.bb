@@ -16,10 +16,9 @@ are described by their code comments or by their code structure).
     * UI-thread object
 
 * SaveFileCreateInfo::SaveFileSource enum
-    * classifies `SaveItem` and `SaveFile` processing into 3 flavours:
+    * classifies `SaveItem` and `SaveFile` processing into 2 flavours:
         * `SAVE_FILE_FROM_NET` (see `SaveFileResourceHandler`)
         * `SAVE_FILE_FROM_DOM` (see "Complete HTML" section below)
-        * `SAVE_FILE_FROM_FILE` (see `SaveFileManager::SaveLocalFile`)
 
 * SaveItem class
     * tracks saving a single file
@@ -68,8 +67,8 @@ Very high-level flow of saving a page as "Complete HTML":
 * Step 1: `SavePackage` asks all frames for "savable resources"
           and creates `SaveItem` for each of files that need to be saved
 
-* Step 2: `SavePackage` first processes `SAVE_FILE_FROM_NET` and
-          `SAVE_FILE_FROM_FILE` `SaveItem`s and asks `SaveFileManager` to save
+* Step 2: `SavePackage` first processes `SAVE_FILE_FROM_NET`
+          `SaveItem`s and asks `SaveFileManager` to save
           them.
 
 * Step 3: `SavePackage` handles remaining `SAVE_FILE_FROM_DOM` `SaveItem`s and
@@ -109,8 +108,8 @@ changed using `--save-page-as-mhtml` command line switch.
 
 Very high-level flow of saving a page as "HTML Only":
 
-* `SavePackage` creates only a single `SaveItem` (either `SAVE_FILE_FROM_NET` or
-  `SAVE_FILE_FROM_FILE`) and asks `SaveFileManager` to process it
+* `SavePackage` creates only a single `SaveItem` (always `SAVE_FILE_FROM_NET`)
+  and asks `SaveFileManager` to process it
   (as in the Complete HTML individual SaveItem handling above.).
 
 

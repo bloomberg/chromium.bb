@@ -25,13 +25,26 @@ class SaveFileManager;
 // Forwards data to the save thread.
 class SaveFileResourceHandler : public ResourceHandler {
  public:
+  // Unauthorized requests are cancelled from OnWillStart callback.
+  //
+  // This way of handling unauthorized requests allows unified handling of all
+  // SaveFile requests - communicating the failure to OnResponseCompleted
+  // happens in a generic, typical way, reusing common infrastructure code
+  // (rather than forcing an ad-hoc, Save-File-specific call to
+  // OnResponseCompleted from ResourceDispatcherHostImpl::BeginSaveFile).
+  enum class AuthorizationState {
+    AUTHORIZED,
+    NOT_AUTHORIZED,
+  };
+
   SaveFileResourceHandler(net::URLRequest* request,
                           SaveItemId save_item_id,
                           SavePackageId save_package_id,
                           int render_process_host_id,
                           int render_frame_routing_id,
                           const GURL& url,
-                          SaveFileManager* manager);
+                          SaveFileManager* manager,
+                          AuthorizationState authorization_state);
   ~SaveFileResourceHandler() override;
 
   // ResourceHandler Implementation:
@@ -84,6 +97,8 @@ class SaveFileResourceHandler : public ResourceHandler {
   GURL final_url_;
   int64_t content_length_;
   SaveFileManager* save_manager_;
+
+  AuthorizationState authorization_state_;
 
   static const int kReadBufSize = 32768;  // bytes
 

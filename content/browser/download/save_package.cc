@@ -301,13 +301,11 @@ void SavePackage::InitWithDownloadItem(
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);
     wait_state_ = NET_FILES;
-    SaveFileCreateInfo::SaveFileSource save_source = page_url_.SchemeIsFile() ?
-        SaveFileCreateInfo::SAVE_FILE_FROM_FILE :
-        SaveFileCreateInfo::SAVE_FILE_FROM_NET;
     // Add this item to waiting list.
-    waiting_item_queue_.push_back(
-        new SaveItem(page_url_, Referrer(), this, save_source,
-                     FrameTreeNode::kFrameTreeNodeInvalidId));
+    waiting_item_queue_.push_back(new SaveItem(
+        page_url_, Referrer(), this, SaveFileCreateInfo::SAVE_FILE_FROM_NET,
+        FrameTreeNode::kFrameTreeNodeInvalidId,
+        web_contents()->GetMainFrame()->GetFrameTreeNodeId()));
     all_save_items_count_ = 1;
     download_->SetTotalBytes(1);
 
@@ -544,16 +542,6 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   } else {
     // It is the main HTML file, use the name chosen by the user.
     save_item->SetTargetPath(saved_main_file_path_);
-  }
-
-  // If the save source is from file system, inform SaveFileManager to copy
-  // corresponding file to the file path which this SaveItem specifies.
-  if (info->save_source == SaveFileCreateInfo::SAVE_FILE_FROM_FILE) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveFileManager::SaveLocalFile, file_manager_,
-                   save_item->url(), save_item->id(), id()));
-    return;
   }
 
   // Check whether we begin to require serialized HTML data.
@@ -798,11 +786,30 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     DCHECK(!ContainsKey(in_progress_items_, save_item->id()));
     in_progress_items_[save_item->id()] = save_item;
     save_item->Start();
+
+    // Find the frame responsible for making the network request below - it will
+    // be used in security checks made later by ResourceDispatcherHostImpl.
+    int requester_frame_tree_node_id =
+        save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET
+            ? save_item->container_frame_tree_node_id()
+            : save_item->frame_tree_node_id();
+    DCHECK_NE(FrameTreeNode::kFrameTreeNodeInvalidId,
+              requester_frame_tree_node_id);
+    FrameTreeNode* requester_frame_tree_node =
+        FrameTreeNode::GloballyFindByID(requester_frame_tree_node_id);
+    if (!requester_frame_tree_node) {
+      save_item->Finish(0, /* is_success = */ false);
+      continue;
+    }
+    RenderFrameHostImpl* requester_frame =
+        requester_frame_tree_node->current_frame_host();
+
     file_manager_->SaveURL(
         save_item->id(), save_item->url(), save_item->referrer(),
-        web_contents()->GetRenderProcessHost()->GetID(), routing_id(),
-        web_contents()->GetMainFrame()->GetRoutingID(),
-        save_item->save_source(), save_item->full_path(),
+        requester_frame->GetProcess()->GetID(),
+        requester_frame->render_view_host()->GetRoutingID(),
+        requester_frame->routing_id(), save_item->save_source(),
+        save_item->full_path(),
         web_contents()->GetBrowserContext()->GetResourceContext(), this);
   } while (process_all_remaining_items && !waiting_item_queue_.empty());
 }
@@ -1125,8 +1132,9 @@ SaveItem* SavePackage::CreatePendingSaveItem(
     SaveFileCreateInfo::SaveFileSource save_source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Referrer sanitized_referrer = Referrer::SanitizeForRequest(url, referrer);
-  SaveItem* save_item = new SaveItem(url, sanitized_referrer, this, save_source,
-                                     save_item_frame_tree_node_id);
+  SaveItem* save_item =
+      new SaveItem(url, sanitized_referrer, this, save_source,
+                   save_item_frame_tree_node_id, container_frame_tree_node_id);
   waiting_item_queue_.push_back(save_item);
 
   frame_tree_node_id_to_contained_save_items_[container_frame_tree_node_id]
@@ -1169,12 +1177,9 @@ void SavePackage::EnqueueSavableResource(int container_frame_tree_node_id,
   if (!url.is_valid())
     return;
 
-  SaveFileCreateInfo::SaveFileSource save_source =
-      url.SchemeIsFile() ? SaveFileCreateInfo::SAVE_FILE_FROM_FILE
-                         : SaveFileCreateInfo::SAVE_FILE_FROM_NET;
   CreatePendingSaveItemDeduplicatingByUrl(
       container_frame_tree_node_id, FrameTreeNode::kFrameTreeNodeInvalidId, url,
-      referrer, save_source);
+      referrer, SaveFileCreateInfo::SAVE_FILE_FROM_NET);
 }
 
 void SavePackage::EnqueueFrame(int container_frame_tree_node_id,

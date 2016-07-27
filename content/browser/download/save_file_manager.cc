@@ -19,7 +19,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"
 
@@ -320,41 +319,6 @@ void SaveFileManager::CancelSave(SaveItemId save_item_id) {
     save_file_map_.erase(it);
     delete save_file;
   }
-}
-
-// It is possible that SaveItem which has specified save_item_id has been
-// canceled
-// before this function runs. So if we can not find corresponding SaveFile by
-// using specified save_item_id, just return.
-void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
-                                    SaveItemId save_item_id,
-                                    SavePackageId save_package_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SaveFile* save_file = LookupSaveFile(save_item_id);
-  if (!save_file)
-    return;
-  // If it has finished, just return.
-  if (!save_file->InProgress())
-    return;
-
-  // Close the save file before the copy operation.
-  save_file->Finish();
-  save_file->Detach();
-
-  DCHECK(original_file_url.SchemeIsFile());
-  base::FilePath file_path;
-  net::FileURLToFilePath(original_file_url, &file_path);
-  // If we can not get valid file path from original URL, treat it as
-  // disk error.
-  if (file_path.empty())
-    SaveFinished(save_item_id, save_package_id, false);
-
-  // Copy the local file to the temporary file. It will be renamed to its
-  // final name later.
-  bool success = base::CopyFile(file_path, save_file->FullPath());
-  if (!success)
-    base::DeleteFile(save_file->FullPath(), false);
-  SaveFinished(save_item_id, save_package_id, success);
 }
 
 void SaveFileManager::OnDeleteDirectoryOrFile(const base::FilePath& full_path,
