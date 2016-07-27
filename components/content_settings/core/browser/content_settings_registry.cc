@@ -123,7 +123,7 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_SESSION_ONLY),
-           WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
@@ -132,7 +132,7 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
@@ -141,7 +141,7 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
@@ -153,7 +153,7 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK,
                          CONTENT_SETTING_DETECT_IMPORTANT_CONTENT),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
@@ -162,7 +162,7 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme,
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
@@ -202,7 +202,7 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
@@ -241,7 +241,7 @@ void ContentSettingsRegistry::Init() {
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
@@ -316,14 +316,14 @@ void ContentSettingsRegistry::Init() {
   Register(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "protocol-handler",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(), ValidSettings(),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(), ValidSettings(),
-           WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 

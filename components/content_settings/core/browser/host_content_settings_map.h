@@ -278,6 +278,19 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Passes ownership of |clock|.
   void SetPrefClockForTesting(std::unique_ptr<base::Clock> clock);
 
+  // Migrate old domain scoped ALLOW settings to be origin scoped for
+  // ContentSettingsTypes which are domain scoped. Only narrow down ALLOW
+  // domain settings to origins so that this will not cause privacy/security
+  // issues.
+  //
+  // |after_sync| will be false when called upon construction of this object and
+  // true when called by the sync layer after sync is completed.
+  // TODO(lshang): https://crbug.com/621398 Remove this when clients have
+  // migrated (~M56).
+  void MigrateDomainScopedSettings(bool after_sync);
+
+  base::WeakPtr<HostContentSettingsMap> GetWeakPtr();
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
@@ -315,17 +328,6 @@ class HostContentSettingsMap : public content_settings::Observer,
   // TODO(lshang): Remove this when clients have migrated (~M53). We should
   // leave in some code to remove old-format settings for a long time.
   void MigrateKeygenSettings();
-
-  // Migrate old domain scoped ALLOW settings to be origin scoped for
-  // ContentSettingsTypes which are domain scoped. Only narrow down ALLOW
-  // domain settings to origins so that this will not cause privacy/security
-  // issues.
-  //
-  // |after_sync| will be false when called upon construction of this object and
-  // true when called by the sync layer after sync is completed.
-  // TODO(lshang): https://crbug.com/621398 Remove this when clients have
-  // migrated (~M56).
-  void MigrateDomainScopedSettings(bool after_sync);
 
   // Collect UMA data about the number of exceptions.
   void RecordNumberOfExceptions();
@@ -402,6 +404,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   base::ThreadChecker thread_checker_;
 
   base::ObserverList<content_settings::Observer> observers_;
+
+  base::WeakPtrFactory<HostContentSettingsMap> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

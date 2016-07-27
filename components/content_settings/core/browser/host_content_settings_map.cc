@@ -135,11 +135,7 @@ content_settings::PatternPair GetPatternsFromScopingType(
   content_settings::PatternPair patterns;
 
   switch (scoping_type) {
-    case WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE:
-    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
-      patterns.first = ContentSettingsPattern::FromURL(primary_url);
-      patterns.second = ContentSettingsPattern::Wildcard();
-      break;
+    case WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE:
     case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
       patterns.second = ContentSettingsPattern::Wildcard();
@@ -164,7 +160,8 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
-      is_off_the_record_(is_incognito_profile || is_guest_profile) {
+      is_off_the_record_(is_incognito_profile || is_guest_profile),
+      weak_ptr_factory_(this) {
   DCHECK(!(is_incognito_profile && is_guest_profile));
 
   content_settings::PolicyProvider* policy_provider =
@@ -189,7 +186,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
 
   MigrateKeygenSettings();
-
+  MigrateDomainScopedSettings(false);
   RecordNumberOfExceptions();
 }
 
@@ -598,6 +595,10 @@ void HostContentSettingsMap::MigrateDomainScopedSettings(bool after_sync) {
     prefs_->SetInteger(prefs::kDomainToOriginMigrationStatus,
                        MIGRATED_AFTER_SYNC);
   }
+}
+
+base::WeakPtr<HostContentSettingsMap> HostContentSettingsMap::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void HostContentSettingsMap::RecordNumberOfExceptions() {

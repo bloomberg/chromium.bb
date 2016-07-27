@@ -116,7 +116,7 @@ void WebsiteSettingsRegistry::Init() {
   Register(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
            "auto-select-certificate", nullptr, WebsiteSettingsInfo::UNSYNCABLE,
            WebsiteSettingsInfo::NOT_LOSSY,
-           WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE, ALL_PLATFORMS,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE, ALL_PLATFORMS,
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   Register(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
            "ssl-cert-decisions", nullptr, WebsiteSettingsInfo::UNSYNCABLE,
@@ -126,7 +126,7 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   Register(CONTENT_SETTINGS_TYPE_APP_BANNER, "app-banner", nullptr,
            WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
-           WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   Register(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, "site-engagement", nullptr,
