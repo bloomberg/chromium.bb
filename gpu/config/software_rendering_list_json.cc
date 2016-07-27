@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.7",
+  "version": "11.9",
   "entries": [
     {
       "id": 1,
@@ -1232,6 +1232,21 @@ LONG_STRING_CONST(
       },
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 120,
+      "description": "VPx decoding isn't supported before Windows 10 anniversary update.",
+      "cr_bugs": [616318],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "10.0.14393"
+        }
+      },
+      "features": [
+        "accelerated_vpx_decode"
       ]
     }
   ]
