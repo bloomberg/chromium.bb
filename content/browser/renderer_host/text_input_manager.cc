@@ -21,6 +21,9 @@ bool AreDifferentTextInputStates(const content::TextInputState& old_state,
   return old_state.type != new_state.type || old_state.mode != new_state.mode ||
          old_state.flags != new_state.flags ||
          old_state.can_compose_inline != new_state.can_compose_inline;
+#elif defined(OS_MACOSX)
+  return old_state.type != new_state.type ||
+         old_state.can_compose_inline != new_state.can_compose_inline;
 #else
   // TODO(ekaramad): Implement the logic for other platforms (crbug.com/578168).
   NOTREACHED();

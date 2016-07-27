@@ -482,10 +482,10 @@ if (!is_android) {
           "../../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
         ]
       }
-      if (use_aura) {
-        # TODO(ekaramad): These tests are activated for aura only. They should
-        # be moved to 'interactive_ui_tests' sources for all platforms once bug
-        # 578168 is fixed.
+      if (use_aura || is_mac) {
+        # TODO(ekaramad): These tests are activated for aura and mac only. They
+        # should be moved to 'interactive_ui_tests' sources for all platforms
+        # once https://crbug.com/578168 is fixed.
         sources += [ "//chrome/browser/renderer_host/site_per_process_text_input_browsertest.cc" ]
         deps += [ "//ui/touch_selection" ]
       }

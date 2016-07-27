@@ -483,8 +483,6 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                                                  bool is_guest_view_hack)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
-      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      can_compose_inline_(true),
       page_at_minimum_scale_(true),
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
@@ -529,6 +527,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     // first to rebaseline some unreliable layout tests.
     ignore_result(rvh->GetWebkitPreferences());
   }
+
+  if (GetTextInputManager())
+    GetTextInputManager()->AddObserver(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -565,6 +566,12 @@ void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
 
 cc::SurfaceId RenderWidgetHostViewMac::SurfaceIdForTesting() const {
   return browser_compositor_->GetDelegatedFrameHost()->SurfaceIdForTesting();
+}
+
+ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
+  if (!GetTextInputManager() || !GetTextInputManager()->GetActiveWidget())
+    return ui::TEXT_INPUT_TYPE_NONE;
+  return GetTextInputManager()->GetTextInputState()->type;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,23 +890,27 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   // like Chrome does on Windows, call |UpdateCursor()| here.
 }
 
-void RenderWidgetHostViewMac::TextInputStateChanged(
-    const TextInputState& params) {
-  if (text_input_type_ != params.type
-      || can_compose_inline_ != params.can_compose_inline) {
-    text_input_type_ = params.type;
-    can_compose_inline_ = params.can_compose_inline;
-    if (HasFocus()) {
-      SetTextInputActive(true);
+void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view,
+    bool did_update_state) {
+  if (!did_update_state)
+    return;
 
-      // Let AppKit cache the new input context to make IMEs happy.
-      // See http://crbug.com/73039.
-      [NSApp updateWindows];
+  if (HasFocus()) {
+    SetTextInputActive(true);
+
+    // Let AppKit cache the new input context to make IMEs happy.
+    // See http://crbug.com/73039.
+    [NSApp updateWindows];
 
 #ifndef __LP64__
-      UseInputWindow(TSMGetActiveDocument(), !can_compose_inline_);
+    bool can_compose_inline =
+        !!GetTextInputManager()->GetActiveWidget()
+            ? GetTextInputManager()->GetTextInputState()->can_compose_inline
+            : true;
+    UseInputWindow(TSMGetActiveDocument(), !can_compose_inline);
 #endif
-    }
   }
 }
 
@@ -955,6 +966,9 @@ void RenderWidgetHostViewMac::Destroy() {
   // Make sure none of our observers send events for us to process after
   // we release render_widget_host_.
   NotifyObserversAboutShutdown();
+
+  if (text_input_manager_)
+    text_input_manager_->RemoveObserver(this);
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -1547,12 +1561,12 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
-    if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)
       EnablePasswordInput();
     else
       DisablePasswordInput();
   } else {
-    if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)
       DisablePasswordInput();
   }
 }
@@ -2895,7 +2909,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext *)inputContext {
-  switch(renderWidgetHostView_->text_input_type_) {
+  switch (renderWidgetHostView_->GetTextInputType()) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
@@ -3174,7 +3188,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
   BOOL hasText = !renderWidgetHostView_->selected_text().empty();
   BOOL takesText =
-      renderWidgetHostView_->text_input_type_ != ui::TEXT_INPUT_TYPE_NONE;
+      renderWidgetHostView_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
 
   if (sendTypeIsString && hasText && !returnType) {
     requestor = self;

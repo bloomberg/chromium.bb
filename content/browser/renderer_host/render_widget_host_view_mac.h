@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
@@ -225,6 +226,7 @@ namespace content {
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
       public BrowserCompositorMacClient,
+      public TextInputManager::Observer,
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender,
       public display::DisplayObserver {
@@ -282,7 +284,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputStateChanged(const TextInputState& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -348,6 +349,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                        const cc::SurfaceId& original_surface,
                                        gfx::Point* transformed_point) override;
 
+  // TextInputManager::Observer implementation.
+  void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,
+                                    RenderWidgetHostViewBase* updated_view,
+                                    bool did_update_state) override;
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 
@@ -405,10 +410,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // someone (other than superview) has retained |cocoa_view_|.
   RenderWidgetHostImpl* render_widget_host_;
 
-  // Current text input type.
-  ui::TextInputType text_input_type_;
-  bool can_compose_inline_;
-
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;
 
@@ -465,6 +466,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Exposed for testing.
   cc::SurfaceId SurfaceIdForTesting() const override;
+
+  // Helper method to obtain ui::TextInputType for the active widget from the
+  // TextInputManager.
+  ui::TextInputType GetTextInputType();
 
  private:
   friend class RenderWidgetHostViewMacTest;
