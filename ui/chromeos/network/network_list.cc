@@ -252,7 +252,7 @@ bool NetworkListView::UpdateNetworkChildren(
     bool highlighted) {
   bool needs_relayout = false;
   int index = *child_index;
-  for (auto& info : network_list_) {
+  for (auto* info : network_list_) {
     if (info->highlight != highlighted)
       continue;
     needs_relayout |= UpdateNetworkChild(index++, info);

@@ -155,7 +155,7 @@ std::vector<DisplayState>
 DisplayConfigurator::DisplayLayoutManagerImpl::ParseDisplays(
     const std::vector<DisplaySnapshot*>& snapshots) const {
   std::vector<DisplayState> cached_displays;
-  for (auto snapshot : snapshots) {
+  for (auto* snapshot : snapshots) {
     DisplayState display_state;
     display_state.display = snapshot;
     display_state.selected_mode = GetUserSelectedMode(*snapshot);
@@ -1155,7 +1155,7 @@ bool DisplayConfigurator::RemoveVirtualDisplay(int64_t display_id) {
     return false;
 
   int64_t max_display_id = 0;
-  for (const auto& display : virtual_display_snapshots_)
+  for (auto* display : virtual_display_snapshots_)
     max_display_id = std::max(max_display_id, display->display_id());
   last_virtual_display_id_ = max_display_id & 0xff;
 
