@@ -35,6 +35,8 @@
       'sources': [
         'arc/arc_bridge_bootstrap.cc',
         'arc/arc_bridge_bootstrap.h',
+        'arc/arc_bridge_host_impl.h',
+        'arc/arc_bridge_host_impl.cc',
         'arc/arc_bridge_service_impl.cc',
         'arc/arc_bridge_service_impl.h',
         'arc/arc_service_manager.cc',

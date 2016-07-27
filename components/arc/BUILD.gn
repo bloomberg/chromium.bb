@@ -9,6 +9,8 @@ static_library("arc") {
   sources = [
     "arc_bridge_bootstrap.cc",
     "arc_bridge_bootstrap.h",
+    "arc_bridge_host_impl.cc",
+    "arc_bridge_host_impl.h",
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
     "arc_service_manager.cc",

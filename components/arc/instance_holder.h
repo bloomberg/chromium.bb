@@ -9,10 +9,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace arc {
 
@@ -35,13 +33,13 @@ class InstanceHolder {
     virtual ~Observer() = default;
   };
 
-  InstanceHolder() : weak_factory_(this) {}
+  InstanceHolder() = default;
 
   // Gets the Mojo interface for all the instance services. This will return
   // nullptr if that particular service is not ready yet. Use an Observer if you
   // want to be notified when this is ready. This can only be called on the
   // thread that this class was created on.
-  T* instance() const { return raw_ptr_; }
+  T* instance() const { return instance_; }
   uint32_t version() const { return version_; }
 
   // Adds or removes observers. This can only be called on the thread that this
@@ -60,64 +58,35 @@ class InstanceHolder {
     observer_list_.RemoveObserver(observer);
   }
 
-  // Called when the channel is closed.
-  void CloseChannel() {
-    if (!ptr_)
+  // Sets |instance| with |version|.
+  // This can be called in both case; on ready, and on closed.
+  // Passing nullptr to |instance| means closing.
+  void SetInstance(T* instance, uint32_t version = T::Version_) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(instance == nullptr || instance_ == nullptr);
+
+    // Note: This can be called with nullptr even if |instance_| is still
+    // nullptr for just in case clean up purpose. No-op in such a case.
+    if (instance == instance_)
       return;
 
-    ptr_.reset();
-    raw_ptr_ = nullptr;
-    version_ = 0;
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceClosed());
-  }
-
-  // Sets the interface pointer to |ptr|, once the version is determined. This
-  // will eventually invoke SetInstance(), which will notify the observers.
-  void OnInstanceReady(mojo::InterfacePtr<T> ptr) {
-    temporary_ptr_ = std::move(ptr);
-    temporary_ptr_.QueryVersion(base::Bind(&InstanceHolder<T>::OnVersionReady,
-                                           weak_factory_.GetWeakPtr()));
-  }
-
-  // This method is not intended to be called directly. Normally it is called by
-  // OnInstanceReady once the version of the instance is determined, but it is
-  // also exposed so that tests can directly inject a raw pointer+version
-  // combination.
-  void SetInstance(T* raw_ptr, uint32_t raw_version = T::Version_) {
-    raw_ptr_ = raw_ptr;
-    version_ = raw_version;
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceReady());
+    instance_ = instance;
+    version_ = version;
+    if (instance_) {
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceReady());
+    } else {
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceClosed());
+    }
   }
 
  private:
-  void OnVersionReady(uint32_t version) {
-    ptr_ = std::move(temporary_ptr_);
-    ptr_.set_connection_error_handler(base::Bind(
-        &InstanceHolder<T>::CloseChannel, weak_factory_.GetWeakPtr()));
-    SetInstance(ptr_.get(), version);
-  }
-
-  // These two are copies of the contents of ptr_. They are provided here just
-  // so that tests can provide non-mojo implementations.
-  T* raw_ptr_ = nullptr;
+  // This class does not have ownership. The pointers should be managed by the
+  // callee.
+  T* instance_ = nullptr;
   uint32_t version_ = 0;
-
-  mojo::InterfacePtr<T> ptr_;
-
-  // Temporary Mojo interfaces.  After a Mojo interface pointer has been
-  // received from the other endpoint, we still need to asynchronously query its
-  // version.  While that is going on, we should still return nullptr on the
-  // instance() function.
-  // To keep the instance() functions being trivial, store the instance pointer
-  // in a temporary variable to avoid losing its reference.
-  mojo::InterfacePtr<T> temporary_ptr_;
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observer_list_;
-
-  // This needs to be the last member in order to cancel all inflight callbacks
-  // before destroying any other members.
-  base::WeakPtrFactory<InstanceHolder<T>> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceHolder<T>);
 };

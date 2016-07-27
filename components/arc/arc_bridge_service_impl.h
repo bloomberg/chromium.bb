@@ -25,8 +25,7 @@ namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcBridgeBootstrap::Delegate,
-                             public mojom::ArcBridgeHost {
+                             public ArcBridgeBootstrap::Delegate {
  public:
   explicit ArcBridgeServiceImpl(std::unique_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
@@ -39,36 +38,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // delay. When testing, however, we'd like it to happen immediately to avoid
   // adding unnecessary delays.
   void DisableReconnectDelayForTesting();
-
-  // ArcHost:
-  void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
-  void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
-  void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
-  void OnBluetoothInstanceReady(
-      mojom::BluetoothInstancePtr bluetooth_ptr) override;
-  void OnClipboardInstanceReady(
-      mojom::ClipboardInstancePtr clipboard_ptr) override;
-  void OnCrashCollectorInstanceReady(
-      mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
-  void OnEnterpriseReportingInstanceReady(
-      mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) override;
-  void OnFileSystemInstanceReady(
-      mojom::FileSystemInstancePtr file_system_ptr) override;
-  void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
-  void OnIntentHelperInstanceReady(
-      mojom::IntentHelperInstancePtr intent_helper_ptr) override;
-  void OnMetricsInstanceReady(mojom::MetricsInstancePtr metrics_ptr) override;
-  void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
-  void OnNotificationsInstanceReady(
-      mojom::NotificationsInstancePtr notifications_ptr) override;
-  void OnObbMounterInstanceReady(
-      mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
-  void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
-  void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
-  void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
-  void OnStorageManagerInstanceReady(
-      mojom::StorageManagerInstancePtr storage_manager_ptr) override;
-  void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
 
  private:
   friend class ArcBridgeTest;
@@ -87,18 +56,14 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void OnConnectionEstablished(mojom::ArcBridgeInstancePtr instance) override;
   void OnStopped(StopReason reason) override;
 
-  // Called when the bridge channel is closed. This typically only happens when
-  // the ARC instance crashes. This is not called during shutdown.
-  void OnChannelClosed();
-
   std::unique_ptr<ArcBridgeBootstrap> bootstrap_;
-
-  // Mojo endpoints.
-  mojo::Binding<mojom::ArcBridgeHost> binding_;
-  mojom::ArcBridgeInstancePtr instance_ptr_;
 
   // If the user's session has started.
   bool session_started_;
+
+  // Mojo endpoint.
+  // TODO(hidehiko): Move this to ArcBridgeBootstrap.
+  std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
 
   // If the instance had already been started but the connection to it was
   // lost. This should make the instance restart.

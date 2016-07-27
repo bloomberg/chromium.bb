@@ -19,6 +19,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_bridge_host_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -33,7 +34,6 @@ constexpr int64_t kReconnectDelayInSeconds = 5;
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     std::unique_ptr<ArcBridgeBootstrap> bootstrap)
     : bootstrap_(std::move(bootstrap)),
-      binding_(this),
       session_started_(false),
       weak_factory_(this) {
   DCHECK(!g_arc_bridge_service);
@@ -97,9 +97,7 @@ void ArcBridgeServiceImpl::StopInstance() {
 
   VLOG(1) << "Stopping ARC";
   SetState(State::STOPPING);
-  instance_ptr_.reset();
-  if (binding_.is_bound())
-    binding_.Close();
+  arc_bridge_host_.reset();
   bootstrap_->Stop();
 
   // We were explicitly asked to stop, so do not reconnect.
@@ -114,11 +112,7 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
     return;
   }
 
-  instance_ptr_ = std::move(instance);
-  instance_ptr_.set_connection_error_handler(base::Bind(
-      &ArcBridgeServiceImpl::OnChannelClosed, weak_factory_.GetWeakPtr()));
-
-  instance_ptr_->Init(binding_.CreateInterfacePtrAndBind());
+  arc_bridge_host_.reset(new ArcBridgeHostImpl(std::move(instance)));
 
   // The container can be considered to have been successfully launched, so
   // restart if the connection goes down without being requested.
@@ -129,9 +123,11 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 
 void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
+  arc_bridge_host_.reset();
   SetStopReason(stop_reason);
   SetState(State::STOPPED);
   VLOG(0) << "ARC stopped";
+
   if (reconnect_) {
     // There was a previous invocation and it crashed for some reason. Try
     // starting the container again.
@@ -150,150 +146,6 @@ void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
       PrerequisitesChanged();
     }
   }
-}
-
-void ArcBridgeServiceImpl::OnChannelClosed() {
-  DCHECK(CalledOnValidThread());
-  if (state() == State::STOPPED || state() == State::STOPPING) {
-    // This will happen when the instance is shut down. Ignore that case.
-    return;
-  }
-  VLOG(1) << "Mojo connection lost";
-  instance_ptr_.reset();
-  if (binding_.is_bound())
-    binding_.Close();
-
-  // Call all the error handlers of all the channels to both close the channel
-  // and notify any observers that the channel is closed.
-  app_.CloseChannel();
-  audio_.CloseChannel();
-  auth_.CloseChannel();
-  bluetooth_.CloseChannel();
-  clipboard_.CloseChannel();
-  crash_collector_.CloseChannel();
-  file_system_.CloseChannel();
-  ime_.CloseChannel();
-  intent_helper_.CloseChannel();
-  metrics_.CloseChannel();
-  net_.CloseChannel();
-  notifications_.CloseChannel();
-  obb_mounter_.CloseChannel();
-  policy_.CloseChannel();
-  power_.CloseChannel();
-  process_.CloseChannel();
-  storage_manager_.CloseChannel();
-  video_.CloseChannel();
-}
-
-void ArcBridgeServiceImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
-  DCHECK(CalledOnValidThread());
-  app_.OnInstanceReady(std::move(app_ptr));
-}
-
-void ArcBridgeServiceImpl::OnAudioInstanceReady(
-    mojom::AudioInstancePtr audio_ptr) {
-  DCHECK(CalledOnValidThread());
-  audio_.OnInstanceReady(std::move(audio_ptr));
-}
-
-void ArcBridgeServiceImpl::OnAuthInstanceReady(
-    mojom::AuthInstancePtr auth_ptr) {
-  DCHECK(CalledOnValidThread());
-  auth_.OnInstanceReady(std::move(auth_ptr));
-}
-
-void ArcBridgeServiceImpl::OnBluetoothInstanceReady(
-    mojom::BluetoothInstancePtr bluetooth_ptr) {
-  DCHECK(CalledOnValidThread());
-  bluetooth_.OnInstanceReady(std::move(bluetooth_ptr));
-}
-
-void ArcBridgeServiceImpl::OnClipboardInstanceReady(
-    mojom::ClipboardInstancePtr clipboard_ptr) {
-  DCHECK(CalledOnValidThread());
-  clipboard_.OnInstanceReady(std::move(clipboard_ptr));
-}
-
-void ArcBridgeServiceImpl::OnCrashCollectorInstanceReady(
-    mojom::CrashCollectorInstancePtr crash_collector_ptr) {
-  DCHECK(CalledOnValidThread());
-  crash_collector_.OnInstanceReady(std::move(crash_collector_ptr));
-}
-
-void ArcBridgeServiceImpl::OnEnterpriseReportingInstanceReady(
-    mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) {
-  DCHECK(CalledOnValidThread());
-  enterprise_reporting_.OnInstanceReady(std::move(enterprise_reporting_ptr));
-}
-
-void ArcBridgeServiceImpl::OnFileSystemInstanceReady(
-    mojom::FileSystemInstancePtr file_system_ptr) {
-  DCHECK(CalledOnValidThread());
-  file_system_.OnInstanceReady(std::move(file_system_ptr));
-}
-
-void ArcBridgeServiceImpl::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
-  DCHECK(CalledOnValidThread());
-  ime_.OnInstanceReady(std::move(ime_ptr));
-}
-
-void ArcBridgeServiceImpl::OnIntentHelperInstanceReady(
-    mojom::IntentHelperInstancePtr intent_helper_ptr) {
-  DCHECK(CalledOnValidThread());
-  intent_helper_.OnInstanceReady(std::move(intent_helper_ptr));
-}
-
-void ArcBridgeServiceImpl::OnMetricsInstanceReady(
-    mojom::MetricsInstancePtr metrics_ptr) {
-  DCHECK(CalledOnValidThread());
-  metrics_.OnInstanceReady(std::move(metrics_ptr));
-}
-
-void ArcBridgeServiceImpl::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
-  DCHECK(CalledOnValidThread());
-  net_.OnInstanceReady(std::move(net_ptr));
-}
-
-void ArcBridgeServiceImpl::OnNotificationsInstanceReady(
-    mojom::NotificationsInstancePtr notifications_ptr) {
-  DCHECK(CalledOnValidThread());
-  notifications_.OnInstanceReady(std::move(notifications_ptr));
-}
-
-void ArcBridgeServiceImpl::OnObbMounterInstanceReady(
-    mojom::ObbMounterInstancePtr obb_mounter_ptr) {
-  DCHECK(CalledOnValidThread());
-  obb_mounter_.OnInstanceReady(std::move(obb_mounter_ptr));
-}
-
-void ArcBridgeServiceImpl::OnPolicyInstanceReady(
-    mojom::PolicyInstancePtr policy_ptr) {
-  DCHECK(CalledOnValidThread());
-  policy_.OnInstanceReady(std::move(policy_ptr));
-}
-
-void ArcBridgeServiceImpl::OnPowerInstanceReady(
-    mojom::PowerInstancePtr power_ptr) {
-  DCHECK(CalledOnValidThread());
-  power_.OnInstanceReady(std::move(power_ptr));
-}
-
-void ArcBridgeServiceImpl::OnProcessInstanceReady(
-    mojom::ProcessInstancePtr process_ptr) {
-  DCHECK(CalledOnValidThread());
-  process_.OnInstanceReady(std::move(process_ptr));
-}
-
-void ArcBridgeServiceImpl::OnStorageManagerInstanceReady(
-    mojom::StorageManagerInstancePtr storage_manager_ptr) {
-  DCHECK(CalledOnValidThread());
-  storage_manager_.OnInstanceReady(std::move(storage_manager_ptr));
-}
-
-void ArcBridgeServiceImpl::OnVideoInstanceReady(
-    mojom::VideoInstancePtr video_ptr) {
-  DCHECK(CalledOnValidThread());
-  video_.OnInstanceReady(std::move(video_ptr));
 }
 
 }  // namespace arc

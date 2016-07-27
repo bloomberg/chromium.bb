@@ -117,7 +117,6 @@ TEST_F(ArcBridgeTest, Restart) {
 
   // Simulate a connection loss.
   service_->DisableReconnectDelayForTesting();
-  service_->OnChannelClosed();
   instance_->Stop(ArcBridgeService::StopReason::CRASH);
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
@@ -137,14 +136,12 @@ TEST_F(ArcBridgeTest, OnBridgeStopped) {
   ASSERT_EQ(ArcBridgeService::State::READY, state());
 
   // Simulate boot failure.
-  service_->OnChannelClosed();
   instance_->Stop(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE, stop_reason_);
   ASSERT_EQ(ArcBridgeService::State::READY, state());
 
   // Simulate crash.
-  service_->OnChannelClosed();
   instance_->Stop(ArcBridgeService::StopReason::CRASH);
   instance_->WaitForInitCall();
   ASSERT_EQ(ArcBridgeService::StopReason::CRASH, stop_reason_);

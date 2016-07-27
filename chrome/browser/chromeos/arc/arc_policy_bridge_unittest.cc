@@ -105,11 +105,8 @@ class ArcPolicyBridgeTest : public testing::Test {
     EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
         .Times(1);
 
-    mojom::PolicyInstancePtr policy_instance_ptr;
-    policy_instance_ = base::MakeUnique<FakePolicyInstance>(
-        GetProxy(&policy_instance_ptr), bridge_service_.get());
-    bridge_service_->policy()->OnInstanceReady(std::move(policy_instance_ptr));
-    policy_instance()->WaitForOnPolicyInstanceReady();
+    policy_instance_.reset(new FakePolicyInstance);
+    bridge_service_->policy()->SetInstance(policy_instance_.get());
   }
 
  protected:
