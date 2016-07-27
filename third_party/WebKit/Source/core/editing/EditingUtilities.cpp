@@ -926,6 +926,20 @@ bool nodeIsUserSelectAll(const Node* node)
 
 }
 
+EUserSelect usedValueOfUserSelect(const Node& node)
+{
+    if (node.isHTMLElement() && toHTMLElement(node).isTextFormControl())
+        return SELECT_TEXT;
+    if (!node.layoutObject())
+        return SELECT_NONE;
+
+    const ComputedStyle* style = node.layoutObject()->style();
+    if (style->userModify() != READ_ONLY)
+        return SELECT_TEXT;
+
+    return style->userSelect();
+}
+
 template <typename Strategy>
 TextDirection directionOfEnclosingBlockAlgorithm(const PositionTemplate<Strategy>& position)
 {
