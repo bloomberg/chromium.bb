@@ -39,7 +39,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

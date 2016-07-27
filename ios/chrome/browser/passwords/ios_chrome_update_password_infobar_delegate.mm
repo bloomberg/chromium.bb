@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -37,7 +37,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"

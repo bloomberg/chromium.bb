@@ -10,7 +10,6 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"

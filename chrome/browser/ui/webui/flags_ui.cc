@@ -31,7 +31,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_resources.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"

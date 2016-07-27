@@ -47,7 +47,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"

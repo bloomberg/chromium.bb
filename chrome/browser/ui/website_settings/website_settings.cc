@@ -60,7 +60,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"

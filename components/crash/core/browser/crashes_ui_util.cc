@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "components/upload_list/upload_list.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 
 namespace crash {

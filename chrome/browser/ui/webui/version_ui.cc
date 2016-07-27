@@ -23,7 +23,6 @@
 #include "content/public/common/user_agent.h"
 #include "grit/browser_resources.h"
 #include "grit/components_chromium_strings.h"
-#include "grit/components_google_chrome_strings.h"
 #include "grit/components_resources.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
