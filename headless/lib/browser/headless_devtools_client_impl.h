@@ -28,6 +28,7 @@
 #include "headless/public/domains/inspector.h"
 #include "headless/public/domains/io.h"
 #include "headless/public/domains/layer_tree.h"
+#include "headless/public/domains/log.h"
 #include "headless/public/domains/memory.h"
 #include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
@@ -81,6 +82,7 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   inspector::Domain* GetInspector() override;
   io::Domain* GetIO() override;
   layer_tree::Domain* GetLayerTree() override;
+  log::Domain* GetLog() override;
   memory::Domain* GetMemory() override;
   network::Domain* GetNetwork() override;
   page::Domain* GetPage() override;
@@ -173,6 +175,7 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   inspector::ExperimentalDomain inspector_domain_;
   io::ExperimentalDomain io_domain_;
   layer_tree::ExperimentalDomain layer_tree_domain_;
+  log::ExperimentalDomain log_domain_;
   memory::ExperimentalDomain memory_domain_;
   network::ExperimentalDomain network_domain_;
   page::ExperimentalDomain page_domain_;

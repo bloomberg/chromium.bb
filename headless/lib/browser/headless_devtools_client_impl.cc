@@ -50,6 +50,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       inspector_domain_(this),
       io_domain_(this),
       layer_tree_domain_(this),
+      log_domain_(this),
       memory_domain_(this),
       network_domain_(this),
       page_domain_(this),
@@ -225,6 +226,10 @@ io::Domain* HeadlessDevToolsClientImpl::GetIO() {
 
 layer_tree::Domain* HeadlessDevToolsClientImpl::GetLayerTree() {
   return &layer_tree_domain_;
+}
+
+log::Domain* HeadlessDevToolsClientImpl::GetLog() {
+  return &log_domain_;
 }
 
 memory::Domain* HeadlessDevToolsClientImpl::GetMemory() {

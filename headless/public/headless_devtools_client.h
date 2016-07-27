@@ -72,6 +72,9 @@ class Domain;
 namespace layer_tree {
 class Domain;
 }
+namespace log {
+class Domain;
+}
 namespace memory {
 class Domain;
 }
@@ -135,6 +138,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual inspector::Domain* GetInspector() = 0;
   virtual io::Domain* GetIO() = 0;
   virtual layer_tree::Domain* GetLayerTree() = 0;
+  virtual log::Domain* GetLog() = 0;
   virtual memory::Domain* GetMemory() = 0;
   virtual network::Domain* GetNetwork() = 0;
   virtual page::Domain* GetPage() = 0;
