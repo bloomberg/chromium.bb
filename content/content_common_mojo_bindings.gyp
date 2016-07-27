@@ -15,6 +15,7 @@
           'common/image_downloader/image_downloader.mojom',
           'common/leveldb_wrapper.mojom',
           'common/process_control.mojom',
+          'common/render_frame_message_filter.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
         ],

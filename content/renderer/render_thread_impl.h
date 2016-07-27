@@ -28,6 +28,7 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu_process_launch_causes.h"
+#include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
@@ -333,6 +334,8 @@ class CONTENT_EXPORT RenderThreadImpl
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
+
+  mojom::RenderFrameMessageFilter* render_frame_message_filter();
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
@@ -701,6 +704,8 @@ class CONTENT_EXPORT RenderThreadImpl
   PendingFrameCreateMap pending_frame_creates_;
 
   mojom::StoragePartitionServicePtr storage_partition_service_;
+
+  mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
 
   bool is_renderer_suspended_;
 

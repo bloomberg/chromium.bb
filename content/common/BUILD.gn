@@ -245,6 +245,7 @@ mojom("mojo_bindings") {
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",
     "process_control.mojom",
+    "render_frame_message_filter.mojom",
     "render_widget_window_tree_client_factory.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "storage_partition_service.mojom",

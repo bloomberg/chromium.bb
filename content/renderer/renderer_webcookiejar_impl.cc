@@ -8,6 +8,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_thread_impl.h"
 
 using blink::WebString;
 using blink::WebURL;
@@ -18,8 +19,8 @@ void RendererWebCookieJarImpl::setCookie(
     const WebURL& url, const WebURL& first_party_for_cookies,
     const WebString& value) {
   std::string value_utf8 = base::UTF16ToUTF8(base::StringPiece16(value));
-  sender_->Send(new FrameHostMsg_SetCookie(
-      sender_->GetRoutingID(), url, first_party_for_cookies, value_utf8));
+  RenderThreadImpl::current()->render_frame_message_filter()->SetCookie(
+      sender_->GetRoutingID(), url, first_party_for_cookies, value_utf8);
 }
 
 WebString RendererWebCookieJarImpl::cookies(

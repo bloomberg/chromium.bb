@@ -61,6 +61,7 @@ class P2PSocketDispatcherHost;
 class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
+class RenderFrameMessageFilter;
 class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -246,6 +247,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 #endif
 
+  RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
+    return render_frame_message_filter_.get();
+  }
+
   MessagePortMessageFilter* message_port_message_filter() const {
     return message_port_message_filter_.get();
   }
@@ -377,6 +382,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
   scoped_refptr<RenderWidgetHelper> widget_helper_;
+
+  scoped_refptr<RenderFrameMessageFilter> render_frame_message_filter_;
 
   // The filter for MessagePort messages coming from the renderer.
   scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;

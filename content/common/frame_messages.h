@@ -1156,14 +1156,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateEncoding,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
                     std::string  /* json_string */)
 
-// Used to set a cookie. The cookie is set asynchronously, but will be
-// available to a subsequent FrameHostMsg_GetCookies request.
-IPC_MESSAGE_CONTROL4(FrameHostMsg_SetCookie,
-                     int /* render_frame_id */,
-                     GURL /* url */,
-                     GURL /* first_party_for_cookies */,
-                     std::string /* cookie */)
-
 // Used to get cookies for the given URL. This may block waiting for a
 // previous SetCookie message to be processed.
 IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_GetCookies,

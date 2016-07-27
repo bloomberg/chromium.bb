@@ -9,8 +9,10 @@
 #include "base/test/histogram_tester.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/render_frame_message_filter.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -215,11 +217,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
   RenderProcessHostWatcher main_frame_killed(
       tab->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  FrameHostMsg_SetCookie illegal_set_cookie(tab->GetMainFrame()->GetRoutingID(),
-                                            GURL("https://baz.com/"),
-                                            GURL("https://baz.com/"), "pwn=ed");
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      tab->GetMainFrame()->GetProcess()->GetChannel(), illegal_set_cookie);
+
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(tab->GetMainFrame()->GetProcess());
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &mojom::RenderFrameMessageFilter::SetCookie,
+          base::Unretained(process->render_frame_message_filter_for_testing()),
+          tab->GetMainFrame()->GetRoutingID(), GURL("https://baz.com/"),
+          GURL("https://baz.com/"), "pwn=ed"));
 
   main_frame_killed.Wait();
 
