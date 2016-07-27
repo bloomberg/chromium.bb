@@ -1155,11 +1155,10 @@ public class AwContents implements SmartClipProvider,
             mPostMessageSender = null;
         }
 
-        // If we are attached, we have to call native detach to clean up
-        // hardware resources.
         if (mIsAttachedToWindow) {
             Log.w(TAG, "WebView.destroy() called while WebView is still attached to window.");
-            nativeOnDetachedFromWindow(mNativeAwContents);
+            // Need to call detach to avoid leaks because the real detach later will be ignored.
+            onDetachedFromWindow();
         }
         mIsDestroyed = true;
         mHandler.post(new Runnable() {
