@@ -3424,19 +3424,17 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
 {
-    // If we're not reading the viewport meta tag, allow GPU rasterization.
-    if (!settingsImpl()->viewportMetaEnabled()) {
-        m_matchesHeuristicsForGpuRasterization = true;
-        if (m_layerTreeView)
-            m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
-    }
-
     if (!page() || (!m_size.width && !m_size.height) || !page()->mainFrame()->isLocalFrame())
         return;
 
     if (!settings()->viewportEnabled()) {
         pageScaleConstraintsSet().clearPageDefinedConstraints();
         updateMainFrameLayoutSize();
+
+        // If we don't support mobile viewports, allow GPU rasterization.
+        m_matchesHeuristicsForGpuRasterization = true;
+        if (m_layerTreeView)
+            m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
         return;
     }
 

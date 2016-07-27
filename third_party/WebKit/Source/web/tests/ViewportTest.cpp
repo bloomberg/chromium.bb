@@ -2792,6 +2792,11 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization)
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-disabled-without-viewport.html", true, nullptr, nullptr, nullptr, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
     EXPECT_FALSE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
+    // Also test that setting enableViewport to false (as on desktop Chrome)
+    // supports GPU raster unconditionally.
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-disabled-without-viewport.html", true);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    EXPECT_TRUE(webViewHelper.webView()->matchesHeuristicsForGpuRasterizationForTesting());
 
     registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization.html", true, nullptr, nullptr, nullptr, setViewportSettings);
