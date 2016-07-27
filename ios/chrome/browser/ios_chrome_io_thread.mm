@@ -205,12 +205,14 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
+  // Tells the getter that the URLRequestContext is about to be shut down.
+  void Shutdown();
+
  protected:
   ~SystemURLRequestContextGetter() override;
 
  private:
-  IOSChromeIOThread* const
-      io_thread_;  // Weak pointer, owned by ApplicationContext.
+  IOSChromeIOThread* io_thread_;  // Weak pointer, owned by ApplicationContext.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   base::debug::LeakTracker<SystemURLRequestContextGetter> leak_tracker_;
@@ -226,6 +228,8 @@ SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
+  if (!io_thread_)
+    return nullptr;
   DCHECK(io_thread_->globals()->system_request_context.get());
 
   return io_thread_->globals()->system_request_context.get();
@@ -234,6 +238,12 @@ net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
 scoped_refptr<base::SingleThreadTaskRunner>
 SystemURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
+}
+
+void SystemURLRequestContextGetter::Shutdown() {
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
+  io_thread_ = nullptr;
+  NotifyContextShuttingDown();
 }
 
 IOSChromeIOThread::Globals::SystemRequestContextLeakChecker::
@@ -423,6 +433,7 @@ void IOSChromeIOThread::Init() {
 }
 
 void IOSChromeIOThread::CleanUp() {
+  system_url_request_context_getter_->Shutdown();
   system_url_request_context_getter_ = nullptr;
 
   // Release objects that the net::URLRequestContext could have been pointing

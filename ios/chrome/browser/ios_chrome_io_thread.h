@@ -61,6 +61,8 @@ namespace net_log {
 class ChromeNetLog;
 }  // namespace net_log
 
+class SystemURLRequestContextGetter;
+
 // Contains state associated with, initialized and cleaned up on, and
 // primarily used on, the IO thread.
 //
@@ -225,7 +227,7 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
 
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  scoped_refptr<net::URLRequestContextGetter>
+  scoped_refptr<SystemURLRequestContextGetter>
       system_url_request_context_getter_;
 
   const base::TimeTicks creation_time_;
