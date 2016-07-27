@@ -47,7 +47,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "platform/JSONValues.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -63,6 +62,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringHasher.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include <memory>

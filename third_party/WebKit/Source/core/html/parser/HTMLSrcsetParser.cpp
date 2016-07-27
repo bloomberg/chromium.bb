@@ -39,7 +39,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "platform/ParsingUtilities.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringToNumber.h"
 #include <algorithm>
 

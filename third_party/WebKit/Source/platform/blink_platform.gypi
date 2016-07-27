@@ -81,7 +81,6 @@
       'PODInterval.h',
       'PODIntervalTree.h',
       'PODRedBlackTree.h',
-      'ParsingUtilities.h',
       'PasteMode.h',
       'PlatformEvent.h',
       'PlatformGestureEvent.h',

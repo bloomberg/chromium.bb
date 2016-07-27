@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
-#include "platform/ParsingUtilities.h"
+#include "wtf/text/ParsingUtilities.h"
 
 namespace blink {
 

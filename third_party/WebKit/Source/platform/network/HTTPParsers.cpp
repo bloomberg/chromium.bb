@@ -32,12 +32,12 @@
 
 #include "platform/network/HTTPParsers.h"
 
-#include "platform/ParsingUtilities.h"
 #include "platform/weborigin/Suborigin.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 

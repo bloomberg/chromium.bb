@@ -140,6 +140,7 @@
             'text/CharacterNames.h',
             'text/Collator.h',
             'text/IntegerToStringConversion.h',
+            'text/ParsingUtilities.h',
             'text/StringBuffer.h',
             'text/StringBuilder.cpp',
             'text/StringBuilder.h',

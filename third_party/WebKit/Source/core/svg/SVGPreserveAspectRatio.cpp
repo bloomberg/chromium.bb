@@ -23,9 +23,9 @@
 
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

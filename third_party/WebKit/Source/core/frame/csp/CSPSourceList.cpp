@@ -6,11 +6,11 @@
 
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/Base64.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringToNumber.h"
 #include "wtf/text/WTFString.h"
 

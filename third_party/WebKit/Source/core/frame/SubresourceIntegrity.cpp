@@ -11,7 +11,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCrypto.h"
@@ -20,6 +19,7 @@
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
 #include "wtf/text/Base64.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 

@@ -25,9 +25,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 
 #include "core/HTMLNames.h"
-#include "platform/ParsingUtilities.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringToNumber.h"

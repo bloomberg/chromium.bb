@@ -5,9 +5,9 @@
 #include "core/frame/csp/MediaListDirective.h"
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/ParsingUtilities.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

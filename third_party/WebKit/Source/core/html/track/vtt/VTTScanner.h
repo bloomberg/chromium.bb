@@ -31,8 +31,8 @@
 #define VTTScanner_h
 
 #include "core/CoreExport.h"
-#include "platform/ParsingUtilities.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
