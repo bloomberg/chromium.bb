@@ -89,7 +89,6 @@ class DepsUpdater(object):
                 self.check_run(['git', 'cl', 'upload', '-m', '\'Wrote lines to TestExpectations\''])
             else:
                 self.print_('No Failures, committing patch.')
-            quit()
             self.run(['git', 'cl', 'land', '-f'])
         return 0
 
