@@ -31,7 +31,7 @@ function test()
         proxyElement.textContent = inputText;
         var selectionRange = document.createRange();
         selectionRange.selectNodeContents(proxyElement);
-        prompt._buildPropertyCompletions(proxyElement, inputText, inputText.length, selectionRange, true, completions);
+        prompt._buildPropertyCompletions(proxyElement, selectionRange, true, completions);
 
         function completions(result, index)
         {

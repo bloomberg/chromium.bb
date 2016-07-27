@@ -82,7 +82,7 @@ function test()
             selectionRange.selectNodeContents(proxyElement);
         }
         var range = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, prompt._completionStopCharacters, proxyElement, "backward");
-        prompt._buildPropertyCompletions(proxyElement, inputText, inputText.length, range, force, completions);
+        prompt._buildPropertyCompletions(proxyElement, range, force, completions);
 
         function completions(result, index)
         {

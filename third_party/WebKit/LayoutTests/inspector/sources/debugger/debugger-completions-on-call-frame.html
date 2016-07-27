@@ -1,3 +1,4 @@
+
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
@@ -25,62 +26,62 @@ function test()
 
         function step2(next)
         {
-            executionContext.completionsForExpression("", "var", 3, "var", false, checkAgainstGolden.bind(this, ["var1", "var2"], [], next));
+            executionContext.completionsForExpression("", "var", false, checkAgainstGolden.bind(this, ["var1", "var2"], [], next));
         },
 
         function step3(next)
         {
-            executionContext.completionsForExpression("", "di", 2, "di", false, checkAgainstGolden.bind(this, ["dir", "dirxml"], [], next));
+            executionContext.completionsForExpression("", "di", false, checkAgainstGolden.bind(this, ["dir", "dirxml"], [], next));
         },
 
         function step4(next)
         {
-            executionContext.completionsForExpression("", "win", 3, "win", false, checkAgainstGolden.bind(this, ["window"], [], next));
+            executionContext.completionsForExpression("", "win", false, checkAgainstGolden.bind(this, ["window"], [], next));
         },
 
         function step5(next)
         {
-            executionContext.completionsForExpression("", "t", 1, "t", false, checkAgainstGolden.bind(this, ["this"], [], next));
+            executionContext.completionsForExpression("", "t", false, checkAgainstGolden.bind(this, ["this"], [], next));
         },
 
         function step6(next)
         {
-            executionContext.completionsForExpression("var1", "var1.toExp", 10, "toExp", false, checkAgainstGolden.bind(this, ["toExponential"], [], next));
+            executionContext.completionsForExpression("var1", "toExp", false, checkAgainstGolden.bind(this, ["toExponential"], [], next));
         },
 
         function step7(next)
         {
-            executionContext.completionsForExpression("123", "123.toExp", 9, "toExp", false, checkAgainstGolden.bind(this, [], ["toExponential"], next));
+            executionContext.completionsForExpression("123", "toExp", false, checkAgainstGolden.bind(this, [], ["toExponential"], next));
         },
 
         function step8(next)
         {
-            executionContext.completionsForExpression("", "", 0, "", false, checkAgainstGolden.bind(this, [], ["$"], next));
+            executionContext.completionsForExpression("",  "", false, checkAgainstGolden.bind(this, [], ["$"], next));
         },
 
         function step9(next)
         {
-            executionContext.completionsForExpression("", "", 0, "", true, checkAgainstGolden.bind(this, ["$", "window"], [], next));
+            executionContext.completionsForExpression("", "", true, checkAgainstGolden.bind(this, ["$", "window"], [], next));
         },
 
         function step10(next)
         {
-            executionContext.completionsForExpression("console", "console.log('bar');", 19, "log('bar');", false, checkAgainstGolden.bind(this, [], ["$"], next));
+            executionContext.completionsForExpression("console", "log('bar');", false, checkAgainstGolden.bind(this, [], ["$"], next));
         },
 
         function step11(next)
         {
-            executionContext.completionsForExpression("arr1.", "arr1.", 5, "", false, checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
+            executionContext.completionsForExpression("arr1.", "", false, checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
         },
 
         function step12(next)
         {
-            executionContext.completionsForExpression("arr1[", "arr1[", 5, "", false, checkAgainstGolden.bind(this, ["\"length\"]"], ["3]"], next));
+            executionContext.completionsForExpression("arr1[", "", false, checkAgainstGolden.bind(this, ["\"length\"]"], ["3]"], next));
         },
 
         function step13_ShouldNotCrash(next)
         {
-            executionContext.completionsForExpression("arr2.", "arr2.", 5, "", false, checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
+            executionContext.completionsForExpression("arr2.",  "", false, checkAgainstGolden.bind(this, ["length"], ["1", "2", "3"], next));
         },
     ]);
 
