@@ -1826,20 +1826,6 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
     availableSpace = LayoutUnit();
 }
 
-bool LayoutGrid::isChildOverflowingContainingBlockHeight(const LayoutBox& child) const
-{
-    // TODO (lajava) We must consider margins to determine whether it overflows or not (see https://crbug/628155)
-    LayoutUnit containingBlockContentHeight = child.hasOverrideContainingBlockHeight() ? child.overrideContainingBlockContentHeight() : LayoutUnit();
-    return child.size().height() > containingBlockContentHeight;
-}
-
-bool LayoutGrid::isChildOverflowingContainingBlockWidth(const LayoutBox& child) const
-{
-    // TODO (lajava) We must consider margins to determine whether it overflows or not (see https://crbug/628155)
-    LayoutUnit containingBlockContentWidth = child.hasOverrideContainingBlockWidth() ? child.overrideContainingBlockContentWidth() : LayoutUnit();
-    return child.size().width() > containingBlockContentWidth;
-}
-
 void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
 {
     populateGridPositionsForDirection(sizingData, ForColumns);
@@ -1885,10 +1871,12 @@ void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
 #endif
         child->setLogicalLocation(findChildLogicalPosition(*child, sizingData));
 
-        // Keep track of children overflowing their grid area as we might need to paint them even if the grid-area is
-        // not visible.
+        // Keep track of children overflowing their grid area as we might need to paint them even if the grid-area is not visible.
         // Using physical dimensions for simplicity, so we can forget about orthogonalty.
-        if (isChildOverflowingContainingBlockHeight(*child) || isChildOverflowingContainingBlockWidth(*child))
+        // TODO (lajava): Child's margins should account when evaluating whether it overflows its grid area (http://crbug.com/628155).
+        LayoutUnit childGridAreaHeight = isHorizontalWritingMode() ? overrideContainingBlockContentLogicalHeight : overrideContainingBlockContentLogicalWidth;
+        LayoutUnit childGridAreaWidth = isHorizontalWritingMode() ? overrideContainingBlockContentLogicalWidth : overrideContainingBlockContentLogicalHeight;
+        if (child->size().height() > childGridAreaHeight || child->size().width() > childGridAreaWidth)
             m_gridItemsOverflowingGridArea.append(child);
     }
 }
