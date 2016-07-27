@@ -14,6 +14,22 @@
 
 namespace cc {
 
+// Maximum number of patches that can be produced for one NinePatchLayer.
+static const int kMaxOcclusionPatches = 12;
+static const int kMaxPatches = 9;
+
+namespace {
+
+gfx::Rect ToRect(const gfx::RectF& rect) {
+  return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+}  // namespace
+
+NinePatchLayerImpl::Patch::Patch(const gfx::RectF& image_rect,
+                                 const gfx::RectF& layer_rect)
+    : image_rect(image_rect), layer_rect(layer_rect) {}
+
 NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
     : UIResourceLayerImpl(tree_impl, id),
       fill_center_(false),
@@ -30,24 +46,24 @@ void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   UIResourceLayerImpl::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
-  layer_impl->SetLayout(image_aperture_, border_, fill_center_,
-                        nearest_neighbor_);
+  layer_impl->SetLayout(image_aperture_, border_, layer_occlusion_,
+                        fill_center_, nearest_neighbor_);
 }
 
-static gfx::RectF NormalizedRect(float x,
-                                 float y,
-                                 float width,
-                                 float height,
+static gfx::RectF BoundsToRect(int x1, int y1, int x2, int y2) {
+  return gfx::RectF(x1, y1, x2 - x1, y2 - y1);
+}
+
+static gfx::RectF NormalizedRect(const gfx::RectF& rect,
                                  float total_width,
                                  float total_height) {
-  return gfx::RectF(x / total_width,
-                    y / total_height,
-                    width / total_width,
-                    height / total_height);
+  return gfx::RectF(rect.x() / total_width, rect.y() / total_height,
+                    rect.width() / total_width, rect.height() / total_height);
 }
 
 void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
                                    const gfx::Rect& border,
+                                   const gfx::Rect& layer_occlusion,
                                    bool fill_center,
                                    bool nearest_neighbor) {
   // This check imposes an ordering on the call sequence.  An UIResource must
@@ -55,13 +71,15 @@ void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
   DCHECK(ui_resource_id_);
 
   if (image_aperture_ == aperture && border_ == border &&
-      fill_center_ == fill_center && nearest_neighbor_ == nearest_neighbor)
+      fill_center_ == fill_center && nearest_neighbor_ == nearest_neighbor &&
+      layer_occlusion_ == layer_occlusion)
     return;
 
   image_aperture_ = aperture;
   border_ = border;
   fill_center_ = fill_center;
   nearest_neighbor_ = nearest_neighbor;
+  layer_occlusion_ = layer_occlusion;
 
   NoteLayerPropertyChanged();
 }
@@ -82,6 +100,204 @@ void NinePatchLayerImpl::CheckGeometryLimitations() {
   DCHECK(gfx::Rect(image_bounds_).Contains(image_aperture_))
       << "image_bounds_ " << gfx::Rect(image_bounds_).ToString()
       << " image_aperture_ " << image_aperture_.ToString();
+
+  // Sanity check on |layer_occlusion_|. It should always be within the
+  // border.
+  gfx::Rect border_rect(border_.x(), border_.y(),
+                        bounds().width() - border_.width(),
+                        bounds().height() - border_.height());
+  DCHECK(layer_occlusion_.IsEmpty() || layer_occlusion_.Contains(border_rect))
+      << "border_rect " << border_rect.ToString() << " layer_occlusion_ "
+      << layer_occlusion_.ToString();
+}
+
+std::vector<NinePatchLayerImpl::Patch>
+NinePatchLayerImpl::ComputeQuadsWithoutOcclusion() const {
+  float image_width = image_bounds_.width();
+  float image_height = image_bounds_.height();
+  float layer_width = bounds().width();
+  float layer_height = bounds().height();
+  gfx::RectF layer_aperture(border_.x(), border_.y(),
+                            layer_width - border_.width(),
+                            layer_height - border_.height());
+
+  std::vector<Patch> patches;
+  patches.reserve(kMaxPatches);
+
+  // Top-left.
+  patches.push_back(
+      Patch(BoundsToRect(0, 0, image_aperture_.x(), image_aperture_.y()),
+            BoundsToRect(0, 0, layer_aperture.x(), layer_aperture.y())));
+
+  // Top-right.
+  patches.push_back(Patch(BoundsToRect(image_aperture_.right(), 0, image_width,
+                                       image_aperture_.y()),
+                          BoundsToRect(layer_aperture.right(), 0, layer_width,
+                                       layer_aperture.y())));
+
+  // Bottom-left.
+  patches.push_back(Patch(BoundsToRect(0, image_aperture_.bottom(),
+                                       image_aperture_.x(), image_height),
+                          BoundsToRect(0, layer_aperture.bottom(),
+                                       layer_aperture.x(), layer_height)));
+
+  // Bottom-right.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.right(), image_aperture_.bottom(),
+                         image_width, image_height),
+            BoundsToRect(layer_aperture.right(), layer_aperture.bottom(),
+                         layer_width, layer_height)));
+
+  // Top.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.x(), 0, image_aperture_.right(),
+                         image_aperture_.y()),
+            BoundsToRect(layer_aperture.x(), 0, layer_aperture.right(),
+                         layer_aperture.y())));
+
+  // Left.
+  patches.push_back(
+      Patch(BoundsToRect(0, image_aperture_.y(), image_aperture_.x(),
+                         image_aperture_.bottom()),
+            BoundsToRect(0, layer_aperture.y(), layer_aperture.x(),
+                         layer_aperture.bottom())));
+
+  // Right.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.right(), image_aperture_.y(),
+                         image_width, image_aperture_.bottom()),
+            BoundsToRect(layer_aperture.right(), layer_aperture.y(),
+                         layer_width, layer_aperture.bottom())));
+
+  // Bottom.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.x(), image_aperture_.bottom(),
+                         image_aperture_.right(), image_height),
+            BoundsToRect(layer_aperture.x(), layer_aperture.bottom(),
+                         layer_aperture.right(), layer_height)));
+
+  // Center.
+  if (fill_center_) {
+    patches.push_back(
+        Patch(BoundsToRect(image_aperture_.x(), image_aperture_.y(),
+                           image_aperture_.right(), image_aperture_.bottom()),
+              BoundsToRect(layer_aperture.x(), layer_aperture.y(),
+                           layer_aperture.right(), layer_aperture.bottom())));
+  }
+
+  return patches;
+}
+
+std::vector<NinePatchLayerImpl::Patch>
+NinePatchLayerImpl::ComputeQuadsWithOcclusion() const {
+  float image_width = image_bounds_.width(),
+        image_height = image_bounds_.height();
+  float layer_width = bounds().width(), layer_height = bounds().height();
+  float layer_border_right = border_.width() - border_.x(),
+        layer_border_bottom = border_.height() - border_.y();
+  float image_aperture_right = image_width - image_aperture_.right(),
+        image_aperture_bottom = image_height - image_aperture_.bottom();
+  float layer_occlusion_right = layer_width - layer_occlusion_.right(),
+        layer_occlusion_bottom = layer_height - layer_occlusion_.bottom();
+  gfx::RectF image_occlusion(BoundsToRect(
+      border_.x() == 0 ? 0 : (layer_occlusion_.x() * image_aperture_.x() /
+                              border_.x()),
+      border_.y() == 0 ? 0 : (layer_occlusion_.y() * image_aperture_.y() /
+                              border_.y()),
+      image_width - (layer_border_right == 0 ? 0 : layer_occlusion_right *
+                                                       image_aperture_right /
+                                                       layer_border_right),
+      image_height - (layer_border_bottom == 0 ? 0 : layer_occlusion_bottom *
+                                                         image_aperture_bottom /
+                                                         layer_border_bottom)));
+  gfx::RectF layer_aperture(border_.x(), border_.y(),
+                            layer_width - border_.width(),
+                            layer_height - border_.height());
+
+  std::vector<Patch> patches;
+  patches.reserve(kMaxOcclusionPatches);
+
+  // Top-left-left.
+  patches.push_back(
+      Patch(BoundsToRect(0, 0, image_occlusion.x(), image_aperture_.y()),
+            BoundsToRect(0, 0, layer_occlusion_.x(), layer_aperture.y())));
+
+  // Top-left-right.
+  patches.push_back(
+      Patch(BoundsToRect(image_occlusion.x(), 0, image_aperture_.x(),
+                         image_occlusion.y()),
+            BoundsToRect(layer_occlusion_.x(), 0, layer_aperture.x(),
+                         layer_occlusion_.y())));
+
+  // Top-center.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.x(), 0, image_aperture_.right(),
+                         image_occlusion.y()),
+            BoundsToRect(layer_aperture.x(), 0, layer_aperture.right(),
+                         layer_occlusion_.y())));
+
+  // Top-right-left.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.right(), 0, image_occlusion.right(),
+                         image_occlusion.y()),
+            BoundsToRect(layer_aperture.right(), 0, layer_occlusion_.right(),
+                         layer_occlusion_.y())));
+
+  // Top-right-right.
+  patches.push_back(Patch(BoundsToRect(image_occlusion.right(), 0, image_width,
+                                       image_aperture_.y()),
+                          BoundsToRect(layer_occlusion_.right(), 0, layer_width,
+                                       layer_aperture.y())));
+
+  // Left-center.
+  patches.push_back(
+      Patch(BoundsToRect(0, image_aperture_.y(), image_occlusion.x(),
+                         image_aperture_.bottom()),
+            BoundsToRect(0, layer_aperture.y(), layer_occlusion_.x(),
+                         layer_aperture.bottom())));
+
+  // Right-center.
+  patches.push_back(
+      Patch(BoundsToRect(image_occlusion.right(), image_aperture_.y(),
+                         image_width, image_aperture_.bottom()),
+            BoundsToRect(layer_occlusion_.right(), layer_aperture.y(),
+                         layer_width, layer_aperture.bottom())));
+
+  // Bottom-left-left.
+  patches.push_back(Patch(BoundsToRect(0, image_aperture_.bottom(),
+                                       image_occlusion.x(), image_height),
+                          BoundsToRect(0, layer_aperture.bottom(),
+                                       layer_occlusion_.x(), layer_height)));
+
+  // Bottom-left-right.
+  patches.push_back(
+      Patch(BoundsToRect(image_occlusion.x(), image_occlusion.bottom(),
+                         image_aperture_.x(), image_height),
+            BoundsToRect(layer_occlusion_.x(), layer_occlusion_.bottom(),
+                         layer_aperture.x(), layer_height)));
+
+  // Bottom-center.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.x(), image_occlusion.bottom(),
+                         image_aperture_.right(), image_height),
+            BoundsToRect(layer_aperture.x(), layer_occlusion_.bottom(),
+                         layer_aperture.right(), layer_height)));
+
+  // Bottom-right-left.
+  patches.push_back(
+      Patch(BoundsToRect(image_aperture_.right(), image_occlusion.bottom(),
+                         image_occlusion.right(), image_height),
+            BoundsToRect(layer_aperture.right(), layer_occlusion_.bottom(),
+                         layer_occlusion_.right(), layer_height)));
+
+  // Bottom-right-right.
+  patches.push_back(
+      Patch(BoundsToRect(image_occlusion.right(), image_aperture_.bottom(),
+                         image_width, image_height),
+            BoundsToRect(layer_occlusion_.right(), layer_aperture.bottom(),
+                         layer_width, layer_height)));
+
+  return patches;
 }
 
 void NinePatchLayerImpl::AppendQuads(
@@ -104,243 +320,35 @@ void NinePatchLayerImpl::AppendQuads(
   if (!resource)
     return;
 
+  DCHECK(!bounds().IsEmpty());
+
+  std::vector<Patch> patches;
+
+  if (layer_occlusion_.IsEmpty() || fill_center_)
+    patches = ComputeQuadsWithoutOcclusion();
+  else
+    patches = ComputeQuadsWithOcclusion();
+
+  const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+  const bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_);
   static const bool flipped = false;
   static const bool premultiplied_alpha = true;
 
-  DCHECK(!bounds().IsEmpty());
-
-  // NinePatch border widths in layer space.
-  int layer_left_width = border_.x();
-  int layer_top_height = border_.y();
-  int layer_right_width = border_.width() - layer_left_width;
-  int layer_bottom_height = border_.height() - layer_top_height;
-
-  int layer_middle_width = bounds().width() - border_.width();
-  int layer_middle_height = bounds().height() - border_.height();
-
-  // Patch positions in layer space
-  gfx::Rect layer_top_left(0, 0, layer_left_width, layer_top_height);
-  gfx::Rect layer_top_right(bounds().width() - layer_right_width,
-                            0,
-                            layer_right_width,
-                            layer_top_height);
-  gfx::Rect layer_bottom_left(0,
-                              bounds().height() - layer_bottom_height,
-                              layer_left_width,
-                              layer_bottom_height);
-  gfx::Rect layer_bottom_right(layer_top_right.x(),
-                               layer_bottom_left.y(),
-                               layer_right_width,
-                               layer_bottom_height);
-  gfx::Rect layer_top(
-      layer_top_left.right(), 0, layer_middle_width, layer_top_height);
-  gfx::Rect layer_left(
-      0, layer_top_left.bottom(), layer_left_width, layer_middle_height);
-  gfx::Rect layer_right(layer_top_right.x(),
-                        layer_top_right.bottom(),
-                        layer_right_width,
-                        layer_left.height());
-  gfx::Rect layer_bottom(layer_top.x(),
-                         layer_bottom_left.y(),
-                         layer_top.width(),
-                         layer_bottom_height);
-  gfx::Rect layer_center(layer_left_width,
-                         layer_top_height,
-                         layer_middle_width,
-                         layer_middle_height);
-
-  // Note the following values are in image (bitmap) space.
-  float image_width = image_bounds_.width();
-  float image_height = image_bounds_.height();
-
-  int image_aperture_left_width = image_aperture_.x();
-  int image_aperture_top_height = image_aperture_.y();
-  int image_aperture_right_width = image_width - image_aperture_.right();
-  int image_aperture_bottom_height = image_height - image_aperture_.bottom();
-  // Patch positions in bitmap UV space (from zero to one)
-  gfx::RectF uv_top_left = NormalizedRect(0,
-                                          0,
-                                          image_aperture_left_width,
-                                          image_aperture_top_height,
-                                          image_width,
-                                          image_height);
-  gfx::RectF uv_top_right =
-      NormalizedRect(image_width - image_aperture_right_width,
-                     0,
-                     image_aperture_right_width,
-                     image_aperture_top_height,
-                     image_width,
-                     image_height);
-  gfx::RectF uv_bottom_left =
-      NormalizedRect(0,
-                     image_height - image_aperture_bottom_height,
-                     image_aperture_left_width,
-                     image_aperture_bottom_height,
-                     image_width,
-                     image_height);
-  gfx::RectF uv_bottom_right =
-      NormalizedRect(image_width - image_aperture_right_width,
-                     image_height - image_aperture_bottom_height,
-                     image_aperture_right_width,
-                     image_aperture_bottom_height,
-                     image_width,
-                     image_height);
-  gfx::RectF uv_top(
-      uv_top_left.right(),
-      0,
-      (image_width - image_aperture_left_width - image_aperture_right_width) /
-          image_width,
-      (image_aperture_top_height) / image_height);
-  gfx::RectF uv_left(0,
-                     uv_top_left.bottom(),
-                     image_aperture_left_width / image_width,
-                     (image_height - image_aperture_top_height -
-                      image_aperture_bottom_height) /
-                         image_height);
-  gfx::RectF uv_right(uv_top_right.x(),
-                      uv_top_right.bottom(),
-                      image_aperture_right_width / image_width,
-                      uv_left.height());
-  gfx::RectF uv_bottom(uv_top.x(),
-                       uv_bottom_left.y(),
-                       uv_top.width(),
-                       image_aperture_bottom_height / image_height);
-  gfx::RectF uv_center(uv_top_left.right(),
-                       uv_top_left.bottom(),
-                       uv_top.width(),
-                       uv_left.height());
-
-  gfx::Rect opaque_rect;
-  gfx::Rect visible_rect;
-  const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-  const bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_);
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_top_left);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_top_left, opaque_rect, visible_rect,
-                 resource, premultiplied_alpha, uv_top_left.origin(),
-                 uv_top_left.bottom_right(), SK_ColorTRANSPARENT,
-                 vertex_opacity, flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_top_right);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_top_right, opaque_rect, visible_rect,
-                 resource, premultiplied_alpha, uv_top_right.origin(),
-                 uv_top_right.bottom_right(), SK_ColorTRANSPARENT,
-                 vertex_opacity, flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_bottom_left);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_bottom_left, opaque_rect,
-                 visible_rect, resource, premultiplied_alpha,
-                 uv_bottom_left.origin(), uv_bottom_left.bottom_right(),
-                 SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                 nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_bottom_right);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_bottom_right, opaque_rect,
-                 visible_rect, resource, premultiplied_alpha,
-                 uv_bottom_right.origin(), uv_bottom_right.bottom_right(),
-                 SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                 nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_top);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_top, opaque_rect, visible_rect,
-                 resource, premultiplied_alpha, uv_top.origin(),
-                 uv_top.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_left);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_left, opaque_rect, visible_rect,
-                 resource, premultiplied_alpha, uv_left.origin(),
-                 uv_left.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_right);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_right, opaque_rect, layer_right,
-                 resource, premultiplied_alpha, uv_right.origin(),
-                 uv_right.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  visible_rect =
-      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          layer_bottom);
-  opaque_rect = opaque ? visible_rect : gfx::Rect();
-  if (!visible_rect.IsEmpty()) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    quad->SetNew(shared_quad_state, layer_bottom, opaque_rect, visible_rect,
-                 resource, premultiplied_alpha, uv_bottom.origin(),
-                 uv_bottom.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_, false);
-    ValidateQuadResources(quad);
-  }
-
-  if (fill_center_) {
-    visible_rect =
+  for (const auto& patch : patches) {
+    gfx::Rect visible_rect =
         draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-            layer_center);
-    opaque_rect = opaque ? visible_rect : gfx::Rect();
+            ToRect(patch.layer_rect));
+    gfx::Rect opaque_rect = opaque ? visible_rect : gfx::Rect();
     if (!visible_rect.IsEmpty()) {
+      gfx::RectF image_rect(NormalizedRect(
+          patch.image_rect, image_bounds_.width(), image_bounds_.height()));
       TextureDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      quad->SetNew(shared_quad_state, layer_center, opaque_rect, visible_rect,
-                   resource, premultiplied_alpha, uv_center.origin(),
-                   uv_center.bottom_right(), SK_ColorTRANSPARENT,
-                   vertex_opacity, flipped, nearest_neighbor_, false);
+      quad->SetNew(shared_quad_state, ToRect(patch.layer_rect), opaque_rect,
+                   visible_rect, resource, premultiplied_alpha,
+                   image_rect.origin(), image_rect.bottom_right(),
+                   SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                   nearest_neighbor_, false);
       ValidateQuadResources(quad);
     }
   }
@@ -368,6 +376,13 @@ std::unique_ptr<base::DictionaryValue> NinePatchLayerImpl::LayerTreeAsJson() {
   result->Set("Border", MathUtil::AsValue(border_).release());
 
   result->SetBoolean("FillCenter", fill_center_);
+
+  list = new base::ListValue;
+  list->AppendInteger(layer_occlusion_.x());
+  list->AppendInteger(layer_occlusion_.y());
+  list->AppendInteger(layer_occlusion_.width());
+  list->AppendInteger(layer_occlusion_.height());
+  result->Set("LayerOcclusion", list);
 
   return result;
 }
