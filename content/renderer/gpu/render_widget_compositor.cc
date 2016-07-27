@@ -486,7 +486,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.create_low_res_tiling = true;
   if (cmd.HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-  if (cmd.HasSwitch(cc::switches::kEnableBeginFrameScheduling))
+  if (!cmd.HasSwitch(cc::switches::kDisableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
