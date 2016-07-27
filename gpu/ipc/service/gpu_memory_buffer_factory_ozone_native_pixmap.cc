@@ -75,14 +75,29 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     int client_id,
     SurfaceHandle surface_handle) {
   DCHECK_EQ(handle.type, gfx::OZONE_NATIVE_PIXMAP);
-  scoped_refptr<ui::NativePixmap> pixmap =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmapFromHandle(surface_handle, size, format,
-                                         handle.native_pixmap_handle);
-  if (!pixmap.get()) {
-    DLOG(ERROR) << "Failed to create pixmap from handle";
-    return nullptr;
+
+  scoped_refptr<ui::NativePixmap> pixmap;
+
+  // If CreateGpuMemoryBuffer was used to allocate this buffer then avoid
+  // creating a new native pixmap for it.
+  {
+    base::AutoLock lock(native_pixmaps_lock_);
+    NativePixmapMapKey key(handle.id.id, client_id);
+    auto it = native_pixmaps_.find(key);
+    if (it != native_pixmaps_.end())
+      pixmap = it->second;
+  }
+
+  // Create new pixmap from handle if one doesn't already exist.
+  if (!pixmap) {
+    pixmap = ui::OzonePlatform::GetInstance()
+                 ->GetSurfaceFactoryOzone()
+                 ->CreateNativePixmapFromHandle(surface_handle, size, format,
+                                                handle.native_pixmap_handle);
+    if (!pixmap.get()) {
+      DLOG(ERROR) << "Failed to create pixmap from handle";
+      return nullptr;
+    }
   }
 
   scoped_refptr<ui::GLImageOzoneNativePixmap> image(
