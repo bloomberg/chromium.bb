@@ -1282,7 +1282,7 @@ ScopedVector<BatchUploadChildEntry>::iterator BatchUploadRequest::GetChildEntry(
 void BatchUploadRequest::MayCompletePrepare() {
   if (!committed_ || prepare_callback_.is_null())
     return;
-  for (const auto& child : child_requests_) {
+  for (auto* child : child_requests_) {
     if (!child->prepared)
       return;
   }
@@ -1290,7 +1290,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   // Build multipart body here.
   int64_t total_size = 0;
   std::vector<ContentTypeAndData> parts;
-  for (auto& child : child_requests_) {
+  for (auto* child : child_requests_) {
     std::string type;
     std::string data;
     const bool result = child->request->GetContentData(&type, &data);
@@ -1402,7 +1402,7 @@ void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
 }
 
 void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
-  for (auto& child : child_requests_)
+  for (auto* child : child_requests_)
     child->request->NotifyError(code);
   child_requests_.clear();
 }
@@ -1410,7 +1410,7 @@ void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
 void BatchUploadRequest::OnURLFetchUploadProgress(const net::URLFetcher* source,
                                                   int64_t current,
                                                   int64_t total) {
-  for (auto& child : child_requests_) {
+  for (auto* child : child_requests_) {
     if (child->data_offset <= current &&
         current <= child->data_offset + child->data_size) {
       child->request->NotifyUploadProgress(source, current - child->data_offset,

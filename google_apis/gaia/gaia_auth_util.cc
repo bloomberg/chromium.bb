@@ -168,8 +168,8 @@ bool ParseListAccountsData(const std::string& data,
           listed_account.valid = is_email_valid != 0;
           listed_account.signed_out = signed_out != 0;
           listed_account.raw_email = email;
-          auto list = listed_account.signed_out ? signed_out_accounts :
-                                                  accounts;
+          auto* list =
+              listed_account.signed_out ? signed_out_accounts : accounts;
           if (list)
             list->push_back(listed_account);
         }
