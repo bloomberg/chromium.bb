@@ -322,7 +322,7 @@ STATIC_ASSERT_ENUM(WebURLLoaderOptions::ConsiderPreflight, ConsiderPreflight);
 STATIC_ASSERT_ENUM(WebURLLoaderOptions::ForcePreflight, ForcePreflight);
 STATIC_ASSERT_ENUM(WebURLLoaderOptions::PreventPreflight, PreventPreflight);
 
-void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURLResponse& response, WebURLError& error, WebData& data)
+void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURLResponse& response, WebURLError& error, WebData& data, int64_t& encodedDataLength)
 {
     DCHECK(0); // Synchronous loading is not supported.
 }

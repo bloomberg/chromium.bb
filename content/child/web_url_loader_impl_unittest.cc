@@ -686,6 +686,7 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
 TEST_F(WebURLLoaderImplTest, SyncLengths) {
   static const char kBodyData[] =  "Today is Thursday";
   const int kEncodedBodyLength = 30;
+  const int kEncodedDataLength = 130;
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
 
@@ -696,14 +697,18 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   sync_load_response.data = kBodyData;
   ASSERT_EQ(17u, sync_load_response.data.size());
   sync_load_response.encoded_body_length = kEncodedBodyLength;
+  sync_load_response.encoded_data_length = kEncodedDataLength;
   dispatcher()->set_sync_load_response(sync_load_response);
 
   blink::WebURLResponse response;
   blink::WebURLError error;
   blink::WebData data;
-  client()->loader()->loadSynchronously(request, response, error, data);
+  int64_t encoded_data_length = 0;
+  client()->loader()->loadSynchronously(request, response, error, data,
+                                        encoded_data_length);
 
   EXPECT_EQ(kEncodedBodyLength, response.encodedBodyLength());
+  EXPECT_EQ(kEncodedDataLength, encoded_data_length);
   int expected_decoded_body_length = strlen(kBodyData);
   EXPECT_EQ(expected_decoded_body_length, response.decodedBodyLength());
 }

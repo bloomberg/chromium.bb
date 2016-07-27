@@ -51,7 +51,7 @@ public:
     ~AssociatedURLLoader();
 
     // WebURLLoader methods:
-    void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&) override;
+    void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&, int64_t& encodedDataLength) override;
     void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override;
     void cancel() override;
     void setDefersLoading(bool) override;

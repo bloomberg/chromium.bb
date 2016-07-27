@@ -103,16 +103,19 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
 void WebURLLoaderMock::loadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
-                                         WebData& data) {
+                                         WebData& data,
+                                         int64_t& encoded_data_length) {
   if (factory_->IsMockedURL(request.url())) {
-    factory_->LoadSynchronously(request, &response, &error, &data);
+      factory_->LoadSynchronously(request, &response, &error, &data,
+                                  &encoded_data_length);
     return;
   }
   DCHECK(KURL(request.url()).protocolIsData())
       << "loadSynchronously shouldn't be falling back: "
       << request.url().string().utf8();
   using_default_loader_ = true;
-  default_loader_->loadSynchronously(request, response, error, data);
+  default_loader_->loadSynchronously(request, response, error, data,
+                                     encoded_data_length);
 }
 
 void WebURLLoaderMock::loadAsynchronously(const WebURLRequest& request,

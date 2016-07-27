@@ -114,8 +114,10 @@ void WebURLLoaderMockFactoryImpl::LoadSynchronously(
     const WebURLRequest& request,
     WebURLResponse* response,
     WebURLError* error,
-    WebData* data) {
+    WebData* data,
+    int64_t* encoded_data_length) {
   LoadRequest(request, response, error, data);
+  *encoded_data_length = data->size();
 }
 
 void WebURLLoaderMockFactoryImpl::LoadAsynchronouly(

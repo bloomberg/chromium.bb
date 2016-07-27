@@ -1134,7 +1134,8 @@ void WebURLLoaderImpl::PopulateURLRequestForRedirect(
 void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
-                                         WebData& data) {
+                                         WebData& data,
+                                         int64_t& encoded_data_length) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
@@ -1156,6 +1157,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                       request.reportRawHeaders());
   response.addToEncodedBodyLength(sync_load_response.encoded_body_length);
   response.addToDecodedBodyLength(sync_load_response.data.size());
+  encoded_data_length = sync_load_response.encoded_data_length;
 
   data.assign(sync_load_response.data.data(), sync_load_response.data.size());
 }

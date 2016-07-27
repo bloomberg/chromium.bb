@@ -48,7 +48,8 @@ class WebURLLoaderMock : public WebURLLoader {
   void loadSynchronously(const WebURLRequest& request,
                          WebURLResponse& response,
                          WebURLError& error,
-                         WebData& data) override;
+                         WebData& data,
+                         int64_t& encoded_data_length) override;
   void loadAsynchronously(const WebURLRequest& request,
                           WebURLLoaderClient* client) override;
   void cancel() override;

@@ -574,6 +574,7 @@ void ResourceDispatcher::StartSync(const RequestInfo& request_info,
   response->data.swap(result.data);
   response->download_file_path = result.download_file_path;
   response->socket_address = result.socket_address;
+  response->encoded_data_length = result.encoded_data_length;
   response->encoded_body_length = result.encoded_body_length;
 }
 

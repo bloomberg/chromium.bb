@@ -242,7 +242,8 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request)
     WebURLResponse responseOut;
     WebURLError errorOut;
     WebData dataOut;
-    m_loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
+    int64_t encodedDataLength = WebURLLoaderClient::kUnknownEncodedDataLength;
+    m_loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut, encodedDataLength);
 
     // A message dispatched while synchronously fetching the resource
     // can bring about the cancellation of this load.
@@ -255,8 +256,6 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request)
     didReceiveResponse(0, responseOut);
     if (!m_loader)
         return;
-    RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
-    int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : WebURLLoaderClient::kUnknownEncodedDataLength;
     DCHECK_GE(responseOut.toResourceResponse().encodedBodyLength(), 0);
 
     // Follow the async case convention of not calling didReceiveData or

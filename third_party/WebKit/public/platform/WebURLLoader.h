@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebURLRequest.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -51,7 +52,8 @@ public:
     // caller upon completion.  There is no mechanism to interrupt a
     // synchronous load!!
     virtual void loadSynchronously(const WebURLRequest&,
-        WebURLResponse&, WebURLError&, WebData& data) = 0;
+        WebURLResponse&, WebURLError&, WebData&,
+        int64_t& encodedDataLength) = 0;
 
     // Load the request asynchronously, sending notifications to the given
     // client.  The client will receive no further notifications if the
