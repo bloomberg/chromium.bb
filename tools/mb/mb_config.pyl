@@ -222,7 +222,7 @@
       'MD Top Chrome ChromeOS non-material':
         'gn_chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material':
-        'gyp_debug_bot_minimal_symbols_x64',
+        'gn_debug_bot_minimal_symbols_x64',
       'MD Top Chrome Linux material': 'gn_debug_bot',
       'LTO Linux': 'gn_official_goma_lto',
       'LTO Linux Perf': 'gn_official_goma_lto',
@@ -240,7 +240,7 @@
       'Mojo ChromiumOS': 'swarming_chromeos_gn_release_bot',
       'Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
       'Site Isolation Linux': 'gn_release_trybot',
-      'Site Isolation Win': 'gyp_release_trybot_x86',
+      'Site Isolation Win': 'gn_release_trybot_x86',
       'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
       'WebKit Linux - TraceWrappables': 'swarming_gn_release_bot_x64',
       'WebKit Linux - WPTServe': 'swarming_gn_release_bot',
@@ -942,8 +942,8 @@
       'win_clang_x64_dbg': 'win_clang_debug_bot',
       'win_clang_x64_rel':
         'swarming_gn_clang_official_optimize_release_trybot_x64',
-      'win_nacl_sdk': 'gyp_release_bot_minimal_symbols_x86',
-      'win_nacl_sdk_build': 'gyp_release_bot_minimal_symbols_x86',
+      'win_nacl_sdk': 'gn_release_bot_minimal_symbols_x86',
+      'win_nacl_sdk_build': 'gn_release_bot_minimal_symbols_x86',
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gn_release_trybot_x86',
       'win_pgo': [
@@ -1333,8 +1333,8 @@
       'gn', 'chromeos_with_codecs', 'debug_bot',
     ],
 
-    'gyp_debug_bot_minimal_symbols_x64': [
-      'gyp', 'debug_bot_minimal_symbols', 'x64',
+    'gn_debug_bot_minimal_symbols_x64': [
+      'gn', 'debug_bot_minimal_symbols', 'x64',
     ],
 
     'gn_debug_bot_minimal_symbols_x86': [
@@ -1413,12 +1413,8 @@
       'gyp', 'official', 'x64', 'six_concurrent_links',
     ],
 
-    'gyp_release_bot_minimal_symbols_x86': [
-      'gyp', 'release_bot_minimal_symbols', 'x86'
-    ],
-
-    'gyp_release_trybot_x86': [
-      'gyp', 'release_trybot', 'x86',
+    'gn_release_trybot_x86': [
+      'gn', 'release_trybot', 'x86',
     ],
 
     'gn_shared_release_bot_minimal_symbols_x86': [
