@@ -176,6 +176,7 @@ RequestIdleCallback status=stable
 ResponseConstructedWithReadableStream status=stable
 ResponseBodyWithV8ExtraStream status=stable
 ResizeObserver status=experimental
+RTCPeerConnectionNewGetStats status=test
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

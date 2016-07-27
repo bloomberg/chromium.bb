@@ -26,7 +26,7 @@
 #define RTCStatsResponse_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/peerconnection/RTCStatsReport.h"
+#include "modules/peerconnection/RTCLegacyStatsReport.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCStatsResponseBase.h"
 #include "wtf/HashMap.h"
@@ -40,9 +40,9 @@ class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappab
 public:
     static RTCStatsResponse* create();
 
-    const HeapVector<Member<RTCStatsReport>>& result() const { return m_result; }
+    const HeapVector<Member<RTCLegacyStatsReport>>& result() const { return m_result; }
 
-    RTCStatsReport* namedItem(const AtomicString& name);
+    RTCLegacyStatsReport* namedItem(const AtomicString& name);
 
     size_t addReport(const String& id, const String& type, double timestamp) override;
     void addStatistic(size_t report, const String& name, const String& value) override;
@@ -52,7 +52,7 @@ public:
 private:
     RTCStatsResponse();
 
-    HeapVector<Member<RTCStatsReport>> m_result;
+    HeapVector<Member<RTCLegacyStatsReport>> m_result;
     HashMap<String, int> m_idmap;
 };
 

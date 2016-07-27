@@ -113,7 +113,8 @@ public:
 
     void removeStream(MediaStream*, ExceptionState&);
 
-    void getStats(ExecutionContext*, RTCStatsCallback* successCallback, MediaStreamTrack* selector);
+    ScriptPromise getStats(ScriptState*, RTCStatsCallback* successCallback, MediaStreamTrack* selector = nullptr);
+    ScriptPromise getStats(ScriptState*, MediaStreamTrack* selector = nullptr);
 
     RTCDataChannel* createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
 

@@ -104,10 +104,12 @@ enum RTCIceConnectionState {
     // TODO(guidou): The failureCallback argument should be non-optional.
     [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
+
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
     // argument.
-    [CallWith=ExecutionContext, LegacyInterfaceTypeChecking] void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
+    [CallWith=ScriptState] Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
+    [CallWith=ScriptState, RuntimeEnabled=RTCPeerConnectionNewGetStats] Promise<RTCStatsReport> getStats(optional MediaStreamTrack? selector);
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]

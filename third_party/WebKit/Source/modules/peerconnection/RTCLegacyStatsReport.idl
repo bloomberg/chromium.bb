@@ -24,7 +24,7 @@
 
 [
     NoInterfaceObject
-] interface RTCStatsReport {
+] interface RTCLegacyStatsReport {
     readonly attribute Date timestamp;
     readonly attribute DOMString id;
     readonly attribute DOMString type;

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -22,41 +23,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsReport_h
-#define RTCStatsReport_h
-
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "modules/peerconnection/RTCLegacyStatsReport.h"
 
 namespace blink {
 
-class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCStatsReport* create(const String& id, const String& type, double timestamp);
+RTCLegacyStatsReport* RTCLegacyStatsReport::create(const String& id, const String& type, double timestamp)
+{
+    return new RTCLegacyStatsReport(id, type, timestamp);
+}
 
-    double timestamp() const { return m_timestamp; }
-    String id() { return m_id; }
-    String type() { return m_type; }
-    String stat(const String& name) { return m_stats.get(name); }
-    Vector<String> names() const;
+RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id, const String& type, double timestamp)
+    : m_id(id)
+    , m_type(type)
+    , m_timestamp(timestamp)
+{
+}
 
-    void addStatistic(const String& name, const String& value);
+Vector<String> RTCLegacyStatsReport::names() const
+{
+    Vector<String> result;
+    for (HashMap<String, String>::const_iterator it = m_stats.begin(); it != m_stats.end(); ++it) {
+        result.append(it->key);
+    }
+    return result;
+}
 
-    DEFINE_INLINE_TRACE() { }
-
-private:
-    RTCStatsReport(const String& id, const String& type, double timestamp);
-
-    String m_id;
-    String m_type;
-    double m_timestamp;
-    HashMap<String, String> m_stats;
-};
+void RTCLegacyStatsReport::addStatistic(const String& name, const String& value)
+{
+    m_stats.add(name, value);
+}
 
 } // namespace blink
-
-#endif // RTCStatsReport_h

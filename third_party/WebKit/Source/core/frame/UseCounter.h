@@ -1277,6 +1277,7 @@ public:
         CSSValueAppearanceTextFieldRendered = 1473,
         CSSValueAppearanceTextFieldForSearch = 1474,
         CSSValueAppearanceTextFieldForTextField = 1475,
+        RTCPeerConnectionGetStats = 1476,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

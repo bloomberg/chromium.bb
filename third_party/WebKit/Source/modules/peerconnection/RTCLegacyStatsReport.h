@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -23,34 +22,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCStatsReport.h"
+#ifndef RTCLegacyStatsReport_h
+#define RTCLegacyStatsReport_h
+
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-RTCStatsReport* RTCStatsReport::create(const String& id, const String& type, double timestamp)
-{
-    return new RTCStatsReport(id, type, timestamp);
-}
+class RTCLegacyStatsReport final : public GarbageCollectedFinalized<RTCLegacyStatsReport>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static RTCLegacyStatsReport* create(const String& id, const String& type, double timestamp);
 
-RTCStatsReport::RTCStatsReport(const String& id, const String& type, double timestamp)
-    : m_id(id)
-    , m_type(type)
-    , m_timestamp(timestamp)
-{
-}
+    double timestamp() const { return m_timestamp; }
+    String id() { return m_id; }
+    String type() { return m_type; }
+    String stat(const String& name) { return m_stats.get(name); }
+    Vector<String> names() const;
 
-Vector<String> RTCStatsReport::names() const
-{
-    Vector<String> result;
-    for (HashMap<String, String>::const_iterator it = m_stats.begin(); it != m_stats.end(); ++it) {
-        result.append(it->key);
-    }
-    return result;
-}
+    void addStatistic(const String& name, const String& value);
 
-void RTCStatsReport::addStatistic(const String& name, const String& value)
-{
-    m_stats.add(name, value);
-}
+    DEFINE_INLINE_TRACE() { }
+
+private:
+    RTCLegacyStatsReport(const String& id, const String& type, double timestamp);
+
+    String m_id;
+    String m_type;
+    double m_timestamp;
+    HashMap<String, String> m_stats;
+};
 
 } // namespace blink
+
+#endif // RTCLegacyStatsReport_h

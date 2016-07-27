@@ -40,6 +40,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/RTCIceCandidateInitOrRTCIceCandidate.h"
+#include "bindings/modules/v8/V8MediaStreamTrack.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTimeStamp.h"
@@ -71,6 +72,7 @@
 #include "modules/peerconnection/RTCStatsRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
 #include "platform/peerconnection/RTCConfiguration.h"
 #include "platform/peerconnection/RTCOfferOptionsPlatform.h"
@@ -948,12 +950,27 @@ MediaStream* RTCPeerConnection::getStreamById(const String& streamId)
     return 0;
 }
 
-void RTCPeerConnection::getStats(ExecutionContext* context, RTCStatsCallback* successCallback, MediaStreamTrack* selector)
+ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState, RTCStatsCallback* successCallback, MediaStreamTrack* selector)
 {
+    ExecutionContext* context = scriptState->getExecutionContext();
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
     UseCounter::count(context, UseCounter::RTCPeerConnectionGetStatsLegacyNonCompliant);
     RTCStatsRequest* statsRequest = RTCStatsRequestImpl::create(getExecutionContext(), this, successCallback, selector);
     // FIXME: Add passing selector as part of the statsRequest.
     m_peerHandler->getStats(statsRequest);
+
+    resolver->resolve();
+    return promise;
+}
+
+ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState, MediaStreamTrack* selector)
+{
+    ExecutionContext* context = scriptState->getExecutionContext();
+    UseCounter::count(context, UseCounter::RTCPeerConnectionGetStats);
+    // TODO(hbos): Implement new |getStats| function. crbug.com/627816
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "getStats(optional MediaStreamTrack?) has not been implemented yet."));
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Dictionary& options, ExceptionState& exceptionState)

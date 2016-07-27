@@ -35,7 +35,7 @@ RTCStatsResponse::RTCStatsResponse()
 {
 }
 
-RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
+RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
 {
     if (m_idmap.find(name) != m_idmap.end())
         return m_result[m_idmap.get(name)];
@@ -44,7 +44,7 @@ RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
 
 size_t RTCStatsResponse::addReport(const String& id, const String& type, double timestamp)
 {
-    m_result.append(RTCStatsReport::create(id, type, timestamp));
+    m_result.append(RTCLegacyStatsReport::create(id, type, timestamp));
     m_idmap.add(id, m_result.size() - 1);
     return m_result.size() - 1;
 }
