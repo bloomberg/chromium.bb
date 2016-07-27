@@ -45,7 +45,7 @@ component("power_save_blocker") {
   if (is_chromeos || !use_ozone) {
     sources -= [ "power_save_blocker_ozone.cc" ]
   }
-  if (is_chromeos || !use_x11) {
+  if (is_chromeos || !use_x11 || !use_dbus) {
     sources -= [ "power_save_blocker_x11.cc" ]
   }
 
