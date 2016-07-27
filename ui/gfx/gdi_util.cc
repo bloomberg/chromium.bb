@@ -10,40 +10,15 @@
 #include <memory>
 
 #include "base/logging.h"
-
-namespace {
-
-void CreateBitmapHeaderWithColorDepth(LONG width,
-                                      LONG height,
-                                      WORD color_depth,
-                                      BITMAPINFOHEADER* hdr) {
-  // These values are shared with gfx::PlatformDevice
-  hdr->biSize = sizeof(BITMAPINFOHEADER);
-  hdr->biWidth = width;
-  hdr->biHeight = -height;  // minus means top-down bitmap
-  hdr->biPlanes = 1;
-  hdr->biBitCount = color_depth;
-  hdr->biCompression = BI_RGB;  // no compression
-  hdr->biSizeImage = 0;
-  hdr->biXPelsPerMeter = 1;
-  hdr->biYPelsPerMeter = 1;
-  hdr->biClrUsed = 0;
-  hdr->biClrImportant = 0;
-}
-
-}  // namespace
+#include "skia/ext/skia_utils_win.h"
 
 namespace gfx {
-
-void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
-  CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
-}
 
 void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr) {
   // Because bmp v4 header is just an extension, we just create a v3 header and
   // copy the bits over to the v4 header.
   BITMAPINFOHEADER header_v3;
-  CreateBitmapHeader(width, height, &header_v3);
+  skia::CreateBitmapHeader(width, height, &header_v3);
   memset(hdr, 0, sizeof(BITMAPV4HEADER));
   memcpy(hdr, &header_v3, sizeof(BITMAPINFOHEADER));
 

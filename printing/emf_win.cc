@@ -19,7 +19,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -106,8 +105,8 @@ class RasterBitmap {
     ::SetGraphicsMode(context_.Get(), GM_ADVANCED);
     void* bits = NULL;
     gfx::Rect bitmap_rect(raster_size);
-    gfx::CreateBitmapHeader(raster_size.width(), raster_size.height(),
-                            &header_.bmiHeader);
+    skia::CreateBitmapHeader(raster_size.width(), raster_size.height(),
+                             &header_.bmiHeader);
     bitmap_.reset(CreateDIBSection(context_.Get(), &header_, DIB_RGB_COLORS,
                                    &bits, NULL, 0));
     if (!bitmap_.is_valid())
@@ -388,7 +387,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
             return false;
           }
           BITMAPINFOHEADER bmi = {0};
-          gfx::CreateBitmapHeader(bitmap->width(), bitmap->height(), &bmi);
+          skia::CreateBitmapHeader(bitmap->width(), bitmap->height(), &bmi);
           res = (0 != StretchDIBits(hdc, sdib_record->xDest, sdib_record->yDest,
                                     sdib_record->cxDest,
                                     sdib_record->cyDest, sdib_record->xSrc,

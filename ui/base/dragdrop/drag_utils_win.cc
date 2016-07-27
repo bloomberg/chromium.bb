@@ -11,11 +11,12 @@
 
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
+#include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -44,7 +45,7 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
 static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
   base::win::ScopedGetDC screen_dc(NULL);
   BITMAPINFOHEADER header;
-  gfx::CreateBitmapHeader(sk_bitmap.width(), sk_bitmap.height(), &header);
+  skia::CreateBitmapHeader(sk_bitmap.width(), sk_bitmap.height(), &header);
   void* bits;
   HBITMAP bitmap =
       CreateDIBSection(screen_dc, reinterpret_cast<BITMAPINFO*>(&header),

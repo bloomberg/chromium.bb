@@ -16,8 +16,8 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hdc.h"
 #include "skia/ext/image_operations.h"
+#include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
@@ -320,7 +320,7 @@ base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
                                                      const void* dib_bits,
                                                      size_t dib_size) {
   BITMAPINFO icon_bitmap_info = {};
-  gfx::CreateBitmapHeader(
+  skia::CreateBitmapHeader(
       icon_size.width(),
       icon_size.height(),
       reinterpret_cast<BITMAPINFOHEADER*>(&icon_bitmap_info));
