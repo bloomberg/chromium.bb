@@ -156,6 +156,8 @@ class ASH_EXPORT Shelf {
     return &shelf_locking_manager_;
   }
 
+  ShelfView* shelf_view_for_testing() { return shelf_view_; }
+
  private:
   friend class test::ShelfTestAPI;
 

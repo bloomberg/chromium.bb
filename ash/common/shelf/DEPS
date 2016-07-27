@@ -7,6 +7,9 @@ specific_include_rules = {
   "overflow_bubble.cc": [
     "+ash/shelf/shelf_view.h"
   ],
+  "shelf_button.cc": [
+    "+ash/shelf/shelf_view.h"
+  ],
   "shelf_tooltip_manager.cc": [
     "+ash/shelf/shelf_view.h"
   ],

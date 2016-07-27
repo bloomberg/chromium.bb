@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_SHELF_BUTTON_PRESSED_METRIC_TRACKER_TEST_API_H_
 #define ASH_TEST_SHELF_BUTTON_PRESSED_METRIC_TRACKER_TEST_API_H_
 
-#include "ash/shelf/shelf_button_pressed_metric_tracker.h"
+#include "ash/common/shelf/shelf_button_pressed_metric_tracker.h"
 
 #include <memory>
 

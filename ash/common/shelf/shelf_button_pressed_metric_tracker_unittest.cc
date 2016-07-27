@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_button_pressed_metric_tracker.h"
+#include "ash/common/shelf/shelf_button_pressed_metric_tracker.h"
 
 #include <utility>
 
-#include "ash/shelf/shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
 #include "ash/test/shelf_test_api.h"
@@ -106,8 +106,8 @@ ShelfButtonPressedMetricTrackerTest::~ShelfButtonPressedMetricTrackerTest() {}
 void ShelfButtonPressedMetricTrackerTest::SetUp() {
   AshTestBase::SetUp();
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  ShelfViewTestAPI shelf_view_test_api(ShelfTestAPI(shelf).shelf_view());
+  WmShelf* wm_shelf = GetPrimaryShelf();
+  ShelfViewTestAPI shelf_view_test_api(wm_shelf->GetShelfViewForTesting());
 
   metric_tracker_ = shelf_view_test_api.shelf_button_pressed_metric_tracker();
 

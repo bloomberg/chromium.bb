@@ -20,6 +20,7 @@ class MouseEvent;
 namespace ash {
 
 class ShelfLockingManager;
+class ShelfView;
 class WmShelfObserver;
 class WmWindow;
 
@@ -93,6 +94,7 @@ class ASH_EXPORT WmShelf {
   virtual void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) = 0;
 
   virtual ShelfLockingManager* GetShelfLockingManagerForTesting() = 0;
+  virtual ShelfView* GetShelfViewForTesting() = 0;
 
  protected:
   virtual ~WmShelf() {}

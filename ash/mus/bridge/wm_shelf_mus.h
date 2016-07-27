@@ -51,6 +51,7 @@ class WmShelfMus : public WmShelf {
   void RemoveObserver(WmShelfObserver* observer) override;
   void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) override;
   ShelfLockingManager* GetShelfLockingManagerForTesting() override;
+  ShelfView* GetShelfViewForTesting() override;
 
  private:
   base::ObserverList<WmShelfObserver> observers_;

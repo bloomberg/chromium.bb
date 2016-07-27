@@ -142,5 +142,10 @@ ShelfLockingManager* WmShelfMus::GetShelfLockingManagerForTesting() {
   return nullptr;
 }
 
+ShelfView* WmShelfMus::GetShelfViewForTesting() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace mus
 }  // namespace ash

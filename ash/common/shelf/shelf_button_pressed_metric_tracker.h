@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
-#define ASH_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
+#define ASH_COMMON_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
 
 #include <memory>
 
@@ -89,4 +89,4 @@ class ASH_EXPORT ShelfButtonPressedMetricTracker {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_BUTTON_PRESSED_METRIC_TRACKER_H_

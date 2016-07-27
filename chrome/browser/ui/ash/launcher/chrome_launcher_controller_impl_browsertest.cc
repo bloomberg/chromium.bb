@@ -8,12 +8,12 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
+#include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_button.h"
+#include "ash/common/shelf/shelf_button.h"
 
 #include <algorithm>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -137,8 +136,8 @@ namespace ash {
 class ShelfButton::BarView : public views::ImageView,
                              public ShelfButtonAnimation::Observer {
  public:
-  BarView(Shelf* shelf)
-      : shelf_(shelf),
+  BarView(WmShelf* wm_shelf)
+      : wm_shelf_(wm_shelf),
         show_attention_(false),
         animation_end_time_(base::TimeTicks()),
         animating_(false) {
@@ -204,7 +203,7 @@ class ShelfButton::BarView : public views::ImageView,
           animating_ ? ShelfButtonAnimation::GetInstance()->GetAnimation()
                      : 1.0;
       double scale = .35 + .65 * animation;
-      if (shelf_->IsHorizontalAlignment()) {
+      if (IsHorizontalAlignment(wm_shelf_->GetAlignment())) {
         int width = base_bounds_.width() * scale;
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
@@ -230,7 +229,7 @@ class ShelfButton::BarView : public views::ImageView,
     }
   }
 
-  Shelf* shelf_;
+  WmShelf* wm_shelf_;
   bool show_attention_;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
   bool animating_;  // Is time-limited attention animation running?
@@ -250,7 +249,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       listener_(listener),
       shelf_view_(shelf_view),
       icon_view_(new views::ImageView()),
-      bar_(new BarView(shelf_view->shelf())),
+      bar_(new BarView(shelf_view->wm_shelf())),
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -398,22 +397,24 @@ void ShelfButton::GetAccessibleState(ui::AXViewState* state) {
 
 void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  Shelf* shelf = shelf_view_->shelf();
-  int icon_pad = shelf->PrimaryAxisValue(kIconPad, kIconPadVertical);
-  int x_offset = shelf->PrimaryAxisValue(0, icon_pad);
-  int y_offset = shelf->PrimaryAxisValue(icon_pad, 0);
+  WmShelf* wm_shelf = shelf_view_->wm_shelf();
+  const bool is_horizontal_shelf =
+      IsHorizontalAlignment(wm_shelf->GetAlignment());
+  int icon_pad = is_horizontal_shelf ? kIconPad : kIconPadVertical;
+  int x_offset = is_horizontal_shelf ? 0 : icon_pad;
+  int y_offset = is_horizontal_shelf ? icon_pad : 0;
 
   int icon_width = std::min(kIconSize, button_bounds.width() - x_offset);
   int icon_height = std::min(kIconSize, button_bounds.height() - y_offset);
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
+  if (SHELF_ALIGNMENT_LEFT == wm_shelf->GetAlignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
   // Center icon with respect to the secondary axis, and ensure
   // that the icon doesn't occlude the bar highlight.
-  if (shelf->IsHorizontalAlignment()) {
+  if (is_horizontal_shelf) {
     x_offset = std::max(0, button_bounds.width() - icon_width) / 2;
     if (y_offset + icon_height + kBarSize > button_bounds.height())
       icon_height = button_bounds.height() - (y_offset + kBarSize);
@@ -522,11 +523,14 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
 
 void ShelfButton::UpdateState() {
   UpdateBar();
-  Shelf* shelf = shelf_view_->shelf();
-  icon_view_->SetHorizontalAlignment(shelf->PrimaryAxisValue(
-      views::ImageView::CENTER, views::ImageView::LEADING));
-  icon_view_->SetVerticalAlignment(shelf->PrimaryAxisValue(
-      views::ImageView::LEADING, views::ImageView::CENTER));
+  const bool is_horizontal_shelf =
+      IsHorizontalAlignment(shelf_view_->wm_shelf()->GetAlignment());
+  icon_view_->SetHorizontalAlignment(is_horizontal_shelf
+                                         ? views::ImageView::CENTER
+                                         : views::ImageView::LEADING);
+  icon_view_->SetVerticalAlignment(is_horizontal_shelf
+                                       ? views::ImageView::LEADING
+                                       : views::ImageView::CENTER);
   SchedulePaint();
 }
 
@@ -545,10 +549,10 @@ void ShelfButton::UpdateBar() {
     bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
 
   if (bar_id != 0) {
-    Shelf* shelf = shelf_view_->shelf();
+    WmShelf* wm_shelf = shelf_view_->wm_shelf();
     gfx::ImageSkia image;
     if (ash::MaterialDesignController::IsShelfMaterial()) {
-      if (shelf->shelf_widget()->shelf_layout_manager()->IsVisible()) {
+      if (wm_shelf->IsVisible()) {
         gfx::Size size(GetShelfConstant(SHELF_BUTTON_SIZE),
                        GetShelfConstant(SHELF_SIZE));
         gfx::Canvas canvas(size, kIndicatorCanvasScale, true /* is_opaque */);
@@ -559,19 +563,29 @@ void ShelfButton::UpdateBar() {
       ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
       image = *rb->GetImageNamed(bar_id).ToImageSkia();
     }
-    if (!shelf->IsHorizontalAlignment()) {
+    ShelfAlignment shelf_alignment = wm_shelf->GetAlignment();
+    if (!IsHorizontalAlignment(shelf_alignment)) {
       image = gfx::ImageSkiaOperations::CreateRotatedImage(
-          image, shelf->alignment() == SHELF_ALIGNMENT_LEFT
+          image, shelf_alignment == SHELF_ALIGNMENT_LEFT
                      ? SkBitmapOperations::ROTATION_90_CW
                      : SkBitmapOperations::ROTATION_270_CW);
     }
     bar_->SetImage(image);
-    bar_->SetHorizontalAlignment(shelf->SelectValueForShelfAlignment(
-        views::ImageView::CENTER, views::ImageView::LEADING,
-        views::ImageView::TRAILING));
-    bar_->SetVerticalAlignment(shelf->SelectValueForShelfAlignment(
-        views::ImageView::TRAILING, views::ImageView::CENTER,
-        views::ImageView::CENTER));
+    switch (shelf_alignment) {
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        bar_->SetHorizontalAlignment(views::ImageView::CENTER);
+        bar_->SetVerticalAlignment(views::ImageView::TRAILING);
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        bar_->SetHorizontalAlignment(views::ImageView::LEADING);
+        bar_->SetVerticalAlignment(views::ImageView::CENTER);
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        bar_->SetHorizontalAlignment(views::ImageView::TRAILING);
+        bar_->SetVerticalAlignment(views::ImageView::CENTER);
+        break;
+    }
     bar_->SchedulePaint();
   }
   bar_->SetVisible(bar_id != 0 && state_ != STATE_NORMAL);

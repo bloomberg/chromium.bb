@@ -167,6 +167,10 @@ ShelfLockingManager* WmShelfAura::GetShelfLockingManagerForTesting() {
   return shelf_->shelf_locking_manager_for_testing();
 }
 
+ShelfView* WmShelfAura::GetShelfViewForTesting() {
+  return shelf_->shelf_view_for_testing();
+}
+
 void WmShelfAura::WillDeleteShelfLayoutManager() {
   ResetShelfLayoutManager();
 }

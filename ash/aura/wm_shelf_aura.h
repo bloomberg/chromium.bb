@@ -65,6 +65,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void RemoveObserver(WmShelfObserver* observer) override;
   void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) override;
   ShelfLockingManager* GetShelfLockingManagerForTesting() override;
+  ShelfView* GetShelfViewForTesting() override;
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;

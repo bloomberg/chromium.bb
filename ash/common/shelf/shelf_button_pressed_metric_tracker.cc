@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_button_pressed_metric_tracker.h"
+#include "ash/common/shelf/shelf_button_pressed_metric_tracker.h"
 
 #include "ash/common/wm_shell.h"
 #include "base/metrics/histogram_macros.h"
