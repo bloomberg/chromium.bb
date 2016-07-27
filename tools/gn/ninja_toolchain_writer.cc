@@ -105,16 +105,17 @@ void NinjaToolchainWriter::WriteToolRule(const Toolchain::ToolType type,
     out_ << kIndent << "deps = msvc" << std::endl;
   }
 
-  // The link pool applies to linker tools. Don't count TYPE_ALINK since
-  // static libraries are not generally intensive to write.
-  if (type == Toolchain::TYPE_SOLINK ||
-      type == Toolchain::TYPE_SOLINK_MODULE ||
-      type == Toolchain::TYPE_LINK) {
-    out_ << kIndent << "pool = link_pool\n";
-  } else if (tool->pool().ptr) {
+  // Use pool is specified.
+  if (tool->pool().ptr) {
     std::string pool_name =
         tool->pool().ptr->GetNinjaName(settings_->default_toolchain_label());
     out_ << kIndent << "pool = " << pool_name << std::endl;
+  } else if (type == Toolchain::TYPE_SOLINK ||
+      type == Toolchain::TYPE_SOLINK_MODULE ||
+      type == Toolchain::TYPE_LINK) {
+    // The link pool applies to linker tools. Don't count TYPE_ALINK since
+    // static libraries are not generally intensive to write.
+    out_ << kIndent << "pool = link_pool\n";
   }
 
   if (tool->restat())
