@@ -34,7 +34,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
@@ -43,15 +42,15 @@
 
 namespace blink {
 
-WorkerInspectorController* WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
+WorkerInspectorController* WorkerInspectorController::create(WorkerThread* thread)
 {
-    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(workerGlobalScope->thread()->isolate());
-    return debugger ? new WorkerInspectorController(workerGlobalScope, debugger) : nullptr;
+    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread->isolate());
+    return debugger ? new WorkerInspectorController(thread, debugger) : nullptr;
 }
 
-WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, WorkerThreadDebugger* debugger)
+WorkerInspectorController::WorkerInspectorController(WorkerThread* thread, WorkerThreadDebugger* debugger)
     : m_debugger(debugger)
-    , m_workerGlobalScope(workerGlobalScope)
+    , m_thread(thread)
     , m_instrumentingAgents(new InstrumentingAgents())
     , m_logAgent(nullptr)
 {
@@ -59,6 +58,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
 WorkerInspectorController::~WorkerInspectorController()
 {
+    DCHECK(!m_thread);
 }
 
 void WorkerInspectorController::connectFrontend()
@@ -68,7 +68,7 @@ void WorkerInspectorController::connectFrontend()
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
     m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
-    m_logAgent = new InspectorLogAgent(m_workerGlobalScope->consoleMessageStorage());
+    m_logAgent = new InspectorLogAgent(m_thread->consoleMessageStorage());
     m_session->append(m_logAgent.get());
 }
 
@@ -93,17 +93,18 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
 void WorkerInspectorController::dispose()
 {
     disconnectFrontend();
+    m_thread = nullptr;
 }
 
 void WorkerInspectorController::resumeStartup()
 {
-    m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPauseOnWorkerThread();
+    m_thread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
 void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, const String& response, const String& state)
 {
     // Worker messages are wrapped, no need to handle callId or state.
-    m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(response);
+    m_thread->workerReportingProxy().postMessageToPageInspector(response);
 }
 
 void WorkerInspectorController::consoleCleared()
@@ -114,7 +115,6 @@ void WorkerInspectorController::consoleCleared()
 
 DEFINE_TRACE(WorkerInspectorController)
 {
-    visitor->trace(m_workerGlobalScope);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_session);
     visitor->trace(m_logAgent);
