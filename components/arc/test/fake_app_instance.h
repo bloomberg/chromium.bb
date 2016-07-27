@@ -85,12 +85,13 @@ class FakeAppInstance : public mojom::AppInstance {
   void RefreshAppList() override;
   void LaunchApp(const mojo::String& package_name,
                  const mojo::String& activity,
-                 const gfx::Rect& dimension) override;
+                 const base::Optional<gfx::Rect>& dimension) override;
   void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
                       mojom::ScaleFactor scale_factor) override;
-  void LaunchIntent(const mojo::String& intent_uri,
-                    const gfx::Rect& dimension_on_screen) override;
+  void LaunchIntent(
+      const mojo::String& intent_uri,
+      const base::Optional<gfx::Rect>& dimension_on_screen) override;
   void RequestIcon(const mojo::String& icon_resource_id,
                    arc::mojom::ScaleFactor scale_factor,
                    const RequestIconCallback& callback) override;

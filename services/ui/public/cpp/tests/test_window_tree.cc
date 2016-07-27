@@ -55,8 +55,8 @@ void TestWindowTree::SetClientArea(
     const gfx::Insets& insets,
     mojo::Array<gfx::Rect> additional_client_areas) {}
 
-void TestWindowTree::SetHitTestMask(uint32_t window_id, const gfx::Rect& mask) {
-}
+void TestWindowTree::SetHitTestMask(uint32_t window_id,
+                                    const base::Optional<gfx::Rect>& mask) {}
 
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          uint32_t window_id,

@@ -124,11 +124,13 @@ struct StructTraits<test::MoveOnlyStructWithTraits,
 };
 
 template <>
-struct StructTraits<test::StructWithTraitsForUniquePtrTest,
-                    std::unique_ptr<int>> {
+struct StructTraits<test::StructWithTraitsForUniquePtr, std::unique_ptr<int>> {
+  static bool IsNull(const std::unique_ptr<int>& data) { return !data; }
+  static void SetToNull(std::unique_ptr<int>* data) { data->reset(); }
+
   static int f_int32(const std::unique_ptr<int>& data) { return *data; }
 
-  static bool Read(test::StructWithTraitsForUniquePtrTest::DataView data,
+  static bool Read(test::StructWithTraitsForUniquePtr::DataView data,
                    std::unique_ptr<int>* out) {
     out->reset(new int(data.f_int32()));
     return true;

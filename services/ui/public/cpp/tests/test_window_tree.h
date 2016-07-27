@@ -46,7 +46,8 @@ class TestWindowTree : public mojom::WindowTree {
   void SetClientArea(uint32_t window_id,
                      const gfx::Insets& insets,
                      mojo::Array<gfx::Rect> additional_client_areas) override;
-  void SetHitTestMask(uint32_t window_id, const gfx::Rect& mask) override;
+  void SetHitTestMask(uint32_t window_id,
+                      const base::Optional<gfx::Rect>& mask) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;

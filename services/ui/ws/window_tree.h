@@ -410,7 +410,8 @@ class WindowTree : public mojom::WindowTree,
       Id transport_window_id,
       const gfx::Insets& insets,
       mojo::Array<gfx::Rect> transport_additional_client_areas) override;
-  void SetHitTestMask(Id transport_window_id, const gfx::Rect& mask) override;
+  void SetHitTestMask(Id transport_window_id,
+                      const base::Optional<gfx::Rect>& mask) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;

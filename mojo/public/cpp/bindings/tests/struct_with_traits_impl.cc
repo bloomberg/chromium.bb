@@ -25,5 +25,8 @@ MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl(
 
 MoveOnlyStructWithTraitsImpl::~MoveOnlyStructWithTraitsImpl() {}
 
+MoveOnlyStructWithTraitsImpl& MoveOnlyStructWithTraitsImpl::operator=(
+    MoveOnlyStructWithTraitsImpl&& other) = default;
+
 }  // namespace test
 }  // namespace mojo

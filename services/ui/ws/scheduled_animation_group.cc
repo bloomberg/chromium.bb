@@ -89,7 +89,8 @@ gfx::Tween::Type AnimationTypeToTweenType(mojom::AnimationTweenType type) {
 void ConvertToScheduledValue(const mojom::AnimationValue& transport_value,
                              ScheduledAnimationValue* value) {
   value->float_value = transport_value.float_value;
-  value->transform = transport_value.transform;
+  value->transform =
+      transport_value.transform ? *transport_value.transform : gfx::Transform();
 }
 
 void ConvertToScheduledElement(const mojom::AnimationElement& transport_element,

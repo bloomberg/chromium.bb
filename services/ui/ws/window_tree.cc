@@ -1366,7 +1366,8 @@ void WindowTree::SetClientArea(
   window->SetClientArea(insets, additional_client_areas);
 }
 
-void WindowTree::SetHitTestMask(Id transport_window_id, const gfx::Rect& mask) {
+void WindowTree::SetHitTestMask(Id transport_window_id,
+                                const base::Optional<gfx::Rect>& mask) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (!window || !access_policy_->CanSetHitTestMask(window)) {
@@ -1374,8 +1375,8 @@ void WindowTree::SetHitTestMask(Id transport_window_id, const gfx::Rect& mask) {
     return;
   }
 
-  if (!mask.IsEmpty())
-    window->SetHitTestMask(mask);
+  if (mask)
+    window->SetHitTestMask(*mask);
   else
     window->ClearHitTestMask();
 }

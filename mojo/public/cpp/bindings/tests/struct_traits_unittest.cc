@@ -146,14 +146,27 @@ class StructTraitsTest : public testing::Test,
     callback.Run(std::move(s));
   }
 
+  void EchoNullableMoveOnlyStructWithTraits(
+      base::Optional<MoveOnlyStructWithTraitsImpl> s,
+      const EchoNullableMoveOnlyStructWithTraitsCallback& callback) override {
+    callback.Run(std::move(s));
+  }
+
   void EchoEnumWithTraits(EnumWithTraitsImpl e,
                           const EchoEnumWithTraitsCallback& callback) override {
     callback.Run(e);
   }
 
-  void EchoStructWithTraitsForUniquePtrTest(
+  void EchoStructWithTraitsForUniquePtr(
       std::unique_ptr<int> e,
-      const EchoStructWithTraitsForUniquePtrTestCallback& callback) override {
+      const EchoStructWithTraitsForUniquePtrCallback& callback) override {
+    callback.Run(std::move(e));
+  }
+
+  void EchoNullableStructWithTraitsForUniquePtr(
+      std::unique_ptr<int> e,
+      const EchoNullableStructWithTraitsForUniquePtrCallback& callback)
+      override {
     callback.Run(std::move(e));
   }
 
@@ -343,6 +356,27 @@ TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
   EXPECT_STREQ(kHello, buffer);
 }
 
+void CaptureNullableMoveOnlyStructWithTraitsImpl(
+    base::Optional<MoveOnlyStructWithTraitsImpl>* storage,
+    const base::Closure& closure,
+    base::Optional<MoveOnlyStructWithTraitsImpl> passed) {
+  *storage = std::move(passed);
+  closure.Run();
+}
+
+TEST_F(StructTraitsTest, EchoNullableMoveOnlyStructWithTraits) {
+  base::RunLoop loop;
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  base::Optional<MoveOnlyStructWithTraitsImpl> received;
+  proxy->EchoNullableMoveOnlyStructWithTraits(
+      base::nullopt, base::Bind(&CaptureNullableMoveOnlyStructWithTraitsImpl,
+                                &received, loop.QuitClosure()));
+  loop.Run();
+
+  EXPECT_FALSE(received);
+}
+
 void ExpectEnumWithTraits(EnumWithTraitsImpl expected_value,
                           const base::Closure& closure,
                           EnumWithTraitsImpl value) {
@@ -391,21 +425,32 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
   EXPECT_EQ(input.get_struct_map(), output.get_struct_map());
 }
 
-void ExpectUniquePtr(int expected,
+void ExpectUniquePtr(std::unique_ptr<int> expected,
                      const base::Closure& closure,
                      std::unique_ptr<int> value) {
-  EXPECT_EQ(expected, *value);
+  ASSERT_EQ(!expected, !value);
+  if (expected)
+    EXPECT_EQ(*expected, *value);
   closure.Run();
 }
 
 TEST_F(StructTraitsTest, TypemapUniquePtr) {
-  base::RunLoop loop;
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
 
-  proxy->EchoStructWithTraitsForUniquePtrTest(
-      base::MakeUnique<int>(12345),
-      base::Bind(&ExpectUniquePtr, 12345, loop.QuitClosure()));
-  loop.Run();
+  {
+    base::RunLoop loop;
+    proxy->EchoStructWithTraitsForUniquePtr(
+        base::MakeUnique<int>(12345),
+        base::Bind(&ExpectUniquePtr, base::Passed(base::MakeUnique<int>(12345)),
+                   loop.QuitClosure()));
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    proxy->EchoNullableStructWithTraitsForUniquePtr(
+        nullptr, base::Bind(&ExpectUniquePtr, nullptr, loop.QuitClosure()));
+    loop.Run();
+  }
 }
 
 }  // namespace test

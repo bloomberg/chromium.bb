@@ -5,11 +5,12 @@
 mojom = "//device/bluetooth/public/interfaces/bluetooth_uuid.mojom"
 public_headers = [
   "//base/optional.h",
-  "//device/bluetooth/bluetooth_uuid.h"
+  "//device/bluetooth/bluetooth_uuid.h",
 ]
-traits_headers = [ "//device/bluetooth/public/interfaces/bluetooth_uuid_struct_traits.h" ]
+traits_headers =
+    [ "//device/bluetooth/public/interfaces/bluetooth_uuid_struct_traits.h" ]
 deps = [
   "//base",
   "//device/bluetooth",
 ]
-type_mappings = [ "device.mojom.BluetoothUUID=base::Optional<device::BluetoothUUID>" ]
+type_mappings = [ "device.mojom.BluetoothUUID=base::Optional<device::BluetoothUUID>[nullable_is_same_type]" ]

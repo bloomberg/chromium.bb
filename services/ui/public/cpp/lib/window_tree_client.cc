@@ -281,7 +281,7 @@ void WindowTreeClient::SetHitTestMask(Id window_id, const gfx::Rect& mask) {
 
 void WindowTreeClient::ClearHitTestMask(Id window_id) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(window_id, {});
+  tree_->SetHitTestMask(window_id, base::nullopt);
 }
 
 void WindowTreeClient::SetFocus(Window* window) {

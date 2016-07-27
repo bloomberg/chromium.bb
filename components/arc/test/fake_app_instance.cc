@@ -47,7 +47,7 @@ void FakeAppInstance::RefreshAppList() {
 
 void FakeAppInstance::LaunchApp(const mojo::String& package_name,
                                 const mojo::String& activity,
-                                const gfx::Rect& dimension) {
+                                const base::Optional<gfx::Rect>& dimension) {
   launch_requests_.push_back(new Request(package_name, activity));
 }
 
@@ -207,8 +207,9 @@ void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
 
 void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {}
 
-void FakeAppInstance::LaunchIntent(const mojo::String& intent_uri,
-                                   const gfx::Rect& dimension_on_screen) {
+void FakeAppInstance::LaunchIntent(
+    const mojo::String& intent_uri,
+    const base::Optional<gfx::Rect>& dimension_on_screen) {
   launch_intents_.push_back(new mojo::String(intent_uri));
 }
 

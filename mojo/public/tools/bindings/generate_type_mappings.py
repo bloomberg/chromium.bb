@@ -97,11 +97,9 @@ def ParseTypemap(typemap):
 
     mojom_type = match_result.group(1)
     native_type = match_result.group(2)
-    # The only attribute supported currently is either "move_only" or
-    # "copyable_pass_by_value".
-    move_only = match_result.group(3) and match_result.group(3) == "move_only"
-    copyable_pass_by_value = (match_result.group(3) and
-                              match_result.group(3) == "copyable_pass_by_value")
+    attributes = []
+    if match_result.group(3):
+      attributes = match_result.group(3).split(',')
 
     assert mojom_type not in result, (
         "Cannot map multiple native types (%s, %s) to the same mojom type: %s" %
@@ -109,8 +107,9 @@ def ParseTypemap(typemap):
 
     result[mojom_type] = {
         'typename': native_type,
-        'move_only': move_only,
-        'copyable_pass_by_value': copyable_pass_by_value,
+        'move_only': 'move_only' in attributes,
+        'copyable_pass_by_value': 'copyable_pass_by_value' in attributes,
+        'nullable_is_same_type': 'nullable_is_same_type' in attributes,
         'public_headers': values['public_headers'],
         'traits_headers': values['traits_headers'],
     }

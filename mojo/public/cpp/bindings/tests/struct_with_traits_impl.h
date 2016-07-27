@@ -107,6 +107,8 @@ class MoveOnlyStructWithTraitsImpl {
 
   ScopedHandle& get_mutable_handle() { return handle_; }
 
+  MoveOnlyStructWithTraitsImpl& operator=(MoveOnlyStructWithTraitsImpl&& other);
+
  private:
   ScopedHandle handle_;
   DISALLOW_COPY_AND_ASSIGN(MoveOnlyStructWithTraitsImpl);

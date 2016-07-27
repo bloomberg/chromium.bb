@@ -21,5 +21,5 @@ type_mappings = [
   "mojo.test.NestedStructWithTraits=mojo::test::NestedStructWithTraitsImpl",
   "mojo.test.TrivialStructWithTraits=mojo::test::TrivialStructWithTraitsImpl[copyable_pass_by_value]",
   "mojo.test.MoveOnlyStructWithTraits=mojo::test::MoveOnlyStructWithTraitsImpl[move_only]",
-  "mojo.test.StructWithTraitsForUniquePtrTest=std::unique_ptr<int>[move_only]",
+  "mojo.test.StructWithTraitsForUniquePtr=std::unique_ptr<int>[move_only,nullable_is_same_type]",
 ]

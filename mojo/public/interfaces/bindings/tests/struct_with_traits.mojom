@@ -49,7 +49,7 @@ struct MoveOnlyStructWithTraitsContainer {
   MoveOnlyStructWithTraits f_struct;
 };
 
-struct StructWithTraitsForUniquePtrTest {
+struct StructWithTraitsForUniquePtr {
   int32 f_int32;
 };
 
@@ -62,8 +62,14 @@ interface TraitsTestService {
   EchoMoveOnlyStructWithTraits(MoveOnlyStructWithTraits s) =>
       (MoveOnlyStructWithTraits passed);
 
+  EchoNullableMoveOnlyStructWithTraits(MoveOnlyStructWithTraits? s) =>
+      (MoveOnlyStructWithTraits? passed);
+
   EchoEnumWithTraits(EnumWithTraits e) => (EnumWithTraits passed);
 
-  EchoStructWithTraitsForUniquePtrTest(StructWithTraitsForUniquePtrTest e) => (
-      StructWithTraitsForUniquePtrTest passed);
+  EchoStructWithTraitsForUniquePtr(StructWithTraitsForUniquePtr e) => (
+      StructWithTraitsForUniquePtr passed);
+
+  EchoNullableStructWithTraitsForUniquePtr(StructWithTraitsForUniquePtr? e) => (
+      StructWithTraitsForUniquePtr? passed);
 };
