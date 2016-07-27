@@ -87,8 +87,6 @@ public:
     ~SpellCheckRequester();
     DECLARE_TRACE();
 
-    bool isCheckable(Range*) const;
-
     void requestCheckingFor(SpellCheckRequest*);
     void cancelCheck();
 
@@ -111,7 +109,6 @@ private:
 
     explicit SpellCheckRequester(LocalFrame&);
 
-    bool canCheckAsynchronously(Range*) const;
     TextCheckerClient& client() const;
     void timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*);
     void invokeRequest(SpellCheckRequest*);

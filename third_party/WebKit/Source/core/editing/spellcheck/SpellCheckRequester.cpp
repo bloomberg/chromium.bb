@@ -173,12 +173,7 @@ void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckReque
     invokeRequest(m_requestQueue.takeFirst());
 }
 
-bool SpellCheckRequester::canCheckAsynchronously(Range* range) const
-{
-    return isCheckable(range);
-}
-
-bool SpellCheckRequester::isCheckable(Range* range) const
+static bool canCheckAsynchronously(const Range* range)
 {
     if (!range || !range->firstNode() || !range->firstNode()->layoutObject())
         return false;
