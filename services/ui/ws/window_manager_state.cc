@@ -215,8 +215,12 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
 
-  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator_) {
-    OnAccelerator(post_target_accelerator_->id(), *event_awaiting_input_ack_,
+  base::WeakPtr<Accelerator> post_target_accelerator = post_target_accelerator_;
+  post_target_accelerator_.reset();
+  std::unique_ptr<ui::Event> event = std::move(event_awaiting_input_ack_);
+
+  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator) {
+    OnAccelerator(post_target_accelerator->id(), *event,
                   AcceleratorPhase::POST);
   }
 
@@ -234,16 +238,15 @@ void WindowManagerState::OnAcceleratorAck(mojom::EventResult result) {
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
   event_dispatch_phase_ = EventDispatchPhase::NONE;
+  std::unique_ptr<ui::Event> event = std::move(event_awaiting_input_ack_);
 
   if (result == mojom::EventResult::UNHANDLED) {
     event_dispatcher_.ProcessEvent(
-        *event_awaiting_input_ack_,
-        EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
+        *event, EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
   } else {
     // We're not going to process the event any further, notify event observers.
     // We don't do this first to ensure we don't send an event twice to clients.
-    window_server()->SendToEventObservers(*event_awaiting_input_ack_, user_id(),
-                                          nullptr);
+    window_server()->SendToEventObservers(*event, user_id(), nullptr);
     ProcessNextEventFromQueue();
   }
 }

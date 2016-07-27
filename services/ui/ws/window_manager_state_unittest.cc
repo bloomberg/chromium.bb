@@ -481,6 +481,35 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
   }
 }
 
+// Ensures accelerators are forgotten between events.
+TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
+  // Send an event that matches the accelerator and have the target respond
+  // that it handled the event so that the accelerator isn't called.
+  ui::KeyEvent accelerator_key(ui::ET_KEY_PRESSED, ui::VKEY_W,
+                               ui::EF_CONTROL_DOWN);
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
+  ServerWindow* target = window();
+  DispatchInputEventToWindow(target, accelerator_key, accelerator.get());
+  TestChangeTracker* tracker = window_tree_client()->tracker();
+  ASSERT_EQ(1u, tracker->changes()->size());
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
+            ChangesToDescription1(*tracker->changes())[0]);
+  tracker->changes()->clear();
+  WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::HANDLED);
+  EXPECT_FALSE(window_manager()->on_accelerator_called());
+
+  // Send another event that doesn't match the accelerator, the accelerator
+  // shouldn't be called.
+  ui::KeyEvent non_accelerator_key(ui::ET_KEY_PRESSED, ui::VKEY_T,
+                                   ui::EF_CONTROL_DOWN);
+  DispatchInputEventToWindow(target, non_accelerator_key, nullptr);
+  ASSERT_EQ(1u, tracker->changes()->size());
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
+            ChangesToDescription1(*tracker->changes())[0]);
+  WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::UNHANDLED);
+  EXPECT_FALSE(window_manager()->on_accelerator_called());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui
