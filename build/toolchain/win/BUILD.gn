@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/clang/clang.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/goma.gni")
@@ -179,9 +180,10 @@ template("msvc_toolchain") {
     tool("solink") {
       dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
       libname = "${dllname}.lib"  # e.g. foo.dll.lib
+      pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
 
-      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
@@ -193,6 +195,10 @@ template("msvc_toolchain") {
       link_output = libname
       depend_output = libname
       runtime_outputs = [ dllname ]
+      if (symbol_level != 0) {
+        outputs += [ pdbname ]
+        runtime_outputs += [ pdbname ]
+      }
 
       # Since the above commands only updates the .lib file when it changes, ask
       # Ninja to check if the timestamp actually changed to know if downstream
@@ -206,9 +212,10 @@ template("msvc_toolchain") {
 
     tool("solink_module") {
       dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
 
-      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
@@ -216,6 +223,10 @@ template("msvc_toolchain") {
       outputs = [
         dllname,
       ]
+      if (symbol_level != 0) {
+        outputs += [ pdbname ]
+      }
+      runtime_outputs = outputs
 
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
@@ -223,16 +234,22 @@ template("msvc_toolchain") {
     }
 
     tool("link") {
-      rspfile = "{{output}}.rsp"
+      exename = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
+      pdbname = "$exename.pdb"
+      rspfile = "$exename.rsp"
 
-      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
 
       default_output_extension = ".exe"
       default_output_dir = "{{root_out_dir}}"
       description = "LINK {{output}}"
       outputs = [
-        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+        exename,
       ]
+      if (symbol_level != 0) {
+        outputs += [ pdbname ]
+      }
+      runtime_outputs = outputs
 
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
