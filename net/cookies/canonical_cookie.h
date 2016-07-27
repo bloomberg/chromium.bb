@@ -168,9 +168,7 @@ class NET_EXPORT CanonicalCookie {
   // the resulting CanonicalCookies should not be relied on to be canonical
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
-  // TODO(mmenke): Remove |url|, as it's not used.
-  CanonicalCookie(const GURL& url,
-                  const std::string& name,
+  CanonicalCookie(const std::string& name,
                   const std::string& value,
                   const std::string& domain,
                   const std::string& path,
