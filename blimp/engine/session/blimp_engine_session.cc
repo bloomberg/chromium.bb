@@ -41,14 +41,14 @@
 #include "blimp/net/thread_pipe_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -242,7 +242,7 @@ BlimpEngineSession::BlimpEngineSession(
       new BlobChannelSenderImpl(base::WrapUnique(new InMemoryBlobCache),
                                 std::move(helium_blob_delegate)));
 
-  device::GeolocationProvider::SetGeolocationDelegate(
+  content::GeolocationProvider::SetGeolocationDelegate(
       geolocation_feature_.CreateGeolocationDelegate());
 }
 

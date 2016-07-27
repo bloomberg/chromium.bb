@@ -6,7 +6,7 @@
 #define CHROMECAST_BROWSER_GEOLOCATION_CAST_ACCESS_TOKEN_STORE_H_
 
 #include "base/macros.h"
-#include "device/geolocation/access_token_store.h"
+#include "content/public/browser/access_token_store.h"
 
 namespace content {
 class BrowserContext;
@@ -17,7 +17,7 @@ namespace shell {
 
 // Access token store for chromecast devices used to initialize the network
 // location provider.
-class CastAccessTokenStore : public device::AccessTokenStore {
+class CastAccessTokenStore : public content::AccessTokenStore {
  public:
   explicit CastAccessTokenStore(content::BrowserContext* browser_context);
 

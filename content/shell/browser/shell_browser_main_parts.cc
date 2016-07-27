@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -26,8 +28,6 @@
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/common/shell_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
@@ -59,12 +59,12 @@ namespace content {
 namespace {
 
 // A provider of services for Geolocation.
-class ShellGeolocationDelegate : public device::GeolocationDelegate {
+class ShellGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit ShellGeolocationDelegate(ShellBrowserContext* context)
       : context_(context) {}
 
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
     return new ShellAccessTokenStore(context_);
   }
 
@@ -183,7 +183,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new ShellNetLog("content_shell"));
   InitializeBrowserContexts();
-  device::GeolocationProvider::SetGeolocationDelegate(
+  content::GeolocationProvider::SetGeolocationDelegate(
       new ShellGeolocationDelegate(browser_context()));
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);

@@ -29,11 +29,8 @@ namespace IPC {
 class Message;
 }
 
-namespace device {
-class GeolocationServiceContext;
-}
-
 namespace content {
+class GeolocationServiceContext;
 class InterstitialPage;
 class PageState;
 class RenderFrameHost;
@@ -152,7 +149,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       int browser_plugin_instance_id);
 
   // Gets the GeolocationServiceContext associated with this delegate.
-  virtual device::GeolocationServiceContext* GetGeolocationServiceContext();
+  virtual GeolocationServiceContext* GetGeolocationServiceContext();
 
   // Gets the WakeLockServiceContext associated with this delegate.
   virtual WakeLockServiceContext* GetWakeLockServiceContext();

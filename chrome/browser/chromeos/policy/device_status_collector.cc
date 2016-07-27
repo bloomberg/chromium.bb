@@ -320,7 +320,7 @@ DeviceStatusCollector::DeviceStatusCollector(
   // The last known location is persisted in local state. This makes location
   // information available immediately upon startup and avoids the need to
   // reacquire the location on every user session change or browser crash.
-  device::Geoposition position;
+  content::Geoposition position;
   std::string timestamp_str;
   int64_t timestamp;
   const base::DictionaryValue* location =
@@ -430,7 +430,7 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     ScheduleGeolocationUpdateRequest();
   } else {
     geolocation_update_timer_.Stop();
-    position_ = device::Geoposition();
+    position_ = content::Geoposition();
     local_state_->ClearPref(prefs::kDeviceLocation);
   }
 
@@ -1122,8 +1122,8 @@ void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {
 
   geolocation_update_in_progress_ = true;
   if (location_update_requester_.is_null()) {
-    geolocation_subscription_ =
-        device::GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
+    geolocation_subscription_ = content::GeolocationProvider::GetInstance()->
+        AddLocationUpdateCallback(
             base::Bind(&DeviceStatusCollector::ReceiveGeolocationUpdate,
                        weak_factory_.GetWeakPtr()),
             true);
@@ -1135,7 +1135,7 @@ void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {
 }
 
 void DeviceStatusCollector::ReceiveGeolocationUpdate(
-    const device::Geoposition& position) {
+    const content::Geoposition& position) {
   geolocation_update_in_progress_ = false;
 
   // Ignore update if device location reporting has since been disabled.

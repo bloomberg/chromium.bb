@@ -74,7 +74,6 @@ test("device_unittests") {
     "//device/bluetooth:mocks",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
-    "//device/geolocation:unittests",
     "//device/nfc",
     "//device/power_save_blocker",
     "//device/vr",
@@ -161,8 +160,6 @@ test("device_unittests") {
     deps += [
       ":bluetooth_test_java",
       ":bluetooth_test_jni_headers",
-      "//device/geolocation:geolocation_java",
-      "//device/geolocation:geolocation_java_test_support",
       "//device/usb:java",
     ]
     deps -= [ "//device/battery" ]

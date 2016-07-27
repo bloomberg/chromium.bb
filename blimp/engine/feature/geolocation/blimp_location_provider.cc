@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
-#include "device/geolocation/geoposition.h"
+#include "content/public/common/geoposition.h"
 
 namespace blimp {
 namespace engine {
@@ -44,7 +44,7 @@ void BlimpLocationProvider::StopProvider() {
   }
 }
 
-void BlimpLocationProvider::GetPosition(device::Geoposition* position) {
+void BlimpLocationProvider::GetPosition(content::Geoposition* position) {
   *position = cached_position_;
 }
 

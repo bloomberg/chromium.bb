@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
+#include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
 #include "services/shell/public/cpp/interface_registry.h"

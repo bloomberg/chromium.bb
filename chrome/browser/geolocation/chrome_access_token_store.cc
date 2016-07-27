@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-using device::AccessTokenStore;
+using content::AccessTokenStore;
 using content::BrowserThread;
 
 namespace {
