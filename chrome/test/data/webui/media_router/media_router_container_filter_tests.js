@@ -501,7 +501,7 @@ cr.define('media_router_container_filter', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[1]);
