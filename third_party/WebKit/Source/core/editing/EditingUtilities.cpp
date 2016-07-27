@@ -256,7 +256,7 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b)
 }
 
 enum EditableLevel { Editable, RichlyEditable };
-static bool hasEditableStyle(const Node& node, EditableLevel editableLevel)
+static bool hasEditableLevel(const Node& node, EditableLevel editableLevel)
 {
     if (node.isPseudoElement())
         return false;
@@ -283,9 +283,9 @@ static bool hasEditableStyle(const Node& node, EditableLevel editableLevel)
     return false;
 }
 
-static bool isEditableToAccessibility(const Node& node, EditableLevel editableLevel)
+static bool hasAXEditableLevel(const Node& node, EditableLevel editableLevel)
 {
-    if (blink::hasEditableStyle(node, editableLevel))
+    if (hasEditableLevel(node, editableLevel))
         return true;
 
     // FIXME: Respect editableLevel for ARIA editable elements.
@@ -302,37 +302,30 @@ static bool isEditableToAccessibility(const Node& node, EditableLevel editableLe
 bool isContentEditable(const Node& node)
 {
     node.document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(node, Editable);
+    return hasEditableLevel(node, Editable);
 }
 
 bool isContentRichlyEditable(const Node& node)
 {
     node.document().updateStyleAndLayoutTree();
-    return blink::hasEditableStyle(node, RichlyEditable);
+    return hasEditableLevel(node, RichlyEditable);
 }
 
 bool hasEditableStyle(const Node& node, EditableType editableType)
 {
     switch (editableType) {
     case ContentIsEditable:
-        return blink::hasEditableStyle(node, Editable);
+        return hasEditableLevel(node, Editable);
     case HasEditableAXRole:
-        return isEditableToAccessibility(node, Editable);
+        return hasAXEditableLevel(node, Editable);
     }
     NOTREACHED();
     return false;
 }
 
-bool layoutObjectIsRichlyEditable(const Node& node, EditableType editableType)
+bool hasRichlyEditableStyle(const Node& node)
 {
-    switch (editableType) {
-    case ContentIsEditable:
-        return blink::hasEditableStyle(node, RichlyEditable);
-    case HasEditableAXRole:
-        return isEditableToAccessibility(node, RichlyEditable);
-    }
-    NOTREACHED();
-    return false;
+    return hasEditableLevel(node, RichlyEditable);
 }
 
 bool isRootEditableElement(const Node& node)
@@ -435,7 +428,7 @@ bool isRichlyEditablePosition(const Position& p)
     if (isDisplayInsideTable(node))
         node = node->parentNode();
 
-    return layoutObjectIsRichlyEditable(*node);
+    return hasRichlyEditableStyle(*node);
 }
 
 Element* rootEditableElementOf(const Position& p, EditableType editableType)

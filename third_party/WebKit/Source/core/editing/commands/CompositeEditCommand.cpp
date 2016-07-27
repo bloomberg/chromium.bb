@@ -674,7 +674,7 @@ bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(const String& tex
 bool CompositeEditCommand::canRebalance(const Position& position) const
 {
     Node* node = position.computeContainerNode();
-    if (!position.isOffsetInAnchor() || !node || !node->isTextNode() || !layoutObjectIsRichlyEditable(*node))
+    if (!position.isOffsetInAnchor() || !node || !node->isTextNode() || !hasRichlyEditableStyle(*node))
         return false;
 
     Text* textNode = toText(node);

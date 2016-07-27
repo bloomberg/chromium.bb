@@ -172,12 +172,12 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     if (!editableRoot->getAttributeEventListener(EventTypeNames::webkitBeforeTextInserted)
         // FIXME: Remove these checks once textareas and textfields actually register an event handler.
         && !(shadowAncestorElement && shadowAncestorElement->layoutObject() && shadowAncestorElement->layoutObject()->isTextControl())
-        && layoutObjectIsRichlyEditable(*editableRoot)) {
+        && hasRichlyEditableStyle(*editableRoot)) {
         removeInterchangeNodes(m_fragment.get());
         return;
     }
 
-    if (!layoutObjectIsRichlyEditable(*editableRoot)) {
+    if (!hasRichlyEditableStyle(*editableRoot)) {
         bool isPlainText = true;
         for (Node& node : NodeTraversal::childrenOf(*m_fragment)) {
             if (isInterchangeHTMLBRElement(&node) && &node == m_fragment->lastChild())
@@ -217,7 +217,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     // Give the root a chance to change the text.
     BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::create(text);
     editableRoot->dispatchEvent(evt);
-    if (text != evt->text() || !layoutObjectIsRichlyEditable(*editableRoot)) {
+    if (text != evt->text() || !hasRichlyEditableStyle(*editableRoot)) {
         restoreAndRemoveTestRenderingNodesToFragment(holder);
 
         m_fragment = createFragmentFromText(selection.toNormalizedEphemeralRange(), evt->text());
@@ -581,7 +581,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             continue;
         }
 
-        if (element->parentNode() && layoutObjectIsRichlyEditable(*element->parentNode()))
+        if (element->parentNode() && hasRichlyEditableStyle(*element->parentNode()))
             removeElementAttribute(element, contenteditableAttr);
 
         // WebKit used to not add display: inline and float: none on copy.

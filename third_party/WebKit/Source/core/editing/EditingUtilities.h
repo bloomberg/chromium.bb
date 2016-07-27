@@ -75,7 +75,7 @@ CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
 CORE_EXPORT bool isContentEditable(const Node&);
 CORE_EXPORT bool isContentRichlyEditable(const Node&);
 CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
-CORE_EXPORT bool layoutObjectIsRichlyEditable(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool hasRichlyEditableStyle(const Node&);
 CORE_EXPORT bool isRootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
