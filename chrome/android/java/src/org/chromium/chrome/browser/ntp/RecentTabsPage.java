@@ -154,6 +154,11 @@ public class RecentTabsPage
     }
 
     @Override
+    public boolean needsToolbarShadow() {
+        return true;
+    }
+
+    @Override
     public View getView() {
         return mView;
     }

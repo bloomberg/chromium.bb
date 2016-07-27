@@ -107,6 +107,11 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
     }
 
     @Override
+    public boolean needsToolbarShadow() {
+        return true;
+    }
+
+    @Override
     public View getView() {
         return mIncognitoNewTabPageView;
     }

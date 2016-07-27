@@ -78,6 +78,11 @@ public class NativePageFactoryTest {
         }
 
         @Override
+        public boolean needsToolbarShadow() {
+            return true;
+        }
+
+        @Override
         public View getView() {
             return null;
         }

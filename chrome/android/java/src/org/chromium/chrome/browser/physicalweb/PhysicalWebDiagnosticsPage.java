@@ -233,6 +233,11 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
     }
 
     @Override
+    public boolean needsToolbarShadow() {
+        return true;
+    }
+
+    @Override
     public View getView() {
         return mPageView;
     }

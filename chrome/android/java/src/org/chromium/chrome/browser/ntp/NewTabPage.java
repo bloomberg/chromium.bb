@@ -788,6 +788,11 @@ public class NewTabPage
     }
 
     @Override
+    public boolean needsToolbarShadow() {
+        return !mSearchProviderHasLogo;
+    }
+
+    @Override
     public View getView() {
         return mNewTabPageView;
     }

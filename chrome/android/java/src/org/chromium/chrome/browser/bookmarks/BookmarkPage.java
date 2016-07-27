@@ -87,6 +87,11 @@ public class BookmarkPage implements NativePage, BookmarkStateChangeListener {
     }
 
     @Override
+    public boolean needsToolbarShadow() {
+        return true;
+    }
+
+    @Override
     public void updateForUrl(String url) {
         mCurrentUrl = url;
         mManager.updateForUrl(url);
