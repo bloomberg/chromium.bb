@@ -13,8 +13,8 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.LocationProviderFactory;
-import org.chromium.content.browser.test.util.MockLocationProvider;
+import org.chromium.device.geolocation.LocationProviderFactory;
+import org.chromium.device.geolocation.MockLocationProvider;
 
 import java.util.concurrent.Callable;
 

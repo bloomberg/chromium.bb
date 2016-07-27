@@ -10,6 +10,7 @@ include_rules = [
   "+components/network_hints/browser",
   "+components/prefs",
   "+content/public/browser",
+  "+device/geolocation",
   "+gin/v8_initializer.h",
   "+gpu/command_buffer/service/gpu_switches.h",
   "+media/audio",

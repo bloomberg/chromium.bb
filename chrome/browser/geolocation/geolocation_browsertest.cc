@@ -31,14 +31,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/geoposition.h"
 #include "content/public/test/browser_test_utils.h"
+#include "device/geolocation/geoposition.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
 
 std::string GetErrorCodePermissionDenied() {
-  return base::IntToString(content::Geoposition::ERROR_CODE_PERMISSION_DENIED);
+  return base::IntToString(device::Geoposition::ERROR_CODE_PERMISSION_DENIED);
 }
 
 std::string RunScript(content::RenderFrameHost* render_frame_host,

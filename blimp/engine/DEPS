@@ -10,6 +10,7 @@ include_rules = [
   "+components/version_info",
   "+components/web_cache/renderer",
   "+content/public",
+  "+device/geolocation",
   "+mojo/public",
   "+net",
   "+services/shell/public/cpp",

@@ -7,6 +7,7 @@ include_rules = [
   "+components/precache/android/javatests",
   "+components/web_restrictions",
   "+content/public/android/java",
+  "+device/geolocation/android/java",
   "+sync/android/java/src/org/chromium/sync",
   # We should only depend on the util package of something that lives in
   # javatests.

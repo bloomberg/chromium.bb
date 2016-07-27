@@ -26,7 +26,6 @@
 #include "content/browser/android/web_contents_observer_proxy.h"
 #include "content/browser/device_sensors/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
-#include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/session/media_session_delegate_android.h"
 #include "content/browser/mojo/service_registrar_android.h"
@@ -36,7 +35,6 @@
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#include "device/power_save_blocker/power_save_blocker_android.h"
 #include "mojo/android/system/core_impl.h"
 
 namespace {
@@ -48,8 +46,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
     {"MediaSessionDelegate", content::MediaSessionDelegateAndroid::Register},
-    {"AndroidLocationApiAdapter",
-     content::AndroidLocationApiAdapter::RegisterGeolocationService},
     {"BackgroundSyncNetworkObserverAndroid",
      content::BackgroundSyncNetworkObserverAndroid::Observer::
          RegisterNetworkObserver},

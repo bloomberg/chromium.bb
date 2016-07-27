@@ -104,7 +104,6 @@
   ],
   'variables': {
     'public_browser_sources': [
-      'public/browser/access_token_store.h',
       'public/browser/android/browser_media_player_manager_register.cc',
       'public/browser/android/browser_media_player_manager_register.h',
       'public/browser/android/compositor.h',
@@ -192,8 +191,6 @@
       'public/browser/file_descriptor_info.h',
       'public/browser/focused_node_details.h',
       'public/browser/font_list_async.h',
-      'public/browser/geolocation_delegate.cc',
-      'public/browser/geolocation_provider.h',
       'public/browser/global_request_id.h',
       'public/browser/gpu_data_manager.h',
       'public/browser/gpu_data_manager_observer.h',
@@ -215,7 +212,6 @@
       'public/browser/load_from_memory_cache_details.h',
       'public/browser/load_notification_details.h',
       'public/browser/local_storage_usage_info.h',
-      'public/browser/location_provider.h',
       'public/browser/media_capture_devices.h',
       'public/browser/media_device_id.cc',
       'public/browser/media_device_id.h',
@@ -812,47 +808,6 @@
       'browser/gamepad/gamepad_service.h',
       'browser/gamepad/gamepad_shared_buffer_impl.cc',
       'browser/gamepad/gamepad_shared_buffer_impl.h',
-      'browser/geolocation/empty_wifi_data_provider.cc',
-      'browser/geolocation/empty_wifi_data_provider.h',
-      'browser/geolocation/geolocation_provider_impl.cc',
-      'browser/geolocation/geolocation_provider_impl.h',
-      'browser/geolocation/geolocation_service_context.cc',
-      'browser/geolocation/geolocation_service_context.h',
-      'browser/geolocation/geolocation_service_impl.cc',
-      'browser/geolocation/geolocation_service_impl.h',
-      'browser/geolocation/location_api_adapter_android.cc',
-      'browser/geolocation/location_api_adapter_android.h',
-      'browser/geolocation/location_arbitrator.h',
-      'browser/geolocation/location_arbitrator_impl.cc',
-      'browser/geolocation/location_arbitrator_impl.h',
-      'browser/geolocation/location_provider_android.cc',
-      'browser/geolocation/location_provider_android.h',
-      'browser/geolocation/location_provider_base.cc',
-      'browser/geolocation/location_provider_base.h',
-      'browser/geolocation/network_location_provider.cc',
-      'browser/geolocation/network_location_provider.h',
-      'browser/geolocation/network_location_request.cc',
-      'browser/geolocation/network_location_request.h',
-      'browser/geolocation/wifi_data.cc',
-      'browser/geolocation/wifi_data.h',
-      'browser/geolocation/wifi_data_provider.cc',
-      'browser/geolocation/wifi_data_provider.h',
-      'browser/geolocation/wifi_data_provider_chromeos.cc',
-      'browser/geolocation/wifi_data_provider_chromeos.h',
-      'browser/geolocation/wifi_data_provider_common.cc',
-      'browser/geolocation/wifi_data_provider_common.h',
-      'browser/geolocation/wifi_data_provider_common_win.cc',
-      'browser/geolocation/wifi_data_provider_common_win.h',
-      'browser/geolocation/wifi_data_provider_corewlan_mac.mm',
-      'browser/geolocation/wifi_data_provider_linux.cc',
-      'browser/geolocation/wifi_data_provider_linux.h',
-      'browser/geolocation/wifi_data_provider_mac.cc',
-      'browser/geolocation/wifi_data_provider_mac.h',
-      'browser/geolocation/wifi_data_provider_manager.cc',
-      'browser/geolocation/wifi_data_provider_manager.h',
-      'browser/geolocation/wifi_data_provider_win.cc',
-      'browser/geolocation/wifi_data_provider_win.h',
-      'browser/geolocation/wifi_polling_policy.h',
       'browser/gpu/browser_gpu_channel_host_factory.cc',
       'browser/gpu/browser_gpu_channel_host_factory.h',
       'browser/gpu/browser_gpu_memory_buffer_manager.cc',
@@ -2036,8 +1991,6 @@
       },
       'sources/': [
         ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default\\.cc$'],
-        ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
-        ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
         ['exclude', '^browser/tracing/trace_uploader\\.(cc|h)$'],
         ['exclude', '^browser/tracing/tracing_ui\\.(cc|h)$'],
       ],
@@ -2046,9 +1999,6 @@
       ],
       'sources!': [
         'browser/browser_ipc_logging.cc',
-        'browser/geolocation/device_data_provider.cc',
-        'browser/geolocation/empty_device_data_provider.cc',
-        'browser/geolocation/wifi_data_provider_common.cc',
         'browser/media/session/media_session_delegate_default.cc',
         'browser/power_usage_monitor_impl.cc',
         'browser/power_usage_monitor_impl.h',
@@ -2058,9 +2008,6 @@
     ['OS=="mac"', {
       'sources/': [
         ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
-      ],
-      'sources!': [
-        'browser/geolocation/empty_wifi_data_provider.cc',
       ],
       'dependencies': [
         '../media/media.gyp:media',
@@ -2077,7 +2024,6 @@
       ],
       'sources!': [
         'browser/device_sensors/data_fetcher_shared_memory_default.cc',
-        'browser/geolocation/wifi_data_provider_linux.cc',
       ],
     }],
     ['use_aura==1', {
@@ -2121,22 +2067,10 @@
         ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
       ],
     }],
-    ['OS == "win"', {
-      'sources!': [
-        'browser/geolocation/empty_wifi_data_provider.cc',
-      ],
-    }],
     ['OS == "linux" and use_dbus==1', {
-      'sources!': [
-        'browser/geolocation/empty_wifi_data_provider.cc',
-      ],
       'dependencies': [
         '../build/linux/system.gyp:dbus',
         '../dbus/dbus.gyp:dbus',
-      ],
-    }, {  # OS != "linux" or use_dbus==0
-      'sources!': [
-        'browser/geolocation/wifi_data_provider_linux.cc',
       ],
     }],
     ['enable_browser_cdms==1', {
