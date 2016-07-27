@@ -35,6 +35,9 @@ ScreenWin* g_screen_win_instance = nullptr;
 
 float GetMonitorScaleFactor(HMONITOR monitor) {
   DCHECK(monitor);
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
+
   if (base::win::IsProcessPerMonitorDpiAware()) {
     static auto get_dpi_for_monitor_func = [](){
       using GetDpiForMonitorPtr = decltype(::GetDpiForMonitor)*;
