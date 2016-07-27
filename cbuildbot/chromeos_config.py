@@ -648,41 +648,6 @@ _waterfall_config_map = {
         'gru-paladin',
         'lakitu_next-paladin',
 
-        # Experimental Canaries
-        # auron
-        'lulu-cheets-release',
-        # glados
-        'glados-release',
-        'chell-release',
-        'glados-cheets-release',
-        'chell-cheets-release',
-        'asuka-release',
-        # reef
-        'reef-release',
-        'amenia-release',
-        # storm
-        'storm-release',
-        'arkham-release',
-        'whirlwind-release',
-        # strago
-        'celes-cheets-release',
-        'kefka-release',
-        # veyron
-        'veyron_mickey-release',
-        'veyron_tiger-release',
-        'veyron_shark-release',
-        'veyron_minnie-cheets-release',
-        'veyron_fievel-release',
-        # other
-        'amd64-generic-goofy-release',
-        'glimmer-cheets-release',
-        'lakitu_next-release',
-        'nyan_freon-release',
-        'smaug-release',
-        'smaug-cheets-release',
-        'guado_moblab-release',
-        'guado_labstation-release',
-
         # KASAN
         'smaug-kasan-kernel-3_18',
 
@@ -2827,10 +2792,22 @@ def GetConfig():
       # Currently just support RELEASE builders
       raise Exception('Do not support other builders.')
 
-  def _GetConfigValues(board):
+  def _GetConfigValues(builder, board):
     """Get and return config values from template"""
+
+    def _GetConfigWaterfall(builder):
+      if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
+        if IS_RELEASE_BRANCH:
+          return constants.WATERFALL_RELEASE
+        else:
+          return constants.WATERFALL_INTERNAL
+      else:
+        # Currently just support RELEASE builders
+        raise ValueError('Do not support builder %s.' % builder)
+
     config_values = {
-        'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL]
+        'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
+        'active_waterfall': _GetConfigWaterfall(builder)
     }
 
     return config_values
@@ -2842,7 +2819,7 @@ def GetConfig():
         config_name = GetConfigName(builder,
                                     board[config_lib.CONFIG_TEMPLATE_NAME])
         site_config[config_name] = site_config[config_name].derive(
-            **_GetConfigValues(board))
+            **_GetConfigValues(builder, board))
 
   def _AdjustGroupedReleaseConfigs(builder_group_dict):
     """Adjust leader and follower configs for grouped boards"""
@@ -2870,14 +2847,14 @@ def GetConfig():
           config_name = GetConfigName(builder,
                                       board[config_lib.CONFIG_TEMPLATE_NAME])
           site_config[config_name] = site_config[config_name].derive(
-              leader_config, **_GetConfigValues(board))
+              leader_config, **_GetConfigValues(builder, board))
 
         # Adjust all follower boards based on above options.
         for board in board_group.follower_boards:
           config_name = GetConfigName(builder,
                                       board[config_lib.CONFIG_TEMPLATE_NAME])
           site_config[config_name] = site_config[config_name].derive(
-              follower_config, **_GetConfigValues(board))
+              follower_config, **_GetConfigValues(builder, board))
 
   def _AdjustTemplateConfigs():
     """Adjust ungrouped and grouped release configs"""
