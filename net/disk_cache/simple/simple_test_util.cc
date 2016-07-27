@@ -97,5 +97,33 @@ bool CorruptKeySHA256FromEntry(const std::string& key,
   return true;
 }
 
+bool CorruptStream0LengthFromEntry(const std::string& key,
+                                   const base::FilePath& cache_path) {
+  FilePath entry_file_path = cache_path.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE;
+  File entry_file(entry_file_path, flags);
+  if (!entry_file.IsValid())
+    return false;
+  int file_length = entry_file.GetLength();
+  SimpleFileEOF eof_record;
+  if (entry_file.Read(file_length - sizeof(eof_record),
+                      reinterpret_cast<char*>(&eof_record),
+                      sizeof(eof_record)) != sizeof(eof_record)) {
+    return false;
+  }
+  if (eof_record.final_magic_number != disk_cache::kSimpleFinalMagicNumber)
+    return false;
+
+  // Set the stream size to a clearly invalidly large value.
+  eof_record.stream_size = std::numeric_limits<uint32_t>::max() - 50;
+  if (entry_file.Write(file_length - sizeof(eof_record),
+                       reinterpret_cast<char*>(&eof_record),
+                       sizeof(eof_record)) != sizeof(eof_record)) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace simple_util
 }  // namespace disk_cache

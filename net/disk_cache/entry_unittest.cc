@@ -4274,3 +4274,21 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptKeySHA256) {
       disk_cache::simple_util::CorruptKeySHA256FromEntry(key, cache_path_));
   EXPECT_NE(net::OK, OpenEntry(key, &entry));
 }
+
+TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptLength) {
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* entry;
+  std::string key("a key");
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  entry->Close();
+
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(
+      disk_cache::simple_util::CorruptStream0LengthFromEntry(key, cache_path_));
+  EXPECT_NE(net::OK, OpenEntry(key, &entry));
+}

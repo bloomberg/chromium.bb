@@ -665,7 +665,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
   uint32_t crc32;
   bool has_crc32;
   bool has_key_sha256;
-  int stream_size;
+  int32_t stream_size;
   *out_result = GetEOFRecordData(index, entry_stat, &has_crc32, &has_key_sha256,
                                  &crc32, &stream_size);
   if (*out_result != net::OK) {
@@ -1168,29 +1168,29 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
   // Pretend this file has a null stream zero, and contains the optional key
   // SHA256. This is good enough to read the EOF record on the file, which gives
   // the actual size of stream 0.
-  int total_data_size = GetDataSizeFromFileSize(key_.size(), file_size);
+  int temp_data_size = GetDataSizeFromFileSize(key_.size(), file_size);
   out_entry_stat->set_data_size(0, 0);
   out_entry_stat->set_data_size(
-      1,
-      total_data_size - sizeof(net::SHA256HashValue) - sizeof(SimpleFileEOF));
+      1, temp_data_size - sizeof(net::SHA256HashValue) - sizeof(SimpleFileEOF));
 
   bool has_crc32;
   bool has_key_sha256;
   uint32_t read_crc32;
-  int stream_0_size;
+  int32_t stream_0_size;
   int ret_value_crc32 =
       GetEOFRecordData(0, *out_entry_stat, &has_crc32, &has_key_sha256,
                        &read_crc32, &stream_0_size);
   if (ret_value_crc32 != net::OK)
     return ret_value_crc32;
-  // Calculate and set the real values for data size.
-  int stream_1_size = out_entry_stat->data_size(1) - stream_0_size;
+
+  // Calculate and set the real values for the two streams.
+  int32_t total_size = out_entry_stat->data_size(1);
   if (!has_key_sha256)
-    stream_1_size += sizeof(net::SHA256HashValue);
-  if (stream_1_size < 0)
+    total_size += sizeof(net::SHA256HashValue);
+  if (stream_0_size > total_size)
     return net::ERR_FAILED;
   out_entry_stat->set_data_size(0, stream_0_size);
-  out_entry_stat->set_data_size(1, stream_1_size);
+  out_entry_stat->set_data_size(1, total_size - stream_0_size);
 
   // Put stream 0 data in memory.
   *stream_0_data = new net::GrowableIOBuffer();
@@ -1246,7 +1246,7 @@ int SimpleSynchronousEntry::GetEOFRecordData(int index,
                                              bool* out_has_crc32,
                                              bool* out_has_key_sha256,
                                              uint32_t* out_crc32,
-                                             int* out_data_size) const {
+                                             int32_t* out_data_size) const {
   SimpleFileEOF eof_record;
   int file_offset = entry_stat.GetEOFOffsetInFile(key_.size(), index);
   int file_index = GetFileIndexFromStreamIndex(index);
@@ -1263,6 +1263,9 @@ int SimpleSynchronousEntry::GetEOFRecordData(int index,
     DVLOG(1) << "EOF record had bad magic number.";
     return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
   }
+
+  if (!base::IsValueInRangeForNumericType<int32_t>(eof_record.stream_size))
+    return net::ERR_FAILED;
 
   *out_has_crc32 = (eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) ==
                    SimpleFileEOF::FLAG_HAS_CRC32;

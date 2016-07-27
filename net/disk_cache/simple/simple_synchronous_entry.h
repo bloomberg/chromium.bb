@@ -279,7 +279,7 @@ class SimpleSynchronousEntry {
                        bool* out_has_crc32,
                        bool* out_has_key_sha256,
                        uint32_t* out_crc32,
-                       int* out_data_size) const;
+                       int32_t* out_data_size) const;
   void Doom() const;
 
   // Opens the sparse data file and scans it if it exists.
