@@ -182,6 +182,7 @@ scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmapFromHandle(
+    gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {

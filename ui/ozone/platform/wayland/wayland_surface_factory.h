@@ -30,6 +30,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
   scoped_refptr<NativePixmap> CreateNativePixmapFromHandle(
+      gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
       const gfx::NativePixmapHandle& handle) override;
