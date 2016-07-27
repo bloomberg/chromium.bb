@@ -1466,8 +1466,8 @@ class TestGitCl(TestCase):
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def test_cmd_set_commit_rietveld(self):
-    self.mock(git_cl._RietveldChangelistImpl, 'SetFlag',
-              lambda _, f, v: self._mocked_call(['SetFlag', f, v]))
+    self.mock(git_cl._RietveldChangelistImpl, 'SetFlags',
+              lambda _, v: self._mocked_call(['SetFlags', v]))
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
         ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
@@ -1476,7 +1476,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.server'],), ''),
         ((['git', 'config', 'branch.feature.rietveldserver'],),
          'https://codereview.chromium.org'),
-        ((['SetFlag', 'commit', '1'], ), ''),
+        ((['SetFlags', {'commit': '1', 'cq_dry_run': '0'}], ), ''),
     ]
     self.assertEqual(0, git_cl.main(['set-commit']))
 

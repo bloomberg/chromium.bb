@@ -1799,7 +1799,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       DieWithError('Cannot set-commit on private issue')
 
     if new_state == _CQState.COMMIT:
-      self.SetFlag('commit', '1')
+      self.SetFlags({'commit': '1', 'cq_dry_run': '0'})
     elif new_state == _CQState.NONE:
       self.SetFlags({'commit': '0', 'cq_dry_run': '0'})
     else:
