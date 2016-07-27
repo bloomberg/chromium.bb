@@ -129,6 +129,7 @@
         }],
         ['chromeos==1',{
           'sources': [
+            'printed_document_chromeos.cc',
             'printing_context_no_system_dialog.cc',
             'printing_context_no_system_dialog.h',
           ],
@@ -179,6 +180,8 @@
                 'backend/cups_printer.h',
                 'backend/print_backend_cups_ipp.cc',
                 'backend/print_backend_cups_ipp.h',
+                'printing_context_chromeos.cc',
+                'printing_context_chromeos.h',
               ],
             }, { # chromeos==0
               'sources': [
@@ -202,6 +205,7 @@
           ],
           'sources': [
             'backend/print_backend_chromeos.cc',
+            'printed_document_chromeos.cc',
           ],
         }],
         ['OS=="linux" and chromeos==0', {

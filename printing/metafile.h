@@ -86,6 +86,10 @@ class PRINTING_EXPORT MetafilePlayer {
                           const MacRenderPageParams& params) const = 0;
 #endif  // if defined(OS_WIN)
 
+  // Populates the buffer with the underlying data. This function should ONLY be
+  // called after the metafile is closed. Returns true if writing succeeded.
+  virtual bool GetDataAsVector(std::vector<char>* buffer) const = 0;
+
   // Saves the underlying data to the given file. This function should ONLY be
   // called after the metafile is closed. Returns true if writing succeeded.
   virtual bool SaveTo(base::File* file) const = 0;
@@ -155,8 +159,8 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
                         const RECT* rect) const = 0;
 #endif  // OS_WIN
 
-  bool GetDataAsVector(std::vector<char>* buffer) const;
-
+  // MetfilePlayer
+  bool GetDataAsVector(std::vector<char>* buffer) const override;
   bool SaveTo(base::File* file) const override;
 
  private:

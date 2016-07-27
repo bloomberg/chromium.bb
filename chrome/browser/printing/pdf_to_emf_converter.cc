@@ -9,6 +9,7 @@
 #include <memory>
 #include <queue>
 #include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -72,6 +73,7 @@ class LazyEmf : public MetafilePlayer {
   ~LazyEmf() override { Close(); }
 
   bool SafePlayback(HDC hdc) const override;
+  bool GetDataAsVector(std::vector<char>* buffer) const override;
   bool SaveTo(base::File* file) const override;
 
  private:
@@ -256,6 +258,11 @@ bool LazyEmf::SafePlayback(HDC hdc) const {
   // release file here.
   Close();
   return result;
+}
+
+bool LazyEmf::GetDataAsVector(std::vector<char>* buffer) const {
+  NOTREACHED();
+  return false;
 }
 
 bool LazyEmf::SaveTo(base::File* file) const {

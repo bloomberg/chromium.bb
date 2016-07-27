@@ -11,7 +11,7 @@
 
 namespace printing {
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 void PrintedDocument::RenderPrintedPage(
     const PrintedPage& page, PrintingContext* context) const {
 #ifndef NDEBUG
@@ -32,6 +32,6 @@ void PrintedDocument::RenderPrintedPage(
     }
   }
 }
-#endif  // !OS_CHROMEOS && !OS_ANDROID
+#endif  // !OS_ANDROID
 
 }  // namespace printing

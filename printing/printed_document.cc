@@ -263,10 +263,11 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
 PrintedDocument::Immutable::~Immutable() {
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-// This function is not used on aura linux/chromeos or android.
+#if defined(OS_ANDROID)
+// This function is not used on android.
 void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
                                         PrintingContext* context) const {
+  NOTREACHED();
 }
 #endif
 

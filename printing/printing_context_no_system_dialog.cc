@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <unicode/ulocdata.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -16,10 +18,12 @@
 
 namespace printing {
 
+#if !defined(USE_CUPS)
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return base::WrapUnique(new PrintingContextNoSystemDialog(delegate));
+  return base::MakeUnique<PrintingContextNoSystemDialog>(delegate);
 }
+#endif  // !defined(USE_CUPS)
 
 PrintingContextNoSystemDialog::PrintingContextNoSystemDialog(Delegate* delegate)
     : PrintingContext(delegate) {
@@ -145,7 +149,7 @@ void PrintingContextNoSystemDialog::ReleaseContext() {
 
 gfx::NativeDrawingContext PrintingContextNoSystemDialog::context() const {
   // Intentional No-op.
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace printing

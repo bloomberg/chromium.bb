@@ -13,6 +13,15 @@
 
 namespace printing {
 
+extern const char kIppCollate[];
+extern const char kIppCopies[];
+extern const char kIppColor[];
+extern const char kIppMedia[];
+extern const char kIppDuplex[];
+
+extern const char kCollated[];
+extern const char kUncollated[];
+
 // Returns the default ColorModel for |printer|.
 ColorModel DefaultColorModel(const CupsOptionProvider& printer);
 

@@ -24,6 +24,11 @@ struct DestInfoDeleter {
   void operator()(cups_dinfo_t* info) const;
 };
 
+struct OptionDeleter {
+ public:
+  void operator()(cups_option_t* option) const;
+};
+
 }  // namespace printing
 
 #endif  // PRINTING_BACKEND_CUPS_DELETERS_H_

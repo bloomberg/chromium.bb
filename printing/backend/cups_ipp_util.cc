@@ -22,15 +22,18 @@
 
 namespace printing {
 
-namespace {
-
+// property names
 const char kIppCollate[] = "sheet-collate";  // RFC 3381
 const char kIppCopies[] = CUPS_COPIES;
 const char kIppColor[] = CUPS_PRINT_COLOR_MODE;
 const char kIppMedia[] = CUPS_MEDIA;
 const char kIppDuplex[] = CUPS_SIDES;
 
+// collation values
 const char kCollated[] = "collated";
+const char kUncollated[] = "uncollated";
+
+namespace {
 
 const int kMicronsPerMM = 1000;
 const double kMMPerInch = 25.4;

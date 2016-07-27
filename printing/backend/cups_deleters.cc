@@ -18,4 +18,9 @@ void DestInfoDeleter::operator()(cups_dinfo_t* info) const {
   cupsFreeDestInfo(info);
 }
 
+void OptionDeleter::operator()(cups_option_t* option) const {
+  // Frees the name and value buffers then the struct itself
+  cupsFreeOptions(1, option);
+}
+
 }  // namespace printing
