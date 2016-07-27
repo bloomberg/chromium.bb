@@ -505,6 +505,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface OffscreenCanvasRenderingContext2D
 [Worker]     attribute @@toStringTag
 [Worker]     getter fillStyle
+[Worker]     getter imageSmoothingEnabled
+[Worker]     getter imageSmoothingQuality
 [Worker]     getter lineCap
 [Worker]     getter lineDashOffset
 [Worker]     getter lineJoin
@@ -551,6 +553,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method transform
 [Worker]     method translate
 [Worker]     setter fillStyle
+[Worker]     setter imageSmoothingEnabled
+[Worker]     setter imageSmoothingQuality
 [Worker]     setter lineCap
 [Worker]     setter lineDashOffset
 [Worker]     setter lineJoin

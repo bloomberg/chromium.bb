@@ -4178,6 +4178,8 @@ interface OffscreenCanvas
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
     getter fillStyle
+    getter imageSmoothingEnabled
+    getter imageSmoothingQuality
     getter lineCap
     getter lineDashOffset
     getter lineJoin
@@ -4224,6 +4226,8 @@ interface OffscreenCanvasRenderingContext2D
     method transform
     method translate
     setter fillStyle
+    setter imageSmoothingEnabled
+    setter imageSmoothingQuality
     setter lineCap
     setter lineDashOffset
     setter lineJoin

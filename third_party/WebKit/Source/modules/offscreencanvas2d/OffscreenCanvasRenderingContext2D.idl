@@ -60,6 +60,10 @@
     void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
     void resetTransform();
 
+    // image smoothing
+    attribute boolean imageSmoothingEnabled; // (default True)
+    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+
     // shadows
     attribute unrestricted double shadowOffsetX;
     attribute unrestricted double shadowOffsetY;
