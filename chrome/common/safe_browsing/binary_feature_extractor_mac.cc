@@ -29,9 +29,9 @@ bool BinaryFeatureExtractor::ExtractImageFeaturesFromData(
   else
     images.push_back(&image_reader);
 
-  for (const auto& mach_o_reader : images) {
+  for (auto* mach_o_reader : images) {
     // Record the entire mach_header struct.
-    auto mach_o_headers = image_headers->mutable_mach_o_headers()->Add();
+    auto* mach_o_headers = image_headers->mutable_mach_o_headers()->Add();
     if (mach_o_reader->Is64Bit()) {
       const mach_header_64* header = mach_o_reader->GetMachHeader64();
       mach_o_headers->set_mach_header(header, sizeof(*header));
@@ -41,11 +41,11 @@ bool BinaryFeatureExtractor::ExtractImageFeaturesFromData(
     }
 
     // Store the load commands for the Mach-O binary.
-    auto proto_load_commands = mach_o_headers->mutable_load_commands();
+    auto* proto_load_commands = mach_o_headers->mutable_load_commands();
     const std::vector<MachOImageReader::LoadCommand>& load_commands =
         mach_o_reader->GetLoadCommands();
     for (const auto& load_command : load_commands) {
-      auto proto_load_command = proto_load_commands->Add();
+      auto* proto_load_command = proto_load_commands->Add();
       proto_load_command->set_command_id(load_command.cmd());
       proto_load_command->set_command(&load_command.data[0],
                                       load_command.data.size());

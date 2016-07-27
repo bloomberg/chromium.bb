@@ -187,7 +187,8 @@ TEST_F(FileTypePoliciesTest, BadProto) {
             policies_.PopulateFromBinaryPb(cfg.SerializeAsString()));
 
   cfg.mutable_default_file_type()->add_platform_settings();
-  auto file_type = cfg.add_file_types();  // This is missing a platform_setting.
+  // This is missing a platform_setting.
+  auto* file_type = cfg.add_file_types();
   EXPECT_EQ(FileTypePolicies::UpdateResult::FAILED_WRONG_SETTINGS_COUNT,
             policies_.PopulateFromBinaryPb(cfg.SerializeAsString()));
 

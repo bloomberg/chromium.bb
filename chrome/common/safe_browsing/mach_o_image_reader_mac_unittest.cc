@@ -83,12 +83,12 @@ class MachOImageReaderTest : public testing::Test {
   // Returns the identity of the signed code data.
   void GetSigningIdentity(const std::vector<uint8_t>& signature,
                           std::string* identity) {
-    auto super_blob =
+    auto* super_blob =
         reinterpret_cast<const CodeSigningSuperBlob*>(&signature[0]);
     EXPECT_EQ(CSMAGIC_EMBEDDED_SIGNATURE, ntohl(super_blob->magic));
     ASSERT_EQ(CSSLOT_CODEDIRECTORY, ntohl(super_blob->index[0].type));
     size_t dir_offset = ntohl(super_blob->index[0].offset);
-    auto directory =
+    auto* directory =
         reinterpret_cast<const CodeSigningDirectory*>(&signature[dir_offset]);
     ASSERT_EQ(CSMAGIC_CODEDIRECTORY, ntohl(directory->magic));
     size_t ident_offset = ntohl(directory->identOffset) + dir_offset;
@@ -102,12 +102,12 @@ class MachOImageReaderTest : public testing::Test {
   // when using `codesign -d -vvvvvv`.
   void GetCodeSignatureHash(const std::vector<uint8_t>& signature,
                             std::vector<uint8_t>* hash) {
-    auto super_blob =
+    auto* super_blob =
         reinterpret_cast<const CodeSigningSuperBlob*>(&signature[0]);
     EXPECT_EQ(CSMAGIC_EMBEDDED_SIGNATURE, ntohl(super_blob->magic));
     ASSERT_EQ(CSSLOT_CODEDIRECTORY, ntohl(super_blob->index[0].type));
     size_t dir_offset = ntohl(super_blob->index[0].offset);
-    auto directory =
+    auto* directory =
         reinterpret_cast<const CodeSigningDirectory*>(&signature[dir_offset]);
     ASSERT_EQ(CSMAGIC_CODEDIRECTORY, ntohl(directory->magic));
     size_t hash_offset = ntohl(directory->hashOffset) + dir_offset;
@@ -149,7 +149,7 @@ TEST_F(MachOImageReaderTest, Executable32) {
   ASSERT_EQ(15u, commands.size());
   auto command = commands[11];
   ASSERT_EQ(static_cast<uint32_t>(LC_LOAD_DYLIB), command.cmd());
-  auto actual = command.as_command<dylib_command>();
+  auto* actual = command.as_command<dylib_command>();
   EXPECT_EQ(2u, actual->dylib.timestamp);
   EXPECT_EQ(0x4ad0101u, actual->dylib.current_version);
   EXPECT_EQ(0x10000u, actual->dylib.compatibility_version);
@@ -211,7 +211,7 @@ TEST_F(MachOImageReaderTest, ExecutableFat) {
     ASSERT_EQ(15u, commands.size());
     auto command = commands[1];
     ASSERT_EQ(static_cast<uint32_t>(LC_SEGMENT_64), command.cmd());
-    auto actual = command.as_command<segment_command_64>();
+    auto* actual = command.as_command<segment_command_64>();
     EXPECT_EQ("__TEXT", std::string(actual->segname));
     EXPECT_EQ(0u, actual->fileoff);
     EXPECT_EQ(4096u, actual->filesize);
