@@ -22,42 +22,51 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
             }
         }
         self.mock_dict_two = {
-            'fake/test/path.html': {
+            'imported/fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'},
                 'two': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'},
                 'three': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'}
             }
         }
         self.mock_dict_three = {
-            'fake/test/path.html': {
+            'imported/fake/test/path.html': {
                 'four': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'}}
+        }
+        self.mock_dict_four = {
+            'imported/fake/test/path.html': {
+                'one': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'}
+            }
         }
 
     def test_merge_same_valued_keys(self):
         self.assertEqual(self.merge_same_valued_keys(self.mock_dict_one['fake/test/path.html']), {
             ('two', 'one'): {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'}
         })
-        self.assertEqual(self.merge_same_valued_keys(self.mock_dict_two['fake/test/path.html']), {
+        self.assertEqual(self.merge_same_valued_keys(self.mock_dict_two['imported/fake/test/path.html']), {
             ('three', 'one'): {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'},
             'two': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'}
         })
 
     def test_get_expectations(self):
-        self.assertEqual(self.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}), ['Pass'])
-        self.assertEqual(self.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}), ['Timeout'])
-        self.assertEqual(self.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}), ['Pass', 'Timeout'])
+        self.assertEqual(self.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}), set(['Pass']))
+        self.assertEqual(self.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}), set(['Timeout']))
+        self.assertEqual(self.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}), set(['Pass']))
+        self.assertEqual(
+            self.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
+            set(['Crash', 'Failure', 'Timeout']))
+        self.assertEqual(self.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}), set(['Pass']))
 
-    def test_create_line_list(self):
-        self.assertEqual(self.create_line_list(self.mock_dict_one),
-                         ['crbug.com/626703 [ two ] fake/test/path.html [ Pass ]',
-                          'crbug.com/626703 [ one ] fake/test/path.html [ Pass ]'])
+    def test_create_line_list_old_tests(self):
+        self.assertEqual(self.create_line_list(self.mock_dict_one), [])
+
+    def test_create_line_list_new_tests(self):
         self.assertEqual(self.create_line_list(self.mock_dict_two),
-                         ['crbug.com/626703 [ three ] fake/test/path.html [ Pass ]',
-                          'crbug.com/626703 [ two ] fake/test/path.html [ Timeout ]',
-                          'crbug.com/626703 [ one ] fake/test/path.html [ Pass ]'])
+                         ['crbug.com/626703 [ three ] imported/fake/test/path.html [ Pass ]',
+                          'crbug.com/626703 [ two ] imported/fake/test/path.html [ Timeout ]',
+                          'crbug.com/626703 [ one ] imported/fake/test/path.html [ Pass ]'])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
-        self.assertRaises(ValueError, self.merge_dicts, self.mock_dict_one, self.mock_dict_two)
+        self.assertRaises(ValueError, self.merge_dicts, self.mock_dict_two, self.mock_dict_four)
 
     def test_merge_dicts_merges_second_dict_into_first(self):
         output = self.merge_dicts(self.mock_dict_one, self.mock_dict_three)

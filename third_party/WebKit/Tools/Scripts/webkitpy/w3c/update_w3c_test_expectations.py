@@ -10,7 +10,7 @@ by retrieving the try job results for the current CL.
 
 import logging
 
-from webkitpy.common.net import buildbot
+from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.net import rietveld
 
 
@@ -23,21 +23,17 @@ def main(host, port):
     issue_number = expectations_line_adder.get_issue_number()
     try_bots = expectations_line_adder.get_try_bots()
     try_jobs = rietveld.latest_try_jobs(issue_number, try_bots, host.web)
-    line_expectations_dict = {}
+    test_expectations = {}
     if not try_jobs:
         print 'No Try Job information was collected.'
         return 1
-    for try_job in try_jobs:
-        builder_name = try_job[0]
-        build_number = try_job[1]
-        builder = buildbot.Builder(builder_name, host.buildbot)
-        build = buildbot.Build(builder, build_number)
-        platform_results_dict = expectations_line_adder.get_failing_results_dict(builder, build)
-        line_expectations_dict = expectations_line_adder.merge_dicts(line_expectations_dict, platform_results_dict)
-    for platform_results_dicts in line_expectations_dict.values():
-        platform_results_dicts = expectations_line_adder.merge_same_valued_keys(platform_results_dicts)
-    line_list = expectations_line_adder.create_line_list(line_expectations_dict)
-    expectations_line_adder.write_to_test_expectations(host, expectations_file, line_list)
+    for job in try_jobs:
+        platform_results = expectations_line_adder.get_failing_results_dict(BuildBot(), job.builder_name, job.build_number)
+        test_expectations = expectations_line_adder.merge_dicts(test_expectations, platform_results)
+    for test_name, platform_result in test_expectations.iteritems():
+        test_expectations[test_name] = expectations_line_adder.merge_same_valued_keys(platform_result)
+    test_expectation_lines = expectations_line_adder.create_line_list(test_expectations)
+    expectations_line_adder.write_to_test_expectations(host, expectations_file, test_expectation_lines)
 
 
 class W3CExpectationsLineAdder(object):
@@ -65,7 +61,7 @@ class W3CExpectationsLineAdder(object):
                 }}
         return test_dict
 
-    def get_failing_results_dict(self, builder, build):
+    def get_failing_results_dict(self, buildbot, builder_name, build_number):
         """Returns a nested dict of failing test results.
 
         Retrieves a full list of layout test results from a builder result URL. Collects
@@ -84,8 +80,8 @@ class W3CExpectationsLineAdder(object):
                 }
             }
         """
-        layout_test_results = builder.fetch_layout_test_results(build.results_url())
-        builder_name = layout_test_results.builder_name()
+        results_url = buildbot.results_url(builder_name, build_number)
+        layout_test_results = buildbot.fetch_layout_test_results(results_url)
         platform = self._host.builders.port_name_for_builder_name(builder_name)
         result_list = layout_test_results.didnt_run_as_expected_results()
         failing_results_dict = self._generate_results_dict(platform, result_list)
@@ -129,34 +125,43 @@ class W3CExpectationsLineAdder(object):
             dictionary: A dictionary with a dictionary as the value.
 
         Returns:
-            A dictionary with updated keys to reflect matching values of keys.
+            A new dictionary with updated keys to reflect matching values of keys.
             Example: {
                 'one': {'foo': 'bar'},
                 'two': {'foo': 'bar'},
-                'three': {'foo': bar'}
+                'three': {'foo': 'bar'}
             }
-            is converted to {('one', 'two', 'three'): {'foo': 'bar'}}
+            is converted to a new dictionary with that contains
+            {('one', 'two', 'three'): {'foo': 'bar'}}
         """
+        merged_dict = {}
         matching_value_keys = set()
-        keys = dictionary.keys()
-        is_last_item = False
-        for index, item in enumerate(keys):
-            if is_last_item:
+        keys = sorted(dictionary.keys())
+        while keys:
+            current_key = keys[0]
+            found_match = False
+            if current_key == keys[-1]:
+                merged_dict[current_key] = dictionary[current_key]
+                keys.remove(current_key)
                 break
-            for i in range(index + 1, len(keys)):
-                next_item = keys[i]
-                if dictionary[item] == dictionary[next_item]:
-                    matching_value_keys.update([item, next_item])
-                    dictionary[tuple(matching_value_keys)] = dictionary[item]
-                    is_last_item = next_item == keys[-1]
-                    del dictionary[item]
-                    del dictionary[next_item]
-        return dictionary
+            for next_item in keys[1:]:
+                if dictionary[current_key] == dictionary[next_item]:
+                    found_match = True
+                    matching_value_keys.update([current_key, next_item])
+                if next_item == keys[-1]:
+                    if found_match:
+                        merged_dict[tuple(matching_value_keys)] = dictionary[current_key]
+                        keys = [k for k in keys if k not in matching_value_keys]
+                    else:
+                        merged_dict[current_key] = dictionary[current_key]
+                        keys.remove(current_key)
+            matching_value_keys = set()
+        return merged_dict
 
     def get_expectations(self, results):
-        """Returns a list of test expectations for a given test dict.
+        """Returns a set of test expectations for a given test dict.
 
-        Returns a list of one or more test expectations based on the expected
+        Returns a set of one or more test expectations based on the expected
         and actual results of a given test name.
 
         Args:
@@ -169,19 +174,20 @@ class W3CExpectationsLineAdder(object):
             }
 
         Returns:
-            A list of one or more test expectations with the first letter capitalized. Example:
-            ['Failure', 'Timeout']
+            A set of one or more test expectations with the first letter capitalized. Example:
+            set(['Failure', 'Timeout'])
         """
-        expectations = []
-        failure_expectations = ['TEXT', 'FAIL', 'IMAGE+TEXT', 'IMAGE']
-        pass_crash_timeout = ['TIMEOUT', 'CRASH', 'PASS']
-        if results['expected'] in pass_crash_timeout and results['actual'] in failure_expectations:
-            expectations.append('Failure')
-        if results['expected'] in failure_expectations and results['actual'] in pass_crash_timeout:
-            expectations.append(results['actual'].capitalize())
-        if results['expected'] in pass_crash_timeout and results['actual'] in pass_crash_timeout:
-            expectations.append(results['actual'].capitalize())
-            expectations.append(results['expected'].capitalize())
+        expectations = set()
+        failure_types = ['TEXT', 'FAIL', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'MISSING', 'LEAK']
+        test_expectation_types = ['SLOW', 'TIMEOUT', 'CRASH', 'PASS', 'REBASELINE', 'NEEDSREBASELINE', 'NEEDSMANUALREBASELINE']
+        for expected in results['expected'].split():
+            for actual in results['actual'].split():
+                if expected in test_expectation_types and actual in failure_types:
+                    expectations.add('Failure')
+                if expected in failure_types and actual in test_expectation_types:
+                    expectations.add(actual.capitalize())
+                if expected in test_expectation_types and actual in test_expectation_types:
+                    expectations.add(actual.capitalize())
         return expectations
 
     def create_line_list(self, merged_results):
@@ -210,17 +216,19 @@ class W3CExpectationsLineAdder(object):
         line_list = []
         for test_name, platform_results in merged_results.iteritems():
             for platform in platform_results:
-                platform_list = []
-                bug = []
-                expectations = []
-                if isinstance(platform, tuple):
-                    platform_list = list(platform)
-                else:
-                    platform_list.append(platform)
-                bug.append(platform_results[platform]['bug'])
-                expectations = self.get_expectations(platform_results[platform])
-                line = '%s [ %s ] %s [ %s ]' % (bug[0], ' '.join(platform_list), test_name, ' '.join(expectations))
-                line_list.append(str(line))
+                if test_name.startswith('imported'):
+                    print platform_results
+                    platform_list = []
+                    bug = []
+                    expectations = []
+                    if isinstance(platform, tuple):
+                        platform_list = list(platform)
+                    else:
+                        platform_list.append(platform)
+                    bug.append(platform_results[platform]['bug'])
+                    expectations = self.get_expectations(platform_results[platform])
+                    line = '%s [ %s ] %s [ %s ]' % (bug[0], ' '.join(platform_list), test_name, ' '.join(expectations))
+                    line_list.append(str(line))
         return line_list
 
     def write_to_test_expectations(self, host, path, line_list):
