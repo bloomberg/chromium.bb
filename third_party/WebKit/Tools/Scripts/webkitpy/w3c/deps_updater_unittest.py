@@ -19,7 +19,6 @@ win_builder       http://example.com/win_builder/builds/222
 Failures:
 android_builder   http://example.com/android_builder/builds/111
 chromeos_builder  http://example.com/chromeos_builder/builds/111
-win_builder       http://example.com/win_builder/builds/111
 Started:
 chromeos_generic  http://example.com/chromeos_generic/builds/111
 chromeos_daisy    http://example.com/chromeos_daisy/builds/111

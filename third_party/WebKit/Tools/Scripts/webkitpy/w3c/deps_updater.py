@@ -63,19 +63,33 @@ class DepsUpdater(object):
             raise AssertionError("Unsupported target %s" % self.target)
 
         self.commit_changes_if_needed(chromium_commitish, import_commitish)
-
         if self.auto_update:
-            self.check_run(['git', 'cl', 'upload', '-f'])
-            self.run(['git', 'cl', 'set-commit', '--dry-run'])
+            try_bots = self.host.builders.all_try_builder_names()
+            self.print_('## Uploading change list.')
+            self.check_run(['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'])
+            self.print_('## Triggering try jobs.')
+            for try_bot in try_bots:
+                self.run(['git', 'cl', 'try', '-b', try_bot])
+            self.print_('## Waiting for Try Job Results')
+            has_failing_results = False
             while True:
                 time.sleep(POLL_DELAY_SECONDS)
                 _, out = self.run(['git', 'cl', 'try-results'])
                 results = self.parse_try_job_results(out)
-                if results['Started'] or results['Scheduled']:
+                if results.get('Started') or results.get('Scheduled'):
                     continue
-                if results['Failures']:
-                    return 1
+                if results.get('Failures'):
+                    has_failing_results = True
                 break
+            if has_failing_results:
+                self.print_('## Adding test expectations lines to LayoutTests/TestExpectations')
+                script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
+                self.run([self.host.executable, script_path])
+                self.check_run(['git', 'commit', '-a', '-m', '\'Modified Test Expectations from W3C Test Auto-roller\''])
+                self.check_run(['git', 'cl', 'upload', '-m', '\'Wrote lines to TestExpectations\''])
+            else:
+                self.print_('No Failures, committing patch.')
+            quit()
             self.run(['git', 'cl', 'land', '-f'])
         return 0
 
@@ -281,9 +295,6 @@ class DepsUpdater(object):
                 break
             else:
                 sets[result_type].add(line.split()[0])
-        sets['Failures'] -= sets['Successes']
-        sets['Started'] -= sets['Successes']
-        sets['Started'] -= sets['Failures']
         return sets
 
     def check_run(self, command):
