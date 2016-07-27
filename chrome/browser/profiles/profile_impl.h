@@ -23,7 +23,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/host_zoom_map.h"
 
-class NetPrefObserver;
 class PrefService;
 
 class TrackedPreferenceValidationDelegate;
