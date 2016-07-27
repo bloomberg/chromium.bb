@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/common/content_export.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
@@ -69,7 +70,8 @@ typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
     ScopedStreamTextureProxy;
 
 // Factory class for managing stream textures.
-class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
+class CONTENT_EXPORT StreamTextureFactory
+    : public base::RefCounted<StreamTextureFactory> {
  public:
   static scoped_refptr<StreamTextureFactory> Create(
       scoped_refptr<ContextProviderCommandBuffer> context_provider);

@@ -286,6 +286,8 @@
       'renderer/media/android/renderer_surface_view_manager.h',
       'renderer/media/android/stream_texture_factory.cc',
       'renderer/media/android/stream_texture_factory.h',
+      'renderer/media/android/stream_texture_wrapper_impl.cc',
+      'renderer/media/android/stream_texture_wrapper_impl.h',
       'renderer/media/android/webmediaplayer_android.cc',
       'renderer/media/android/webmediaplayer_android.h',
       'renderer/media/android/webmediasession_android.cc',

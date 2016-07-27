@@ -826,6 +826,7 @@
       'browser/android/java/jni_helper_unittest.cc',
       'browser/android/url_request_content_job_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',
+      'renderer/media/android/stream_texture_wrapper_impl_unittest.cc',
       'renderer/media/android/webmediasession_android_unittest.cc',
     ],
   },
