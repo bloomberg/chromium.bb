@@ -420,6 +420,7 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     SkPictureGpuAnalyzer gpuAnalyzer;
 
     m_currentCacheGeneration = DisplayItemClient::CacheGenerationOrInvalidationReason::next();
+    Vector<const DisplayItemClient*> skippedCacheClients;
     for (const auto& item : m_newDisplayItemList) {
         // No reason to continue the analysis once we have a veto.
         if (gpuAnalyzer.suitableForGpuRasterization())
@@ -427,9 +428,18 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
 
         m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
 
-        if (item.isCacheable())
+        if (item.isCacheable()) {
             item.client().setDisplayItemsCached(m_currentCacheGeneration);
+        } else {
+            if (item.client().isJustCreated())
+                item.client().clearIsJustCreated();
+            if (item.skippedCache())
+                skippedCacheClients.append(&item.client());
+        }
     }
+
+    for (auto* client : skippedCacheClients)
+        client->setDisplayItemsUncached();
 
     // The new list will not be appended to again so we can release unused memory.
     m_newDisplayItemList.shrinkToFit();
@@ -437,9 +447,11 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     resetCurrentListIndices();
     m_outOfOrderItemIndices.clear();
 
-    for (const auto& chunk : m_currentPaintArtifact.paintChunks()) {
-        if (chunk.id)
-            chunk.id->client.setDisplayItemsCached(m_currentCacheGeneration);
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        for (const auto& chunk : m_currentPaintArtifact.paintChunks()) {
+            if (chunk.id && chunk.id->client.isJustCreated())
+                chunk.id->client.clearIsJustCreated();
+        }
     }
 
     // We'll allocate the initial buffer when we start the next paint.

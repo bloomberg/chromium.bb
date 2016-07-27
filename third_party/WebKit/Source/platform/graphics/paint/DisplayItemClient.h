@@ -65,6 +65,7 @@ public:
 
     // A client is considered "just created" if its display items have never been committed.
     bool isJustCreated() const { return m_cacheGenerationOrInvalidationReason.isJustCreated(); }
+    void clearIsJustCreated() const { m_cacheGenerationOrInvalidationReason.clearIsJustCreated(); }
 
 private:
     friend class FakeDisplayItemClient;
@@ -115,6 +116,7 @@ private:
         }
 
         bool isJustCreated() const { return m_value == kJustCreated; }
+        void clearIsJustCreated() { m_value = static_cast<ValueType>(PaintInvalidationFull); }
 
     private:
         typedef uint32_t ValueType;

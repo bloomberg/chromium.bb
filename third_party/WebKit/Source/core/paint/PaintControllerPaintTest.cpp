@@ -8,6 +8,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
@@ -61,6 +62,38 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(newFirstTextBox, foregroundType),
         TestDisplayItem(secondTextBox, foregroundType));
+}
+
+TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag)
+{
+    setBodyInnerHTML(
+        "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
+        "  <div style='width: 100px; height: 100px; background-color: blue'></div>"
+        "</div>");
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
+    LayoutObject& subDiv = *div.firstChild();
+
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 6,
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+        TestDisplayItem(div, DisplayItem::BeginCompositing),
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(div, DisplayItem::EndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+
+    const EffectPaintPropertyNode* effectNode = div.objectPaintProperties()->effect();
+    EXPECT_EQ(0.5f, effectNode->opacity());
+    const PaintChunk& chunk = rootPaintController().paintChunks()[1];
+    EXPECT_EQ(*div.layer(), chunk.id->client);
+    EXPECT_EQ(effectNode, chunk.properties.effect.get());
+
+    EXPECT_FALSE(div.layer()->isJustCreated());
+    // Client used by only paint chunks and non-cachaeable display items but not by any
+    // cacheable display items won't be marked as validly cached.
+    EXPECT_FALSE(rootPaintController().clientCacheIsValid(*div.layer()));
+    EXPECT_FALSE(rootPaintController().clientCacheIsValid(div));
+    EXPECT_TRUE(rootPaintController().clientCacheIsValid(subDiv));
 }
 
 } // namespace blink

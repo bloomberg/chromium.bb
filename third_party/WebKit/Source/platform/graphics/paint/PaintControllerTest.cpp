@@ -828,6 +828,61 @@ TEST_F(PaintControllerTest, SkipCache)
     getPaintController().commitNewDisplayItems();
 }
 
+TEST_F(PaintControllerTest, PartialSkipCache)
+{
+    FakeDisplayItemClient content("content");
+    GraphicsContext context(getPaintController());
+
+    FloatRect rect1(100, 100, 50, 50);
+    FloatRect rect2(150, 100, 50, 50);
+    FloatRect rect3(200, 100, 50, 50);
+
+    drawRect(context, content, backgroundDrawingType, rect1);
+    getPaintController().beginSkippingCache();
+    drawRect(context, content, foregroundDrawingType, rect2);
+    getPaintController().endSkippingCache();
+    drawRect(context, content, foregroundDrawingType, rect3);
+
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
+        TestDisplayItem(content, backgroundDrawingType),
+        TestDisplayItem(content, foregroundDrawingType),
+        TestDisplayItem(content, foregroundDrawingType));
+    RefPtr<const SkPicture> picture0 = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture();
+    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture();
+    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[2]).picture();
+    EXPECT_NE(picture1, picture2);
+
+    // Content's cache is invalid because it has display items skipped cache.
+    EXPECT_FALSE(getPaintController().clientCacheIsValid(content));
+    EXPECT_EQ(PaintInvalidationFull, content.getPaintInvalidationReason());
+
+    // Draw again with nothing invalidated.
+    drawRect(context, content, backgroundDrawingType, rect1);
+    getPaintController().beginSkippingCache();
+    drawRect(context, content, foregroundDrawingType, rect2);
+    getPaintController().endSkippingCache();
+    drawRect(context, content, foregroundDrawingType, rect3);
+
+    EXPECT_EQ(0, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(0, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(0, numIndexedItems());
+#endif
+
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
+        TestDisplayItem(content, backgroundDrawingType),
+        TestDisplayItem(content, foregroundDrawingType),
+        TestDisplayItem(content, foregroundDrawingType));
+    EXPECT_NE(picture0, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[2]).picture());
+}
+
 TEST_F(PaintControllerTest, OptimizeNoopPairs)
 {
     FakeDisplayItemClient first("first");
