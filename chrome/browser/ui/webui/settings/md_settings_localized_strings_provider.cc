@@ -60,7 +60,7 @@ void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
   }
 }
 
-void AddCommonStrings(content::WebUIDataSource* html_source) {
+void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   LocalizedString localized_strings[] = {
       {"add", IDS_ADD},
       {"cancel", IDS_CANCEL},
@@ -75,6 +75,14 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddBoolean(
+      "isGuest",
+#if defined(OS_CHROMEOS)
+      user_manager::UserManager::Get()->IsLoggedInAsGuest());
+#else
+      profile->IsOffTheRecord());
+#endif
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -1307,7 +1315,7 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
-  AddCommonStrings(html_source);
+  AddCommonStrings(html_source, profile);
 
   AddA11yStrings(html_source);
   AddAboutStrings(html_source);

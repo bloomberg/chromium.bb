@@ -60,13 +60,23 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @private {!GuestModePageVisibility}
+     */
+    pageVisibility_: Object,
   },
 
   listeners: {
     'sideNav.iron-activate': 'onIronActivate_',
   },
 
-  /** @override */
+  /**
+   * @override
+   * @suppress {es5Strict} Object literals cannot contain duplicate keys in ES5
+   *     strict mode.
+   */
   ready: function() {
     this.$$('cr-toolbar').addEventListener('search-changed', function(e) {
       this.$$('settings-main').searchContents(e.detail);
@@ -75,6 +85,40 @@ Polymer({
     window.addEventListener('popstate', function(e) {
       this.$$('app-drawer').close();
     }.bind(this));
+
+    if (loadTimeData.getBoolean('isGuest')) {
+      this.pageVisibility_ = {
+        people: false,
+        onStartup: false,
+        reset: false,
+<if expr="not chromeos">
+        appearance: false,
+        defaultBrowser: false,
+        advancedSettings: false,
+</if>
+<if expr="chromeos">
+        appearance: {
+          setWallpaper: false,
+          setTheme: false,
+          homeButton: false,
+          bookmarksBar: false,
+          pageZoom: false,
+        },
+        advancedSettings: true,
+        dateTime: {
+          timeZoneSelector: false,
+        },
+        privacy: {
+          searchPrediction: false,
+          networkPrediction: false,
+        },
+        passwordsAndForms: false,
+        downloads: {
+          googleDrive: false,
+        },
+</if>
+      };
+    }
   },
 
   /** @private */

@@ -84,6 +84,7 @@ SettingsSubPageBrowserTest.prototype = {
   },
 
   testSubPages: function() {
+    Polymer.dom.flush();
     var page = this.getPage(this.pageId);
     this.subPages.forEach(function(subPage) {
       if (this.includePage(subPage))

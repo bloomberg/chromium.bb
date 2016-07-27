@@ -28,17 +28,20 @@
       <neon-animatable id="main">
 <if expr="chromeos">
         <div class="settings-box first two-line" id="wallpaperButton"
-            on-tap="openWallpaperManager_" actionable>
+            on-tap="openWallpaperManager_" actionable
+            hidden="[[!pageVisibility.setWallpaper]]">
           <iron-icon icon="settings:wallpaper"></iron-icon>
           <div class="start">
             <div>$i18n{setWallpaper}</div>
             <div class="secondary">$i18n{openWallpaperApp}</div>
           </div>
         </div>
-        <div class="settings-box two-line">
+        <div class="settings-box two-line"
+            hidden="[[!pageVisibility.setTheme]]">
 </if>
 <if expr="not chromeos">
-        <div class="settings-box two-line first">
+        <div class="settings-box two-line first"
+            hidden="[[!pageVisibility.setTheme]]">
 </if>
           <div class="layout horizontal center flex"
               on-tap="openThemesGallery_" actionable>
@@ -57,14 +60,16 @@
             </div>
           </template>
         </div>
-        <div class="settings-box two-line">
+        <div class="settings-box two-line"
+            hidden="[[!pageVisibility.homeButton]]">
           <settings-checkbox class="start" label="$i18n{showHomeButton}"
               sub-label="[[getShowHomeSubLabel_(prefs.homepage_is_newtabpage.value, prefs.homepage.value)]]"
               pref="{{prefs.browser.show_home_button}}">
           </settings-checkbox>
         </div>
         <template is="dom-if" if="[[prefs.browser.show_home_button.value]]">
-          <div class="list-frame">
+          <div class="list-frame"
+              hidden="[[!pageVisibility.homeButton]]">
             <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
               <paper-radio-button class="list-item" name="true">
                 $i18n{homePageNtp}
@@ -78,19 +83,21 @@
             </settings-radio-group>
           </div>
         </template>
-        <div class="settings-box">
+        <div class="settings-box"
+            hidden="[[!pageVisibility.bookmarksBar]]">
           <settings-checkbox class="start" label="$i18n{showBookmarksBar}"
               pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
           </settings-checkbox>
         </div>
+        <div class$="settings-box [[getFirst_(
+            pageVisibility.bookmarksBar)]]">
 <if expr="is_linux and not chromeos">
-        <div class="settings-box">
           <settings-checkbox class="start" label="$i18n{showWindowDecorations}"
               pref="{{prefs.browser.custom_chrome_frame}}">
           </settings-checkbox>
         </div>
-</if>
         <div class="settings-box">
+</if>
           <div class="start">$i18n{fontSize}</div>
           <settings-dropdown-menu id="defaultFontSize"
               pref="{{prefs.webkit.webprefs.default_font_size}}"
@@ -102,7 +109,8 @@
           <div>$i18n{customizeFonts}</div>
           <div class="secondary">$i18n{chooseFontsAndEncoding}</div>
         </div>
-        <div class="settings-box">
+        <div class="settings-box"
+            hidden="[[!pageVisibility.pageZoom]]">
           <div class="start">$i18n{pageZoom}</div>
           <settings-dropdown-menu id="pageZoom" pref="{{defaultZoomLevel_}}"
               menu-options="[[pageZoomOptions_]]" no-label-float>

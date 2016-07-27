@@ -107,6 +107,12 @@ Polymer({
 
     /** @private */
     themeSublabel_: String,
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!AppearancePageVisibility}
+     */
+    pageVisibility: Object,
   },
 
   observers: [
@@ -220,4 +226,13 @@ Polymer({
       return;
     chrome.settingsPrivate.setDefaultZoomPercent(percent);
   },
+
+  /**
+   * @param {boolean} bookmarksBarVisible if bookmarks bar option is visible.
+   * @return {string} 'first' if the argument is false or empty otherwise.
+   * @private
+   */
+  getFirst_: function(bookmarksBarVisible) {
+    return !bookmarksBarVisible ? 'first' : '';
+  }
 });

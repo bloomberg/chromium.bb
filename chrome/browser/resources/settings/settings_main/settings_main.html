@@ -55,23 +55,28 @@
       <div>$i18nRaw{searchNoResultsHelp}</div>
     </div>
     <template is="dom-if" if="[[showPages_.basic]]">
-      <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
+      <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}"
+          page-visibility="[[pageVisibility]]">
       </settings-basic-page>
     </template>
     <template is="dom-if"
-        if="[[showAdvancedToggle_(showPages_.basic, inSubpage_)]]">
-      <div id="toggleSpacer"></div>
-      <div id="toggleContainer" hidden$="[[showNoResultsFound_]]">
-        <div id="advancedToggle" on-tap="toggleAdvancedPage_">
-          <span>$i18n{advancedPageTitle}</span>
-          <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>
+        if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
+      <template is="dom-if"
+          if="[[showAdvancedToggle_(showPages_.basic, inSubpage_)]]">
+        <div id="toggleSpacer"></div>
+        <div id="toggleContainer" hidden$="[[showNoResultsFound_]]">
+          <div id="advancedToggle" on-tap="toggleAdvancedPage_">
+            <span>$i18n{advancedPageTitle}</span>
+            <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>
+          </div>
         </div>
-      </div>
-    </template>
-    <template is="dom-if" if="[[showPages_.advanced]]">
-      <settings-advanced-page prefs="{{prefs}}"
-          current-route="{{currentRoute}}">
-      </settings-advanced-page>
+      </template>
+      <template is="dom-if" if="[[showPages_.advanced]]">
+        <settings-advanced-page prefs="{{prefs}}"
+            current-route="{{currentRoute}}"
+            page-visibility="[[pageVisibility]]">
+        </settings-advanced-page>
+      </template>
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
       <settings-about-page current-route="{{currentRoute}}">

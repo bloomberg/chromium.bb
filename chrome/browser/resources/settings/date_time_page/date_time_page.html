@@ -7,7 +7,9 @@
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box first block">
-      <div>$i18n{timeZone}</div>
+      <div disabled$="[[!pageVisibility.timeZoneSelector]]">
+        $i18n{timeZone}
+      </div>
       <settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
           label="$i18n{use24HourClock}">
       </settings-checkbox>

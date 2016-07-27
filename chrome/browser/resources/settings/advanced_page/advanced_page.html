@@ -31,7 +31,8 @@
       <template is="dom-if" if="[[showPage(pageVisibility.dateTime)]]" restamp>
         <settings-section page-title="$i18n{dateTimePageTitle}"
             current-route="[[currentRoute]]" section="dateTime">
-          <settings-date-time-page prefs="{{prefs}}">
+          <settings-date-time-page prefs="{{prefs}}"
+              page-visibility="[[pageVisibility.dateTime]]">
           </settings-date-time-page>
         </settings-section>
       </template>
@@ -40,7 +41,8 @@
         <settings-section page-title="$i18n{privacyPageTitle}"
             current-route="[[currentRoute]]" section="privacy">
           <settings-privacy-page prefs="{{prefs}}"
-            current-route="{{currentRoute}}">
+              current-route="{{currentRoute}}"
+              page-visibility="[[pageVisibility.privacy]]">
           </settings-privacy-page>
         </settings-section>
       </template>
@@ -75,7 +77,8 @@
       <template is="dom-if" if="[[showPage(pageVisibility.downloads)]]" restamp>
         <settings-section page-title="$i18n{downloadsPageTitle}"
             current-route="[[currentRoute]]" section="downloads">
-          <settings-downloads-page prefs="{{prefs}}">
+          <settings-downloads-page prefs="{{prefs}}"
+              page-visibility="[[pageVisibility.downloads]]">
           </settings-downloads-page>
         </settings-section>
       </template>

@@ -32,6 +32,12 @@ Polymer({
       computed: 'computeShowClearBrowsingDataDialog_(currentRoute)',
       type: Boolean,
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!PrivacyPageVisibility}
+     */
+    pageVisibility: Object,
   },
 
   ready: function() {

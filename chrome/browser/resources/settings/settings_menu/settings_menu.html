@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
@@ -95,11 +96,13 @@
             $i18n{internetPageTitle}
           </div>
 </if>
-          <div data-section="people" on-tap="openPage_">
+          <div data-section="people" on-tap="openPage_"
+              hidden="[[!pageVisibility.people]]">
             <iron-icon icon="settings:people"></iron-icon>
             $i18n{peoplePageTitle}
           </div>
-          <div data-section="appearance" on-tap="openPage_">
+          <div data-section="appearance" on-tap="openPage_"
+              hidden="[[!pageVisibility.appearance]]">
             <iron-icon icon="settings:palette"></iron-icon>
             $i18n{appearancePageTitle}
           </div>
@@ -114,19 +117,22 @@
             $i18n{searchPageTitle}
           </div>
 <if expr="not chromeos">
-          <div data-section="defaultBrowser" on-tap="openPage_">
+          <div data-section="defaultBrowser" on-tap="openPage_"
+              hidden="[[!pageVisibility.defaultBrowser]]">
             <iron-icon icon="settings:web"></iron-icon>
             $i18n{defaultBrowser}
           </div>
 </if>
-          <div data-section="onStartup" on-tap="openPage_">
+          <div data-section="onStartup" on-tap="openPage_"
+              hidden="[[!pageVisibility.onStartup]]">
             <iron-icon icon="settings:power-settings-new"></iron-icon>
             $i18n{onStartup}
           </div>
         </paper-menu>
       </div>
       <paper-submenu class="page-menu" id="advancedPage" data-page="advanced"
-          opened="{{advancedOpened_}}">
+          opened="{{advancedOpened_}}"
+          hidden="[[!pageVisibility.advancedSettings]]">
         <div class="menu-trigger" data-section="" on-tap="openPage_">
           <span>$i18n{advancedPageTitle}</span>
           <iron-icon icon="[[arrowState_(advancedOpened_)]]"></iron-icon>
@@ -149,7 +155,8 @@
             $i18n{bluetoothPageTitle}
           </div>
 </if>
-          <div data-section="passwordsAndForms" on-tap="openPage_">
+          <div data-section="passwordsAndForms" on-tap="openPage_"
+              hidden="[[!pageVisibility.passwordsAndForms]]">
             <iron-icon icon="settings:assignment"></iron-icon>
             $i18n{passwordsAndAutofillPageTitle}
           </div>
@@ -175,7 +182,8 @@
             $i18n{systemPageTitle}
           </div>
 </if>
-          <div data-section="reset" on-tap="openPage_">
+          <div data-section="reset" on-tap="openPage_"
+              hidden="[[!pageVisibility.reset]]">
             <iron-icon icon="settings:restore"></iron-icon>
             $i18n{resetPageTitle}
           </div>

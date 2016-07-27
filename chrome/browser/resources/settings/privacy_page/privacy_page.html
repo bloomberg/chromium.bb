@@ -43,11 +43,13 @@
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.search.suggest_enabled}}"
-              label="$i18n{searchSuggestPref}">
+              label="$i18n{searchSuggestPref}"
+              hidden="[[!pageVisibility.searchPrediction]]">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.net.network_prediction_options}}"
-              label="$i18n{networkPredictionEnabled}">
+              label="$i18n{networkPredictionEnabled}"
+              hidden="[[!pageVisibility.networkPrediction]]">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.safebrowsing.extended_reporting_enabled}}"

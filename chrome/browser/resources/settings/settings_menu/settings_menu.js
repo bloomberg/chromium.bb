@@ -22,6 +22,14 @@ Polymer({
       notify: true,
       observer: 'currentRouteChanged_',
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!GuestModePageVisibility}
+     */
+    pageVisibility: {
+      type: Object,
+    },
   },
 
   attached: function() {
@@ -51,6 +59,8 @@ Polymer({
     // Sync URL changes to the side nav menu.
 
     if (newRoute.page == 'advanced') {
+      assert(!this.pageVisibility ||
+             this.pageVisibility.advancedSettings !== false);
       this.$.advancedMenu.selected = this.currentRoute.section;
       this.$.basicMenu.selected = null;
     } else if (newRoute.page == 'basic') {

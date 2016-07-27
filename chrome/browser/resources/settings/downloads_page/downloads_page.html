@@ -38,7 +38,8 @@
       </settings-checkbox>
 <if expr="chromeos">
       <settings-checkbox pref="{{prefs.gdata.disabled}}"
-          label="$i18n{disconnectGoogleDriveAccount}">
+          label="$i18n{disconnectGoogleDriveAccount}"
+          hidden="[[!pageVisibility.googleDrive]]">
       </settings-checkbox>
 </if>
     </div>

@@ -124,13 +124,15 @@
     <app-drawer swipe-open>
       <div class="drawer-header">$i18n{settings}</div>
       <div class="drawer-content">
-        <settings-menu current-route="{{currentRoute}}" id="sideNav">
+        <settings-menu current-route="{{currentRoute}}" id="sideNav"
+            page-visibility="[[pageVisibility_]]">
         </settings-menu>
       </div>
     </app-drawer>
     <paper-header-panel mode="waterfall">
       <settings-main prefs="{{prefs}}" current-route="{{currentRoute}}"
-          toolbar-spinner-active="{{toolbarSpinnerActive_}}">
+          toolbar-spinner-active="{{toolbarSpinnerActive_}}"
+          page-visibility="[[pageVisibility_]]">
       </settings-main>
     </paper-header-panel>
 

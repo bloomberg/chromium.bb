@@ -26,6 +26,12 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!DownloadsPageVisibility}
+     */
+    pageVisibility: Object,
   },
 
   /** @private */

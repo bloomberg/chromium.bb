@@ -68,7 +68,7 @@ Polymer({
    */
   onLanguageTap_: function(e) {
     // Only change the UI language on platforms that allow it.
-    if (!cr.isChromeOS && !cr.isWindows)
+    if ((!cr.isChromeOS && !cr.isWindows) || loadTimeData.getBoolean('isGuest'))
       return;
 
     // Set the prospective UI language. This won't take effect until a restart.
@@ -282,7 +282,7 @@ Polymer({
     var classes = [];
 
     if (cr.isChromeOS || cr.isWindows) {
-      if (supportsUI)
+      if (supportsUI && !loadTimeData.getBoolean('isGuest'))
         classes.push('list-button');  // Makes the item look "actionable".
 
       if (this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage))

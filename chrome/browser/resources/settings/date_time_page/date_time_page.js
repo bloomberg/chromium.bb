@@ -26,5 +26,11 @@ Polymer({
       type: Object,
       notify: true
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!DateTimePageVisibility}
+     */
+    pageVisibility: Object,
   },
 });

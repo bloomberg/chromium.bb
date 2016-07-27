@@ -60,6 +60,15 @@ Polymer({
       value: false,
       notify: true,
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!GuestModePageVisibility}
+     */
+    pageVisibility: {
+      type: Object,
+      value: function() { return {}; },
+    },
   },
 
   /** @override */
@@ -103,6 +112,7 @@ Polymer({
    * @param {boolean} showBasicPage
    * @param {boolean} inSubpage
    * @return {boolean}
+   * @private
    */
   showAdvancedToggle_: function(showBasicPage, inSubpage) {
     return showBasicPage && !inSubpage;
@@ -126,8 +136,11 @@ Polymer({
             (!this.inSubpage_ && this.advancedToggleExpanded_),
       };
 
-      if (this.showPages_.advanced)
+      if (this.showPages_.advanced) {
+        assert(!this.pageVisibility ||
+            this.pageVisibility.advancedSettings !== false);
         this.advancedToggleExpanded_ = true;
+      }
     }
 
     // Wait for any other changes prior to calculating the overflow padding.
@@ -180,7 +193,9 @@ Polymer({
     // |lastSection| may be null in unit tests.
     if (!lastSection)
       return 0;
-    return calcHeight(lastSection) - this.$$('#toggleContainer').offsetHeight;
+    var toggleContainer = this.$$('#toggleContainer');
+    return calcHeight(lastSection) -
+        (toggleContainer ? toggleContainer.offsetHeight : 0);
   },
 
   /** @private */
@@ -230,5 +245,14 @@ Polymer({
                 !request.isSame('') && !request.didFindMatches();
           }.bind(this));
     }.bind(this), 0);
+  },
+
+  /**
+   * @param {(boolean|undefined)} visibility
+   * @return {boolean} True unless visibility is false.
+   * @private
+   */
+  showAdvancedSettings_: function(visibility) {
+    return visibility !== false;
   },
 });
