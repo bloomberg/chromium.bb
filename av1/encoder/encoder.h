@@ -84,14 +84,14 @@ typedef enum {
   // regular inter frame
   REGULAR_FRAME = 0,
   // alternate reference frame
-  ARF_REF_FRAME = 1,
+  ARF_FRAME = 1,
   // overlay frame
   OVERLAY_FRAME = 2,
   // golden frame
   GLD_FRAME = 3,
 #if CONFIG_EXT_REFS
   // backward reference frame
-  BWR_FRAME = 4,
+  BRF_FRAME = 4,
 #endif
 } FRAME_CONTEXT_INDEX;
 
