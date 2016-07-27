@@ -12,7 +12,6 @@
 
 namespace shell {
 class Service;
-class ServiceContext;
 }
 
 // Responsible for running mash, both child and main processes.
@@ -30,7 +29,6 @@ class MashRunner {
   void StartChildApp(shell::mojom::ServiceRequest service_request);
 
   std::unique_ptr<shell::Service> service_;
-  std::unique_ptr<shell::ServiceContext> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);
 };
