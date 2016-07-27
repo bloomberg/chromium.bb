@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
@@ -957,6 +958,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onShareMenuItemSelected(final boolean shareDirectly, boolean isIncognito) {
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
+
+        PrintingController printingController = getChromeApplication().getPrintingController();
+        if (printingController != null && !currentTab.isNativePage() && !printingController.isBusy()
+                && PrefServiceBridge.getInstance().isPrintingEnabled()) {
+            PrintShareActivity.enablePrintShareOption(this);
+        }
 
         final Activity mainActivity = this;
         ContentBitmapCallback callback = new ContentBitmapCallback() {

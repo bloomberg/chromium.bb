@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.printing.PrintingController;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -153,14 +152,6 @@ public class AppMenuPropertiesDelegate {
             requestItem.setTitleCondensed(requestItem.isChecked()
                     ? mActivity.getString(R.string.menu_request_desktop_site_on)
                     : mActivity.getString(R.string.menu_request_desktop_site_off));
-
-            PrintingController printingController =
-                    mActivity.getChromeApplication().getPrintingController();
-            disableEnableMenuItem(menu, R.id.print_id,
-                    printingController != null && !currentTab.isNativePage(),
-                    printingController != null && !printingController.isBusy()
-                            && PrefServiceBridge.getInstance().isPrintingEnabled(),
-                    PrefServiceBridge.getInstance().isPrintingManaged());
 
             // Only display reader mode settings menu option if the current page is in reader mode.
             menu.findItem(R.id.reader_mode_prefs_id)

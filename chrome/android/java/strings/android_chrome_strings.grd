@@ -2460,6 +2460,11 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Web App
       </message>
 
+      <!-- Share targets -->
+      <message name="IDS_PRINT_SHARE_ACTIVITY_TITLE" desc="Title of the Print Share activity that will appear in the Android share dialog.">
+        Print
+      </message>
+
       <!-- Omnibox Autocomplete -->
       <message name="IDS_OMNIBOX_CONFIRM_DELETE" desc="A message within a modal dialog that confirms the user wants to delete a suggestion from the list dropdown in the omnibox">
         Remove suggestion from history?

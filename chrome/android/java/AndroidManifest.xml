@@ -535,6 +535,24 @@ by a child template that "extends" this file.
             android:process=":browser_restart_process">
         </activity>
 
+        <!-- This activity is to expose the print option via the generic Android share action. -->
+        <activity
+            android:name="org.chromium.chrome.browser.printing.PrintShareActivity"
+            android:icon="@drawable/print"
+            android:label="@string/print_share_activity_title"
+            android:enabled="false"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <!-- Activity to list Physical Web Urls -->
         <activity android:name="org.chromium.chrome.browser.physicalweb.ListUrlsActivity"
             android:label="@string/physical_web_list_urls_activity_title"

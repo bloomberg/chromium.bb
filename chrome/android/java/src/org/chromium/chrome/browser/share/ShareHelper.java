@@ -59,6 +59,9 @@ public class ShareHelper {
 
     private static final String TAG = "share";
 
+    /** The task ID of the activity that triggered the share action. */
+    public static final String EXTRA_TASK_ID = "org.chromium.chrome.extra.TASK_ID";
+
     private static final String JPEG_EXTENSION = ".jpg";
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
@@ -140,7 +143,7 @@ public class ShareHelper {
 
             ComponentName target = intent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT);
             if (target != null) {
-                setLastShareComponentName(context, target);
+                setLastShareComponentName(target);
             }
         }
     }
@@ -259,7 +262,7 @@ public class ShareHelper {
      */
     private static void showShareDialog(final Activity activity, final String title,
             final String url, final Bitmap screenshot) {
-        Intent intent = getShareIntent(title, url, null);
+        Intent intent = getShareIntent(activity, title, url, null);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
@@ -281,7 +284,7 @@ public class ShareHelper {
                 ActivityInfo ai = info.activityInfo;
                 ComponentName component =
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
-                setLastShareComponentName(activity, component);
+                setLastShareComponentName(component);
                 makeIntentAndShare(activity, title, url, screenshot, component);
                 dialog.dismiss();
             }
@@ -298,7 +301,7 @@ public class ShareHelper {
      */
     private static void shareWithLastUsed(
             Activity activity, String title, String url, Bitmap screenshot) {
-        ComponentName component = getLastShareComponentName(activity);
+        ComponentName component = getLastShareComponentName();
         if (component == null) return;
         makeIntentAndShare(activity, title, url, screenshot, component);
     }
@@ -315,7 +318,8 @@ public class ShareHelper {
     private static void makeIntentAndShare(final Activity activity, final String title,
             final String url, final Bitmap screenshot, final ComponentName component) {
         if (screenshot == null) {
-            shareIntent(activity, getDirectShareIntentForComponent(title, url, null, component));
+            shareIntent(activity,
+                    getDirectShareIntentForComponent(activity, title, url, null, component));
         } else {
             new AsyncTask<Void, Void, File>() {
                 @Override
@@ -355,7 +359,7 @@ public class ShareHelper {
                         Uri screenshotUri = saveFile == null
                                 ? null : UiUtils.getUriForImageCaptureFile(activity, saveFile);
                         shareIntent(activity, getDirectShareIntentForComponent(
-                                title, url, screenshotUri, component));
+                                activity, title, url, screenshotUri, component));
                     }
                 }
             }.execute();
@@ -372,10 +376,10 @@ public class ShareHelper {
         Drawable directShareIcon = null;
         CharSequence directShareTitle = null;
 
-        final ComponentName component = getLastShareComponentName(activity);
+        final ComponentName component = getLastShareComponentName();
         boolean isComponentValid = false;
         if (component != null) {
-            Intent intent = getShareIntent("", "", null);
+            Intent intent = getShareIntent(activity, "", "", null);
             intent.setPackage(component.getPackageName());
             PackageManager manager = activity.getPackageManager();
             List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
@@ -434,13 +438,16 @@ public class ShareHelper {
     }
 
     @VisibleForTesting
-    public static Intent getShareIntent(String title, String url, Uri screenshotUri) {
+    protected static Intent getShareIntent(
+            Activity activity, String title, String url, Uri screenshotUri) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, url);
+        intent.putExtra(EXTRA_TASK_ID, activity.getTaskId());
+
         if (screenshotUri != null) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             // To give read access to an Intent target, we need to put |screenshotUri| in clipData
@@ -462,15 +469,16 @@ public class ShareHelper {
     }
 
     private static Intent getDirectShareIntentForComponent(
-            String title, String url, Uri screenshotUri, ComponentName component) {
-        Intent intent = getShareIntent(title, url, screenshotUri);
+            Activity activity, String title, String url,
+            Uri screenshotUri, ComponentName component) {
+        Intent intent = getShareIntent(activity, title, url, screenshotUri);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);
         return intent;
     }
 
-    private static ComponentName getLastShareComponentName(Context context) {
+    private static ComponentName getLastShareComponentName() {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         String packageName = preferences.getString(PACKAGE_NAME_KEY, null);
         String className = preferences.getString(CLASS_NAME_KEY, null);
@@ -478,7 +486,7 @@ public class ShareHelper {
         return new ComponentName(packageName, className);
     }
 
-    private static void setLastShareComponentName(Context context, ComponentName component) {
+    private static void setLastShareComponentName(ComponentName component) {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PACKAGE_NAME_KEY, component.getPackageName());
