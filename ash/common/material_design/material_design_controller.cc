@@ -68,6 +68,11 @@ bool MaterialDesignController::IsShelfMaterial() {
 }
 
 // static
+bool MaterialDesignController::IsSystemTrayMenuMaterial() {
+  return MaterialDesignController::IsMaterialExperimental();
+}
+
+// static
 bool MaterialDesignController::UseMaterialDesignSystemIcons() {
   return MaterialDesignController::IsMaterialExperimental();
 }
