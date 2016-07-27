@@ -188,7 +188,34 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="file" android:mimeType="multipart/related"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+                <data android:mimeType="multipart/related"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.mhtml"/>
+                <data android:pathPattern=".*\\.mht"/>
+                <data android:pathPattern=".*\\.eml"/> 
+            </intent-filter>
+            <!-- Same filter as above but with mimeType="*/*". Used for
+                 handling intent send by ShareIt. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+                <data android:host="*" />
+                <data android:mimeType="*/*"/>
+                <data android:pathPattern=".*\\.mhtml"/>
+                <data android:pathPattern=".*\\.mht"/>
+                <data android:pathPattern=".*\\.eml"/> 
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_SEARCH" />
