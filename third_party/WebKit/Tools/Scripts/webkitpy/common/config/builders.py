@@ -75,19 +75,39 @@ BUILDERS = {
         "port_name": "android",
         "specifiers": ['Android', 'Release']
     },
-    # TODO(qyearsley): Update this set of builders when new builders
-    # are set up for layout test try jobs. http://crbug.com/474273.
-    "linux_chromium_rel_ng": {
+    "linux_precise_blink_rel": {
         "port_name": "linux-precise",
         "specifiers": ['Precise', 'Release'],
         "is_try_builder": True,
     },
-    "mac_chromium_rel_ng": {
+    "linux_trusty_blink_rel": {
+        "port_name": "linux-precise",
+        "specifiers": ['Precise', 'Release'],
+        "is_try_builder": True,
+    },
+    "mac10.9_blink_rel": {
         "port_name": "mac-mac10.9",
         "specifiers": ['Mac10.9', 'Release'],
         "is_try_builder": True,
     },
-    "win_chromium_rel_ng": {
+    "mac10.10_blink_rel": {
+        "port_name": "mac-mac10.9",
+        "specifiers": ['Mac10.', 'Release'],
+        "is_try_builder": True,
+    },
+    "mac10.11_blink_rel": {
+        "port_name": "mac-mac10.9",
+        "specifiers": ['Mac10.11', 'Release'],
+        "is_try_builder": True,
+    },
+    # TODO(qyearsley): Add mac retina builder here
+    # when it is ready. http://crbug.com/590036.
+    "win7_blink_rel": {
+        "port_name": "win-win7",
+        "specifiers": ['Win7', 'Release'],
+        "is_try_builder": True,
+    },
+    "win10_blink_rel": {
         "port_name": "win-win7",
         "specifiers": ['Win7', 'Release'],
         "is_try_builder": True,
