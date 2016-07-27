@@ -137,7 +137,13 @@ TEST_F('EditDictionaryWebUITest', 'testAddNotification', function() {
 
 // Verify that dictionary hides newly removed words that arrived in a
 // notification, but ignores duplicate remove notifications.
-TEST_F('EditDictionaryWebUITest', 'testRemoveNotification', function() {
+// TODO(crbug.com/631940): Flaky on Win 7.
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_testRemoveNotification DISABLED_testRemoveNotification');
+GEN('#else');
+GEN('#define MAYBE_testRemoveNotification testRemoveNotification');
+GEN('#endif  // defined(OS_WIN)');
+TEST_F('EditDictionaryWebUITest', 'MAYBE_testRemoveNotification', function() {
   // Begin with a dictionary with words 'foo', 'bar', 'baz', and 'baz'. The
   // second instance of 'baz' appears because the user added the word twice.
   // The backend keeps only one copy of the word.
