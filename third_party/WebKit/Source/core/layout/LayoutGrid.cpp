@@ -274,19 +274,15 @@ public:
         NOTREACHED();
         sizingState = ColumnSizingFirstIteration;
     }
-    bool isValidTransitionForDirection(GridTrackSizingDirection direction)
+    bool isValidTransition(GridTrackSizingDirection direction) const
     {
         switch (sizingState) {
         case ColumnSizingFirstIteration:
-            return direction == ForColumns ? true : false;
-        case RowSizingFirstIteration:
-            return direction == ForRows ? true : false;
         case ColumnSizingSecondIteration:
-            if (direction == ForRows)
-                sizingState = RowSizingFirstIteration;
-            return true;
+            return direction == ForColumns;
+        case RowSizingFirstIteration:
         case RowSizingSecondIteration:
-            return direction == ForRows ? true : false;
+            return direction == ForRows;
         }
         NOTREACHED();
         return false;
@@ -394,7 +390,7 @@ LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(const GridSizingData& sizi
 
 void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit freeSpace)
 {
-    DCHECK(sizingData.isValidTransitionForDirection(direction));
+    DCHECK(sizingData.isValidTransition(direction));
     sizingData.freeSpaceForDirection(direction) = freeSpace - guttersSize(direction, 0, direction == ForRows ? gridRowCount() : gridColumnCount());
     sizingData.sizingOperation = TrackSizing;
 
