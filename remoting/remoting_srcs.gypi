@@ -372,6 +372,8 @@
       'client/gl_helpers.h',
       'client/gl_math.cc',
       'client/gl_math.h',
+      'client/gl_renderer.cc',
+      'client/gl_renderer.h',
       'client/gl_render_layer.cc',
       'client/gl_render_layer.h',
     ],

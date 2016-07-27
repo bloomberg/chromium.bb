@@ -8,14 +8,20 @@
 
 namespace {
 
-// | m0, m1, m2, |   | Scale_x  0        Offset_x |
-// | m3, m4, m5, | = | 0        Scale_y  Offset_y |
+// | m0, m1, m2, |   | Scale_x  Skew_x   Offset_x |
+// | m3, m4, m5, | = | Skew_y   Scale_y  Offset_y |
 // | m6, m7, m8  |   | 0        0        1        |
 
 const int kXScaleKey = 0;
-const int kYScaleKey = 4;
+const int kXSkewKey = 1;
 const int kXOffsetKey = 2;
+
+const int kYSkewKey = 3;
+const int kYScaleKey = 4;
 const int kYOffsetKey = 5;
+
+const int kXOffsetTransposedKey = 6;
+const int kYOffsetTransposedKey = 7;
 
 }  // namespace
 
@@ -30,6 +36,12 @@ void NormalizeTransformationMatrix(int view_width,
   (*matrix)[kYScaleKey] = canvas_height * (*matrix)[kYScaleKey] / view_height;
   (*matrix)[kXOffsetKey] /= view_width;
   (*matrix)[kYOffsetKey] /= view_height;
+}
+
+void TransposeTransformationMatrix(std::array<float, 9>* matrix) {
+  std::swap((*matrix)[kXOffsetKey], (*matrix)[kXOffsetTransposedKey]);
+  std::swap((*matrix)[kYOffsetKey], (*matrix)[kYOffsetTransposedKey]);
+  std::swap((*matrix)[kXSkewKey], (*matrix)[kYSkewKey]);
 }
 
 void FillRectangleVertexPositions(float left,

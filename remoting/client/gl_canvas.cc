@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "remoting/client/gl_helpers.h"
+#include "remoting/client/gl_math.h"
 
 namespace {
 
@@ -84,7 +85,10 @@ GlCanvas::~GlCanvas() {
 
 void GlCanvas::SetNormalizedTransformation(const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  glUniformMatrix3fv(transform_location_, 1, GL_TRUE, matrix.data());
+  std::array<float, 9> transposed_matrix = matrix;
+  TransposeTransformationMatrix(&transposed_matrix);
+  glUniformMatrix3fv(transform_location_, 1, GL_FALSE,
+                     transposed_matrix.data());
   transformation_set_ = true;
 }
 

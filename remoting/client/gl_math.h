@@ -28,6 +28,15 @@ void NormalizeTransformationMatrix(int view_width,
                                    int canvas_height,
                                    std::array<float, 9>* matrix);
 
+// Transposes matrix [ m0, m1, m2, m3, m4, m5, m6, m7, m8 ]:
+//
+// | m0, m1, m2, |   | x |
+// | m3, m4, m5, | * | y |
+// | m6, m7, m8  |   | 1 |
+//
+// Into [ m0, m3, m6, m1, m4, m7, m2, m5, m8 ].
+void TransposeTransformationMatrix(std::array<float, 9>* matrix);
+
 // Given left, top, width, height of a rectangle, fills |positions| with
 // coordinates of four vertices of the rectangle.
 // positions: [ x_upperleft, y_upperleft, x_lowerleft, y_lowerleft,
