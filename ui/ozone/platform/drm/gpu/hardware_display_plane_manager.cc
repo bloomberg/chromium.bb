@@ -155,7 +155,7 @@ HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
     uint32_t crtc_index,
     const OverlayPlane& overlay) const {
   for (size_t i = *index; i < planes_.size(); ++i) {
-    auto plane = planes_[i].get();
+    auto* plane = planes_[i].get();
     if (!plane->in_use() && IsCompatible(plane, overlay, crtc_index)) {
       *index = i + 1;
       return plane;
