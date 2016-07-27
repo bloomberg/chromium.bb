@@ -792,7 +792,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // The renderer sandbox prevents us from accessing our .pak files directly.
     // Therefore file descriptors to the .pak files that we need are passed in
     // at process creation time.
-    auto global_descriptors = base::GlobalDescriptors::GetInstance();
+    auto* global_descriptors = base::GlobalDescriptors::GetInstance();
     int pak_fd = global_descriptors->Get(kAndroidLocalePakDescriptor);
     base::MemoryMappedFile::Region pak_region =
         global_descriptors->GetRegion(kAndroidLocalePakDescriptor);
