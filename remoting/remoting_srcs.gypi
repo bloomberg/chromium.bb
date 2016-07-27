@@ -288,6 +288,8 @@
       'client/audio_decode_scheduler.h',
       'client/audio_player.cc',
       'client/audio_player.h',
+      'client/cursor_shape_stub_proxy.cc',
+      'client/cursor_shape_stub_proxy.h',
       'client/chromoting_client.cc',
       'client/chromoting_client.h',
       'client/client_context.cc',

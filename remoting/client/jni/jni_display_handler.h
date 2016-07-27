@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/jni/display_updater_factory.h"
+#include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
 
 namespace protocol {
-class CursorShapeInfo;
 class VideoRenderer;
 }  // namespace protocol
 
@@ -23,7 +23,8 @@ class ChromotingJniRuntime;
 
 // Handles display operations. Must be called and deleted on the display thread
 // unless otherwise noted.
-class JniDisplayHandler : public DisplayUpdaterFactory {
+class JniDisplayHandler : public DisplayUpdaterFactory,
+                          public protocol::CursorShapeStub {
  public:
   explicit JniDisplayHandler(ChromotingJniRuntime* runtime);
 
@@ -33,8 +34,6 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
   // Sets the DesktopViewFactory for the Java client.
   void InitializeClient(
       const base::android::JavaRef<jobject>& java_client);
-
-  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
   // DisplayUpdaterFactory overrides (functions can be called on any thread).
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
@@ -59,6 +58,9 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
                       const base::android::JavaParamRef<jobject>& caller);
 
  private:
+  // CursorShapeStub interface.
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
+
   ChromotingJniRuntime* runtime_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_display_;
