@@ -90,16 +90,44 @@ void TextInputManager::UpdateTextInputState(
     const TextInputState& text_input_state) {
   DCHECK(IsRegistered(view));
 
-  // Since |view| is registgered, we already have a previous value for its
+  if (text_input_state.type == ui::TEXT_INPUT_TYPE_NONE &&
+      active_view_ != view) {
+    // We reached here because an IPC is received to reset the TextInputState
+    // for |view|. But |view| != |active_view_|, which suggests that at least
+    // one other view has become active and we have received the corresponding
+    // IPC from their RenderWidget sooner than this one. That also means we have
+    // already synthesized the loss of TextInputState for the |view| before (see
+    // below). So we can forget about this method ever being called (no observer
+    // calls necessary).
+    return;
+  }
+
+  // Since |view| is registered, we already have a previous value for its
   // TextInputState.
   bool changed = AreDifferentTextInputStates(text_input_state_map_[view],
                                              text_input_state);
 
   text_input_state_map_[view] = text_input_state;
 
-  // |active_view_| is only updated when the state for |view| is not none.
-  if (text_input_state.type != ui::TEXT_INPUT_TYPE_NONE)
+  // If |view| is different from |active_view| and its |TextInputState.type| is
+  // not NONE, |active_view_| should change to |view|.
+  if (text_input_state.type != ui::TEXT_INPUT_TYPE_NONE &&
+      active_view_ != view) {
+    if (active_view_) {
+      // Ideally, we should always receive an IPC from |active_view_|'s
+      // RenderWidget to reset its |TextInputState.type| to NONE, before any
+      // other RenderWidget updates its TextInputState. But there is no
+      // guarantee in the order of IPCs from different RenderWidgets and another
+      // RenderWidget's IPC might arrive sooner and we reach here. To make the
+      // IME behavior identical to the non-OOPIF case, we have to manually reset
+      // the state for |active_view_|.
+      text_input_state_map_[active_view_].type = ui::TEXT_INPUT_TYPE_NONE;
+      RenderWidgetHostViewBase* active_view = active_view_;
+      active_view_ = nullptr;
+      NotifyObserversAboutInputStateUpdate(active_view, true);
+    }
     active_view_ = view;
+  }
 
   // If the state for |active_view_| is none, then we no longer have an
   // |active_view_|.

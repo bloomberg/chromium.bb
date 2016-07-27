@@ -266,6 +266,35 @@ class ViewTextSelectionObserver : public TextInputManagerObserverBase {
   DISALLOW_COPY_AND_ASSIGN(ViewTextSelectionObserver);
 };
 
+// This class monitors all the changes in TextInputState and keeps a record of
+// the active views. There is no waiting and the recording process is
+// continuous.
+class RecordActiveViewsObserver {
+ public:
+  explicit RecordActiveViewsObserver(content::WebContents* web_contents)
+      : tester_(new content::TextInputManagerTester(web_contents)) {
+    tester_->SetUpdateTextInputStateCalledCallback(base::Bind(
+        &RecordActiveViewsObserver::RecordActiveView, base::Unretained(this)));
+  }
+
+  const std::vector<const content::RenderWidgetHostView*>* active_views()
+      const {
+    return &active_views_;
+  }
+
+ private:
+  void RecordActiveView() {
+    if (!tester_->IsTextInputStateChanged())
+      return;
+    active_views_.push_back(tester_->GetActiveView());
+  }
+
+  std::unique_ptr<content::TextInputManagerTester> tester_;
+  std::vector<const content::RenderWidgetHostView*> active_views_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecordActiveViewsObserver);
+};
+
 }  // namespace
 
 // Main class for all TextInputState and IME related tests.
@@ -650,6 +679,57 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   for (size_t i = 0; i < frames.size(); ++i)
     send_tab_and_wait_for_selection_change(frames[i], input_text[i].size());
 }
+
+// The following test verifies that when the active widget changes value, it is
+// always from nullptr to non-null or vice versa.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       ResetTextInputStateOnActiveWidgetChange) {
+  CreateIframePage("a(b,c(a,b),d)");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}),    GetFrame(IndexVector{1, 0}),
+      GetFrame(IndexVector{1, 1}), GetFrame(IndexVector{2})};
+  std::vector<content::RenderWidgetHostView*> views;
+  for (auto frame : frames)
+    views.push_back(frame->GetView());
+  std::vector<std::string> values{"a", "ab", "ac", "aca", "acb", "acd"};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", values[i], true);
+
+  content::WebContents* web_contents = active_contents();
+
+  auto send_tab_and_wait_for_value =
+      [&web_contents](const std::string& expected_value) {
+        TextInputManagerValueObserver observer(web_contents, expected_value);
+        SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                         ui::VKEY_TAB, false, false, false, false);
+        observer.Wait();
+      };
+
+  // Record all active view changes.
+  RecordActiveViewsObserver recorder(web_contents);
+  for (auto value : values)
+    send_tab_and_wait_for_value(value);
+
+  // We have covered a total of 6 views, so there should at least be 11 entries
+  // recorded (at least one null between two views).
+  size_t record_count = recorder.active_views()->size();
+  EXPECT_GT(record_count, 10U);
+
+  // Verify we do not have subsequent nullptr or non-nullptrs.
+  for (size_t i = 0; i < record_count - 1U; ++i) {
+    const content::RenderWidgetHostView* current =
+        recorder.active_views()->at(i);
+    const content::RenderWidgetHostView* next =
+        recorder.active_views()->at(i + 1U);
+    EXPECT_TRUE((current != nullptr && next == nullptr) ||
+                (current == nullptr && next != nullptr));
+  }
+}
+
+// TODO(ekaramad): The following tests are specifically written for Aura and are
+// based on InputMethodObserver. Write similar tests for Mac/Android/Mus
+// (crbug.com/602723).
 
 // -----------------------------------------------------------------------------
 // Input Method Observer Tests
