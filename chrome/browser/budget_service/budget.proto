@@ -22,9 +22,9 @@ message Budget {
 // Next available id: 3
 message BudgetChunk {
   // The amount of budget remaining in this chunk.
-  optional double budget_amount = 1;
+  optional double amount = 1;
 
   // The timestamp when the budget expires. Format is double to integrate with
   // Site Engagement and Blink and is the number of seconds since Jan 1, 1970.
-  optional double expiration_timestamp = 2;
+  optional double expiration = 2;
 }
