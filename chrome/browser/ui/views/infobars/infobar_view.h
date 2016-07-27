@@ -48,6 +48,7 @@ class InfoBarView : public infobars::InfoBar,
 
   static const int kButtonButtonSpacing;
   static const int kEndOfLabelSpacing;
+  static const SkColor kTextColor;
 
   ~InfoBarView() override;
 
@@ -64,10 +65,6 @@ class InfoBarView : public infobars::InfoBar,
   // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::LabelButton* CreateTextButton(views::ButtonListener* listener,
                                               const base::string16& text);
-  // As above, but used for MD.
-  static views::MdTextButton* CreateMdTextButton(
-      views::ButtonListener* listener,
-      const base::string16& text);
 
   // Given |labels| and the total |available_width| to display them in, sets
   // each label's size so that the longest label shrinks until it reaches the

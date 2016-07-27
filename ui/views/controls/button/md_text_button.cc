@@ -254,20 +254,20 @@ void MdTextButton::UpdateColors() {
       is_cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
               : ui::NativeTheme::kColorId_ButtonEnabledColor;
 
-  // When there's no call to action, respect a color override if one has
-  // been set. For call to action styling, don't let individual buttons
-  // specify a color.
   ui::NativeTheme* theme = GetNativeTheme();
-  if (is_cta_ || !explicitly_set_normal_color())
+  if (!explicitly_set_normal_color())
     LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
   SkColor text_color = label()->enabled_color();
   SkColor bg_color =
-      is_cta_
-          ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
-          : is_default()
-                ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
-                : SK_ColorWHITE;
+      bg_color_override_
+          ? *bg_color_override_
+          : is_cta_
+                ? theme->GetSystemColor(
+                      ui::NativeTheme::kColorId_CallToActionColor)
+                : is_default()
+                      ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
+                      : SK_ColorTRANSPARENT;
 
   const SkAlpha kStrokeOpacity = 0x1A;
   SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))

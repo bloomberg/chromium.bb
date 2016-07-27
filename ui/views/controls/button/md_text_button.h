@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace views {
@@ -38,6 +39,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
                                SkAlpha alpha);
 
   void SetCallToAction(bool cta);
+  void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
 
   // LabelButton:
   void Layout() override;
@@ -64,6 +66,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // True if this button uses call-to-action styling.
   bool is_cta_;
+
+  // When set, this provides the background color.
+  base::Optional<SkColor> bg_color_override_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

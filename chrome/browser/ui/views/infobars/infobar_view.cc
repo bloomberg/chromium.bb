@@ -64,7 +64,7 @@ const gfx::FontList& GetFontList() {
                             : ui::ResourceBundle::MediumFont);
 }
 
-SkColor GetInfobarTextColor() {
+constexpr SkColor GetInfobarTextColor() {
   return SK_ColorBLACK;
 }
 
@@ -76,6 +76,7 @@ SkColor GetInfobarTextColor() {
 // static
 const int InfoBarView::kButtonButtonSpacing = views::kRelatedButtonHSpacing;
 const int InfoBarView::kEndOfLabelSpacing = views::kItemLabelSpacing;
+const SkColor InfoBarView::kTextColor = GetInfobarTextColor();
 
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
@@ -164,17 +165,6 @@ views::LabelButton* InfoBarView::CreateTextButton(
   button->set_request_focus_on_press(true);
   button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
   button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
-  return button;
-}
-
-views::MdTextButton* InfoBarView::CreateMdTextButton(
-    views::ButtonListener* listener,
-    const base::string16& text) {
-  DCHECK(ui::MaterialDesignController::IsModeMaterial());
-  views::MdTextButton* button =
-      views::MdTextButton::CreateMdButton(listener, text);
-  // TODO(estade): can we just remove this?
-  button->SetEnabledTextColors(GetInfobarTextColor());
   return button;
 }
 
