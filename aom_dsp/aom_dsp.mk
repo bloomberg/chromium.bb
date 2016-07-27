@@ -375,6 +375,11 @@ ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_subpel_variance_impl_sse2.asm
 endif  # CONFIG_USE_X86INC
 endif  # CONFIG_AOM_HIGHBITDEPTH
+
+ifeq ($(CONFIG_MOTION_VAR),yes)
+DSP_SRCS-$(HAVE_SSE4_1) += x86/obmc_sad_sse4.c
+DSP_SRCS-$(HAVE_SSE4_1) += x86/obmc_variance_sse4.c
+endif  #CONFIG_MOTION_VAR
 endif  # CONFIG_ENCODERS
 
 DSP_SRCS-no += $(DSP_SRCS_REMOVE-yes)

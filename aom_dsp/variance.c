@@ -410,7 +410,7 @@ static void highbd_12_variance(const uint8_t *a8, int a_stride,
     return *sse;                                                              \
   }
 
-static void highbd_var_filter_block2d_bil_first_pass(
+static void aom_highbd_var_filter_block2d_bil_first_pass(
     const uint8_t *src_ptr8, uint16_t *output_ptr,
     unsigned int src_pixels_per_line, int pixel_step,
     unsigned int output_height, unsigned int output_width,
@@ -432,7 +432,7 @@ static void highbd_var_filter_block2d_bil_first_pass(
   }
 }
 
-static void highbd_var_filter_block2d_bil_second_pass(
+static void aom_highbd_var_filter_block2d_bil_second_pass(
     const uint16_t *src_ptr, uint16_t *output_ptr,
     unsigned int src_pixels_per_line, unsigned int pixel_step,
     unsigned int output_height, unsigned int output_width,
@@ -452,111 +452,111 @@ static void highbd_var_filter_block2d_bil_second_pass(
   }
 }
 
-#define HIGHBD_SUBPIX_VAR(W, H)                                              \
-  uint32_t aom_highbd_8_sub_pixel_variance##W##x##H##_c(                     \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse) {                   \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    return aom_highbd_8_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W,  \
-                                              dst, dst_stride, sse);         \
-  }                                                                          \
-                                                                             \
-  uint32_t aom_highbd_10_sub_pixel_variance##W##x##H##_c(                    \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse) {                   \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    return aom_highbd_10_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W, \
-                                               dst, dst_stride, sse);        \
-  }                                                                          \
-                                                                             \
-  uint32_t aom_highbd_12_sub_pixel_variance##W##x##H##_c(                    \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse) {                   \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    return aom_highbd_12_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W, \
-                                               dst, dst_stride, sse);        \
+#define HIGHBD_SUBPIX_VAR(W, H)                                               \
+  uint32_t aom_highbd_8_sub_pixel_variance##W##x##H##_c(                      \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse) {                    \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    return aom_highbd_8_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W,   \
+                                              dst, dst_stride, sse);          \
+  }                                                                           \
+                                                                              \
+  uint32_t aom_highbd_10_sub_pixel_variance##W##x##H##_c(                     \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse) {                    \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    return aom_highbd_10_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W,  \
+                                               dst, dst_stride, sse);         \
+  }                                                                           \
+                                                                              \
+  uint32_t aom_highbd_12_sub_pixel_variance##W##x##H##_c(                     \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse) {                    \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    return aom_highbd_12_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W,  \
+                                               dst, dst_stride, sse);         \
   }
 
-#define HIGHBD_SUBPIX_AVG_VAR(W, H)                                          \
-  uint32_t aom_highbd_8_sub_pixel_avg_variance##W##x##H##_c(                 \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse,                     \
-      const uint8_t *second_pred) {                                          \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                             \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                       \
-                             CONVERT_TO_BYTEPTR(temp2), W);                  \
-                                                                             \
-    return aom_highbd_8_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W,  \
-                                              dst, dst_stride, sse);         \
-  }                                                                          \
-                                                                             \
-  uint32_t aom_highbd_10_sub_pixel_avg_variance##W##x##H##_c(                \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse,                     \
-      const uint8_t *second_pred) {                                          \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                             \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                       \
-                             CONVERT_TO_BYTEPTR(temp2), W);                  \
-                                                                             \
-    return aom_highbd_10_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W, \
-                                               dst, dst_stride, sse);        \
-  }                                                                          \
-                                                                             \
-  uint32_t aom_highbd_12_sub_pixel_avg_variance##W##x##H##_c(                \
-      const uint8_t *src, int src_stride, int xoffset, int yoffset,          \
-      const uint8_t *dst, int dst_stride, uint32_t *sse,                     \
-      const uint8_t *second_pred) {                                          \
-    uint16_t fdata3[(H + 1) * W];                                            \
-    uint16_t temp2[H * W];                                                   \
-    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                             \
-                                                                             \
-    highbd_var_filter_block2d_bil_first_pass(                                \
-        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);    \
-    highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,     \
-                                              bilinear_filters[yoffset]);    \
-                                                                             \
-    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                       \
-                             CONVERT_TO_BYTEPTR(temp2), W);                  \
-                                                                             \
-    return aom_highbd_12_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W, \
-                                               dst, dst_stride, sse);        \
+#define HIGHBD_SUBPIX_AVG_VAR(W, H)                                           \
+  uint32_t aom_highbd_8_sub_pixel_avg_variance##W##x##H##_c(                  \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse,                      \
+      const uint8_t *second_pred) {                                           \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                              \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                        \
+                             CONVERT_TO_BYTEPTR(temp2), W);                   \
+                                                                              \
+    return aom_highbd_8_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W,   \
+                                              dst, dst_stride, sse);          \
+  }                                                                           \
+                                                                              \
+  uint32_t aom_highbd_10_sub_pixel_avg_variance##W##x##H##_c(                 \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse,                      \
+      const uint8_t *second_pred) {                                           \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                              \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                        \
+                             CONVERT_TO_BYTEPTR(temp2), W);                   \
+                                                                              \
+    return aom_highbd_10_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W,  \
+                                               dst, dst_stride, sse);         \
+  }                                                                           \
+                                                                              \
+  uint32_t aom_highbd_12_sub_pixel_avg_variance##W##x##H##_c(                 \
+      const uint8_t *src, int src_stride, int xoffset, int yoffset,           \
+      const uint8_t *dst, int dst_stride, uint32_t *sse,                      \
+      const uint8_t *second_pred) {                                           \
+    uint16_t fdata3[(H + 1) * W];                                             \
+    uint16_t temp2[H * W];                                                    \
+    DECLARE_ALIGNED(16, uint16_t, temp3[H * W]);                              \
+                                                                              \
+    aom_highbd_var_filter_block2d_bil_first_pass(                             \
+        src, fdata3, src_stride, 1, H + 1, W, bilinear_filters[xoffset]);     \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,  \
+                                                  bilinear_filters[yoffset]); \
+                                                                              \
+    aom_highbd_comp_avg_pred(temp3, second_pred, W, H,                        \
+                             CONVERT_TO_BYTEPTR(temp2), W);                   \
+                                                                              \
+    return aom_highbd_12_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp3), W,  \
+                                               dst, dst_stride, sse);         \
   }
 
 /* All three forms of the variance are available in the same sizes. */
@@ -641,3 +641,257 @@ void aom_highbd_comp_avg_upsampled_pred_c(uint16_t *comp_pred,
   }
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+
+#if CONFIG_MOTION_VAR
+static INLINE void obmc_variance(const uint8_t *pre, int pre_stride,
+                                 const int32_t *wsrc, const int32_t *mask,
+                                 int w, int h, unsigned int *sse, int *sum) {
+  int i, j;
+
+  *sse = 0;
+  *sum = 0;
+
+  for (i = 0; i < h; i++) {
+    for (j = 0; j < w; j++) {
+      int diff = ROUND_POWER_OF_TWO_SIGNED(wsrc[j] - pre[j] * mask[j], 12);
+      *sum += diff;
+      *sse += diff * diff;
+    }
+
+    pre += pre_stride;
+    wsrc += w;
+    mask += w;
+  }
+}
+
+#define OBMC_VAR(W, H)                                           \
+  unsigned int aom_obmc_variance##W##x##H##_c(                   \
+      const uint8_t *pre, int pre_stride, const int32_t *wsrc,   \
+      const int32_t *mask, unsigned int *sse) {                  \
+    int sum;                                                     \
+    obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
+    return *sse - (((int64_t)sum * sum) / (W * H));              \
+  }
+
+#define OBMC_SUBPIX_VAR(W, H)                                               \
+  unsigned int aom_obmc_sub_pixel_variance##W##x##H##_c(                    \
+      const uint8_t *pre, int pre_stride, int xoffset, int yoffset,         \
+      const int32_t *wsrc, const int32_t *mask, unsigned int *sse) {        \
+    uint16_t fdata3[(H + 1) * W];                                           \
+    uint8_t temp2[H * W];                                                   \
+                                                                            \
+    var_filter_block2d_bil_first_pass(pre, fdata3, pre_stride, 1, H + 1, W, \
+                                      bilinear_filters[xoffset]);           \
+    var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,           \
+                                       bilinear_filters[yoffset]);          \
+                                                                            \
+    return aom_obmc_variance##W##x##H##_c(temp2, W, wsrc, mask, sse);       \
+  }
+
+OBMC_VAR(4, 4)
+OBMC_SUBPIX_VAR(4, 4)
+
+OBMC_VAR(4, 8)
+OBMC_SUBPIX_VAR(4, 8)
+
+OBMC_VAR(8, 4)
+OBMC_SUBPIX_VAR(8, 4)
+
+OBMC_VAR(8, 8)
+OBMC_SUBPIX_VAR(8, 8)
+
+OBMC_VAR(8, 16)
+OBMC_SUBPIX_VAR(8, 16)
+
+OBMC_VAR(16, 8)
+OBMC_SUBPIX_VAR(16, 8)
+
+OBMC_VAR(16, 16)
+OBMC_SUBPIX_VAR(16, 16)
+
+OBMC_VAR(16, 32)
+OBMC_SUBPIX_VAR(16, 32)
+
+OBMC_VAR(32, 16)
+OBMC_SUBPIX_VAR(32, 16)
+
+OBMC_VAR(32, 32)
+OBMC_SUBPIX_VAR(32, 32)
+
+OBMC_VAR(32, 64)
+OBMC_SUBPIX_VAR(32, 64)
+
+OBMC_VAR(64, 32)
+OBMC_SUBPIX_VAR(64, 32)
+
+OBMC_VAR(64, 64)
+OBMC_SUBPIX_VAR(64, 64)
+
+#if CONFIG_AOM_HIGHBITDEPTH
+static INLINE void highbd_obmc_variance64(const uint8_t *pre8, int pre_stride,
+                                          const int32_t *wsrc,
+                                          const int32_t *mask, int w, int h,
+                                          uint64_t *sse, int64_t *sum) {
+  int i, j;
+  uint16_t *pre = CONVERT_TO_SHORTPTR(pre8);
+
+  *sse = 0;
+  *sum = 0;
+
+  for (i = 0; i < h; i++) {
+    for (j = 0; j < w; j++) {
+      int diff = ROUND_POWER_OF_TWO_SIGNED(wsrc[j] - pre[j] * mask[j], 12);
+      *sum += diff;
+      *sse += diff * diff;
+    }
+
+    pre += pre_stride;
+    wsrc += w;
+    mask += w;
+  }
+}
+
+static INLINE void highbd_obmc_variance(const uint8_t *pre8, int pre_stride,
+                                        const int32_t *wsrc,
+                                        const int32_t *mask, int w, int h,
+                                        unsigned int *sse, int *sum) {
+  int64_t sum64;
+  uint64_t sse64;
+  highbd_obmc_variance64(pre8, pre_stride, wsrc, mask, w, h, &sse64, &sum64);
+  *sum = (int)sum64;
+  *sse = (unsigned int)sse64;
+}
+
+static INLINE void highbd_10_obmc_variance(const uint8_t *pre8, int pre_stride,
+                                           const int32_t *wsrc,
+                                           const int32_t *mask, int w, int h,
+                                           unsigned int *sse, int *sum) {
+  int64_t sum64;
+  uint64_t sse64;
+  highbd_obmc_variance64(pre8, pre_stride, wsrc, mask, w, h, &sse64, &sum64);
+  *sum = (int)ROUND_POWER_OF_TWO(sum64, 2);
+  *sse = (unsigned int)ROUND_POWER_OF_TWO(sse64, 4);
+}
+
+static INLINE void highbd_12_obmc_variance(const uint8_t *pre8, int pre_stride,
+                                           const int32_t *wsrc,
+                                           const int32_t *mask, int w, int h,
+                                           unsigned int *sse, int *sum) {
+  int64_t sum64;
+  uint64_t sse64;
+  highbd_obmc_variance64(pre8, pre_stride, wsrc, mask, w, h, &sse64, &sum64);
+  *sum = (int)ROUND_POWER_OF_TWO(sum64, 4);
+  *sse = (unsigned int)ROUND_POWER_OF_TWO(sse64, 8);
+}
+
+#define HIGHBD_OBMC_VAR(W, H)                                              \
+  unsigned int aom_highbd_obmc_variance##W##x##H##_c(                      \
+      const uint8_t *pre, int pre_stride, const int32_t *wsrc,             \
+      const int32_t *mask, unsigned int *sse) {                            \
+    int sum;                                                               \
+    highbd_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum);    \
+    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+  }                                                                        \
+                                                                           \
+  unsigned int aom_highbd_10_obmc_variance##W##x##H##_c(                   \
+      const uint8_t *pre, int pre_stride, const int32_t *wsrc,             \
+      const int32_t *mask, unsigned int *sse) {                            \
+    int sum;                                                               \
+    highbd_10_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
+    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+  }                                                                        \
+                                                                           \
+  unsigned int aom_highbd_12_obmc_variance##W##x##H##_c(                   \
+      const uint8_t *pre, int pre_stride, const int32_t *wsrc,             \
+      const int32_t *mask, unsigned int *sse) {                            \
+    int sum;                                                               \
+    highbd_12_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
+    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+  }
+
+#define HIGHBD_OBMC_SUBPIX_VAR(W, H)                                           \
+  unsigned int aom_highbd_obmc_sub_pixel_variance##W##x##H##_c(                \
+      const uint8_t *pre, int pre_stride, int xoffset, int yoffset,            \
+      const int32_t *wsrc, const int32_t *mask, unsigned int *sse) {           \
+    uint16_t fdata3[(H + 1) * W];                                              \
+    uint16_t temp2[H * W];                                                     \
+                                                                               \
+    aom_highbd_var_filter_block2d_bil_first_pass(                              \
+        pre, fdata3, pre_stride, 1, H + 1, W, bilinear_filters[xoffset]);      \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,   \
+                                                  bilinear_filters[yoffset]);  \
+                                                                               \
+    return aom_highbd_obmc_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), W, \
+                                                 wsrc, mask, sse);             \
+  }                                                                            \
+                                                                               \
+  unsigned int aom_highbd_10_obmc_sub_pixel_variance##W##x##H##_c(             \
+      const uint8_t *pre, int pre_stride, int xoffset, int yoffset,            \
+      const int32_t *wsrc, const int32_t *mask, unsigned int *sse) {           \
+    uint16_t fdata3[(H + 1) * W];                                              \
+    uint16_t temp2[H * W];                                                     \
+                                                                               \
+    aom_highbd_var_filter_block2d_bil_first_pass(                              \
+        pre, fdata3, pre_stride, 1, H + 1, W, bilinear_filters[xoffset]);      \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,   \
+                                                  bilinear_filters[yoffset]);  \
+                                                                               \
+    return aom_highbd_10_obmc_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), \
+                                                    W, wsrc, mask, sse);       \
+  }                                                                            \
+                                                                               \
+  unsigned int aom_highbd_12_obmc_sub_pixel_variance##W##x##H##_c(             \
+      const uint8_t *pre, int pre_stride, int xoffset, int yoffset,            \
+      const int32_t *wsrc, const int32_t *mask, unsigned int *sse) {           \
+    uint16_t fdata3[(H + 1) * W];                                              \
+    uint16_t temp2[H * W];                                                     \
+                                                                               \
+    aom_highbd_var_filter_block2d_bil_first_pass(                              \
+        pre, fdata3, pre_stride, 1, H + 1, W, bilinear_filters[xoffset]);      \
+    aom_highbd_var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,   \
+                                                  bilinear_filters[yoffset]);  \
+                                                                               \
+    return aom_highbd_12_obmc_variance##W##x##H##_c(CONVERT_TO_BYTEPTR(temp2), \
+                                                    W, wsrc, mask, sse);       \
+  }
+
+HIGHBD_OBMC_VAR(4, 4)
+HIGHBD_OBMC_SUBPIX_VAR(4, 4)
+
+HIGHBD_OBMC_VAR(4, 8)
+HIGHBD_OBMC_SUBPIX_VAR(4, 8)
+
+HIGHBD_OBMC_VAR(8, 4)
+HIGHBD_OBMC_SUBPIX_VAR(8, 4)
+
+HIGHBD_OBMC_VAR(8, 8)
+HIGHBD_OBMC_SUBPIX_VAR(8, 8)
+
+HIGHBD_OBMC_VAR(8, 16)
+HIGHBD_OBMC_SUBPIX_VAR(8, 16)
+
+HIGHBD_OBMC_VAR(16, 8)
+HIGHBD_OBMC_SUBPIX_VAR(16, 8)
+
+HIGHBD_OBMC_VAR(16, 16)
+HIGHBD_OBMC_SUBPIX_VAR(16, 16)
+
+HIGHBD_OBMC_VAR(16, 32)
+HIGHBD_OBMC_SUBPIX_VAR(16, 32)
+
+HIGHBD_OBMC_VAR(32, 16)
+HIGHBD_OBMC_SUBPIX_VAR(32, 16)
+
+HIGHBD_OBMC_VAR(32, 32)
+HIGHBD_OBMC_SUBPIX_VAR(32, 32)
+
+HIGHBD_OBMC_VAR(32, 64)
+HIGHBD_OBMC_SUBPIX_VAR(32, 64)
+
+HIGHBD_OBMC_VAR(64, 32)
+HIGHBD_OBMC_SUBPIX_VAR(64, 32)
+
+HIGHBD_OBMC_VAR(64, 64)
+HIGHBD_OBMC_SUBPIX_VAR(64, 64)
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_MOTION_VAR

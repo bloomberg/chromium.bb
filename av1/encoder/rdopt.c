@@ -16,6 +16,7 @@
 #include "./av1_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/blend.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
@@ -2954,14 +2955,34 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  mvp_full = pred_mv[x->mv_best_ref_index[ref]];
+#if CONFIG_MOTION_VAR
+  if (mbmi->motion_mode != SIMPLE_TRANSLATION)
+    mvp_full = mbmi->mv[0].as_mv;
+  else
+#endif  // CONFIG_MOTION_VAR
+    mvp_full = pred_mv[x->mv_best_ref_index[ref]];
 
   mvp_full.col >>= 3;
   mvp_full.row >>= 3;
 
-  bestsme = av1_full_pixel_search(cpi, x, bsize, &mvp_full, step_param, sadpb,
-                                  cond_cost_list(cpi, cost_list), &ref_mv,
-                                  &tmp_mv->as_mv, INT_MAX, 1);
+#if CONFIG_MOTION_VAR
+  switch (mbmi->motion_mode) {
+    case SIMPLE_TRANSLATION:
+#endif  // CONFIG_MOTION_VAR
+      bestsme = av1_full_pixel_search(cpi, x, bsize, &mvp_full, step_param,
+                                      sadpb, cond_cost_list(cpi, cost_list),
+                                      &ref_mv, &tmp_mv->as_mv, INT_MAX, 1);
+#if CONFIG_MOTION_VAR
+      break;
+    case OBMC_CAUSAL:
+      bestsme = av1_obmc_full_pixel_diamond(
+          cpi, x, &mvp_full, step_param, sadpb,
+          MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
+          &tmp_mv->as_mv, 0);
+      break;
+    default: assert("Invalid motion mode!\n");
+  }
+#endif  // CONFIG_MOTION_VAR
 
   x->mv_col_min = tmp_col_min;
   x->mv_col_max = tmp_col_max;
@@ -2970,39 +2991,64 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (bestsme < INT_MAX) {
     int dis; /* TODO: use dis in distortion calculation later. */
-    if (cpi->sf.use_upsampled_references) {
-      const int pw = 4 * num_4x4_blocks_wide_lookup[bsize];
-      const int ph = 4 * num_4x4_blocks_high_lookup[bsize];
-      // Use up-sampled reference frames.
-      struct macroblockd_plane *const pd = &xd->plane[0];
-      struct buf_2d backup_pred = pd->pre[0];
-      const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
+#if CONFIG_MOTION_VAR
+    switch (mbmi->motion_mode) {
+      case SIMPLE_TRANSLATION:
+#endif  // CONFIG_MOTION_VAR
+        if (cpi->sf.use_upsampled_references) {
+          const int pw = 4 * num_4x4_blocks_wide_lookup[bsize];
+          const int ph = 4 * num_4x4_blocks_high_lookup[bsize];
+          // Use up-sampled reference frames.
+          struct macroblockd_plane *const pd = &xd->plane[0];
+          struct buf_2d backup_pred = pd->pre[0];
+          const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
 
-      // Set pred for Y plane
-      setup_pred_plane(&pd->pre[0], upsampled_ref->y_buffer,
-                       upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3),
-                       NULL, pd->subsampling_x, pd->subsampling_y);
+          // Set pred for Y plane
+          setup_pred_plane(&pd->pre[0], upsampled_ref->y_buffer,
+                           upsampled_ref->y_stride, (mi_row << 3),
+                           (mi_col << 3), NULL, pd->subsampling_x,
+                           pd->subsampling_y);
 
-      bestsme = cpi->find_fractional_mv_step(
-          x, &tmp_mv->as_mv, &ref_mv, cm->allow_high_precision_mv,
-          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-          x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, pw, ph, 1);
+          bestsme = cpi->find_fractional_mv_step(
+              x, &tmp_mv->as_mv, &ref_mv, cm->allow_high_precision_mv,
+              x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
+              cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+              x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, pw, ph,
+              1);
 
-      // Restore the reference frames.
-      pd->pre[0] = backup_pred;
-    } else {
-      cpi->find_fractional_mv_step(
-          x, &tmp_mv->as_mv, &ref_mv, cm->allow_high_precision_mv,
-          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-          x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, 0, 0, 0);
+          // Restore the reference frames.
+          pd->pre[0] = backup_pred;
+        } else {
+          cpi->find_fractional_mv_step(
+              x, &tmp_mv->as_mv, &ref_mv, cm->allow_high_precision_mv,
+              x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
+              cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+              x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, 0, 0,
+              0);
+        }
+#if CONFIG_MOTION_VAR
+        break;
+      case OBMC_CAUSAL:
+        av1_find_best_obmc_sub_pixel_tree_up(
+            cpi, x, mi_row, mi_col, &tmp_mv->as_mv, &ref_mv,
+            cm->allow_high_precision_mv, x->errorperbit, &cpi->fn_ptr[bsize],
+            cpi->sf.mv.subpel_force_stop, cpi->sf.mv.subpel_iters_per_step,
+            x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], 0,
+            cpi->sf.use_upsampled_references);
+        break;
+      default: assert("Invalid motion mode!\n");
     }
+#endif  // CONFIG_MOTION_VAR
   }
   *rate_mv = av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmvjointcost,
                              x->mvcost, MV_COST_WEIGHT);
 
-  if (cpi->sf.adaptive_motion_search) x->pred_mv[ref] = tmp_mv->as_mv;
+#if CONFIG_MOTION_VAR
+  if (cpi->sf.adaptive_motion_search && mbmi->motion_mode == SIMPLE_TRANSLATION)
+#else
+  if (cpi->sf.adaptive_motion_search)
+#endif  // CONFIG_MOTION_VAR
+    x->pred_mv[ref] = tmp_mv->as_mv;
 
   if (scaled_ref_frame) {
     int i;
@@ -3103,13 +3149,14 @@ static int64_t handle_inter_mode(
   int16_t mode_ctx = mbmi_ext->mode_context[refs[0]];
 #if CONFIG_MOTION_VAR
   int allow_motion_variation = is_motion_variation_allowed(mbmi);
-  int rate2_nocoeff, best_rate2 = INT_MAX, best_skippable, best_xskip,
-                     best_disable_skip = 0;
+  int rate2_nocoeff, best_rate2 = INT_MAX, best_rate_y, best_rate_uv,
+                     best_skippable, best_xskip, best_disable_skip = 0;
   int64_t best_distortion = INT64_MAX;
   MB_MODE_INFO best_mbmi;
 #endif  // CONFIG_MOTION_VAR
   int tmp_rate;
   int64_t tmp_dist;
+  int rate_mv = 0;
   int rs;
 
 #if CONFIG_REF_MV
@@ -3118,7 +3165,6 @@ static int64_t handle_inter_mode(
 #endif
 
   if (this_mode == NEWMV) {
-    int rate_mv;
     if (is_comp_pred) {
       // Initialize mv using single prediction mode result.
       frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
@@ -3144,7 +3190,6 @@ static int64_t handle_inter_mode(
                                    &x->mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
-      *rate2 += rate_mv;
     } else {
       int_mv tmp_mv;
       single_motion_search(cpi, x, bsize, mi_row, mi_col, &tmp_mv, &rate_mv);
@@ -3159,11 +3204,10 @@ static int64_t handle_inter_mode(
       // motion field, where the distortion gain for a single block may not
       // be enough to overcome the cost of a new mv.
       if (discount_newmv_test(cpi, this_mode, tmp_mv, mode_mv, refs[0])) {
-        *rate2 += AOMMAX((rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
-      } else {
-        *rate2 += rate_mv;
+        rate_mv = AOMMAX((rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
       }
     }
+    *rate2 += rate_mv;
   }
 
   for (i = 0; i < is_comp_pred + 1; ++i) {
@@ -3382,6 +3426,25 @@ static int64_t handle_inter_mode(
     int tmp_rate2 = rate2_nocoeff;
 
     if (mbmi->motion_mode == OBMC_CAUSAL) {
+      if (!is_comp_pred && this_mode == NEWMV) {
+        int_mv tmp_mv;
+        int tmp_rate_mv = 0;
+
+        single_motion_search(cpi, x, bsize, mi_row, mi_col, &tmp_mv,
+                             &tmp_rate_mv);
+        mbmi->mv[0].as_int = tmp_mv.as_int;
+        if (discount_newmv_test(cpi, this_mode, tmp_mv, mode_mv, refs[0])) {
+          tmp_rate_mv = AOMMAX((tmp_rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
+        }
+        tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
+#if CONFIG_EXT_INTERP
+        if (cm->interp_filter = SWITCHABLE && !is_interp_needed(xd)) {
+          tmp_rate2 -= rs;
+          mbmi->interp_filter = EIGHT_TAP;
+        }
+#endif  // CONFIG_EXT_INTERP
+        av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
+      }
       av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, above_pred_buf,
                                       above_pred_stride, left_pred_buf,
                                       left_pred_stride);
@@ -3474,7 +3537,6 @@ static int64_t handle_inter_mode(
     } else {
       x->skip = 1;
       *disable_skip = 1;
-
 #if CONFIG_MOTION_VAR
       mbmi->skip = 0;
 #endif  // CONFIG_MOTION_VAR
@@ -3491,6 +3553,8 @@ static int64_t handle_inter_mode(
       best_mbmi = *mbmi;
       rd = tmp_rd;
       best_rate2 = *rate2;
+      best_rate_y = *rate_y;
+      best_rate_uv = *rate_uv;
       best_distortion = *distortion;
       best_skippable = *skippable;
       best_xskip = x->skip;
@@ -3506,6 +3570,8 @@ static int64_t handle_inter_mode(
   }
   *mbmi = best_mbmi;
   *rate2 = best_rate2;
+  *rate_y = best_rate_y;
+  *rate_uv = best_rate_uv;
   *distortion = best_distortion;
   *skippable = best_skippable;
   x->skip = best_xskip;
@@ -3690,6 +3756,14 @@ int av1_active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
          av1_active_v_edge(cpi, mi_col, MI_BLOCK_SIZE);
 }
 
+#if CONFIG_MOTION_VAR
+static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                      const MACROBLOCKD *xd, int mi_row,
+                                      int mi_col, const uint8_t *above,
+                                      int above_stride, const uint8_t *left,
+                                      int left_stride);
+#endif  // CONFIG_MOTION_VAR
+
 void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_COST *rd_cost, BLOCK_SIZE bsize,
@@ -3767,6 +3841,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_SB_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+  DECLARE_ALIGNED(16, int32_t, weighted_src_buf[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, int32_t, mask2d_buf[MAX_SB_SQUARE]);
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_stride2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -3852,6 +3928,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
                                      dst_stride2);
   av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+  x->mask_buf = mask2d_buf;
+  x->wsrc_buf = weighted_src_buf;
+  calc_target_weighted_pred(cm, x, xd, mi_row, mi_col, dst_buf1[0],
+                            dst_stride1[0], dst_buf2[0], dst_stride2[0]);
 #endif  // CONFIG_MOTION_VAR
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
@@ -5315,3 +5395,224 @@ void av1_rd_pick_inter_mode_sub8x8(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
   store_coding_context(x, ctx, best_ref_index, best_pred_diff, 0);
 }
+
+#if CONFIG_MOTION_VAR
+// This function has a structure similar to av1_build_obmc_inter_prediction
+//
+// The OBMC predictor is computed as:
+//
+//  PObmc(x,y) =
+//    AOM_BLEND_A64(Mh(x),
+//                  AOM_BLEND_A64(Mv(y), P(x,y), PAbove(x,y)),
+//                  PLeft(x, y))
+//
+// Scaling up by AOM_BLEND_A64_MAX_ALPHA ** 2 and omitting the intermediate
+// rounding, this can be written as:
+//
+//  AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA * Pobmc(x,y) =
+//    Mh(x) * Mv(y) * P(x,y) +
+//      Mh(x) * Cv(y) * Pabove(x,y) +
+//      AOM_BLEND_A64_MAX_ALPHA * Ch(x) * PLeft(x, y)
+//
+// Where :
+//
+//  Cv(y) = AOM_BLEND_A64_MAX_ALPHA - Mv(y)
+//  Ch(y) = AOM_BLEND_A64_MAX_ALPHA - Mh(y)
+//
+// This function computes 'wsrc' and 'mask' as:
+//
+//  wsrc(x, y) =
+//    AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA * src(x, y) -
+//      Mh(x) * Cv(y) * Pabove(x,y) +
+//      AOM_BLEND_A64_MAX_ALPHA * Ch(x) * PLeft(x, y)
+//
+//  mask(x, y) = Mh(x) * Mv(y)
+//
+// These can then be used to efficiently approximate the error for any
+// predictor P in the context of the provided neighboring predictors by
+// computing:
+//
+//  error(x, y) =
+//    wsrc(x, y) - mask(x, y) * P(x, y) / (AOM_BLEND_A64_MAX_ALPHA ** 2)
+//
+static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                      const MACROBLOCKD *xd, int mi_row,
+                                      int mi_col, const uint8_t *above,
+                                      int above_stride, const uint8_t *left,
+                                      int left_stride) {
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  int row, col, i;
+  const int bw = 8 * xd->n8_w;
+  const int bh = 8 * xd->n8_h;
+  int32_t *mask_buf = x->mask_buf;
+  int32_t *wsrc_buf = x->wsrc_buf;
+  const int wsrc_stride = bw;
+  const int mask_stride = bw;
+  const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
+#if CONFIG_AOM_HIGHBITDEPTH
+  const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
+#else
+  const int is_hbd = 0;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
+  // plane 0 should not be subsampled
+  assert(xd->plane[0].subsampling_x == 0);
+  assert(xd->plane[0].subsampling_y == 0);
+
+  av1_zero_array(wsrc_buf, bw * bh);
+  for (i = 0; i < bw * bh; ++i) mask_buf[i] = AOM_BLEND_A64_MAX_ALPHA;
+
+  // handle above row
+  if (xd->up_available) {
+    const int overlap = num_4x4_blocks_high_lookup[bsize] * 2;
+    const int miw = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+    const int mi_row_offset = -1;
+    const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
+
+    assert(miw > 0);
+
+    i = 0;
+    do {  // for each mi in the above row
+      const int mi_col_offset = i;
+      const MB_MODE_INFO *const above_mbmi =
+          &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      const int mi_step =
+          AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[above_mbmi->sb_type]);
+      const int neighbor_bw = mi_step * MI_SIZE;
+
+      if (is_neighbor_overlappable(above_mbmi)) {
+        const int tmp_stride = above_stride;
+        int32_t *wsrc = wsrc_buf + (i * MI_SIZE);
+        int32_t *mask = mask_buf + (i * MI_SIZE);
+
+        if (!is_hbd) {
+          const uint8_t *tmp = above;
+
+          for (row = 0; row < overlap; ++row) {
+            const uint8_t m0 = mask1d[row];
+            const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
+            for (col = 0; col < neighbor_bw; ++col) {
+              wsrc[col] = m1 * tmp[col];
+              mask[col] = m0;
+            }
+            wsrc += wsrc_stride;
+            mask += mask_stride;
+            tmp += tmp_stride;
+          }
+#if CONFIG_AOM_HIGHBITDEPTH
+        } else {
+          const uint16_t *tmp = CONVERT_TO_SHORTPTR(above);
+
+          for (row = 0; row < overlap; ++row) {
+            const uint8_t m0 = mask1d[row];
+            const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
+            for (col = 0; col < neighbor_bw; ++col) {
+              wsrc[col] = m1 * tmp[col];
+              mask[col] = m0;
+            }
+            wsrc += wsrc_stride;
+            mask += mask_stride;
+            tmp += tmp_stride;
+          }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+        }
+      }
+
+      above += neighbor_bw;
+      i += mi_step;
+    } while (i < miw);
+  }
+
+  for (i = 0; i < bw * bh; ++i) {
+    wsrc_buf[i] *= AOM_BLEND_A64_MAX_ALPHA;
+    mask_buf[i] *= AOM_BLEND_A64_MAX_ALPHA;
+  }
+
+  // handle left column
+  if (xd->left_available) {
+    const int overlap = num_4x4_blocks_wide_lookup[bsize] * 2;
+    const int mih = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+    const int mi_col_offset = -1;
+    const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
+
+    assert(mih > 0);
+
+    i = 0;
+    do {  // for each mi in the left column
+      const int mi_row_offset = i;
+      const MB_MODE_INFO *const left_mbmi =
+          &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
+      const int mi_step =
+          AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[left_mbmi->sb_type]);
+      const int neighbor_bh = mi_step * MI_SIZE;
+
+      if (is_neighbor_overlappable(left_mbmi)) {
+        const int tmp_stride = left_stride;
+        int32_t *wsrc = wsrc_buf + (i * MI_SIZE * wsrc_stride);
+        int32_t *mask = mask_buf + (i * MI_SIZE * mask_stride);
+
+        if (!is_hbd) {
+          const uint8_t *tmp = left;
+
+          for (row = 0; row < neighbor_bh; ++row) {
+            for (col = 0; col < overlap; ++col) {
+              const uint8_t m0 = mask1d[col];
+              const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
+              wsrc[col] = (wsrc[col] >> AOM_BLEND_A64_ROUND_BITS) * m0 +
+                          (tmp[col] << AOM_BLEND_A64_ROUND_BITS) * m1;
+              mask[col] = (mask[col] >> AOM_BLEND_A64_ROUND_BITS) * m0;
+            }
+            wsrc += wsrc_stride;
+            mask += mask_stride;
+            tmp += tmp_stride;
+          }
+#if CONFIG_AOM_HIGHBITDEPTH
+        } else {
+          const uint16_t *tmp = CONVERT_TO_SHORTPTR(left);
+
+          for (row = 0; row < neighbor_bh; ++row) {
+            for (col = 0; col < overlap; ++col) {
+              const uint8_t m0 = mask1d[col];
+              const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
+              wsrc[col] = (wsrc[col] >> AOM_BLEND_A64_ROUND_BITS) * m0 +
+                          (tmp[col] << AOM_BLEND_A64_ROUND_BITS) * m1;
+              mask[col] = (mask[col] >> AOM_BLEND_A64_ROUND_BITS) * m0;
+            }
+            wsrc += wsrc_stride;
+            mask += mask_stride;
+            tmp += tmp_stride;
+          }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+        }
+      }
+
+      left += neighbor_bh * left_stride;
+      i += mi_step;
+    } while (i < mih);
+  }
+
+  if (!is_hbd) {
+    const uint8_t *src = x->plane[0].src.buf;
+
+    for (row = 0; row < bh; ++row) {
+      for (col = 0; col < bw; ++col) {
+        wsrc_buf[col] = src[col] * src_scale - wsrc_buf[col];
+      }
+      wsrc_buf += wsrc_stride;
+      src += x->plane[0].src.stride;
+    }
+#if CONFIG_AOM_HIGHBITDEPTH
+  } else {
+    const uint16_t *src = CONVERT_TO_SHORTPTR(x->plane[0].src.buf);
+
+    for (row = 0; row < bh; ++row) {
+      for (col = 0; col < bw; ++col) {
+        wsrc_buf[col] = src[col] * src_scale - wsrc_buf[col];
+      }
+      wsrc_buf += wsrc_stride;
+      src += x->plane[0].src.stride;
+    }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  }
+}
+#endif  // CONFIG_MOTION_VAR

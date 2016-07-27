@@ -20,6 +20,10 @@
 extern "C" {
 #endif
 
+#ifndef MAX_SB_SIZE
+#define MAX_SB_SIZE 64
+#endif
+
 #define AOMMIN(x, y) (((x) < (y)) ? (x) : (y))
 #define AOMMAX(x, y) (((x) > (y)) ? (x) : (y))
 

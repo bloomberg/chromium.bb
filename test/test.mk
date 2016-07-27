@@ -117,6 +117,10 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += subtract_test.cc
 LIBAOM_TEST_SRCS-yes += function_equivalence_test.h
 LIBAOM_TEST_SRCS-yes += blend_a64_mask_test.cc
 LIBAOM_TEST_SRCS-yes += blend_a64_mask_1d_test.cc
+ifeq ($(CONFIG_MOTION_VAR),yes)
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_sad_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_variance_test.cc
+endif
 
 ifeq ($(CONFIG_AV1_ENCODER)$(CONFIG_AV1_TEMPORAL_DENOISING),yesyes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += denoiser_sse2_test.cc

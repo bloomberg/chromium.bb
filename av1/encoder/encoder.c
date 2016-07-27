@@ -1024,6 +1024,44 @@ MAKE_BFP_SAD8_WRAPPER(aom_highbd_sad4x4x8)
 MAKE_BFP_SAD4D_WRAPPER(aom_highbd_sad4x4x4d)
 /* clang-format on */
 
+#if CONFIG_MOTION_VAR
+#define HIGHBD_OBFP(BT, OSDF, OVF, OSVF) \
+  cpi->fn_ptr[BT].osdf = OSDF;           \
+  cpi->fn_ptr[BT].ovf = OVF;             \
+  cpi->fn_ptr[BT].osvf = OSVF;
+
+#define MAKE_OBFP_SAD_WRAPPER(fnname)                                     \
+  static unsigned int fnname##_bits8(const uint8_t *ref, int ref_stride,  \
+                                     const int32_t *wsrc,                 \
+                                     const int32_t *msk) {                \
+    return fnname(ref, ref_stride, wsrc, msk);                            \
+  }                                                                       \
+  static unsigned int fnname##_bits10(const uint8_t *ref, int ref_stride, \
+                                      const int32_t *wsrc,                \
+                                      const int32_t *msk) {               \
+    return fnname(ref, ref_stride, wsrc, msk) >> 2;                       \
+  }                                                                       \
+  static unsigned int fnname##_bits12(const uint8_t *ref, int ref_stride, \
+                                      const int32_t *wsrc,                \
+                                      const int32_t *msk) {               \
+    return fnname(ref, ref_stride, wsrc, msk) >> 4;                       \
+  }
+
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad64x64)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad64x32)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad32x64)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad32x32)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad32x16)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad16x32)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad16x16)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad16x8)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad8x16)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad8x8)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad8x4)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad4x8)
+MAKE_OBFP_SAD_WRAPPER(aom_highbd_obmc_sad4x4)
+#endif  // CONFIG_MOTION_VAR
+
 static void highbd_set_var_fns(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   if (cm->use_highbitdepth) {
@@ -1109,6 +1147,48 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_8_variance4x4, aom_highbd_8_sub_pixel_variance4x4,
             aom_highbd_8_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits8,
             aom_highbd_sad4x4x8_bits8, aom_highbd_sad4x4x4d_bits8)
+
+#if CONFIG_MOTION_VAR
+        HIGHBD_OBFP(BLOCK_64X64, aom_highbd_obmc_sad64x64_bits8,
+                    aom_highbd_obmc_variance64x64,
+                    aom_highbd_obmc_sub_pixel_variance64x64)
+        HIGHBD_OBFP(BLOCK_64X32, aom_highbd_obmc_sad64x32_bits8,
+                    aom_highbd_obmc_variance64x32,
+                    aom_highbd_obmc_sub_pixel_variance64x32)
+        HIGHBD_OBFP(BLOCK_32X64, aom_highbd_obmc_sad32x64_bits8,
+                    aom_highbd_obmc_variance32x64,
+                    aom_highbd_obmc_sub_pixel_variance32x64)
+        HIGHBD_OBFP(BLOCK_32X32, aom_highbd_obmc_sad32x32_bits8,
+                    aom_highbd_obmc_variance32x32,
+                    aom_highbd_obmc_sub_pixel_variance32x32)
+        HIGHBD_OBFP(BLOCK_32X16, aom_highbd_obmc_sad32x16_bits8,
+                    aom_highbd_obmc_variance32x16,
+                    aom_highbd_obmc_sub_pixel_variance32x16)
+        HIGHBD_OBFP(BLOCK_16X32, aom_highbd_obmc_sad16x32_bits8,
+                    aom_highbd_obmc_variance16x32,
+                    aom_highbd_obmc_sub_pixel_variance16x32)
+        HIGHBD_OBFP(BLOCK_16X16, aom_highbd_obmc_sad16x16_bits8,
+                    aom_highbd_obmc_variance16x16,
+                    aom_highbd_obmc_sub_pixel_variance16x16)
+        HIGHBD_OBFP(BLOCK_8X16, aom_highbd_obmc_sad8x16_bits8,
+                    aom_highbd_obmc_variance8x16,
+                    aom_highbd_obmc_sub_pixel_variance8x16)
+        HIGHBD_OBFP(BLOCK_16X8, aom_highbd_obmc_sad16x8_bits8,
+                    aom_highbd_obmc_variance16x8,
+                    aom_highbd_obmc_sub_pixel_variance16x8)
+        HIGHBD_OBFP(BLOCK_8X8, aom_highbd_obmc_sad8x8_bits8,
+                    aom_highbd_obmc_variance8x8,
+                    aom_highbd_obmc_sub_pixel_variance8x8)
+        HIGHBD_OBFP(BLOCK_4X8, aom_highbd_obmc_sad4x8_bits8,
+                    aom_highbd_obmc_variance4x8,
+                    aom_highbd_obmc_sub_pixel_variance4x8)
+        HIGHBD_OBFP(BLOCK_8X4, aom_highbd_obmc_sad8x4_bits8,
+                    aom_highbd_obmc_variance8x4,
+                    aom_highbd_obmc_sub_pixel_variance8x4)
+        HIGHBD_OBFP(BLOCK_4X4, aom_highbd_obmc_sad4x4_bits8,
+                    aom_highbd_obmc_variance4x4,
+                    aom_highbd_obmc_sub_pixel_variance4x4)
+#endif  // CONFIG_MOTION_VAR
         break;
 
       case AOM_BITS_10:
@@ -1194,6 +1274,48 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_10_variance4x4, aom_highbd_10_sub_pixel_variance4x4,
             aom_highbd_10_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits10,
             aom_highbd_sad4x4x8_bits10, aom_highbd_sad4x4x4d_bits10)
+
+#if CONFIG_MOTION_VAR
+        HIGHBD_OBFP(BLOCK_64X64, aom_highbd_obmc_sad64x64_bits10,
+                    aom_highbd_10_obmc_variance64x64,
+                    aom_highbd_10_obmc_sub_pixel_variance64x64)
+        HIGHBD_OBFP(BLOCK_64X32, aom_highbd_obmc_sad64x32_bits10,
+                    aom_highbd_10_obmc_variance64x32,
+                    aom_highbd_10_obmc_sub_pixel_variance64x32)
+        HIGHBD_OBFP(BLOCK_32X64, aom_highbd_obmc_sad32x64_bits10,
+                    aom_highbd_10_obmc_variance32x64,
+                    aom_highbd_10_obmc_sub_pixel_variance32x64)
+        HIGHBD_OBFP(BLOCK_32X32, aom_highbd_obmc_sad32x32_bits10,
+                    aom_highbd_10_obmc_variance32x32,
+                    aom_highbd_10_obmc_sub_pixel_variance32x32)
+        HIGHBD_OBFP(BLOCK_32X16, aom_highbd_obmc_sad32x16_bits10,
+                    aom_highbd_10_obmc_variance32x16,
+                    aom_highbd_10_obmc_sub_pixel_variance32x16)
+        HIGHBD_OBFP(BLOCK_16X32, aom_highbd_obmc_sad16x32_bits10,
+                    aom_highbd_10_obmc_variance16x32,
+                    aom_highbd_10_obmc_sub_pixel_variance16x32)
+        HIGHBD_OBFP(BLOCK_16X16, aom_highbd_obmc_sad16x16_bits10,
+                    aom_highbd_10_obmc_variance16x16,
+                    aom_highbd_10_obmc_sub_pixel_variance16x16)
+        HIGHBD_OBFP(BLOCK_8X16, aom_highbd_obmc_sad8x16_bits10,
+                    aom_highbd_10_obmc_variance8x16,
+                    aom_highbd_10_obmc_sub_pixel_variance8x16)
+        HIGHBD_OBFP(BLOCK_16X8, aom_highbd_obmc_sad16x8_bits10,
+                    aom_highbd_10_obmc_variance16x8,
+                    aom_highbd_10_obmc_sub_pixel_variance16x8)
+        HIGHBD_OBFP(BLOCK_8X8, aom_highbd_obmc_sad8x8_bits10,
+                    aom_highbd_10_obmc_variance8x8,
+                    aom_highbd_10_obmc_sub_pixel_variance8x8)
+        HIGHBD_OBFP(BLOCK_4X8, aom_highbd_obmc_sad4x8_bits10,
+                    aom_highbd_10_obmc_variance4x8,
+                    aom_highbd_10_obmc_sub_pixel_variance4x8)
+        HIGHBD_OBFP(BLOCK_8X4, aom_highbd_obmc_sad8x4_bits10,
+                    aom_highbd_10_obmc_variance8x4,
+                    aom_highbd_10_obmc_sub_pixel_variance8x4)
+        HIGHBD_OBFP(BLOCK_4X4, aom_highbd_obmc_sad4x4_bits10,
+                    aom_highbd_10_obmc_variance4x4,
+                    aom_highbd_10_obmc_sub_pixel_variance4x4)
+#endif  // CONFIG_MOTION_VAR
         break;
 
       case AOM_BITS_12:
@@ -1279,6 +1401,48 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_12_variance4x4, aom_highbd_12_sub_pixel_variance4x4,
             aom_highbd_12_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits12,
             aom_highbd_sad4x4x8_bits12, aom_highbd_sad4x4x4d_bits12)
+
+#if CONFIG_MOTION_VAR
+        HIGHBD_OBFP(BLOCK_64X64, aom_highbd_obmc_sad64x64_bits12,
+                    aom_highbd_12_obmc_variance64x64,
+                    aom_highbd_12_obmc_sub_pixel_variance64x64)
+        HIGHBD_OBFP(BLOCK_64X32, aom_highbd_obmc_sad64x32_bits12,
+                    aom_highbd_12_obmc_variance64x32,
+                    aom_highbd_12_obmc_sub_pixel_variance64x32)
+        HIGHBD_OBFP(BLOCK_32X64, aom_highbd_obmc_sad32x64_bits12,
+                    aom_highbd_12_obmc_variance32x64,
+                    aom_highbd_12_obmc_sub_pixel_variance32x64)
+        HIGHBD_OBFP(BLOCK_32X32, aom_highbd_obmc_sad32x32_bits12,
+                    aom_highbd_12_obmc_variance32x32,
+                    aom_highbd_12_obmc_sub_pixel_variance32x32)
+        HIGHBD_OBFP(BLOCK_32X16, aom_highbd_obmc_sad32x16_bits12,
+                    aom_highbd_12_obmc_variance32x16,
+                    aom_highbd_12_obmc_sub_pixel_variance32x16)
+        HIGHBD_OBFP(BLOCK_16X32, aom_highbd_obmc_sad16x32_bits12,
+                    aom_highbd_12_obmc_variance16x32,
+                    aom_highbd_12_obmc_sub_pixel_variance16x32)
+        HIGHBD_OBFP(BLOCK_16X16, aom_highbd_obmc_sad16x16_bits12,
+                    aom_highbd_12_obmc_variance16x16,
+                    aom_highbd_12_obmc_sub_pixel_variance16x16)
+        HIGHBD_OBFP(BLOCK_8X16, aom_highbd_obmc_sad8x16_bits12,
+                    aom_highbd_12_obmc_variance8x16,
+                    aom_highbd_12_obmc_sub_pixel_variance8x16)
+        HIGHBD_OBFP(BLOCK_16X8, aom_highbd_obmc_sad16x8_bits12,
+                    aom_highbd_12_obmc_variance16x8,
+                    aom_highbd_12_obmc_sub_pixel_variance16x8)
+        HIGHBD_OBFP(BLOCK_8X8, aom_highbd_obmc_sad8x8_bits12,
+                    aom_highbd_12_obmc_variance8x8,
+                    aom_highbd_12_obmc_sub_pixel_variance8x8)
+        HIGHBD_OBFP(BLOCK_4X8, aom_highbd_obmc_sad4x8_bits12,
+                    aom_highbd_12_obmc_variance4x8,
+                    aom_highbd_12_obmc_sub_pixel_variance4x8)
+        HIGHBD_OBFP(BLOCK_8X4, aom_highbd_obmc_sad8x4_bits12,
+                    aom_highbd_12_obmc_variance8x4,
+                    aom_highbd_12_obmc_sub_pixel_variance8x4)
+        HIGHBD_OBFP(BLOCK_4X4, aom_highbd_obmc_sad4x4_bits12,
+                    aom_highbd_12_obmc_variance4x4,
+                    aom_highbd_12_obmc_sub_pixel_variance4x4)
+#endif  // CONFIG_MOTION_VAR
         break;
 
       default:
@@ -1740,6 +1904,40 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   BFP(BLOCK_4X4, aom_sad4x4, aom_sad4x4_avg, aom_variance4x4,
       aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
       aom_sad4x4x8, aom_sad4x4x4d)
+
+#if CONFIG_MOTION_VAR
+#define OBFP(BT, OSDF, OVF, OSVF) \
+  cpi->fn_ptr[BT].osdf = OSDF;    \
+  cpi->fn_ptr[BT].ovf = OVF;      \
+  cpi->fn_ptr[BT].osvf = OSVF;
+
+  OBFP(BLOCK_64X64, aom_obmc_sad64x64, aom_obmc_variance64x64,
+       aom_obmc_sub_pixel_variance64x64)
+  OBFP(BLOCK_64X32, aom_obmc_sad64x32, aom_obmc_variance64x32,
+       aom_obmc_sub_pixel_variance64x32)
+  OBFP(BLOCK_32X64, aom_obmc_sad32x64, aom_obmc_variance32x64,
+       aom_obmc_sub_pixel_variance32x64)
+  OBFP(BLOCK_32X32, aom_obmc_sad32x32, aom_obmc_variance32x32,
+       aom_obmc_sub_pixel_variance32x32)
+  OBFP(BLOCK_32X16, aom_obmc_sad32x16, aom_obmc_variance32x16,
+       aom_obmc_sub_pixel_variance32x16)
+  OBFP(BLOCK_16X32, aom_obmc_sad16x32, aom_obmc_variance16x32,
+       aom_obmc_sub_pixel_variance16x32)
+  OBFP(BLOCK_16X16, aom_obmc_sad16x16, aom_obmc_variance16x16,
+       aom_obmc_sub_pixel_variance16x16)
+  OBFP(BLOCK_16X8, aom_obmc_sad16x8, aom_obmc_variance16x8,
+       aom_obmc_sub_pixel_variance16x8)
+  OBFP(BLOCK_8X16, aom_obmc_sad8x16, aom_obmc_variance8x16,
+       aom_obmc_sub_pixel_variance8x16)
+  OBFP(BLOCK_8X8, aom_obmc_sad8x8, aom_obmc_variance8x8,
+       aom_obmc_sub_pixel_variance8x8)
+  OBFP(BLOCK_4X8, aom_obmc_sad4x8, aom_obmc_variance4x8,
+       aom_obmc_sub_pixel_variance4x8)
+  OBFP(BLOCK_8X4, aom_obmc_sad8x4, aom_obmc_variance8x4,
+       aom_obmc_sub_pixel_variance8x4)
+  OBFP(BLOCK_4X4, aom_obmc_sad4x4, aom_obmc_variance4x4,
+       aom_obmc_sub_pixel_variance4x4)
+#endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_AOM_HIGHBITDEPTH
   highbd_set_var_fns(cpi);

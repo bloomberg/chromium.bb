@@ -318,3 +318,81 @@ highbd_sadMxNx4D(4, 4)
 /* clang-format on */
 
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+
+#if CONFIG_MOTION_VAR
+    // pre: predictor being evaluated
+    // wsrc: target weighted prediction (has been *4096 to keep precision)
+    // mask: 2d weights (scaled by 4096)
+    static INLINE
+    unsigned int obmc_sad(const uint8_t *pre, int pre_stride,
+                          const int32_t *wsrc, const int32_t *mask, int width,
+                          int height) {
+  int y, x;
+  unsigned int sad = 0;
+
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++)
+      sad += ROUND_POWER_OF_TWO(abs(wsrc[x] - pre[x] * mask[x]), 12);
+
+    pre += pre_stride;
+    wsrc += width;
+    mask += width;
+  }
+
+  return sad;
+}
+
+#define OBMC_SADMxN(m, n)                                                    \
+  unsigned int aom_obmc_sad##m##x##n##_c(const uint8_t *ref, int ref_stride, \
+                                         const int32_t *wsrc,                \
+                                         const int32_t *mask) {              \
+    return obmc_sad(ref, ref_stride, wsrc, mask, m, n);                      \
+  }
+
+OBMC_SADMxN(64, 64) OBMC_SADMxN(64, 32) OBMC_SADMxN(32, 64) OBMC_SADMxN(32, 32)
+    OBMC_SADMxN(32, 16) OBMC_SADMxN(16, 32) OBMC_SADMxN(16, 16)
+        OBMC_SADMxN(16, 8) OBMC_SADMxN(8, 16) OBMC_SADMxN(8, 8)
+            OBMC_SADMxN(8, 4) OBMC_SADMxN(4, 8) OBMC_SADMxN(4, 4)
+#if CONFIG_AOM_HIGHBITDEPTH
+                static INLINE
+    unsigned int highbd_obmc_sad(const uint8_t *pre8, int pre_stride,
+                                 const int32_t *wsrc, const int32_t *mask,
+                                 int width, int height) {
+  int y, x;
+  unsigned int sad = 0;
+  const uint16_t *pre = CONVERT_TO_SHORTPTR(pre8);
+
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++)
+      sad += ROUND_POWER_OF_TWO(abs(wsrc[x] - pre[x] * mask[x]), 12);
+
+    pre += pre_stride;
+    wsrc += width;
+    mask += width;
+  }
+
+  return sad;
+}
+
+#define HIGHBD_OBMC_SADMXN(m, n)                               \
+  unsigned int aom_highbd_obmc_sad##m##x##n##_c(               \
+      const uint8_t *ref, int ref_stride, const int32_t *wsrc, \
+      const int32_t *mask) {                                   \
+    return highbd_obmc_sad(ref, ref_stride, wsrc, mask, m, n); \
+  }
+
+HIGHBD_OBMC_SADMXN(64, 64)
+HIGHBD_OBMC_SADMXN(64, 32)
+HIGHBD_OBMC_SADMXN(32, 64)
+HIGHBD_OBMC_SADMXN(32, 32)
+HIGHBD_OBMC_SADMXN(32, 16)
+HIGHBD_OBMC_SADMXN(16, 32)
+HIGHBD_OBMC_SADMXN(16, 16)
+HIGHBD_OBMC_SADMXN(16, 8)
+HIGHBD_OBMC_SADMXN(8, 16)
+HIGHBD_OBMC_SADMXN(8, 8)
+HIGHBD_OBMC_SADMXN(8, 4)
+HIGHBD_OBMC_SADMXN(4, 8)
+HIGHBD_OBMC_SADMXN(4, 4)
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_MOTION_VAR

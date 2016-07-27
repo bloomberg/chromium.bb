@@ -50,6 +50,20 @@ typedef unsigned int (*aom_subpixvariance_fn_t)(const uint8_t *a, int a_stride,
                                                 const uint8_t *b, int b_stride,
                                                 unsigned int *sse);
 
+#if CONFIG_AV1 && CONFIG_MOTION_VAR
+typedef unsigned int (*aom_obmc_sad_fn_t)(const uint8_t *pred, int pred_stride,
+                                          const int32_t *wsrc,
+                                          const int32_t *msk);
+typedef unsigned int (*aom_obmc_variance_fn_t)(const uint8_t *pred,
+                                               int pred_stride,
+                                               const int32_t *wsrc,
+                                               const int32_t *msk,
+                                               unsigned int *sse);
+typedef unsigned int (*aom_obmc_subpixvariance_fn_t)(
+    const uint8_t *pred, int pred_stride, int xoffset, int yoffset,
+    const int32_t *wsrc, const int32_t *msk, unsigned int *sse);
+#endif  // CONFIG_AV1 && CONFIG_MOTION_VAR
+
 typedef unsigned int (*aom_subp_avg_variance_fn_t)(
     const uint8_t *a_ptr, int a_stride, int xoffset, int yoffset,
     const uint8_t *b_ptr, int b_stride, unsigned int *sse,
@@ -64,6 +78,11 @@ typedef struct aom_variance_vtable {
   aom_sad_multi_fn_t sdx3f;
   aom_sad_multi_fn_t sdx8f;
   aom_sad_multi_d_fn_t sdx4df;
+#if CONFIG_MOTION_VAR
+  aom_obmc_sad_fn_t osdf;
+  aom_obmc_variance_fn_t ovf;
+  aom_obmc_subpixvariance_fn_t osvf;
+#endif  // CONFIG_MOTION_VAR
 } aom_variance_fn_ptr_t;
 #endif  // CONFIG_AV1
 

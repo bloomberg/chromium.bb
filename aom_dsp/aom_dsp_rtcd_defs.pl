@@ -50,6 +50,14 @@ if ($opts{arch} eq "x86_64") {
   $avx2_x86_64 = 'avx2';
 }
 
+@block_widths = (4, 8, 16, 32, 64);
+@block_sizes = ();
+foreach $w (@block_widths) {
+  foreach $h (@block_widths) {
+    push @block_sizes, [$w, $h] if ($w <= 2*$h && $h <= 2*$w) ;
+  }
+}
+
 #
 # Intra prediction
 #
@@ -1028,6 +1036,50 @@ specialize qw/aom_sad4x8 msa/, "$sse2_x86inc";
 
 add_proto qw/unsigned int aom_sad4x4/, "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride";
 specialize qw/aom_sad4x4 neon msa/, "$sse2_x86inc";
+
+#
+# OBMC SAD
+#
+if (aom_config("CONFIG_MOTION_VAR") eq "yes") {
+  foreach (@block_sizes) {
+    ($w, $h) = @$_;
+    add_proto qw/unsigned int/, "aom_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
+    specialize "aom_obmc_sad${w}x${h}", qw/sse4_1/;
+  }
+
+  if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+    foreach (@block_sizes) {
+      ($w, $h) = @$_;
+      add_proto qw/unsigned int/, "aom_highbd_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
+      specialize "aom_highbd_obmc_sad${w}x${h}", qw/sse4_1/;
+    }
+  }
+}
+
+#
+# OBMC Variance / OBMC Subpixel Variance
+#
+if (aom_config("CONFIG_MOTION_VAR") eq "yes") {
+  foreach (@block_sizes) {
+    ($w, $h) = @$_;
+    add_proto qw/unsigned int/, "aom_obmc_variance${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask, unsigned int *sse";
+    add_proto qw/unsigned int/, "aom_obmc_sub_pixel_variance${w}x${h}", "const uint8_t *pre, int pre_stride, int xoffset, int yoffset, const int32_t *wsrc, const int32_t *mask, unsigned int *sse";
+    specialize "aom_obmc_variance${w}x${h}", q/sse4_1/;
+    specialize "aom_obmc_sub_pixel_variance${w}x${h}";
+  }
+
+  if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+    foreach $bd ("_", "_10_", "_12_") {
+      foreach (@block_sizes) {
+        ($w, $h) = @$_;
+        add_proto qw/unsigned int/, "aom_highbd${bd}obmc_variance${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask, unsigned int *sse";
+        add_proto qw/unsigned int/, "aom_highbd${bd}obmc_sub_pixel_variance${w}x${h}", "const uint8_t *pre, int pre_stride, int xoffset, int yoffset, const int32_t *wsrc, const int32_t *mask, unsigned int *sse";
+        specialize "aom_highbd${bd}obmc_variance${w}x${h}", qw/sse4_1/;
+        specialize "aom_highbd${bd}obmc_sub_pixel_variance${w}x${h}";
+      }
+    }
+  }
+}
 
 #
 # Avg

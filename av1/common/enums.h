@@ -18,6 +18,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#undef MAX_SB_SIZE
 #define MAX_SB_SIZE_LOG2 6
 #define MAX_SB_SIZE (1 << MAX_SB_SIZE_LOG2)
 #define MAX_SB_SQUARE (MAX_SB_SIZE * MAX_SB_SIZE)
