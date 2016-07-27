@@ -42,6 +42,10 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/display/win/dpi.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -49,11 +53,6 @@ namespace {
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-
-#if !defined(OS_WIN)
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
-#endif
 
 }  // namespace
 
@@ -351,8 +350,10 @@ int OpaqueBrowserFrameView::GetIconSize() const {
 #if defined(OS_WIN)
   // This metric scales up if either the titlebar height or the titlebar font
   // size are increased.
-  return GetSystemMetrics(SM_CYSMICON);
+  return display::win::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
+  // The icon never shrinks below 16 px on a side.
+  const int kIconMinimumSize = 16;
   return std::max(BrowserFrame::GetTitleFontList().GetHeight(),
                   kIconMinimumSize);
 #endif
