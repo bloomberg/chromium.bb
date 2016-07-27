@@ -21,6 +21,7 @@ source_set("public") {
     "osd_plane.h",
     "osd_plane_shlib.h",
     "osd_surface.h",
+    "reboot_shlib.h",
     "task_runner.h",
     "video_plane.h",
   ]

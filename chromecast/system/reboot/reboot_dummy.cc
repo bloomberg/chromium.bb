@@ -2,29 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Dummy implementation of reboot.h
+#include "chromecast/public/reboot_shlib.h"
 
-#include "base/logging.h"
-#include "chromecast/system/reboot/reboot.h"
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#include <stdlib.h>  // abort()
+#define NOTREACHED() abort()
+#else
+#define NOTREACHED() static_cast<void>(0)
+#endif
 
 namespace chromecast {
 
-RebootType GetLastRebootType() {
-  return RebootType::UNKNOWN;
-}
-
-base::Time GetLastRebootTime() {
-  return base::Time();
-}
-
-bool DoReboot(RebootType type) {
-  LOG(ERROR) << "Dummy DoReboot called, no action taken";
+bool RebootShlib::IsSupported() {
   return false;
 }
 
-bool DoRebootApi(RebootCommand command) {
-  LOG(ERROR) << "Dummy DoRebootApi called, no action taken";
+bool RebootShlib::IsRebootSourceSupported(
+    RebootShlib::RebootSource /* reboot_source */) {
   return false;
 }
 
+bool RebootShlib::RebootNow(RebootShlib::RebootSource /* reboot_source */) {
+  NOTREACHED();
+  return false;
+}
+
+bool RebootShlib::IsFdrForNextRebootSupported() {
+  return false;
+}
+
+void RebootShlib::SetFdrForNextReboot() {
+  NOTREACHED();
+}
+
+bool RebootShlib::IsOtaForNextRebootSupported() {
+  return false;
+}
+
+void RebootShlib::SetOtaForNextReboot() {
+  NOTREACHED();
+}
 }  // namespace chromecast

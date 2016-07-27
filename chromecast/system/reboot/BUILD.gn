@@ -3,20 +3,46 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//testing/test.gni")
 
-source_set("reboot") {
+source_set("reboot_util") {
   sources = [
-    "reboot.h",
+    "reboot_util.h",
+    "reboot_util_core.cc",
   ]
 
   deps = [
+    ":libcast_reboot_1.0",
     "//base",
   ]
 
-  if (chromecast_branding == "public") {
-    sources += [ "reboot_dummy.cc" ]
+  if (chromecast_branding == "google") {
+    deps += [ "//chromecast/internal/system/reboot:reboot_util" ]
   } else {
-    # TODO(ameyak): Remove once google implementation is upstreamed
-    deps += [ "//chromecast/internal/common/reboot" ]
+    sources += [ "reboot_util_dummy.cc" ]
   }
+}
+
+test("cast_reboot_unittests") {
+  sources = [
+    "reboot_util_test.cc",
+  ]
+
+  deps = [
+    ":reboot_util",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
+  ]
+}
+
+# Target for OEM partners to override reboot shared library, i.e.
+# libcast_reboot_1.0.so.
+shared_library("libcast_reboot_1.0") {
+  sources = [
+    "reboot_dummy.cc",
+  ]
+
+  public_deps = [
+    "//chromecast/public",
+  ]
 }

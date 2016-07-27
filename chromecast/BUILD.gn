@@ -31,6 +31,7 @@ cast_test_group("cast_tests") {
     "//chromecast/base:cast_base_unittests",
     "//chromecast/base/component:cast_component_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
+    "//chromecast/system/reboot:cast_reboot_unittests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
     "//media:media_unittests",
