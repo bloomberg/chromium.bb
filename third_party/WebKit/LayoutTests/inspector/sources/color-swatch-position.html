@@ -1,0 +1,83 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/color.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function test()
+{
+    Runtime.experiments.enableForTest("sourceColorPicker");
+    InspectorTest.showScriptSource("color.css", onSourceFrame);
+
+    function onSourceFrame(sourceFrame)
+    {
+        var range = new WebInspector.TextRange(0, 0, 6, 0);
+        InspectorTest.addResult("Initial swatch positions:");
+        dumpSwatchPositions();
+
+        InspectorTest.runTestSuite([
+            function testEditSpectrum(next)
+            {
+                var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector("span[is=color-swatch]");
+                swatch.shadowRoot.querySelector(".color-swatch-inner").click();
+                sourceFrame._spectrum._innerSetColor(WebInspector.Color.parse("#008000").hsva(), "", WebInspector.Color.Format.HEX, WebInspector.Spectrum._ChangeSource.Other);
+                sourceFrame._swatchPopoverHelper.hide(true)
+                dumpSwatchPositions();
+                next();
+            },
+
+            function testAddLine(next)
+            {
+                var start = WebInspector.TextRange.createFromLocation(0, 0);
+                sourceFrame.textEditor.editRange(start, "/* New line */\n");
+                dumpSwatchPositions();
+                next();
+            },
+
+            function testDeleteLine(next)
+            {
+                var bodyLine = new WebInspector.TextRange(2, 0, 3, 0);
+                sourceFrame.textEditor.editRange(bodyLine, "");
+                dumpSwatchPositions();
+                next();
+            },
+
+            function testAddColor(next)
+            {
+                var emptyBodyLine = new WebInspector.TextRange(2, 0, 2, 0);
+                sourceFrame.textEditor.editRange(emptyBodyLine, "color: hsl(300, 100%, 35%);");
+                dumpSwatchPositions();
+                next();
+            },
+
+            function testInvalidateColor(next)
+            {
+                var endParenthesis = new WebInspector.TextRange(2, 25, 2, 26);
+                sourceFrame.textEditor.editRange(endParenthesis, "]");
+                dumpSwatchPositions();
+                next();
+            }
+        ]);
+
+        function dumpSwatchPositions()
+        {
+            var markers = sourceFrame.textEditor.bookmarks(range);
+            for (var i = 0; i < markers.length; i++) {
+                var position = markers[i].find();
+                var color = markers[i].widgetNode.firstChild.color();
+                InspectorTest.addResult("Line " + position.line + ", Column " + position.ch + ": " + color.asString(color.format()));
+            }
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that color swatch positions are updated properly.
+</p>
+</body>
+</html>
