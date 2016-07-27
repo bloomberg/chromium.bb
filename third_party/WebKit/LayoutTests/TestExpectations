@@ -46,8 +46,8 @@ crbug.com/622898 fast/repaint/window-resize-background-image-fixed-centered.html
 crbug.com/622898 fast/repaint/window-resize-background-image-fixed-centered-composited.html [ Failure Pass ]
 crbug.com/622898 [ Win ] fast/repaint/window-resize-background-image-non-fixed.html [ Failure ]
 
-crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
-crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
+crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
+crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.https.html [ Skip ]
 
