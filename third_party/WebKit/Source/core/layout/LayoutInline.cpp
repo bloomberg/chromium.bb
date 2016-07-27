@@ -1102,7 +1102,8 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     if (containerBox && !containerBox->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
         return false;
 
-    if (containerBox)
+    // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
+    if (containerBox && !isRuby())
         containerBox->flipForWritingMode(rect);
     return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }

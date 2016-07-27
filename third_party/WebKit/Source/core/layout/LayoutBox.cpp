@@ -2123,6 +2123,10 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         // coordinate space to the parent space, then back to <tr> / <td>.
         if (tableRowContainer)
             topLeft.moveBy(-tableRowContainer->topLeftLocation(toLayoutBox(container)));
+    } else if (container->isRuby()) {
+        // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
+        // See the accompanying specialization in LayoutInline::mapToVisualRectInAncestorSpace.
+        topLeft.moveBy(topLeftLocation());
     } else {
         topLeft.moveBy(location());
     }
