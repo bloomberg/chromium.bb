@@ -415,8 +415,8 @@
       'Chromium Linux TSan Builder':
         'swarming_tsan_disable_nacl_gn_release_bot',
       'Chromium Windows Builder (DrMemory x64)':
-        'gn_drmemory_shared_release_x64',
-      'Chromium Windows Builder (DrMemory)': 'gn_drmemory_shared_release_x86',
+        'gyp_drmemory_shared_release_x64',
+      'Chromium Windows Builder (DrMemory)': 'gyp_drmemory_shared_release_x86',
       'Linux ChromeOS MSan Tests': 'none',
       'Linux MSan Tests': 'none',
       'Linux TSan Tests': 'none',
@@ -1341,12 +1341,12 @@
       'gn', 'debug_bot_minimal_symbols', 'x86',
     ],
 
-    'gn_drmemory_shared_release_x86': [
-      'gn', 'drmemory', 'shared', 'release', 'x86',
+    'gyp_drmemory_shared_release_x86': [
+      'gyp', 'drmemory', 'shared', 'release', 'x86',
     ],
 
-    'gn_drmemory_shared_release_x64': [
-      'gn', 'drmemory', 'shared', 'release', 'x64',
+    'gyp_drmemory_shared_release_x64': [
+      'gyp', 'drmemory', 'shared', 'release', 'x64',
     ],
 
     'gn_msan_edge_release_bot': [
