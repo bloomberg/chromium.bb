@@ -90,6 +90,7 @@ DocumentLifecycle::DisallowThrottlingScope::~DisallowThrottlingScope()
 DocumentLifecycle::DocumentLifecycle()
     : m_state(Uninitialized)
     , m_detachCount(0)
+    , m_disallowTransitionCount(0)
 {
 }
 
@@ -101,6 +102,9 @@ DocumentLifecycle::~DocumentLifecycle()
 
 bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
 {
+    if (stateTransitionDisallowed())
+        return false;
+
     // We can stop from anywhere.
     if (nextState == Stopping)
         return true;
@@ -265,6 +269,9 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
 
 bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const
 {
+    if (stateTransitionDisallowed())
+        return false;
+
     // This transition is bogus, but we've whitelisted it anyway.
     if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && nextState == s_deprecatedTransitionStack->to())
         return true;

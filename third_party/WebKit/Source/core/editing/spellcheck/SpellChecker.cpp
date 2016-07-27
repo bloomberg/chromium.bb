@@ -604,41 +604,50 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
         }
     }
 
-    for (unsigned i = 0; i < results.size(); i++) {
-        int spellingRangeEndOffset = paragraph.checkingEnd();
-        const TextCheckingResult* result = &results[i];
-        int resultLocation = result->location + paragraph.checkingStart();
-        int resultLength = result->length;
-        bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-        // Only mark misspelling if:
-        // 1. Current text checking isn't done for autocorrection, in which case shouldMarkSpelling is false.
-        // 2. Result falls within spellingRange.
-        // 3. The word in question doesn't end at an ambiguous boundary. For instance, we would not mark
-        //    "wouldn'" as misspelled right after apostrophe is typed.
-        if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
-            DCHECK_GT(resultLength, 0);
-            DCHECK_GE(resultLocation, 0);
-            const EphemeralRange misspellingRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
-            frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
-        } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
-            DCHECK_GT(resultLength, 0);
-            DCHECK_GE(resultLocation, 0);
-            for (unsigned j = 0; j < result->details.size(); j++) {
-                const GrammarDetail* detail = &result->details[j];
-                DCHECK_GT(detail->length, 0);
-                DCHECK_GE(detail->location, 0);
-                if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
-                    const EphemeralRange badGrammarRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation + detail->location, detail->length);
-                    frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
+    {
+        DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+
+        for (unsigned i = 0; i < results.size(); i++) {
+            int spellingRangeEndOffset = paragraph.checkingEnd();
+            const TextCheckingResult* result = &results[i];
+            int resultLocation = result->location + paragraph.checkingStart();
+            int resultLength = result->length;
+            bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
+
+            // Only mark misspelling if:
+            // 1. Current text checking isn't done for autocorrection, in which case shouldMarkSpelling is false.
+            // 2. Result falls within spellingRange.
+            // 3. The word in question doesn't end at an ambiguous boundary. For instance, we would not mark
+            //    "wouldn'" as misspelled right after apostrophe is typed.
+            if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
+                DCHECK_GT(resultLength, 0);
+                DCHECK_GE(resultLocation, 0);
+                const EphemeralRange misspellingRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
+                frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
+            } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
+                DCHECK_GT(resultLength, 0);
+                DCHECK_GE(resultLocation, 0);
+                for (unsigned j = 0; j < result->details.size(); j++) {
+                    const GrammarDetail* detail = &result->details[j];
+                    DCHECK_GT(detail->length, 0);
+                    DCHECK_GE(detail->location, 0);
+                    if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
+                        const EphemeralRange badGrammarRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation + detail->location, detail->length);
+                        frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
+                    }
                 }
+            } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
+                DCHECK_GT(resultLength, 0);
+                DCHECK_GE(resultLocation, 0);
+                const EphemeralRange invisibleSpellcheckRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
+                frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
             }
-        } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
-            DCHECK_GT(resultLength, 0);
-            DCHECK_GE(resultLocation, 0);
-            const EphemeralRange invisibleSpellcheckRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
-            frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
         }
+
     }
 
     if (selectionChanged) {

@@ -110,6 +110,27 @@ public:
         LifecycleState m_to;
     };
 
+    // Within this scope, state transitions are not allowed.
+    // Any attempts to advance or rewind will result in a DCHECK.
+    class DisallowTransitionScope {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(DisallowTransitionScope);
+    public:
+        explicit DisallowTransitionScope(DocumentLifecycle& documentLifecycle)
+            : m_documentLifecycle(documentLifecycle)
+        {
+            m_documentLifecycle.incrementNoTransitionCount();
+        }
+
+        ~DisallowTransitionScope()
+        {
+            m_documentLifecycle.decrementNoTransitionCount();
+        }
+
+    private:
+        DocumentLifecycle& m_documentLifecycle;
+    };
+
     class DetachScope {
         STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(DetachScope);
@@ -168,6 +189,14 @@ public:
     void advanceTo(LifecycleState);
     void ensureStateAtMost(LifecycleState);
 
+    bool stateTransitionDisallowed() const { return m_disallowTransitionCount; }
+    void incrementNoTransitionCount() { m_disallowTransitionCount++; }
+    void decrementNoTransitionCount()
+    {
+        DCHECK_GT(m_disallowTransitionCount, 0);
+        m_disallowTransitionCount--;
+    }
+
     bool inDetach() const { return m_detachCount; }
     void incrementDetachCount() { m_detachCount++; }
     void decrementDetachCount()
@@ -188,6 +217,7 @@ private:
 
     LifecycleState m_state;
     int m_detachCount;
+    int m_disallowTransitionCount;
 };
 
 inline bool DocumentLifecycle::stateAllowsTreeMutations() const
