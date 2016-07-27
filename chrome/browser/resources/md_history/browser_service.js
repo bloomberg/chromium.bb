@@ -49,6 +49,26 @@ cr.define('md_history', function() {
       chrome.send('removeBookmark', [url]);
     },
 
+    /**
+     * @param {string} sessionTag
+     */
+    openForeignSessionAllTabs: function(sessionTag) {
+      chrome.send('openForeignSession', [sessionTag]);
+    },
+
+    /**
+     * @param {string} sessionTag
+     * @param {number} windowId
+     * @param {number} tabId
+     * @param {Event} e
+     */
+    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
+      chrome.send('openForeignSession', [
+        sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey,
+        e.ctrlKey, e.metaKey, e.shiftKey
+      ]);
+    },
+
     openClearBrowsingData: function() {
       chrome.send('clearBrowsingData');
     },

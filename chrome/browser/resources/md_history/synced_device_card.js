@@ -34,6 +34,10 @@ Polymer({
     cardOpen_: {type: Boolean, value: true},
 
     searchTerm: String,
+
+    windowId: Number,
+
+    sessionTag: String,
   },
 
   /**
@@ -41,9 +45,20 @@ Polymer({
    * @private
    */
   openAllTabs_: function() {
-    // TODO(calamity): add a warning if an excessive number of tabs will open.
-    for (var i = 0; i < this.tabs.length; i++)
-      window.open(this.tabs[i].url, '_blank');
+    md_history.BrowserService.getInstance().openForeignSessionAllTabs(
+        this.sessionTag);
+  },
+
+  /**
+   * @param {TapEvent} e
+   * @private
+   */
+  openTab_: function(e) {
+    var model = /** @type {ForeignSessionTab} */(e.model);
+    var srcEvent = /** @type {Event} */(e.detail.sourceEvent);
+    md_history.BrowserService.getInstance().openForeignSessionTab(
+        this.sessionTag, model.windowId, model.sessionId, srcEvent);
+    e.preventDefault();
   },
 
   /**

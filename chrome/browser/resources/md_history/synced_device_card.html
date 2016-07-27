@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://history/browser_service.html">
+<link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/searched_label.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
@@ -86,7 +88,8 @@
           <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
             <div id="item-container">
               <div id="icon" class="website-icon"></div>
-              <a href="[[tab.url]]" class="website-title" title="[[tab.title]]">
+              <a href="[[tab.url]]" class="website-title" title="[[tab.title]]"
+                  on-tap="openTab_">
                 <history-searched-label title="[[tab.title]]"
                     search-term="[[searchTerm]]"></history-searched-label>
               </a>

@@ -45,3 +45,9 @@ var QueryState;
  *            sessionList: ?Array<!ForeignSession>}}
  */
 var QueryResult;
+
+/** @constructor
+ *  @extends {CustomEvent} */
+var TapEvent = function() {
+  this.model = null;
+};

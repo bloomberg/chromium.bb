@@ -65,10 +65,14 @@ Polymer({
     var tabs = [];
     var separatorIndexes = [];
     for (var i = 0; i < session.windows.length; i++) {
+      var windowId = session.windows[i].sessionId;
       var newTabs = session.windows[i].tabs;
       if (newTabs.length == 0)
         continue;
 
+      newTabs.forEach(function(tab) {
+        tab.windowId = windowId;
+      });
 
       if (!this.searchTerm) {
         // Add all the tabs if there is no search term.
