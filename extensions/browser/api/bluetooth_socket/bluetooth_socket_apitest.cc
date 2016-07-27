@@ -97,7 +97,8 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Connect) {
+// TODO(crbug.com/632002): Flaky on many trybot platforms.
+IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, DISABLED_Connect) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser_context());
 
