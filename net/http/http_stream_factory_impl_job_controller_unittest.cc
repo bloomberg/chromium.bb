@@ -99,7 +99,7 @@ class FailingHostResolver : public MockHostResolverBase {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     return ERR_NAME_NOT_RESOLVED;
   }
@@ -114,12 +114,10 @@ class HangingResolver : public MockHostResolverBase {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     return ERR_IO_PENDING;
   }
-
-  void CancelRequest(RequestHandle req) override {}
 };
 }  // anonymous namespace
 

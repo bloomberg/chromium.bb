@@ -136,11 +136,8 @@ class NET_EXPORT HostResolverImpl
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& source_net_log) override;
-  void ChangeRequestPriority(RequestHandle req,
-                             RequestPriority priority) override;
-  void CancelRequest(RequestHandle req) override;
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const BoundNetLog& source_net_log) override;
@@ -176,7 +173,7 @@ class NET_EXPORT HostResolverImpl
   class ProcTask;
   class LoopbackProbeJob;
   class DnsTask;
-  class Request;
+  class RequestImpl;
   typedef HostCache::Key Key;
   typedef std::map<Key, Job*> JobMap;
 

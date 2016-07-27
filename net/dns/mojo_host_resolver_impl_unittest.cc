@@ -105,7 +105,7 @@ class CallbackMockHostResolver : public MockHostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* request,
               const BoundNetLog& net_log) override;
 
  private:
@@ -116,10 +116,10 @@ int CallbackMockHostResolver::Resolve(const RequestInfo& info,
                                       RequestPriority priority,
                                       AddressList* addresses,
                                       const CompletionCallback& callback,
-                                      RequestHandle* out_req,
+                                      std::unique_ptr<Request>* request,
                                       const BoundNetLog& net_log) {
   int result = MockHostResolver::Resolve(info, priority, addresses, callback,
-                                         out_req, net_log);
+                                         request, net_log);
   if (!resolve_callback_.is_null()) {
     resolve_callback_.Run();
     resolve_callback_.Reset();

@@ -487,17 +487,18 @@ class MockHostResolver : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* request_handle,
+              std::unique_ptr<Request>* request,
               const BoundNetLog& source_net_log) override {
     waiter_.NotifyEvent(DNS_REQUEST);
     return ERR_IO_PENDING;
   }
+
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const BoundNetLog& source_net_log) override {
     return ERR_DNS_CACHE_MISS;
   }
-  void CancelRequest(RequestHandle req) override {}
+
   HostCache* GetHostCache() override { return nullptr; }
 
   EventWaiter<Event>& waiter() { return waiter_; }

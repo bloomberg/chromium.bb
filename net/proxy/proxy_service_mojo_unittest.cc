@@ -113,7 +113,7 @@ class LoggingMockHostResolver : public MockHostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB);
     return MockHostResolver::Resolve(info, priority, addresses, callback,

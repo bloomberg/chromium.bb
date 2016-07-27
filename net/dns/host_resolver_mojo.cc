@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -51,6 +52,18 @@ class HostResolverMojo::Job : public interfaces::HostResolverRequestClient {
   base::WeakPtr<HostCache> host_cache_;
 };
 
+class HostResolverMojo::RequestImpl : public HostResolver::Request {
+ public:
+  explicit RequestImpl(std::unique_ptr<Job> job) : job_(std::move(job)) {}
+
+  ~RequestImpl() override {}
+
+  void ChangeRequestPriority(RequestPriority priority) override {}
+
+ private:
+  std::unique_ptr<Job> job_;
+};
+
 HostResolverMojo::HostResolverMojo(Impl* impl)
     : impl_(impl),
       host_cache_(HostCache::CreateDefaultCache()),
@@ -63,9 +76,10 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
                               RequestPriority priority,
                               AddressList* addresses,
                               const CompletionCallback& callback,
-                              RequestHandle* request_handle,
+                              std::unique_ptr<Request>* request,
                               const BoundNetLog& source_net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(request);
   DVLOG(1) << "Resolve " << info.host_port_pair().ToString();
 
   HostCache::Key key = CacheKeyForRequest(info);
@@ -77,8 +91,11 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
   }
 
   interfaces::HostResolverRequestClientPtr handle;
-  *request_handle = new Job(key, addresses, callback, mojo::GetProxy(&handle),
-                            host_cache_weak_factory_.GetWeakPtr());
+  std::unique_ptr<Job> job(new Job(key, addresses, callback,
+                                   mojo::GetProxy(&handle),
+                                   host_cache_weak_factory_.GetWeakPtr()));
+  request->reset(new RequestImpl(std::move(job)));
+
   impl_->ResolveDns(interfaces::HostResolverRequestInfo::From(info),
                     std::move(handle));
   return ERR_IO_PENDING;
@@ -90,18 +107,6 @@ int HostResolverMojo::ResolveFromCache(const RequestInfo& info,
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "ResolveFromCache " << info.host_port_pair().ToString();
   return ResolveFromCacheInternal(info, CacheKeyForRequest(info), addresses);
-}
-
-void HostResolverMojo::ChangeRequestPriority(RequestHandle req,
-                                             RequestPriority priority) {
-  // Do nothing, since Resolve() discarded the priority anyway.
-}
-
-void HostResolverMojo::CancelRequest(RequestHandle req) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Deleting the Job closes the HostResolverRequestClient connection,
-  // signalling cancellation of the request.
-  delete static_cast<Job*>(req);
 }
 
 HostCache* HostResolverMojo::GetHostCache() {
@@ -149,8 +154,9 @@ void HostResolverMojo::Job::ReportResult(
     HostCache::Entry entry(error, *addresses_, ttl);
     host_cache_->Set(key_, entry, base::TimeTicks::Now(), ttl);
   }
-  callback_.Run(error);
-  delete this;
+  if (binding_.is_bound())
+    binding_.Close();
+  base::ResetAndReturn(&callback_).Run(error);
 }
 
 void HostResolverMojo::Job::OnConnectionError() {

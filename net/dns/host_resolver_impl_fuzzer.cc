@@ -38,13 +38,9 @@ class DnsRequest {
       : host_resolver_(host_resolver),
         data_provider_(data_provider),
         dns_requests_(dns_requests),
-        handle_(nullptr),
         is_running_(false) {}
 
-  ~DnsRequest() {
-    if (is_running_)
-      Cancel();
-  }
+  ~DnsRequest() {}
 
   // Creates and starts a DNS request using fuzzed parameters. If the request
   // doesn't complete synchronously, adds it to |dns_requests|.
@@ -97,6 +93,7 @@ class DnsRequest {
     CHECK_NE(net::ERR_IO_PENDING, result);
 
     is_running_ = false;
+    request_.reset();
 
     // Remove |this| from |dns_requests| and take ownership of it, if it wasn't
     // already removed from the vector. It may have been removed if this is in a
@@ -155,7 +152,7 @@ class DnsRequest {
     info.set_allow_cached_response(data_provider_->ConsumeBool());
     return host_resolver_->Resolve(
         info, priority, &address_list_,
-        base::Bind(&DnsRequest::OnCallback, base::Unretained(this)), &handle_,
+        base::Bind(&DnsRequest::OnCallback, base::Unretained(this)), &request_,
         net::BoundNetLog());
   }
 
@@ -166,14 +163,13 @@ class DnsRequest {
       run_loop_.reset(new base::RunLoop());
       run_loop_->Run();
       run_loop_.reset();
-      CHECK(!is_running_);
+      DCHECK(request_);
     }
   }
 
   // Cancel the request, if not already completed. Otherwise, does nothing.
   void Cancel() {
-    if (is_running_)
-      host_resolver_->CancelRequest(handle_);
+    request_.reset();
     is_running_ = false;
   }
 
@@ -181,7 +177,7 @@ class DnsRequest {
   net::FuzzedDataProvider* data_provider_;
   std::vector<std::unique_ptr<DnsRequest>>* dns_requests_;
 
-  net::HostResolver::RequestHandle handle_;
+  std::unique_ptr<net::HostResolver::Request> request_;
   net::AddressList address_list_;
 
   bool is_running_;

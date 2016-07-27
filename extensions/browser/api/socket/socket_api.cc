@@ -203,14 +203,11 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
       HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
   DCHECK(host_resolver);
 
-  // RequestHandle is not needed because we never need to cancel requests.
-  net::HostResolver::RequestHandle request_handle;
-
   net::HostResolver::RequestInfo request_info(host_port_pair);
   int resolve_result = host_resolver->Resolve(
       request_info, net::DEFAULT_PRIORITY, &addresses_,
       base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
-      &request_handle, net::BoundNetLog());
+      &request_, net::BoundNetLog());
 
   if (resolve_result != net::ERR_IO_PENDING)
     OnDnsLookup(resolve_result);

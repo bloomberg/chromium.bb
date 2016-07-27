@@ -117,8 +117,9 @@ void TransportClientSocketTest::SetUp() {
   std::unique_ptr<HostResolver> resolver(new MockHostResolver());
   HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_));
   TestCompletionCallback callback;
+  std::unique_ptr<HostResolver::Request> request;
   int rv = resolver->Resolve(info, DEFAULT_PRIORITY, &addr, callback.callback(),
-                             NULL, BoundNetLog());
+                             &request, BoundNetLog());
   CHECK_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   CHECK_EQ(rv, OK);

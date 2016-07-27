@@ -158,6 +158,8 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
 
   net::AddressList addresses_;
 
+  std::unique_ptr<net::HostResolver::Request> request_;
+
  private:
   void OnDnsLookup(int resolve_result);
 

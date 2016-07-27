@@ -104,11 +104,6 @@ HostResolver::~HostResolver() {
 void HostResolver::SetDnsClientEnabled(bool enabled) {
 }
 
-void HostResolver::ChangeRequestPriority(RequestHandle req,
-                                         RequestPriority priority) {
-  NOTIMPLEMENTED();
-}
-
 HostCache* HostResolver::GetHostCache() {
   return nullptr;
 }

@@ -224,19 +224,15 @@ class Request {
         resolver_(resolver),
         handler_(handler),
         quit_on_complete_(false),
-        result_(ERR_UNEXPECTED),
-        handle_(NULL) {}
+        result_(ERR_UNEXPECTED) {}
 
   int Resolve() {
     DCHECK(resolver_);
-    DCHECK(!handle_);
+    DCHECK(!request_);
     list_ = AddressList();
     result_ = resolver_->Resolve(
-        info_,
-        priority_,
-        &list_,
-        base::Bind(&Request::OnComplete, base::Unretained(this)),
-        &handle_,
+        info_, priority_, &list_,
+        base::Bind(&Request::OnComplete, base::Unretained(this)), &request_,
         BoundNetLog());
     if (!list_.empty())
       EXPECT_THAT(result_, IsOk());
@@ -245,29 +241,28 @@ class Request {
 
   int ResolveFromCache() {
     DCHECK(resolver_);
-    DCHECK(!handle_);
+    DCHECK(!request_);
     return resolver_->ResolveFromCache(info_, &list_, BoundNetLog());
   }
 
   int ResolveStaleFromCache() {
     DCHECK(resolver_);
-    DCHECK(!handle_);
+    DCHECK(!request_);
     return resolver_->ResolveStaleFromCache(info_, &list_, &staleness_,
                                             BoundNetLog());
   }
 
   void ChangePriority(RequestPriority priority) {
     DCHECK(resolver_);
-    DCHECK(handle_);
-    resolver_->ChangeRequestPriority(handle_, priority);
+    DCHECK(request_);
+    request_->ChangeRequestPriority(priority);
     priority_ = priority;
   }
 
   void Cancel() {
     DCHECK(resolver_);
-    DCHECK(handle_);
-    resolver_->CancelRequest(handle_);
-    handle_ = NULL;
+    DCHECK(request_);
+    request_.reset();
   }
 
   const HostResolver::RequestInfo& info() const { return info_; }
@@ -276,7 +271,7 @@ class Request {
   int result() const { return result_; }
   const HostCache::EntryStaleness staleness() const { return staleness_; }
   bool completed() const { return result_ != ERR_IO_PENDING; }
-  bool pending() const { return handle_ != NULL; }
+  bool pending() const { return request_ != nullptr; }
 
   bool HasAddress(const std::string& address, uint16_t port) const {
     return AddressListContains(list_, address, port);
@@ -315,7 +310,7 @@ class Request {
     EXPECT_THAT(result_, IsError(ERR_IO_PENDING));
     EXPECT_NE(ERR_IO_PENDING, rv);
     result_ = rv;
-    handle_ = NULL;
+    request_.reset();
     if (!list_.empty()) {
       EXPECT_THAT(result_, IsOk());
       EXPECT_EQ(info_.port(), list_.front().port());
@@ -337,7 +332,7 @@ class Request {
 
   AddressList list_;
   int result_;
-  HostResolver::RequestHandle handle_;
+  std::unique_ptr<HostResolver::Request> request_;
   HostCache::EntryStaleness staleness_;
 
   DISALLOW_COPY_AND_ASSIGN(Request);
@@ -640,7 +635,6 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
   EXPECT_THAT(req->WaitForResult(), IsOk());
 
   EXPECT_TRUE(req->HasOneAddress("192.168.1.42", 80));
-
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
 

@@ -25,6 +25,9 @@ namespace {
 // It checks that only one request is outstanding at a time, and that
 // it is cancelled before the class is destroyed.
 class HangingHostResolver : public HostResolver {
+ private:
+  class RequestImpl;
+
  public:
   HangingHostResolver() : outstanding_request_(NULL) {}
 
@@ -38,11 +41,11 @@ class HangingHostResolver : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* request,
               const BoundNetLog& net_log) override {
     EXPECT_FALSE(has_outstanding_request());
-    outstanding_request_ = reinterpret_cast<RequestHandle>(0x1234);
-    *out_req = outstanding_request_;
+    outstanding_request_ = new RequestImpl(this);
+    request->reset(outstanding_request_);
 
     // Never complete this request! Caller is expected to cancel it
     // before destroying the resolver.
@@ -56,14 +59,29 @@ class HangingHostResolver : public HostResolver {
     return ERR_UNEXPECTED;
   }
 
-  void CancelRequest(RequestHandle req) override {
+  void RemoveRequest(RequestImpl* request) {
     EXPECT_TRUE(has_outstanding_request());
-    EXPECT_EQ(req, outstanding_request_);
-    outstanding_request_ = NULL;
+    EXPECT_EQ(outstanding_request_, request);
+    outstanding_request_ = nullptr;
   }
 
  private:
-  RequestHandle outstanding_request_;
+  class RequestImpl : public HostResolver::Request {
+   public:
+    explicit RequestImpl(HangingHostResolver* resolver) : resolver_(resolver) {}
+
+    ~RequestImpl() override {
+      DCHECK(resolver_);
+      resolver_->RemoveRequest(this);
+    }
+
+    void ChangeRequestPriority(RequestPriority priority) override {}
+
+   private:
+    HangingHostResolver* resolver_;
+  };
+
+  HostResolver::Request* outstanding_request_;
 
   DISALLOW_COPY_AND_ASSIGN(HangingHostResolver);
 };

@@ -41,7 +41,7 @@ class MojoHostResolverImpl::Job {
   net::HostResolver::RequestInfo request_info_;
   const BoundNetLog net_log_;
   interfaces::HostResolverRequestClientPtr client_;
-  net::HostResolver::RequestHandle handle_;
+  std::unique_ptr<net::HostResolver::Request> request_;
   AddressList result_;
   base::ThreadChecker thread_checker_;
 };
@@ -91,8 +91,7 @@ MojoHostResolverImpl::Job::Job(
       resolver_(resolver),
       request_info_(request_info),
       net_log_(net_log),
-      client_(std::move(client)),
-      handle_(nullptr) {
+      client_(std::move(client)) {
   client_.set_connection_error_handler(base::Bind(
       &MojoHostResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }
@@ -103,21 +102,18 @@ void MojoHostResolverImpl::Job::Start() {
       resolver_->Resolve(request_info_, DEFAULT_PRIORITY, &result_,
                          base::Bind(&MojoHostResolverImpl::Job::OnResolveDone,
                                     base::Unretained(this)),
-                         &handle_, net_log_);
+                         &request_, net_log_);
 
   if (result != ERR_IO_PENDING)
     OnResolveDone(result);
 }
 
 MojoHostResolverImpl::Job::~Job() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (handle_)
-    resolver_->CancelRequest(handle_);
 }
 
 void MojoHostResolverImpl::Job::OnResolveDone(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  handle_ = nullptr;
+  request_.reset();
   DVLOG(1) << "Resolved " << request_info_.host_port_pair().ToString()
            << " with error " << result << " and " << result_.size()
            << " results!";

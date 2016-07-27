@@ -685,7 +685,7 @@ class BlockableHostResolver : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     EXPECT_FALSE(callback.is_null());
     EXPECT_TRUE(out_req);
@@ -700,7 +700,7 @@ class BlockableHostResolver : public HostResolver {
     // This line is intentionally after action_.Run(), since one of the
     // tests does a cancellation inside of Resolve(), and it is more
     // interesting if *out_req hasn't been written yet at that point.
-    *out_req = reinterpret_cast<RequestHandle*>(1);  // Magic value.
+    out_req->reset(new RequestImpl(this));
 
     // Return ERR_IO_PENDING as this request will NEVER be completed.
     // Expectation is for the caller to later cancel the request.
@@ -714,10 +714,7 @@ class BlockableHostResolver : public HostResolver {
     return ERR_DNS_CACHE_MISS;
   }
 
-  void CancelRequest(RequestHandle req) override {
-    EXPECT_EQ(reinterpret_cast<RequestHandle*>(1), req);
-    num_cancelled_requests_++;
-  }
+  void IncreaseNumOfCancelledRequests() { num_cancelled_requests_++; }
 
   void SetAction(const base::Callback<void(void)>& action) {
     action_ = action;
@@ -736,6 +733,23 @@ class BlockableHostResolver : public HostResolver {
   }
 
  private:
+  class RequestImpl : public HostResolver::Request {
+   public:
+    RequestImpl(BlockableHostResolver* resolver) : resolver_(resolver) {}
+
+    ~RequestImpl() override {
+      if (resolver_)
+        resolver_->IncreaseNumOfCancelledRequests();
+    }
+
+    void ChangeRequestPriority(RequestPriority priority) override {}
+
+   private:
+    BlockableHostResolver* resolver_;
+
+    DISALLOW_COPY_AND_ASSIGN(RequestImpl);
+  };
+
   int num_cancelled_requests_;
   bool waiting_for_resolve_;
   base::Callback<void(void)> action_;

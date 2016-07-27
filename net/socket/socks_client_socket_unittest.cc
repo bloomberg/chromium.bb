@@ -111,13 +111,13 @@ class HangingHostResolverWithCancel : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     DCHECK(addresses);
     DCHECK_EQ(false, callback.is_null());
     EXPECT_FALSE(HasOutstandingRequest());
-    outstanding_request_ = reinterpret_cast<RequestHandle>(1);
-    *out_req = outstanding_request_;
+    outstanding_request_ = new RequestImpl(this);
+    out_req->reset(outstanding_request_);
     return ERR_IO_PENDING;
   }
 
@@ -128,18 +128,31 @@ class HangingHostResolverWithCancel : public HostResolver {
     return ERR_UNEXPECTED;
   }
 
-  void CancelRequest(RequestHandle req) override {
+  void RemoveRequest(Request* req) {
     EXPECT_TRUE(HasOutstandingRequest());
     EXPECT_EQ(outstanding_request_, req);
-    outstanding_request_ = NULL;
+    outstanding_request_ = nullptr;
   }
 
-  bool HasOutstandingRequest() {
-    return outstanding_request_ != NULL;
-  }
+  bool HasOutstandingRequest() { return outstanding_request_ != nullptr; }
 
  private:
-  RequestHandle outstanding_request_;
+  class RequestImpl : public HostResolver::Request {
+   public:
+    RequestImpl(HangingHostResolverWithCancel* resolver)
+        : resolver_(resolver) {}
+    ~RequestImpl() override {
+      DCHECK(resolver_);
+      resolver_->RemoveRequest(this);
+    }
+
+    void ChangeRequestPriority(RequestPriority priority) override {}
+
+   private:
+    HangingHostResolverWithCancel* resolver_;
+  };
+
+  Request* outstanding_request_;
 
   DISALLOW_COPY_AND_ASSIGN(HangingHostResolverWithCancel);
 };

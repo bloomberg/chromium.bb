@@ -101,13 +101,9 @@ class HostResolverImplChromeOSTest : public testing::Test {
 
   // Run from IO message loop.
   void Resolve(net::HostResolver::RequestInfo info) {
-    result_ = host_resolver_->Resolve(
-        info,
-        net::DEFAULT_PRIORITY,
-        &addresses_,
-        base::Bind(&ResolveCompletionCallback),
-        NULL,
-        net_log_);
+    result_ = host_resolver_->Resolve(info, net::DEFAULT_PRIORITY, &addresses_,
+                                      base::Bind(&ResolveCompletionCallback),
+                                      &request_, net_log_);
   }
 
   void SetDefaultIPConfigs(const std::string& default_device_path) {
@@ -150,6 +146,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
   std::unique_ptr<net::HostResolver> host_resolver_;
   base::MessageLoop io_message_loop_;
   net::BoundNetLog net_log_;
+  std::unique_ptr<net::HostResolver::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImplChromeOSTest);
 };

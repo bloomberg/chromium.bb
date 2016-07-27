@@ -67,12 +67,9 @@ class SocketTunnel : public base::NonThreadSafe {
     host_resolver_ = net::HostResolver::CreateDefaultResolver(nullptr);
     net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
     int result = host_resolver_->Resolve(
-        request_info,
-        net::DEFAULT_PRIORITY,
-        &address_list_,
+        request_info, net::DEFAULT_PRIORITY, &address_list_,
         base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
-        nullptr,
-        net::BoundNetLog());
+        &request_, net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnResolved(result);
   }
@@ -186,6 +183,7 @@ class SocketTunnel : public base::NonThreadSafe {
   std::unique_ptr<net::StreamSocket> remote_socket_;
   std::unique_ptr<net::StreamSocket> host_socket_;
   std::unique_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::HostResolver::Request> request_;
   net::AddressList address_list_;
   int pending_writes_;
   bool pending_destruction_;

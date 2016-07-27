@@ -143,7 +143,7 @@ int HostResolverImplChromeOS::Resolve(const RequestInfo& info,
                                       net::RequestPriority priority,
                                       net::AddressList* addresses,
                                       const net::CompletionCallback& callback,
-                                      RequestHandle* out_req,
+                                      std::unique_ptr<Request>* out_req,
                                       const net::BoundNetLog& source_net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (ResolveLocalIPAddress(info, addresses))

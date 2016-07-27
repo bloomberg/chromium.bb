@@ -820,6 +820,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   };
 
   host_resolver_.set_synchronous_mode(true);
+  std::unique_ptr<HostResolver::Request> req[arraysize(test_hosts)];
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
@@ -827,12 +828,8 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    host_resolver_.Resolve(info,
-                           DEFAULT_PRIORITY,
-                           &test_hosts[i].addresses,
-                           CompletionCallback(),
-                           NULL,
-                           BoundNetLog());
+    host_resolver_.Resolve(info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+                           CompletionCallback(), &req[i], BoundNetLog());
 
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
@@ -880,6 +877,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
 
   TestCompletionCallback callback;
   int rv;
+  std::unique_ptr<HostResolver::Request> req[arraysize(test_hosts)];
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
@@ -887,12 +885,9 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    rv = host_resolver_.Resolve(info,
-                                DEFAULT_PRIORITY,
-                                &test_hosts[i].addresses,
-                                callback.callback(),
-                                NULL,
-                                BoundNetLog());
+    rv =
+        host_resolver_.Resolve(info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+                               callback.callback(), &req[i], BoundNetLog());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
 
     // Setup a SpdySessionKey

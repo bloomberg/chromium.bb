@@ -37,18 +37,16 @@ class HostResolverMojo : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* request_handle,
+              std::unique_ptr<Request>* request,
               const BoundNetLog& source_net_log) override;
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const BoundNetLog& source_net_log) override;
-  void ChangeRequestPriority(RequestHandle req,
-                             RequestPriority priority) override;
-  void CancelRequest(RequestHandle req) override;
   HostCache* GetHostCache() override;
 
  private:
   class Job;
+  class RequestImpl;
 
   int ResolveFromCacheInternal(const RequestInfo& info,
                                const HostCache::Key& key,

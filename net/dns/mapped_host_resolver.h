@@ -49,12 +49,11 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* request,
               const BoundNetLog& net_log) override;
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle req) override;
   void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;

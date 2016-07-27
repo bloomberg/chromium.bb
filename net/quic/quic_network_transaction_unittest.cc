@@ -1145,8 +1145,9 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1691,8 +1692,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
@@ -1726,8 +1728,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   request_.url = GURL("http://mail.example.org/");
   CreateSession();
@@ -1762,8 +1765,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1808,8 +1812,9 @@ TEST_P(QuicNetworkTransactionTest,
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1863,8 +1868,9 @@ TEST_P(QuicNetworkTransactionTest,
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1914,8 +1920,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -1970,8 +1977,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2198,8 +2206,9 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
                                            "");
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         nullptr, net_log_.bound());
+                         &request, net_log_.bound());
 
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);

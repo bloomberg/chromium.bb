@@ -231,6 +231,7 @@ class GDig {
   std::unique_ptr<FileNetLogObserver> log_observer_;
   std::unique_ptr<NetLog> log_;
   std::unique_ptr<HostResolver> resolver_;
+  std::unique_ptr<HostResolver::Request> request_;
 
 #if defined(OS_MACOSX)
   // Without this there will be a mem leak on osx.
@@ -468,11 +469,7 @@ void GDig::ReplayNextEntry() {
     ++active_resolves_;
     ++replay_log_index_;
     int ret = resolver_->Resolve(
-        info,
-        DEFAULT_PRIORITY,
-        addrlist,
-        callback,
-        NULL,
+        info, DEFAULT_PRIORITY, addrlist, callback, &request_,
         BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
     if (ret != ERR_IO_PENDING)
       callback.Run(ret);

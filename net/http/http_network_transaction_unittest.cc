@@ -9290,10 +9290,10 @@ TEST_F(HttpNetworkTransactionTest, ReconsiderProxyAfterFailedConnection) {
 void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
     int load_flags) {
   // Issue a request, asking to bypass the cache(s).
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.load_flags = load_flags;
-  request.url = GURL("http://www.example.org/");
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.load_flags = load_flags;
+  request_info.url = GURL("http://www.example.org/");
 
   // Select a host resolver that does caching.
   session_deps_.host_resolver.reset(new MockCachingHostResolver);
@@ -9305,18 +9305,22 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   // Warm up the host cache so it has an entry for "www.example.org".
   AddressList addrlist;
   TestCompletionCallback callback;
+  std::unique_ptr<HostResolver::Request> request1;
   int rv = session_deps_.host_resolver->Resolve(
       HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
-      DEFAULT_PRIORITY, &addrlist, callback.callback(), NULL, BoundNetLog());
+      DEFAULT_PRIORITY, &addrlist, callback.callback(), &request1,
+      BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
 
   // Verify that it was added to host cache, by doing a subsequent async lookup
   // and confirming it completes synchronously.
+  std::unique_ptr<HostResolver::Request> request2;
   rv = session_deps_.host_resolver->Resolve(
       HostResolver::RequestInfo(HostPortPair("www.example.org", 80)),
-      DEFAULT_PRIORITY, &addrlist, callback.callback(), NULL, BoundNetLog());
+      DEFAULT_PRIORITY, &addrlist, callback.callback(), &request2,
+      BoundNetLog());
   ASSERT_THAT(rv, IsOk());
 
   // Inject a failure the next time that "www.example.org" is resolved. This way
@@ -9331,7 +9335,7 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Run the request.
-  rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
 
@@ -12787,12 +12791,10 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   HostPortPair host_port("www.gmail.com", 443);
   HostResolver::RequestInfo resolve_info(host_port);
   AddressList ignored;
-  rv = session_deps_.host_resolver->Resolve(resolve_info,
-                                            DEFAULT_PRIORITY,
-                                            &ignored,
-                                            callback.callback(),
-                                            NULL,
-                                            BoundNetLog());
+  std::unique_ptr<HostResolver::Request> request;
+  rv = session_deps_.host_resolver->Resolve(resolve_info, DEFAULT_PRIORITY,
+                                            &ignored, callback.callback(),
+                                            &request, BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
@@ -12907,7 +12909,7 @@ class OneTimeCachingHostResolver : public HostResolver {
               RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
-              RequestHandle* out_req,
+              std::unique_ptr<Request>* out_req,
               const BoundNetLog& net_log) override {
     return host_resolver_.Resolve(
         info, priority, addresses, callback, out_req, net_log);
@@ -12920,10 +12922,6 @@ class OneTimeCachingHostResolver : public HostResolver {
     if (rv == OK && info.host_port_pair().Equals(host_port_))
       host_resolver_.GetHostCache()->clear();
     return rv;
-  }
-
-  void CancelRequest(RequestHandle req) override {
-    host_resolver_.CancelRequest(req);
   }
 
   MockCachingHostResolver* GetMockHostResolver() {
@@ -12999,12 +12997,9 @@ TEST_F(HttpNetworkTransactionTest,
   // Preload cache entries into HostCache.
   HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443));
   AddressList ignored;
-  rv = host_resolver.Resolve(resolve_info,
-                             DEFAULT_PRIORITY,
-                             &ignored,
-                             callback.callback(),
-                             NULL,
-                             BoundNetLog());
+  std::unique_ptr<HostResolver::Request> request;
+  rv = host_resolver.Resolve(resolve_info, DEFAULT_PRIORITY, &ignored,
+                             callback.callback(), &request, BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());

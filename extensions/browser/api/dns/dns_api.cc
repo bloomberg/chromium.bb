@@ -23,10 +23,7 @@ namespace Resolve = extensions::api::dns::Resolve;
 namespace extensions {
 
 DnsResolveFunction::DnsResolveFunction()
-    : resource_context_(NULL),
-      response_(false),
-      request_handle_(new net::HostResolver::RequestHandle()),
-      addresses_(new net::AddressList) {}
+    : resource_context_(), response_(false), addresses_(new net::AddressList) {}
 
 DnsResolveFunction::~DnsResolveFunction() {}
 
@@ -60,11 +57,8 @@ void DnsResolveFunction::WorkOnIOThread() {
 
   net::HostResolver::RequestInfo request_info(host_port_pair);
   int resolve_result = host_resolver->Resolve(
-      request_info,
-      net::DEFAULT_PRIORITY,
-      addresses_.get(),
-      base::Bind(&DnsResolveFunction::OnLookupFinished, this),
-      request_handle_.get(),
+      request_info, net::DEFAULT_PRIORITY, addresses_.get(),
+      base::Bind(&DnsResolveFunction::OnLookupFinished, this), &request_,
       net::BoundNetLog());
 
   // Balanced in OnLookupFinished.

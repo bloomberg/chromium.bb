@@ -341,6 +341,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   };
 
   session_deps_.host_resolver->set_synchronous_mode(true);
+  std::unique_ptr<HostResolver::Request> request[arraysize(test_hosts)];
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
@@ -348,12 +349,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    session_deps_.host_resolver->Resolve(info,
-                                         DEFAULT_PRIORITY,
-                                         &test_hosts[i].addresses,
-                                         CompletionCallback(),
-                                         NULL,
-                                         BoundNetLog());
+    session_deps_.host_resolver->Resolve(
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
+        &request[i], BoundNetLog());
 
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(

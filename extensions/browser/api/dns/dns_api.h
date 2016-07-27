@@ -43,7 +43,7 @@ class DnsResolveFunction : public AsyncExtensionFunction {
 
   bool response_;  // The value sent in SendResponse().
 
-  std::unique_ptr<net::HostResolver::RequestHandle> request_handle_;
+  std::unique_ptr<net::HostResolver::Request> request_;
   std::unique_ptr<net::AddressList> addresses_;
 };
 

@@ -352,12 +352,9 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   // IPv6 literal hostnames.
   info.set_address_family(ADDRESS_FAMILY_IPV4);
   TestCompletionCallback callback;
-  int rv = resolver->Resolve(info,
-                             DEFAULT_PRIORITY,
-                             address_list,
-                             callback.callback(),
-                             NULL,
-                             BoundNetLog());
+  std::unique_ptr<HostResolver::Request> request;
+  int rv = resolver->Resolve(info, DEFAULT_PRIORITY, address_list,
+                             callback.callback(), &request, BoundNetLog());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   if (rv != OK) {
