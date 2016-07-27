@@ -329,6 +329,12 @@
       <structure name="IDR_SETTINGS_HISTORY_DELETION_DIALOG_JS"
                  file="clear_browsing_data_dialog/history_deletion_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_JS"
+                 file="controls/controlled_button.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_HTML"
+                 file="controls/controlled_button.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_HTML"
                  file="controls/settings_checkbox.html"
                  type="chrome_html" />

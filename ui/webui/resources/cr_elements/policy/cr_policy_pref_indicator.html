@@ -12,6 +12,8 @@
       --paper-tooltip: {
         font-size: 92.31%;  /* Effectively 12px if the host default is 13px. */
         font-weight: 500;
+        max-width: 330px;
+        min-width: 200px;
         padding: 10px 8px;
       };
     }
@@ -20,7 +22,7 @@
     <iron-icon id="indicator" tabindex=0
         hidden$="[[!isIndicatorVisible(indicatorType)]]"
         icon="[[getPolicyIndicatorIcon(indicatorType)]]"></iron-icon>
-    <paper-tooltip for="indicator" position="top">
+    <paper-tooltip for="indicator" position="top" fit-to-visible-bounds>
       [[getTooltip_(indicatorType, pref, controllingUser)]]
     </paper-tooltip>
   </template>
