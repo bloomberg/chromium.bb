@@ -15,6 +15,7 @@
 #include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "headless/lib/utility/headless_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
 namespace headless {
@@ -51,8 +52,12 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   // adding it here allows us to run in a non-headless build too.
   command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
 
-  // TODO(skyostil): Investigate using Mesa/SwiftShader for output.
-  command_line->AppendSwitch(switches::kDisableGpu);
+  if (!browser_->options()->gl_implementation.empty()) {
+    command_line->AppendSwitchASCII(switches::kUseGL,
+                                    browser_->options()->gl_implementation);
+  } else {
+    command_line->AppendSwitch(switches::kDisableGpu);
+  }
 
   SetContentClient(&content_client_);
   return false;

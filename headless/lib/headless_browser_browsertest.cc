@@ -159,4 +159,19 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
   EXPECT_EQ(kResponseBody, inner_html);
 }
 
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
+  HeadlessWebContents* web_contents =
+      browser()->CreateWebContentsBuilder().Build();
+
+  bool webgl_supported;
+  EXPECT_TRUE(EvaluateScript(
+      web_contents,
+      "(document.createElement('canvas').getContext('webgl')"
+      "    instanceof WebGLRenderingContext)")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsBoolean(&webgl_supported));
+  EXPECT_TRUE(webgl_supported);
+}
+
 }  // namespace headless
