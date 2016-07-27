@@ -1065,13 +1065,19 @@ GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 
 // static
 VideoDecodeAccelerator::SupportedProfiles
-DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
+DXVAVideoDecodeAccelerator::GetSupportedProfiles(
+    const gpu::GpuPreferences& preferences) {
   TRACE_EVENT0("gpu,startup",
                "DXVAVideoDecodeAccelerator::GetSupportedProfiles");
 
   // TODO(henryhsu): Need to ensure the profiles are actually supported.
   SupportedProfiles profiles;
   for (const auto& supported_profile : kSupportedProfiles) {
+    if (!preferences.enable_accelerated_vpx_decode &&
+        (supported_profile >= VP8PROFILE_MIN) &&
+        (supported_profile <= VP9PROFILE_MAX)) {
+      continue;
+    }
     std::pair<int, int> min_resolution = GetMinResolution(supported_profile);
     std::pair<int, int> max_resolution = GetMaxResolution(supported_profile);
 

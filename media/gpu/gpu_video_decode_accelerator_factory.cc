@@ -78,7 +78,7 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
 // resolutions and other supported profile parameters.
 #if defined(OS_WIN)
   capabilities.supported_profiles =
-      DXVAVideoDecodeAccelerator::GetSupportedProfiles();
+      DXVAVideoDecodeAccelerator::GetSupportedProfiles(gpu_preferences);
 #elif defined(OS_CHROMEOS)
   VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if defined(USE_V4L2_CODEC)

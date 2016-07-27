@@ -130,7 +130,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       override;
   GLenum GetSurfaceInternalFormat() const override;
 
-  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
+  static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles(
+      const gpu::GpuPreferences& gpu_preferences);
 
   // Preload dlls required for decoding.
   static void PreSandboxInitialization();
