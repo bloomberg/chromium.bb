@@ -85,10 +85,6 @@ void DistillabilityDriver::RenderFrameHostChanged(
   // or from a native page), the service needs to be attached to that host.
   mojo_needs_setup_ = true;
   SetupMojoService(new_host);
-  // Clean up the service on the old host if possible.
-  if (!old_host || !old_host->GetInterfaceRegistry()) return;
-  old_host->GetInterfaceRegistry()
-      ->RemoveInterface<mojom::DistillabilityService>();
 }
 
 void DistillabilityDriver::DidStartProvisionalLoadForFrame(
