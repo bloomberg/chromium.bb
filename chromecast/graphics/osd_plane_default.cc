@@ -48,7 +48,9 @@ class OsdPlaneDefault : public OsdPlane {
   OsdSurface* CreateSurface(const Size& size) override {
     return new OsdSurfaceDefault(size);
   }
-  void SetClipRectangle(const Rect& rect) override {
+  void SetClipRectangle(const Rect& rect,
+                        const Size& screen_res,
+                        float output_scale) override {
     size_ = Size(rect.width, rect.height);
   }
   OsdSurface* GetBackBuffer() override {

@@ -25,7 +25,12 @@ class OsdPlane {
   // usage by only allocating back buffer to cover this area.  Areas outside
   // clip rectangle must display as fully transparent.  In particular, setting
   // an empty clip rectangle and calling Flip should clear the plane.
-  virtual void SetClipRectangle(const Rect& rect) = 0;
+  // |osd_res| gives the resolution of the full OSD plane, i.e. |rect| is
+  // a subrectangle of this area.  |output_scale| specifies the current scaling
+  // from |osd_res| to output screen resolution.
+  virtual void SetClipRectangle(const Rect& rect,
+                                const Size& osd_res,
+                                float output_scale) = 0;
 
   // Gets the current back buffer surface.  Valid until next call to Flip or
   // SetClipRectangle.
