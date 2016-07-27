@@ -93,11 +93,6 @@
              "--disable-composited-antialiasing"]
   },
   {
-    "prefix": "media-gpu-accelerated",
-    "base": "http/tests/media/media-source",
-    "args": ["--use-gpu-in-tests"]
-  },
-  {
     "prefix": "android",
     "base": "media/mediadocument",
     "args": ["--enable-features=MediaDocumentDownloadButton"]
