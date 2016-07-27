@@ -77356,6 +77356,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1466" label="VisualViewportResizeFired"/>
   <int value="1467" label="NodeGetRootNode"/>
   <int value="1468" label="SlotChangeEventAddListener"/>
+  <int value="1469" label="CSSValueAppearanceButtonRendered"/>
+  <int value="1470" label="CSSValueAppearanceButtonForAnchor"/>
+  <int value="1471" label="CSSValueAppearanceButtonForButton"/>
+  <int value="1472" label="CSSValueAppearanceButtonForOtherButtons"/>
+  <int value="1473" label="CSSValueAppearanceTextFieldRendered"/>
+  <int value="1474" label="CSSValueAppearanceTextFieldForSearch"/>
+  <int value="1475" label="CSSValueAppearanceTextFieldForTextField"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

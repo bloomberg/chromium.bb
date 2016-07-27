@@ -1270,6 +1270,13 @@ public:
         VisualViewportResizeFired = 1466,
         NodeGetRootNode = 1467,
         SlotChangeEventAddListener = 1468,
+        CSSValueAppearanceButtonRendered = 1469,
+        CSSValueAppearanceButtonForAnchor = 1470,
+        CSSValueAppearanceButtonForButton = 1471,
+        CSSValueAppearanceButtonForOtherButtons = 1472,
+        CSSValueAppearanceTextFieldRendered = 1473,
+        CSSValueAppearanceTextFieldForSearch = 1474,
+        CSSValueAppearanceTextFieldForTextField = 1475,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
