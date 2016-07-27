@@ -64,7 +64,6 @@ WindowTreeHostMus::~WindowTreeHostMus() {
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
   if (event->IsKeyEvent() && GetInputMethod()) {
     GetInputMethod()->DispatchKeyEvent(event->AsKeyEvent());
-    event->StopPropagation();
     return;
   }
   WindowTreeHostPlatform::DispatchEvent(event);
