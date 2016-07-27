@@ -54,7 +54,6 @@
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -710,7 +709,6 @@ Shell::~Shell() {
   window_tree_host_manager_.reset();
   focus_client_.reset();
   screen_position_controller_.reset();
-  new_window_delegate_.reset();
   pointer_watcher_delegate_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
@@ -951,7 +949,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());
-  new_window_delegate_.reset(wm_shell_->delegate()->CreateNewWindowDelegate());
   pointer_watcher_delegate_ =
       wm_shell_->delegate()->CreatePointerWatcherDelegate();
 

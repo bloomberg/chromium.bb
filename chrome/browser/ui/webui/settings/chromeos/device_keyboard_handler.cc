@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 
-#include "ash/new_window_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/new_window_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
@@ -67,7 +67,7 @@ void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
 
 void KeyboardHandler::HandleShowKeyboardShortcutsOverlay(
     const base::ListValue* args) const {
-  ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
+  ash::WmShell::Get()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
 void KeyboardHandler::UpdateShowKeys() {

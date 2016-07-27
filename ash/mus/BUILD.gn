@@ -56,6 +56,8 @@ source_set("lib") {
     "frame/non_client_frame_view_mash.h",
     "layout_manager.cc",
     "layout_manager.h",
+    "new_window_delegate_mus.cc",
+    "new_window_delegate_mus.h",
     "non_client_frame_controller.cc",
     "non_client_frame_controller.h",
     "property_util.cc",

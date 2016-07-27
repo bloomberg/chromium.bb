@@ -12,6 +12,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/mus/accessibility_delegate_mus.h"
+#include "ash/mus/new_window_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
@@ -187,8 +188,7 @@ AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
 }
 
 NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return new mus::NewWindowDelegateMus;
 }
 
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {

@@ -11,6 +11,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
+#include "ash/common/new_window_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -67,6 +68,8 @@ void WmShell::Initialize() {
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
+
+  new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
 }
 
 void WmShell::Shutdown() {

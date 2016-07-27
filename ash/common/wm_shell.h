@@ -36,6 +36,7 @@ class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class MaximizeModeController;
 class MruWindowTracker;
+class NewWindowDelegate;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
 class ShelfDelegate;
@@ -105,6 +106,10 @@ class ASH_EXPORT WmShell {
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
 
   MediaDelegate* media_delegate() { return media_delegate_.get(); }
+
+  NewWindowDelegate* new_window_delegate() {
+    return new_window_delegate_.get();
+  }
 
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
@@ -333,6 +338,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;

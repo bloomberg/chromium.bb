@@ -102,7 +102,6 @@ class LockStateController;
 enum class LoginStatus;
 class MagnificationController;
 class MouseCursorEventFilter;
-class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PointerWatcherDelegate;
@@ -343,10 +342,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return session_state_delegate_.get();
   }
 
-  NewWindowDelegate* new_window_delegate() {
-    return new_window_delegate_.get();
-  }
-
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -549,7 +544,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       accelerator_controller_delegate_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
-  std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<WindowPositioner> window_positioner_;

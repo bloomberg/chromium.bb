@@ -38,20 +38,13 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case LAUNCH_LAST_APP:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
-    case NEW_INCOGNITO_WINDOW:
-    case NEW_TAB:
-    case NEW_WINDOW:
-    case OPEN_FEEDBACK_PAGE:
-    case RESTORE_TAB:
     case ROTATE_SCREEN:
     case ROTATE_WINDOW:
     case SCALE_UI_DOWN:
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
-    case SHOW_KEYBOARD_OVERLAY:
     case SHOW_MESSAGE_CENTER_BUBBLE:
     case SHOW_SYSTEM_TRAY_BUBBLE:
-    case SHOW_TASK_MANAGER:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
@@ -66,9 +59,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
-    case OPEN_CROSH:
-    case OPEN_FILE_MANAGER:
-    case OPEN_GET_HELP:
     case POWER_PRESSED:
     case POWER_RELEASED:
     case SWAP_PRIMARY_DISPLAY:

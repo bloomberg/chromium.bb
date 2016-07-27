@@ -7,10 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/new_window_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/new_window_delegate.h"
 #include "ash/shell.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
@@ -71,7 +71,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
   // downloads by default, which is what we want.  However if it is open it will
   // simply be brought to the forgeground without forcibly being navigated to
   // downloads, which is probably not ideal.
-  ash::Shell::GetInstance()->new_window_delegate()->OpenFileManager();
+  ash::WmShell::Get()->new_window_delegate()->OpenFileManager();
 }
 
 void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {

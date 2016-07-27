@@ -7,10 +7,11 @@
 #include <algorithm>
 
 #include "ash/common/display/display_info.h"
+#include "ash/common/new_window_delegate.h"
 #include "ash/common/system/system_notifier.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host.h"
-#include "ash/new_window_delegate.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "grit/ash_resources.h"
@@ -48,7 +49,7 @@ class DisplayErrorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
+    WmShell::Get()->new_window_delegate()->OpenFeedbackPage();
   }
 
  private:

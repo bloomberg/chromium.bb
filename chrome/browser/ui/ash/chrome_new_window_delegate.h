@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/new_window_delegate.h"
+#include "ash/common/new_window_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

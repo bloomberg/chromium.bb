@@ -13,6 +13,7 @@
 #include "ash/common/ime_control_delegate.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/multi_profile_uma.h"
+#include "ash/common/new_window_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -105,6 +106,26 @@ void HandleMediaPrevTrack() {
   WmShell::Get()->media_delegate()->HandleMediaPrevTrack();
 }
 
+bool CanHandleNewIncognitoWindow() {
+  return WmShell::Get()->delegate()->IsIncognitoAllowed();
+}
+
+void HandleNewIncognitoWindow() {
+  base::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
+  WmShell::Get()->new_window_delegate()->NewWindow(true /* is_incognito */);
+}
+
+void HandleNewTab(const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_T)
+    base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
+  WmShell::Get()->new_window_delegate()->NewTab();
+}
+
+void HandleNewWindow() {
+  base::RecordAction(UserMetricsAction("Accel_New_Window"));
+  WmShell::Get()->new_window_delegate()->NewWindow(false /* is_incognito */);
+}
+
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
   return ime_control_delegate && ime_control_delegate->CanCycleIme();
 }
@@ -134,6 +155,11 @@ void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
   ime_control_delegate->HandleNextIme();
 }
 
+void HandleOpenFeedbackPage() {
+  base::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
+  WmShell::Get()->new_window_delegate()->OpenFeedbackPage();
+}
+
 bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
   return ime_control_delegate && ime_control_delegate->CanCycleIme();
 }
@@ -144,6 +170,21 @@ void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
   if (accelerator.type() == ui::ET_KEY_PRESSED)
     ime_control_delegate->HandlePreviousIme();
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
+}
+
+void HandleRestoreTab() {
+  base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
+  WmShell::Get()->new_window_delegate()->RestoreTab();
+}
+
+void HandleShowKeyboardOverlay() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
+  WmShell::Get()->new_window_delegate()->ShowKeyboardOverlay();
+}
+
+void HandleShowTaskManager() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Task_Manager"));
+  WmShell::Get()->new_window_delegate()->ShowTaskManager();
 }
 
 bool CanHandleSwitchIme(ImeControlDelegate* ime_control_delegate,
@@ -211,6 +252,12 @@ void HandlePositionCenter() {
 }
 
 #if defined(OS_CHROMEOS)
+void HandleCrosh() {
+  base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
+
+  WmShell::Get()->new_window_delegate()->OpenCrosh();
+}
+
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
   ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
   if (previous_accelerator.type() == ui::ET_KEY_RELEASED ||
@@ -233,6 +280,16 @@ void HandleDisableCapsLock() {
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
   ime->GetImeKeyboard()->SetCapsLockEnabled(false);
+}
+
+void HandleFileManager() {
+  base::RecordAction(UserMetricsAction("Accel_Open_File_Manager"));
+
+  WmShell::Get()->new_window_delegate()->OpenFileManager();
+}
+
+void HandleGetHelp() {
+  WmShell::Get()->new_window_delegate()->OpenGetHelp();
 }
 
 bool CanHandleLock() {
@@ -568,6 +625,8 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
       return debug::DebugAcceleratorsEnabled();
+    case NEW_INCOGNITO_WINDOW:
+      return CanHandleNewIncognitoWindow();
     case NEXT_IME:
       return CanHandleNextIme(ime_control_delegate_.get());
     case PREVIOUS_IME:
@@ -603,7 +662,13 @@ bool AcceleratorController::CanPerformAction(
     case MEDIA_NEXT_TRACK:
     case MEDIA_PLAY_PAUSE:
     case MEDIA_PREV_TRACK:
+    case NEW_TAB:
+    case NEW_WINDOW:
+    case OPEN_FEEDBACK_PAGE:
     case PRINT_UI_HIERARCHIES:
+    case RESTORE_TAB:
+    case SHOW_KEYBOARD_OVERLAY:
+    case SHOW_TASK_MANAGER:
     case TOGGLE_FULLSCREEN:
     case TOGGLE_MAXIMIZED:
     case TOGGLE_OVERVIEW:
@@ -613,6 +678,9 @@ bool AcceleratorController::CanPerformAction(
     case BRIGHTNESS_UP:
     case KEYBOARD_BRIGHTNESS_DOWN:
     case KEYBOARD_BRIGHTNESS_UP:
+    case OPEN_CROSH:
+    case OPEN_FILE_MANAGER:
+    case OPEN_GET_HELP:
     case SUSPEND:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_WIFI:
@@ -674,14 +742,35 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case MEDIA_PREV_TRACK:
       HandleMediaPrevTrack();
       break;
+    case NEW_INCOGNITO_WINDOW:
+      HandleNewIncognitoWindow();
+      break;
+    case NEW_TAB:
+      HandleNewTab(accelerator);
+      break;
+    case NEW_WINDOW:
+      HandleNewWindow();
+      break;
     case NEXT_IME:
       HandleNextIme(ime_control_delegate_.get());
+      break;
+    case OPEN_FEEDBACK_PAGE:
+      HandleOpenFeedbackPage();
       break;
     case PREVIOUS_IME:
       HandlePreviousIme(ime_control_delegate_.get(), accelerator);
       break;
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
+      break;
+    case RESTORE_TAB:
+      HandleRestoreTab();
+      break;
+    case SHOW_KEYBOARD_OVERLAY:
+      HandleShowKeyboardOverlay();
+      break;
+    case SHOW_TASK_MANAGER:
+      HandleShowTaskManager();
       break;
     case SWITCH_IME:
       HandleSwitchIme(ime_control_delegate_.get(), accelerator);
@@ -745,6 +834,15 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     }
     case LOCK_SCREEN:
       HandleLock();
+      break;
+    case OPEN_CROSH:
+      HandleCrosh();
+      break;
+    case OPEN_FILE_MANAGER:
+      HandleFileManager();
+      break;
+    case OPEN_GET_HELP:
+      HandleGetHelp();
       break;
     case SUSPEND:
       HandleSuspend();

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include "ash/new_window_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/new_window_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -175,7 +175,7 @@ void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
 }
 
 void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
-  ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
+  ash::WmShell::Get()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
 void KeyboardHandler::UpdateCapsLockOptions() const {
