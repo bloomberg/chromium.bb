@@ -40,8 +40,9 @@ FrameReceiver::FrameReceiver(
     CastTransport* const transport)
     : cast_environment_(cast_environment),
       transport_(transport),
-      packet_parser_(config.sender_ssrc,
-                     static_cast<uint8_t>(config.rtp_payload_type)),
+      packet_parser_(
+          config.sender_ssrc,
+          config.rtp_payload_type <= RtpPayloadType::AUDIO_LAST ? 127 : 96),
       stats_(cast_environment->Clock()),
       event_media_type_(event_media_type),
       event_subscriber_(kReceiverRtcpEventHistorySize, event_media_type),

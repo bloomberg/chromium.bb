@@ -39,7 +39,14 @@ RtpSender::~RtpSender() {}
 
 bool RtpSender::Initialize(const CastTransportRtpConfig& config) {
   config_.ssrc = config.ssrc;
-  config_.payload_type = static_cast<int>(config.rtp_payload_type);
+  // TODO(xjz): Android TV receivers expect the |payload_type| to be one of
+  // these two specific values. This constraint needs to be removed and the
+  // value of the |payload_type| can vary according to the spec:
+  // https://tools.ietf.org/html/rfc3551.
+  if (config.rtp_payload_type <= RtpPayloadType::AUDIO_LAST)
+    config_.payload_type = 127;
+  else
+    config_.payload_type = 96;
   packetizer_.reset(new RtpPacketizer(transport_, &storage_, config_));
   return true;
 }
