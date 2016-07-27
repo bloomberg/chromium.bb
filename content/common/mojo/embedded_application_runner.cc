@@ -52,13 +52,26 @@ class EmbeddedApplicationRunner::Instance
 
   void ShutDown() {
     DCHECK(runner_thread_checker_.CalledOnValidThread());
-    if (thread_) {
-      thread_.reset();
-      application_task_runner_ = nullptr;
+    if (!application_task_runner_)
+      return;
+    // Any extant ServiceContexts must be destroyed on the application thread.
+    if (application_task_runner_->BelongsToCurrentThread()) {
+      Quit();
+    } else {
+      application_task_runner_->PostTask(FROM_HERE,
+                                         base::Bind(&Instance::Quit, this));
     }
   }
 
  private:
+  friend class base::RefCountedThreadSafe<Instance>;
+
+  ~Instance() {
+    // If this instance had its own thread, it MUST be explicitly destroyed by
+    // QuitOnRunnerThread() by the time this destructor is run.
+    DCHECK(!thread_);
+  }
+
   void BindServiceRequestOnApplicationThread(
       shell::mojom::ServiceRequest request) {
     DCHECK(application_task_runner_->BelongsToCurrentThread());
@@ -74,15 +87,6 @@ class EmbeddedApplicationRunner::Instance
     new_connection->SetConnectionLostClosure(
         base::Bind(&Instance::OnStop, base::Unretained(this),
                    new_connection));
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<Instance>;
-
-  ~Instance() {
-    // If this instance had its own thread, it MUST be explicitly destroyed by
-    // ShutDown() on the runner's thread by the time this destructor is run.
-    DCHECK(!thread_);
   }
 
   void OnStop(shell::ServiceContext* connection) {
@@ -102,13 +106,20 @@ class EmbeddedApplicationRunner::Instance
 
     shell_connections_.clear();
     service_.reset();
-    quit_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Instance::QuitOnRunnerThread, this));
+    if (quit_task_runner_->BelongsToCurrentThread()) {
+      QuitOnRunnerThread();
+    } else {
+      quit_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Instance::QuitOnRunnerThread, this));
+    }
   }
 
   void QuitOnRunnerThread() {
     DCHECK(runner_thread_checker_.CalledOnValidThread());
-    ShutDown();
+    if (thread_) {
+      thread_.reset();
+      application_task_runner_ = nullptr;
+    }
     quit_closure_.Run();
   }
 
