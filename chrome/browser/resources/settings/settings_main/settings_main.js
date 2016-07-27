@@ -130,7 +130,7 @@ Polymer({
         this.advancedToggleExpanded_ = true;
     }
 
-    // Wait for the dom-if changes prior to calculating the overflow padding.
+    // Wait for any other changes prior to calculating the overflow padding.
     this.async(function() {
       this.$.overscroll.style.paddingBottom = this.overscrollHeight_() + 'px';
     });
@@ -149,6 +149,9 @@ Polymer({
         this.showPages_.about) {
       return 0;
     }
+
+    // Ensure any dom-if reflects the current properties.
+    Polymer.dom.flush();
 
     /**
      * @param {!Element} element
