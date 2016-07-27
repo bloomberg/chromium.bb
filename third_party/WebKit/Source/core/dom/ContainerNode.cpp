@@ -1193,7 +1193,7 @@ void ContainerNode::setRestyleFlag(DynamicRestyleFlags mask)
     ensureRareData().setRestyleFlag(mask);
 }
 
-void ContainerNode::recalcChildStyle(StyleRecalcChange change)
+void ContainerNode::recalcDescendantStyles(StyleRecalcChange change)
 {
     DCHECK(document().inStyleRecalc());
     DCHECK(change >= UpdatePseudoElements || childNeedsStyleRecalc());

@@ -140,7 +140,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // There's no style to update so just calling recalcStyle means we're updated.
     clearNeedsStyleRecalc();
 
-    recalcChildStyle(change);
+    recalcDescendantStyles(change);
     clearChildNeedsStyleRecalc();
 }
 

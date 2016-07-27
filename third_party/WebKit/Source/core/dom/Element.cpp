@@ -1737,7 +1737,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
                 if (root->shouldCallRecalcStyle(change))
                     root->recalcStyle(change);
             }
-            recalcChildStyle(change);
+            recalcDescendantStyles(change);
         }
 
         updatePseudoElement(PseudoIdAfter, change);
