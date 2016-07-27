@@ -42,7 +42,7 @@ interface HTMLElement : Element {
     // HTMLElement implements ElementContentEditable
     // https://html.spec.whatwg.org/#contenteditable
     [CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
-    readonly attribute boolean isContentEditable;
+    [ImplementedAs=isContentEditableForBinding] readonly attribute boolean isContentEditable;
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface

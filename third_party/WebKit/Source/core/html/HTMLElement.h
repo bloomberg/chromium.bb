@@ -56,7 +56,10 @@ public:
 
     String contentEditable() const;
     void setContentEditable(const String&, ExceptionState&);
-    bool isContentEditable() const;
+    // For HTMLElement.prototype.isContentEditable. This matches to neither
+    // blink::isContentEditable() nor blink::isContentRichlyEditable().  Do not
+    // use this function in Blink.
+    bool isContentEditableForBinding() const;
 
     virtual bool draggable() const;
     void setDraggable(bool);

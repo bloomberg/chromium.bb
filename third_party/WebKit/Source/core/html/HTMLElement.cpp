@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/MathMLNames.h"
 #include "core/XMLNames.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSMarkup.h"
@@ -58,6 +59,7 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/SpatialNavigation.h"
+#include "core/svg/SVGSVGElement.h"
 #include "platform/Language.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/BidiTextRun.h"
@@ -71,6 +73,41 @@ using namespace HTMLNames;
 using namespace WTF;
 
 using namespace std;
+
+namespace {
+
+// https://w3c.github.io/editing/execCommand.html#editing-host
+bool isEditingHost(const Node& node)
+{
+    if (!node.isHTMLElement())
+        return false;
+    String normalizedValue = toHTMLElement(node).contentEditable();
+    if (normalizedValue == "true" || normalizedValue == "plaintext-only")
+        return true;
+    return node.document().inDesignMode() && node.document().documentElement() == &node;
+}
+
+// https://w3c.github.io/editing/execCommand.html#editable
+bool isEditable(const Node& node)
+{
+    if (isEditingHost(node))
+        return false;
+    if (node.isHTMLElement() && toHTMLElement(node).contentEditable() == "false")
+        return false;
+    if (!node.parentNode())
+        return false;
+    if (!isEditingHost(*node.parentNode()) && !isEditable(*node.parentNode()))
+        return false;
+    if (node.isHTMLElement())
+        return true;
+    if (isSVGSVGElement(node))
+        return true;
+    if (node.isElementNode() && toElement(node).hasTagName(MathMLNames::mathTag))
+        return true;
+    return !node.isElementNode() && node.parentNode()->isHTMLElement();
+}
+
+} // anonymous namespace
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
@@ -587,9 +624,9 @@ void HTMLElement::setContentEditable(const String& enabled, ExceptionState& exce
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + enabled + "') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.");
 }
 
-bool HTMLElement::isContentEditable() const
+bool HTMLElement::isContentEditableForBinding() const
 {
-    return blink::isContentEditable(*this);
+    return isEditingHost(*this) || isEditable(*this);
 }
 
 bool HTMLElement::draggable() const
