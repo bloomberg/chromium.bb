@@ -47,7 +47,7 @@ class CyclicFrameGenerator
 
   static scoped_refptr<CyclicFrameGenerator> Create();
 
-  CyclicFrameGenerator(
+  explicit CyclicFrameGenerator(
       std::vector<std::unique_ptr<webrtc::DesktopFrame>> reference_frames);
 
   void set_frame_cycle_period(base::TimeDelta frame_cycle_period) {
