@@ -28,6 +28,7 @@ const GURL kUrl2("http://nytimes.com");
 const ClientId kClientId2("bookmark", "5678");
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
+const int kTwoWeeksInSeconds = 60 * 60 * 24 * 7 * 2;
 
 // Constants for policy values - These settings represent the default values.
 const bool kPreferUntried = false;
@@ -236,6 +237,21 @@ TEST_F(RequestPickerTest, ChooseLaterRequest) {
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
+  base::Time creation_time2 = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+                           kUserRequested);
+
+  QueueRequestsAndChooseOne(request1, request2);
+
+  EXPECT_EQ(kRequestId2, last_picked_->request_id());
+  EXPECT_FALSE(request_queue_empty_called_);
+}
+
+TEST_F(RequestPickerTest, ChooseUnexpiredRequest) {
+  base::Time creation_time1 =
+      base::Time::Now() - base::TimeDelta::FromSeconds(kTwoWeeksInSeconds);
   base::Time creation_time2 = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
                            kUserRequested);

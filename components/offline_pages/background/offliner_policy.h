@@ -10,6 +10,7 @@ const int kMaxRetries = 2;
 const int kBackgroundProcessingTimeBudgetSeconds = 170;
 const int kSinglePageTimeLimitSeconds = 120;
 const int kMinimumBatteryPercentageForNonUserRequestOfflining = 50;
+const int kRequestExpirationTimeInSeconds = 60 * 60 * 24 * 7;
 }  // namespace
 
 namespace offline_pages {
@@ -58,7 +59,7 @@ class OfflinerPolicy {
 
   bool UnmeteredNetworkRequiredForNonUserRequestedPage() const { return true; }
 
-  int BatteryPercentageRequiredForUserRequestedPage() const { return 50; }
+  int BatteryPercentageRequiredForUserRequestedPage() const { return 0; }
 
   // This is so low because we require the device to be plugged in and charging.
   // If we decide to allow non-user requested pages when not plugged in, we
@@ -74,6 +75,11 @@ class OfflinerPolicy {
   // How long do we allow a page to load before giving up on it
   int GetSinglePageTimeLimitInSeconds() const {
     return kSinglePageTimeLimitSeconds;
+  }
+
+  // How long we allow requests to remain in the system before giving up.
+  int GetRequestExpirationTimeInSeconds() const {
+    return kRequestExpirationTimeInSeconds;
   }
 
   // How much battery must we have before fetching a page not explicitly

@@ -114,6 +114,14 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
   if (request.attempt_count() >= policy_->GetMaxRetries())
     return false;
 
+  // If the request is expired, do not consider it.
+  // TODO(petewil): We need to remove this from the queue.
+  base::TimeDelta requestAge = base::Time::Now() - request.creation_time();
+  if (requestAge >
+      base::TimeDelta::FromSeconds(
+          policy_->GetRequestExpirationTimeInSeconds()))
+    return false;
+
   // If this request is not active yet, return false.
   // TODO(petewil): If the only reason we return nothing to do is that we have
   // inactive requests, we still want to try again later after their activation
