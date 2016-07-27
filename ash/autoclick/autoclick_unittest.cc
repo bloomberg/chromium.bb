@@ -161,7 +161,7 @@ TEST_F(AutoclickTest, MovementThreshold) {
   EXPECT_EQ(2u, root_windows.size());
 
   // Run test for the secondary display too to test fix for crbug.com/449870.
-  for (const auto& root_window : root_windows) {
+  for (auto* root_window : root_windows) {
     gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
     GetAutoclickController()->SetEnabled(true);

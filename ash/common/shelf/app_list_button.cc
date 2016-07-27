@@ -261,7 +261,7 @@ std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
   // and large sizes to mimic a circular flood fill. Replace with an actual
   // flood fill when circular flood fills are implemented.
   gfx::Size ripple_size(2 * kAppListButtonRadius, 2 * kAppListButtonRadius);
-  auto ink_drop_ripple = new views::SquareInkDropRipple(
+  auto* ink_drop_ripple = new views::SquareInkDropRipple(
       ripple_size, 0, ripple_size, 0, GetContentsBounds().CenterPoint(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
   ink_drop_ripple->set_activated_shape(views::SquareInkDropRipple::CIRCLE);

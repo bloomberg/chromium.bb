@@ -20,7 +20,7 @@ void EnsureAllChildrenAreVisible(ui::Layer* layer) {
   std::list<ui::Layer*> layers;
   layers.push_back(layer);
   while (!layers.empty()) {
-    for (auto child : layers.front()->children())
+    for (auto* child : layers.front()->children())
       layers.push_back(child);
     layers.front()->SetVisible(true);
     layers.pop_front();

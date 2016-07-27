@@ -36,7 +36,7 @@ class PowerEventObserverTest : public test::AshTestBase {
  protected:
   int GetNumVisibleCompositors() {
     int result = 0;
-    for (const auto& window : Shell::GetAllRootWindows()) {
+    for (auto* window : Shell::GetAllRootWindows()) {
       if (window->GetHost()->compositor()->IsVisible())
         ++result;
     }

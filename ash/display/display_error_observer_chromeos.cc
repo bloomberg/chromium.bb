@@ -18,7 +18,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState new_state) {
   LOG(ERROR) << "Failed to configure the following display(s):";
-  for (const auto& display : displays) {
+  for (auto* display : displays) {
     LOG(ERROR) << "- Display with ID = " << display->display_id()
                << ", and EDID = " << base::HexEncode(display->edid().data(),
                                                      display->edid().size())
