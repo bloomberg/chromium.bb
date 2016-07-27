@@ -366,7 +366,13 @@ class PrinterProviderApiTest : public ShellApiTest {
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobSuccess) {
+// TODO(crbug.com/631983): Flaky on Linux and CrOS trybots.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_PrintJobSuccess DISABLED_PrintJobSuccess
+#else
+#define MAYBE_PrintJobSuccess PrintJobSuccess
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, MAYBE_PrintJobSuccess) {
   RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_BYTES, "OK");
 }
 
