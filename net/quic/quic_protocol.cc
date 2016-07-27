@@ -564,6 +564,26 @@ PacketNumberQueue::const_iterator PacketNumberQueue::lower_bound(
   return const_iterator(it, first, last);
 }
 
+PacketNumberQueue::const_interval_iterator PacketNumberQueue::begin_intervals()
+    const {
+  return packet_number_intervals_.begin();
+}
+
+PacketNumberQueue::const_interval_iterator PacketNumberQueue::end_intervals()
+    const {
+  return packet_number_intervals_.end();
+}
+
+PacketNumberQueue::const_reverse_interval_iterator
+PacketNumberQueue::rbegin_intervals() const {
+  return packet_number_intervals_.rbegin();
+}
+
+PacketNumberQueue::const_reverse_interval_iterator
+PacketNumberQueue::rend_intervals() const {
+  return packet_number_intervals_.rend();
+}
+
 ostream& operator<<(ostream& os, const PacketNumberQueue& q) {
   for (QuicPacketNumber packet_number : q) {
     os << packet_number << " ";

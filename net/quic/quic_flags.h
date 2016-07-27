@@ -45,5 +45,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_not_migrate_on_old_packet;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_async_get_proof;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_neuter_unencrypted_when_sending;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_change_alarms_efficiently;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation_pre33;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_packet_number_queue_intervals;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

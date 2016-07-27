@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/base/linked_hash_map.h"
+#include "net/quic/quic_flags.h"
 
 using std::make_pair;
 using std::max;
@@ -80,8 +81,19 @@ bool QuicSentEntropyManager::IsValidEntropy(
 
   // Now XOR out all the missing entropies.
   QuicPacketEntropyHash expected_entropy_hash = last_valid_entropy_.entropy;
-  for (QuicPacketNumber packet : missing_packets) {
-    expected_entropy_hash ^= GetPacketEntropy(packet);
+  if (FLAGS_quic_use_packet_number_queue_intervals) {
+    for (auto itr = missing_packets.begin_intervals();
+         itr != missing_packets.end_intervals(); ++itr) {
+      const auto& interval = *itr;
+      for (QuicPacketNumber packet_number = interval.min();
+           packet_number < interval.max(); ++packet_number) {
+        expected_entropy_hash ^= GetPacketEntropy(packet_number);
+      }
+    }
+  } else {
+    for (QuicPacketNumber packet : missing_packets) {
+      expected_entropy_hash ^= GetPacketEntropy(packet);
+    }
   }
   DLOG_IF(WARNING, entropy_hash != expected_entropy_hash)
       << "Invalid entropy hash: " << static_cast<int>(entropy_hash)

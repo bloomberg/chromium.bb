@@ -90,10 +90,13 @@ class ValidateClientHelloHelper {
         << "Deleting ValidateClientHelloHelper with a pending callback.";
   }
 
-  void ValidationComplete(QuicErrorCode error_code, const char* error_details) {
+  void ValidationComplete(
+      QuicErrorCode error_code,
+      const char* error_details,
+      std::unique_ptr<ProofSource::Details> proof_source_details) {
     result_->error_code = error_code;
     result_->error_details = error_details;
-    done_cb_->Run(result_);
+    done_cb_->Run(result_, std::move(proof_source_details));
     DetachCallback();
   }
 
@@ -114,8 +117,11 @@ class VerifyNonceIsValidAndUniqueCallback
  public:
   VerifyNonceIsValidAndUniqueCallback(
       ValidateClientHelloResultCallback::Result* result,
+      std::unique_ptr<ProofSource::Details> proof_source_details,
       ValidateClientHelloResultCallback* done_cb)
-      : result_(result), done_cb_(done_cb) {}
+      : result_(result),
+        proof_source_details_(std::move(proof_source_details)),
+        done_cb_(done_cb) {}
 
  protected:
   void RunImpl(bool nonce_is_valid_and_unique,
@@ -154,11 +160,12 @@ class VerifyNonceIsValidAndUniqueCallback
       }
       result_->info.reject_reasons.push_back(client_nonce_error);
     }
-    done_cb_->Run(result_);
+    done_cb_->Run(result_, std::move(proof_source_details_));
   }
 
  private:
   ValidateClientHelloResultCallback::Result* result_;
+  std::unique_ptr<ProofSource::Details> proof_source_details_;
   ValidateClientHelloResultCallback* done_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VerifyNonceIsValidAndUniqueCallback);
@@ -191,8 +198,10 @@ ValidateClientHelloResultCallback::ValidateClientHelloResultCallback() {}
 
 ValidateClientHelloResultCallback::~ValidateClientHelloResultCallback() {}
 
-void ValidateClientHelloResultCallback::Run(const Result* result) {
-  RunImpl(result->client_hello, *result);
+void ValidateClientHelloResultCallback::Run(
+    const Result* result,
+    std::unique_ptr<ProofSource::Details> details) {
+  RunImpl(result->client_hello, *result, std::move(details));
   delete result;
   delete this;
 }
@@ -539,7 +548,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
     EvaluateClientHello(server_ip, version, primary_orbit, requested_config,
                         primary_config, crypto_proof, result, done_cb);
   } else {
-    done_cb->Run(result);
+    done_cb->Run(result, nullptr /* proof_source_details */);
   }
 }
 
@@ -1009,7 +1018,8 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
   void Run(bool ok,
            const scoped_refptr<ProofSource::Chain>& chain,
            const string& signature,
-           const string& leaf_cert_sct) override {
+           const string& leaf_cert_sct,
+           std::unique_ptr<ProofSource::Details> details) override {
     if (ok) {
       crypto_proof_->chain = chain;
       crypto_proof_->signature = signature;
@@ -1017,7 +1027,8 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
     }
     config_.EvaluateClientHelloAfterGetProof(
         found_error_, server_ip_, version_, primary_orbit_, requested_config_,
-        primary_config_, crypto_proof_, !ok, client_hello_state_, done_cb_);
+        primary_config_, crypto_proof_, std::move(details), !ok,
+        client_hello_state_, done_cb_);
   }
 
  private:
@@ -1049,14 +1060,14 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
   if (client_hello.size() < kClientHelloMinimumSize) {
     helper.ValidationComplete(QUIC_CRYPTO_INVALID_VALUE_LENGTH,
-                              "Client hello too small");
+                              "Client hello too small", nullptr);
     return;
   }
 
   if (client_hello.GetStringPiece(kSNI, &info->sni) &&
       !CryptoUtils::IsValidSNI(info->sni)) {
     helper.ValidationComplete(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
-                              "Invalid SNI name");
+                              "Invalid SNI name", nullptr);
     return;
   }
 
@@ -1088,14 +1099,14 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       info->reject_reasons.push_back(SERVER_CONFIG_INCHOATE_HELLO_FAILURE);
     }
     // No server config with the requested ID.
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "", nullptr);
     return;
   }
 
   if (!client_hello.GetStringPiece(kNONC, &info->client_nonce)) {
     info->reject_reasons.push_back(SERVER_CONFIG_INCHOATE_HELLO_FAILURE);
     // Report no client nonce as INCHOATE_HELLO_FAILURE.
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "", nullptr);
     return;
   }
 
@@ -1143,10 +1154,12 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     get_proof_failed = true;
   }
 
+  // Details are null because the synchronous version of GetProof does not
+  // return any stats.  Eventually the synchronous codepath will be eliminated.
   EvaluateClientHelloAfterGetProof(
       found_error, server_ip, version, primary_orbit, requested_config,
-      primary_config, crypto_proof, get_proof_failed, client_hello_state,
-      done_cb);
+      primary_config, crypto_proof, nullptr /* proof_source_details */,
+      get_proof_failed, client_hello_state, done_cb);
   helper.DetachCallback();
 }
 
@@ -1158,6 +1171,7 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     scoped_refptr<Config> requested_config,
     scoped_refptr<Config> primary_config,
     QuicCryptoProof* crypto_proof,
+    std::unique_ptr<ProofSource::Details> proof_source_details,
     bool get_proof_failed,
     ValidateClientHelloResultCallback::Result* client_hello_state,
     ValidateClientHelloResultCallback* done_cb) const {
@@ -1194,13 +1208,15 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
         info->server_nonce.empty()) {
       info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
     }
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
 
   if (!replay_protection_) {
     DVLOG(1) << "No replay protection.";
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
 
@@ -1213,22 +1229,26 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
       info->reject_reasons.push_back(server_nonce_error);
     }
     DVLOG(1) << "Using server nonce, unique: " << is_unique;
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
   // If we hit this block, the server nonce was empty.  If we're requiring
   // handshake confirmation for DoS reasons and there's no server nonce present,
   // reject the CHLO.
-  if (FLAGS_quic_require_handshake_confirmation) {
+  if (FLAGS_quic_require_handshake_confirmation ||
+      FLAGS_quic_require_handshake_confirmation_pre33) {
     info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
 
   // We want to contact strike register only if there are no errors because it
   // is a RPC call and is expensive.
   if (found_error) {
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
 
@@ -1244,13 +1264,15 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     // Since neither are present, reject the handshake which will send a
     // server nonce to the client.
     info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
-    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    helper.ValidationComplete(QUIC_NO_ERROR, "",
+                              std::move(proof_source_details));
     return;
   }
 
   strike_register_client->VerifyNonceIsValidAndUnique(
       info->client_nonce, info->now,
-      new VerifyNonceIsValidAndUniqueCallback(client_hello_state, done_cb));
+      new VerifyNonceIsValidAndUniqueCallback(
+          client_hello_state, std::move(proof_source_details), done_cb));
   helper.DetachCallback();
 }
 
@@ -1373,12 +1395,13 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
     Run(bool ok,
         const scoped_refptr<ProofSource::Chain>& chain,
         const string& signature,
-        const string& leaf_cert_sct) {
+        const string& leaf_cert_sct,
+        std::unique_ptr<ProofSource::Details> details) {
   config_->FinishBuildServerConfigUpdateMessage(
       version_, compressed_certs_cache_, common_cert_sets_,
       client_common_set_hashes_, client_cached_cert_hashes_,
       sct_supported_by_client_, ok, chain, signature, leaf_cert_sct,
-      std::move(message_), std::move(cb_));
+      std::move(details), std::move(message_), std::move(cb_));
 }
 
 void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
@@ -1392,6 +1415,7 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
     const scoped_refptr<ProofSource::Chain>& chain,
     const string& signature,
     const string& leaf_cert_sct,
+    std::unique_ptr<ProofSource::Details> details,
     CryptoHandshakeMessage message,
     std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const {
   if (!ok) {

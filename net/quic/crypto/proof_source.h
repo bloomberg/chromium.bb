@@ -36,6 +36,13 @@ class NET_EXPORT_PRIVATE ProofSource {
     DISALLOW_COPY_AND_ASSIGN(Chain);
   };
 
+  // Details is an abstract class which acts as a container for any
+  // implementation-specific details that a ProofSource wants to return.
+  class Details {
+   public:
+    virtual ~Details() {}
+  };
+
   // Callback base class for receiving the results of an async call to GetProof.
   class Callback {
    public:
@@ -53,10 +60,16 @@ class NET_EXPORT_PRIVATE ProofSource {
     // |signature| contains the signature of the server config.
     //
     // |leaf_cert_sct| holds the signed timestamp (RFC6962) of the leaf cert.
+    //
+    // |details| holds a pointer to an object representing the statistics, if
+    // any,
+    // gathered during the operation of GetProof.  If no stats are available,
+    // this will be nullptr.
     virtual void Run(bool ok,
                      const scoped_refptr<Chain>& chain,
                      const std::string& signature,
-                     const std::string& leaf_cert_sct) = 0;
+                     const std::string& leaf_cert_sct,
+                     std::unique_ptr<Details> details) = 0;
 
    private:
     Callback(const Callback&) = delete;

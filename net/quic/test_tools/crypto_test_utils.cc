@@ -290,9 +290,9 @@ class FullChloGenerator : public ValidateClientHelloResultCallback {
         compressed_certs_cache_(compressed_certs_cache),
         out_(out) {}
 
-  void RunImpl(
-      const CryptoHandshakeMessage& client_hello,
-      const ValidateClientHelloResultCallback::Result& result) override {
+  void RunImpl(const CryptoHandshakeMessage& client_hello,
+               const ValidateClientHelloResultCallback::Result& result,
+               std::unique_ptr<ProofSource::Details> /* details */) override {
     QuicCryptoNegotiatedParameters params;
     string error_details;
     DiversificationNonce diversification_nonce;

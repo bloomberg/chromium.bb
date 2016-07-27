@@ -157,7 +157,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
     const CryptoHandshakeMessage& message,
-    const ValidateClientHelloResultCallback::Result& result) {
+    const ValidateClientHelloResultCallback::Result& result,
+    std::unique_ptr<ProofSource::Details> details) {
   // Clear the callback that got us here.
   DCHECK(validate_client_hello_cb_ != nullptr);
   validate_client_hello_cb_ = nullptr;
@@ -169,8 +170,9 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   CryptoHandshakeMessage reply;
   DiversificationNonce diversification_nonce;
   string error_details;
-  QuicErrorCode error = ProcessClientHello(
-      message, result, &reply, &diversification_nonce, &error_details);
+  QuicErrorCode error =
+      ProcessClientHello(message, result, std::move(details), &reply,
+                         &diversification_nonce, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
@@ -417,6 +419,7 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
 QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     const CryptoHandshakeMessage& message,
     const ValidateClientHelloResultCallback::Result& result,
+    std::unique_ptr<ProofSource::Details> proof_source_details,
     CryptoHandshakeMessage* reply,
     DiversificationNonce* out_diversification_nonce,
     string* error_details) {
@@ -466,9 +469,11 @@ void QuicCryptoServerStream::ValidateCallback::Cancel() {
 
 void QuicCryptoServerStream::ValidateCallback::RunImpl(
     const CryptoHandshakeMessage& client_hello,
-    const Result& result) {
+    const Result& result,
+    std::unique_ptr<ProofSource::Details> details) {
   if (parent_ != nullptr) {
-    parent_->FinishProcessingHandshakeMessage(client_hello, result);
+    parent_->FinishProcessingHandshakeMessage(client_hello, result,
+                                              std::move(details));
   }
 }
 

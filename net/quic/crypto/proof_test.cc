@@ -119,7 +119,8 @@ class TestCallback : public ProofSource::Callback {
   void Run(bool ok,
            const scoped_refptr<ProofSource::Chain>& chain,
            const string& signature,
-           const string& leaf_cert_sct) override {
+           const string& leaf_cert_sct,
+           std::unique_ptr<ProofSource::Details> /* details */) override {
     *ok_ = ok;
     *chain_ = chain;
     *signature_ = signature;

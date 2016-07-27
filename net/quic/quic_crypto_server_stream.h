@@ -124,6 +124,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   virtual QuicErrorCode ProcessClientHello(
       const CryptoHandshakeMessage& message,
       const ValidateClientHelloResultCallback::Result& result,
+      std::unique_ptr<ProofSource::Details> proof_source_details,
       CryptoHandshakeMessage* reply,
       DiversificationNonce* out_diversification_nonce,
       std::string* error_details);
@@ -149,7 +150,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
 
     // From ValidateClientHelloResultCallback
     void RunImpl(const CryptoHandshakeMessage& client_hello,
-                 const Result& result) override;
+                 const Result& result,
+                 std::unique_ptr<ProofSource::Details> details) override;
 
    private:
     QuicCryptoServerStream* parent_;
@@ -180,7 +182,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   // hello message and handles handshake success/failure.
   void FinishProcessingHandshakeMessage(
       const CryptoHandshakeMessage& message,
-      const ValidateClientHelloResultCallback::Result& result);
+      const ValidateClientHelloResultCallback::Result& result,
+      std::unique_ptr<ProofSource::Details> details);
 
   // Invoked by SendServerConfigUpdateCallback::RunImpl once the proof has been
   // received.  |ok| indicates whether or not the proof was successfully

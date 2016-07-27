@@ -534,6 +534,7 @@ TEST_P(QuicCryptoServerStreamTest, NoTokenBindingWithoutClientSupport) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
+  FLAGS_quic_require_handshake_confirmation_pre33 = false;
   // Tests that the client can close the connection while the remote strike
   // register verification RPC is still pending.
 

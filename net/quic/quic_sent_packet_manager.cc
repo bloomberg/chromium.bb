@@ -754,8 +754,12 @@ bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
       send_delta.ToSeconds() > kMaxSendDeltaSeconds) {
     // send_delta can be very high if local clock is changed mid-connection.
     LOG(WARNING) << "Excessive send delta: " << send_delta.ToSeconds()
-                 << ", setting to: " << kMaxSendDeltaSeconds;
-    send_delta = QuicTime::Delta::FromSeconds(kMaxSendDeltaSeconds);
+                 << ", setting to: " << kMaxSendDeltaSeconds
+                 << " largest_observed:" << ack_frame.largest_observed
+                 << " ack_receive_time:" << ack_receive_time.ToDebuggingValue()
+                 << " sent_time:"
+                 << transmission_info.sent_time.ToDebuggingValue();
+    return false;
   }
   rtt_stats_.UpdateRtt(send_delta, ack_frame.ack_delay_time, ack_receive_time);
 

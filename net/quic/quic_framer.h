@@ -411,6 +411,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
     QuicPacketNumber first_block_length;
     // Ack blocks starting with gaps to next block and ack block lengths.
     std::vector<AckBlock> ack_blocks;
+    // Number of ACK blocks. If |ack_blocks| is generated, must equal
+    // |ack_blocks.size()|.
+    size_t num_ack_blocks;
   };
 
   bool ProcessDataPacket(QuicDataReader* reader,
@@ -513,12 +516,20 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicPacketNumber packet_number,
       QuicDataWriter* writer);
 
+  // Appends a single ACK block to |writer| and returns true if the block was
+  // successfully appended.
+  static bool AppendAckBlock(uint8_t gap,
+                             QuicPacketNumberLength length_length,
+                             QuicPacketNumber length,
+                             QuicDataWriter* writer);
+
   static uint8_t GetSequenceNumberFlags(
       QuicPacketNumberLength packet_number_length);
 
   static AckFrameInfo GetAckFrameInfo(const QuicAckFrame& frame);
 
-  static NewAckFrameInfo GetNewAckFrameInfo(const QuicAckFrame& frame);
+  static NewAckFrameInfo GetNewAckFrameInfo(const QuicAckFrame& frame,
+                                            bool construct_blocks);
 
   // The Append* methods attempt to write the provided header or frame using the
   // |writer|, and return true if successful.

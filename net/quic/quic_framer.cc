@@ -29,6 +29,8 @@ using std::max;
 using std::min;
 using std::numeric_limits;
 using std::string;
+using std::vector;
+#define PREDICT_FALSE(x) (x)
 
 namespace net {
 
@@ -336,7 +338,7 @@ QuicFramer::AckBlock::AckBlock(const AckBlock& other) = default;
 QuicFramer::AckBlock::~AckBlock() {}
 
 QuicFramer::NewAckFrameInfo::NewAckFrameInfo()
-    : max_block_length(0), first_block_length(0) {}
+    : max_block_length(0), first_block_length(0), num_ack_blocks(0) {}
 
 QuicFramer::NewAckFrameInfo::NewAckFrameInfo(const NewAckFrameInfo& other) =
     default;
@@ -986,73 +988,122 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
     return ack_info;
   }
   DCHECK_GE(frame.largest_observed, frame.packets.Max());
-  size_t cur_range_length = 0;
-  PacketNumberQueue::const_iterator iter = frame.packets.begin();
-  // TODO(jdorfman): Switch this logic to use the intervals in PacketNumberQueue
-  // instead of reconstructing them from the sequence.
-  QuicPacketNumber last_missing = *iter;
-  ++iter;
-  for (; iter != frame.packets.end(); ++iter) {
-    if (cur_range_length < numeric_limits<uint8_t>::max() &&
-        *iter == (last_missing + 1)) {
-      ++cur_range_length;
-    } else {
-      ack_info.nack_ranges[last_missing - cur_range_length] =
-          static_cast<uint8_t>(cur_range_length);
-      cur_range_length = 0;
+  if (FLAGS_quic_use_packet_number_queue_intervals) {
+    QuicPacketNumber last_largest_missing = 0;
+    for (auto itr = frame.packets.begin_intervals();
+         itr != frame.packets.end_intervals(); ++itr) {
+      const Interval<QuicPacketNumber>& interval = *itr;
+      for (QuicPacketNumber interval_start = interval.min();
+           interval_start < interval.max();
+           interval_start += (1ull + numeric_limits<uint8_t>::max())) {
+        uint8_t cur_range_length =
+            interval.max() - interval_start > numeric_limits<uint8_t>::max()
+                ? numeric_limits<uint8_t>::max()
+                : (interval.max() - interval_start) - 1;
+        ack_info.nack_ranges[interval_start] = cur_range_length;
+      }
+      ack_info.max_delta = max(ack_info.max_delta,
+                               last_largest_missing == 0
+                                   ? QuicPacketNumber{0}
+                                   : (interval.min() - last_largest_missing));
+      last_largest_missing = interval.max() - 1;
     }
-    ack_info.max_delta = max(ack_info.max_delta, *iter - last_missing);
-    last_missing = *iter;
+    // Include the range to the largest observed.
+    ack_info.max_delta =
+        max(ack_info.max_delta, frame.largest_observed - last_largest_missing);
+  } else {
+    size_t cur_range_length = 0;
+    PacketNumberQueue::const_iterator iter = frame.packets.begin();
+    QuicPacketNumber last_missing = *iter;
+    ++iter;
+    for (; iter != frame.packets.end(); ++iter) {
+      if (cur_range_length < numeric_limits<uint8_t>::max() &&
+          *iter == (last_missing + 1)) {
+        ++cur_range_length;
+      } else {
+        ack_info.nack_ranges[last_missing - cur_range_length] =
+            static_cast<uint8_t>(cur_range_length);
+        cur_range_length = 0;
+      }
+      ack_info.max_delta = max(ack_info.max_delta, *iter - last_missing);
+      last_missing = *iter;
+    }
+    // Include the last nack range.
+    ack_info.nack_ranges[last_missing - cur_range_length] =
+        static_cast<uint8_t>(cur_range_length);
+    // Include the range to the largest observed.
+    ack_info.max_delta =
+        max(ack_info.max_delta, frame.largest_observed - last_missing);
   }
-  // Include the last nack range.
-  ack_info.nack_ranges[last_missing - cur_range_length] =
-      static_cast<uint8_t>(cur_range_length);
-  // Include the range to the largest observed.
-  ack_info.max_delta =
-      max(ack_info.max_delta, frame.largest_observed - last_missing);
   return ack_info;
 }
 
 // static
 QuicFramer::NewAckFrameInfo QuicFramer::GetNewAckFrameInfo(
-    const QuicAckFrame& frame) {
+    const QuicAckFrame& frame,
+    bool construct_blocks) {
   NewAckFrameInfo new_ack_info;
   if (frame.packets.Empty()) {
     return new_ack_info;
   }
-  uint64_t cur_range_length = 1;
-  PacketNumberQueue::const_iterator iter = frame.packets.begin();
-  QuicPacketNumber last_received = *iter;
-  ++iter;
-  for (; iter != frame.packets.end(); ++iter) {
-    if (*iter == (last_received + 1)) {
-      ++cur_range_length;
-    } else {
-      size_t total_gap = *iter - last_received - 1;
-      size_t num_blocks = static_cast<size_t>(ceil(
-          static_cast<double>(total_gap) / numeric_limits<uint8_t>::max()));
-      uint8_t last_gap = static_cast<uint8_t>(
-          total_gap - (num_blocks - 1) * numeric_limits<uint8_t>::max());
-      for (size_t i = 0; i < num_blocks; ++i) {
-        if (i == 0) {
-          new_ack_info.ack_blocks.push_back(
-              AckBlock(last_gap, cur_range_length));
-        } else {
-          // Add an ack block of length 0 because there are more than 255
-          // missing packets in a row.
-          new_ack_info.ack_blocks.push_back(
-              AckBlock(numeric_limits<uint8_t>::max(), 0));
-        }
-      }
+  if (!construct_blocks) {
+    // The first block is the last interval. It isn't encoded with the
+    // gap-length encoding, so skip it.
+    new_ack_info.first_block_length = frame.packets.LastIntervalLength();
+    auto itr = frame.packets.rbegin_intervals();
+    QuicPacketNumber previous_start = itr->min();
+    new_ack_info.max_block_length = itr->Length();
+    ++itr;
+
+    // Don't do any more work after getting information for 256 ACK blocks; any
+    // more can't be encoded anyway.
+    for (; itr != frame.packets.rend_intervals() &&
+           new_ack_info.num_ack_blocks < numeric_limits<uint8_t>::max();
+         previous_start = itr->min(), ++itr) {
+      const auto& interval = *itr;
+      const QuicPacketNumber total_gap = previous_start - interval.max();
+      new_ack_info.num_ack_blocks +=
+          (total_gap + numeric_limits<uint8_t>::max() - 1) /
+          numeric_limits<uint8_t>::max();
       new_ack_info.max_block_length =
-          max(new_ack_info.max_block_length, cur_range_length);
-      cur_range_length = 1;
+          max(new_ack_info.max_block_length, interval.Length());
     }
-    last_received = *iter;
+  } else {
+    QuicPacketNumber cur_range_length = 1;
+    PacketNumberQueue::const_iterator iter = frame.packets.begin();
+    QuicPacketNumber last_received = *iter;
+    ++iter;
+    for (; iter != frame.packets.end(); ++iter) {
+      if (*iter == (last_received + 1)) {
+        ++cur_range_length;
+      } else {
+        size_t total_gap = *iter - last_received - 1;
+        size_t num_blocks = static_cast<size_t>(ceil(
+            static_cast<double>(total_gap) / numeric_limits<uint8_t>::max()));
+        uint8_t last_gap = static_cast<uint8_t>(
+            total_gap - (num_blocks - 1) * numeric_limits<uint8_t>::max());
+        for (size_t i = 0; i < num_blocks; ++i) {
+          if (i == 0) {
+            new_ack_info.ack_blocks.push_back(
+                AckBlock(last_gap, cur_range_length));
+          } else {
+            // Add an ack block of length 0 because there are more than 255
+            // missing packets in a row.
+            new_ack_info.ack_blocks.push_back(
+                AckBlock(numeric_limits<uint8_t>::max(), 0));
+          }
+        }
+        new_ack_info.max_block_length =
+            max(new_ack_info.max_block_length, cur_range_length);
+        cur_range_length = 1;
+      }
+      last_received = *iter;
+    }
+    new_ack_info.first_block_length = cur_range_length;
+    new_ack_info.max_block_length =
+        max(new_ack_info.max_block_length, new_ack_info.first_block_length);
+    new_ack_info.num_ack_blocks = new_ack_info.ack_blocks.size();
   }
-  new_ack_info.first_block_length = cur_range_length;
-  new_ack_info.max_block_length =
-      max(new_ack_info.max_block_length, new_ack_info.first_block_length);
   return new_ack_info;
 }
 
@@ -1982,7 +2033,8 @@ size_t QuicFramer::GetAckFrameSize(
     return ack_size;
   }
 
-  NewAckFrameInfo ack_info = GetNewAckFrameInfo(ack);
+  NewAckFrameInfo ack_info =
+      GetNewAckFrameInfo(ack, !FLAGS_quic_use_packet_number_queue_intervals);
   QuicPacketNumberLength largest_acked_length =
       GetMinSequenceNumberLength(ack.largest_observed);
   QuicPacketNumberLength ack_block_length =
@@ -1991,9 +2043,9 @@ size_t QuicFramer::GetAckFrameSize(
   ack_size = GetMinAckFrameSize(quic_version_, largest_acked_length);
   // First ack block length.
   ack_size += ack_block_length;
-  if (!ack_info.ack_blocks.empty()) {
+  if (ack_info.num_ack_blocks != 0) {
     ack_size += kNumberOfAckBlocksSize;
-    ack_size += min(ack_info.ack_blocks.size(), kMaxAckBlocks) *
+    ack_size += min(ack_info.num_ack_blocks, kMaxAckBlocks) *
                 (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
   }
 
@@ -2118,6 +2170,15 @@ bool QuicFramer::AppendPacketSequenceNumber(
       DCHECK(false) << "packet_number_length: " << packet_number_length;
       return false;
   }
+}
+
+// static
+bool QuicFramer::AppendAckBlock(uint8_t gap,
+                                QuicPacketNumberLength length_length,
+                                QuicPacketNumber length,
+                                QuicDataWriter* writer) {
+  return AppendPacketSequenceNumber(PACKET_1BYTE_PACKET_NUMBER, gap, writer) &&
+         AppendPacketSequenceNumber(length_length, length, writer);
 }
 
 bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
@@ -2303,7 +2364,10 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
 
 bool QuicFramer::AppendNewAckFrameAndTypeByte(const QuicAckFrame& frame,
                                               QuicDataWriter* writer) {
-  NewAckFrameInfo new_ack_info = GetNewAckFrameInfo(frame);
+  const bool new_ack_info_construct_blocks =
+      !FLAGS_quic_use_packet_number_queue_intervals;
+  const NewAckFrameInfo new_ack_info =
+      GetNewAckFrameInfo(frame, new_ack_info_construct_blocks);
   QuicPacketNumber largest_acked = frame.largest_observed;
   QuicPacketNumberLength largest_acked_length =
       GetMinSequenceNumberLength(largest_acked);
@@ -2313,14 +2377,14 @@ bool QuicFramer::AppendNewAckFrameAndTypeByte(const QuicAckFrame& frame,
   int32_t available_timestamp_and_ack_block_bytes =
       writer->capacity() - writer->length() - ack_block_length -
       GetMinAckFrameSize(quic_version_, largest_acked_length) -
-      (!new_ack_info.ack_blocks.empty() ? kNumberOfAckBlocksSize : 0);
+      (new_ack_info.num_ack_blocks != 0 ? kNumberOfAckBlocksSize : 0);
   DCHECK_LE(0, available_timestamp_and_ack_block_bytes);
 
   // Write out the type byte by setting the low order bits and doing shifts
   // to make room for the next bit flags to be set.
   // Whether there are multiple ack blocks.
   uint8_t type_byte =
-      new_ack_info.ack_blocks.empty() ? 0 : kQuicHasMultipleAckBlocksMask;
+      new_ack_info.num_ack_blocks == 0 ? 0 : kQuicHasMultipleAckBlocksMask;
   type_byte <<= kQuicHasMultipleAckBlocksShift;
 
   // Largest acked length.
@@ -2357,8 +2421,7 @@ bool QuicFramer::AppendNewAckFrameAndTypeByte(const QuicAckFrame& frame,
                               (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
 
   // Number of ack blocks.
-  size_t num_ack_blocks =
-      min(new_ack_info.ack_blocks.size(), max_num_ack_blocks);
+  size_t num_ack_blocks = min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
   if (num_ack_blocks > numeric_limits<uint8_t>::max()) {
     num_ack_blocks = numeric_limits<uint8_t>::max();
   }
@@ -2377,19 +2440,73 @@ bool QuicFramer::AppendNewAckFrameAndTypeByte(const QuicAckFrame& frame,
 
   // Ack blocks.
   if (num_ack_blocks > 0) {
-    std::vector<AckBlock>::reverse_iterator iter =
-        new_ack_info.ack_blocks.rbegin();
     size_t num_ack_blocks_written = 0;
-    for (; iter != new_ack_info.ack_blocks.rend(); ++iter) {
-      if (!AppendPacketSequenceNumber(PACKET_1BYTE_PACKET_NUMBER, iter->gap,
-                                      writer)) {
-        return false;
+    if (!new_ack_info_construct_blocks) {
+      // Append, in descending order from the largest ACKed packet, a series of
+      // ACK blocks that represents the successfully acknoweldged packets. Each
+      // appended gap/block length represents a descending delta from the
+      // previous block. i.e.:
+      // |--- length ---|--- gap ---|--- length ---|--- gap ---|--- largest ---|
+      // For gaps larger than can be represented by a single encoded gap, a 0
+      // length gap of the maximum is used, i.e.:
+      // |--- length ---|--- gap ---|- 0 -|--- gap ---|--- largest ---|
+      auto itr = frame.packets.rbegin_intervals();
+      QuicPacketNumber previous_start = itr->min();
+      ++itr;
+
+      for (; itr != frame.packets.rend_intervals() &&
+             num_ack_blocks_written < num_ack_blocks;
+           previous_start = itr->min(), ++itr) {
+        const auto& interval = *itr;
+        const QuicPacketNumber total_gap = previous_start - interval.max();
+        const size_t num_encoded_gaps =
+            (total_gap + numeric_limits<uint8_t>::max() - 1) /
+            numeric_limits<uint8_t>::max();
+        DCHECK_GT(num_encoded_gaps, 0u);
+
+        // Append empty ACK blocks because the gap is longer than a single gap.
+        for (size_t i = 1;
+             i < num_encoded_gaps && num_ack_blocks_written < num_ack_blocks;
+             ++i) {
+          if (!AppendAckBlock(numeric_limits<uint8_t>::max(), ack_block_length,
+                              0, writer)) {
+            return false;
+          }
+          ++num_ack_blocks_written;
+        }
+        if (num_ack_blocks_written >= num_ack_blocks) {
+          if (PREDICT_FALSE(num_ack_blocks_written != num_ack_blocks)) {
+            QUIC_BUG << "Wrote " << num_ack_blocks_written
+                     << ", expected to write " << num_ack_blocks;
+          }
+          break;
+        }
+
+        const uint8_t last_gap =
+            total_gap - (num_encoded_gaps - 1) * numeric_limits<uint8_t>::max();
+        // Append the final ACK block with a non-empty size.
+        if (!AppendAckBlock(last_gap, ack_block_length, interval.Length(),
+                            writer)) {
+          return false;
+        }
+        ++num_ack_blocks_written;
       }
-      if (!AppendPacketSequenceNumber(ack_block_length, iter->length, writer)) {
-        return false;
-      }
-      if (++num_ack_blocks_written == num_ack_blocks) {
-        break;
+    } else {
+      DCHECK_EQ(new_ack_info.num_ack_blocks, new_ack_info.ack_blocks.size());
+      vector<AckBlock>::const_reverse_iterator iter =
+          new_ack_info.ack_blocks.rbegin();
+      for (; iter != new_ack_info.ack_blocks.rend(); ++iter) {
+        if (!AppendPacketSequenceNumber(PACKET_1BYTE_PACKET_NUMBER, iter->gap,
+                                        writer)) {
+          return false;
+        }
+        if (!AppendPacketSequenceNumber(ack_block_length, iter->length,
+                                        writer)) {
+          return false;
+        }
+        if (++num_ack_blocks_written == num_ack_blocks) {
+          break;
+        }
       }
     }
     DCHECK_EQ(num_ack_blocks, num_ack_blocks_written);

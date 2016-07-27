@@ -18,7 +18,9 @@ class StatelessRejector::ValidateCallback
   ~ValidateCallback() override {}
 
   void RunImpl(const CryptoHandshakeMessage& client_hello,
-               const Result& result) override {
+               const Result& result,
+               std::unique_ptr<ProofSource::Details> /* proof_source_details */)
+      override {
     rejector_->ProcessClientHello(client_hello, result);
   }
 

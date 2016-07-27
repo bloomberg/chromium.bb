@@ -278,7 +278,7 @@ void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
 
   const char* src = static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset;
   while (true) {
-    memmove(buffer, src, copy_len);
+    memcpy(buffer, src, copy_len);
     length -= copy_len;
     buffer += copy_len;
     if (length == 0 || ++iovnum >= iov.iov_count) {

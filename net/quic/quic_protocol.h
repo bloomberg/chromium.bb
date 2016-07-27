@@ -894,6 +894,9 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 // larger new packet numbers are added, with the occasional random access.
 class NET_EXPORT_PRIVATE PacketNumberQueue {
  public:
+  using const_interval_iterator = IntervalSet<QuicPacketNumber>::const_iterator;
+  using const_reverse_interval_iterator =
+      IntervalSet<QuicPacketNumber>::const_reverse_iterator;
   // TODO(jdorfman): remove const_iterator and change the callers to iterate
   // over the intervals.
   class NET_EXPORT_PRIVATE const_iterator
@@ -992,6 +995,12 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,
       const PacketNumberQueue& q);
+
+  // Returns iterators over the packet number intervals.
+  const_interval_iterator begin_intervals() const;
+  const_interval_iterator end_intervals() const;
+  const_reverse_interval_iterator rbegin_intervals() const;
+  const_reverse_interval_iterator rend_intervals() const;
 
  private:
   IntervalSet<QuicPacketNumber> packet_number_intervals_;

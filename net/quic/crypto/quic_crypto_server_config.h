@@ -105,11 +105,12 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
 
   ValidateClientHelloResultCallback();
   virtual ~ValidateClientHelloResultCallback();
-  void Run(const Result* result);
+  void Run(const Result* result, std::unique_ptr<ProofSource::Details> details);
 
  protected:
   virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
-                       const Result& result) = 0;
+                       const Result& result,
+                       std::unique_ptr<ProofSource::Details> details) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloResultCallback);
@@ -532,6 +533,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       scoped_refptr<Config> requested_config,
       scoped_refptr<Config> primary_config,
       QuicCryptoProof* crypto_proof,
+      std::unique_ptr<ProofSource::Details> proof_source_details,
       bool get_proof_failed,
       ValidateClientHelloResultCallback::Result* client_hello_state,
       ValidateClientHelloResultCallback* done_cb) const;
@@ -665,7 +667,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     void Run(bool ok,
              const scoped_refptr<ProofSource::Chain>& chain,
              const std::string& signature,
-             const std::string& leaf_cert_sct) override;
+             const std::string& leaf_cert_sct,
+             std::unique_ptr<ProofSource::Details> details) override;
 
    private:
     const QuicCryptoServerConfig* config_;
@@ -693,6 +696,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const scoped_refptr<ProofSource::Chain>& chain,
       const std::string& signature,
       const std::string& leaf_cert_sct,
+      std::unique_ptr<ProofSource::Details> details,
       CryptoHandshakeMessage message,
       std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const;
 

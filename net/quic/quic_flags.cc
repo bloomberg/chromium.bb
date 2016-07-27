@@ -138,3 +138,11 @@ bool FLAGS_quic_neuter_unencrypted_when_sending = false;
 // If true, QuicAlarm::Update will call a faster UpdateImpl implementation
 // instead of canceling and reregistering the alarm.
 bool FLAGS_quic_change_alarms_efficiently = false;
+
+// If true, requires handshake confirmations for all QUIC handshakes with
+// versions less than 33.
+bool FLAGS_quic_require_handshake_confirmation_pre33 = false;
+
+// If true, use the interval form of iteration over a PacketNumberQueue instead
+// of iterating over the individual numbers.
+bool FLAGS_quic_use_packet_number_queue_intervals = false;

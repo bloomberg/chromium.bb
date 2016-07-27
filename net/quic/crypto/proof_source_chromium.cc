@@ -166,7 +166,7 @@ void ProofSourceChromium::GetProof(const IPAddress& server_ip,
   const bool ok =
       GetProof(server_ip, hostname, server_config, quic_version, chlo_hash,
                ecdsa_ok, &chain, &signature, &leaf_cert_sct);
-  callback->Run(ok, chain, signature, leaf_cert_sct);
+  callback->Run(ok, chain, signature, leaf_cert_sct, nullptr /* details */);
 }
 
 }  // namespace net

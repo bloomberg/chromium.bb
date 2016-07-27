@@ -119,6 +119,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     client_version_string_ =
         QuicUtils::TagToString(QuicVersionToQuicTag(client_version_));
 
+    FLAGS_quic_require_handshake_confirmation_pre33 = false;
     FLAGS_enable_quic_stateless_reject_support =
         GetParam().enable_stateless_rejects;
     use_stateless_rejects_ = GetParam().use_stateless_rejects;
@@ -200,7 +201,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     }
 
     void RunImpl(const CryptoHandshakeMessage& client_hello,
-                 const Result& result) override {
+                 const Result& result,
+                 std::unique_ptr<ProofSource::Details> /* details */) override {
       {
         // Ensure that the strike register client lock is not held.
         QuicCryptoServerConfigPeer peer(&test_->config_);
@@ -1172,6 +1174,43 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(0, strike_register_client_->PendingVerifications());
   // The message should be rejected now.
   CheckRejectTag();
+}
+
+TEST_P(AsyncStrikeServerVerificationTest, RequireHandshakeCofirmationPre33) {
+  FLAGS_quic_require_handshake_confirmation = false;
+  FLAGS_quic_require_handshake_confirmation_pre33 = true;
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "PDMD", "X509",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SNI", "foobar1.example.com",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  ShouldSucceed(msg);
+
+  if (client_version_ <= QUIC_VERSION_32) {
+    // clang-format off
+    const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_NONCE_REQUIRED_FAILURE
+    };
+    // clang-format on
+    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+    EXPECT_EQ(0, strike_register_client_->PendingVerifications());
+  } else {
+    // version 33.
+    ASSERT_EQ(kSHLO, out_.tag());
+    CheckServerHello(out_);
+  }
 }
 
 }  // namespace test
