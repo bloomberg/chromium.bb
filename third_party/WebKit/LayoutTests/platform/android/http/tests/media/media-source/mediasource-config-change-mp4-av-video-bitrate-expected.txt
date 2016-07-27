@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 95: Ignore this warning. See https://crbug.com/568704#c2
+CONSOLE WARNING: line 106: Ignore this warning. See https://crbug.com/568704#c2
 This is a testharness.js-based test.
 PASS Tests mp4 video bitrate changes in multiplexed content. 
 Harness: the test ran to completion.

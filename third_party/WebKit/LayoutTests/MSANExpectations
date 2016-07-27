@@ -41,3 +41,6 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-e
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
+
+# These tests use OpenGl, which crashes on MSAN builds due to missing instrumentation
+crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated [ Skip ]

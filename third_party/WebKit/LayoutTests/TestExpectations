@@ -725,12 +725,9 @@ crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-t
 crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendbuffer-quota-exceeded.html [ Timeout ]
 crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Timeout ]
 
-crbug.com/568827 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ Failure ]
-crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html [ Failure ]
-crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ Failure ]
-crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ Failure ]
-crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure ]
-crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure ]
+# On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
+# benefit to running them again with gpu acceleration enabled.
+crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]
 
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
