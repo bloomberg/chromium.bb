@@ -315,13 +315,13 @@ void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
     root_.reset(window_server_->CreateServerWindow(
         display_manager()->GetAndAdvanceNextRootId(),
         ServerWindow::Properties()));
-    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels));
+    root_->SetBounds(new_metrics.bounds);
     root_->SetVisible(true);
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
     InitWindowManagerDisplayRootsIfNecessary();
   } else {
-    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels));
+    root_->SetBounds(new_metrics.bounds);
     const gfx::Rect wm_bounds(root_->bounds().size());
     for (auto& pair : window_manager_display_root_map_)
       pair.second->root()->SetBounds(wm_bounds);

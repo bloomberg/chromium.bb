@@ -4,6 +4,7 @@
 
 #include "services/ui/display/platform_screen_impl_ozone.h"
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,7 +29,13 @@ namespace {
 // ConfigurePhysicalDisplay() with a hard-coded |id| and |bounds|.
 void FixedSizeScreenConfiguration(
     const PlatformScreen::ConfiguredDisplayCallback& callback) {
-  callback.Run(1, gfx::Rect(1024, 768));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("multi-display")) {
+    // This really doesn't work properly. Use at your own risk.
+    callback.Run(100, gfx::Rect(800, 800));
+    callback.Run(200, gfx::Rect(800, 0, 800, 800));
+  } else {
+    callback.Run(100, gfx::Rect(0, 0, 1024, 768));
+  }
 }
 
 // Needed for DisplayConfigurator::ForceInitialConfigure.
@@ -67,9 +74,13 @@ void PlatformScreenImplOzone::ConfigurePhysicalDisplay(
 
 void PlatformScreenImplOzone::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
-  // TODO(kylechar): Remove checks when multiple display support is added.
-  CHECK(displays.size() == 1) << "Mus only supports one 1 display";
+  // TODO(kylechar): Remove check when adding/removing displays is supported.
   CHECK(!callback_.is_null());
+
+  if (displays.size() > 1) {
+    LOG(ERROR)
+        << "Mus doesn't really support multiple displays, expect it to crash";
+  }
 
   gfx::Point origin;
   for (auto* display : displays) {

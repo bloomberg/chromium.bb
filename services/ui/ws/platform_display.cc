@@ -62,27 +62,26 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
       frame_generator_(new FrameGenerator(this,
                                           init_params.gpu_state,
                                           init_params.surfaces_state)) {
-  metrics_.size_in_pixels = init_params.display_bounds.size();
+  metrics_.bounds = init_params.display_bounds;
   // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.
 }
 
 void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
-  gfx::Rect bounds(metrics_.size_in_pixels);
 #if defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, bounds));
+  platform_window_.reset(new ui::WinWindow(this, metrics_.bounds));
 #elif defined(USE_X11)
   platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
   platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #elif defined(USE_OZONE)
-  platform_window_ =
-      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
+  platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+      this, metrics_.bounds);
 #else
   NOTREACHED() << "Unsupported platform";
 #endif
-  platform_window_->SetBounds(bounds);
+  platform_window_->SetBounds(metrics_.bounds);
   platform_window_->Show();
 }
 
@@ -168,22 +167,28 @@ int64_t DefaultPlatformDisplay::GetDisplayId() const {
   return display_id_;
 }
 
-void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
+gfx::Rect DefaultPlatformDisplay::GetBounds() const {
+  return metrics_.bounds;
+}
+
+void DefaultPlatformDisplay::UpdateMetrics(const gfx::Rect& bounds,
                                            float device_scale_factor) {
   if (display::Display::HasForceDeviceScaleFactor())
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
-  if (metrics_.size_in_pixels == size &&
+  if (metrics_.bounds == bounds &&
       metrics_.device_scale_factor == device_scale_factor)
     return;
 
   ViewportMetrics old_metrics = metrics_;
-  metrics_.size_in_pixels = size;
+  metrics_.bounds = bounds;
   metrics_.device_scale_factor = device_scale_factor;
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
 void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  UpdateMetrics(new_bounds.size(), metrics_.device_scale_factor);
+  // TODO(kylechar): We should keep track of the actual top left of the window
+  // and also the internal top left of the window (eg. first window is at 0,0).
+  UpdateMetrics(new_bounds, metrics_.device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
@@ -248,7 +253,7 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_scale_factor) {
   frame_generator_->OnAcceleratedWidgetAvailable(widget);
-  UpdateMetrics(metrics_.size_in_pixels, device_scale_factor);
+  UpdateMetrics(metrics_.bounds, device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {

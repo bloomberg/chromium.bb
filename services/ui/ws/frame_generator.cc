@@ -93,7 +93,7 @@ void FrameGenerator::DidDraw() {
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   const ViewportMetrics& metrics = delegate_->GetViewportMetrics();
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  gfx::Rect output_rect(metrics.size_in_pixels);
+  gfx::Rect output_rect = metrics.bounds;
   dirty_rect_.Intersect(output_rect);
   const cc::RenderPassId render_pass_id(1, 1);
   render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,

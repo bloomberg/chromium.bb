@@ -13,7 +13,7 @@ namespace ws {
 class ServerWindow;
 
 struct ViewportMetrics {
-  gfx::Size size_in_pixels;
+  gfx::Rect bounds;
   float device_scale_factor = 0.f;
 };
 

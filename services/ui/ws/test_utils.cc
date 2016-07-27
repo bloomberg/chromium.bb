@@ -29,7 +29,7 @@ class TestPlatformDisplay : public PlatformDisplay {
  public:
   explicit TestPlatformDisplay(int32_t* cursor_id_storage)
       : cursor_id_storage_(cursor_id_storage) {
-    display_metrics_.size_in_pixels = gfx::Size(400, 300);
+    display_metrics_.bounds = gfx::Rect(0, 0, 400, 300);
     display_metrics_.device_scale_factor = 1.f;
   }
   ~TestPlatformDisplay() override {}
@@ -60,6 +60,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
   int64_t GetDisplayId() const override { return 1; }
+  gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
 
  private:
   ViewportMetrics display_metrics_;

@@ -87,6 +87,8 @@ class PlatformDisplay {
 
   virtual int64_t GetDisplayId() const = 0;
 
+  virtual gfx::Rect GetBounds() const = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {
@@ -124,9 +126,10 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override;
   int64_t GetDisplayId() const override;
+  gfx::Rect GetBounds() const override;
 
  private:
-  void UpdateMetrics(const gfx::Size& size, float device_scale_factor);
+  void UpdateMetrics(const gfx::Rect& bounds, float device_scale_factor);
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
