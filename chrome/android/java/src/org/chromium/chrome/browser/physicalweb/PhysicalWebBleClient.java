@@ -114,6 +114,15 @@ public class PhysicalWebBleClient {
     }
 
     /**
+     * Get the URLs from a device within a message.
+     * @param message The Nearby message.
+     * @return The URL contained in the message.
+     */
+    String getUrlFromMessage(Message message) {
+        return null;
+    }
+
+    /**
      * Modify a GoogleApiClient.Builder as necessary for doing Physical Web scanning.
      * @param builder The builder to be modified.
      * @return The Builder.

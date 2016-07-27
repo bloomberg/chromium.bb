@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.components.location.LocationUtils;
 
 /**
  * This class provides the basic interface to the Physical Web feature.
@@ -56,22 +58,29 @@ public class PhysicalWeb {
      * At the moment, this only enables URL discovery over BLE.
      */
     public static void startPhysicalWeb() {
-        PhysicalWebBleClient.getInstance().backgroundSubscribe(new Runnable() {
-            @Override
-            public void run() {
-                // We need to clear the list of nearby URLs so that they can be repopulated by the
-                // new subscription, but we don't know whether we are already subscribed, so we need
-                // to pass a callback so that we can clear as soon as we are resubscribed.
-                UrlManager.getInstance().clearNearbyUrls();
-            }
-        });
+        // Only subscribe to Nearby if we have the location permission.
+        LocationUtils locationUtils = LocationUtils.getInstance();
+        Context context = ContextUtils.getApplicationContext();
+        if (locationUtils.hasAndroidLocationPermission(context)
+                && locationUtils.isSystemLocationSettingEnabled(context)) {
+            new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE, new Runnable() {
+                @Override
+                public void run() {
+                    // We need to clear the list of nearby URLs so that they can be repopulated by
+                    // the new subscription, but we don't know whether we are already subscribed, so
+                    // we need to pass a callback so that we can clear as soon as we are
+                    // resubscribed.
+                    UrlManager.getInstance().clearNearbyUrls();
+                }
+            });
+        }
     }
 
     /**
      * Stop the Physical Web feature.
      */
     public static void stopPhysicalWeb() {
-        PhysicalWebBleClient.getInstance().backgroundUnsubscribe(new Runnable() {
+        new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE, new Runnable() {
             @Override
             public void run() {
                 // This isn't absolutely necessary, but it's nice to clean up all our shared prefs.

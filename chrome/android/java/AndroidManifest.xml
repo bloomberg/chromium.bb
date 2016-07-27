@@ -557,6 +557,10 @@ by a child template that "extends" this file.
             android:exported="false">
         </receiver>
 
+        <!-- Service for handling Nearby Messages -->
+        <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
+            android:exported="false" />
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"

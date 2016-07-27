@@ -25,6 +25,8 @@ import org.chromium.base.Log;
  * and unsubscriptions to Nearby.
  */
 abstract class NearbySubscription implements ConnectionCallbacks, OnConnectionFailedListener {
+    public static final int UNSUBSCRIBE = 0;
+    public static final int SUBSCRIBE = 1;
     private static final String TAG = "PhysicalWeb";
     private final GoogleApiClient mGoogleApiClient;
 
@@ -92,8 +94,4 @@ abstract class NearbySubscription implements ConnectionCallbacks, OnConnectionFa
     protected GoogleApiClient getGoogleApiClient() {
         return mGoogleApiClient;
     }
-
-    abstract void subscribe();
-
-    abstract void unsubscribe();
 }
