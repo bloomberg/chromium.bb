@@ -338,7 +338,7 @@ def PostUploadHook(cl, change, output_api):
     return []
 
   bots = [
-    'master.tryserver.blink:linux_blink_rel',
+    'master.tryserver.blink:linux_precise_blink_rel',
   ]
 
   results = []
