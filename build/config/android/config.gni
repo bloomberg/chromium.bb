@@ -99,8 +99,7 @@ if (is_android) {
     proguard_verbose = false
 
     # Java debug on Android. Having this on enables multidexing, and turning it
-    # off will enable proguard. To access this flag from within Java code, look
-    # at BuildConfig.IS_DEBUG, which is wired to this arg.
+    # off will enable proguard.
     is_java_debug = is_debug
 
     # Set to true to enable the Errorprone compiler

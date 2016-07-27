@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/toolchain/toolchain.gni")
 
 assert(is_android)
@@ -1754,8 +1755,8 @@ if (enable_java_templates) {
         if (enable_multidex) {
           defines += [ "ENABLE_MULTIDEX" ]
         }
-        if (!is_java_debug) {
-          defines += [ "NDEBUG" ]
+        if (is_java_debug || dcheck_always_on) {
+          defines += [ "_DCHECK_IS_ON" ]
         }
       }
       _srcjar_deps += [ ":${_template_name}__build_config_java" ]

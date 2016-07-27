@@ -21,6 +21,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
@@ -2421,8 +2422,8 @@ if (is_android) {
     package_name = "org/chromium/base"
 
     defines = []
-    if (!is_java_debug) {
-      defines += [ "NDEBUG" ]
+    if (is_java_debug || dcheck_always_on) {
+      defines += [ "_DCHECK_IS_ON" ]
     }
   }
 
