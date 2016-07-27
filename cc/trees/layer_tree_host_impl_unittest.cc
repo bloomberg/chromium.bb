@@ -3658,6 +3658,21 @@ struct PrepareToDrawSuccessTestCase {
       : expected_result(result) {}
 };
 
+static void CreateLayerFromState(
+    DidDrawCheckLayer* root,
+    const scoped_refptr<AnimationTimeline>& timeline,
+    const PrepareToDrawSuccessTestCase::State& state) {
+  static int layer_id = 2;
+  root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
+      root->layer_tree_impl(), layer_id++, state.has_missing_tile,
+      state.has_incomplete_tile, state.is_animating,
+      root->layer_tree_impl()->resource_provider(), timeline));
+  DidDrawCheckLayer* layer =
+      static_cast<DidDrawCheckLayer*>(root->test_properties()->children.back());
+  if (state.has_copy_request)
+    layer->AddCopyRequest();
+}
+
 TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
   std::vector<PrepareToDrawSuccessTestCase> cases;
 
@@ -3756,35 +3771,9 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     scope << "Test case: " << i;
     SCOPED_TRACE(scope.str());
 
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
-        testcase.layer_before.has_incomplete_tile,
-        testcase.layer_before.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* before = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_before.has_copy_request)
-      before->AddCopyRequest();
-
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
-        testcase.layer_between.has_incomplete_tile,
-        testcase.layer_between.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* between = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_between.has_copy_request)
-      between->AddCopyRequest();
-
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
-        testcase.layer_after.has_incomplete_tile,
-        testcase.layer_after.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* after = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_after.has_copy_request)
-      after->AddCopyRequest();
+    CreateLayerFromState(root, timeline(), testcase.layer_before);
+    CreateLayerFromState(root, timeline(), testcase.layer_between);
+    CreateLayerFromState(root, timeline(), testcase.layer_after);
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
     if (testcase.high_res_required)
@@ -3849,35 +3838,9 @@ TEST_F(LayerTreeHostImplTest,
     scope << "Test case: " << i;
     SCOPED_TRACE(scope.str());
 
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
-        testcase.layer_before.has_incomplete_tile,
-        testcase.layer_before.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* before = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_before.has_copy_request)
-      before->AddCopyRequest();
-
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
-        testcase.layer_between.has_incomplete_tile,
-        testcase.layer_between.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* between = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_between.has_copy_request)
-      between->AddCopyRequest();
-
-    root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
-        host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
-        testcase.layer_after.has_incomplete_tile,
-        testcase.layer_after.is_animating, host_impl_->resource_provider(),
-        timeline()));
-    DidDrawCheckLayer* after = static_cast<DidDrawCheckLayer*>(
-        root->test_properties()->children.back());
-    if (testcase.layer_after.has_copy_request)
-      after->AddCopyRequest();
+    CreateLayerFromState(root, timeline(), testcase.layer_before);
+    CreateLayerFromState(root, timeline(), testcase.layer_between);
+    CreateLayerFromState(root, timeline(), testcase.layer_after);
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
     if (testcase.high_res_required)
