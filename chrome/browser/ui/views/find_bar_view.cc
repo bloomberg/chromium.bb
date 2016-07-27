@@ -91,7 +91,7 @@ const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 
 // The default number of average characters that the text box will be.
 const int kDefaultCharWidth = 43;
-const int kDefaultCharWidthMd = 26;
+const int kDefaultCharWidthMd = 30;
 
 // The match count label is like a normal label, but can process events (which
 // makes it easier to forward events to the text input --- see
