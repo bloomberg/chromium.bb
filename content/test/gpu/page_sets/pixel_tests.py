@@ -12,13 +12,17 @@ from gpu_tests import gpu_test_base
 class PixelTestsPage(gpu_test_base.PageBase):
 
   def __init__(self, url, name, test_rect, revision, story_set,
-               shared_page_state_class, expectations, expected_colors=None):
+               shared_page_state_class, expectations, expected_colors=None,
+               tolerance=2):
     super(PixelTestsPage, self).__init__(
       url=url, page_set=story_set, name=name,
       shared_page_state_class=shared_page_state_class,
       expectations=expectations)
     self.test_rect = test_rect
     self.revision = revision
+
+    # The tolerance when comparing against the reference image.
+    self.tolerance = tolerance
     if expected_colors:
       self.expected_colors = expected_colors
 
@@ -141,7 +145,8 @@ class PixelTestsStorySet(story_set_module.StorySet):
         revision=1,
         story_set=self,
         shared_page_state_class=gpu_test_base.GpuSharedPageState,
-        expectations=expectations))
+        expectations=expectations,
+        tolerance=10))
 
       self.AddStory(PixelTestsPage(
         url='file://../../data/gpu/filter_effects.html',
@@ -150,7 +155,8 @@ class PixelTestsStorySet(story_set_module.StorySet):
         revision=1,
         story_set=self,
         shared_page_state_class=DisableMacOverlaysSharedPageState,
-        expectations=expectations))
+        expectations=expectations,
+        tolerance=10))
 
   def _AddAllPages(self, expectations, base_name, use_es3):
     if use_es3:

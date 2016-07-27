@@ -116,7 +116,7 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
           image_name, page.revision, screenshot)
 
     # Test new snapshot against existing reference image
-    if not image_util.AreEqual(ref_png, screenshot, tolerance=2):
+    if not image_util.AreEqual(ref_png, screenshot, tolerance=page.tolerance):
       if self.options.test_machine_name:
         self._UploadErrorImagesToCloudStorage(image_name, screenshot, ref_png)
       else:
