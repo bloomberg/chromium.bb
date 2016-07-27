@@ -788,6 +788,8 @@
       'content/shell_content_state.h',
     ],
     'ash_test_support_sources': [
+      'common/test/test_volume_control_delegate.cc',
+      'common/test/test_volume_control_delegate.h',
       'desktop_background/desktop_background_controller_test_api.cc',
       'desktop_background/desktop_background_controller_test_api.h',
       'shell/toplevel_window.cc',
@@ -853,8 +855,6 @@
       'test/test_system_tray_item.h',
       'test/test_user_wallpaper_delegate.cc',
       'test/test_user_wallpaper_delegate.h',
-      'test/test_volume_control_delegate.cc',
-      'test/test_volume_control_delegate.h',
       'test/tray_cast_test_api.cc',
       'test/tray_cast_test_api.h',
       'test/ui_controls_factory_ash.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
-#define ASH_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
+#ifndef ASH_COMMON_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
+#define ASH_COMMON_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
 
 #include "ash/common/system/volume_control_delegate.h"
 #include "base/macros.h"
@@ -43,4 +43,4 @@ class TestVolumeControlDelegate : public ash::VolumeControlDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
+#endif  // ASH_COMMON_TEST_TEST_VOLUME_CONTROL_DELEGATE_H_
