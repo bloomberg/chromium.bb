@@ -61,7 +61,6 @@ bool RequestCoordinator::SavePageLater(
   static int64_t id = 0;
 
   // Build a SavePageRequest.
-  // TODO(petewil): Use something like base::Clock to help in testing.
   offline_pages::SavePageRequest request(
       id++, url, client_id, base::Time::Now(), was_user_requested);
 
@@ -76,8 +75,7 @@ void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
 
-  // Inform the scheduler that we have an outstanding task.
-  // TODO(petewil): Determine trigger conditions from policy.
+  // Inform the scheduler that we have an outstanding task..
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }
 
@@ -121,8 +119,6 @@ bool RequestCoordinator::StartProcessing(
 
   is_canceled_ = false;
   scheduler_callback_ = callback;
-  // TODO(petewil): Check existing conditions (should be passed down from
-  // BackgroundTask)
 
   TryNextRequest();
 
