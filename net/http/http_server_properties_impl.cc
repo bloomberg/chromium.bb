@@ -413,8 +413,27 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
   if (it != alternative_service_map_.end()) {
     DCHECK(!it->second.empty());
     if (it->second.size() == alternative_service_info_vector.size()) {
-      changed = !std::equal(it->second.begin(), it->second.end(),
-                            alternative_service_info_vector.begin());
+      const base::Time now = base::Time::Now();
+      changed = false;
+      auto new_it = alternative_service_info_vector.begin();
+      for (const auto& old : it->second) {
+        // Persist to disk immediately if new entry has different scheme, host,
+        // or port.
+        if (old.alternative_service != new_it->alternative_service) {
+          changed = true;
+          break;
+        }
+        // Also persist to disk if new expiration it more that twice as far or
+        // less than half as far in the future.
+        base::Time old_time = old.expiration;
+        base::Time new_time = new_it->expiration;
+        if (new_time - now > 2 * (old_time - now) ||
+            2 * (new_time - now) < (old_time - now)) {
+          changed = true;
+          break;
+        }
+        ++new_it;
+      }
     }
   }
 
