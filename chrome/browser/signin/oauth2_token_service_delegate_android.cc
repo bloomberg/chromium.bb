@@ -442,13 +442,11 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailableFromJava(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
     const std::string& account_id) {
-  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
-  CHECK(!account_id.empty());
+  DCHECK(!account_id.empty());
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable id="
            << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
-  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
-  CHECK(!account_name.empty());
+  DCHECK(!account_name.empty());
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_account_name =
       ConvertUTF8ToJavaString(env, account_name);
@@ -469,8 +467,7 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevokedFromJava(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
     const std::string& account_id) {
-  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
-  CHECK(!account_id.empty());
+  DCHECK(!account_id.empty());
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked id="
            << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
