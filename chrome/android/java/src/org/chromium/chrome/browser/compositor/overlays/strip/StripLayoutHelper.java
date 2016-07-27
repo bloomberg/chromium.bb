@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1738,31 +1739,33 @@ public class StripLayoutHelper {
 
     /**
      * Set the accessibility description of a {@link StripLayoutTab}.
+     *
      * @param stripTab  The StripLayoutTab to set the accessibility description.
      * @param title     The title of the tab.
-     * @param isHidden  Is the tab hidden?
+     * @param isHidden  Current visibility state of the Tab.
      */
-    private void setAccessibilityDescription(StripLayoutTab stripTab, String title,
-            boolean isHidden) {
+    private void setAccessibilityDescription(
+                StripLayoutTab stripTab, String title, boolean isHidden) {
         if (stripTab == null) return;
 
         // Separator used to separate the different parts of the content description.
         // Not for sentence construction and hence not localized.
         final String contentDescriptionSeparator = ", ";
-
         final StringBuilder builder = new StringBuilder();
         if (!TextUtils.isEmpty(title)) {
             builder.append(title);
             builder.append(contentDescriptionSeparator);
         }
 
-        int resId = R.string.accessibility_tabstrip_identifier;
-        if (!isHidden && !mIncognito) {
-            resId = R.string.accessibility_tabstrip_identifier_selected;
-        } else if (!isHidden && mIncognito) {
-            resId = R.string.accessibility_tabstrip_incognito_identifier_selected;
-        } else if (isHidden && mIncognito) {
-            resId = R.string.accessibility_tabstrip_incognito_identifier;
+        @StringRes int resId;
+        if (mIncognito) {
+            resId = isHidden
+                        ? R.string.accessibility_tabstrip_incognito_identifier
+                        : R.string.accessibility_tabstrip_incognito_identifier_selected;
+        } else {
+            resId = isHidden
+                        ? R.string.accessibility_tabstrip_identifier
+                        : R.string.accessibility_tabstrip_identifier_selected;
         }
         builder.append(mContext.getResources().getString(resId));
 

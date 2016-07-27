@@ -43,7 +43,6 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class StripLayoutHelperTest {
-
     @Mock private Context mContext;
     @Mock private Resources mResources;
     @Mock private LayoutUpdateHost mUpdateHost;
@@ -94,7 +93,7 @@ public class StripLayoutHelperTest {
     }
 
     /**
-     * Test method for {@link stripLayoutHelper#getVirtualViews(List<VirtualView>)}.
+     * Test method for {@link StripLayoutHelper#getVirtualViews(List<VirtualView>)}.
      *
      * Checks that it returns the correct order of tabs, including correct content.
      */
@@ -107,7 +106,7 @@ public class StripLayoutHelperTest {
     }
 
     /**
-     * Test method for {@link stripLayoutHelper#getVirtualViews(List<VirtualView>)}.
+     * Test method for {@link StripLayoutHelper#getVirtualViews(List<VirtualView>)}.
      *
      * Checks that it returns the correct order of tabs, even when a tab except the first one is
      * selected.
@@ -122,7 +121,7 @@ public class StripLayoutHelperTest {
     }
 
     /**
-     * Test method for {@link stripLayoutHelper#getVirtualViews(List<VirtualView>)}.
+     * Test method for {@link StripLayoutHelper#getVirtualViews(List<VirtualView>)}.
      *
      * Checks that it returns the correct order of tabs, even in RTL mode.
      */
@@ -137,7 +136,7 @@ public class StripLayoutHelperTest {
     }
 
     /**
-     * Test method for {@link stripLayoutHelper#getVirtualViews(List<VirtualView>)}.
+     * Test method for {@link StripLayoutHelper#getVirtualViews(List<VirtualView>)}.
      *
      * Checks that it returns the correct order of tabs, even in incognito mode.
      */
@@ -166,7 +165,7 @@ public class StripLayoutHelperTest {
         // Each tab has a "close button", and there is one additional "new tab" button
         final int expectedNumberOfViews = 2 * expectedAccessibilityDescriptions.length + 1;
 
-        final List<VirtualView> views = new ArrayList<VirtualView>();
+        final List<VirtualView> views = new ArrayList<>();
         mStripLayoutHelper.getVirtualViews(views);
         assertEquals(expectedNumberOfViews, views.size());
 
@@ -191,16 +190,14 @@ public class StripLayoutHelperTest {
     }
 
     private String[] getExpectedAccessibilityDescriptions(int tabIndex) {
-        String[] expectedAccessibilityDescriptions = new String[TEST_TAB_TITLES.length];
+        final String[] expectedAccessibilityDescriptions = new String[TEST_TAB_TITLES.length];
         for (int i = 0; i < TEST_TAB_TITLES.length; i++) {
-            boolean isHidden = (i != tabIndex);
-            String suffix = IDENTIFIER;
-            if (!isHidden && !mIncognito) {
-                suffix = IDENTIFIER_SELECTED;
-            } else if (!isHidden && mIncognito) {
-                suffix = INCOGNITO_IDENTIFIER_SELECTED;
-            } else if (isHidden && mIncognito) {
-                suffix = INCOGNITO_IDENTIFIER;
+            final boolean isHidden = (i != tabIndex);
+            String suffix;
+            if (mIncognito) {
+                suffix = isHidden ? INCOGNITO_IDENTIFIER : INCOGNITO_IDENTIFIER_SELECTED;
+            } else {
+                suffix = isHidden ? IDENTIFIER : IDENTIFIER_SELECTED;
             }
             String expectedDescription = "";
             if (!TextUtils.isEmpty(TEST_TAB_TITLES[i])) {
@@ -211,8 +208,8 @@ public class StripLayoutHelperTest {
         return expectedAccessibilityDescriptions;
     }
 
-    private class TestTabModel extends EmptyTabModel {
-        private List<Tab> mMockTabs = new ArrayList<Tab>();
+    private static class TestTabModel extends EmptyTabModel {
+        private final List<Tab> mMockTabs = new ArrayList<>();
         private int mMaxId = -1;
         private int mIndex = 0;
 
