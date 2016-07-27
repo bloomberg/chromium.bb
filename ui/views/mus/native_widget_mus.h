@@ -41,10 +41,6 @@ enum class EventResult;
 }
 }
 
-namespace shell {
-class Connector;
-}
-
 namespace ui {
 class Event;
 }
@@ -71,7 +67,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
       public NON_EXPORTED_BASE(ui::InputEventHandler) {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                  shell::Connector* connector,
                   ui::Window* window,
                   ui::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;

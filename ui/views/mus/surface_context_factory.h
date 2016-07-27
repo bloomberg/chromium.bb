@@ -15,10 +15,6 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/surface_binding.h"
 
-namespace mojo {
-class Connector;
-}
-
 namespace ui {
 class Window;
 }
@@ -27,8 +23,7 @@ namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(shell::Connector* connector,
-                        ui::Window* window,
+  SurfaceContextFactory(ui::Window* window,
                         ui::mojom::SurfaceType surface_type);
   ~SurfaceContextFactory() override;
 

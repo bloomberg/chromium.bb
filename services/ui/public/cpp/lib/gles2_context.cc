@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/shell/public/cpp/connector.h"
 #include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/lib/command_buffer_client_impl.h"
 #include "services/ui/public/interfaces/command_buffer.mojom.h"
@@ -27,8 +26,7 @@ GLES2Context::GLES2Context() {}
 
 GLES2Context::~GLES2Context() {}
 
-bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
-                              shell::Connector* connector) {
+bool GLES2Context::Initialize(const std::vector<int32_t>& attribs) {
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
       GpuService::GetInstance()->EstablishGpuChannelSync();
   if (!gpu_channel_host)
@@ -81,10 +79,9 @@ bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
 
 // static
 std::unique_ptr<GLES2Context> GLES2Context::CreateOffscreenContext(
-    const std::vector<int32_t>& attribs,
-    shell::Connector* connector) {
+    const std::vector<int32_t>& attribs) {
   std::unique_ptr<GLES2Context> gles2_context(new GLES2Context);
-  if (!gles2_context->Initialize(attribs, connector))
+  if (!gles2_context->Initialize(attribs))
     gles2_context.reset();
   return gles2_context;
 }

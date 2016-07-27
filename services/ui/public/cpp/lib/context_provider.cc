@@ -7,21 +7,14 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "services/shell/public/cpp/connector.h"
 #include "services/ui/public/cpp/gles2_context.h"
 
 namespace ui {
 
-ContextProvider::ContextProvider(shell::Connector* connector)
-    : connector_(connector->Clone()) {}
+ContextProvider::ContextProvider() {}
 
 bool ContextProvider::BindToCurrentThread() {
-  if (connector_) {
-    context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>(),
-                                                    connector_.get());
-    // We don't need the connector anymore, so release it.
-    connector_.reset();
-  }
+  context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>());
   return !!context_;
 }
 

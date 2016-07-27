@@ -112,11 +112,9 @@ class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
-                    shell::Connector* connector,
                     ::ui::Window* window,
                     ::ui::WindowManagerClient* window_manager_client)
       : NativeWidgetMus(delegate,
-                        connector,
                         window,
                         ::ui::mojom::SurfaceType::UNDERLAY),
         window_manager_client_(window_manager_client) {}
@@ -238,7 +236,7 @@ NonClientFrameController::NonClientFrameController(
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.delegate = this;
   params.native_widget =
-      new WmNativeWidgetMus(widget_, connector, window, window_manager_client);
+      new WmNativeWidgetMus(widget_, window, window_manager_client);
   widget_->Init(params);
 
   parent->AddChild(window);

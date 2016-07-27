@@ -504,7 +504,6 @@ class NativeWidgetMus::MusCaptureClient
 // NativeWidgetMus, public:
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 shell::Connector* connector,
                                  ui::Window* window,
                                  ui::mojom::SurfaceType surface_type)
     : window_(window),
@@ -528,8 +527,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   if (!default_context_factory) {
-    context_factory_.reset(
-        new SurfaceContextFactory(connector, window_, surface_type_));
+    context_factory_.reset(new SurfaceContextFactory(window_, surface_type_));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   }
 
