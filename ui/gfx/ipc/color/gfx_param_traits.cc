@@ -11,30 +11,36 @@ namespace IPC {
 
 void ParamTraits<gfx::ColorSpace>::GetSize(base::PickleSizer* s,
                                            const gfx::ColorSpace& p) {
-  GetParamSize(s, p.valid_);
-  if (!p.valid_)
-    return;
+  GetParamSize(s, p.primaries_);
+  GetParamSize(s, p.transfer_);
+  GetParamSize(s, p.matrix_);
+  GetParamSize(s, p.range_);
   GetParamSize(s, p.icc_profile_id_);
 }
 
 void ParamTraits<gfx::ColorSpace>::Write(base::Pickle* m,
                                          const gfx::ColorSpace& p) {
-  WriteParam(m, p.valid_);
-  if (!p.valid_)
-    return;
+  WriteParam(m, p.primaries_);
+  WriteParam(m, p.transfer_);
+  WriteParam(m, p.matrix_);
+  WriteParam(m, p.range_);
   WriteParam(m, p.icc_profile_id_);
 }
 
 bool ParamTraits<gfx::ColorSpace>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         gfx::ColorSpace* r) {
-  if (!ReadParam(m, iter, &r->valid_))
+  if (!ReadParam(m, iter, &r->primaries_))
     return false;
-  if (!r->valid_)
-    return true;
-
+  if (!ReadParam(m, iter, &r->transfer_))
+    return false;
+  if (!ReadParam(m, iter, &r->matrix_))
+    return false;
+  if (!ReadParam(m, iter, &r->range_))
+    return false;
   if (!ReadParam(m, iter, &r->icc_profile_id_))
     return false;
+
   return true;
 }
 

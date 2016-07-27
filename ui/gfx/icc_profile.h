@@ -67,13 +67,6 @@ class GFX_EXPORT ICCProfile {
   // profile from a ColorSpace object created from it.
   uint64_t id_ = 0;
 
-  // Hard-coded values for the supported non-monitor-ICC-based profiles that we
-  // support (for now).
-  static const uint64_t kSRGBId = 1;
-  static const uint64_t kJpegId = 2;
-  static const uint64_t kRec601Id = 3;
-  static const uint64_t kRec709Id = 4;
-
   friend class ColorSpace;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;
 };

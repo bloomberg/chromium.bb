@@ -103,8 +103,9 @@ const std::vector<char>& ICCProfile::GetData() const {
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
-  ColorSpace color_space;
-  color_space.valid_ = true;
+  ColorSpace color_space(ColorSpace::PrimaryID::CUSTOM,
+                         ColorSpace::TransferID::CUSTOM,
+                         ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
   color_space.icc_profile_id_ = id_;
 
   // Move this ICC profile to the most recently used end of the cache.

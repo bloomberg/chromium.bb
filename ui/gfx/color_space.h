@@ -25,7 +25,94 @@ class ICCProfile;
 // between any processes.
 class GFX_EXPORT ColorSpace {
  public:
+  enum class PrimaryID : uint16_t {
+    // The first 0-255 values should match the H264 specification.
+    RESERVED0 = 0,
+    BT709 = 1,
+    UNSPECIFIED = 2,
+    RESERVED = 3,
+    BT470M = 4,
+    BT470BG = 5,
+    SMPTE170M = 6,
+    SMPTE240M = 7,
+    FILM = 8,
+    BT2020 = 9,
+    SMPTEST428_1 = 10,
+    SMPTEST431_2 = 11,
+    SMPTEST432_1 = 12,
+
+    // Chrome-specific values start at 1000.
+    XYZ_D50 = 1000,
+    // TODO(hubbe): We need to store the primaries.
+    CUSTOM = 1001,
+    LAST = CUSTOM
+  };
+
+  enum class TransferID : uint16_t {
+    // The first 0-255 values should match the H264 specification.
+    RESERVED0 = 0,
+    BT709 = 1,
+    UNSPECIFIED = 2,
+    RESERVED = 3,
+    GAMMA22 = 4,
+    GAMMA28 = 5,
+    SMPTE170M = 6,
+    SMPTE240M = 7,
+    LINEAR = 8,
+    LOG = 9,
+    LOG_SQRT = 10,
+    IEC61966_2_4 = 11,
+    BT1361_ECG = 12,
+    IEC61966_2_1 = 13,
+    BT2020_10 = 14,
+    BT2020_12 = 15,
+    SMPTEST2084 = 16,
+    SMPTEST428_1 = 17,
+
+    // Chrome-specific values start at 1000.
+    GAMMA24 = 1000,
+
+    // TODO(hubbe): Need to store an approximation of the gamma function(s).
+    CUSTOM = 1001,
+    LAST = CUSTOM,
+  };
+
+  enum class MatrixID : int16_t {
+    // The first 0-255 values should match the H264 specification.
+    RGB = 0,
+    BT709 = 1,
+    UNSPECIFIED = 2,
+    RESERVED = 3,
+    FCC = 4,
+    BT470BG = 5,
+    SMPTE170M = 6,
+    SMPTE240M = 7,
+    YCOCG = 8,
+    BT2020_NCL = 9,
+    BT2020_CL = 10,
+    YDZDX = 11,
+
+    // Chrome-specific values start at 1000
+    LAST = YDZDX,
+  };
+
+  // The h264 spec declares this as bool, so only the the first two values
+  // correspond to the h264 spec. Chrome-specific values can start at 2.
+  // We use an enum instead of a bool becuase different bit depths may have
+  // different definitions of what "limited" means.
+  enum class RangeID : int8_t {
+    FULL = 0,
+    LIMITED = 1,
+
+    LAST = LIMITED
+  };
+
   ColorSpace();
+  ColorSpace(PrimaryID primaries,
+             TransferID transfer,
+             MatrixID matrix,
+             RangeID full_range);
+
   static ColorSpace CreateSRGB();
 
   // TODO: Remove these, and replace with more generic constructors.
@@ -36,7 +123,11 @@ class GFX_EXPORT ColorSpace {
   bool operator==(const ColorSpace& other) const;
 
  private:
-  bool valid_ = false;
+  PrimaryID primaries_;
+  TransferID transfer_;
+  MatrixID matrix_;
+  RangeID range_;
+
   // This is used to look up the ICCProfile from which this ColorSpace was
   // created, if possible.
   uint64_t icc_profile_id_ = 0;

@@ -12,45 +12,50 @@
 
 namespace gfx {
 
-ColorSpace::ColorSpace() = default;
+ColorSpace::ColorSpace()
+    : primaries_(PrimaryID::UNSPECIFIED),
+      transfer_(TransferID::UNSPECIFIED),
+      matrix_(MatrixID::UNSPECIFIED),
+      range_(RangeID::LIMITED) {}
+
+ColorSpace::ColorSpace(PrimaryID primaries,
+                       TransferID transfer,
+                       MatrixID matrix,
+                       RangeID range)
+    : primaries_(primaries),
+      transfer_(transfer),
+      matrix_(matrix),
+      range_(range) {
+  // TODO: Set profile_id_
+}
 
 // static
 ColorSpace ColorSpace::CreateSRGB() {
-  ColorSpace color_space;
-  color_space.valid_ = true;
-  color_space.icc_profile_id_ = ICCProfile::kSRGBId;
-  return color_space;
+  return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1, MatrixID::RGB,
+                    RangeID::FULL);
 }
 
 // static
 ColorSpace ColorSpace::CreateJpeg() {
-  ColorSpace color_space;
-  color_space.valid_ = true;
-  color_space.icc_profile_id_ = ICCProfile::kJpegId;
-  return color_space;
+  return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1, MatrixID::BT709,
+                    RangeID::FULL);
 }
 
 // static
 ColorSpace ColorSpace::CreateREC601() {
-  ColorSpace color_space;
-  color_space.valid_ = true;
-  color_space.icc_profile_id_ = ICCProfile::kRec601Id;
-  return color_space;
+  return ColorSpace(PrimaryID::SMPTE170M, TransferID::SMPTE170M,
+                    MatrixID::SMPTE170M, RangeID::LIMITED);
 }
 
 // static
 ColorSpace ColorSpace::CreateREC709() {
-  ColorSpace color_space;
-  color_space.valid_ = true;
-  color_space.icc_profile_id_ = ICCProfile::kRec709Id;
-  return color_space;
+  return ColorSpace(PrimaryID::BT709, TransferID::BT709, MatrixID::BT709,
+                    RangeID::LIMITED);
 }
 
 bool ColorSpace::operator==(const ColorSpace& other) const {
-  // TODO(ccameron): The |icc_profile_id_| should eventually not factor in
-  // to equality comparison at all, because it's just an optimization, but
-  // for now there is no other data in this structure.
-  return valid_ == other.valid_ && icc_profile_id_ == other.icc_profile_id_;
+  return primaries_ == other.primaries_ && transfer_ == other.transfer_ &&
+         matrix_ == other.matrix_ && range_ == other.range_;
 }
 
 }  // namespace gfx
