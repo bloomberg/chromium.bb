@@ -267,6 +267,11 @@ void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
   NOTIMPLEMENTED();
 }
 
+void WmShellMus::ShowContextMenu(const gfx::Point& location_in_screen,
+                                 ui::MenuSourceType source_type) {
+  NOTIMPLEMENTED();
+}
+
 std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {

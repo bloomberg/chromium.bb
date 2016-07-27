@@ -19,6 +19,7 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_shell.h"
@@ -27,7 +28,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
@@ -1380,7 +1380,7 @@ void ShelfView::ToggleOverflowBubble() {
 
   overflow_bubble_->Show(overflow_button_, overflow_view);
 
-  Shell::GetInstance()->UpdateShelfVisibility();
+  wm_shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnFadeOutAnimationEnded() {
@@ -1781,7 +1781,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
 
   const ShelfItem* item = ShelfItemForView(source);
   if (!item) {
-    Shell::GetInstance()->ShowContextMenu(point, source_type);
+    WmShell::Get()->ShowContextMenu(point, source_type);
     return;
   }
 
@@ -1861,7 +1861,8 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
   menu_model_.reset();
   scoped_target_root_window_.reset();
 
-  Shell::GetInstance()->UpdateShelfVisibility();
+  // Auto-hide or alignment might have changed, but only for this shelf.
+  wm_shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
