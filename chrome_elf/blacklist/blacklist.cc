@@ -347,25 +347,7 @@ bool Initialize(bool force) {
                     VirtualProtect(&g_thunk_storage, sizeof(g_thunk_storage),
                                    PAGE_EXECUTE_READ, &old_protect);
 
-  AddDllsFromRegistryToBlacklist();
-
   return NT_SUCCESS(ret) && page_executable;
-}
-
-void AddDllsFromRegistryToBlacklist() {
-  std::vector<std::wstring> dlls;
-
-  if (!nt::QueryRegValueMULTISZ(nt::HKCU, kRegistryFinchListPath,
-                                kRegistryFinchListValueName, &dlls) ||
-      dlls.empty())
-    return;
-
-  // Add each DLL to the BL in memory
-  for (auto name : dlls) {
-    AddDllToBlacklist(name.c_str());
-  }
-
-  return;
 }
 
 }  // namespace blacklist

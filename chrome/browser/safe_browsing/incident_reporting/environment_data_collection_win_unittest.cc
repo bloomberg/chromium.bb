@@ -29,8 +29,6 @@ namespace safe_browsing {
 
 namespace {
 
-const wchar_t test_dll[] = L"test_name.dll";
-
 // Returns true if a dll with filename |dll_name| is found in |process_report|,
 // providing a copy of it in |result|.
 bool GetProcessReportDll(
@@ -123,53 +121,6 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
     return;
 
   FAIL() << "No LSP feature found for " << lsp;
-}
-
-TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
-  // Ensure that CollectDllBlacklistData correctly adds the set of sanitized dll
-  // names currently stored in the registry to the report.
-  registry_util::RegistryOverrideManager override_manager;
-  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
-
-  base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER,
-                                           blacklist::kRegistryFinchListPath,
-                                           KEY_QUERY_VALUE | KEY_SET_VALUE);
-
-  // Check that with an empty registry the blacklisted dlls field is left empty.
-  ClientIncidentReport_EnvironmentData_Process process_report;
-  CollectDllBlacklistData(&process_report);
-  EXPECT_EQ(0, process_report.blacklisted_dll_size());
-
-  // Check that after adding exactly one dll to the registry it appears in the
-  // process report.
-  blacklist_registry_key.WriteValue(test_dll, test_dll);
-  CollectDllBlacklistData(&process_report);
-  ASSERT_EQ(1, process_report.blacklisted_dll_size());
-
-  base::string16 process_report_dll =
-      base::UTF8ToWide(process_report.blacklisted_dll(0));
-  EXPECT_EQ(base::string16(test_dll), process_report_dll);
-
-  // Check that if the registry contains the full path to a dll it is properly
-  // sanitized before being reported.
-  blacklist_registry_key.DeleteValue(test_dll);
-  process_report.clear_blacklisted_dll();
-
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &path));
-  base::string16 input_path =
-      path.Append(FILE_PATH_LITERAL("test_path.dll")).value();
-
-  std::string path_expected = base::FilePath(FILE_PATH_LITERAL("~"))
-                                  .Append(FILE_PATH_LITERAL("test_path.dll"))
-                                  .AsUTF8Unsafe();
-
-  blacklist_registry_key.WriteValue(input_path.c_str(), input_path.c_str());
-  CollectDllBlacklistData(&process_report);
-
-  ASSERT_EQ(1, process_report.blacklisted_dll_size());
-  std::string process_report_path = process_report.blacklisted_dll(0);
-  EXPECT_EQ(path_expected, process_report_path);
 }
 
 #if !defined(_WIN64)

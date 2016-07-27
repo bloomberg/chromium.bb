@@ -19,10 +19,6 @@ namespace blacklist {
 
 const wchar_t kRegistryBeaconPath[] =
     L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BLBeacon";
-const wchar_t kRegistryFinchListPath[] =
-    L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BLFinchList";
-const char kRegistryFinchListValueNameStr[] = "BLDlls";
-const wchar_t kRegistryFinchListValueName[] = L"BLDlls";
 const wchar_t kBeaconVersion[] = L"version";
 const wchar_t kBeaconState[] = L"state";
 const wchar_t kBeaconAttemptCount[] = L"failed_count";
@@ -35,7 +31,6 @@ namespace elf_sec {
 
 const wchar_t kRegSecurityFinchPath[] =
     L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BrowserSboxFinch";
-
 const wchar_t kRegSecurityPath[] =
     L"SOFTWARE\\" PRODUCT_STRING_PATH L"\\BrowserSec";
 

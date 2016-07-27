@@ -234,18 +234,6 @@ void RecordLspFeature(ClientIncidentReport_EnvironmentData_Process* process) {
   }
 }
 
-void CollectDllBlacklistData(
-    ClientIncidentReport_EnvironmentData_Process* process) {
-  PathSanitizer path_sanitizer;
-  base::win::RegistryValueIterator iter(HKEY_CURRENT_USER,
-                                        blacklist::kRegistryFinchListPath);
-  for (; iter.Valid(); ++iter) {
-    base::FilePath dll_name(iter.Value());
-    path_sanitizer.StripHomeDirectory(&dll_name);
-    process->add_blacklisted_dll(dll_name.AsUTF8Unsafe());
-  }
-}
-
 void CollectModuleVerificationData(
     const wchar_t* const modules_to_verify[],
     size_t num_modules_to_verify,
@@ -311,7 +299,6 @@ void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
   RecordLspFeature(process);
-  CollectDllBlacklistData(process);
   CollectModuleVerificationData(
       kModulesToVerify, arraysize(kModulesToVerify), process);
 }

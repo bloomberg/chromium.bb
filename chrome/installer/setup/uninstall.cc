@@ -786,8 +786,17 @@ void RemoveBlacklistState() {
   InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
                                  blacklist::kRegistryBeaconPath,
                                  0);  // wow64_access
+// The following key is no longer used (https://crbug.com/631771).
+// This cleanup is being left in for a time though.
+#if defined(GOOGLE_CHROME_BUILD)
+  const wchar_t kRegistryFinchListPath[] =
+      L"SOFTWARE\\Google\\Chrome\\BLFinchList";
+#else
+  const wchar_t kRegistryFinchListPath[] =
+      L"SOFTWARE\\Chromium\\BLFinchList";
+#endif
   InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
-                                 blacklist::kRegistryFinchListPath,
+                                 kRegistryFinchListPath,
                                  0);  // wow64_access
 }
 

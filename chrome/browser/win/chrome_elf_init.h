@@ -13,9 +13,6 @@ extern const char kBrowserBlacklistTrialDisabledGroupName[];
 // only affect future runs since Chrome Elf is already setup by this point).
 void InitializeChromeElf();
 
-// Add the blacklist from the finch configs in the registry.
-void AddFinchBlacklistToRegistry();
-
 // Set the required state for an enabled browser blacklist.
 void BrowserBlacklistBeaconSetup();
 
