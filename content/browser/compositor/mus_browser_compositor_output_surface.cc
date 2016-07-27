@@ -13,7 +13,6 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
-#include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_surface.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -33,7 +32,6 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         begin_frame_source,
                                         std::move(overlay_candidate_validator)),
       ui_window_(nullptr) {
-  DCHECK(ui::GpuService::UseChromeGpuCommandBuffer());
   views::WindowTreeHostMus* window_tree_host =
       static_cast<views::WindowTreeHostMus*>(
           aura::WindowTreeHost::GetForAcceleratedWidget(surface_handle));

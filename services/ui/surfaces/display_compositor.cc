@@ -25,7 +25,6 @@ namespace ui {
 DisplayCompositor::DisplayCompositor(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : task_runner_(task_runner),
       surfaces_state_(surfaces_state),
@@ -36,7 +35,7 @@ DisplayCompositor::DisplayCompositor(
       allocator_.client_id(), this);
 
   scoped_refptr<SurfacesContextProvider> surfaces_context_provider(
-      new SurfacesContextProvider(widget, gpu_state));
+      new SurfacesContextProvider(widget));
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(surfaces_context_provider->BindToCurrentThread());
 

@@ -270,11 +270,6 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 }
 
 static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
-#if defined(MOJO_RUNNER_CLIENT)
-  if (shell::ShellIsRemote() && !ui::GpuService::UseChromeGpuCommandBuffer())
-    return false;
-#endif
-
 #if defined(OS_CHROMEOS)
   // Software fallback does not happen on Chrome OS.
   return true;

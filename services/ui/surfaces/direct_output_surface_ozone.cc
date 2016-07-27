@@ -35,16 +35,9 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
                  context_provider->ContextSupport()),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {
-  if (!GpuService::UseChromeGpuCommandBuffer()) {
-    ozone_gpu_memory_buffer_manager_.reset(new OzoneGpuMemoryBufferManager());
-    buffer_queue_.reset(new BufferQueue(
-        context_provider->ContextGL(), target, internalformat, &gl_helper_,
-        ozone_gpu_memory_buffer_manager_.get(), widget));
-  } else {
-    buffer_queue_.reset(new BufferQueue(
-        context_provider->ContextGL(), target, internalformat, &gl_helper_,
-        MusGpuMemoryBufferManager::current(), widget));
-  }
+  buffer_queue_.reset(new BufferQueue(
+      context_provider->ContextGL(), target, internalformat, &gl_helper_,
+      MusGpuMemoryBufferManager::current(), widget));
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;

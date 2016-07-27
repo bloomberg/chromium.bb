@@ -31,7 +31,6 @@ source_set("surfaces") {
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
-    "//services/ui/gles2",
     "//services/ui/gpu",
     "//services/ui/public/interfaces",
     "//ui/gfx",
@@ -43,8 +42,6 @@ source_set("surfaces") {
     sources += [
       "direct_output_surface_ozone.cc",
       "direct_output_surface_ozone.h",
-      "ozone_gpu_memory_buffer_manager.cc",
-      "ozone_gpu_memory_buffer_manager.h",
     ]
     deps += [ "//gpu/command_buffer/common" ]
   }

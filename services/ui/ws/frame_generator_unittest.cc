@@ -9,7 +9,6 @@
 #include "base/test/test_message_loop.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
-#include "services/ui/gles2/gpu_state.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_surface_manager.h"
@@ -74,7 +73,6 @@ void FrameGeneratorTest::SetUp() {
       base::WrapUnique(new ServerWindow(&window_delegate_, WindowId()))));
   PlatformDisplayInitParams init_params;
   frame_generator_.reset(new FrameGenerator(frame_generator_delegate_.get(),
-                                            init_params.gpu_state,
                                             init_params.surfaces_state));
   InitWindow(root_window());
 }

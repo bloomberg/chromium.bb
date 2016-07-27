@@ -33,7 +33,6 @@ class Window;
 }
 
 namespace ui {
-class BitmapUploader;
 class Window;
 class WindowTreeClient;
 namespace mojom {
@@ -48,7 +47,6 @@ class Connector;
 
 namespace ui {
 class Event;
-class ViewProp;
 }
 
 namespace wm {
@@ -279,10 +277,6 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<wm::CursorManager> cursor_manager_;
-
-  // Bitmap management.
-  std::unique_ptr<ui::BitmapUploader> bitmap_uploader_;
-  std::unique_ptr<ui::ViewProp> prop_;
 
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 

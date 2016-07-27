@@ -52,18 +52,6 @@ GpuService::~GpuService() {
 }
 
 // static
-bool GpuService::UseChromeGpuCommandBuffer() {
-// TODO(penghuang): Kludge: Running with Chrome GPU command buffer by default
-// breaks unit tests on Windows
-#if defined(OS_WIN)
-  return false;
-#else
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseMojoGpuCommandBufferInMus);
-#endif
-}
-
-// static
 void GpuService::Initialize(shell::Connector* connector) {
   DCHECK(!g_gpu_service);
   g_gpu_service = new GpuService(connector);

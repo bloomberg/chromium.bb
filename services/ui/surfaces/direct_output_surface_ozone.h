@@ -11,7 +11,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/display_compositor/gl_helper.h"
-#include "services/ui/surfaces/ozone_gpu_memory_buffer_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -72,7 +71,6 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
 
   display_compositor::GLHelper gl_helper_;
-  std::unique_ptr<OzoneGpuMemoryBufferManager> ozone_gpu_memory_buffer_manager_;
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
 

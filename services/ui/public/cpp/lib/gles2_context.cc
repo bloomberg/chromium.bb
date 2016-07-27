@@ -29,47 +29,30 @@ GLES2Context::~GLES2Context() {}
 
 bool GLES2Context::Initialize(const std::vector<int32_t>& attribs,
                               shell::Connector* connector) {
-  gpu::CommandBuffer* command_buffer = nullptr;
-  gpu::GpuControl* gpu_control = nullptr;
-  // TODO(penghuang): Use type gpu::gles2::ContextCreationAttribHelper for
-  // attribs.
-  if (!ui::GpuService::UseChromeGpuCommandBuffer()) {
-    mojom::GpuPtr gpu;
-    connector->ConnectToInterface("mojo:ui", &gpu);
-    mojom::CommandBufferPtr command_buffer_ptr;
-    gpu->CreateOffscreenGLES2Context(GetProxy(&command_buffer_ptr));
-    command_buffer_client_impl_.reset(
-        new CommandBufferClientImpl(attribs, std::move(command_buffer_ptr)));
-    if (!command_buffer_client_impl_->Initialize())
-      return false;
-    command_buffer = command_buffer_client_impl_.get();
-    gpu_control = command_buffer_client_impl_.get();
-  } else {
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-        GpuService::GetInstance()->EstablishGpuChannelSync();
-    if (!gpu_channel_host)
-      return false;
-    gpu::SurfaceHandle surface_handle = gfx::kNullAcceleratedWidget;
-    // TODO(penghuang): support shared group.
-    gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
-    gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
-    gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
-    gpu::gles2::ContextCreationAttribHelper attributes;
-    // TODO(penghuang): figure a useful active_url.
-    GURL active_url;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        base::ThreadTaskRunnerHandle::Get();
-    if (!attributes.Parse(attribs))
-      return false;
-    command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
-        std::move(gpu_channel_host), surface_handle, shared_command_buffer,
-        stream_id, stream_priority, attributes, active_url,
-        std::move(task_runner));
-    if (!command_buffer_proxy_impl_)
-      return false;
-    command_buffer = command_buffer_proxy_impl_.get();
-    gpu_control = command_buffer_proxy_impl_.get();
-  }
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      GpuService::GetInstance()->EstablishGpuChannelSync();
+  if (!gpu_channel_host)
+    return false;
+  gpu::SurfaceHandle surface_handle = gfx::kNullAcceleratedWidget;
+  // TODO(penghuang): support shared group.
+  gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
+  gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
+  gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  // TODO(penghuang): figure a useful active_url.
+  GURL active_url;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  if (!attributes.Parse(attribs))
+    return false;
+  command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
+      std::move(gpu_channel_host), surface_handle, shared_command_buffer,
+      stream_id, stream_priority, attributes, active_url,
+      std::move(task_runner));
+  if (!command_buffer_proxy_impl_)
+    return false;
+  gpu::CommandBuffer* command_buffer = command_buffer_proxy_impl_.get();
+  gpu::GpuControl* gpu_control = command_buffer_proxy_impl_.get();
 
   constexpr gpu::SharedMemoryLimits default_limits;
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer));

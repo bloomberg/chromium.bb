@@ -115,7 +115,6 @@ static_library("lib") {
     "//services/ui/clipboard:lib",
     "//services/ui/common:mus_common",
     "//services/ui/display",
-    "//services/ui/gles2",
     "//services/ui/public/interfaces",
     "//services/ui/surfaces",
     "//ui/base",

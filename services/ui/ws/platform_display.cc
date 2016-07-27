@@ -11,7 +11,6 @@
 #include "cc/output/delegated_frame_data.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/ui/gles2/gpu_state.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/surfaces/surfaces_state.h"
@@ -60,7 +59,6 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
       frame_generator_(new FrameGenerator(this,
-                                          init_params.gpu_state,
                                           init_params.surfaces_state)) {
   metrics_.bounds = init_params.display_bounds;
   // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.

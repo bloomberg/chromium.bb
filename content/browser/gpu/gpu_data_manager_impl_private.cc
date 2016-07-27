@@ -266,11 +266,6 @@ enum BlockStatusHistogram {
 };
 
 bool ShouldDisableHardwareAcceleration() {
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-  // TODO(rjkroege): Remove this when https://crbug.com/602519 is fixed.
-  if (shell::ShellIsRemote() && !ui::GpuService::UseChromeGpuCommandBuffer())
-    return true;
-#endif
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpu);
 }
