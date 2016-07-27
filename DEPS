@@ -250,7 +250,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'ef811c6bd4de74e13e7035ca882cc77f85793fef',
 
   'src/third_party/ced/src':
-    Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '7645a37dd138aea639f30e2a18e04bc17b586367',
+    Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '9012c0ab648025dd0f8df14294bf5d6d73793ac9',
 
   'src/third_party/cld_2/src':
     Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
