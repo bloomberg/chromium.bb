@@ -118,9 +118,10 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
 
 + (id<GREYMatcher>)matcherForWebWithCSSSelector:(const std::string&)selector
                                      inWebState:(web::WebState*)webState {
+  std::string selectorCopy = selector;
   MatchesBlock matches = ^BOOL(WKWebView*) {
     std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,
-                                            selector.c_str());
+                                            selectorCopy.c_str());
     __block bool didSucceed = false;
     NSDate* deadline =
         [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
@@ -137,7 +138,7 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"web view selector "];
-    [description appendText:base::SysUTF8ToNSString(selector)];
+    [description appendText:base::SysUTF8ToNSString(selectorCopy)];
   };
 
   return grey_allOf(webViewInWebState(webState),

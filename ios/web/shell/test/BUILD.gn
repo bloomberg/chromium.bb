@@ -10,6 +10,7 @@ ios_eg_test("ios_web_shell_test") {
     "meta_tags_egtest.mm",
     "navigation_egtest.mm",
     "page_state_egtest.mm",
+    "plugin_placeholder_egtest.mm",
   ]
 
   deps = [
@@ -18,6 +19,7 @@ ios_eg_test("ios_web_shell_test") {
     "//ios/web:test_support",
     "//ios/web/shell",
     "//ios/web/shell/test:earl_grey_test_support",
+    "//url:url",
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).
