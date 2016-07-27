@@ -497,4 +497,31 @@ TEST_F(TextIteratorTest, CopyWholeCodePoints)
         EXPECT_EQ(expected[i], buffer[i]);
 }
 
+// Regression test for crbug.com/630921
+TEST_F(TextIteratorTest, EndingConditionWithDisplayNone)
+{
+    setBodyContent("<div style='display: none'><span>hello</span>world</div>Lorem ipsum dolor sit amet.");
+    Position start(&document(), 0);
+    Position end(document().querySelector("span"), 0);
+    TextIterator iter(start, end);
+    EXPECT_TRUE(iter.atEnd());
+}
+
+// Trickier regression test for crbug.com/630921
+TEST_F(TextIteratorTest, EndingConditionWithDisplayNoneInShadowTree)
+{
+    const char* bodyContent = "<div style='display: none'><span id=host><a></a></span>world</div>Lorem ipsum dolor sit amet.";
+    const char* shadowContent = "<i><b id=end>he</b></i>llo";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+
+    ShadowRoot* shadowRoot = document().getElementById("host")->openShadowRoot();
+    Node* bInShadowTree = shadowRoot->getElementById("end");
+
+    Position start(&document(), 0);
+    Position end(bInShadowTree, 0);
+    TextIterator iter(start, end);
+    EXPECT_TRUE(iter.atEnd());
+}
+
 } // namespace blink

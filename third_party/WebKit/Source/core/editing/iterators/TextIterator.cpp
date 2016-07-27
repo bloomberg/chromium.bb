@@ -82,18 +82,32 @@ TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInFlatTreeStrategy>(TextIte
     return flags & ~(TextIteratorEntersOpenShadowRoots | TextIteratorEntersTextControls);
 }
 
+// Checks if |advance()| skips the descendants of |node|, which is the case if
+// |node| is neither a shadow root nor the owner of a layout object.
+static bool notSkipping(const Node& node)
+{
+    return node.layoutObject() || (node.isShadowRoot() && node.shadowHost()->layoutObject());
+}
+
 // This function is like Range::pastLastNode, except for the fact that it can
-// climb up out of shadow trees.
+// climb up out of shadow trees and ignores all nodes that will be skipped in
+// |advance()|.
 template <typename Strategy>
 Node* pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
 {
-    if (rangeEndOffset >= 0 && !rangeEndContainer.offsetInCharacters()) {
-        if (Node* next = Strategy::childAt(rangeEndContainer, rangeEndOffset))
-            return next;
+    if (rangeEndOffset >= 0 && !rangeEndContainer.offsetInCharacters() && notSkipping(rangeEndContainer)) {
+        for (Node* next = Strategy::childAt(rangeEndContainer, rangeEndOffset); next; next = Strategy::nextSibling(*next)) {
+            if (notSkipping(*next))
+                return next;
+        }
     }
-    for (const Node* node = &rangeEndContainer; node; node = parentCrossingShadowBoundaries<Strategy>(*node)) {
-        if (Node* next = Strategy::nextSibling(*node))
-            return next;
+    for (const Node* node = &rangeEndContainer; node; ) {
+        const Node* parent = parentCrossingShadowBoundaries<Strategy>(*node);
+        if (parent && notSkipping(*parent)) {
+            if (Node* next = Strategy::nextSibling(*node))
+                return next;
+        }
+        node = parent;
     }
     return nullptr;
 }
@@ -170,6 +184,7 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
     m_startOffset = startOffset;
     m_endContainer = endContainer;
     m_endOffset = endOffset;
+    m_endNode = endContainer && !endContainer->offsetInCharacters() && endOffset > 0 ? Strategy::childAt(*endContainer, endOffset - 1) : nullptr;
 
     m_shadowDepth = shadowDepthOf<Strategy>(*startContainer, *endContainer);
 
@@ -352,10 +367,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
             next = Strategy::nextSibling(*m_node);
             if (!next) {
                 // 3. If we are at the last child, go up the node tree until we find a next sibling.
-                bool pastEnd = Strategy::next(*m_node) == m_pastEndNode;
                 ContainerNode* parentNode = Strategy::parent(*m_node);
                 while (!next && parentNode) {
-                    if ((pastEnd && parentNode == m_endContainer) || Strategy::isDescendantOf(*m_endContainer, *parentNode))
+                    if (m_node == m_endNode || Strategy::isDescendantOf(*m_endContainer, *parentNode))
                         return;
                     bool haveLayoutObject = m_node->layoutObject();
                     m_node = parentNode;
