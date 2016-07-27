@@ -43,8 +43,8 @@ namespace {
 // For reporting whether a subresource is handled or not, and for what reasons.
 enum ResourceStatus {
   RESOURCE_STATUS_HANDLED = 0,
-  RESOURCE_STATUS_NOT_HTTP_PAGE = 1,
-  RESOURCE_STATUS_NOT_HTTP_RESOURCE = 2,
+  RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_PAGE = 1,
+  RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_RESOURCE = 2,
   RESOURCE_STATUS_UNSUPPORTED_MIME_TYPE = 4,
   RESOURCE_STATUS_NOT_GET = 8,
   RESOURCE_STATUS_URL_TOO_LONG = 16,
@@ -232,18 +232,19 @@ bool ResourcePrefetchPredictor::ShouldRecordRedirect(
 
 // static
 bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
-  return request->original_url().scheme() == url::kHttpScheme;
+  return request->url().SchemeIsHTTPOrHTTPS();
 }
 
 // static
 bool ResourcePrefetchPredictor::IsHandledSubresource(
     net::URLRequest* response) {
   int resource_status = 0;
-  if (response->first_party_for_cookies().scheme() != url::kHttpScheme)
-    resource_status |= RESOURCE_STATUS_NOT_HTTP_PAGE;
 
-  if (response->original_url().scheme() != url::kHttpScheme)
-    resource_status |= RESOURCE_STATUS_NOT_HTTP_RESOURCE;
+  if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS())
+    resource_status |= RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_PAGE;
+
+  if (!response->url().SchemeIsHTTPOrHTTPS())
+    resource_status |= RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_RESOURCE;
 
   std::string mime_type;
   response->GetMimeType(&mime_type);
