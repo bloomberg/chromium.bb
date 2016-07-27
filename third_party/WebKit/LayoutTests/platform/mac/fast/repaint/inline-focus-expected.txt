@@ -9,11 +9,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutInline A id='link'",
-          "rect": [-5, -5, 810, 242],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [0, 34, 800, 18],
           "reason": "forced by layout"
@@ -29,13 +24,13 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutInline A",
-          "rect": [0, 0, 40, 18],
-          "reason": "forced by layout"
+          "object": "LayoutInline A id='link'",
+          "rect": [581, -5, 224, 242],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [0, 6, 40, 10],
+          "rect": [0, 0, 40, 18],
           "reason": "forced by layout"
         }
       ]
@@ -53,18 +48,6 @@
     {
       "object": "LayoutInline A id='link'",
       "reason": "style change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutInline A",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutText #text",

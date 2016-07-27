@@ -715,9 +715,6 @@ crbug.com/397255 [ Linux ] css3/masking/clip-path-reference-userSpaceOnUse.html 
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ Failure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ Failure ]
 
-crbug.com/378610 fast/repaint/inline-focus.html [ NeedsRebaseline ]
-crbug.com/378610 svg/custom/focus-ring-text.svg [ NeedsRebaseline ]
-
 crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
