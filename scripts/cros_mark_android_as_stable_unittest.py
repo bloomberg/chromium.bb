@@ -91,6 +91,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.build_branch = 'x'
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.arc_bucket_url = 'gs://a'
+    self.targets = constants.ANDROID_BUILD_TARGETS
 
     builds = {
         'ARM': [
@@ -104,13 +105,12 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         ],
     }
     for build_type, builds in builds.iteritems():
-      url = self.makeSrcTargetUrl(
-          constants.ANDROID_BUILD_TARGETS[build_type][0])
+      url = self.makeSrcTargetUrl(self.targets[build_type][0])
       builds = '\n'.join(os.path.join(url, version) for version in builds)
       self.gs_mock.AddCmdResult(['ls', '--', url], output=builds)
 
     for version in [self.old_version, self.old2_version, self.new_version]:
-      for key in constants.ANDROID_BUILD_TARGETS.iterkeys():
+      for key in self.targets.iterkeys():
         self.setupMockBuild(key, version)
     self.new_subpaths = {
         'ARM': 'linux-cheets_arm-user100',
@@ -122,15 +122,16 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.setupMockBuild('X86', self.partial_new_version, valid=False)
     self.setupMockBuild('SDK_TOOLS', self.partial_new_version)
 
-    for key in constants.ANDROID_BUILD_TARGETS.iterkeys():
+    for key in self.targets.iterkeys():
       self.setupMockBuild(key, self.not_new_version, False)
+
 
   def setupMockBuild(self, key, version, valid=True):
     """Helper to mock a build."""
     def _RaiseGSNoSuchKey(*_args, **_kwargs):
       raise gs.GSNoSuchKey('file does not exist')
 
-    target = constants.ANDROID_BUILD_TARGETS[key][0]
+    target = self.targets[key][0]
     src_url = self.makeSrcUrl(target, version)
     if valid:
       # Show source subpath directory.
@@ -195,7 +196,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     """Test if checking if build valid."""
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
-                                                          self.old_version)
+                                                          self.old_version,
+                                                          self.targets)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 3)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user25')
@@ -204,16 +206,19 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
-                                                          self.new_version)
+                                                          self.new_version,
+                                                          self.targets)
     self.assertEquals(subpaths, self.new_subpaths)
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(
-        self.bucket_url, self.build_branch, self.partial_new_version)
+        self.bucket_url, self.build_branch, self.partial_new_version,
+        self.targets)
     self.assertEqual(subpaths, None)
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
-                                                          self.not_new_version)
+                                                          self.not_new_version,
+                                                          self.targets)
     self.assertEqual(subpaths, None)
 
   def testFindAndroidCandidates(self):
@@ -230,7 +235,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   def testGetLatestBuild(self):
     """Test determination of latest build from gs bucket."""
     version, subpaths = cros_mark_android_as_stable.GetLatestBuild(
-        self.bucket_url, self.build_branch)
+        self.bucket_url, self.build_branch, self.targets)
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 3)
@@ -246,6 +251,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                 self.build_branch,
                                                 self.new_version,
                                                 self.new_subpaths,
+                                                self.targets,
                                                 self.arc_bucket_url,
                                                 self.acls)
 

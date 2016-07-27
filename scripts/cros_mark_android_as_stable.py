@@ -42,7 +42,7 @@ _ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
                         'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
 
 
-def IsBuildIdValid(bucket_url, build_branch, build_id):
+def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
   """Checks that a specific build_id is valid.
 
   Looks for that build_id for all builds. Confirms that the subpath can
@@ -52,6 +52,8 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
     bucket_url: URL of Android build gs bucket
     build_branch: branch of Android builds
     build_id: A string. The Android build id number to check.
+    targets: Dict from build key to (targe build suffix, artifact file pattern)
+        pair.
 
   Returns:
     Returns subpaths dictionary if build_id is valid.
@@ -59,7 +61,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
   """
   gs_context = gs.GSContext()
   subpaths_dict = {}
-  for build, (target, _) in constants.ANDROID_BUILD_TARGETS.iteritems():
+  for build, (target, _) in targets.iteritems():
     build_dir = '%s-%s' % (build_branch, target)
     build_id_path = os.path.join(bucket_url, build_dir, build_id)
 
@@ -96,12 +98,14 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
   return subpaths_dict
 
 
-def GetLatestBuild(bucket_url, build_branch):
+def GetLatestBuild(bucket_url, build_branch, targets):
   """Searches the gs bucket for the latest green build.
 
   Args:
     bucket_url: URL of Android build gs bucket
     build_branch: branch of Android builds
+    targets: Dict from build key to (targe build suffix, artifact file pattern)
+        pair.
 
   Returns:
     Tuple of (latest version string, subpaths dictionary)
@@ -110,7 +114,7 @@ def GetLatestBuild(bucket_url, build_branch):
   gs_context = gs.GSContext()
   common_build_ids = None
   # Find builds for each target.
-  for target, _ in constants.ANDROID_BUILD_TARGETS.itervalues():
+  for target, _ in targets.itervalues():
     build_dir = '-'.join((build_branch, target))
     base_path = os.path.join(bucket_url, build_dir)
     build_ids = []
@@ -137,7 +141,7 @@ def GetLatestBuild(bucket_url, build_branch):
 
   # Otherwise, find the most recent one that is valid.
   for build_id in sorted(common_build_ids, key=int, reverse=True):
-    subpaths = IsBuildIdValid(bucket_url, build_branch, build_id)
+    subpaths = IsBuildIdValid(bucket_url, build_branch, build_id, targets)
     if subpaths:
       return build_id, subpaths
 
@@ -177,7 +181,7 @@ def FindAndroidCandidates(package_dir):
 
 
 def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
-                    arc_bucket_url, acls):
+                    targets, arc_bucket_url, acls):
   """Copies from source Android bucket to ARC++ specific bucket.
 
   Copies each build to the ARC bucket eliminating the subpath.
@@ -188,12 +192,14 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
     build_branch: branch of Android builds
     build_id: A string. The Android build id number to check.
     subpaths: Subpath dictionary for each build to copy.
+    targets: Dict from build key to (targe build suffix, artifact file pattern)
+        pair.
     arc_bucket_url: URL of the target ARC build gs bucket
     acls: ACLs dictionary for each build to copy.
   """
   gs_context = gs.GSContext()
   for build, subpath in subpaths.iteritems():
-    target, pattern = constants.ANDROID_BUILD_TARGETS[build]
+    target, pattern = targets[build]
     build_dir = '%s-%s' % (build_branch, target)
     android_dir = os.path.join(android_bucket_url, build_dir, build_id, subpath)
     arc_dir = os.path.join(arc_bucket_url, build_dir, build_id)
@@ -228,6 +234,43 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
                        targetfile.url, arc_path, acl)
           gs_context.Copy(targetfile.url, arc_path, version=0)
         gs_context.ChangeACL(arc_path, acl_args_file=acl)
+
+
+def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
+                    acls, targets, version=None):
+  """Mirrors artifacts from Android bucket to ARC bucket.
+
+  First, this function identifies which build version should be copied,
+  if not given. Please see GetLatestBuild() and IsBuildIdValid() for details.
+
+  On build version identified, then copies target artifacts to the ARC bucket,
+  with setting ACLs.
+
+  Args:
+    android_bucket_url: URL of Android build gs bucket
+    android_build_branch: branch of Android builds
+    arc_bucket_url: URL of the target ARC build gs bucket
+    acls: ACLs dictionary for each build to copy.
+    targets: Dict from build key to (targe build suffix, artifact file pattern)
+        pair.
+    version: (optional) A string. The Android build id number to check.
+        If not passed, detect latest good build version.
+
+  Returns:
+    Mirrored version.
+  """
+  if version:
+    subpaths = IsBuildIdValid(
+        android_bucket_url, android_build_branch, version, targets)
+    if not subpaths:
+      logging.error('Requested build %s is not valid' % version)
+  else:
+    version, subpaths = GetLatestBuild(
+        android_bucket_url, android_build_branch, targets)
+
+  CopyToArcBucket(android_bucket_url, android_build_branch, version, subpaths,
+                  targets, arc_bucket_url, acls)
+  return version
 
 
 def MakeAclDict(package_dir):
@@ -357,6 +400,8 @@ def GetParser():
                       type='gs_path')
   parser.add_argument('--android_build_branch',
                       default=constants.ANDROID_BUILD_BRANCH)
+  parser.add_argument('--android_gts_build_branch',
+                      default=constants.ANDROID_GTS_BUILD_BRANCH)
   parser.add_argument('--arc_bucket_url',
                       default=constants.ARC_BUCKET_URL,
                       type='gs_path')
@@ -378,23 +423,21 @@ def main(argv):
   overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
   android_package_dir = os.path.join(overlay_dir, constants.ANDROID_CP)
   version_to_uprev = None
-  subpaths = None
 
   (unstable_ebuild, stable_ebuilds) = FindAndroidCandidates(android_package_dir)
-
-  if options.force_version:
-    version_to_uprev = options.force_version
-    subpaths = IsBuildIdValid(options.android_bucket_url,
-                              options.android_build_branch, version_to_uprev)
-    if not subpaths:
-      logging.error('Requested build %s is not valid' % version_to_uprev)
-  else:
-    version_to_uprev, subpaths = GetLatestBuild(options.android_bucket_url,
-                                                options.android_build_branch)
-
   acls = MakeAclDict(android_package_dir)
-  CopyToArcBucket(options.android_bucket_url, options.android_build_branch,
-                  version_to_uprev, subpaths, options.arc_bucket_url, acls)
+  # Mirror artifacts, i.e., images and some sdk tools (e.g., adb, aapt).
+  version_to_uprev = MirrorArtifacts(options.android_bucket_url,
+                                     options.android_build_branch,
+                                     options.arc_bucket_url, acls,
+                                     constants.ANDROID_BUILD_TARGETS,
+                                     options.force_version)
+
+  # Mirror GTS.
+  MirrorArtifacts(options.android_bucket_url,
+                  options.android_gts_build_branch,
+                  options.arc_bucket_url, acls,
+                  constants.ANDROID_GTS_BUILD_TARGETS)
 
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 

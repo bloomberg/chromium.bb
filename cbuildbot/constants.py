@@ -290,11 +290,16 @@ ANDROID_BUILD_TARGETS = {
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
 }
+ANDROID_GTS_BUILD_BRANCH = 'git_mnc-dev'
+ANDROID_GTS_BUILD_TARGETS = {
+    'XTS': ('linux-xts', r'\.zip$'),
+}
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
     'SDK_TOOLS': 'googlestorage_acl_cts.txt',
+    'XTS': 'googlestorage_acl_cts.txt',
 }
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
