@@ -469,6 +469,11 @@ void MetricsService::OnAppEnterBackground() {
 
   MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
 
+  // Give providers a chance to persist histograms as part of being
+  // backgrounded.
+  for (MetricsProvider* provider : metrics_providers_)
+    provider->OnAppEnterBackground();
+
   // At this point, there's no way of knowing when the process will be
   // killed, so this has to be treated similar to a shutdown, closing and
   // persisting all logs. Unlinke a shutdown, the state is primed to be ready

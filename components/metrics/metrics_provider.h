@@ -36,6 +36,13 @@ class MetricsProvider {
   // Called when metrics recording has been disabled.
   virtual void OnRecordingDisabled();
 
+  // Called when the application is going into background mode, on platforms
+  // where applications may be killed when going into the background (Android,
+  // iOS). Providers that buffer histogram data in memory should persist
+  // histograms in this callback, as the application may be killed without
+  // further notification after this callback.
+  virtual void OnAppEnterBackground();
+
   // Provides additional metrics into the system profile.
   virtual void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto);
