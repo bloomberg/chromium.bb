@@ -15,7 +15,7 @@ class PermissionUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(PermissionUtilTest, SetContentSettingRecordRevocation) {
+TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
   TestingProfile profile;
   // TODO(tsergeant): Add more comprehensive tests of PermissionUmaUtil.
   base::HistogramTester histograms;
@@ -23,32 +23,49 @@ TEST_F(PermissionUtilTest, SetContentSettingRecordRevocation) {
       HostContentSettingsMapFactory::GetForProfile(&profile);
   GURL host("https://example.com");
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
+  PermissionSourceUI source_ui = PermissionSourceUI::SITE_SETTINGS;
 
   // Allow->Block triggers a revocation.
   map->SetContentSettingDefaultScope(host, host, type, std::string(),
                                      CONTENT_SETTING_ALLOW);
-  PermissionUtil::SetContentSettingAndRecordRevocation(
-      &profile, host, host, type, std::string(), CONTENT_SETTING_BLOCK);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host, host, type, source_ui);
+    map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                       CONTENT_SETTING_BLOCK);
+  }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
                                PermissionAction::REVOKED, 1);
 
   // Block->Allow does not trigger a revocation.
-  PermissionUtil::SetContentSettingAndRecordRevocation(
-      &profile, host, host, type, std::string(), CONTENT_SETTING_ALLOW);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host, host, type, source_ui);
+    map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                       CONTENT_SETTING_ALLOW);
+  }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
                                PermissionAction::REVOKED, 1);
 
   // Allow->Default triggers a revocation when default is 'ask'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ASK);
-  PermissionUtil::SetContentSettingAndRecordRevocation(
-      &profile, host, host, type, std::string(), CONTENT_SETTING_DEFAULT);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host, host, type, source_ui);
+    map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                       CONTENT_SETTING_DEFAULT);
+  }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
                                PermissionAction::REVOKED, 2);
 
   // Allow->Default does not trigger a revocation when default is 'allow'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ALLOW);
-  PermissionUtil::SetContentSettingAndRecordRevocation(
-      &profile, host, host, type, std::string(), CONTENT_SETTING_DEFAULT);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host, host, type, source_ui);
+    map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                       CONTENT_SETTING_DEFAULT);
+  }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
                                PermissionAction::REVOKED, 2);
 }
