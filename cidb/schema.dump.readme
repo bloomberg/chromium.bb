@@ -2,7 +2,7 @@ These instructions assume you have a full chromiumos checkout at
 ~/chromiumos/
 
 To generate a schema dump, run this inside the chroot:
-  $ lib/cidb_integration_test CIDBMigrationsTest.testMigrations --no-wipe
+  $ lib/cidb_integration_test CIDBMigrationsTest.testMigrations --no-wipe --debug
 
 Then, follow the instructions in the developer.readme to re-launch the mysqld
 daemon from the temporary directory and dump the schema using (again, inside the
