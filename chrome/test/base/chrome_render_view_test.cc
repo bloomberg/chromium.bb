@@ -79,9 +79,8 @@ class MockAutofillAgent : public AutofillAgent {
   MOCK_CONST_METHOD0(IsUserGesture, bool());
 
  private:
-  void didAssociateFormControls(
-      const blink::WebVector<blink::WebNode>& nodes) override {
-    AutofillAgent::didAssociateFormControls(nodes);
+  void didAssociateFormControlsDynamically() override {
+    AutofillAgent::didAssociateFormControlsDynamically();
     if (run_loop_)
       run_loop_->Quit();
   }

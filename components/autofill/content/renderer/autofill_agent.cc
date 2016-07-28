@@ -762,20 +762,16 @@ bool AutofillAgent::IsUserGesture() const {
   return WebUserGestureIndicator::isProcessingUserGesture();
 }
 
-void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    WebLocalFrame* frame = nodes[i].document().frame();
-    // Only monitors dynamic forms created in the top frame. Dynamic forms
-    // inserted in iframes are not captured yet. Frame is only processed
-    // if it has finished loading, otherwise you can end up with a partially
-    // parsed form.
-    if (frame && !frame->isLoading()) {
-      ProcessForms();
-      password_autofill_agent_->OnDynamicFormsSeen();
-      if (password_generation_agent_)
-        password_generation_agent_->OnDynamicFormsSeen();
-      return;
-    }
+void AutofillAgent::didAssociateFormControlsDynamically() {
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // Frame is only processed if it has finished loading, otherwise you can end
+  // up with a partially parsed form.
+  if (frame && !frame->isLoading()) {
+    ProcessForms();
+    password_autofill_agent_->OnDynamicFormsSeen();
+    if (password_generation_agent_)
+      password_generation_agent_->OnDynamicFormsSeen();
   }
 }
 

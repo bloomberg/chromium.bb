@@ -57,7 +57,7 @@ public:
     // Informs the client whether or not any subsequent text changes should be ignored.
     virtual void setIgnoreTextChanges(bool ignore) { }
 
-    virtual void didAssociateFormControls(const WebVector<WebNode>&) { }
+    virtual void didAssociateFormControlsDynamically() { }
     virtual void ajaxSucceeded() { }
 
 protected:

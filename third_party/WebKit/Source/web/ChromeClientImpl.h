@@ -160,7 +160,7 @@ public:
     void requestPointerUnlock(LocalFrame*) override;
 
     // AutofillClient pass throughs:
-    void didAssociateFormControls(const HeapVector<Member<Element>>&, LocalFrame*) override;
+    void didAssociateFormControlsAfterLoad(LocalFrame*) override;
     void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
     void didChangeValueInTextField(HTMLFormControlElement&) override;
     void didEndEditingOnTextField(HTMLInputElement&) override;

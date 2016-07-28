@@ -5738,9 +5738,9 @@ Document& Document::ensureTemplateDocument()
 
 void Document::didAssociateFormControl(Element* element)
 {
-    if (!frame() || !frame()->page())
+    if (!frame() || !frame()->page() || !loadEventFinished())
         return;
-    m_associatedFormControls.add(element);
+
     // We add a slight delay because this could be called rapidly.
     if (!m_didAssociateFormControlsTimer.isActive())
         m_didAssociateFormControlsTimer.startOneShot(0.3, BLINK_FROM_HERE);
@@ -5748,12 +5748,6 @@ void Document::didAssociateFormControl(Element* element)
 
 void Document::removeFormAssociation(Element* element)
 {
-    auto it = m_associatedFormControls.find(element);
-    if (it == m_associatedFormControls.end())
-        return;
-    m_associatedFormControls.remove(it);
-    if (m_associatedFormControls.isEmpty())
-        m_didAssociateFormControlsTimer.stop();
 }
 
 void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
@@ -5762,11 +5756,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     if (!frame() || !frame()->page())
         return;
 
-    HeapVector<Member<Element>> associatedFormControls;
-    copyToVector(m_associatedFormControls, associatedFormControls);
-
-    frame()->page()->chromeClient().didAssociateFormControls(associatedFormControls, frame());
-    m_associatedFormControls.clear();
+    frame()->page()->chromeClient().didAssociateFormControlsAfterLoad(frame());
 }
 
 float Document::devicePixelRatio() const
@@ -5994,7 +5984,6 @@ DEFINE_TRACE(Document)
     visitor->trace(m_registrationContext);
     visitor->trace(m_customElementMicrotaskRunQueue);
     visitor->trace(m_elementDataCache);
-    visitor->trace(m_associatedFormControls);
     visitor->trace(m_useElementsNeedingUpdate);
     visitor->trace(m_layerUpdateSVGFilterElements);
     visitor->trace(m_timers);

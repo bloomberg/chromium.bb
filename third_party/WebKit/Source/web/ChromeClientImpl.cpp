@@ -939,11 +939,11 @@ void ChromeClientImpl::annotatedRegionsChanged()
         client->draggableRegionsChanged();
 }
 
-void ChromeClientImpl::didAssociateFormControls(const HeapVector<Member<Element>>& elements, LocalFrame* frame)
+void ChromeClientImpl::didAssociateFormControlsAfterLoad(LocalFrame* frame)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->autofillClient())
-        webframe->autofillClient()->didAssociateFormControls(elements);
+        webframe->autofillClient()->didAssociateFormControlsDynamically();
 }
 
 void ChromeClientImpl::didCancelCompositionOnSelectionChange()

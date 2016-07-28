@@ -82,8 +82,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
  protected:
   // blink::WebAutofillClient:
-  void didAssociateFormControls(
-      const blink::WebVector<blink::WebNode>& nodes) override;
+  void didAssociateFormControlsDynamically() override;
 
  private:
   // Functor used as a simplified comparison function for FormData. Only

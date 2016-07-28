@@ -1393,7 +1393,6 @@ private:
     Member<Document> m_templateDocumentHost;
 
     Timer<Document> m_didAssociateFormControlsTimer;
-    HeapHashSet<Member<Element>> m_associatedFormControls;
 
     HeapHashSet<Member<SVGUseElement>> m_useElementsNeedingUpdate;
     HeapHashSet<Member<Element>> m_layerUpdateSVGFilterElements;

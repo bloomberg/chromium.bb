@@ -167,7 +167,7 @@ public:
 
     void setTouchAction(TouchAction) override {}
 
-    void didAssociateFormControls(const HeapVector<Member<Element>>&, LocalFrame*) override {}
+    void didAssociateFormControlsAfterLoad(LocalFrame*) override {}
 
     void annotatedRegionsChanged() override {}
     String acceptLanguages() override;
