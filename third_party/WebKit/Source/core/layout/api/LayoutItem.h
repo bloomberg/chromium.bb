@@ -299,6 +299,11 @@ public:
         return m_layoutObject->objectPaintProperties();
     }
 
+    void invalidatePaintRectangle(const LayoutRect& dirtyRect) const
+    {
+        m_layoutObject->invalidatePaintRectangle(dirtyRect);
+    }
+
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }
     const LayoutObject* layoutObject() const { return m_layoutObject; }

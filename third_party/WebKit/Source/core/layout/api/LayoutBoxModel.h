@@ -39,6 +39,26 @@ public:
         return toBoxModel()->getScrollableArea();
     }
 
+    int borderTop() const
+    {
+        return toBoxModel()->borderTop();
+    }
+
+    int borderLeft() const
+    {
+        return toBoxModel()->borderLeft();
+    }
+
+    LayoutUnit paddingTop() const
+    {
+        return toBoxModel()->paddingTop();
+    }
+
+    LayoutUnit paddingLeft() const
+    {
+        return toBoxModel()->paddingLeft();
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }

@@ -66,6 +66,7 @@
 #include "core/layout/TracedLayoutObject.h"
 #include "core/layout/api/LayoutBoxModel.h"
 #include "core/layout/api/LayoutItem.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
@@ -379,16 +380,16 @@ void FrameView::invalidateRect(const IntRect& rect)
         return;
     }
 
-    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+    if (layoutItem.isNull())
         return;
 
     IntRect paintInvalidationRect = rect;
-    paintInvalidationRect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
-        layoutObject->borderTop() + layoutObject->paddingTop());
+    paintInvalidationRect.move(layoutItem.borderLeft() + layoutItem.paddingLeft(),
+        layoutItem.borderTop() + layoutItem.paddingTop());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    layoutObject->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
+    layoutItem.invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
