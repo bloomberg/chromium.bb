@@ -279,9 +279,15 @@ source_set("browser") {
     configs += [
       "//build/config/linux/atk",
       "//build/config/linux/atk:warnings",
-      "//build/config/linux/gconf",
-      "//build/config/linux:glib",
     ]
+
+    if (use_gconf) {
+      configs += [ "//build/config/linux/gconf" ]
+    }
+
+    if (use_glib) {
+      configs += [ "//build/config/linux:glib" ]
+    }
   }
 
   if (is_linux && use_aura) {
