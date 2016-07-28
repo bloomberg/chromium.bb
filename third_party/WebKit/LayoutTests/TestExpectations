@@ -1308,6 +1308,8 @@ crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
+crbug.com/632000 [ Win7 Debug Win10 ] fast/images/paint-subrect-grid.html [ Pass Failure ]
+
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
