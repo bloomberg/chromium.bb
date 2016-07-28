@@ -92,7 +92,7 @@ Polymer({
    * @private
    */
   onPointersTap_: function() {
-    this.$.pages.setSubpageChain(['pointers']);
+    settings.navigateTo(settings.Route.POINTERS);
   },
 
   /**
@@ -100,7 +100,7 @@ Polymer({
    * @private
    */
   onKeyboardTap_: function() {
-    this.$.pages.setSubpageChain(['keyboard']);
+    settings.navigateTo(settings.Route.KEYBOARD);
   },
 
   /**
@@ -116,7 +116,7 @@ Polymer({
    * @private
    */
   onDisplayTap_: function() {
-    this.$.pages.setSubpageChain(['display']);
+    settings.navigateTo(settings.Route.DISPLAY);
   },
 
   /** @private */

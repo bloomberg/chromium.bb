@@ -49,7 +49,7 @@ Polymer({
    */
   onShowDetail_: function(event) {
     this.detailGuid = event.detail.GUID;
-    this.$.pages.setSubpageChain(['network-detail']);
+    settings.navigateTo(settings.Route.NETWORK_DETAIL);
   },
 
   /**
@@ -58,7 +58,7 @@ Polymer({
    */
   onShowKnownNetworks_: function(event) {
     this.knownNetworksType = event.detail.type;
-    this.$.pages.setSubpageChain(['known-networks']);
+    settings.navigateTo(settings.Route.KNOWN_NETWORKS);
   },
 
 });

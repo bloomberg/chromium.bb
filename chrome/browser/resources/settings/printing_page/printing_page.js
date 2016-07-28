@@ -22,12 +22,12 @@ Polymer({
 <if expr="chromeos">
   /** @private */
   onTapCupsPrinters_: function() {
-    this.$.pages.setSubpageChain(['cups-printers']);
+    settings.navigateTo(settings.Route.CUPS_PRINTERS);
   },
 </if>
 
   /** @private */
   onTapCloudPrinters_: function() {
-    this.$.pages.setSubpageChain(['cloud-printers']);
+    settings.navigateTo(settings.Route.CLOUD_PRINTERS);
   },
 });

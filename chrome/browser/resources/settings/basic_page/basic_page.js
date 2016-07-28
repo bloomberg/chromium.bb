@@ -22,7 +22,7 @@ Polymer({
 
     /**
      * The current active route.
-     * @type {SettingsRoute}
+     * @type {settings.Route}
      */
     currentRoute: {
       type: Object,

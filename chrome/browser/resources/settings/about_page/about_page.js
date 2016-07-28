@@ -250,9 +250,7 @@ Polymer({
 
   /** @private */
   onDetailedBuildInfoTap_: function() {
-    var animatedPages = /** @type {!SettingsAnimatedPagesElement} */ (
-        this.$.pages);
-    animatedPages.setSubpageChain(['detailed-build-info']);
+    settings.navigateTo(settings.Route.DETAILED_BUILD_INFO);
   },
 
   /** @private */

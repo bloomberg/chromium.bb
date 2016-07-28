@@ -47,7 +47,7 @@ Polymer({
 
   /** @private */
   onManageSearchEnginesTap_: function() {
-    this.$.pages.setSubpageChain(['search-engines']);
+    settings.navigateTo(settings.Route.SEARCH_ENGINES);
   },
 
   /** @private */

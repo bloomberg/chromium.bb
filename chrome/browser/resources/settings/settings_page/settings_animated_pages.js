@@ -46,10 +46,7 @@ Polymer({
         this.lightDomChanged_.bind(this));
 
     this.addEventListener('subpage-back', function() {
-      assert(this.currentRoute.section == this.section);
-      assert(this.currentRoute.subpage.length >= 1);
-
-      this.setSubpageChain(this.currentRoute.subpage.slice(0, -1));
+      settings.navigateTo(this.currentRoute.parent);
     }.bind(this));
   },
 
@@ -140,25 +137,5 @@ Polymer({
     // Render synchronously so neon-animated-pages can select the subpage.
     template.if = true;
     template.render();
-  },
-
-  /**
-   * Buttons in this pageset should use this method to transition to subpages.
-   * @param {!Array<string>} subpage The chain of subpages within the page.
-   */
-  setSubpageChain: function(subpage) {
-    var node = window.event.currentTarget;
-    var page;
-    while (node) {
-      if (node.dataset && node.dataset.page)
-        page = node.dataset.page;
-      // A shadow root has a |host| rather than a |parentNode|.
-      node = node.host || node.parentNode;
-    }
-    this.currentRoute = {
-      page: page,
-      section: subpage.length > 0 ? this.section : '',
-      subpage: subpage,
-    };
   },
 });

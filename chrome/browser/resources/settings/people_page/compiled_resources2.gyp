@@ -67,10 +67,11 @@
     {
       'target_name': 'people_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
-        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         'easy_unlock_browser_proxy',
         'easy_unlock_turn_off_dialog',
         'profile_info_browser_proxy',
@@ -88,6 +89,7 @@
     {
       'target_name': 'quick_unlock_authenticate',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         'quick_unlock_routing_behavior',
         '<(EXTERNS_GYP):quick_unlock_private',
       ],
@@ -96,9 +98,10 @@
     {
       'target_name': 'quick_unlock_choose_method',
       'dependencies': [
-        'quick_unlock_password_detect_behavior',
+        '../compiled_resources2.gyp:route',
         '../prefs/compiled_resources2.gyp:prefs_types',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
+        'quick_unlock_password_detect_behavior',
         '<(EXTERNS_GYP):quick_unlock_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -113,6 +116,7 @@
     {
       'target_name': 'quick_unlock_password_detect_behavior',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         'quick_unlock_routing_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -120,6 +124,7 @@
     {
       'target_name': 'quick_unlock_setup_pin',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         'quick_unlock_password_detect_behavior',
         '../settings_page/compiled_resources2.gyp:settings_router',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',

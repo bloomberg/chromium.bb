@@ -20,7 +20,7 @@ Polymer({
 
     /**
      * The current active route.
-     * @type {!SettingsRoute}
+     * @type {!settings.Route}
      */
     currentRoute: {
       type: Object,
@@ -82,11 +82,8 @@ Polymer({
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.advancedToggleExpanded_ = e.detail;
-      this.currentRoute = {
-        page: this.advancedToggleExpanded_ ? 'advanced' : 'basic',
-        section: '',
-        subpage: [],
-      };
+      settings.navigateTo(this.advancedToggleExpanded_ ?
+          settings.Route.ADVANCED : settings.Route.BASIC);
     }.bind(this));
 
     doWhenReady(
@@ -119,7 +116,6 @@ Polymer({
   },
 
   /**
-   * @param {!SettingsRoute} newRoute
    * @private
    */
   currentRouteChanged_: function(newRoute) {
@@ -144,9 +140,9 @@ Polymer({
     }
 
     // Wait for any other changes prior to calculating the overflow padding.
-    this.async(function() {
+    setTimeout(function() {
       this.$.overscroll.style.paddingBottom = this.overscrollHeight_() + 'px';
-    });
+    }.bind(this));
   },
 
   /**
@@ -208,11 +204,7 @@ Polymer({
    * @private
    */
   ensureInDefaultSearchPage_: function() {
-    if (this.currentRoute.page != 'basic' ||
-        this.currentRoute.section != '' ||
-        this.currentRoute.subpage.length != 0) {
-      this.currentRoute = {page: 'basic', section: '', subpage: [], url: ''};
-    }
+    settings.navigateTo(settings.Route.BASIC);
   },
 
   /**

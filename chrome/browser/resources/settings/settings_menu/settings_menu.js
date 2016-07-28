@@ -15,7 +15,7 @@ Polymer({
 
     /**
      * The current active route.
-     * @type {!SettingsRoute}
+     * @type {!settings.Route}
      */
     currentRoute: {
       type: Object,
@@ -52,7 +52,7 @@ Polymer({
   },
 
   /**
-   * @param {!SettingsRoute} newRoute
+   * @param {!settings.Route} newRoute
    * @private
    */
   currentRouteChanged_: function(newRoute) {
@@ -92,14 +92,22 @@ Polymer({
    */
   openPage_: function(event) {
     this.ripple_(/** @type {!Node} */(event.currentTarget));
-    var submenuRoute = event.currentTarget.parentNode.dataset.page;
-    if (submenuRoute) {
-      this.currentRoute = {
-        page: submenuRoute,
-        section: event.currentTarget.dataset.section,
-        subpage: [],
-      };
-    }
+    var page = event.currentTarget.parentNode.dataset.page;
+    if (!page)
+      return;
+
+    var section = event.currentTarget.dataset.section;
+    // TODO(tommycli): Use Object.values once Closure compilation supports it.
+    var matchingKey = Object.keys(settings.Route).find(function(key) {
+      var route = settings.Route[key];
+      // TODO(tommycli): Remove usage of page, section, and subpage properties.
+      // Routes should be somehow directly bound to the menu elements.
+      return route.page == page && route.section == section &&
+          route.subpage.length == 0;
+    });
+
+    if (matchingKey)
+      settings.navigateTo(settings.Route[matchingKey]);
   },
 
   /**

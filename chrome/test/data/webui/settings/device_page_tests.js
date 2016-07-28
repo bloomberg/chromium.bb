@@ -142,6 +142,12 @@ cr.define('device_page_tests', function() {
     suiteSetup(function() {
       // Disable animations so sub-pages open within one event loop.
       testing.Test.disableAnimationsAndTransitions();
+
+      // Update the device page route for navigations.
+      // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
+      settings.navigateTo = function(route) {
+        devicePage.currentRoute = route;
+      };
     });
 
     setup(function(done) {
@@ -150,7 +156,7 @@ cr.define('device_page_tests', function() {
 
       PolymerTest.clearBody();
       devicePage = document.createElement('settings-device-page');
-      devicePage.currentRoute = {page: 'basic', section: '', subpage: []};
+      devicePage.currentRoute = settings.Route.BASIC;
       devicePage.prefs = getFakePrefs();
       settings.DevicePageBrowserProxyImpl.instance_ =
           new TestDevicePageBrowserProxy();

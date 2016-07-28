@@ -19,12 +19,7 @@ var QuickUnlockPasswordDetectBehavior = [QuickUnlockRoutingBehavior, {
    * redirect to the authenticate screen.
    */
   askForPasswordIfUnset: function() {
-    if (!this.setModes) {
-      this.currentRoute = {
-        page: 'basic',
-        section: 'people',
-        subpage: [QuickUnlockScreen.AUTHENTICATE]
-      };
-    }
+    if (!this.setModes)
+      settings.navigateTo(settings.Route.QUICK_UNLOCK_AUTHENTICATE);
   }
 }];

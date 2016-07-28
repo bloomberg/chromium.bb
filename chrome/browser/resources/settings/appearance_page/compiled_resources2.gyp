@@ -33,6 +33,7 @@
         '<(EXTERNS_GYP):management',
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):chrome_send',
+        '../compiled_resources2.gyp:route',
         '../controls/compiled_resources2.gyp:settings_dropdown_menu',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',

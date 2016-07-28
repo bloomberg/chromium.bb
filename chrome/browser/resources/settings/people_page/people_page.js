@@ -184,17 +184,17 @@ Polymer({
   /** @private */
   onPictureTap_: function() {
 <if expr="chromeos">
-    this.$.pages.setSubpageChain(['changePicture']);
+    settings.navigateTo(settings.Route.CHANGE_PICTURE);
 </if>
 <if expr="not chromeos">
-    this.$.pages.setSubpageChain(['manageProfile']);
+    settings.navigateTo(settings.Route.MANAGE_PROFILE);
 </if>
   },
 
 <if expr="not chromeos">
   /** @private */
   onProfileNameTap_: function() {
-    this.$.pages.setSubpageChain(['manageProfile']);
+    settings.navigateTo(settings.Route.MANAGE_PROFILE);
   },
 </if>
 
@@ -235,13 +235,13 @@ Polymer({
     if (this.syncStatus.managed)
       return;
 
-    this.$.pages.setSubpageChain(['sync']);
+    settings.navigateTo(settings.Route.SYNC);
   },
 
 <if expr="chromeos">
   /** @private */
   onQuickUnlockTap_: function() {
-    this.$.pages.setSubpageChain(['quick-unlock-authenticate']);
+    settings.navigateTo(settings.Route.QUICK_UNLOCK_AUTHENTICATE);
   },
 
   /** @private */
@@ -261,7 +261,7 @@ Polymer({
     this.syncBrowserProxy_.manageOtherPeople();
 </if>
 <if expr="chromeos">
-    this.$.pages.setSubpageChain(['users']);
+    settings.navigateTo(settings.Route.ACCOUNTS);
 </if>
   },
 

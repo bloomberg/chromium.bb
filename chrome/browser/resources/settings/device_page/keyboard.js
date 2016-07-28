@@ -26,12 +26,6 @@ Polymer({
       notify: true,
     },
 
-    /** The current active route. */
-    currentRoute: {
-      type: Object,
-      notify: true,
-    },
-
     /** @private Whether to show Caps Lock options. */
     showCapsLock_: Boolean,
 
@@ -117,10 +111,6 @@ Polymer({
   },
 
   onShowLanguageInputTap_: function() {
-    this.currentRoute = {
-      page: 'advanced',
-      section: 'languages',
-      subpage: [],
-    };
+    settings.navigateTo(settings.Route.LANGUAGES);
   },
 });

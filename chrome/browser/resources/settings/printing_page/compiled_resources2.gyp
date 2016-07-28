@@ -6,6 +6,7 @@
     {
       'target_name': 'printing_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

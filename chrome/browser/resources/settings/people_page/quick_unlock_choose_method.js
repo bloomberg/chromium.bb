@@ -173,11 +173,7 @@ Polymer({
 
   /** @private */
   onConfigurePin_: function() {
-    this.currentRoute = {
-      page: 'basic',
-      section: 'people',
-      subpage: [QuickUnlockScreen.CHOOSE_METHOD, QuickUnlockScreen.SETUP_PIN]
-    };
+    settings.navigateTo(settings.Route.QUICK_UNLOCK_SETUP_PIN);
   },
 });
 

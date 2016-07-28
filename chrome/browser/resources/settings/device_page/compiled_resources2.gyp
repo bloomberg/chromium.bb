@@ -6,6 +6,7 @@
     {
       'target_name': 'device_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
@@ -30,6 +31,7 @@
     {
       'target_name': 'keyboard',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '../prefs/compiled_resources2.gyp:prefs_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -81,7 +83,7 @@
         'display'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    }, 
+    },
     {
       'target_name': 'drag_behavior',
       'dependencies': [

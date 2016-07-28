@@ -106,6 +106,84 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * A utility function to lookup the route for a category name.
+   * @param {string} category The category ID to look up.
+   * @return {!settings.Route}
+   * @protected
+   */
+  computeCategoryRoute: function(category) {
+    switch (category) {
+      case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
+        return settings.Route.SITE_SETTINGS_AUTOMATIC_DOWNLOADS;
+      case settings.ContentSettingsTypes.BACKGROUND_SYNC:
+        return settings.Route.SITE_SETTINGS_BACKGROUND_SYNC;
+      case settings.ContentSettingsTypes.CAMERA:
+        return settings.Route.SITE_SETTINGS_CAMERA;
+      case settings.ContentSettingsTypes.COOKIES:
+        return settings.Route.SITE_SETTINGS_COOKIES;
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return settings.Route.SITE_SETTINGS_LOCATION;
+      case settings.ContentSettingsTypes.IMAGES:
+        return settings.Route.SITE_SETTINGS_IMAGES;
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return settings.Route.SITE_SETTINGS_JAVASCRIPT;
+      case settings.ContentSettingsTypes.KEYGEN:
+        return settings.Route.SITE_SETTINGS_KEYGEN;
+      case settings.ContentSettingsTypes.MIC:
+        return settings.Route.SITE_SETTINGS_MICROPHONE;
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
+        return settings.Route.SITE_SETTINGS_NOTIFICATIONS;
+      case settings.ContentSettingsTypes.PLUGINS:
+        return settings.Route.SITE_SETTINGS_PLUGINS;
+      case settings.ContentSettingsTypes.POPUPS:
+        return settings.Route.SITE_SETTINGS_POPUPS;
+      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+        return settings.Route.SITE_SETTINGS_HANDLERS;
+      case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
+        return settings.Route.SITE_SETTINGS_UNSANDBOXED_PLUGINS;
+    }
+    assertNotReached();
+  },
+
+  /**
+   * A utility function to lookup the 'details' route for a category name.
+   * @param {string} category The category ID to look up.
+   * @return {!settings.Route}
+   * @protected
+   */
+  computeCategoryDetailsRoute: function(category) {
+    switch (category) {
+      case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
+        return settings.Route.SITE_SETTINGS_AUTOMATIC_DOWNLOADS_DETAILS;
+      case settings.ContentSettingsTypes.BACKGROUND_SYNC:
+        return settings.Route.SITE_SETTINGS_BACKGROUND_SYNC_DETAILS;
+      case settings.ContentSettingsTypes.CAMERA:
+        return settings.Route.SITE_SETTINGS_CAMERA_DETAILS;
+      case settings.ContentSettingsTypes.COOKIES:
+        return settings.Route.SITE_SETTINGS_COOKIES_DETAILS;
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return settings.Route.SITE_SETTINGS_LOCATION_DETAILS;
+      case settings.ContentSettingsTypes.IMAGES:
+        return settings.Route.SITE_SETTINGS_IMAGES_DETAILS;
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return settings.Route.SITE_SETTINGS_JAVASCRIPT_DETAILS;
+      case settings.ContentSettingsTypes.KEYGEN:
+        return settings.Route.SITE_SETTINGS_KEYGEN_DETAILS;
+      case settings.ContentSettingsTypes.MIC:
+        return settings.Route.SITE_SETTINGS_MICROPHONE_DETAILS;
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
+        return settings.Route.SITE_SETTINGS_NOTIFICATIONS_DETAILS;
+      case settings.ContentSettingsTypes.PLUGINS:
+        return settings.Route.SITE_SETTINGS_PLUGINS_DETAILS;
+      case settings.ContentSettingsTypes.POPUPS:
+        return settings.Route.SITE_SETTINGS_POPUPS_DETAILS;
+      case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
+        return settings.Route.SITE_SETTINGS_UNSANDBOXED_PLUGINS_DETAILS;
+    }
+    assertNotReached();
+  },
+
+  /**
    * A utility function to compute the icon to use for the category, both for
    * the overall category as well as the individual permission in the details
    * for a site.

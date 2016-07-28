@@ -9,6 +9,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '../compiled_resources2.gyp:route',
         '../site_settings/compiled_resources2.gyp:constants',
         '../site_settings/compiled_resources2.gyp:site_settings_behavior',
         '../site_settings/compiled_resources2.gyp:site_settings_prefs_browser_proxy',

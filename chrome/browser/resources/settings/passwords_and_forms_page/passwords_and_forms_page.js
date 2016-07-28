@@ -476,7 +476,7 @@ Polymer({
     // Ignore clicking on the toggle button and verify autofill is enabled.
     if (Polymer.dom(event).localTarget != this.$.autofillToggle &&
         this.getPref('autofill.enabled').value) {
-      this.$.pages.setSubpageChain(['manage-autofill']);
+      settings.navigateTo(settings.Route.AUTOFILL);
     }
   },
 
@@ -490,7 +490,7 @@ Polymer({
     // enabled.
     if (Polymer.dom(event).localTarget != this.$.passwordToggle &&
         this.getPref('profile.password_manager_enabled').value) {
-      this.$.pages.setSubpageChain(['manage-passwords']);
+      settings.navigateTo(settings.Route.MANAGE_PASSWORDS);
     }
   },
 

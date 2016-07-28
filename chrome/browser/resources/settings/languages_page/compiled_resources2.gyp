@@ -36,9 +36,10 @@
     {
       'target_name': 'languages_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         'languages',
         'languages_types',
       ],

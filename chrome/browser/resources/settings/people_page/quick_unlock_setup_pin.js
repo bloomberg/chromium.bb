@@ -110,7 +110,7 @@ Polymer({
   },
 
   /**
-   * @param {!SettingsRoute} currentRoute
+   * @param {!settings.Route} currentRoute
    * @private
    */
   onRouteChanged_: function(currentRoute) {
@@ -252,11 +252,7 @@ Polymer({
         }
 
         this.resetState_();
-        this.currentRoute = {
-          page: 'basic',
-          section: 'people',
-          subpage: [QuickUnlockScreen.CHOOSE_METHOD]
-        };
+        settings.navigateTo(settings.Route.QUICK_UNLOCK_CHOOSE_METHOD);
       }
 
       this.setModes.call(

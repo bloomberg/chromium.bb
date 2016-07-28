@@ -382,15 +382,10 @@ Polymer({
    */
   onOriginTap_: function(event) {
     this.selectedSite = event.model.item;
-    var categorySelected =
-        this.allSites ?
-        'all-sites' :
-        'site-settings-category-' + this.computeCategoryTextId(this.category);
-    this.currentRoute = {
-      page: this.currentRoute.page,
-      section: 'privacy',
-      subpage: ['site-settings', categorySelected, 'site-details'],
-    };
+    if (this.allSites)
+      settings.navigateTo(settings.Route.SITE_SETTINGS_ALL_DETAILS);
+    else
+      settings.navigateTo(this.computeCategoryDetailsRoute(this.category));
   },
 
   /**

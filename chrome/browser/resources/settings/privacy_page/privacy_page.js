@@ -68,7 +68,7 @@ Polymer({
   onManageCertificatesTap_: function() {
 <if expr="use_nss_certs">
     var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
-    pages.setSubpageChain(['manage-certificates']);
+    settings.navigateTo(settings.Route.CERTIFICATES);
 </if>
 <if expr="is_win or is_macosx">
     settings.PrivacyPageBrowserProxyImpl.getInstance().
@@ -79,17 +79,12 @@ Polymer({
   /** @private */
   onSiteSettingsTap_: function() {
     var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
-    pages.setSubpageChain(['site-settings']);
+    settings.navigateTo(settings.Route.SITE_SETTINGS);
   },
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    this.currentRoute = {
-      page: 'advanced',
-      section: 'privacy',
-      subpage: [],
-      dialog: 'clear-browsing-data',
-    };
+    settings.navigateTo(settings.Route.CLEAR_BROWSER_DATA);
   },
 
   /**
@@ -97,14 +92,7 @@ Polymer({
    * @private
    */
   onIronOverlayClosed_: function(event) {
-    if (Polymer.dom(event).rootTarget.tagName != 'CR-DIALOG')
-      return;
-
-    this.currentRoute = {
-      page: 'advanced',
-      section: 'privacy',
-      subpage: [],
-      // Drop dialog key.
-    };
+    if (Polymer.dom(event).rootTarget.tagName == 'CR-DIALOG')
+      settings.navigateTo(settings.Route.PRIVACY);
   },
 });

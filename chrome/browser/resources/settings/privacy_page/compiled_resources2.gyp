@@ -14,6 +14,7 @@
     {
       'target_name': 'privacy_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '../settings_main/compiled_resources2.gyp:settings_main_rendered',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',

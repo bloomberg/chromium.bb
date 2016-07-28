@@ -150,11 +150,7 @@ Polymer({
         this.clearAccountPasswordTimeout_ = setTimeout(
             clearSetModes.bind(this), PASSWORD_ACTIVE_DURATION_MS);
 
-        this.currentRoute = {
-          page: 'basic',
-          section: 'people',
-          subpage: [QuickUnlockScreen.CHOOSE_METHOD]
-        };
+        settings.navigateTo(settings.Route.QUICK_UNLOCK_CHOOSE_METHOD);
       }
     }
 

@@ -12,7 +12,7 @@ var QuickUnlockScreen = {
 /** @polymerBehavior */
 var QuickUnlockRoutingBehavior = {
   properties: {
-    /** @type {SettingsRoute} */
+    /** @type {!settings.Route} */
     currentRoute: {
       type: Object,
       notify: true,

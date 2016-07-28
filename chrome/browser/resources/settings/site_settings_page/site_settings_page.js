@@ -73,26 +73,9 @@ Polymer({
    */
   onTapCategory: function(event) {
     var category = event.currentTarget.getAttribute('category');
-    if (category == settings.ALL_SITES) {
-      this.currentRoute = {
-        page: this.currentRoute.page,
-        section: 'privacy',
-        subpage: ['site-settings', 'all-sites'],
-      };
-    } else if (category == this.ContentSettingsTypes.PROTOCOL_HANDLERS) {
-      this.currentRoute = {
-        page: this.currentRoute.page,
-        section: 'privacy',
-        subpage: ['site-settings', 'protocol-handlers'],
-      };
-    } else {
-      this.categorySelected = this.computeCategoryTextId(category);
-      this.currentRoute = {
-        page: this.currentRoute.page,
-        section: 'privacy',
-        subpage: ['site-settings', 'site-settings-category-' +
-            this.categorySelected],
-      };
-    }
+    if (category == settings.ALL_SITES)
+      settings.navigateTo(settings.Route.SITE_SETTINGS_ALL);
+    else
+      settings.navigateTo(this.computeCategoryRoute(category));
   },
 });

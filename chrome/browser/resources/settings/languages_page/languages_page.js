@@ -95,7 +95,7 @@ Polymer({
    * @private
    */
   onManageLanguagesTap_: function() {
-    this.$.pages.setSubpageChain(['manage-languages']);
+    settings.navigateTo(settings.Route.MANAGE_LANGUAGES);
     this.forceRenderList_('settings-manage-languages-page');
   },
 
@@ -154,7 +154,7 @@ Polymer({
    */
   onShowLanguageDetailTap_: function(e) {
     this.detailLanguage_ = e.model.item;
-    this.$.pages.setSubpageChain(['language-detail']);
+    settings.navigateTo(settings.Route.LANGUAGES_DETAIL);
   },
 
   /**
@@ -163,7 +163,7 @@ Polymer({
    */
   onManageInputMethodsTap_: function() {
     assert(cr.isChromeOS);
-    this.$.pages.setSubpageChain(['manage-input-methods']);
+    settings.navigateTo(settings.Route.INPUT_METHODS);
   },
 
   /**
@@ -238,7 +238,7 @@ Polymer({
    */
   onEditDictionaryTap_: function() {
     assert(!cr.isMac);
-    this.$.pages.setSubpageChain(['edit-dictionary']);
+    settings.navigateTo(settings.Route.EDIT_DICTIONARY);
     this.forceRenderList_('settings-edit-dictionary-page');
   },
 
