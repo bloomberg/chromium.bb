@@ -5011,6 +5011,35 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             GURL(exploded_state.top.children.at(0).url_string.string()));
 }
 
+// Start a provisional navigation, but abort it by going back before it commits.
+// In crbug.com/631617 there was an issue which cleared the
+// pending_navigation_params_ in RenderFrameImpl. This caused the interrupting
+// navigation to lose important navigation data like its nav_entry_id, which
+// could cause it to commit in-place instead of in the correct location in the
+// browsing history.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       AbortProvisionalLoadRetainsNavigationParams) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  TestNavigationManager delayer(shell()->web_contents(),
+                                embedded_test_server()->GetURL("/title3.html"));
+  shell()->LoadURL(embedded_test_server()->GetURL("/title3.html"));
+  delayer.WaitForWillStartRequest();
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+
+  TestNavigationManager back_manager(
+      shell()->web_contents(), embedded_test_server()->GetURL("/title1.html"));
+  controller.GoBack();
+  back_manager.WaitForNavigationFinished();
+
+  EXPECT_TRUE(controller.CanGoForward());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+}
+
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
 // navigations compete in different frames.  See https://crbug.com/623319.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
