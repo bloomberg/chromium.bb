@@ -217,7 +217,6 @@ class W3CExpectationsLineAdder(object):
         for test_name, platform_results in merged_results.iteritems():
             for platform in platform_results:
                 if test_name.startswith('imported'):
-                    print platform_results
                     platform_list = []
                     bug = []
                     expectations = []
