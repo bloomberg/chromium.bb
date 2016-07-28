@@ -56,8 +56,7 @@ bool RequestCoordinator::SavePageLater(
     const GURL& url, const ClientId& client_id, bool was_user_requested) {
   DVLOG(2) << "URL is " << url << " " << __func__;
 
-  // TODO(petewil): We need a robust scheme for allocating new IDs.  We may need
-  // GUIDS for the downloads home design.
+  // TODO(petewil): We need a robust scheme for allocating new IDs.
   static int64_t id = 0;
 
   // Build a SavePageRequest.

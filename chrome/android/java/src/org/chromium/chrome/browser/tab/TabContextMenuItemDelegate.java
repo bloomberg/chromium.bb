@@ -26,7 +26,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
 import java.util.Locale;
-import java.util.Random;
+import java.util.UUID;
 
 /**
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
@@ -170,9 +170,9 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onSavePageLater(String linkUrl) {
         OfflinePageBridge bridge = OfflinePageBridge.getForProfile(mTab.getProfile());
-        Random random = new Random();
-        long offline_id = random.nextLong();
-        ClientId clientId = new ClientId("async_loading", Long.toString(offline_id));
+        // Download UI needs "async_loading" namespace and a random (type 4) GUID.
+        String uuid = UUID.randomUUID().toString();
+        ClientId clientId = new ClientId("async_loading", uuid);
         bridge.savePageLater(linkUrl, clientId);
     }
 
