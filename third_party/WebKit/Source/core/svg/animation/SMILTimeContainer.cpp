@@ -30,6 +30,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include <algorithm>
@@ -511,6 +512,8 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 #endif
         return earliestFireTime;
     }
+
+    UseCounter::count(&document(), UseCounter::SVGSMILAnimationAppliedEffect);
 
     // Apply results to target elements.
     for (unsigned i = 0; i < animationsToApplySize; ++i)

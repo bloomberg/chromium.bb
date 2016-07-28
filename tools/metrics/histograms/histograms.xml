@@ -77429,6 +77429,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1474" label="CSSValueAppearanceTextFieldForSearch"/>
   <int value="1475" label="CSSValueAppearanceTextFieldForTextField"/>
   <int value="1476" label="RTCPeerConnectionGetStats"/>
+  <int value="1477" label="SVGSMILAnimationAppliedEffect"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
