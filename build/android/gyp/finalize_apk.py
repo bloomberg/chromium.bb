@@ -11,7 +11,6 @@ import optparse
 import shutil
 import sys
 import tempfile
-import zipfile
 
 from util import build_utils
 
@@ -143,15 +142,6 @@ def FinalizeApk(options):
     signed_apk_path = signed_apk_path_tmp.name
     JarSigner(options.key_path, options.key_name, options.key_passwd,
               apk_to_sign, signed_apk_path)
-
-    # Make the signing files hermetic.
-    with tempfile.NamedTemporaryFile(suffix='.zip') as hermetic_signed_apk:
-      with zipfile.ZipFile(signed_apk_path, 'r') as zi:
-        with zipfile.ZipFile(hermetic_signed_apk, 'w') as zo:
-          for info in zi.infolist():
-            info.date_time = build_utils.HERMETIC_TIMESTAMP
-            zo.writestr(info, zi.read(info.filename))
-      shutil.copy(hermetic_signed_apk.name, signed_apk_path)
 
     if options.load_library_from_zip:
       # Reorder the contents of the APK. This re-establishes the canonical
