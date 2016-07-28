@@ -129,6 +129,9 @@ SkBitmap SkBitmapOperations::CreateMaskedBitmap(const SkBitmap& rgb,
 SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
                                                     const SkBitmap& image,
                                                     const SkBitmap& mask) {
+  // Despite this assert, it seems like image is actually unpremultiplied.
+  // The math producing dst_row[x] below is a correct SrcOver when
+  // bg_* are premultiplied and img_* are unpremultiplied.
   DCHECK(image.colorType() == kN32_SkColorType);
   DCHECK(mask.colorType() == kN32_SkColorType);
 
@@ -136,9 +139,9 @@ SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
   background.allocN32Pixels(mask.width(), mask.height());
 
   double bg_a = SkColorGetA(color);
-  double bg_r = SkColorGetR(color);
-  double bg_g = SkColorGetG(color);
-  double bg_b = SkColorGetB(color);
+  double bg_r = SkColorGetR(color) * (bg_a / 255.0);
+  double bg_g = SkColorGetG(color) * (bg_a / 255.0);
+  double bg_b = SkColorGetB(color) * (bg_a / 255.0);
 
   SkAutoLockPixels lock_mask(mask);
   SkAutoLockPixels lock_image(image);
@@ -157,12 +160,13 @@ SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
       double img_g = SkColorGetG(image_pixel);
       double img_b = SkColorGetB(image_pixel);
 
-      double img_alpha = static_cast<double>(img_a) / 255.0;
+      double img_alpha = img_a / 255.0;
       double img_inv = 1 - img_alpha;
 
       double mask_a = static_cast<double>(SkColorGetA(mask_row[x])) / 255.0;
 
       dst_row[x] = SkColorSetARGB(
+          // This is pretty weird; why not the usual SrcOver alpha?
           static_cast<int>(std::min(255.0, bg_a + img_a) * mask_a),
           static_cast<int>(((bg_r * img_inv) + (img_r * img_alpha)) * mask_a),
           static_cast<int>(((bg_g * img_inv) + (img_g * img_alpha)) * mask_a),
