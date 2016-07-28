@@ -81,6 +81,7 @@ class CoreTabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver overrides:
   void DidStartLoading() override;
+  void DocumentOnLoadCompletedInMainFrame() override;
   void WasShown() override;
   void WebContentsDestroyed() override;
   void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;

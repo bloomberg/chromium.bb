@@ -52,7 +52,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
@@ -63,7 +62,6 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/ssl_status.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -2105,16 +2103,6 @@ void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
 
 void RenderViewImpl::ClearEditCommands() {
   edit_commands_.clear();
-}
-
-SSLStatus RenderViewImpl::GetSSLStatusOfFrame(blink::WebFrame* frame) const {
-  std::string security_info;
-  if (frame && frame->dataSource())
-    security_info = frame->dataSource()->response().securityInfo();
-
-  SSLStatus result;
-  CHECK(DeserializeSecurityInfo(security_info, &result));
-  return result;
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() const {

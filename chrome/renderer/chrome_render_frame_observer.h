@@ -35,7 +35,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidFinishDocumentLoad() override;
   void DidStartProvisionalLoad() override;
   void DidFinishLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,

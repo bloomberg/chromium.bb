@@ -422,7 +422,6 @@ class CONTENT_EXPORT RenderViewImpl
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
   void ClearEditCommands() override;
-  SSLStatus GetSSLStatusOfFrame(blink::WebFrame* frame) const override;
   const std::string& GetAcceptLanguages() const override;
 #if defined(OS_ANDROID)
   void UpdateTopControlsState(TopControlsState constraints,

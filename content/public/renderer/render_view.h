@@ -39,7 +39,6 @@ namespace content {
 
 class RenderFrame;
 class RenderViewVisitor;
-struct SSLStatus;
 struct WebPreferences;
 
 // DEPRECATED: RenderView is being removed as part of the SiteIsolation project.
@@ -117,9 +116,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual void SetEditCommandForNextKeyEvent(const std::string& name,
                                              const std::string& value) = 0;
   virtual void ClearEditCommands() = 0;
-
-  // Returns a collection of security info about |frame|.
-  virtual SSLStatus GetSSLStatusOfFrame(blink::WebFrame* frame) const = 0;
 
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() const = 0;

@@ -28,9 +28,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
-#include "net/base/url_util.h"
-#include "net/ssl/ssl_cipher_suite_names.h"
-#include "net/ssl/ssl_connection_status_flags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -58,7 +55,6 @@ using blink::WebFrameContentDumper;
 using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebString;
-using content::SSLStatus;
 using content::RenderFrame;
 
 // Maximum number of characters in the document to index.
@@ -242,56 +238,6 @@ void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
                                                               nullptr)
           : nullptr;
 #endif
-}
-
-void ChromeRenderFrameObserver::DidFinishDocumentLoad() {
-  // If the navigation is to a localhost URL (and the flag is set to
-  // allow localhost SSL misconfigurations), print a warning to the
-  // console telling the developer to check their SSL configuration
-  // before going to production.
-  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowInsecureLocalhost);
-  WebDataSource* ds = render_frame()->GetWebFrame()->dataSource();
-
-  SSLStatus ssl_status = render_frame()->GetRenderView()->GetSSLStatusOfFrame(
-      render_frame()->GetWebFrame());
-
-  if (allow_localhost) {
-    bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
-                         !net::IsCertStatusMinorError(ssl_status.cert_status);
-    bool is_localhost = net::IsLocalhost(GURL(ds->request().url()).host());
-
-    if (is_cert_error && is_localhost) {
-      render_frame()->GetWebFrame()->addMessageToConsole(
-          blink::WebConsoleMessage(
-              blink::WebConsoleMessage::LevelWarning,
-              base::ASCIIToUTF16(
-                  "This site does not have a valid SSL "
-                  "certificate! Without SSL, your site's and "
-                  "visitors' data is vulnerable to theft and "
-                  "tampering. Get a valid SSL certificate before"
-                  " releasing your website to the public.")));
-    }
-  }
-
-  // DHE is deprecated and will be removed in M52. See https://crbug.com/598109.
-  // TODO(davidben): Remove this logic when DHE is removed.
-  uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl_status.connection_status);
-  const char* key_exchange;
-  const char* unused;
-  bool is_aead_unused;
-  net::SSLCipherSuiteToStrings(&key_exchange, &unused, &unused, &is_aead_unused,
-                               cipher_suite);
-  if (strcmp(key_exchange, "DHE_RSA") == 0) {
-    render_frame()->GetWebFrame()->addMessageToConsole(blink::WebConsoleMessage(
-        blink::WebConsoleMessage::LevelWarning,
-        base::ASCIIToUTF16("This site requires a DHE-based SSL cipher suite. "
-                           "These are deprecated and will be removed in M52, "
-                           "around July 2016. See "
-                           "https://www.chromestatus.com/feature/"
-                           "5752033759985664 for more details.")));
-  }
 }
 
 void ChromeRenderFrameObserver::OnAppBannerPromptRequest(

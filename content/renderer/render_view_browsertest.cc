@@ -29,7 +29,6 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/site_isolation_policy.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -1740,21 +1739,6 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
 // frame in the RenderView.
 TEST_F(RenderViewImplTest, BasicRenderFrame) {
   EXPECT_TRUE(view()->main_render_frame_);
-}
-
-TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
-  LoadHTML("<!DOCTYPE html><html><body></body></html>");
-
-  WebLocalFrame* frame = GetMainFrame();
-  SSLStatus ssl_status = view()->GetSSLStatusOfFrame(frame);
-  EXPECT_FALSE(net::IsCertStatusError(ssl_status.cert_status));
-
-  SSLStatus status;
-  status.cert_status = net::CERT_STATUS_ALL_ERRORS;
-  const_cast<blink::WebURLResponse&>(frame->dataSource()->response())
-      .setSecurityInfo(SerializeSecurityInfo(status));
-  ssl_status = view()->GetSSLStatusOfFrame(frame);
-  EXPECT_TRUE(net::IsCertStatusError(ssl_status.cert_status));
 }
 
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
