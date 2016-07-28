@@ -464,6 +464,7 @@ class CONTENT_EXPORT WebContentsImpl
   void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) override;
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
       const GURL& url) override;
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -832,9 +833,12 @@ class CONTENT_EXPORT WebContentsImpl
                                    RenderFrameHostImpl* outer_contents_frame);
 
     WebContentsImpl* outer_web_contents() { return outer_web_contents_; }
-    int outer_contents_frame_tree_node_id() {
+    int outer_contents_frame_tree_node_id() const {
       return outer_contents_frame_tree_node_id_;
     }
+
+    WebContentsImpl* focused_web_contents() { return focused_web_contents_; }
+    void SetFocusedWebContents(WebContentsImpl* web_contents);
 
    private:
     // The outer WebContents.
@@ -843,6 +847,10 @@ class CONTENT_EXPORT WebContentsImpl
     int outer_contents_frame_tree_node_id_;
     // List of inner WebContents that we host.
     ChildrenSet inner_web_contents_tree_nodes_;
+    // Only the root node should have this set. This indicates the WebContents
+    // whose frame tree has the focused frame. The WebContents tree could be
+    // arbitrarily deep.
+    WebContentsImpl* focused_web_contents_;
   };
 
   // See WebContents::Create for a description of these parameters.
@@ -980,6 +988,15 @@ class CONTENT_EXPORT WebContentsImpl
   // up at the next animation step if the throbber is going.
   void SetNotWaitingForResponse() { waiting_for_response_ = false; }
 
+  // Returns the focused WebContents.
+  // If there are multiple inner/outer WebContents (when embedding <webview>,
+  // <guestview>, ...) returns the single one containing the currently focused
+  // frame. Otherwise, returns this WebContents.
+  WebContentsImpl* GetFocusedWebContents();
+
+  // Returns the root of the WebContents tree.
+  WebContentsImpl* GetOutermostWebContents();
+
   // Navigation helpers --------------------------------------------------------
   //
   // These functions are helpers for Navigate() and DidNavigate().
@@ -1076,9 +1093,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);
-
-  // Returns the outermost WebContents in this WebContents's tree.
-  WebContentsImpl* GetOutermostWebContents();
 
   // Returns the FindRequestManager, or creates one if it doesn't already exist.
   FindRequestManager* GetOrCreateFindRequestManager();

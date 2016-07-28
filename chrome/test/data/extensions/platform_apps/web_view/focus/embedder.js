@@ -33,6 +33,10 @@ window.runCommand = function(command, opt_step) {
       break;
     case 'testFocusRestoredRunNextStep':
       testFocusRestoredRunNextStep(opt_step);
+      break;
+    case 'testKeyboardFocusRunNextStep':
+      testKeyboardFocusRunNextStep(opt_step);
+      break;
     default:
       embedder.test.fail();
   }
@@ -389,6 +393,53 @@ function testBlurEvent() {
   });
 }
 
+// This test verifies that keyboard input is correctly routed into the guest.
+//
+// 1) Load the guest and attach an <input> to the guest dom. Count the number of
+// input events sent to that element.
+// 2) C++ simulates a mouse over and click of the <input> element and waits for
+// the browser to see the guest main frame as focused.
+// 3) Injects the key sequence: a, Shift+b, c.
+// 4) In the second step, the test waits for the input events to be processed
+// and then expects the vaue of the <input> to be what the test sent, notably:
+// aBc.
+function testKeyboardFocus() {
+  embedder.testFocus_(function(webview) {
+    var created = function(e) {
+      var data = JSON.parse(e.data);
+      if (data[0] === 'response-createdInput') {
+        chrome.test.sendMessage('TEST_PASSED');
+        window.removeEventListener('message', created);
+      }
+    };
+    window.addEventListener('message', created);
+
+    g_webview = webview;
+    var msg = ['request-createInput', 3];
+    webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+  }, 'response-elementClicked', function() {
+        chrome.test.sendMessage('TEST_STEP_PASSED');
+  });
+
+}
+
+function testKeyboardFocusRunNextStep(expected) {
+  g_webview.contentWindow.postMessage(
+      JSON.stringify(['request-getInputValue']), '*');
+
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    LOG('send window.message, data: ' + data);
+    if (data[0] == 'response-inputValue') {
+      if (data[1] == expected) {
+        chrome.test.sendMessage('TEST_STEP_PASSED');
+      } else {
+        chrome.test.sendMessage('TEST_STEP_FAILED');
+      }
+    }
+  });
+}
+
 // This test verifies IME related stuff for guest.
 //
 // Briefly:
@@ -598,6 +649,7 @@ embedder.test.testList = {
   'testFocusEvent': testFocusEvent,
   'testFocusTracksEmbedder': testFocusTracksEmbedder,
   'testInputMethod': testInputMethod,
+  'testKeyboardFocus': testKeyboardFocus,
   'testFocusRestored': testFocusRestored
 };
 

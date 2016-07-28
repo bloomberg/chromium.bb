@@ -450,6 +450,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cross-process window.focus() calls.
   void SetFocusedFrame();
 
+  // This is used to clear focus inside an inner WebContents when focus shifts
+  // to a frame in the outer WebContents or a sibling WebContents.
+  void ClearFocusedFrame();
+
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);

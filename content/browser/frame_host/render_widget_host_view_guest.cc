@@ -166,43 +166,43 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
 }
 #endif
 
+void RenderWidgetHostViewGuest::ProcessMouseEvent(
+    const blink::WebMouseEvent& event,
+    const ui::LatencyInfo& latency) {
+  if (event.type == blink::WebInputEvent::MouseDown) {
+    DCHECK(guest_->GetOwnerRenderWidgetHostView());
+    RenderWidgetHost* embedder =
+        guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost();
+    if (!embedder->GetView()->HasFocus())
+      embedder->GetView()->Focus();
+
+    // With direct routing, the embedder would not know to focus the guest on
+    // click. Sends a synthetic event for the focusing side effect.
+    // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
+    // http://crbug.com/533069
+    MaybeSendSyntheticTapGesture(
+        blink::WebFloatPoint(event.x, event.y),
+        blink::WebFloatPoint(event.globalX, event.globalY));
+  }
+  host_->ForwardMouseEventWithLatencyInfo(event, latency);
+}
+
 void RenderWidgetHostViewGuest::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
   if (event.type == blink::WebInputEvent::TouchStart) {
     DCHECK(guest_->GetOwnerRenderWidgetHostView());
-    RenderWidgetHostImpl* embedder = static_cast<RenderWidgetHostImpl*>(
-        guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost());
+    RenderWidgetHost* embedder =
+        guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost();
     if (!embedder->GetView()->HasFocus())
       embedder->GetView()->Focus();
 
-    // Since we now route GestureEvents directly to the guest renderer, we need
-    // a way to make sure that the BrowserPlugin in the embedder gets focused so
-    // that keyboard input (which still travels via BrowserPlugin) is routed to
-    // the plugin and thus onwards to the guest.
+    // With direct routing, the embedder would not know to focus the guest on
+    // touch. Sends a synthetic event for the focusing side effect.
     // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
     // http://crbug.com/533069
-    if (!HasFocus()) {
-      // We need to a account for the position of the guest view within the
-      // embedder, as well as the fact that the embedder's host will add its
-      // offset in screen coordinates before sending the event (with the latter
-      // component just serving to confuse the renderer, hence why it should be
-      // removed).
-      gfx::Vector2d offset = GetViewBounds().origin() -
-          GetOwnerRenderWidgetHostView()->GetBoundsInRootWindow().origin();
-      blink::WebGestureEvent gesture_tap_event;
-      gesture_tap_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
-      gesture_tap_event.type = blink::WebGestureEvent::GestureTapDown;
-      gesture_tap_event.x = event.touches[0].position.x + offset.x();
-      gesture_tap_event.y = event.touches[0].position.y + offset.y();
-      gesture_tap_event.globalX = event.touches[0].screenPosition.x;
-      gesture_tap_event.globalY = event.touches[0].screenPosition.y;
-      GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
-                                                          ui::LatencyInfo());
-      gesture_tap_event.type = blink::WebGestureEvent::GestureTapCancel;
-      GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
-                                                          ui::LatencyInfo());
-    }
+    MaybeSendSyntheticTapGesture(event.touches[0].position,
+                                 event.touches[0].screenPosition);
   }
 
   host_->ForwardTouchEventWithLatencyInfo(event, latency);
@@ -529,6 +529,35 @@ RenderWidgetHostViewBase*
 RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewBase*>(
       guest_->GetOwnerRenderWidgetHostView());
+}
+
+// TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
+// http://crbug.com/533069
+void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
+    const blink::WebFloatPoint& position,
+    const blink::WebFloatPoint& screenPosition) const {
+  if (!HasFocus()) {
+    // We need to a account for the position of the guest view within the
+    // embedder, as well as the fact that the embedder's host will add its
+    // offset in screen coordinates before sending the event (with the latter
+    // component just serving to confuse the renderer, hence why it should be
+    // removed).
+    gfx::Vector2d offset =
+        GetViewBounds().origin() -
+        GetOwnerRenderWidgetHostView()->GetBoundsInRootWindow().origin();
+    blink::WebGestureEvent gesture_tap_event;
+    gesture_tap_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+    gesture_tap_event.type = blink::WebGestureEvent::GestureTapDown;
+    gesture_tap_event.x = position.x + offset.x();
+    gesture_tap_event.y = position.y + offset.y();
+    gesture_tap_event.globalX = screenPosition.x;
+    gesture_tap_event.globalY = screenPosition.y;
+    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
+                                                        ui::LatencyInfo());
+    gesture_tap_event.type = blink::WebGestureEvent::GestureTapCancel;
+    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
+                                                        ui::LatencyInfo());
+  }
 }
 
 void RenderWidgetHostViewGuest::WheelEventAck(

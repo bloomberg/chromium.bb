@@ -30,6 +30,7 @@ class Message;
 }
 
 namespace content {
+class FrameTreeNode;
 class GeolocationServiceContext;
 class InterstitialPage;
 class PageState;
@@ -183,6 +184,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // refactoring for --site-per-process mode is further along.  See
   // https://crbug.com/330264.
   virtual void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {}
+
+  // Set the |node| frame as focused in the current FrameTree as well as
+  // possibly changing focus in distinct but related inner/outer WebContents.
+  virtual void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {}
 
   // Creates a WebUI object for a frame navigating to |url|. If no WebUI
   // applies, returns null.

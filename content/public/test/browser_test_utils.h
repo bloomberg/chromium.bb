@@ -574,6 +574,24 @@ class BrowserTestClipboardScope {
   DISALLOW_COPY_AND_ASSIGN(BrowserTestClipboardScope);
 };
 
+// This observer is used to wait for its owner Frame to become focused.
+class FrameFocusedObserver {
+  // Private impl struct which hides non public types including FrameTreeNode.
+  class FrameTreeNodeObserverImpl;
+
+ public:
+  explicit FrameFocusedObserver(RenderFrameHost* owner_host);
+  ~FrameFocusedObserver();
+
+  void Wait();
+
+ private:
+  // FrameTreeNode::Observer
+  std::unique_ptr<FrameTreeNodeObserverImpl> impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_

@@ -141,7 +141,8 @@ void WebContentsViewChildFrame::GotFocus() {
 }
 
 void WebContentsViewChildFrame::TakeFocus(bool reverse) {
-  NOTREACHED();
+  // TODO(avallee): http://crbug.com/610819 Advance focus to next element in
+  // outer WebContents.
 }
 
 void WebContentsViewChildFrame::ShowContextMenu(

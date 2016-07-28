@@ -433,31 +433,6 @@ class UserInteractionObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(UserInteractionObserver);
 };
 
-// This observer is used to wait for its owner FrameTreeNode to become focused.
-class FrameFocusedObserver : public FrameTreeNode::Observer {
- public:
-  FrameFocusedObserver(FrameTreeNode* owner)
-      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
-    owner->AddObserver(this);
-  }
-
-  ~FrameFocusedObserver() override { owner_->RemoveObserver(this); }
-
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // FrameTreeNode::Observer
-  void OnFrameTreeNodeFocused(FrameTreeNode* node) override {
-    if (node == owner_)
-      message_loop_runner_->Quit();
-  }
-
-  FrameTreeNode* owner_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
-};
-
 // This observer is used to wait for its owner FrameTreeNode to become deleted.
 class FrameDeletedObserver : public FrameTreeNode::Observer {
  public:
@@ -484,7 +459,7 @@ class FrameDeletedObserver : public FrameTreeNode::Observer {
 // Helper function to focus a frame by sending it a mouse click and then
 // waiting for it to become focused.
 void FocusFrame(FrameTreeNode* frame) {
-  FrameFocusedObserver focus_observer(frame);
+  FrameFocusedObserver focus_observer(frame->current_frame_host());
   SimulateMouseClick(frame->current_frame_host()->GetRenderWidgetHost(), 1, 1);
   focus_observer.Wait();
 }

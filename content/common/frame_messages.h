@@ -826,6 +826,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
 // support cross-process focused frame changes.
 IPC_MESSAGE_ROUTED0(FrameMsg_SetFocusedFrame)
 
+// Notifies this frame or proxy that it is no longer focused. This is used when
+// a frame in the embedder that the guest cannot see (<webview>) gains focus.
+IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedFrame)
+
 // Sent to a frame proxy when its real frame is preparing to enter fullscreen
 // in another process.  Actually entering fullscreen will be done separately as
 // part of ViewMsg_Resize, once the browser process has resized the tab for

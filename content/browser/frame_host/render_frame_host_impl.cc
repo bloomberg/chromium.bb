@@ -954,7 +954,7 @@ void RenderFrameHostImpl::OnDetach() {
 }
 
 void RenderFrameHostImpl::OnFrameFocused() {
-  frame_tree_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
+  delegate_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
@@ -2339,6 +2339,10 @@ void RenderFrameHostImpl::SetFocusedFrame() {
   Send(new FrameMsg_SetFocusedFrame(routing_id_));
 }
 
+void RenderFrameHostImpl::ClearFocusedFrame() {
+  Send(new FrameMsg_ClearFocusedFrame(routing_id_));
+}
+
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
                                                    size_t after) {
   Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));
@@ -3004,6 +3008,8 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
     return;
 
   // For the root frame tree node, also store the AXTreeID of the focused frame.
+  // TODO(avallee): https://crbug.com/610795: No focus ax events.
+  // This is probably where we need to fix the bug to enable the test.
   FrameTreeNode* focused_frame_tree_node = frame_tree_->GetFocusedFrame();
   if (!focused_frame_tree_node)
     return;

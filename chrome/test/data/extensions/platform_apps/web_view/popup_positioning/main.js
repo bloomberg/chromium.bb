@@ -22,6 +22,7 @@ var testHelper = function(onLoadStopHook) {
     LOG('webview.loadstop');
     if (!loaded) {
       loaded = true;
+      webview.focus();
       onLoadStopHook(webview);
       var msg = 'request-connect';
       webview.contentWindow.postMessage(JSON.stringify([msg]), '*');

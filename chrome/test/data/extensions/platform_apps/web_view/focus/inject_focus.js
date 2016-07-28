@@ -47,6 +47,31 @@ var waitForFocus = function() {
   inputElement.focus();
 };
 
+var createInput = function(count) {
+  inputElement = document.createElement('input');
+  inputElement.eventCount = count;
+  inputElement.addEventListener('click', function(e) {
+    sendMessage(['response-elementClicked']);
+  });
+  inputElement.addEventListener('input', function(e) {
+    inputElement.eventCount -= 1;
+    if (inputElement.eventCount <= 0 && inputElement.signalOnInput) {
+      sendMessage(['response-inputValue', inputElement.value]);
+    }
+  });
+
+  document.body.appendChild(inputElement);
+  sendMessage(['response-createdInput']);
+};
+
+var getInputValue = function() {
+  if (inputElement.eventCount <= 0) {
+    sendMessage(['response-inputValue', inputElement.value]);
+  } else {
+    inputElement.signalOnInput = true;
+  }
+}
+
 window.addEventListener('message', function(e) {
   var data = JSON.parse(e.data);
   if (data[0] == 'connect') {
@@ -59,6 +84,10 @@ window.addEventListener('message', function(e) {
     waitForFocus();
   } else if (data[0] == 'request-waitForBlurAfterFocus') {
     waitForBlurAfterFocus();
+  } else if (data[0] == 'request-createInput') {
+    createInput(data[1]);
+  } else if (data[0] == 'request-getInputValue') {
+    getInputValue();
   }
 });
 

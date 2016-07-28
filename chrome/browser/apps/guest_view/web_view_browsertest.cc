@@ -869,11 +869,12 @@ INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewVisibilityTest, testing::Bool());
 class WebViewSpeechAPITest : public WebViewTest {};
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewSpeechAPITest, testing::Bool());
 
-// The following test suits are created to group tests based on specific
+// The following test suites are created to group tests based on specific
 // features of <webview>.
-// These features current would not work with
+// These features currently would not work with
 // --use-cross-process-frames-for-guest and is disabled on
 // UseCrossProcessFramesForGuests.
+// TODO(avallee): https://crbug.com/610795: Enable this for testing::Bool().
 class WebViewAccessibilityTest : public WebViewTest {};
 INSTANTIATE_TEST_CASE_P(WebViewTests,
                         WebViewAccessibilityTest,
@@ -1257,7 +1258,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, SelectShowHide) {
 
   // Important, pass mouse click to embedder in order to transfer focus. Note
   // that SelectControlWaiter may be waited ealier than click is completed.
-  LeftMouseClick mouse_click(embedder_contents);
+  LeftMouseClick mouse_click(GetParam() ? guest_contents : embedder_contents);
   SelectControlWaiter select_control_waiter;
 
   for (int i = 0; i < 5; ++i) {

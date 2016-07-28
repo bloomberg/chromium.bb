@@ -98,6 +98,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;
 #endif
+  void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                         const ui::LatencyInfo& latency) override;
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
 
@@ -129,6 +131,16 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
  private:
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
+
+  // Since we now route GestureEvents directly to the guest renderer, we need
+  // a way to make sure that the BrowserPlugin in the embedder gets focused so
+  // that keyboard input (which still travels via BrowserPlugin) is routed to
+  // the plugin and thus onwards to the guest.
+  // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
+  // http://crbug.com/533069
+  void MaybeSendSyntheticTapGesture(
+      const blink::WebFloatPoint& position,
+      const blink::WebFloatPoint& screenPosition) const;
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
                           int browser_plugin_instance_id,

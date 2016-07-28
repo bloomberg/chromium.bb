@@ -253,6 +253,19 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   if (node == GetFocusedFrame())
     return;
 
+  if (!node) {
+    // TODO(avallee): https://crbug.com/614463 Notify proxies here once
+    // <webview> supports oopifs inside itself.
+    if (GetFocusedFrame())
+      GetFocusedFrame()->current_frame_host()->ClearFocusedFrame();
+    focused_frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
+
+    // TODO(avallee): https://crbug.com/610795 This line is not sufficient to
+    // make the test pass. There seems to be no focus change events generated.
+    root()->current_frame_host()->UpdateAXTreeData();
+    return;
+  }
+
   std::set<SiteInstance*> frame_tree_site_instances =
       CollectSiteInstances(this);
 

@@ -2960,6 +2960,11 @@ void WebViewImpl::focusDocumentView(WebFrame* frame)
     page()->focusController().focusDocumentView(frame->toImplBase()->frame(), false /* notifyEmbedder */);
 }
 
+void WebViewImpl::unfocusDocumentView()
+{
+    page()->focusController().focusDocumentView(nullptr /* frame */, false /* notifyEmbedder */);
+}
+
 void WebViewImpl::setInitialFocus(bool reverse)
 {
     if (!m_page)

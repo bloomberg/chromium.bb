@@ -1507,4 +1507,35 @@ void BrowserTestClipboardScope::SetText(const std::string& text) {
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
+class FrameFocusedObserver::FrameTreeNodeObserverImpl
+    : public FrameTreeNode::Observer {
+ public:
+  explicit FrameTreeNodeObserverImpl(FrameTreeNode* owner)
+      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
+    owner->AddObserver(this);
+  }
+  ~FrameTreeNodeObserverImpl() override { owner_->RemoveObserver(this); }
+
+  void Run() { message_loop_runner_->Run(); }
+
+  void OnFrameTreeNodeFocused(FrameTreeNode* node) override {
+    if (node == owner_)
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  FrameTreeNode* owner_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+};
+
+FrameFocusedObserver::FrameFocusedObserver(RenderFrameHost* owner_host)
+    : impl_(new FrameTreeNodeObserverImpl(
+          static_cast<RenderFrameHostImpl*>(owner_host)->frame_tree_node())) {}
+
+FrameFocusedObserver::~FrameFocusedObserver() {}
+
+void FrameFocusedObserver::Wait() {
+  impl_->Run();
+}
+
 }  // namespace content
