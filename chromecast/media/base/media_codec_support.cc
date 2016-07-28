@@ -50,5 +50,71 @@ bool IsCodecSupported(const std::string& codec) {
   return base::Bind(&IsCodecSupported);
 }
 
+// Converts ::media::VideoCodec to chromecast::media::VideoCodec. Any unknown or
+// unsupported codec will be converted to chromecast::media::kCodecUnknown.
+VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec) {
+  switch (video_codec) {
+    case ::media::kCodecH264:
+      return kCodecH264;
+    case ::media::kCodecVP8:
+      return kCodecVP8;
+    case ::media::kCodecVP9:
+      return kCodecVP9;
+    case ::media::kCodecHEVC:
+      return kCodecHEVC;
+    default:
+      LOG(ERROR) << "Unsupported video codec " << video_codec;
+  }
+  return kVideoCodecUnknown;
+}
+
+// Converts ::media::VideoCodecProfile to chromecast::media::VideoProfile.
+VideoProfile ToCastVideoProfile(
+    const ::media::VideoCodecProfile codec_profile) {
+  switch (codec_profile) {
+    case ::media::H264PROFILE_BASELINE:
+      return kH264Baseline;
+    case ::media::H264PROFILE_MAIN:
+      return kH264Main;
+    case ::media::H264PROFILE_EXTENDED:
+      return kH264Extended;
+    case ::media::H264PROFILE_HIGH:
+      return kH264High;
+    case ::media::H264PROFILE_HIGH10PROFILE:
+      return kH264High10;
+    case ::media::H264PROFILE_HIGH422PROFILE:
+      return kH264High422;
+    case ::media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return kH264High444Predictive;
+    case ::media::H264PROFILE_SCALABLEBASELINE:
+      return kH264ScalableBaseline;
+    case ::media::H264PROFILE_SCALABLEHIGH:
+      return kH264ScalableHigh;
+    case ::media::H264PROFILE_STEREOHIGH:
+      return kH264Stereohigh;
+    case ::media::H264PROFILE_MULTIVIEWHIGH:
+      return kH264MultiviewHigh;
+    case ::media::HEVCPROFILE_MAIN:
+      return kHEVCMain;
+    case ::media::HEVCPROFILE_MAIN10:
+      return kHEVCMain10;
+    case ::media::HEVCPROFILE_MAIN_STILL_PICTURE:
+      return kHEVCMainStillPicture;
+    case ::media::VP8PROFILE_ANY:
+      return kVP8ProfileAny;
+    case ::media::VP9PROFILE_PROFILE0:
+      return kVP9Profile0;
+    case ::media::VP9PROFILE_PROFILE1:
+      return kVP9Profile1;
+    case ::media::VP9PROFILE_PROFILE2:
+      return kVP9Profile2;
+    case ::media::VP9PROFILE_PROFILE3:
+      return kVP9Profile3;
+    default:
+      LOG(INFO) << "Unsupported video codec profile " << codec_profile;
+  }
+  return kVideoProfileUnknown;
+}
+
 }  // namespace media
 }  // namespace chromecast

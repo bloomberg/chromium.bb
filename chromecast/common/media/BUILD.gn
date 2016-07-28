@@ -10,13 +10,18 @@ enable_cma = !is_android
 # GYP target: chromecast.gyp:cast_shell_media
 source_set("media") {
   sources = [
+    "cast_media_client.cc",
+    "cast_media_client.h",
     "shared_memory_chunk.cc",
     "shared_memory_chunk.h",
   ]
 
   deps = [
     "//base",
+    "//chromecast/media/base",
     "//chromecast/media/cma/ipc",
+    "//chromecast/public:public",
+    "//media",
   ]
 
   public_deps = [

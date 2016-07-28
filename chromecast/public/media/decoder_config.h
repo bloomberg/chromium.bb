@@ -91,9 +91,12 @@ enum VideoProfile : int {
   kDolbyVisionCompatible_BL_EL_MD,
   kDolbyVisionNonCompatible_BL_MD,
   kDolbyVisionNonCompatible_BL_EL_MD,
+  kHEVCMain,
+  kHEVCMain10,
+  kHEVCMainStillPicture,
 
   kVideoProfileMin = kVideoProfileUnknown,
-  kVideoProfileMax = kDolbyVisionNonCompatible_BL_EL_MD,
+  kVideoProfileMax = kHEVCMainStillPicture,
 };
 
 // Specification of whether and how the stream is encrypted (in whole or part).

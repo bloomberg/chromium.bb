@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/common/media/cast_media_client.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/media/base/media_caps.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
@@ -72,6 +73,8 @@ void CastContentRendererClient::RenderThreadStarted() {
       ::media::SetHdmiSinkCodecs(hdmi_codecs_mask);
     }
   }
+
+  chromecast::media::CastMediaClient::Initialize();
 
   cast_observer_.reset(new CastRenderThreadObserver());
 

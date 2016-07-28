@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "media/base/mime_util.h"
+#include "media/base/video_codecs.h"
 
 // TODO(slan|servolk): remove when this definition exists in //media.
 namespace media {
@@ -21,6 +23,9 @@ namespace media {
 // Returns the callback to decide whether a given codec (passed in as a string
 // representation of the codec id conforming to RFC 6381) is supported or not.
 ::media::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB();
+
+VideoCodec ToCastVideoCodec(const ::media::VideoCodec codec);
+VideoProfile ToCastVideoProfile(const ::media::VideoCodecProfile profile);
 
 }  // namespace media
 }  // namespace chromecast
