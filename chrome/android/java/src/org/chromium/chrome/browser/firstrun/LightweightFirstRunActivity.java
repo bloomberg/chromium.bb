@@ -14,7 +14,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -27,6 +29,10 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
+            completeFirstRunExperience();
+        }
 
         setContentView(LayoutInflater.from(LightweightFirstRunActivity.this)
                                .inflate(R.layout.lightweight_fre_tos, null));
@@ -57,10 +63,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
                     @Override
                     public void onClick(View v) {
                         sGlue.acceptTermsOfService(LightweightFirstRunActivity.this, false);
-                        FirstRunStatus.setLightweightFirstRunFlowComplete(
-                                LightweightFirstRunActivity.this, true);
-                        Intent intent = new Intent();
-                        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, intent);
+                        completeFirstRunExperience();
                     }
                 });
 
@@ -71,5 +74,13 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
                         abortFirstRunExperience();
                     }
                 });
+    }
+
+    @Override
+    public void completeFirstRunExperience() {
+        FirstRunStatus.setLightweightFirstRunFlowComplete(LightweightFirstRunActivity.this, true);
+        Intent intent = new Intent();
+        intent.putExtras(mFreProperties);
+        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, intent);
     }
 }

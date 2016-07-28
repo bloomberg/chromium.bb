@@ -85,7 +85,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     private ProfileDataCache mProfileDataCache;
     private FirstRunViewPager mPager;
 
-    private Bundle mFreProperties;
+    protected Bundle mFreProperties;
 
     private List<Callable<FirstRunPage>> mPages;
 
