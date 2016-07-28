@@ -116,6 +116,8 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
 void MessagePipeReader::GetRemoteInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
+  if (!sender_.is_bound())
+    return;
   mojom::GenericInterfaceAssociatedRequest request;
   request.Bind(std::move(handle));
   sender_->GetAssociatedInterface(name, std::move(request));

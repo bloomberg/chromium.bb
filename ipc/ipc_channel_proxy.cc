@@ -571,6 +571,7 @@ mojo::AssociatedGroup* ChannelProxy::GetAssociatedGroup() {
 void ChannelProxy::GetGenericRemoteAssociatedInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
+  DCHECK(did_init_);
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::GetRemoteAssociatedInterface,
                             context_.get(), name, base::Passed(&handle)));
