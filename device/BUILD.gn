@@ -64,6 +64,7 @@ test("device_unittests") {
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
     "vr/vr_device_manager_unittest.cc",
+    "vr/vr_service_impl_unittest.cc",
   ]
 
   deps = [

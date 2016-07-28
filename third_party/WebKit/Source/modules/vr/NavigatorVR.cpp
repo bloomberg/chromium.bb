@@ -14,7 +14,6 @@
 #include "core/page/Page.h"
 #include "modules/vr/VRController.h"
 #include "modules/vr/VRDisplay.h"
-#include "modules/vr/VRDisplayCollection.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
 #include "wtf/PtrUtil.h"
@@ -57,7 +56,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState)
         return promise;
     }
 
-    controller()->getDisplays(WTF::wrapUnique(new VRGetDevicesCallback(resolver, m_displays.get())));
+    controller()->getDisplays(resolver);
 
     return promise;
 }
@@ -67,7 +66,11 @@ VRController* NavigatorVR::controller()
     if (!frame())
         return 0;
 
-    return VRController::from(*frame());
+    if (!m_controller) {
+        m_controller = new VRController(this);
+    }
+
+    return m_controller;
 }
 
 Document* NavigatorVR::document()
@@ -77,7 +80,7 @@ Document* NavigatorVR::document()
 
 DEFINE_TRACE(NavigatorVR)
 {
-    visitor->trace(m_displays);
+    visitor->trace(m_controller);
 
     Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
@@ -86,7 +89,6 @@ DEFINE_TRACE(NavigatorVR)
 NavigatorVR::NavigatorVR(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    m_displays = new VRDisplayCollection(this);
 }
 
 NavigatorVR::~NavigatorVR()

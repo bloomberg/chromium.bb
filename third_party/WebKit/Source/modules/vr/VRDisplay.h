@@ -72,7 +72,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    friend class VRDisplayCollection;
+    friend class VRController;
 
     VRDisplay(NavigatorVR*);
 

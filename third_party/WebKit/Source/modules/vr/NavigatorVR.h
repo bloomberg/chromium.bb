@@ -19,7 +19,6 @@ namespace blink {
 class Document;
 class Navigator;
 class VRController;
-class VRDisplayCollection;
 
 class MODULES_EXPORT NavigatorVR final : public GarbageCollectedFinalized<NavigatorVR>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
@@ -45,7 +44,7 @@ private:
 
     static const char* supplementName();
 
-    Member<VRDisplayCollection> m_displays;
+    Member<VRController> m_controller;
 };
 
 } // namespace blink

@@ -4,48 +4,39 @@
 
 #include "modules/vr/VRController.h"
 
+#include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRGetDevicesCallback.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
 
+#include "wtf/Assertions.h"
+
 namespace blink {
+
+VRController::VRController(NavigatorVR* navigatorVR)
+    : ContextLifecycleObserver(navigatorVR->document())
+    , m_navigatorVR(navigatorVR)
+    , m_binding(this)
+{
+    navigatorVR->document()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    m_service->SetClient(m_binding.CreateInterfacePtrAndBind());
+}
 
 VRController::~VRController()
 {
 }
 
-void VRController::provideTo(LocalFrame& frame, ServiceRegistry* registry)
-{
-    ASSERT(RuntimeEnabledFeatures::webVREnabled());
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), registry ? new VRController(frame, registry) : nullptr);
-}
-
-VRController* VRController::from(LocalFrame& frame)
-{
-    return static_cast<VRController*>(Supplement<LocalFrame>::from(frame, supplementName()));
-}
-
-VRController::VRController(LocalFrame& frame, ServiceRegistry* registry)
-{
-    ASSERT(!m_service.is_bound());
-    registry->connectToRemoteService(mojo::GetProxy(&m_service));
-}
-
-const char* VRController::supplementName()
-{
-    return "VRController";
-}
-
-void VRController::getDisplays(std::unique_ptr<VRGetDevicesCallback> callback)
+void VRController::getDisplays(ScriptPromiseResolver* resolver)
 {
     if (!m_service) {
-        callback->onError();
+        DOMException* exception = DOMException::create(InvalidStateError, "The service is no longer active.");
+        resolver->reject(exception);
         return;
     }
 
-    m_pendingGetDevicesCallbacks.append(std::move(callback));
+    m_pendingGetDevicesCallbacks.append(WTF::wrapUnique(new VRGetDevicesCallback(resolver)));
     m_service->GetDisplays(convertToBaseCallback(WTF::bind(&VRController::onGetDisplays, wrapPersistent(this))));
 }
 
@@ -63,21 +54,84 @@ void VRController::resetPose(unsigned index)
 {
     if (!m_service)
         return;
+
     m_service->ResetPose(index);
+}
+
+VRDisplay* VRController::createOrUpdateDisplay(const device::blink::VRDisplayPtr& display)
+{
+    VRDisplay* vrDisplay = getDisplayForIndex(display->index);
+    if (!vrDisplay) {
+        vrDisplay = new VRDisplay(m_navigatorVR);
+        m_displays.append(vrDisplay);
+    }
+
+    vrDisplay->update(display);
+    return vrDisplay;
+}
+
+VRDisplayVector VRController::updateDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
+{
+    VRDisplayVector vrDisplays;
+
+    for (const auto& display : displays.PassStorage()) {
+        VRDisplay* vrDisplay = createOrUpdateDisplay(display);
+        vrDisplays.append(vrDisplay);
+    }
+
+    return vrDisplays;
+}
+
+VRDisplay* VRController::getDisplayForIndex(unsigned index)
+{
+    VRDisplay* display;
+    for (size_t i = 0; i < m_displays.size(); ++i) {
+        display = m_displays[i];
+        if (display->displayId() == index) {
+            return display;
+        }
+    }
+
+    return 0;
 }
 
 void VRController::onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
 {
+    VRDisplayVector outDisplays = updateDisplays(std::move(displays));
+
     std::unique_ptr<VRGetDevicesCallback> callback = m_pendingGetDevicesCallbacks.takeFirst();
     if (!callback)
         return;
 
-    callback->onSuccess(std::move(displays));
+    callback->onSuccess(outDisplays);
+}
+
+void VRController::OnDisplayChanged(device::blink::VRDisplayPtr display)
+{
+    VRDisplay* vrDisplay = getDisplayForIndex(display->index);
+    if (!vrDisplay)
+        return;
+
+    vrDisplay->update(display);
+}
+
+void VRController::contextDestroyed()
+{
+    // If the document context was destroyed, shut down the client connection
+    // and never call the mojo service again.
+    m_binding.Close();
+    m_service.reset();
+
+    // The context is not automatically cleared, so do it manually.
+    ContextLifecycleObserver::clearContext();
 }
 
 DEFINE_TRACE(VRController)
 {
-    Supplement<LocalFrame>::trace(visitor);
+    visitor->trace(m_navigatorVR);
+    visitor->trace(m_displays);
+
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

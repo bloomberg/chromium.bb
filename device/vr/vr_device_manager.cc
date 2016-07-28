@@ -22,8 +22,6 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 
 VRDeviceManager::VRDeviceManager()
     : vr_initialized_(false), keep_alive_(false) {
-  bindings_.set_connection_error_handler(
-      base::Bind(&VRDeviceManager::OnConnectionError, base::Unretained(this)));
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   std::unique_ptr<VRDeviceProvider> cardboard_provider(
@@ -44,19 +42,6 @@ VRDeviceManager::~VRDeviceManager() {
   g_vr_device_manager = nullptr;
 }
 
-void VRDeviceManager::BindRequest(mojo::InterfaceRequest<VRService> request) {
-  VRDeviceManager* device_manager = GetInstance();
-  device_manager->bindings_.AddBinding(device_manager, std::move(request));
-}
-
-void VRDeviceManager::OnConnectionError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (bindings_.empty() && !keep_alive_) {
-    // Delete the device manager when it has no active connections.
-    delete g_vr_device_manager;
-  }
-}
-
 VRDeviceManager* VRDeviceManager::GetInstance() {
   if (!g_vr_device_manager)
     g_vr_device_manager = new VRDeviceManager();
@@ -74,6 +59,23 @@ void VRDeviceManager::SetInstance(VRDeviceManager* instance) {
 bool VRDeviceManager::HasInstance() {
   // For testing. Checks to see if a VRDeviceManager instance is active.
   return !!g_vr_device_manager;
+}
+
+void VRDeviceManager::AddService(VRServiceImpl* service) {
+  services_.push_back(service);
+
+  // Ensure that the device providers are initialized
+  InitializeProviders();
+}
+
+void VRDeviceManager::RemoveService(VRServiceImpl* service) {
+  services_.erase(std::remove(services_.begin(), services_.end(), service),
+                  services_.end());
+
+  if (services_.empty() && !keep_alive_) {
+    // Delete the device manager when it has no active connections.
+    delete g_vr_device_manager;
+  }
 }
 
 mojo::Array<VRDisplayPtr> VRDeviceManager::GetVRDevices() {
@@ -118,6 +120,13 @@ VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
   return iter->second;
 }
 
+// These dispatchers must use Clone() instead of std::move to ensure that
+// if there are multiple registered services they all get a copy of the data.
+void VRDeviceManager::OnDeviceChanged(VRDisplayPtr device) {
+  for (const auto& service : services_)
+    service->client()->OnDisplayChanged(device.Clone());
+}
+
 void VRDeviceManager::InitializeProviders() {
   if (vr_initialized_) {
     return;
@@ -132,25 +141,6 @@ void VRDeviceManager::InitializeProviders() {
 void VRDeviceManager::RegisterProvider(
     std::unique_ptr<VRDeviceProvider> provider) {
   providers_.push_back(make_linked_ptr(provider.release()));
-}
-
-void VRDeviceManager::GetDisplays(const GetDisplaysCallback& callback) {
-  callback.Run(GetVRDevices());
-}
-
-void VRDeviceManager::GetPose(uint32_t index, const GetPoseCallback& callback) {
-  VRDevice* device = GetDevice(index);
-  if (device) {
-    callback.Run(device->GetPose());
-  } else {
-    callback.Run(nullptr);
-  }
-}
-
-void VRDeviceManager::ResetPose(uint32_t index) {
-  VRDevice* device = GetDevice(index);
-  if (device)
-    device->ResetPose();
 }
 
 }  // namespace device

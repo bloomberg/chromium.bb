@@ -55,8 +55,14 @@ struct VRDisplay {
 };
 
 interface VRService {
+  SetClient(VRServiceClient client);
+
   GetDisplays() => (array<VRDisplay> displays);
   [Sync]
   GetPose(uint32 index) => (VRPose pose);
   ResetPose(uint32 index);
+};
+
+interface VRServiceClient {
+  OnDisplayChanged(VRDisplay display);
 };

@@ -1625,8 +1625,6 @@
       'vr/VRDisplay.h',
       'vr/VRDisplayCapabilities.cpp',
       'vr/VRDisplayCapabilities.h',
-      'vr/VRDisplayCollection.cpp',
-      'vr/VRDisplayCollection.h',
       'vr/VREyeParameters.cpp',
       'vr/VREyeParameters.h',
       'vr/VRFieldOfView.h',

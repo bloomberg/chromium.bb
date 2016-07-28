@@ -16,6 +16,8 @@ class FakeVRDevice : public VRDevice {
   explicit FakeVRDevice(VRDeviceProvider* provider);
   ~FakeVRDevice() override;
 
+  void InitBasicDevice();
+
   void SetVRDevice(const VRDisplayPtr& device);
   void SetPose(const VRPosePtr& state);
 
@@ -24,6 +26,8 @@ class FakeVRDevice : public VRDevice {
   void ResetPose() override;
 
  private:
+  VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);
+
   VRDisplayPtr device_;
   VRPosePtr pose_;
 

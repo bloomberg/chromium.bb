@@ -160,7 +160,6 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
-#include "modules/vr/VRController.h"
 #include "modules/wake_lock/ScreenWakeLock.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -1487,8 +1486,6 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
         ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
     if (RuntimeEnabledFeatures::presentationEnabled())
         PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
-    if (RuntimeEnabledFeatures::webVREnabled())
-        VRController::provideTo(*m_frame, m_client ? m_client->serviceRegistry() : nullptr);
     if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
         provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
     if (RuntimeEnabledFeatures::installedAppEnabled())

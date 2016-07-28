@@ -14,29 +14,36 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "device/vr/vr_client_dispatcher.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
+#include "device/vr/vr_service_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace device {
 
-class VRDeviceManager : public VRService {
+class VRDeviceManager : public VRClientDispatcher {
  public:
-  DEVICE_VR_EXPORT ~VRDeviceManager() override;
-
-  DEVICE_VR_EXPORT static void BindRequest(
-      mojo::InterfaceRequest<VRService> request);
+  DEVICE_VR_EXPORT virtual ~VRDeviceManager();
 
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
 
+  // Adds a listener for device manager events. VRDeviceManager does not own
+  // this object.
+  void AddService(VRServiceImpl* service);
+  void RemoveService(VRServiceImpl* service);
+
   DEVICE_VR_EXPORT mojo::Array<VRDisplayPtr> GetVRDevices();
   DEVICE_VR_EXPORT VRDevice* GetDevice(unsigned int index);
 
+  void OnDeviceChanged(VRDisplayPtr device) override;
+
  private:
   friend class VRDeviceManagerTest;
+  friend class VRServiceImplTest;
 
   VRDeviceManager();
   // Constructor for testing.
@@ -49,14 +56,6 @@ class VRDeviceManager : public VRService {
   void InitializeProviders();
   void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
 
-  // mojom::VRService implementation
-  void GetDisplays(const GetDisplaysCallback& callback) override;
-  void GetPose(uint32_t index, const GetPoseCallback& callback) override;
-  void ResetPose(uint32_t index) override;
-
-  // Mojo connection error handler.
-  void OnConnectionError();
-
   using ProviderList = std::vector<linked_ptr<VRDeviceProvider>>;
   ProviderList providers_;
 
@@ -66,7 +65,8 @@ class VRDeviceManager : public VRService {
 
   bool vr_initialized_;
 
-  mojo::BindingSet<VRService> bindings_;
+  using ServiceList = std::vector<VRServiceImpl*>;
+  ServiceList services_;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;

@@ -107,7 +107,7 @@
 #if defined(ENABLE_WEBVR)
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
-#include "device/vr/vr_device_manager.h" // nogncheck
+#include "device/vr/vr_service_impl.h" // nogncheck
 #endif
 
 using base::TimeDelta;
@@ -2122,7 +2122,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
     GetInterfaceRegistry()->AddInterface<device::VRService>(
-        base::Bind(&device::VRDeviceManager::BindRequest));
+        base::Bind(&device::VRServiceImpl::BindRequest));
   }
 #endif
 
