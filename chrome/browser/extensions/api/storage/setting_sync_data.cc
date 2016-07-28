@@ -8,10 +8,10 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "sync/api/sync_data.h"
-#include "sync/protocol/app_setting_specifics.pb.h"
-#include "sync/protocol/extension_setting_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/protocol/app_setting_specifics.pb.h"
+#include "components/sync/protocol/extension_setting_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace extensions {
 

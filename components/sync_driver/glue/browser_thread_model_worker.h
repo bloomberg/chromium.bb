@@ -8,8 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/util/syncer_error.h"
+#include "components/sync/base/syncer_error.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace base {
 class SingleThreadTaskRunner;

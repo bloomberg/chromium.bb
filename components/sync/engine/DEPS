@@ -1,0 +1,9 @@
+include_rules = [
+  "+components/sync/base",
+  # TODO(maxbogue): Move to engine.
+  "+components/sync/core/sync_encryption_handler.h",
+  "+components/sync/protocol",
+  # TODO(maxbogue): Move events to engine_impl.
+  "+components/sync/sessions_impl",
+]
+

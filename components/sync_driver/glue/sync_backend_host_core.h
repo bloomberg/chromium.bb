@@ -15,12 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "components/invalidation/public/invalidation.h"
+#include "components/sync/base/cancelation_signal.h"
+#include "components/sync/core/shutdown_reason.h"
+#include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/sessions/type_debug_info_observer.h"
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 #include "components/sync_driver/system_encryptor.h"
-#include "sync/internal_api/public/base/cancelation_signal.h"
-#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
-#include "sync/internal_api/public/shutdown_reason.h"
-#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "url/gurl.h"
 
 namespace browser_sync {

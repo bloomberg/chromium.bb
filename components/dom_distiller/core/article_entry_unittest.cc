@@ -4,7 +4,7 @@
 
 #include "components/dom_distiller/core/article_entry.h"
 
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::EntitySpecifics;

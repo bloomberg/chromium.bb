@@ -6,14 +6,14 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/util/data_type_histogram.h"
 
 namespace browser_sync {
 

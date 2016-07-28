@@ -12,9 +12,9 @@
 #include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/test/fake_server/fake_server.h"
 #include "google_apis/gaia/fake_identity_provider.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/test/fake_server/fake_server.h"
 
 namespace invalidation {
 class InvalidationLogger;

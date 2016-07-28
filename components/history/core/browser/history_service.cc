@@ -48,7 +48,7 @@
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/common/thumbnail_score.h"
-#include "sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_IOS)

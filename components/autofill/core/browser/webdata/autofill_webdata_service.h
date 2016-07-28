@@ -14,11 +14,11 @@
 #include "base/supports_user_data.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/sync/base/model_type.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 class WebDatabaseService;
 

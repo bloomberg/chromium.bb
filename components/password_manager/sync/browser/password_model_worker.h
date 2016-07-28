@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace base {
 class WaitableEvent;

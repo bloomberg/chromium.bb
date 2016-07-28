@@ -4,8 +4,8 @@
 
 #include "components/sync_driver/glue/sync_backend_host_mock.h"
 
+#include "components/sync/core/activation_context.h"
 #include "components/sync_driver/sync_frontend.h"
-#include "sync/internal_api/public/activation_context.h"
 
 namespace browser_sync {
 

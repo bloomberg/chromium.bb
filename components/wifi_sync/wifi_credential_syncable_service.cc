@@ -5,18 +5,19 @@
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 
 #include <stdint.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/wifi_sync/wifi_credential.h"
 #include "components/wifi_sync/wifi_security_class.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/protocol/sync.pb.h"
 
 namespace wifi_sync {
 

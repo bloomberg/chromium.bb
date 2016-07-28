@@ -19,6 +19,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/web_application_info.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_error_factory.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -30,8 +32,6 @@
 #include "extensions/common/image_util.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_error_factory.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"

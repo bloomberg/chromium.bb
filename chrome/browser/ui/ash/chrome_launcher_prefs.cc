@@ -24,8 +24,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync/api/string_ordinal.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "sync/api/string_ordinal.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

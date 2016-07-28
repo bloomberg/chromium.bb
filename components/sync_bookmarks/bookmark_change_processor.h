@@ -15,9 +15,9 @@
 #include "base/threading/thread_checker.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_driver/change_processor.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
 
 class Profile;
 

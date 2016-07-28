@@ -17,10 +17,10 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/setting_sync_data.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/syncable_service.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/value_store.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/syncable_service.h"
 
 namespace extensions {
 

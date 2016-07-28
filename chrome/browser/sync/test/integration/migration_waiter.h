@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/base/model_type.h"
 
 class MigrationWatcher;
 

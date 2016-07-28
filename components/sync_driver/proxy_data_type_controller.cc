@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/proxy_data_type_controller.h"
 
-#include "sync/api/sync_merge_result.h"
+#include "components/sync/api/sync_merge_result.h"
 
 namespace sync_driver {
 

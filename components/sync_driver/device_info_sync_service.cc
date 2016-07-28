@@ -11,11 +11,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/base/time.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/sync_driver/device_info_util.h"
 #include "components/sync_driver/local_device_info_provider.h"
-#include "sync/api/sync_change.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/util/time.h"
 
 namespace sync_driver {
 

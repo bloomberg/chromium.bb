@@ -33,13 +33,13 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/search_engine_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/search_engine_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;

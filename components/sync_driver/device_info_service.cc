@@ -12,15 +12,15 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "components/sync/api/entity_change.h"
+#include "components/sync/api/metadata_batch.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/time.h"
+#include "components/sync/core/data_batch_impl.h"
+#include "components/sync/core/simple_metadata_change_list.h"
+#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/sync_driver/device_info_util.h"
-#include "sync/api/entity_change.h"
-#include "sync/api/metadata_batch.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/data_batch_impl.h"
-#include "sync/internal_api/public/simple_metadata_change_list.h"
-#include "sync/protocol/data_type_state.pb.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/util/time.h"
 
 namespace sync_driver_v2 {
 

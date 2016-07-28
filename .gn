@@ -93,7 +93,6 @@ check_targets = [
   "//skia/*",
   "//sql/*",
   "//storage/*",
-  "//sync/*",
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
@@ -252,6 +251,7 @@ exec_script_whitelist = [
   "//clank/native/BUILD.gn",
 
   "//components/domain_reliability/BUILD.gn",
+  "//components/sync/protocol/protocol_sources.gni",
   "//content/browser/browser.gni",
   "//content/child/child.gni",
   "//content/common/common.gni",
@@ -274,7 +274,6 @@ exec_script_whitelist = [
   "//remoting/remoting_srcs.gni",
   "//remoting/remoting_version.gni",
   "//skia/BUILD.gn",
-  "//sync/protocol/protocol_sources.gni",
   "//third_party/android_platform/BUILD.gn",
   "//third_party/angle/BUILD.gn",
   "//third_party/angle/src/tests/BUILD.gn",

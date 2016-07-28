@@ -12,11 +12,11 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/wifi_sync/wifi_config_delegate.h"
 #include "components/wifi_sync/wifi_credential.h"
 #include "components/wifi_sync/wifi_security_class.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/syncable_service.h"
 
 namespace wifi_sync {
 

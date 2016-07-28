@@ -69,7 +69,7 @@
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/fips181/fips181.gyp:fips181',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_INTEGRATION_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_INTEGRATION_TEST_UTIL_H_
 
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/base/model_type.h"
 
 class ProfileSyncService;
 

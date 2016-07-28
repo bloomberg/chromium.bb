@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string_util.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace sync_driver {
 

@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
-#include "sync/util/time.h"
+#include "components/sync/base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

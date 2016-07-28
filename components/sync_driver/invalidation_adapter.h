@@ -10,7 +10,7 @@
 #include <string>
 
 #include "components/invalidation/public/invalidation.h"
-#include "sync/internal_api/public/base/invalidation_interface.h"
+#include "components/sync/base/invalidation_interface.h"
 
 namespace browser_sync {
 

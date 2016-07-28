@@ -2890,7 +2890,7 @@
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/icu/icu.gyp:icui18n',
@@ -2917,7 +2917,7 @@
       ],
       'export_dependent_settings': [
         '../components/components.gyp:dom_distiller_core',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
       ],
       'includes': [
         # Disable LTO due to undefined reference

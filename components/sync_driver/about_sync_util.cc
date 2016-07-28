@@ -12,13 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/api/time.h"
+#include "components/sync/base/sync_string_conversions.h"
+#include "components/sync/engine/sync_status.h"
+#include "components/sync/protocol/proto_enum_conversions.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 #include "components/sync_driver/sync_service.h"
 #include "components/version_info/version_info.h"
-#include "sync/api/time.h"
-#include "sync/internal_api/public/engine/sync_status.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/internal_api/public/util/sync_string_conversions.h"
-#include "sync/protocol/proto_enum_conversions.h"
 
 using base::DictionaryValue;
 using base::ListValue;

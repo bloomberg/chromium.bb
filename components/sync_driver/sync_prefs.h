@@ -19,8 +19,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sync_encryption_handler.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/sync_encryption_handler.h"
 
 class PrefService;
 class ProfileIOData;

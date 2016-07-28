@@ -33,7 +33,7 @@
         '../base/base.gyp:base',
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
-        '../sync/sync.gyp:sync_proto',
+        '../components/sync.gyp:sync_proto',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
@@ -297,7 +297,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             '../content/content.gyp:content_java',
-            '../sync/sync.gyp:sync_java',
+            '../components/sync.gyp:sync_java',
           ],
           'variables': {
             'java_in_dir': 'gcm_driver/android/java',

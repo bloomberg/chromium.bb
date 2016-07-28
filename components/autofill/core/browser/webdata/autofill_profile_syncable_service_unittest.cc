@@ -16,9 +16,9 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_error_factory_mock.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_error_factory_mock.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

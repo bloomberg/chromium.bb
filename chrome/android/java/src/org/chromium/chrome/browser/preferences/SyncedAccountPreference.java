@@ -11,9 +11,9 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
  * A preference that displays the account currently being synced and allows the user to choose a new

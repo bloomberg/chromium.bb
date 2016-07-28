@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/strings/stringprintf.h"
@@ -13,12 +14,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/theme_specifics.pb.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/protocol/theme_specifics.pb.h"
 
 using std::string;
 

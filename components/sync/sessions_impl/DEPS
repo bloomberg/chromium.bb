@@ -1,0 +1,11 @@
+include_rules = [
+  "+components/sync/base",
+  # TODO(maxbogue): Move ModelTypeRegistry to engine.
+  "+components/sync/core",
+  "+components/sync/engine",
+  "+components/sync/engine_impl",
+  "+components/sync/protocol",
+  "+components/sync/sessions",
+  "+components/sync/syncable",
+  "+components/sync/test",
+]

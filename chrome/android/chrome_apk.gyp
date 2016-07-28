@@ -141,8 +141,8 @@
       ],
       'dependencies': [
         'libchrome_base',
-        '../../sync/sync.gyp:sync',
-        '../../sync/sync.gyp:test_support_sync_fake_server_android',
+        '../../components/sync.gyp:sync',
+        '../../components/sync.gyp:test_support_sync_fake_server_android',
       ],
     },
     {
@@ -245,7 +245,7 @@
         # This exists here because com.google.protobuf.nano is needed in tests,
         # but that code is stripped out via proguard. Adding this deps adds
         # usages and prevents removal of the proto code.
-        '../../sync/sync.gyp:test_support_sync_proto_java',
+        '../../components/sync.gyp:test_support_sync_proto_java',
       ],
       'includes': [ 'chrome_apk.gypi' ],
     },
@@ -283,7 +283,7 @@
         '../../mojo/mojo_public.gyp:mojo_public_java',
         '../../net/net.gyp:net_java',
         '../../net/net.gyp:net_java_test_support',
-        '../../sync/sync.gyp:sync_java_test_support',
+        '../../components/sync.gyp:sync_java_test_support',
         '../../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
         '../../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
         '../../third_party/WebKit/public/blink.gyp:android_mojo_bindings_java',
@@ -359,10 +359,10 @@
         '../../base/base.gyp:base_java_test_support',
         '../../chrome/chrome.gyp:chrome_java',
         '../../chrome/chrome.gyp:chrome_java_test_support',
-        '../../sync/sync.gyp:sync_java',
-        '../../sync/sync.gyp:sync_java_test_support',
-        '../../sync/sync.gyp:sync_javatests',
-        '../../sync/sync.gyp:test_support_sync_proto_java',
+        '../../components/sync.gyp:sync_java',
+        '../../components/sync.gyp:sync_java_test_support',
+        '../../components/sync.gyp:sync_javatests',
+        '../../components/sync.gyp:test_support_sync_proto_java',
         '../../testing/android/on_device_instrumentation.gyp:broker_java',
         '../../testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],

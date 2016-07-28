@@ -6,7 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_OBSERVER_H_
 
 #include "components/autofill/core/browser/webdata/autofill_change.h"
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/base/model_type.h"
 
 namespace autofill {
 

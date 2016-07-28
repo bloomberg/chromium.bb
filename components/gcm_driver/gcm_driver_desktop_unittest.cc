@@ -27,12 +27,12 @@
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/protocol/experiment_status.pb.h"
+#include "components/sync/protocol/experiments_specifics.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/protocol/experiment_status.pb.h"
-#include "sync/protocol/experiments_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {

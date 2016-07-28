@@ -127,7 +127,7 @@
         '../../net/net.gyp:net_extras',
         '../../services/shell/shell_public.gyp:shell_public',
         '../../skia/skia.gyp:skia',
-        '../../sync/sync.gyp:sync',
+        '../../components/sync.gyp:sync',
         '../../third_party/brotli/brotli.gyp:brotli',
         '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
         '../../third_party/libwebp/libwebp.gyp:libwebp_dec',

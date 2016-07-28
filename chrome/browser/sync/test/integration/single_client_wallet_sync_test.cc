@@ -18,10 +18,10 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/test/fake_server/fake_server_entity.h"
+#include "components/sync/test/fake_server/unique_client_entity.h"
 #include "content/public/browser/notification_service.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/test/fake_server/fake_server_entity.h"
-#include "sync/test/fake_server/unique_client_entity.h"
 
 using autofill_helper::GetPersonalDataManager;
 using sync_integration_test_util::AwaitCommitActivityCompletion;

@@ -15,11 +15,11 @@
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/syncable_service.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

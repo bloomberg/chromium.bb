@@ -49,7 +49,7 @@
       'type': 'static_library',
       'dependencies': [
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -84,7 +84,7 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../content/content.gyp:content_browser',
             '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync',
+            '../components/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -133,7 +133,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../ios/web/ios_web.gyp:ios_web',
-            '../sync/sync.gyp:sync',
+            '../components/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',

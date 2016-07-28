@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_data.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_data.h"
 
 namespace sync_pb {
 class HistoryDeleteDirectiveSpecifics;

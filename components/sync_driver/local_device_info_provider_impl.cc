@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
+#include "components/sync/base/get_session_name.h"
 #include "components/sync_driver/sync_util.h"
-#include "sync/util/get_session_name.h"
 
 namespace browser_sync {
 

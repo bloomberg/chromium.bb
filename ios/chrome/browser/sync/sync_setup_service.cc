@@ -9,14 +9,14 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/stop_source.h"
+#include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "net/base/network_change_notifier.h"
-#include "sync/internal_api/public/base/stop_source.h"
-#include "sync/protocol/sync_protocol_error.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as

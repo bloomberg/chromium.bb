@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/crx_file/id_util.h"
+#include "components/sync/api/string_ordinal.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -29,7 +30,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "sync/api/string_ordinal.h"
 
 using content::BrowserThread;
 using extensions::Extension;

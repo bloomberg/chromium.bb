@@ -13,10 +13,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.sync.test.util.AccountHolder;
-import org.chromium.sync.test.util.MockAccountManager;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.test.util.AccountHolder;
+import org.chromium.components.sync.test.util.MockAccountManager;
 
 import java.util.HashSet;
 

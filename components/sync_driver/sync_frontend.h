@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sync_encryption_handler.h"
-#include "sync/internal_api/public/sync_manager.h"
-#include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/protocol/sync_protocol_error.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/base/weak_handle.h"
+#include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/core/sync_manager.h"
+#include "components/sync/protocol/sync_protocol_error.h"
 
 namespace syncer {
 class DataTypeDebugInfoListener;

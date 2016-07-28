@@ -13,11 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/connection_status.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/connection_status.h"
 
 class GoogleServiceAuthError;
 

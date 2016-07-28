@@ -13,11 +13,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/sync/base/extensions_activity.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "sync/util/extensions_activity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;

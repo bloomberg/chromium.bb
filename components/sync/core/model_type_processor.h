@@ -1,0 +1,48 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_SYNC_CORE_MODEL_TYPE_PROCESSOR_H_
+#define COMPONENTS_SYNC_CORE_MODEL_TYPE_PROCESSOR_H_
+
+#include <memory>
+
+#include "components/sync/base/sync_export.h"
+#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/protocol/data_type_state.pb.h"
+
+namespace syncer_v2 {
+class CommitQueue;
+
+// Interface used by sync backend to issue requests to a synced data type.
+class SYNC_EXPORT ModelTypeProcessor {
+ public:
+  ModelTypeProcessor();
+  virtual ~ModelTypeProcessor();
+
+  // Connect this processor to the sync engine via |commit_queue|. Once called,
+  // the processor will send any pending and future commits via this channel.
+  // This can only be called multiple times if the processor is disconnected
+  // (via the DataTypeController) in between.
+  virtual void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) = 0;
+
+  // Disconnect this processor from the sync engine. Change metadata will
+  // continue being processed and persisted, but no commits can be made until
+  // the next time sync is connected.
+  virtual void DisconnectSync() = 0;
+
+  // Informs this object that some of its commit requests have been
+  // successfully serviced.
+  virtual void OnCommitCompleted(
+      const sync_pb::DataTypeState& type_state,
+      const CommitResponseDataList& response_list) = 0;
+
+  // Informs this object that there are some incoming updates is should
+  // handle.
+  virtual void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
+                                const UpdateResponseDataList& updates) = 0;
+};
+
+}  // namespace syncer_v2
+
+#endif  // COMPONENTS_SYNC_CORE_MODEL_TYPE_PROCESSOR_H_

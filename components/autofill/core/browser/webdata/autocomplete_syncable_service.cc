@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/location.h"
@@ -12,12 +13,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/webdata/common/web_database.h"
 #include "net/base/escape.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/autofill_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 
 namespace autofill {
 namespace {

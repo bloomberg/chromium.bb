@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

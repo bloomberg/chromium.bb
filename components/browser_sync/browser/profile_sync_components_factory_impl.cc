@@ -24,6 +24,10 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/core/attachments/attachment_downloader.h"
+#include "components/sync/core/attachments/attachment_service.h"
+#include "components/sync/core/attachments/attachment_service_impl.h"
+#include "components/sync/core/attachments/attachment_uploader_impl.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -42,10 +46,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/internal_api/public/attachments/attachment_downloader.h"
-#include "sync/internal_api/public/attachments/attachment_service.h"
-#include "sync/internal_api/public/attachments/attachment_service_impl.h"
-#include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
 using bookmarks::BookmarkModel;
 using browser_sync::AutofillDataTypeController;

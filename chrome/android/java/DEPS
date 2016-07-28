@@ -8,8 +8,8 @@ include_rules = [
   "+components/navigation_interception",
   "+components/precache/android/java",
   "+components/safe_json/android/java",
+  "+components/sync/android/java/src/org/chromium/components/sync",
   "+components/web_contents_delegate_android",
   "+components/web_restrictions",
   "+content/public/android/java",
-  "+sync/android/java/src/org/chromium/sync",
 ]

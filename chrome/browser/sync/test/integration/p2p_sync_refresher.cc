@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 #include "content/public/browser/notification_service.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 P2PSyncRefresher::P2PSyncRefresher(Profile* profile,
                                    ProfileSyncService* sync_service)

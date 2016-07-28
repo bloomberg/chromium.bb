@@ -5,6 +5,7 @@
 #include "components/sync_driver/generic_change_processor.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -13,20 +14,20 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/base/unrecoverable_error_handler.h"
+#include "components/sync/core/base_node.h"
+#include "components/sync/core/change_record.h"
+#include "components/sync/core/data_type_error_handler.h"
+#include "components/sync/core/read_node.h"
+#include "components/sync/core/read_transaction.h"
+#include "components/sync/core/write_node.h"
+#include "components/sync/core/write_transaction.h"
+#include "components/sync/syncable/entry.h"  // TODO(tim): Bug 123674.
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/syncable_service.h"
-#include "sync/internal_api/public/base_node.h"
-#include "sync/internal_api/public/change_record.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
-#include "sync/internal_api/public/read_node.h"
-#include "sync/internal_api/public/read_transaction.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
-#include "sync/internal_api/public/write_node.h"
-#include "sync/internal_api/public/write_transaction.h"
-#include "sync/syncable/entry.h"  // TODO(tim): Bug 123674.
 
 namespace sync_driver {
 

@@ -16,8 +16,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
  * A preference that displays the current sync account and status (enabled, error, needs passphrase,

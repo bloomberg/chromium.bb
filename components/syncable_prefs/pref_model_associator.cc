@@ -16,12 +16,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/preference_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/syncable_prefs/pref_model_associator_client.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/preference_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 
 using syncer::PREFERENCES;
 using syncer::PRIORITY_PREFERENCES;

@@ -52,10 +52,10 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
+    "//components/sync:test_support_sync_api",
     "//components/sync_driver:test_support",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
-    "//sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
   ]

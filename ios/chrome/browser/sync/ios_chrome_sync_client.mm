@@ -27,6 +27,8 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync/base/extensions_activity.h"
+#include "components/sync/engine/passive_model_worker.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/glue/ui_model_worker.h"
@@ -59,8 +61,6 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/web_thread.h"
-#include "sync/internal_api/public/engine/passive_model_worker.h"
-#include "sync/util/extensions_activity.h"
 #include "ui/base/device_form_factor.h"
 
 namespace {

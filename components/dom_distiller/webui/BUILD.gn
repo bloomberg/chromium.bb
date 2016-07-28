@@ -17,10 +17,10 @@ static_library("webui") {
     "//components/dom_distiller/core/proto",
     "//components/resources",
     "//components/strings",
+    "//components/sync",
     "//content/public/browser",
     "//net",
     "//skia",
-    "//sync",
     "//url",
   ]
 }

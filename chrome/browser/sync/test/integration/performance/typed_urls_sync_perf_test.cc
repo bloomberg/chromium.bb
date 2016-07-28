@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
-#include "sync/sessions/sync_session_context.h"
+#include "components/sync/sessions_impl/sync_session_context.h"
 
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::DeleteUrlsFromHistory;

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/core/sync_auth_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "sync/internal_api/public/sync_auth_provider.h"
 
 class ProfileOAuth2TokenService;
 

@@ -28,7 +28,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.chrome.browser.util.NonThreadSafe;
 import org.chromium.components.precache.DeviceState;
-import org.chromium.sync.ModelType;
+import org.chromium.components.sync.ModelType;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;

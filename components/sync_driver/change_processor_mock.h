@@ -9,10 +9,10 @@
 
 #include <string>
 
+#include "components/sync/base/model_type.h"
+#include "components/sync/base/unrecoverable_error_handler.h"
+#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync_driver/change_processor.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace sync_driver {

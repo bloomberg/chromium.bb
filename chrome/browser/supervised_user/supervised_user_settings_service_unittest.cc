@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/sync/api/fake_sync_change_processor.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/api/sync_error_factory_mock.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "sync/api/fake_sync_change_processor.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_change_processor_wrapper_for_test.h"
-#include "sync/api/sync_error_factory_mock.h"
-#include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

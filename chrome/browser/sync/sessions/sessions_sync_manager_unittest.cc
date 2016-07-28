@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/macros.h"
@@ -23,6 +24,9 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
+#include "components/sync/api/attachments/attachment_id.h"
+#include "components/sync/api/sync_error_factory_mock.h"
+#include "components/sync/core/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"
@@ -32,9 +36,6 @@
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "sync/api/attachments/attachment_id.h"
-#include "sync/api/sync_error_factory_mock.h"
-#include "sync/internal_api/public/attachments/attachment_service_proxy_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

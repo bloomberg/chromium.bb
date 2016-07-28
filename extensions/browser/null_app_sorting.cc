@@ -4,7 +4,7 @@
 
 #include "extensions/browser/null_app_sorting.h"
 
-#include "sync/api/string_ordinal.h"
+#include "components/sync/api/string_ordinal.h"
 
 namespace {
 

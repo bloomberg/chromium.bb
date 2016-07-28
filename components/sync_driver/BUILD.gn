@@ -125,7 +125,7 @@ static_library("sync_driver") {
   ]
 
   public_deps = [
-    "//sync",
+    "//components/sync",
     "//third_party/cacheinvalidation",
   ]
 
@@ -189,15 +189,15 @@ static_library("test_support") {
 
   public_deps = [
     ":sync_driver",
-    "//sync",
+    "//components/sync",
   ]
 
   deps = [
     "//base",
+    "//components/sync:test_support_sync_core_impl",
     "//components/syncable_prefs:test_support",
     "//components/version_info",
     "//google_apis",
-    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -244,12 +244,12 @@ source_set("unit_tests") {
     "//components/pref_registry:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
+    "//components/sync:test_support_sync_api",
+    "//components/sync:test_support_sync_core_impl",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
     "//components/version_info",
     "//net:test_support",
-    "//sync:test_support_sync_api",
-    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

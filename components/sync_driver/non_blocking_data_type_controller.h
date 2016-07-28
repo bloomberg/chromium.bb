@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_driver {
 class SyncClient;

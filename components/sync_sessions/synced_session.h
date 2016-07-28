@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
-#include "sync/protocol/session_specifics.pb.h"
+#include "components/sync/protocol/session_specifics.pb.h"
 
 namespace sessions {
 struct SessionWindow;

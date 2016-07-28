@@ -15,9 +15,9 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderService;
 
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
-import org.chromium.sync.SyncConstants;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.SyncConstants;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 import java.io.IOException;
 import java.util.UUID;

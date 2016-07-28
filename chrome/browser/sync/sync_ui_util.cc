@@ -32,12 +32,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/protocol/proto_enum_conversions.h"
+#include "components/sync/protocol/sync_protocol_error.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/components_strings.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/protocol/proto_enum_conversions.h"
-#include "sync/protocol/sync_protocol_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

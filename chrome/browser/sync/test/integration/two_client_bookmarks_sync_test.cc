@@ -24,8 +24,8 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 #include "policy/policy_constants.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
 

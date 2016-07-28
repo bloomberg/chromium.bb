@@ -24,12 +24,12 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.ModelType;
-import org.chromium.sync.ModelTypeHelper;
-import org.chromium.sync.notifier.InvalidationIntentProtocol;
-import org.chromium.sync.notifier.InvalidationPreferences;
-import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.ModelType;
+import org.chromium.components.sync.ModelTypeHelper;
+import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.components.sync.notifier.InvalidationPreferences;
+import org.chromium.components.sync.notifier.InvalidationPreferences.EditContext;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

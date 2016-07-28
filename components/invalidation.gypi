@@ -207,7 +207,7 @@
           'dependencies': [
             'invalidation_proto_java',
             '../base/base.gyp:base',
-            '../sync/sync.gyp:sync_java',
+            '../components/sync.gyp:sync_java',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
           ],
           'variables': {

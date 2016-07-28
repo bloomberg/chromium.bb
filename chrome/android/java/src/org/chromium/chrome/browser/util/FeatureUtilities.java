@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;

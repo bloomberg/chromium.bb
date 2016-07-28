@@ -207,7 +207,7 @@ if (is_android) {
     deps = [
       ":proto_java",
       "//base:base_java",
-      "//sync/android:sync_java",
+      "//components/sync/android:sync_java",
       "//third_party/android_protobuf:protobuf_nano_javalib",
       "//third_party/cacheinvalidation:cacheinvalidation_javalib",
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
@@ -230,7 +230,7 @@ if (is_android) {
       ":java",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//sync/android:sync_java",
+      "//components/sync/android:sync_java",
       "//third_party/cacheinvalidation:cacheinvalidation_javalib",
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     ]

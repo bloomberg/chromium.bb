@@ -10,7 +10,7 @@ namespace switches {
 const char kDisableSync[]                   = "disable-sync";
 
 // Disables syncing one or more sync data types that are on by default.
-// See sync/internal_api/public/base/model_type.h for possible types. Types
+// See sync/base/model_type.h for possible types. Types
 // should be comma separated, and follow the naming convention for string
 // representation of model types, e.g.:
 // --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'

@@ -9,11 +9,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
+#include "components/sync/core/configure_reason.h"
+#include "components/sync/core/read_transaction.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/syncable/directory.h"  // TODO(tim): Bug 131130.
 #include "components/sync_driver/sync_service.h"
-#include "sync/internal_api/public/configure_reason.h"
-#include "sync/internal_api/public/read_transaction.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/syncable/directory.h"  // TODO(tim): Bug 131130.
 
 using syncer::ModelTypeSet;
 

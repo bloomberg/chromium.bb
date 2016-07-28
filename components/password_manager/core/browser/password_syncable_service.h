@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/password_manager/core/browser/password_store_change.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/syncable_service.h"
-#include "sync/protocol/password_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/protocol/password_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 template <typename T>
 class ScopedVector;

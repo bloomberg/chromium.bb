@@ -14,11 +14,11 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.test.util.AccountHolder;
+import org.chromium.components.sync.test.util.MockAccountManager;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.sync.test.util.AccountHolder;
-import org.chromium.sync.test.util.MockAccountManager;
 
 import java.util.concurrent.Callable;
 

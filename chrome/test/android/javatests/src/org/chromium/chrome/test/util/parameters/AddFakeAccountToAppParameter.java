@@ -9,7 +9,7 @@ import android.app.Instrumentation;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.chrome.test.util.ChromeSigninUtils;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
  * Adds a fake account to app when this parameter is used.

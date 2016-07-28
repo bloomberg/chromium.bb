@@ -5,8 +5,8 @@
 #include "components/sync_driver/generic_change_processor_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/sync_driver/generic_change_processor.h"
-#include "sync/api/syncable_service.h"
 
 namespace sync_driver {
 

@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;

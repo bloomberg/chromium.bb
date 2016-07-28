@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/guid.h"
@@ -18,10 +19,10 @@
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "components/webdata/common/web_database.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/sync.pb.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;

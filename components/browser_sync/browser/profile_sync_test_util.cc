@@ -9,12 +9,12 @@
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/engine/passive_model_worker.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
 #include "components/sync_driver/glue/ui_model_worker.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/internal_api/public/engine/passive_model_worker.h"
 
 namespace browser_sync {
 

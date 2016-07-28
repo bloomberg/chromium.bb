@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "sync/test/fake_server/tombstone_entity.h"
+#include "components/sync/test/fake_server/tombstone_entity.h"
 
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::DisableExtension;

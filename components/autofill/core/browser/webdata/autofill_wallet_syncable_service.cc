@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <utility>
 
@@ -16,8 +17,8 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace autofill {
 

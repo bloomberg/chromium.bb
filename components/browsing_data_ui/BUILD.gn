@@ -27,10 +27,10 @@ source_set("unit_tests") {
     "//base",
     "//components/history/core/test:test",
     "//components/signin/core/browser:test_support",
+    "//components/sync/protocol:protocol",
     "//components/sync_driver:test_support",
     "//components/version_info:version_info",
     "//net",
-    "//sync/protocol:protocol",
     "//testing/gtest",
   ]
 }

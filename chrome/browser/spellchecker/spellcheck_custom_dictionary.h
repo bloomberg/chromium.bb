@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/api/syncable_service.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/api/syncable_service.h"
 
 namespace syncer {
 class SyncErrorFactory;

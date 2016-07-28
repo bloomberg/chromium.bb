@@ -17,9 +17,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/sync_manager.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/sync_manager.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 class Profile;
 

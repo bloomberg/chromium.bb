@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
  * This activity is used for requesting a sync passphrase from the user. Typically,

@@ -6,9 +6,9 @@
 
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "components/crx_file/id_util.h"
+#include "components/sync/api/string_ordinal.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
-#include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

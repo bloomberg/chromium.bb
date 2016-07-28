@@ -9,11 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/base/extensions_activity.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/shared_model_type_processor.h"
+#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/shared_model_type_processor.h"
-#include "sync/util/extensions_activity.h"
 
 class BookmarkUndoService;
 class PrefService;

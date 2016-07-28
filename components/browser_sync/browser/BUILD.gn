@@ -34,6 +34,7 @@ static_library("browser") {
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/strings",
+    "//components/sync",
     "//components/sync_bookmarks",
     "//components/sync_sessions",
     "//components/syncable_prefs",
@@ -42,7 +43,6 @@ static_library("browser") {
     "//components/version_info:generate_version_info",
     "//google_apis",
     "//net",
-    "//sync",
     "//ui/base",
   ]
 }
@@ -78,6 +78,7 @@ source_set("unit_tests") {
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common:common",
     "//components/strings",
+    "//components/sync:test_support_sync_core_impl",
     "//components/sync_bookmarks:sync_bookmarks",
     "//components/sync_driver",
     "//components/sync_driver:test_support",
@@ -90,7 +91,6 @@ source_set("unit_tests") {
     "//components/webdata_services:test_support",
     "//google_apis",
     "//net",
-    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
@@ -123,14 +123,14 @@ static_library("test_support") {
     "//components/pref_registry",
     "//components/signin/core/browser:browser",
     "//components/signin/core/browser:test_support",
+    "//components/sync:test_support_sync_core",
+    "//components/sync:test_support_sync_core_impl",
     "//components/sync_driver",
     "//components/sync_driver:test_support",
     "//components/sync_sessions:test_support",
     "//components/syncable_prefs:test_support",
     "//google_apis",
     "//net:test_support",
-    "//sync:test_support_sync_core",
-    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
   ]
 }

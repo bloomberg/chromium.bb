@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace base {
 class DictionaryValue;

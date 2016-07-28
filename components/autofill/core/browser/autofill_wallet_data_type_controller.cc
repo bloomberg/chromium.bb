@@ -9,10 +9,10 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/syncable_service.h"
 
 namespace browser_sync {
 

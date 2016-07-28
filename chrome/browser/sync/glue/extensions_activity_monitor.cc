@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 
+#include "components/sync/base/extensions_activity.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/util/extensions_activity.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/chrome_notification_types.h"

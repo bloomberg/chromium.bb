@@ -8,11 +8,11 @@
 
 #include "base/files/file_path.h"
 #include "base/version.h"
+#include "components/sync/api/string_ordinal.h"
+#include "components/sync/protocol/app_specifics.pb.h"
+#include "components/sync/protocol/extension_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "extensions/common/extension.h"
-#include "sync/api/string_ordinal.h"
-#include "sync/protocol/app_specifics.pb.h"
-#include "sync/protocol/extension_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

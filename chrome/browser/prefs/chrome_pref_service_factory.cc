@@ -48,6 +48,7 @@
 #include "components/search_engines/default_search_pref_migration.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/syncable_prefs/pref_model_associator.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
@@ -56,7 +57,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_EXTENSIONS)

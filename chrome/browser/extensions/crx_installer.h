@@ -19,11 +19,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/sync/api/string_ordinal.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "sync/api/string_ordinal.h"
 
 class ExtensionService;
 class ExtensionServiceTest;

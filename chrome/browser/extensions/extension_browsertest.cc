@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 
 #include <stddef.h>
+
 #include <utility>
 #include <vector>
 
@@ -38,6 +39,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/sync/api/string_ordinal.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -55,7 +57,6 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
-#include "sync/api/string_ordinal.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"

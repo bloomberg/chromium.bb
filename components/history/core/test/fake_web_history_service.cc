@@ -11,9 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/sync/protocol/history_status.pb.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/protocol/history_status.pb.h"
 
 namespace history {
 

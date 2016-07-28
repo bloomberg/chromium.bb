@@ -4,7 +4,9 @@ include_rules = [
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/sync_driver",
+  "+components/sync/base",
+  "+components/sync/core",
+  "+components/sync/engine",
   "+components/syncable_prefs",
   "+google_apis/gaia",
-  "+sync/internal_api/public",
 ]

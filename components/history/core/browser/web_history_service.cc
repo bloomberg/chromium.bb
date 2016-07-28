@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/protocol/history_status.pb.h"
 #include "components/sync_driver/sync_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -28,7 +29,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/protocol/history_status.pb.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 

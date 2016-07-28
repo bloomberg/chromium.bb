@@ -19,7 +19,7 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
-#include "sync/api/syncable_service.h"
+#include "components/sync/api/syncable_service.h"
 
 namespace autofill {
 struct PasswordForm;

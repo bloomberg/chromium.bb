@@ -6,6 +6,7 @@ include_rules = [
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/pref_registry",
+  "+components/sync/api",
   "+components/update_client",
   "+components/user_prefs",
   "+components/web_modal",
@@ -32,7 +33,6 @@ include_rules = [
 
   "+ppapi",
   "+storage/browser/quota",
-  "+sync/api",
   "+third_party/skia/include",
 
   # Additional UI dependencies for app_shell. Note that no particular UI toolkit

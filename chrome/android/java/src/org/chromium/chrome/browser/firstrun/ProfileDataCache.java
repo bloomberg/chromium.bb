@@ -20,7 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.profiles.ProfileDownloader.Observer;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.HashMap;

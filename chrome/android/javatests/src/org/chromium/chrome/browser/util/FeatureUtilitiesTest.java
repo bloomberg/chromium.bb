@@ -18,8 +18,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.test.util.MockAccountManager;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.test.util.MockAccountManager;
 
 import java.util.ArrayList;
 import java.util.List;

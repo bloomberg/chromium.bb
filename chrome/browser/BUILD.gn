@@ -105,9 +105,9 @@ split_static_library("browser") {
   # non-iOS deps below.
   public_deps = [
     "//components/autofill/core/browser",
+    "//components/sync",
     "//content/public/browser",
     "//sql",
-    "//sync",
   ]
   deps = [
     "//chrome:extra_resources",
@@ -196,6 +196,7 @@ split_static_library("browser") {
     "//components/subresource_filter/core/browser",
     "//components/suggestions",
     "//components/supervised_user_error_page",
+    "//components/sync",
     "//components/sync_bookmarks",
     "//components/sync_driver",
     "//components/sync_sessions",
@@ -225,7 +226,6 @@ split_static_library("browser") {
     "//gpu/config",
     "//skia",
     "//sql",
-    "//sync",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/libjingle",

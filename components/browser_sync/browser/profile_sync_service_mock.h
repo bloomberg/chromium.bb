@@ -11,12 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/device_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/protocol/sync_protocol_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ProfileSyncServiceMock : public ProfileSyncService {

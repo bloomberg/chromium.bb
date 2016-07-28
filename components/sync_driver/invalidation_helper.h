@@ -6,8 +6,8 @@
 #define COMPONENTS_SYNC_DRIVER_INVALIDATION_HELPER_H_
 
 #include "components/invalidation/public/invalidation_util.h"
+#include "components/sync/base/model_type.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 

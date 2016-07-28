@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/base/unrecoverable_error_handler.h"
+#include "components/sync/core/data_type_error_handler.h"
 
 namespace base {
 class SingleThreadTaskRunner;

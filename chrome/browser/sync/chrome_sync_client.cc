@@ -54,6 +54,7 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync/engine/passive_model_worker.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/glue/ui_model_worker.h"
@@ -63,7 +64,6 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "ui/base/device_form_factor.h"
 
 #if defined(ENABLE_APP_LIST)

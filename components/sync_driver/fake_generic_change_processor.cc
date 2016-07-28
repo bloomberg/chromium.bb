@@ -8,8 +8,8 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/api/syncable_service.h"
-#include "sync/internal_api/public/attachments/attachment_service_impl.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/core/attachments/attachment_service_impl.h"
 
 namespace sync_driver {
 

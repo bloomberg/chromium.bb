@@ -8,7 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace wifi_sync {
 

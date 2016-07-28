@@ -7,13 +7,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
+#include "components/sync/base/model_type_test_util.h"
+#include "components/sync/core/test/test_user_share.h"
+#include "components/sync/core/write_transaction.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/syncable/directory.h"  // TODO(tim): Remove. Bug 131130.
 #include "components/sync_driver/data_type_manager_mock.h"
 #include "components/sync_driver/fake_sync_service.h"
-#include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/internal_api/public/test/test_user_share.h"
-#include "sync/internal_api/public/write_transaction.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/syncable/directory.h"  // TODO(tim): Remove. Bug 131130.
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

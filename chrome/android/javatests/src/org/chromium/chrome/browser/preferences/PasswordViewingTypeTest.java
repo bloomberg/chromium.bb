@@ -16,12 +16,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.test.util.AccountHolder;
+import org.chromium.components.sync.test.util.MockAccountManager;
+import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.test.util.AccountHolder;
-import org.chromium.sync.test.util.MockAccountManager;
-import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 /**
  * Tests for verifying whether users are presented with the correct option of viewing

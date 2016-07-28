@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 import org.json.JSONException;
 import org.json.JSONObject;
 

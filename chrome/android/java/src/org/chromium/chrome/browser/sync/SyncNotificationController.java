@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
  * {@link SyncNotificationController} provides functionality for displaying Android notifications

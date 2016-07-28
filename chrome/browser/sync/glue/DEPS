@@ -1,6 +1,6 @@
 include_rules = [
-  "-sync/engine",
-  "-sync/sessions",
-  "-sync/syncable",
-  "+sync/util",
+  "+components/sync/base",
+  "-components/sync/engine",
+  "-components/sync/sessions",
+  "-components/sync/syncable",
 ]

@@ -5,9 +5,9 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/keyed_service/core",
   "+components/onc",
+  "+components/sync/api",
+  "+components/sync/core/attachments",
+  "+components/sync/protocol",
   "+content/public/browser",
-  "+sync/api",
-  "+sync/internal_api/public/attachments",
-  "+sync/protocol",
   "+third_party/cros_system_api/dbus/service_constants.h",
 ]

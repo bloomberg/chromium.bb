@@ -7,7 +7,7 @@
 
 #include "components/sync_driver/data_type_controller.h"
 
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace sync_driver {
 class ChangeProcessor;

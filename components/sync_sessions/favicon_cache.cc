@@ -14,10 +14,10 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
-#include "sync/api/time.h"
-#include "sync/protocol/favicon_image_specifics.pb.h"
-#include "sync/protocol/favicon_tracking_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/time.h"
+#include "components/sync/protocol/favicon_image_specifics.pb.h"
+#include "components/sync/protocol/favicon_tracking_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "ui/gfx/favicon_size.h"
 
 namespace browser_sync {

@@ -14,9 +14,9 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
-#include "sync/test/fake_server/fake_server_verifier.h"
-#include "sync/test/fake_server/sessions_hierarchy.h"
-#include "sync/util/time.h"
+#include "components/sync/base/time.h"
+#include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "components/sync/test/fake_server/sessions_hierarchy.h"
 
 using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;

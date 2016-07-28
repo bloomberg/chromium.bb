@@ -1,6 +1,6 @@
 include_rules = [
-  "+sync",
+  "+components/sync",
+  "+components/variations",
   "+ui/base",
   "+ui/gfx",
-  "+components/variations",
 ]

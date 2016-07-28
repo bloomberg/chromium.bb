@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync_driver/directory_data_type_controller.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
 
 namespace base {
 class SingleThreadTaskRunner;

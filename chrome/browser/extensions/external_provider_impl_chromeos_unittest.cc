@@ -30,14 +30,14 @@
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync/api/fake_sync_change_processor.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "sync/api/fake_sync_change_processor.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_error_factory_mock.h"
 
 namespace extensions {
 

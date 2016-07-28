@@ -34,8 +34,8 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/api/syncable_service.h"
 #include "sql/init_status.h"
-#include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

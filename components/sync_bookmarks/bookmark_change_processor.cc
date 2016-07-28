@@ -21,15 +21,15 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync/core/change_record.h"
+#include "components/sync/core/read_node.h"
+#include "components/sync/core/write_node.h"
+#include "components/sync/core/write_transaction.h"
+#include "components/sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
+#include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
-#include "sync/internal_api/public/change_record.h"
-#include "sync/internal_api/public/read_node.h"
-#include "sync/internal_api/public/write_node.h"
-#include "sync/internal_api/public/write_transaction.h"
-#include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
-#include "sync/syncable/syncable_write_transaction.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_util.h"
 

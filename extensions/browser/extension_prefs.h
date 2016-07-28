@@ -17,13 +17,13 @@
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync/api/string_ordinal.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_scoped_prefs.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
-#include "sync/api/string_ordinal.h"
 
 class ExtensionPrefValueMap;
 class PrefService;

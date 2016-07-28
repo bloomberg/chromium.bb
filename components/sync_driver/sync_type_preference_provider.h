@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_TYPE_PREFERENCE_PROVIDER_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_TYPE_PREFERENCE_PROVIDER_H_
 
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/base/model_type.h"
 
 class SyncTypePreferenceProvider {
  public:

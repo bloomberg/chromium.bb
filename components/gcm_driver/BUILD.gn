@@ -68,12 +68,12 @@ static_library("gcm_driver") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//components/sync/protocol",
     "//components/sync_driver",
     "//components/version_info",
     "//google_apis",
     "//google_apis/gcm",
     "//net",
-    "//sync/protocol",
     "//url:url",
   ]
   allow_circular_includes_from = [ "//components/gcm_driver/crypto" ]
@@ -162,10 +162,10 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/gcm_driver/crypto",
     "//components/prefs:test_support",
+    "//components/sync/protocol",
     "//google_apis:test_support",
     "//google_apis/gcm:test_support",
     "//net:test_support",
-    "//sync/protocol",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]

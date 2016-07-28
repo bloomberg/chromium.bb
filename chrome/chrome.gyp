@@ -15,12 +15,12 @@
     'chromium_browser_dependencies': [
       'common',
       'browser',
-      '../sync/sync.gyp:sync',
+      '../components/sync.gyp:sync',
     ],
     # GN version is the group //chrome:child_dependencies
     'chromium_child_dependencies': [
       'common',
-      '../sync/sync.gyp:sync',
+      '../components/sync.gyp:sync',
     ],
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
@@ -507,7 +507,7 @@
             '../mojo/mojo_public.gyp:mojo_bindings_java',
             '../mojo/mojo_public.gyp:mojo_public_java',
             '../printing/printing.gyp:printing_java',
-            '../sync/sync.gyp:sync_java',
+            '../components/sync.gyp:sync_java',
             '../third_party/WebKit/public/blink.gyp:android_mojo_bindings_java',
             '../third_party/android_data_chart/android_data_chart.gyp:android_data_chart_java',
             '../third_party/android_media/android_media.gyp:android_media_java',

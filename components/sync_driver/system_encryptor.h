@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "sync/util/encryptor.h"
+#include "components/sync/base/encryptor.h"
 
 namespace sync_driver {
 

@@ -7,11 +7,11 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/signin/core/browser",
+  "+components/sync",
   "+components/syncable_prefs",
   "+components/version_info",
   "+google",
   "+google_apis",
   "+net",
   "+policy",
-  "+sync",
 ]

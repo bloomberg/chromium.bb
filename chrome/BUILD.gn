@@ -1173,7 +1173,7 @@ group("browser_dependencies") {
   public_deps = [
     "//chrome/browser",
     "//chrome/common",
-    "//sync",
+    "//components/sync",
   ]
   if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
@@ -1204,7 +1204,7 @@ group("browser_dependencies") {
 group("child_dependencies") {
   public_deps = [
     "//chrome/common",
-    "//sync",
+    "//components/sync",
   ]
   if (!is_ios) {
     public_deps += [

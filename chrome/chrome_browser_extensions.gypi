@@ -971,7 +971,7 @@
         '../skia/skia.gyp:skia',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',

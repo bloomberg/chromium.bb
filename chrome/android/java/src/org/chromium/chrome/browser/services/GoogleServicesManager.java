@@ -16,7 +16,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
  * Starts and monitors various sync and Google services related tasks.

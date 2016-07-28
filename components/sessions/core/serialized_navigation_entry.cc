@@ -9,8 +9,8 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/core/serialized_navigation_driver.h"
-#include "sync/protocol/session_specifics.pb.h"
-#include "sync/util/time.h"
+#include "components/sync/base/time.h"
+#include "components/sync/protocol/session_specifics.pb.h"
 
 namespace sessions {
 

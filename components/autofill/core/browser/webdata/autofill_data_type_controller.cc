@@ -8,8 +8,8 @@
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/util/experiments.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/experiments.h"
 
 namespace browser_sync {
 

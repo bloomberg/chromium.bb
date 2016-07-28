@@ -15,9 +15,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.sync.test.util.AccountHolder;
-import org.chromium.sync.test.util.MockAccountManager;
+import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.test.util.AccountHolder;
+import org.chromium.components.sync.test.util.MockAccountManager;
 
 import java.io.IOException;
 

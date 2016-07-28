@@ -13,7 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace history {
 class HistoryService;

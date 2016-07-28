@@ -10,8 +10,8 @@ import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
 import com.google.protobuf.nano.MessageNano;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.sync.protocol.EntitySpecifics;
-import org.chromium.sync.protocol.SyncEntity;
+import org.chromium.components.sync.protocol.EntitySpecifics;
+import org.chromium.components.sync.protocol.SyncEntity;
 
 import java.util.ArrayList;
 import java.util.List;

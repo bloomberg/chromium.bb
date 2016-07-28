@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/syncable_service.h"
-#include "sync/internal_api/public/data_type_error_handler.h"
 
 using base::AutoLock;
 

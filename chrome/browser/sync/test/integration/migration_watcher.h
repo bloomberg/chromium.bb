@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_MIGRATION_WATCHER_H_
 
 #include "base/macros.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/backend_migrator.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 class ProfileSyncServiceHarness;
 class MigrationWaiter;

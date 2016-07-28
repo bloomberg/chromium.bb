@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
 #include <stddef.h>
+
 #include <functional>
 #include <utility>
 
@@ -17,10 +18,10 @@
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/protocol/sync.pb.h"
 
 using content::BrowserThread;
 

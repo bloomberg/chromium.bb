@@ -9,12 +9,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
+#include "components/sync/protocol/experiment_status.pb.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "sync/protocol/experiment_status.pb.h"
 #include "url/gurl.h"
 
 namespace gcm {

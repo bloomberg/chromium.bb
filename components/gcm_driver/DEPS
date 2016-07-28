@@ -4,6 +4,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/signin",
+  "+components/sync/protocol",
   "+components/sync_driver",
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",
@@ -13,5 +14,4 @@ include_rules = [
   "+google_apis/gcm",
   "+jni",
   "+net",
-  "+sync/protocol",
 ]

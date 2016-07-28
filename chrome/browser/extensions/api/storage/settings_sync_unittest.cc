@@ -21,6 +21,10 @@
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_error_factory_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
@@ -31,10 +35,6 @@
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/manifest.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_change_processor_wrapper_for_test.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;

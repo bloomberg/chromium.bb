@@ -1,4 +1,0 @@
-include_rules = [
-  "+sync/api/attachments",
-  "+third_party/leveldatabase",
-]

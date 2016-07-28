@@ -1,0 +1,899 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//components/sync/protocol/protocol_sources.gni")
+import("//testing/test.gni")
+
+component("sync") {
+  public_deps = [
+    ":sync_core",
+    "//components/sync/protocol",
+  ]
+}
+
+# GYP version: components/sync.gyp:sync_core
+source_set("sync_core") {
+  sources = [
+    "api/attachments/attachment.cc",
+    "api/attachments/attachment.h",
+    "api/attachments/attachment_id.cc",
+    "api/attachments/attachment_id.h",
+    "api/attachments/attachment_metadata.cc",
+    "api/attachments/attachment_metadata.h",
+    "api/attachments/attachment_store.cc",
+    "api/attachments/attachment_store.h",
+    "api/attachments/attachment_store_backend.cc",
+    "api/attachments/attachment_store_backend.h",
+    "api/conflict_resolution.cc",
+    "api/conflict_resolution.h",
+    "api/data_batch.h",
+    "api/entity_change.cc",
+    "api/entity_change.h",
+    "api/entity_data.cc",
+    "api/entity_data.h",
+    "api/metadata_batch.cc",
+    "api/metadata_batch.h",
+    "api/metadata_change_list.h",
+    "api/model_type_change_processor.cc",
+    "api/model_type_change_processor.h",
+    "api/model_type_service.cc",
+    "api/model_type_service.h",
+    "api/model_type_store.cc",
+    "api/model_type_store.h",
+    "api/string_ordinal.h",
+    "api/sync_change.cc",
+    "api/sync_change.h",
+    "api/sync_change_processor.cc",
+    "api/sync_change_processor.h",
+    "api/sync_data.cc",
+    "api/sync_data.h",
+    "api/sync_error.cc",
+    "api/sync_error.h",
+    "api/sync_error_factory.cc",
+    "api/sync_error_factory.h",
+    "api/sync_merge_result.cc",
+    "api/sync_merge_result.h",
+    "api/syncable_service.cc",
+    "api/syncable_service.h",
+    "api/time.h",
+    "base/attachment_id_proto.cc",
+    "base/attachment_id_proto.h",
+    "base/cancelation_observer.cc",
+    "base/cancelation_observer.h",
+    "base/cancelation_signal.cc",
+    "base/cancelation_signal.h",
+    "base/cryptographer.cc",
+    "base/cryptographer.h",
+    "base/data_type_histogram.cc",
+    "base/data_type_histogram.h",
+    "base/encryptor.h",
+    "base/enum_set.h",
+    "base/experiments.h",
+    "base/extensions_activity.cc",
+    "base/extensions_activity.h",
+    "base/get_session_name.cc",
+    "base/get_session_name.h",
+    "base/get_session_name_ios.h",
+    "base/get_session_name_ios.mm",
+    "base/get_session_name_linux.cc",
+    "base/get_session_name_linux.h",
+    "base/get_session_name_mac.h",
+    "base/get_session_name_mac.mm",
+    "base/get_session_name_win.cc",
+    "base/get_session_name_win.h",
+    "base/immutable.h",
+    "base/invalidation_interface.cc",
+    "base/invalidation_interface.h",
+    "base/logging.cc",
+    "base/logging.h",
+    "base/model_type.h",
+    "base/nigori.cc",
+    "base/nigori.h",
+    "base/node_ordinal.cc",
+    "base/node_ordinal.h",
+    "base/ordinal.h",
+    "base/progress_marker_map.cc",
+    "base/progress_marker_map.h",
+    "base/proto_value_ptr.h",
+    "base/stop_source.h",
+    "base/sync_db_util.h",
+    "base/sync_export.h",
+    "base/sync_string_conversions.cc",
+    "base/sync_string_conversions.h",
+    "base/syncer_error.cc",
+    "base/syncer_error.h",
+    "base/time.cc",
+    "base/time.h",
+    "base/unique_position.cc",
+    "base/unique_position.h",
+    "base/unrecoverable_error_handler.h",
+    "base/unrecoverable_error_info.cc",
+    "base/unrecoverable_error_info.h",
+    "base/weak_handle.cc",
+    "base/weak_handle.h",
+    "core/activation_context.cc",
+    "core/activation_context.h",
+    "core/attachments/attachment_downloader.h",
+    "core/attachments/attachment_downloader_impl.h",
+    "core/attachments/attachment_service.h",
+    "core/attachments/attachment_service_impl.h",
+    "core/attachments/attachment_service_proxy.h",
+    "core/attachments/attachment_service_proxy_for_test.h",
+    "core/attachments/attachment_store_frontend.h",
+    "core/attachments/attachment_uploader.h",
+    "core/attachments/attachment_uploader_impl.h",
+    "core/attachments/attachment_util.h",
+    "core/attachments/fake_attachment_downloader.h",
+    "core/attachments/fake_attachment_uploader.h",
+    "core/attachments/in_memory_attachment_store.h",
+    "core/attachments/on_disk_attachment_store.h",
+    "core/base_node.cc",
+    "core/base_node.h",
+    "core/base_transaction.cc",
+    "core/base_transaction.h",
+    "core/change_record.cc",
+    "core/change_record.h",
+    "core/configure_reason.h",
+    "core/data_batch_impl.cc",
+    "core/data_batch_impl.h",
+    "core/data_type_association_stats.cc",
+    "core/data_type_association_stats.h",
+    "core/data_type_debug_info_listener.cc",
+    "core/data_type_debug_info_listener.h",
+    "core/data_type_error_handler.h",
+    "core/delete_journal.cc",
+    "core/delete_journal.h",
+    "core/http_bridge.cc",
+    "core/http_bridge.h",
+    "core/http_bridge_network_resources.cc",
+    "core/http_bridge_network_resources.h",
+    "core/http_post_provider_factory.h",
+    "core/http_post_provider_interface.h",
+    "core/internal_components_factory.h",
+    "core/internal_components_factory_impl.cc",
+    "core/internal_components_factory_impl.h",
+    "core/model_type_connector.cc",
+    "core/model_type_connector.h",
+    "core/model_type_processor.cc",
+    "core/model_type_processor.h",
+    "core/model_type_store_backend.cc",
+    "core/model_type_store_backend.h",
+    "core/model_type_store_impl.cc",
+    "core/model_type_store_impl.h",
+    "core/network_resources.h",
+    "core/non_blocking_sync_common.cc",
+    "core/non_blocking_sync_common.h",
+    "core/processor_entity_tracker.cc",
+    "core/processor_entity_tracker.h",
+    "core/read_node.cc",
+    "core/read_node.h",
+    "core/read_transaction.cc",
+    "core/read_transaction.h",
+    "core/shared_model_type_processor.cc",
+    "core/shared_model_type_processor.h",
+    "core/shutdown_reason.h",
+    "core/simple_metadata_change_list.cc",
+    "core/simple_metadata_change_list.h",
+    "core/sync_auth_provider.h",
+    "core/sync_db_util.cc",
+    "core/sync_encryption_handler.cc",
+    "core/sync_encryption_handler.h",
+    "core/sync_manager.cc",
+    "core/sync_manager.h",
+    "core/sync_manager_factory.cc",
+    "core/sync_manager_factory.h",
+    "core/user_share.cc",
+    "core/user_share.h",
+    "core/write_node.cc",
+    "core/write_node.h",
+    "core/write_transaction.cc",
+    "core/write_transaction.h",
+    "core_impl/attachments/attachment_downloader.cc",
+    "core_impl/attachments/attachment_downloader_impl.cc",
+    "core_impl/attachments/attachment_service.cc",
+    "core_impl/attachments/attachment_service_impl.cc",
+    "core_impl/attachments/attachment_service_proxy.cc",
+    "core_impl/attachments/attachment_service_proxy_for_test.cc",
+    "core_impl/attachments/attachment_store_frontend.cc",
+    "core_impl/attachments/attachment_uploader.cc",
+    "core_impl/attachments/attachment_uploader_impl.cc",
+    "core_impl/attachments/attachment_util.cc",
+    "core_impl/attachments/fake_attachment_downloader.cc",
+    "core_impl/attachments/fake_attachment_uploader.cc",
+    "core_impl/attachments/in_memory_attachment_store.cc",
+    "core_impl/attachments/on_disk_attachment_store.cc",
+    "core_impl/attachments/task_queue.cc",
+    "core_impl/change_reorder_buffer.cc",
+    "core_impl/change_reorder_buffer.h",
+    "core_impl/debug_info_event_listener.cc",
+    "core_impl/debug_info_event_listener.h",
+    "core_impl/js_mutation_event_observer.cc",
+    "core_impl/js_mutation_event_observer.h",
+    "core_impl/js_sync_encryption_handler_observer.cc",
+    "core_impl/js_sync_encryption_handler_observer.h",
+    "core_impl/js_sync_manager_observer.cc",
+    "core_impl/js_sync_manager_observer.h",
+    "core_impl/model_type_connector_proxy.cc",
+    "core_impl/model_type_connector_proxy.h",
+    "core_impl/protocol_event_buffer.cc",
+    "core_impl/protocol_event_buffer.h",
+    "core_impl/sync_encryption_handler_impl.cc",
+    "core_impl/sync_encryption_handler_impl.h",
+    "core_impl/sync_manager_impl.cc",
+    "core_impl/sync_manager_impl.h",
+    "core_impl/syncapi_internal.cc",
+    "core_impl/syncapi_internal.h",
+    "core_impl/syncapi_server_connection_manager.cc",
+    "core_impl/syncapi_server_connection_manager.h",
+    "engine/events/clear_server_data_request_event.cc",
+    "engine/events/clear_server_data_request_event.h",
+    "engine/events/clear_server_data_response_event.cc",
+    "engine/events/clear_server_data_response_event.h",
+    "engine/events/commit_request_event.cc",
+    "engine/events/commit_request_event.h",
+    "engine/events/commit_response_event.cc",
+    "engine/events/commit_response_event.h",
+    "engine/events/configure_get_updates_request_event.cc",
+    "engine/events/configure_get_updates_request_event.h",
+    "engine/events/get_updates_response_event.cc",
+    "engine/events/get_updates_response_event.h",
+    "engine/events/normal_get_updates_request_event.cc",
+    "engine/events/normal_get_updates_request_event.h",
+    "engine/events/poll_get_updates_request_event.cc",
+    "engine/events/poll_get_updates_request_event.h",
+    "engine/events/protocol_event.cc",
+    "engine/events/protocol_event.h",
+    "engine/model_safe_worker.cc",
+    "engine/model_safe_worker.h",
+    "engine/passive_model_worker.cc",
+    "engine/passive_model_worker.h",
+    "engine/polling_constants.cc",
+    "engine/polling_constants.h",
+    "engine/sync_status.cc",
+    "engine/sync_status.h",
+    "engine_impl/all_status.cc",
+    "engine_impl/all_status.h",
+    "engine_impl/apply_control_data_updates.cc",
+    "engine_impl/apply_control_data_updates.h",
+    "engine_impl/backoff_delay_provider.cc",
+    "engine_impl/backoff_delay_provider.h",
+    "engine_impl/clear_server_data.cc",
+    "engine_impl/clear_server_data.h",
+    "engine_impl/commit.cc",
+    "engine_impl/commit.h",
+    "engine_impl/commit_contribution.cc",
+    "engine_impl/commit_contribution.h",
+    "engine_impl/commit_contributor.cc",
+    "engine_impl/commit_contributor.h",
+    "engine_impl/commit_processor.cc",
+    "engine_impl/commit_processor.h",
+    "engine_impl/commit_queue.cc",
+    "engine_impl/commit_queue.h",
+    "engine_impl/commit_util.cc",
+    "engine_impl/commit_util.h",
+    "engine_impl/conflict_resolver.cc",
+    "engine_impl/conflict_resolver.h",
+    "engine_impl/conflict_util.cc",
+    "engine_impl/conflict_util.h",
+    "engine_impl/directory_commit_contribution.cc",
+    "engine_impl/directory_commit_contribution.h",
+    "engine_impl/directory_commit_contributor.cc",
+    "engine_impl/directory_commit_contributor.h",
+    "engine_impl/directory_update_handler.cc",
+    "engine_impl/directory_update_handler.h",
+    "engine_impl/get_commit_ids.cc",
+    "engine_impl/get_commit_ids.h",
+    "engine_impl/get_updates_delegate.cc",
+    "engine_impl/get_updates_delegate.h",
+    "engine_impl/get_updates_processor.cc",
+    "engine_impl/get_updates_processor.h",
+    "engine_impl/model_type_worker.cc",
+    "engine_impl/model_type_worker.h",
+    "engine_impl/net/server_connection_manager.cc",
+    "engine_impl/net/server_connection_manager.h",
+    "engine_impl/net/url_translator.cc",
+    "engine_impl/net/url_translator.h",
+    "engine_impl/non_blocking_type_commit_contribution.cc",
+    "engine_impl/non_blocking_type_commit_contribution.h",
+    "engine_impl/nudge_handler.cc",
+    "engine_impl/nudge_handler.h",
+    "engine_impl/nudge_source.cc",
+    "engine_impl/nudge_source.h",
+    "engine_impl/process_updates_util.cc",
+    "engine_impl/process_updates_util.h",
+    "engine_impl/sync_cycle_event.cc",
+    "engine_impl/sync_cycle_event.h",
+    "engine_impl/sync_engine_event_listener.cc",
+    "engine_impl/sync_engine_event_listener.h",
+    "engine_impl/sync_scheduler.cc",
+    "engine_impl/sync_scheduler.h",
+    "engine_impl/sync_scheduler_impl.cc",
+    "engine_impl/sync_scheduler_impl.h",
+    "engine_impl/syncer.cc",
+    "engine_impl/syncer.h",
+    "engine_impl/syncer_proto_util.cc",
+    "engine_impl/syncer_proto_util.h",
+    "engine_impl/syncer_types.h",
+    "engine_impl/syncer_util.cc",
+    "engine_impl/syncer_util.h",
+    "engine_impl/traffic_logger.cc",
+    "engine_impl/traffic_logger.h",
+    "engine_impl/update_applicator.cc",
+    "engine_impl/update_applicator.h",
+    "engine_impl/update_handler.cc",
+    "engine_impl/update_handler.h",
+    "engine_impl/worker_entity_tracker.cc",
+    "engine_impl/worker_entity_tracker.h",
+    "js/js_backend.h",
+    "js/js_controller.h",
+    "js/js_event_details.cc",
+    "js/js_event_details.h",
+    "js/js_event_handler.h",
+    "js/sync_js_controller.cc",
+    "js/sync_js_controller.h",
+    "protocol/proto_enum_conversions.cc",
+    "protocol/proto_enum_conversions.h",
+    "protocol/proto_value_conversions.cc",
+    "protocol/proto_value_conversions.h",
+    "protocol/sync_protocol_error.cc",
+    "protocol/sync_protocol_error.h",
+    "sessions/commit_counters.cc",
+    "sessions/commit_counters.h",
+    "sessions/model_neutral_state.cc",
+    "sessions/model_neutral_state.h",
+    "sessions/status_counters.cc",
+    "sessions/status_counters.h",
+    "sessions/sync_session_snapshot.cc",
+    "sessions/sync_session_snapshot.h",
+    "sessions/type_debug_info_observer.cc",
+    "sessions/type_debug_info_observer.h",
+    "sessions/update_counters.cc",
+    "sessions/update_counters.h",
+    "sessions_impl/data_type_tracker.cc",
+    "sessions_impl/data_type_tracker.h",
+    "sessions_impl/debug_info_getter.h",
+    "sessions_impl/directory_type_debug_info_emitter.cc",
+    "sessions_impl/directory_type_debug_info_emitter.h",
+    "sessions_impl/model_type_registry.cc",
+    "sessions_impl/model_type_registry.h",
+    "sessions_impl/nudge_tracker.cc",
+    "sessions_impl/nudge_tracker.h",
+    "sessions_impl/status_controller.cc",
+    "sessions_impl/status_controller.h",
+    "sessions_impl/sync_session.cc",
+    "sessions_impl/sync_session.h",
+    "sessions_impl/sync_session_context.cc",
+    "sessions_impl/sync_session_context.h",
+    "syncable/dir_open_result.h",
+    "syncable/directory.cc",
+    "syncable/directory.h",
+    "syncable/directory_backing_store.cc",
+    "syncable/directory_backing_store.h",
+    "syncable/directory_change_delegate.h",
+    "syncable/entry.cc",
+    "syncable/entry.h",
+    "syncable/entry_kernel.cc",
+    "syncable/entry_kernel.h",
+    "syncable/in_memory_directory_backing_store.cc",
+    "syncable/in_memory_directory_backing_store.h",
+    "syncable/invalid_directory_backing_store.cc",
+    "syncable/invalid_directory_backing_store.h",
+    "syncable/metahandle_set.h",
+    "syncable/model_neutral_mutable_entry.cc",
+    "syncable/model_neutral_mutable_entry.h",
+    "syncable/model_type.cc",
+    "syncable/mutable_entry.cc",
+    "syncable/mutable_entry.h",
+    "syncable/nigori_handler.cc",
+    "syncable/nigori_handler.h",
+    "syncable/nigori_util.cc",
+    "syncable/nigori_util.h",
+    "syncable/on_disk_directory_backing_store.cc",
+    "syncable/on_disk_directory_backing_store.h",
+    "syncable/parent_child_index.cc",
+    "syncable/parent_child_index.h",
+    "syncable/scoped_kernel_lock.cc",
+    "syncable/scoped_kernel_lock.h",
+    "syncable/scoped_parent_child_index_updater.cc",
+    "syncable/scoped_parent_child_index_updater.h",
+    "syncable/syncable-inl.h",
+    "syncable/syncable_base_transaction.cc",
+    "syncable/syncable_base_transaction.h",
+    "syncable/syncable_base_write_transaction.cc",
+    "syncable/syncable_base_write_transaction.h",
+    "syncable/syncable_changes_version.h",
+    "syncable/syncable_columns.h",
+    "syncable/syncable_delete_journal.cc",
+    "syncable/syncable_delete_journal.h",
+    "syncable/syncable_enum_conversions.cc",
+    "syncable/syncable_enum_conversions.h",
+    "syncable/syncable_id.cc",
+    "syncable/syncable_id.h",
+    "syncable/syncable_model_neutral_write_transaction.cc",
+    "syncable/syncable_model_neutral_write_transaction.h",
+    "syncable/syncable_proto_util.cc",
+    "syncable/syncable_proto_util.h",
+    "syncable/syncable_read_transaction.cc",
+    "syncable/syncable_read_transaction.h",
+    "syncable/syncable_util.cc",
+    "syncable/syncable_util.h",
+    "syncable/syncable_write_transaction.cc",
+    "syncable/syncable_write_transaction.h",
+    "syncable/transaction_observer.h",
+    "syncable/write_transaction_info.cc",
+    "syncable/write_transaction_info.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//components/sync/core_impl/attachments/proto",
+    "//net",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//components/sync/protocol",
+    "//crypto",
+    "//google_apis",
+    "//sql",
+    "//third_party/leveldatabase",
+    "//third_party/zlib",
+    "//url",
+  ]
+
+  if (is_android) {
+    deps += [ "//components/sync/android:jni_headers" ]
+    sources += [
+      "android/model_type_helper.cc",
+      "android/model_type_helper.h",
+      "android/sync_jni_registrar.cc",
+      "android/sync_jni_registrar.h",
+    ]
+  }
+
+  if (is_chromeos) {
+    # Required by get_session_name.cc on Chrome OS.
+    deps += [ "//chromeos" ]
+  }
+
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
+    ]
+  }
+
+  defines = [ "SYNC_IMPLEMENTATION" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+# GYP version: sync/sync_tests.gypi:test_support_sync_core
+static_library("test_support_sync_core") {
+  testonly = true
+  sources = [
+    "base/mock_unrecoverable_error_handler.cc",
+    "base/mock_unrecoverable_error_handler.h",
+    "base/model_type_test_util.cc",
+    "base/model_type_test_util.h",
+    "base/test_unrecoverable_error_handler.cc",
+    "base/test_unrecoverable_error_handler.h",
+    "js/js_test_util.cc",
+    "js/js_test_util.h",
+    "sessions_impl/test_util.cc",
+    "sessions_impl/test_util.h",
+    "test/callback_counter.h",
+    "test/directory_backing_store_corruption_testing.cc",
+    "test/directory_backing_store_corruption_testing.h",
+    "test/engine/fake_model_worker.cc",
+    "test/engine/fake_model_worker.h",
+    "test/engine/fake_sync_scheduler.cc",
+    "test/engine/fake_sync_scheduler.h",
+    "test/engine/mock_connection_manager.cc",
+    "test/engine/mock_connection_manager.h",
+    "test/engine/mock_model_type_processor.cc",
+    "test/engine/mock_model_type_processor.h",
+    "test/engine/mock_model_type_worker.cc",
+    "test/engine/mock_model_type_worker.h",
+    "test/engine/mock_nudge_handler.cc",
+    "test/engine/mock_nudge_handler.h",
+    "test/engine/mock_update_handler.cc",
+    "test/engine/mock_update_handler.h",
+    "test/engine/single_type_mock_server.cc",
+    "test/engine/single_type_mock_server.h",
+    "test/engine/test_directory_setter_upper.cc",
+    "test/engine/test_directory_setter_upper.h",
+    "test/engine/test_id_factory.h",
+    "test/engine/test_syncable_utils.cc",
+    "test/engine/test_syncable_utils.h",
+    "test/fake_encryptor.cc",
+    "test/fake_encryptor.h",
+    "test/fake_sync_encryption_handler.cc",
+    "test/fake_sync_encryption_handler.h",
+    "test/mock_invalidation.cc",
+    "test/mock_invalidation.h",
+    "test/mock_invalidation_tracker.cc",
+    "test/mock_invalidation_tracker.h",
+    "test/null_directory_change_delegate.cc",
+    "test/null_directory_change_delegate.h",
+    "test/null_transaction_observer.cc",
+    "test/null_transaction_observer.h",
+    "test/sessions/mock_debug_info_getter.cc",
+    "test/sessions/mock_debug_info_getter.h",
+    "test/sessions/test_scoped_session_event_listener.h",
+    "test/test_directory_backing_store.cc",
+    "test/test_directory_backing_store.h",
+    "test/test_transaction_observer.cc",
+    "test/test_transaction_observer.h",
+    "test/trackable_mock_invalidation.cc",
+    "test/trackable_mock_invalidation.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/sync",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  defines = [ "SYNC_TEST" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+# GYP version: sync/sync_tests.gypi:test_support_sync_core_impl
+static_library("test_support_sync_core_impl") {
+  testonly = true
+  sources = [
+    "core/test/data_type_error_handler_mock.h",
+    "core/test/fake_model_type_connector.h",
+    "core/test/fake_model_type_processor.h",
+    "core/test/fake_sync_manager.h",
+    "core/test/model_type_store_test_util.h",
+    "core/test/sync_manager_factory_for_profile_sync_test.h",
+    "core/test/test_entry_factory.h",
+    "core/test/test_internal_components_factory.h",
+    "core/test/test_user_share.h",
+    "core_impl/test/data_type_error_handler_mock.cc",
+    "core_impl/test/fake_model_type_connector.cc",
+    "core_impl/test/fake_model_type_processor.cc",
+    "core_impl/test/fake_sync_manager.cc",
+    "core_impl/test/model_type_store_test_util.cc",
+    "core_impl/test/sync_manager_factory_for_profile_sync_test.cc",
+    "core_impl/test/sync_manager_for_profile_sync_test.cc",
+    "core_impl/test/sync_manager_for_profile_sync_test.h",
+    "core_impl/test/test_entry_factory.cc",
+    "core_impl/test/test_internal_components_factory.cc",
+    "core_impl/test/test_user_share.cc",
+  ]
+
+  public_deps = [
+    ":test_support_sync_core",
+    "//base",
+    "//components/sync",
+    "//testing/gtest",
+  ]
+
+  defines = [ "SYNC_TEST" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+# GYP version: sync/sync_tests.gypi:test_support_sync_api
+static_library("test_support_sync_api") {
+  testonly = true
+  sources = [
+    "api/fake_model_type_change_processor.cc",
+    "api/fake_model_type_change_processor.h",
+    "api/fake_model_type_service.cc",
+    "api/fake_model_type_service.h",
+    "api/fake_sync_change_processor.cc",
+    "api/fake_sync_change_processor.h",
+    "api/fake_syncable_service.cc",
+    "api/fake_syncable_service.h",
+    "api/mock_model_type_store.cc",
+    "api/mock_model_type_store.h",
+    "api/sync_change_processor_wrapper_for_test.cc",
+    "api/sync_change_processor_wrapper_for_test.h",
+    "api/sync_error_factory_mock.cc",
+    "api/sync_error_factory_mock.h",
+  ]
+
+  defines = [ "SYNC_TEST" ]
+
+  public_deps = [
+    "//base",
+    "//components/sync",
+    "//testing/gmock",
+  ]
+}
+
+# GYP version: sync/sync_tests.gypi:sync_unit_tests
+test("sync_unit_tests") {
+  sources = [
+    "api/attachments/attachment_id_unittest.cc",
+    "api/attachments/attachment_metadata_unittest.cc",
+    "api/attachments/attachment_unittest.cc",
+    "api/entity_data_unittest.cc",
+    "api/model_type_service_unittest.cc",
+    "api/sync_change_unittest.cc",
+    "api/sync_data_unittest.cc",
+    "api/sync_error_unittest.cc",
+    "api/sync_merge_result_unittest.cc",
+    "base/attachment_id_proto_unittest.cc",
+    "base/cancelation_signal_unittest.cc",
+    "base/cryptographer_unittest.cc",
+    "base/data_type_histogram_unittest.cc",
+    "base/enum_set_unittest.cc",
+    "base/get_session_name_unittest.cc",
+    "base/immutable_unittest.cc",
+    "base/nigori_unittest.cc",
+    "base/node_ordinal_unittest.cc",
+    "base/ordinal_unittest.cc",
+    "base/proto_value_ptr_unittest.cc",
+    "base/protobuf_unittest.cc",
+    "base/unique_position_unittest.cc",
+    "base/weak_handle_unittest.cc",
+    "core/change_record_unittest.cc",
+    "core/data_batch_impl_unittest.cc",
+    "core/http_bridge_unittest.cc",
+    "core/model_type_store_backend_unittest.cc",
+    "core/model_type_store_impl_unittest.cc",
+    "core/processor_entity_tracker_unittest.cc",
+    "core/shared_model_type_processor_unittest.cc",
+    "core/simple_metadata_change_list_unittest.cc",
+    "core_impl/attachments/attachment_downloader_impl_unittest.cc",
+    "core_impl/attachments/attachment_service_impl_unittest.cc",
+    "core_impl/attachments/attachment_service_proxy_unittest.cc",
+    "core_impl/attachments/attachment_store_frontend_unittest.cc",
+    "core_impl/attachments/attachment_store_test_template.h",
+    "core_impl/attachments/attachment_uploader_impl_unittest.cc",
+    "core_impl/attachments/fake_attachment_downloader_unittest.cc",
+    "core_impl/attachments/fake_attachment_uploader_unittest.cc",
+    "core_impl/attachments/in_memory_attachment_store_unittest.cc",
+    "core_impl/attachments/on_disk_attachment_store_unittest.cc",
+    "core_impl/attachments/task_queue_unittest.cc",
+    "core_impl/debug_info_event_listener_unittest.cc",
+    "core_impl/js_mutation_event_observer_unittest.cc",
+    "core_impl/js_sync_encryption_handler_observer_unittest.cc",
+    "core_impl/js_sync_manager_observer_unittest.cc",
+    "core_impl/model_type_connector_proxy_unittest.cc",
+    "core_impl/protocol_event_buffer_unittest.cc",
+    "core_impl/sync_encryption_handler_impl_unittest.cc",
+    "core_impl/sync_manager_impl_unittest.cc",
+    "core_impl/syncapi_server_connection_manager_unittest.cc",
+    "engine/model_safe_worker_unittest.cc",
+    "engine_impl/apply_control_data_updates_unittest.cc",
+    "engine_impl/backoff_delay_provider_unittest.cc",
+    "engine_impl/directory_commit_contribution_unittest.cc",
+    "engine_impl/directory_update_handler_unittest.cc",
+    "engine_impl/get_updates_processor_unittest.cc",
+    "engine_impl/model_type_worker_unittest.cc",
+    "engine_impl/sync_scheduler_unittest.cc",
+    "engine_impl/syncer_proto_util_unittest.cc",
+    "engine_impl/syncer_unittest.cc",
+    "engine_impl/syncer_util_unittest.cc",
+    "engine_impl/worker_entity_tracker_unittest.cc",
+    "js/js_event_details_unittest.cc",
+    "js/sync_js_controller_unittest.cc",
+    "protocol/proto_enum_conversions_unittest.cc",
+    "protocol/proto_value_conversions_unittest.cc",
+    "sessions/sync_session_snapshot_unittest.cc",
+    "sessions_impl/model_type_registry_unittest.cc",
+    "sessions_impl/nudge_tracker_unittest.cc",
+    "sessions_impl/status_controller_unittest.cc",
+    "syncable/directory_backing_store_unittest.cc",
+    "syncable/directory_unittest.cc",
+    "syncable/directory_unittest.h",
+    "syncable/entry_kernel_unittest.cc",
+    "syncable/model_type_unittest.cc",
+    "syncable/nigori_util_unittest.cc",
+    "syncable/parent_child_index_unittest.cc",
+    "syncable/syncable_enum_conversions_unittest.cc",
+    "syncable/syncable_id_unittest.cc",
+    "syncable/syncable_unittest.cc",
+    "syncable/syncable_util_unittest.cc",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  data = [
+    "//chrome/test/data/sync/",
+    "//net/tools/testserver/",
+    "//third_party/pyftpdlib/",
+    "//third_party/pywebsocket/",
+    "//third_party/tlslite/",
+    "$root_out_dir/pyproto/google/",
+  ]
+
+  deps = [
+    ":test_support_sync_api",
+    ":test_support_sync_core",
+    ":test_support_sync_core_impl",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//components/sync",
+    "//components/sync/protocol",
+    "//google_apis",
+    "//google_apis:test_support",
+    "//net",
+    "//net:test_support",
+    "//sql",
+    "//sql:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/leveldatabase",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+
+  if (is_chromeos) {
+    # Required by get_session_name_unittest.cc on Chrome OS.
+    deps += [ "//chromeos" ]
+  }
+
+  if (is_ios) {
+    sources -= [ "core/http_bridge_unittest.cc" ]
+  }
+
+  defines = [ "SYNC_TEST" ]
+}
+
+# GYP version: sync/sync_tests.gypi:test_support_sync_fake_server
+static_library("test_support_sync_fake_server") {
+  testonly = true
+  sources = [
+    "test/fake_server/bookmark_entity.cc",
+    "test/fake_server/bookmark_entity.h",
+    "test/fake_server/bookmark_entity_builder.cc",
+    "test/fake_server/bookmark_entity_builder.h",
+    "test/fake_server/entity_builder_factory.cc",
+    "test/fake_server/entity_builder_factory.h",
+    "test/fake_server/fake_server.cc",
+    "test/fake_server/fake_server.h",
+    "test/fake_server/fake_server_entity.cc",
+    "test/fake_server/fake_server_entity.h",
+    "test/fake_server/fake_server_http_post_provider.cc",
+    "test/fake_server/fake_server_http_post_provider.h",
+    "test/fake_server/fake_server_network_resources.cc",
+    "test/fake_server/fake_server_network_resources.h",
+    "test/fake_server/fake_server_verifier.cc",
+    "test/fake_server/fake_server_verifier.h",
+    "test/fake_server/permanent_entity.cc",
+    "test/fake_server/permanent_entity.h",
+    "test/fake_server/sessions_hierarchy.cc",
+    "test/fake_server/sessions_hierarchy.h",
+    "test/fake_server/tombstone_entity.cc",
+    "test/fake_server/tombstone_entity.h",
+    "test/fake_server/unique_client_entity.cc",
+    "test/fake_server/unique_client_entity.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/sync",
+    "//net",
+    "//testing/gtest",
+    "//url",
+  ]
+
+  public_deps = [
+    "//third_party/protobuf:protobuf_lite",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+# GYP version: sync/sync_tests.gypi:test_support_sync_testserver
+static_library("test_support_sync_testserver") {
+  testonly = true
+  sources = [
+    "test/local_sync_test_server.cc",
+    "test/local_sync_test_server.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  public_deps = [
+    "//base",
+    "//net:test_support",
+  ]
+  deps = [
+    ":sync",
+
+    # The sync test server uses Python modules generated by the sync protos.
+    "//third_party/protobuf:py_proto",
+  ]
+}
+
+if (!is_ios) {
+  # GYP version: sync/sync_tests.gypi:run_sync_testserver
+  executable("run_sync_testserver") {
+    testonly = true
+    sources = [
+      "tools/testserver/run_sync_testserver.cc",
+    ]
+
+    deps = [
+      ":test_support_sync_testserver",
+      "//base",
+      "//base/test:test_support",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+      "//net:test_support",
+      "//testing/gtest",
+    ]
+  }
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  # GYP: //components/sync/sync_tests.gypi:fake_server_jni
+  generate_jni("fake_server_jni") {
+    testonly = true
+    jni_package = "sync/test/fake_server"
+    sources = [
+      "//chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+    ]
+  }
+
+  _test_support_sync_prepared_protos_dir =
+      "$root_gen_dir/test_support_sync_proto_java_prepare/"
+  action("test_support_sync_proto_java_prepare") {
+    script = "//components/sync/protocol/prepare_protos_for_java_tests.py"
+    inputs = sync_protocol_sources
+    outputs = process_file_template(
+            sync_protocol_sources,
+            [ "$_test_support_sync_prepared_protos_dir/{{source_file_part}}" ])
+    args = [
+      "--output_dir",
+      rebase_path(_test_support_sync_prepared_protos_dir, root_build_dir),
+    ]
+    args += rebase_path(sync_protocol_sources, root_build_dir)
+  }
+
+  # GYP: //components/sync/sync_tests.gypi:test_support_sync_proto_java
+  proto_java_library("test_support_sync_proto_java") {
+    proto_path = _test_support_sync_prepared_protos_dir
+    sources = get_target_outputs(":test_support_sync_proto_java_prepare")
+    deps = [
+      ":test_support_sync_proto_java_prepare",
+    ]
+  }
+
+  # GYP: //components/sync/sync_tests.gypi:sync_java_test_support
+  android_library("sync_java_test_support") {
+    testonly = true
+    deps = [
+      "android:sync_java",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/jsr-305:jsr_305_javalib",
+    ]
+    java_files = [
+      "test/android/javatests/src/org/chromium/components/sync/test/util/AccountHolder.java",
+      "test/android/javatests/src/org/chromium/components/sync/test/util/MockAccountManager.java",
+      "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java",
+      "test/android/javatests/src/org/chromium/components/sync/test/util/SimpleFuture.java",
+    ]
+  }
+
+  # GYP: //components/sync/sync_tests.gypi:test_support_sync_fake_server_android
+  static_library("test_support_sync_fake_server_android") {
+    testonly = true
+    sources = [
+      "test/fake_server/android/fake_server_helper_android.cc",
+      "test/fake_server/android/fake_server_helper_android.h",
+    ]
+    deps = [
+      ":fake_server_jni",
+      ":sync_core",
+      ":test_support_sync_fake_server",
+      "//base",
+      "//components/sync/protocol:protocol",
+      "//testing/gtest",
+      "//url:url",
+    ]
+  }
+}

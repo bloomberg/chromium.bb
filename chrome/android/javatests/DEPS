@@ -5,11 +5,11 @@ include_rules = [
   "+components/location/android/java",
   "+components/navigation_interception",
   "+components/precache/android/javatests",
+  "+components/sync/android/java/src/org/chromium/components/sync",
+  # We should only depend on the util package of something that lives in
+  # javatests.
+  "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
   "+components/web_restrictions",
   "+content/public/android/java",
   "+device/geolocation/android/java",
-  "+sync/android/java/src/org/chromium/sync",
-  # We should only depend on the util package of something that lives in
-  # javatests.
-  "+sync/test/android/javatests/src/org/chromium/sync/test/util",
 ]

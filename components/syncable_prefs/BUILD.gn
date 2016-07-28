@@ -23,7 +23,7 @@ static_library("syncable_prefs") {
     "//base",
     "//components/pref_registry",
     "//components/prefs",
-    "//sync",
+    "//components/sync",
   ]
 
   if (enable_configuration_policy) {
@@ -67,7 +67,7 @@ source_set("unit_tests") {
     ":test_support",
     "//components/pref_registry",
     "//components/prefs",
-    "//sync:test_support_sync_api",
+    "//components/sync:test_support_sync_api",
     "//testing/gtest",
   ]
 }

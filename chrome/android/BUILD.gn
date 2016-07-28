@@ -241,8 +241,8 @@ android_library("chrome_java") {
       "//components/precache/android:precache_java",
       "//components/safe_json/android:safe_json_java",
       "//components/signin/core/browser/android:java",
+      "//components/sync/android:sync_java",
       "//components/web_contents_delegate_android:web_contents_delegate_android_java",
-      "//sync/android:sync_java",
     ]
   }
 }
@@ -309,12 +309,12 @@ junit_binary("chrome_junit_tests") {
     "//base:base_junit_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/invalidation/impl:java",
+    "//components/sync:sync_java_test_support",
+    "//components/sync/android:sync_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//net/android:net_java",
-    "//sync:sync_java_test_support",
-    "//sync/android:sync_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
@@ -371,6 +371,9 @@ android_library("chrome_test_java") {
     "//components/policy/android:policy_java",
     "//components/precache/android:precache_java",
     "//components/precache/android:precache_javatests",
+    "//components/sync:sync_java_test_support",
+    "//components/sync/android:sync_java",
+    "//components/sync/android:sync_javatests",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
@@ -382,9 +385,6 @@ android_library("chrome_test_java") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//printing:printing_java",
-    "//sync:sync_java_test_support",
-    "//sync/android:sync_java",
-    "//sync/android:sync_javatests",
     "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_tools:android_support_design_java",
@@ -498,8 +498,8 @@ shared_library("chrome_sync_shell") {
   deps = [
     "//build/config/sanitizers:deps",
     "//chrome:chrome_android_core",
-    "//sync",
-    "//sync:test_support_sync_fake_server_android",
+    "//components/sync",
+    "//components/sync:test_support_sync_fake_server_android",
   ]
   sources = chrome_apk_gypi.chrome_sync_shell_app_native_sources
 }
@@ -546,7 +546,7 @@ chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
     # This exists here because com.google.protobuf.nano is needed in tests,
     # but that code is stripped out via proguard. Adding this deps adds
     # usages and prevents removal of the proto code.
-    "//sync:test_support_sync_proto_java",
+    "//components/sync:test_support_sync_proto_java",
   ]
 }
 
@@ -605,11 +605,11 @@ android_library("chrome_sync_shell_test_apk_java") {
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/policy/android:policy_java",
+    "//components/sync:sync_java_test_support",
+    "//components/sync:test_support_sync_proto_java",
+    "//components/sync/android:sync_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
-    "//sync:sync_java_test_support",
-    "//sync:test_support_sync_proto_java",
-    "//sync/android:sync_java",
     "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//ui/android:ui_java",

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_MOCK_H__
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_MOCK_H__
 
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_merge_result.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace sync_driver {

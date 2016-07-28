@@ -10,14 +10,14 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "components/sync/api/model_type_change_processor.h"
+#include "components/sync/api/model_type_service.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/base/data_type_histogram.h"
+#include "components/sync/core/activation_context.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/api/model_type_change_processor.h"
-#include "sync/api/model_type_service.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/internal_api/public/activation_context.h"
-#include "sync/util/data_type_histogram.h"
 
 namespace sync_driver_v2 {
 

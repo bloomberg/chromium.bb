@@ -24,10 +24,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
+import org.chromium.components.sync.signin.ChromeSigninController;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.Collections;
 import java.util.List;

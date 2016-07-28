@@ -5,7 +5,7 @@
 #include "components/sync_driver/fake_data_type_controller.h"
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "sync/api/sync_merge_result.h"
+#include "components/sync/api/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

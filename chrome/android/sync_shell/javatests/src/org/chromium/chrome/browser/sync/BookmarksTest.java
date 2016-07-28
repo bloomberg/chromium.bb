@@ -13,10 +13,10 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.sync.ModelType;
+import org.chromium.components.sync.protocol.BookmarkSpecifics;
+import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.sync.ModelType;
-import org.chromium.sync.protocol.BookmarkSpecifics;
-import org.chromium.sync.protocol.SyncEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 

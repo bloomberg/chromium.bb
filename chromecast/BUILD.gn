@@ -40,7 +40,7 @@ cast_test_group("cast_tests") {
     "//ppapi:ppapi_unittests",
     "//sandbox/linux:sandbox_linux_unittests",
     "//sql:sql_unittests",
-    "//sync:sync_unit_tests",
+    "//components/sync:sync_unit_tests",
     "//third_party/cacheinvalidation:cacheinvalidation_unittests",
     "//ui/base:ui_base_unittests",
   ]

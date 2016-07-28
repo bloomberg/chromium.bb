@@ -16,10 +16,10 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/data_type_status_table.h"
-#include "sync/internal_api/public/data_type_debug_info_listener.h"
 
 namespace sync_driver {
 

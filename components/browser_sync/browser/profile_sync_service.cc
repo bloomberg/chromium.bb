@@ -5,6 +5,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 
 #include <stddef.h>
+
 #include <cstddef>
 #include <map>
 #include <utility>
@@ -41,6 +42,24 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/api/model_type_store.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/cryptographer.h"
+#include "components/sync/base/experiments.h"
+#include "components/sync/base/stop_source.h"
+#include "components/sync/base/sync_db_util.h"
+#include "components/sync/base/sync_string_conversions.h"
+#include "components/sync/core/configure_reason.h"
+#include "components/sync/core/http_bridge_network_resources.h"
+#include "components/sync/core/network_resources.h"
+#include "components/sync/core/shared_model_type_processor.h"
+#include "components/sync/core/shutdown_reason.h"
+#include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/js/js_event_details.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/sessions/model_neutral_state.h"
+#include "components/sync/sessions/type_debug_info_observer.h"
+#include "components/sync/syncable/directory.h"
 #include "components/sync_driver/backend_migrator.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -70,29 +89,11 @@
 #include "components/version_info/version_info_values.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/api/model_type_store.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/base/stop_source.h"
-#include "sync/internal_api/public/configure_reason.h"
-#include "sync/internal_api/public/http_bridge_network_resources.h"
-#include "sync/internal_api/public/network_resources.h"
-#include "sync/internal_api/public/sessions/model_neutral_state.h"
-#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
-#include "sync/internal_api/public/shared_model_type_processor.h"
-#include "sync/internal_api/public/shutdown_reason.h"
-#include "sync/internal_api/public/sync_encryption_handler.h"
-#include "sync/internal_api/public/util/experiments.h"
-#include "sync/internal_api/public/util/sync_db_util.h"
-#include "sync/internal_api/public/util/sync_string_conversions.h"
-#include "sync/js/js_event_details.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/syncable/directory.h"
-#include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
 #if defined(OS_ANDROID)
-#include "sync/internal_api/public/read_transaction.h"
+#include "components/sync/core/read_transaction.h"
 #endif
 
 using browser_sync::SessionsSyncManager;

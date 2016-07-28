@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
  * The main settings screen, shown when the user first opens Settings.

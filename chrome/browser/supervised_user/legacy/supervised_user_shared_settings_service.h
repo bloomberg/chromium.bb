@@ -12,7 +12,7 @@
 #include "base/callback_list.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "sync/api/syncable_service.h"
+#include "components/sync/api/syncable_service.h"
 
 class PrefService;
 

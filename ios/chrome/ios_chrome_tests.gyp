@@ -128,7 +128,7 @@
         '../../components/components.gyp:password_manager_core_browser_test_support',
         '../../components/components.gyp:signin_ios_browser_test_support',
         '../../components/components.gyp:sync_driver_test_support',
-        '../../sync/sync.gyp:sync',
+        '../../components/sync.gyp:sync',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../ui/base/ui_base.gyp:ui_base',

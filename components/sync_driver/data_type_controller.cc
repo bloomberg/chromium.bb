@@ -4,9 +4,9 @@
 
 #include "components/sync_driver/data_type_controller.h"
 
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/user_share.h"
-#include "sync/util/data_type_histogram.h"
+#include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/user_share.h"
 
 namespace sync_driver {
 

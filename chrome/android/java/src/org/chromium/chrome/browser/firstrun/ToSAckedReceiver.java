@@ -11,7 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.List;

@@ -13,12 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
 class DataTypeErrorHandler;

@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/spellcheck/common/spellcheck_common.h"
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/base/model_type.h"
 
 using spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS;
 using dictionary_helper::AwaitNumDictionaryEntries;

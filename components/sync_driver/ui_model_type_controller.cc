@@ -4,10 +4,10 @@
 
 #include "components/sync_driver/ui_model_type_controller.h"
 
+#include "components/sync/api/model_type_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/activation_context.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/api/model_type_service.h"
-#include "sync/internal_api/public/activation_context.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_driver_v2 {
 

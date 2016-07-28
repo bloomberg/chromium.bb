@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sync/api/string_ordinal.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
@@ -36,7 +37,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/manifest_constants.h"
-#include "sync/api/string_ordinal.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/x/x11_util.h"

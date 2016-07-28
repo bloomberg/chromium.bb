@@ -5,6 +5,7 @@
 #include "components/history/core/browser/typed_url_syncable_service.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -12,9 +13,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_backend.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/typed_url_specifics.pb.h"
 #include "net/base/url_util.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/protocol/typed_url_specifics.pb.h"
 
 namespace history {
 

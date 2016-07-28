@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
+#include "components/sync/base/weak_handle.h"
+#include "components/sync/core/data_type_association_stats.h"
 #include "components/sync_driver/data_type_manager.h"
-#include "sync/internal_api/public/data_type_association_stats.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace sync_driver {
 

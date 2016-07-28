@@ -13,7 +13,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',

@@ -5,7 +5,7 @@
 #include "chrome/browser/android/chrome_sync_shell_main_delegate.h"
 
 #include "base/android/jni_android.h"
-#include "sync/test/fake_server/android/fake_server_helper_android.h"
+#include "components/sync/test/fake_server/android/fake_server_helper_android.h"
 
 ChromeSyncShellMainDelegate::ChromeSyncShellMainDelegate() {
 }

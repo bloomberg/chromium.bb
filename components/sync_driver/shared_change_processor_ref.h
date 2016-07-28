@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_error_factory.h"
 #include "components/sync_driver/shared_change_processor.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_error_factory.h"
 
 namespace sync_driver {
 

@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/sync/base/weak_handle.h"
+#include "components/sync/js/js_event_handler.h"
+#include "components/sync/test/engine/test_id_factory.h"
 #include "components/sync_driver/data_type_manager.h"
-#include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/js/js_event_handler.h"
-#include "sync/test/engine/test_id_factory.h"
 
 namespace sync_driver {
 class SyncPrefs;

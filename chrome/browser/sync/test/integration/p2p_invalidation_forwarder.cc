@@ -6,8 +6,8 @@
 
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 #include "components/sync_driver/invalidation_helper.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 P2PInvalidationForwarder::P2PInvalidationForwarder(
     ProfileSyncService* sync_service,

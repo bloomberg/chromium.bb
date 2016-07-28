@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_SYNC_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_SYNC_UTIL_H_
 
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_data.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_data.h"
 
 namespace base {
 class Value;

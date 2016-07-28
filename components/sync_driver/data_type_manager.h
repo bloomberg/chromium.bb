@@ -9,11 +9,11 @@
 #include <set>
 #include <string>
 
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/configure_reason.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_status_table.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/configure_reason.h"
 
 namespace sync_driver {
 

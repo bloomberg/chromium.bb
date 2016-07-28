@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.sync.signin.ChromeSigninController;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 import java.util.Arrays;
 import java.util.EnumSet;

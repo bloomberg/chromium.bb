@@ -16,12 +16,12 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/sync_driver/device_info_tracker.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/syncable_service.h"
 
 namespace sync_driver {
 

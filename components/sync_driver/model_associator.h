@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/synchronization/lock.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/model_type.h"
 
 namespace syncer {
 class BaseNode;

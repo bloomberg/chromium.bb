@@ -9,8 +9,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "sync/internal_api/public/engine/polling_constants.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/polling_constants.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 
 namespace {
 // Given the current delay calculate the minimum and maximum wait times for

@@ -10,7 +10,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../ui/gfx/gfx.gyp:gfx',
         'bookmarks_browser',
         'favicon_core',

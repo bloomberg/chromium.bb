@@ -10,8 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/sessions/sync_session_snapshot.h"
 
 class Profile;
 class ProfileSyncService;

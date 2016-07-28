@@ -57216,7 +57216,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Histogram of the run failures for the different sync datatypes. These are
     failures that occur after startup while the datatype is syncing. Note: Due
     to an enumeration reordering, pre-M23 labels are inaccurate (see
-    sync/internal_api/public/base/model_type.h).
+    sync/base/model_type.h).
   </summary>
 </histogram>
 
@@ -57226,7 +57226,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Histogram of the startup failures for the different sync datatypes. These
     are failures due to missing top level sync nodes or model association Note:
     Due to an enumeration reordering, pre-M23 labels are inaccurate (see
-    sync/internal_api/public/base/model_type.h).
+    sync/base/model_type.h).
   </summary>
 </histogram>
 

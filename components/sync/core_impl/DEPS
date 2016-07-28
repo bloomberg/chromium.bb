@@ -1,0 +1,22 @@
+include_rules = [
+  "+components/sync/api",
+  "+components/sync/base",
+  "+components/sync/core",
+  "+components/sync/engine",
+  "+components/sync/engine_impl",
+  "+components/sync/js",
+  "+components/sync/protocol",
+  "+components/sync/sessions",
+  "+components/sync/sessions_impl",
+  "+components/sync/syncable",
+  "+components/sync/test",
+  "+components/sync/base",
+  "+net/base",
+  "+net/cookies",
+  "+net/http",
+  "+net/test",
+  "+net/url_request",
+  "+sql",
+  "+third_party/leveldatabase",  # for ModelTypeStore implementation
+  "+third_party/protobuf",  # for unit test
+]

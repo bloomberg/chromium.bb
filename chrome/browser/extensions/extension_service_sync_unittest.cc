@@ -33,6 +33,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/crx_file/id_util.h"
+#include "components/sync/api/fake_sync_change_processor.h"
+#include "components/sync/api/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error_factory_mock.h"
 #include "components/variations/variations_associated_data.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_sorting.h"
@@ -46,10 +50,6 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/value_builder.h"
-#include "sync/api/fake_sync_change_processor.h"
-#include "sync/api/sync_change_processor_wrapper_for_test.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)

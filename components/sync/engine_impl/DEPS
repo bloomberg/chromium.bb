@@ -1,0 +1,17 @@
+include_rules = [
+  "+components/sync/base",
+  # TODO(maxbogue): Move to engine.
+  "+components/sync/core/model_type_processor.h",
+  # TODO(maxbogue): Move to base.
+  "+components/sync/core/non_blocking_sync_common.h",
+  # TODO(maxbogue): Move to engine.
+  "+components/sync/core/sync_encryption_handler.h",
+  # TODO(maxbogue): Move to test.
+  "+components/sync/core/test/test_entry_factory.h",
+  "+components/sync/engine",
+  "+components/sync/protocol",
+  "+components/sync/sessions",
+  "+components/sync/sessions_impl",
+  "+components/sync/syncable",
+  "+components/sync/test",
+]

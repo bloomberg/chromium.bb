@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_GLUE_SYNC_START_UTIL_H_
 #define IOS_CHROME_BROWSER_SYNC_GLUE_SYNC_START_UTIL_H_
 
-#include "sync/api/syncable_service.h"
+#include "components/sync/api/syncable_service.h"
 
 namespace base {
 class FilePath;

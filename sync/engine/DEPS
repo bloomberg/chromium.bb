@@ -1,9 +1,0 @@
-include_rules = [
-  "+sync/base",
-  "+sync/internal_api/public",
-  "+sync/protocol",
-  "+sync/sessions",
-  "+sync/syncable",
-  "+sync/test",
-  "+sync/util",
-]

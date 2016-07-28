@@ -70,6 +70,10 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/engine_impl/sync_scheduler_impl.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/sync_driver/invalidation_helper.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "content/public/browser/navigation_entry.h"
@@ -84,10 +88,6 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "sync/engine/sync_scheduler_impl.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/test/fake_server/fake_server.h"
-#include "sync/test/fake_server/fake_server_network_resources.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)

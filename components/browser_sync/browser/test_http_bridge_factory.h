@@ -6,8 +6,8 @@
 #define COMPONENTS_BROWSER_SYNC_BROWSER_TEST_HTTP_BRIDGE_FACTORY_H_
 
 #include "base/compiler_specific.h"
-#include "sync/internal_api/public/http_post_provider_factory.h"
-#include "sync/internal_api/public/http_post_provider_interface.h"
+#include "components/sync/core/http_post_provider_factory.h"
+#include "components/sync/core/http_post_provider_interface.h"
 
 namespace browser_sync {
 

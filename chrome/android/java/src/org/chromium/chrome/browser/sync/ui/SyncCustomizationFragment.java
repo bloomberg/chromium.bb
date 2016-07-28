@@ -37,11 +37,11 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncAccountSwitcher;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.ModelType;
-import org.chromium.sync.PassphraseType;
-import org.chromium.sync.StopSource;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.ModelType;
+import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.StopSource;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.Set;

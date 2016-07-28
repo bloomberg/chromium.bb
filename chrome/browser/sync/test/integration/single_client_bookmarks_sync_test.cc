@@ -13,10 +13,10 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "sync/test/fake_server/bookmark_entity_builder.h"
-#include "sync/test/fake_server/entity_builder_factory.h"
-#include "sync/test/fake_server/fake_server_verifier.h"
-#include "sync/test/fake_server/tombstone_entity.h"
+#include "components/sync/test/fake_server/bookmark_entity_builder.h"
+#include "components/sync/test/fake_server/entity_builder_factory.h"
+#include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "components/sync/test/fake_server/tombstone_entity.h"
 #include "ui/base/layout.h"
 
 using bookmarks::BookmarkModel;

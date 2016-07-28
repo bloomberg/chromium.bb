@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync/api/sync_change.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "sync/api/sync_change.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SupervisedUserSharedSettingsUpdateTest : public testing::Test {

@@ -7,11 +7,11 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
+#include "components/sync/protocol/app_setting_specifics.pb.h"
+#include "components/sync/protocol/extension_setting_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
-#include "sync/protocol/app_setting_specifics.pb.h"
-#include "sync/protocol/extension_setting_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 
 using content::BrowserThread;
 

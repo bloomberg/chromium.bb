@@ -13,8 +13,8 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/fake_sync_service.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {

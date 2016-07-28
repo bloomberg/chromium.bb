@@ -1245,7 +1245,7 @@
         '../skia/skia.gyp:skia',
         '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
@@ -1277,7 +1277,7 @@
       'export_dependent_settings': [
         'browser/extensions/api/api_registration.gyp:chrome_api_registration',
         'common/extensions/api/api.gyp:chrome_api',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
       ],
       'include_dirs': [
         # breakpad_linux.cc uses generated file_version_info_linux.h.

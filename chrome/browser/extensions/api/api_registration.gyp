@@ -25,7 +25,7 @@
         # TODO(brettw) this should be made unnecessary if possible.
         '<(DEPTH)/components/components.gyp:component_metrics_proto',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/sync/sync.gyp:sync',
+        '<(DEPTH)/components/sync.gyp:sync',
         '<(DEPTH)/ui/accessibility/accessibility.gyp:ax_gen',
       ],
       'conditions': [

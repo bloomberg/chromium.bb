@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "components/sync/core/user_share.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/internal_api/public/user_share.h"
 
 namespace browser_sync {
 

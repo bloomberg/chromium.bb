@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/test/fake_server/fake_server.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/test/fake_server/fake_server.h"
 
 namespace fake_server {
 

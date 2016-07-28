@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "sync/api/string_ordinal.h"
+#include "components/sync/api/string_ordinal.h"
 
 class PrefService;
 

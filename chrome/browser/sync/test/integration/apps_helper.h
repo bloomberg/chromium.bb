@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "sync/api/string_ordinal.h"
+#include "components/sync/api/string_ordinal.h"
 
 class Profile;
 

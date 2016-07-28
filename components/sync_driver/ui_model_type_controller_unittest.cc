@@ -15,12 +15,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
+#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/core/activation_context.h"
+#include "components/sync/core/shared_model_type_processor.h"
+#include "components/sync/engine_impl/commit_queue.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "components/sync_driver/fake_sync_client.h"
-#include "sync/api/fake_model_type_service.h"
-#include "sync/engine/commit_queue.h"
-#include "sync/internal_api/public/activation_context.h"
-#include "sync/internal_api/public/shared_model_type_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {

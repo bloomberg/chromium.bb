@@ -8,9 +8,9 @@
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/sync_driver/sync_client.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/syncable_service.h"
 
 using autofill::AutofillWebDataService;
 

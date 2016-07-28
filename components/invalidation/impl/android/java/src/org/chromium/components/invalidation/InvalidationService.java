@@ -14,9 +14,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.sync.notifier.InvalidationClientNameProvider;
-import org.chromium.sync.notifier.InvalidationIntentProtocol;
-import org.chromium.sync.notifier.InvalidationPreferences;
+import org.chromium.components.sync.notifier.InvalidationClientNameProvider;
+import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
+import org.chromium.components.sync.notifier.InvalidationPreferences;
 
 /**
  * Wrapper for invalidations::InvalidationServiceAndroid.

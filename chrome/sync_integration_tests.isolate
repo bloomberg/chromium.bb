@@ -48,7 +48,7 @@
         'files': [
           '../chrome/test/data/sync/',
           '../net/tools/testserver/',
-          '../sync/tools/testserver/',
+          '../components/sync/tools/testserver/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',

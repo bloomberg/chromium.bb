@@ -114,15 +114,15 @@ source_set("shared") {
 
   public_deps = [
     "//components/keyed_service/core",
-    "//sync/protocol",
+    "//components/sync/protocol",
   ]
 
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/sync",
     "//components/variations",
     "//skia",
-    "//sync",
     "//ui/base",
     "//ui/gfx",
     "//url",
@@ -141,8 +141,8 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//components/sync",
     "//skia",
-    "//sync",
     "//testing/gtest",
     "//ui/base",  # For page_transition_types.h.
     "//url",
@@ -181,7 +181,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//sync",
+    "//components/sync",
     "//testing/gtest",
     "//ui/base",  # For page transition types.
     "//url",

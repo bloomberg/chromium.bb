@@ -15,9 +15,9 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/sync/syncable/directory.h"
+#include "components/sync/test/directory_backing_store_corruption_testing.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/syncable/directory.h"
-#include "sync/test/directory_backing_store_corruption_testing.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

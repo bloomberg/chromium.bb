@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_change_processor.h"
-#include "sync/api/sync_data.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_change_processor.h"
+#include "components/sync/api/sync_data.h"
 
 class ExtensionSyncService;
 

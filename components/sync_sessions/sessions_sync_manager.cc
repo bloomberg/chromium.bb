@@ -10,17 +10,17 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/api/time.h"
+#include "components/sync/syncable/syncable_util.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "components/variations/variations_associated_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/api/time.h"
-#include "sync/syncable/syncable_util.h"
 
 using sessions::SerializedNavigationEntry;
 using sync_driver::DeviceInfo;

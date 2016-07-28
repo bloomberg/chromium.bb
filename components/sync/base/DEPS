@@ -1,0 +1,10 @@
+include_rules = [
+  "+chromeos",
+  # TODO(maxbogue): Move sync_string_conversions.h from base.
+  "+components/sync/core",
+  "+components/sync/protocol",
+  # TODO(maxbogue): Move to base.
+  "+components/sync/test/fake_encryptor.h",
+  "+crypto",
+  "+third_party/zlib",  # For UniquePosition compression
+]

@@ -16,8 +16,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.signin.AccountManagerHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

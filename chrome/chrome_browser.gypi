@@ -3352,7 +3352,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
@@ -3386,7 +3386,7 @@
         '../components/components.gyp:autofill_core_browser',
         '../content/content.gyp:content_browser',
         '../sql/sql.gyp:sql',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
       ],
       # sources applied to all configurations
       'sources': [

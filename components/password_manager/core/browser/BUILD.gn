@@ -122,7 +122,7 @@ static_library("browser") {
 
   public_deps = [
     "//base",
-    "//sync",
+    "//components/sync",
   ]
   deps = [
     ":proto",
@@ -290,11 +290,11 @@ source_set("unit_tests") {
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//components/strings",
+    "//components/sync:test_support_sync_api",
     "//components/sync_driver:test_support",
     "//components/variations",
     "//net:test_support",
     "//sql:test_support",
-    "//sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

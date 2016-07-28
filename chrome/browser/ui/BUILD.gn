@@ -49,8 +49,8 @@ split_static_library("ui") {
   # browser, then we can clean up these dependencies.
   public_deps = [
     "//components/dom_distiller/core",
+    "//components/sync",
     "//content/public/browser",
-    "//sync",
   ]
   deps = [
     # NOTE: New dependencies should generally be added in the OS!="ios"

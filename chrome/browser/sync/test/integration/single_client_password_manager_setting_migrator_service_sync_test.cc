@@ -14,17 +14,17 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/protocol/preference_specifics.pb.h"
+#include "components/sync/protocol/priority_preference_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/fake_server/unique_client_entity.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/protocol/preference_specifics.pb.h"
-#include "sync/protocol/priority_preference_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
-#include "sync/test/fake_server/unique_client_entity.h"
 
 using password_manager_setting_migrater_helper::ExpectPrefValuesOnClient;
 using preferences_helper::AwaitBooleanPrefMatches;

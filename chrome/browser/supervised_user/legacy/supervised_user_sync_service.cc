@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <utility>
 
@@ -21,12 +22,12 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_data.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_error_factory.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/protocol/sync.pb.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_data.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_error_factory.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/protocol/sync.pb.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"

@@ -13,9 +13,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 

@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/core/attachments/attachment_service.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "sync/api/syncable_service.h"
-#include "sync/internal_api/public/attachments/attachment_service.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
 class FilePath;

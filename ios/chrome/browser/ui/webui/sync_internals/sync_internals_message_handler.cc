@@ -9,6 +9,12 @@
 #include "base/logging.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/base/weak_handle.h"
+#include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/js/js_event_details.h"
+#include "components/sync/sessions/commit_counters.h"
+#include "components/sync/sessions/status_counters.h"
+#include "components/sync/sessions/update_counters.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -17,12 +23,6 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
-#include "sync/internal_api/public/events/protocol_event.h"
-#include "sync/internal_api/public/sessions/commit_counters.h"
-#include "sync/internal_api/public/sessions/status_counters.h"
-#include "sync/internal_api/public/sessions/update_counters.h"
-#include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/js/js_event_details.h"
 
 using syncer::JsEventDetails;
 using syncer::ModelTypeSet;

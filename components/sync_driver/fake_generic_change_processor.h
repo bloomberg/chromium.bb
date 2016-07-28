@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-#include "sync/api/sync_error.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_driver {
 

@@ -11,8 +11,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/util/unrecoverable_error_info.h"
+#include "components/sync/base/unrecoverable_error_info.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace browser_sync {
 

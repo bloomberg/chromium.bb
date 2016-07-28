@@ -15,9 +15,9 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
-#include "sync/api/sync_change.h"
-#include "sync/api/sync_change_processor.h"  // syncer::SyncChangeList
-#include "sync/api/sync_data.h"
+#include "components/sync/api/sync_change.h"
+#include "components/sync/api/sync_change_processor.h"  // syncer::SyncChangeList
+#include "components/sync/api/sync_data.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {

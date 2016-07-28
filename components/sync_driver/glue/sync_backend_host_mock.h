@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "components/sync/base/weak_handle.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace browser_sync {
 

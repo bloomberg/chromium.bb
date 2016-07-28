@@ -14,9 +14,9 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/sync/api/syncable_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/api/syncable_service.h"
 
 namespace password_manager {
 

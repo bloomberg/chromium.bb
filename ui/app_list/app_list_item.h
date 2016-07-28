@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "sync/api/string_ordinal.h"
+#include "components/sync/api/string_ordinal.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/gfx/image/image_skia.h"
 

@@ -13,11 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "components/sync/api/fake_model_type_change_processor.h"
+#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "sync/api/fake_model_type_change_processor.h"
-#include "sync/api/fake_model_type_service.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver {

@@ -15,10 +15,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
-#include "sync/api/sync_error.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/api/syncable_service.h"
-#include "sync/protocol/autofill_specifics.pb.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/api/sync_merge_result.h"
+#include "components/sync/api/syncable_service.h"
+#include "components/sync/protocol/autofill_specifics.pb.h"
 
 namespace base {
 template <typename, typename>

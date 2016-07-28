@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync_driver/data_type_manager.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 struct UserShare;

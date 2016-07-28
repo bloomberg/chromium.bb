@@ -11,7 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'data_use_measurement_core',
@@ -22,7 +22,7 @@
         'version_info',
       ],
       'export_dependent_settings': [
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       'include_dirs': [
@@ -166,8 +166,8 @@
         'sync_driver',
         'version_info',
         '../base/base.gyp:base',
-        '../sync/sync.gyp:sync',
-        '../sync/sync.gyp:test_support_sync_internal_api',
+        '../components/sync.gyp:sync',
+        '../components/sync.gyp:test_support_sync_core_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],

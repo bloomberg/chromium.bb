@@ -1,5 +1,5 @@
 include_rules = [
-  "+sync/util/time.h",
+  "+components/sync/base/time.h",
   # For compressing data stored in SessionStorage.
   "+third_party/bzip2",
 ]

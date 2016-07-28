@@ -15,13 +15,13 @@
 #include "base/process/process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/protocol/sync_protocol_error.h"
+#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/local_sync_test_server.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/protocol/sync_protocol_error.h"
-#include "sync/test/fake_server/fake_server.h"
-#include "sync/test/local_sync_test_server.h"
 
 // The E2E tests are designed to run against real backend servers. To identify
 // those tests we use *E2ETest* test name filter and run disabled tests.

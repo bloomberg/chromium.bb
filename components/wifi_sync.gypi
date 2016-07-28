@@ -11,7 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../components/components.gyp:onc_component',
-        '../sync/sync.gyp:sync',
+        '../components/sync.gyp:sync',
       ],
       'sources': [
         'wifi_sync/network_state_helper_chromeos.cc',

@@ -29,6 +29,8 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/core/network_resources.h"
+#include "components/sync/core/read_transaction.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -38,8 +40,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/components_strings.h"
 #include "jni/ProfileSyncService_jni.h"
-#include "sync/internal_api/public/network_resources.h"
-#include "sync/internal_api/public/read_transaction.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;

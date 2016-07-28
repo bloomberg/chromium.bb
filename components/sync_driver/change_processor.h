@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "sync/internal_api/public/base_transaction.h"
-#include "sync/internal_api/public/change_record.h"
-#include "sync/internal_api/public/user_share.h"
+#include "components/sync/core/base_transaction.h"
+#include "components/sync/core/change_record.h"
+#include "components/sync/core/user_share.h"
 
 namespace syncer {
 class DataTypeErrorHandler;

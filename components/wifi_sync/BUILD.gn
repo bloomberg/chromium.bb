@@ -26,8 +26,8 @@ source_set("wifi_sync") {
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/onc",
+    "//components/sync",
     "//content/public/browser",
-    "//sync",
   ]
 
   if (is_chromeos) {
@@ -51,7 +51,7 @@ source_set("unit_tests") {
     "//base",
     "//chromeos",
     "//components/onc",
-    "//sync:test_support_sync_api",
+    "//components/sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/sync/api/syncable_service.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
-#include "sync/api/syncable_service.h"
 
 namespace base {
 class FilePath;

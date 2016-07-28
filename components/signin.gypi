@@ -184,7 +184,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            '../sync/sync.gyp:sync_java',
+            '../components/sync.gyp:sync_java',
           ],
           'variables': {
             'java_in_dir': 'signin/core/browser/android/java',
