@@ -43,6 +43,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -75,6 +76,11 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
 
 EventSource* EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit& eventSourceInit, ExceptionState& exceptionState)
 {
+    if (context->isDocument())
+        UseCounter::count(toDocument(context), UseCounter::EventSourceDocument);
+    else
+        UseCounter::count(context, UseCounter::EventSourceWorker);
+
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
         return nullptr;
