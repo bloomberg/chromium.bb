@@ -1342,7 +1342,7 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
-crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
+# crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
@@ -1370,3 +1370,7 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-scrol
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-scroll.html [ Pass Failure ]
 
 crbug.com/630996 [ Win7 Win10 Linux ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Skip ]
+
+crbug.com/619452 editing/spelling/inline_spelling_markers.html [ NeedsRebaseline ]
+crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi.html [ NeedsRebaseline ]
+crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
