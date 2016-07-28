@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SPELLCHECK_COMMON_H_
-#define CHROME_COMMON_SPELLCHECK_COMMON_H_
+#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_COMMON_H_
+#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_COMMON_H_
 
 #include <stddef.h>
 
@@ -14,8 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-namespace spellcheck_common {
+namespace spellcheck {
 
 // The number of hours that a session of feedback for spelling service lasts.
 // After this number of hours passes, all feedback.
@@ -63,7 +62,6 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
                                          std::string* language_code,
                                          std::string* country_code);
 
-}  // namespace spellcheck_common
-}  // namespace chrome
+}  // namespace spellcheck
 
-#endif  // CHROME_COMMON_SPELLCHECK_COMMON_H_
+#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_COMMON_H_

@@ -5,8 +5,8 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 
 #include "chrome/browser/spellchecker/spellchecker_session_bridge_android.h"
-#include "chrome/common/spellcheck_messages.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

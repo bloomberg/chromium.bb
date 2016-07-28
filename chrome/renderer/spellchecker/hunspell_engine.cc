@@ -11,8 +11,8 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/time/time.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
@@ -111,7 +111,7 @@ void HunspellEngine::FillSuggestionList(
 
   // Populate the vector of WideStrings.
   for (int i = 0; i < number_of_suggestions; ++i) {
-    if (i < chrome::spellcheck_common::kMaxSuggestions)
+    if (i < spellcheck::kMaxSuggestions)
       optional_suggestions->push_back(base::UTF8ToUTF16(suggestions[i]));
     free(suggestions[i]);
   }

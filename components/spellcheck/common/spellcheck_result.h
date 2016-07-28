@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SPELLCHECK_RESULT_H_
-#define CHROME_COMMON_SPELLCHECK_RESULT_H_
+#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_
+#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_
 
 #include <stdint.h>
 
@@ -40,4 +40,4 @@ struct SpellCheckResult {
   uint32_t hash;
 };
 
-#endif  // CHROME_COMMON_SPELLCHECK_RESULT_H_
+#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_RESULT_H_

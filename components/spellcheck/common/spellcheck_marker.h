@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SPELLCHECK_MARKER_H_
-#define CHROME_COMMON_SPELLCHECK_MARKER_H_
+#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MARKER_H_
+#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MARKER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,6 +18,7 @@ class SpellCheckMarker {
     bool operator()(const SpellCheckMarker& marker) const {
       return marker.offset < text_length_;
     }
+
    private:
     size_t text_length_;
   };
@@ -35,4 +36,4 @@ class SpellCheckMarker {
   uint32_t offset;
 };
 
-#endif  // CHROME_COMMON_SPELLCHECK_MARKER_H_
+#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MARKER_H_

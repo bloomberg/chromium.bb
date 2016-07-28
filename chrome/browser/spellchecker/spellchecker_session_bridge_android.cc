@@ -9,8 +9,8 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "chrome/common/spellcheck_messages.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/render_process_host.h"
 #include "jni/SpellCheckerSessionBridge_jni.h"
 

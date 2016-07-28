@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/spellchecker/platform_spelling_engine.h"
 
-#include "chrome/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"
 
 using content::RenderThread;

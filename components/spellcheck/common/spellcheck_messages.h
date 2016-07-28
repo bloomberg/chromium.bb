@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "chrome/common/spellcheck_bdict_language.h"
-#include "chrome/common/spellcheck_marker.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_bdict_language.h"
+#include "components/spellcheck/common/spellcheck_marker.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -41,8 +41,7 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
-                     bool)
+IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck, bool)
 
 // Passes some initialization params from the browser to the renderer's
 // spellchecker. This can be called directly after startup or in (async)
@@ -72,9 +71,9 @@ IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
 // If the service is not available, the 4th parameter should be false and the
 // 5th parameter should contain the requested sentence.
 IPC_MESSAGE_ROUTED4(SpellCheckMsg_RespondSpellingService,
-                    int             /* request identifier given by WebKit */,
-                    bool            /* succeeded calling service */,
-                    base::string16  /* sentence */,
+                    int /* request identifier given by WebKit */,
+                    bool /* succeeded calling service */,
+                    base::string16 /* sentence */,
                     std::vector<SpellCheckResult>)
 #endif
 
@@ -86,12 +85,11 @@ IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
 // Sends when NSSpellChecker finishes checking text received by a preceding
 // SpellCheckHostMsg_RequestTextCheck message.
 IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
-                    int             /* request identifier given by WebKit */,
-                    base::string16  /* sentence */,
+                    int /* request identifier given by WebKit */,
+                    base::string16 /* sentence */,
                     std::vector<SpellCheckResult>)
 
-IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
-                    bool)
+IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel, bool)
 #endif
 
 // Messages sent from the renderer to the browser.

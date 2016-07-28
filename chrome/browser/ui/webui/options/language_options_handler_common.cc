@@ -29,10 +29,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_common.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/user_metrics.h"
@@ -197,7 +197,7 @@ base::DictionaryValue*
 LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
   base::DictionaryValue* dictionary = new base::DictionaryValue();
   std::vector<std::string> spell_check_languages;
-  chrome::spellcheck_common::SpellCheckLanguages(&spell_check_languages);
+  spellcheck::SpellCheckLanguages(&spell_check_languages);
   for (size_t i = 0; i < spell_check_languages.size(); ++i) {
     dictionary->SetBoolean(spell_check_languages[i], true);
   }

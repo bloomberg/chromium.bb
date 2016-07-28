@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -82,8 +82,7 @@ ChecksumStatus LoadFile(const base::FilePath& file_path,
 bool IsValidWord(const std::string& word) {
   std::string tmp;
   return !word.empty() &&
-         word.size() <=
-             chrome::spellcheck_common::MAX_CUSTOM_DICTIONARY_WORD_BYTES &&
+         word.size() <= spellcheck::MAX_CUSTOM_DICTIONARY_WORD_BYTES &&
          base::IsStringUTF8(word) &&
          base::TRIM_NONE ==
              base::TrimWhitespaceASCII(word, base::TRIM_ALL, &tmp);
@@ -336,7 +335,7 @@ syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
   syncer::SyncDataList data;
   size_t i = 0;
   for (const auto& word : words_) {
-    if (i++ >= chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS)
+    if (i++ >= spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS)
       break;
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_dictionary()->set_word(word);
@@ -476,11 +475,9 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
   // The number of words on the sync server should not exceed the limits.
   int server_size = static_cast<int>(words_.size()) -
       static_cast<int>(dictionary_change.to_add().size());
-  int max_upload_size = std::max(
-      0,
-      static_cast<int>(
-          chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS) -
-          server_size);
+  int max_upload_size =
+      std::max(0, static_cast<int>(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS) -
+                      server_size);
   int upload_size = std::min(
       static_cast<int>(dictionary_change.to_add().size()),
       max_upload_size);
@@ -514,7 +511,7 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
 
   // Turn off syncing of this dictionary if the server already has the maximum
   // number of words.
-  if (words_.size() > chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS)
+  if (words_.size() > spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS)
     StopSyncing(syncer::DICTIONARY);
 
   return error;

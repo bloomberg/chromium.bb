@@ -17,10 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_result.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -73,8 +73,8 @@ bool SpellingServiceClient::RequestTextCheck(
 
   std::string language_code;
   std::string country_code;
-  chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
-      dictionary, &language_code, &country_code);
+  spellcheck::GetISOLanguageCountryCodeFromLocale(dictionary, &language_code,
+                                                  &country_code);
 
   // Replace typographical apostrophes with typewriter apostrophes, so that
   // server word breaker behaves correctly.

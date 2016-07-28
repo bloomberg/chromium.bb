@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_
-#define CHROME_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_
+#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_
+#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_
 
 #include <string>
 
@@ -14,4 +14,4 @@ struct SpellCheckBDictLanguage {
   std::string language;
 };
 
-#endif  // CHROME_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_
+#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_BDICT_LANGUAGE_H_

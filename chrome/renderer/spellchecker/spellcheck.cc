@@ -19,11 +19,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
-#include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -198,8 +198,7 @@ void SpellCheck::FillSuggestions(
     if (!ContainsValue(*optional_suggestions, suggestion)) {
         optional_suggestions->push_back(suggestion);
     }
-    if (optional_suggestions->size() >=
-        chrome::spellcheck_common::kMaxSuggestions) {
+    if (optional_suggestions->size() >= spellcheck::kMaxSuggestions) {
       break;
     }
   }

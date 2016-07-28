@@ -17,10 +17,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_marker.h"
-#include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_marker.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/test/test_browser_thread.h"
@@ -141,7 +141,7 @@ class FeedbackSenderTest : public testing::Test {
   void ExpireSession() {
     feedback_->session_start_ =
         base::Time::Now() -
-        base::TimeDelta::FromHours(chrome::spellcheck_common::kSessionHours);
+        base::TimeDelta::FromHours(spellcheck::kSessionHours);
   }
 
   bool UploadDataContains(const std::string& data) const {

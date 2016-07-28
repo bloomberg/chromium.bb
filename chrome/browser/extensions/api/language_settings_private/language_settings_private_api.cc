@@ -31,7 +31,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -201,7 +201,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 
   // Get the list of spell check languages and convert to a set.
   std::vector<std::string> spellcheck_languages;
-  chrome::spellcheck_common::SpellCheckLanguages(&spellcheck_languages);
+  spellcheck::SpellCheckLanguages(&spellcheck_languages);
   const std::unordered_set<std::string> spellcheck_language_set(
       spellcheck_languages.begin(), spellcheck_languages.end());
 

@@ -18,10 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
@@ -69,8 +69,7 @@ class SpellCheckTest : public testing::Test {
     base::FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
     base::File file(
-        chrome::spellcheck_common::GetVersionedFileName(language,
-                                                        hunspell_directory),
+        spellcheck::GetVersionedFileName(language, hunspell_directory),
         base::File::FLAG_OPEN | base::File::FLAG_READ);
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
@@ -1367,13 +1366,13 @@ TEST_F(SpellCheckTest, NoSuggest) {
 // Check that the correct dictionary files are checked in.
 TEST_F(SpellCheckTest, DictionaryFiles) {
   std::vector<std::string> spellcheck_languages;
-  chrome::spellcheck_common::SpellCheckLanguages(&spellcheck_languages);
+  spellcheck::SpellCheckLanguages(&spellcheck_languages);
   EXPECT_FALSE(spellcheck_languages.empty());
 
   base::FilePath hunspell = GetHunspellDirectory();
   for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
-    base::FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
-        spellcheck_languages[i], hunspell);
+    base::FilePath dict =
+        spellcheck::GetVersionedFileName(spellcheck_languages[i], hunspell);
     EXPECT_TRUE(base::PathExists(dict)) << dict.value() << " not found";
   }
 }
@@ -1494,13 +1493,13 @@ TEST_F(SpellCheckTest, FillSuggestions_OneLanguageManySuggestions) {
   std::vector<base::string16> suggestion_results;
 
   suggestions_list.resize(1);
-  for (int i = 0; i < chrome::spellcheck_common::kMaxSuggestions + 2; ++i)
+  for (int i = 0; i < spellcheck::kMaxSuggestions + 2; ++i)
     suggestions_list[0].push_back(base::ASCIIToUTF16(base::IntToString(i)));
 
   FillSuggestions(suggestions_list, &suggestion_results);
-  ASSERT_EQ(static_cast<size_t>(chrome::spellcheck_common::kMaxSuggestions),
+  ASSERT_EQ(static_cast<size_t>(spellcheck::kMaxSuggestions),
             suggestion_results.size());
-  for (int i = 0; i < chrome::spellcheck_common::kMaxSuggestions; ++i)
+  for (int i = 0; i < spellcheck::kMaxSuggestions; ++i)
     EXPECT_EQ(base::ASCIIToUTF16(base::IntToString(i)), suggestion_results[i]);
 }
 
@@ -1536,7 +1535,7 @@ TEST_F(SpellCheckTest, FillSuggestions_TwoLanguages) {
 
   // Yes, this test assumes kMaxSuggestions is 5. If it isn't, the test needs
   // to be updated accordingly.
-  ASSERT_EQ(5, chrome::spellcheck_common::kMaxSuggestions);
+  ASSERT_EQ(5, spellcheck::kMaxSuggestions);
   FillSuggestions(suggestions_list, &suggestion_results);
   ASSERT_EQ(5U, suggestion_results.size());
   EXPECT_EQ(base::ASCIIToUTF16("0foo"), suggestion_results[0]);
@@ -1560,7 +1559,7 @@ TEST_F(SpellCheckTest, FillSuggestions_ThreeLanguages) {
 
   // Yes, this test assumes kMaxSuggestions is 5. If it isn't, the test needs
   // to be updated accordingly.
-  ASSERT_EQ(5, chrome::spellcheck_common::kMaxSuggestions);
+  ASSERT_EQ(5, spellcheck::kMaxSuggestions);
   FillSuggestions(suggestions_list, &suggestion_results);
   ASSERT_EQ(5U, suggestion_results.size());
   EXPECT_EQ(base::ASCIIToUTF16("0foo"), suggestion_results[0]);

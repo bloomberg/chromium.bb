@@ -30,10 +30,6 @@
 #include "chrome/common/chrome_utility_printing_messages.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
-#include "chrome/common/spellcheck_messages.h"
-#endif
-
 #if defined(ENABLE_WEBRTC)
 #include "chrome/common/media/webrtc_logging_messages.h"
 #endif

@@ -11,8 +11,8 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/spellcheck_common.h"
 #include "chrome/renderer/spellchecker/spelling_engine.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 
 class Hunspell;
 

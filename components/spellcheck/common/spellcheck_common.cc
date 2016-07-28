@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -10,16 +10,14 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/urename.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 
-namespace chrome {
-namespace spellcheck_common {
+namespace spellcheck {
 
 struct LanguageRegion {
-  const char* language;  // The language.
+  const char* language;         // The language.
   const char* language_region;  // language & region, used by dictionaries.
 };
 
@@ -82,8 +80,7 @@ static const LanguageRegion g_supported_spellchecker_languages[] = {
 };
 
 bool IsValidRegion(const std::string& region) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages);
-       ++i) {
+  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
     if (g_supported_spellchecker_languages[i].language_region == region)
       return true;
   }
@@ -93,11 +90,9 @@ bool IsValidRegion(const std::string& region) {
 // This function returns the language-region version of language name.
 // e.g. returns hi-IN for hi.
 std::string GetSpellCheckLanguageRegion(const std::string& input_language) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages);
-       ++i) {
+  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
     if (g_supported_spellchecker_languages[i].language == input_language) {
-      return std::string(
-          g_supported_spellchecker_languages[i].language_region);
+      return std::string(g_supported_spellchecker_languages[i].language_region);
     }
   }
 
@@ -147,8 +142,7 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
 std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
   std::string best_match;
   // Look for exact match in the Spell Check language list.
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages);
-       ++i) {
+  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
     // First look for exact match in the language region of the list.
     std::string spellcheck_language(
         g_supported_spellchecker_languages[i].language);
@@ -169,8 +163,7 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
 }
 
 void SpellCheckLanguages(std::vector<std::string>* languages) {
-  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages);
-       ++i) {
+  for (size_t i = 0; i < arraysize(g_supported_spellchecker_languages); ++i) {
     languages->push_back(g_supported_spellchecker_languages[i].language);
   }
 }
@@ -194,5 +187,4 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   *country_code = std::string(country);
 }
 
-}  // namespace spellcheck_common
-}  // namespace chrome
+}  // namespace spellcheck

@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/spellcheck_messages.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"

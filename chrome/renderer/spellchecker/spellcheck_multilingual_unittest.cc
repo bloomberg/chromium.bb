@@ -13,10 +13,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -61,9 +61,9 @@ class MultilingualSpellCheckTest : public testing::Test {
         unsplit_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     for (const auto& language : languages) {
-      base::File file(chrome::spellcheck_common::GetVersionedFileName(
-                          language, hunspell_directory),
-                      base::File::FLAG_OPEN | base::File::FLAG_READ);
+      base::File file(
+          spellcheck::GetVersionedFileName(language, hunspell_directory),
+          base::File::FLAG_OPEN | base::File::FLAG_READ);
       spellcheck_->AddSpellcheckLanguage(std::move(file), language);
     }
   }

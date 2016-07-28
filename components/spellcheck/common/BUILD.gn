@@ -4,7 +4,21 @@
 
 source_set("common") {
   sources = [
+    "spellcheck_bdict_language.h",
+    "spellcheck_common.cc",
+    "spellcheck_common.h",
+    "spellcheck_marker.h",
+    "spellcheck_message_generator.cc",
+    "spellcheck_message_generator.h",
+    "spellcheck_messages.h",
+    "spellcheck_result.h",
     "spellcheck_switches.cc",
     "spellcheck_switches.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ipc",
+    "//third_party/icu",
   ]
 }

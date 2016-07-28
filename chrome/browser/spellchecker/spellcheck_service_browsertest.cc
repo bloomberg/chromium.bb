@@ -24,10 +24,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   base::FilePath dict_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir));
   base::FilePath bdict_path =
-      chrome::spellcheck_common::GetVersionedFileName("en-US", dict_dir);
+      spellcheck::GetVersionedFileName("en-US", dict_dir);
 
   size_t actual = base::WriteFile(bdict_path,
       reinterpret_cast<const char*>(kCorruptedBDICT),

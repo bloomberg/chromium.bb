@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class SpellCheckerSessionBridge;

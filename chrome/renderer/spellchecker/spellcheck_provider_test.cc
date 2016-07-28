@@ -5,9 +5,9 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 
 #include "base/stl_util.h"
-#include "chrome/common/spellcheck_marker.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "components/spellcheck/common/spellcheck_marker.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 class MockSpellcheck: public SpellCheck {

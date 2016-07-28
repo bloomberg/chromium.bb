@@ -12,9 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/spellcheck_messages.h"
-#include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Fake filter for testing, which stores sent messages and

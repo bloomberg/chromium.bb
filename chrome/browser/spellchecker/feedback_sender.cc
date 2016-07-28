@@ -45,10 +45,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/word_trimmer.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_marker.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_marker.h"
+#include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "crypto/random.h"
@@ -99,10 +99,8 @@ uint64_t BuildAnonymousHash(const FeedbackSender::RandSalt& r,
 Misspelling BuildFeedback(const SpellCheckResult& result,
                           const base::string16& text) {
   size_t start = result.location;
-  base::string16 context = TrimWords(&start,
-                               start + result.length,
-                               text,
-                               chrome::spellcheck_common::kContextWordCount);
+  base::string16 context = TrimWords(&start, start + result.length, text,
+                                     spellcheck::kContextWordCount);
   return Misspelling(context,
                      start,
                      result.length,
@@ -281,7 +279,7 @@ void FeedbackSender::OnReceiveDocumentMarkers(
     int renderer_process_id,
     const std::vector<uint32_t>& markers) {
   if ((base::Time::Now() - session_start_).InHours() >=
-      chrome::spellcheck_common::kSessionHours) {
+      spellcheck::kSessionHours) {
     FlushFeedback();
     return;
   }
@@ -343,7 +341,7 @@ void FeedbackSender::StartFeedbackCollection() {
   if (timer_.IsRunning())
     return;
 
-  int interval_seconds = chrome::spellcheck_common::kFeedbackIntervalSeconds;
+  int interval_seconds = spellcheck::kFeedbackIntervalSeconds;
   // This command-line switch is for testing and temporary.
   // TODO(rouslan): Remove the command-line switch when testing is complete.
   // http://crbug.com/247726
@@ -355,8 +353,7 @@ void FeedbackSender::StartFeedbackCollection() {
         &interval_seconds);
     if (interval_seconds < kMinIntervalSeconds)
       interval_seconds = kMinIntervalSeconds;
-    static const int kSessionSeconds =
-        chrome::spellcheck_common::kSessionHours * 60 * 60;
+    static const int kSessionSeconds = spellcheck::kSessionHours * 60 * 60;
     if (interval_seconds >  kSessionSeconds)
       interval_seconds = kSessionSeconds;
   }

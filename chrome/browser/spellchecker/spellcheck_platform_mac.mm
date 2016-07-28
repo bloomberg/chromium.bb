@@ -14,8 +14,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/common/spellcheck_common.h"
-#include "chrome/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -209,7 +209,7 @@ void FillSuggestionList(const base::string16& wrong_word,
   int i = 0;
   for (NSString* guess in guesses) {
     optional_suggestions->push_back(base::SysNSStringToUTF16(guess));
-    if (++i >= chrome::spellcheck_common::kMaxSuggestions)
+    if (++i >= spellcheck::kMaxSuggestions)
       break;
   }
 }
