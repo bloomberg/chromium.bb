@@ -134,15 +134,17 @@
                 if (isCSSWGTest() || isJSTest()) {
                     // Anything isn't material to the testrunner output, so
                     // should be hidden from the text dump.
-                    if (document.body)
+                    if (document.body && document.body.tagName == 'BODY')
                         document.body.textContent = '';
                 }
             }
 
             // Add results element to document.
-            if (!document.body) {
+            if (!document.body || document.body.tagName != 'BODY') {
                 if (!document.documentElement)
                     document.appendChild(document.createElement('html'));
+                else if (document.body) // document.body is <frameset>.
+                    document.body.remove();
                 document.documentElement.appendChild(document.createElement("body"));
             }
             document.body.appendChild(results);

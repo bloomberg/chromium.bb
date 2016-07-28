@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS htmlAllCollection.__proto__ is HTMLAllCollection.prototype
-FAIL htmlAllCollection.__proto__.__proto__ should be [object HTMLCollection]. Was [object Object].
+PASS htmlAllCollection.__proto__.__proto__ is Object.prototype
 PASS htmlAllCollection.length is 34
 PASS enumeratedProperties is expectedEnumeratedProperties
 PASS successfullyParsed is true

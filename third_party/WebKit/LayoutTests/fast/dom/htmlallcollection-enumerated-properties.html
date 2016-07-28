@@ -25,7 +25,8 @@ description("This tests verifies the enumerated properties on HTMLAllCollection 
 
 var htmlAllCollection = document.all;
 shouldBe("htmlAllCollection.__proto__", "HTMLAllCollection.prototype");
-shouldBe("htmlAllCollection.__proto__.__proto__", "HTMLCollection.prototype");
+// HTMLAllCollection doesn't inherit from HTMLCollection.
+shouldBe("htmlAllCollection.__proto__.__proto__", "Object.prototype");
 shouldBe("htmlAllCollection.length", "34");
 
 // As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection-0:
@@ -34,7 +35,7 @@ shouldBe("htmlAllCollection.length", "34");
 // embed, form, frame, frameset, iframe, img, and object elements represented by the collection, in tree order,
 // ignoring later duplicates, with the id of an element preceding its name if it contributes both, they differ from
 // each other, and neither is the duplicate of an earlier entry.
-var expectedEnumeratedProperties = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "length", "description", "console", "aId1", "aName1", "mapId1", "areaId1", "areaName1", "areaId2", "areaName2", "embedId1", "embedName1", "formId1", "formName1", "inputId1", "inputName1", "inputId2", "iframeId1", "iframeName1", "imgId8", "imgName8", "objectId1", "objectName1", "selectId1", "selectName1", "optionId1", "item", "namedItem"].sort();
+var expectedEnumeratedProperties = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "length", "description", "console", "aId1", "aName1", "mapId1", "mapName1", "areaId1", "areaId2", "embedId1", "embedName1", "formId1", "formName1", "inputId1", "inputName1", "inputId2", "iframeId1", "iframeName1", "imgId8", "imgName8", "objectId1", "objectName1", "selectId1", "selectName1", "optionId1", "item", "namedItem"].sort();
 
 var enumeratedProperties = [];
 for (var property in htmlAllCollection) {

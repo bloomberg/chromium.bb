@@ -297,13 +297,14 @@ Element* HTMLCollection::virtualItemAfter(Element*) const
     return nullptr;
 }
 
+// https://html.spec.whatwg.org/multipage/infrastructure.html#all-named-elements
+// The document.all collection returns only certain types of elements by name,
+// although it returns any type of element by id.
 static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#dom-htmlallcollection-nameditem:
-    // The document.all collection returns only certain types of elements by name,
-    // although it returns any type of element by id.
     return element.hasTagName(aTag)
-        || element.hasTagName(areaTag)
+        || element.hasTagName(appletTag)
+        || element.hasTagName(buttonTag)
         || element.hasTagName(embedTag)
         || element.hasTagName(formTag)
         || element.hasTagName(frameTag)
@@ -311,8 +312,11 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
         || element.hasTagName(iframeTag)
         || element.hasTagName(imgTag)
         || element.hasTagName(inputTag)
+        || element.hasTagName(mapTag)
+        || element.hasTagName(metaTag)
         || element.hasTagName(objectTag)
-        || element.hasTagName(selectTag);
+        || element.hasTagName(selectTag)
+        || element.hasTagName(textareaTag);
 }
 
 Element* HTMLCollection::traverseToFirst() const
