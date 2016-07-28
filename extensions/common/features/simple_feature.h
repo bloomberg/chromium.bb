@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <initializer_list>
 #include <memory>
 #include <set>
 #include <string>
@@ -99,28 +100,27 @@ class SimpleFeature : public Feature {
   };
 
   // Setters used by generated code to create the feature.
-  // NOTE: These setters use rvalue references deliberately. These should only
-  // ever be used by generated code, and we ensure that in each call, the new
-  // value is constructed in-place. This allows us to avoid a copy when we
-  // assign it to the value in this class, and results in noticable improvements
-  // in both speed and binary size.
-  void set_blacklist(std::vector<std::string>&& blacklist);
+  // NOTE: These setters use base::StringPiece and std::initalizer_list rather
+  // than std::string and std::vector for binary size reasons. Using STL types
+  // directly in the header means that code that doesn't already have that exact
+  // type ends up triggering many implicit conversions which are all inlined.
+  void set_blacklist(std::initializer_list<const char* const> blacklist);
   void set_channel(version_info::Channel channel) {
     channel_.reset(new version_info::Channel(channel));
   }
-  void set_command_line_switch(std::string&& command_line_switch);
+  void set_command_line_switch(base::StringPiece command_line_switch);
   void set_component_extensions_auto_granted(bool granted) {
     component_extensions_auto_granted_ = granted;
   }
-  void set_contexts(std::vector<Context>&& contexts);
-  void set_dependencies(std::vector<std::string>&& dependencies);
-  void set_extension_types(std::vector<Manifest::Type>&& types);
+  void set_contexts(std::initializer_list<Context> contexts);
+  void set_dependencies(std::initializer_list<const char* const> dependencies);
+  void set_extension_types(std::initializer_list<Manifest::Type> types);
   void set_internal(bool is_internal) { is_internal_ = is_internal; }
   void set_location(Location location) { location_ = location; }
   // set_matches() is an exception to pass-by-value since we construct an
   // URLPatternSet from the vector of strings.
   // TODO(devlin): Pass in an URLPatternSet directly.
-  void set_matches(const std::vector<std::string>& matches);
+  void set_matches(std::initializer_list<const char* const> matches);
   void set_max_manifest_version(int max_manifest_version) {
     max_manifest_version_ = max_manifest_version;
   }
@@ -128,8 +128,8 @@ class SimpleFeature : public Feature {
     min_manifest_version_ = min_manifest_version;
   }
   void set_noparent(bool no_parent) { no_parent_ = no_parent; }
-  void set_platforms(std::vector<Platform>&& platforms);
-  void set_whitelist(std::vector<std::string>&& whitelist);
+  void set_platforms(std::initializer_list<Platform> platforms);
+  void set_whitelist(std::initializer_list<const char* const> whitelist);
 
  protected:
   // Accessors used by subclasses in feature verification.

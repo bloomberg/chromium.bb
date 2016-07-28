@@ -109,7 +109,7 @@ JSONFeatureProvider::JSONFeatureProvider(const base::DictionaryValue& root,
       if (parse_error)
         continue;
 
-      features_[iter.key()] = std::move(feature);
+      AddFeature(iter.key(), std::move(feature));
     } else if (iter.value().GetType() == base::Value::TYPE_LIST) {
       // This is a complex feature.
       const base::ListValue* list =
@@ -138,7 +138,7 @@ JSONFeatureProvider::JSONFeatureProvider(const base::DictionaryValue& root,
           new ComplexFeature(std::move(features)));
       feature->set_name(iter.key());
 
-      features_[iter.key()] = std::move(feature);
+      AddFeature(iter.key(), std::move(feature));
     } else {
       LOG(ERROR) << iter.key() << ": Feature description must be dictionary or"
                  << " list of dictionaries.";

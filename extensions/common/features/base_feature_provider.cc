@@ -4,6 +4,8 @@
 
 #include "extensions/common/features/base_feature_provider.h"
 
+#include <utility>
+
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/features/feature.h"
@@ -57,6 +59,11 @@ std::vector<Feature*> BaseFeatureProvider::GetChildren(const Feature& parent)
     result.push_back(it->second.get());
   }
   return result;
+}
+
+void BaseFeatureProvider::AddFeature(base::StringPiece name,
+                                     std::unique_ptr<Feature> feature) {
+  features_[name.as_string()] = std::move(feature);
 }
 
 }  // namespace extensions

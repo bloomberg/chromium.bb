@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
@@ -37,9 +38,12 @@ class BaseFeatureProvider : public FeatureProvider {
 
  protected:
   BaseFeatureProvider();
-  std::map<std::string, std::unique_ptr<Feature>> features_;
+
+  void AddFeature(base::StringPiece name, std::unique_ptr<Feature> feature);
 
  private:
+  std::map<std::string, std::unique_ptr<Feature>> features_;
+
   DISALLOW_COPY_AND_ASSIGN(BaseFeatureProvider);
 };
 

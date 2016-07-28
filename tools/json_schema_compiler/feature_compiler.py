@@ -498,7 +498,7 @@ class FeatureCompiler(object):
         c.Append('feature->set_name("%s");' % k)
       else:
         c.Concat(feature.GetCode(self._feature_class))
-      c.Append('features_["%s"] = std::move(feature);' % k)
+      c.Append('AddFeature("%s", std::move(feature));' % k)
       c.Eblock('}')
     c.Eblock('}')
     return c

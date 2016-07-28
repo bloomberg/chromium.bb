@@ -667,38 +667,44 @@ bool SimpleFeature::IsValidExtensionId(const std::string& extension_id) {
   return (extension_id.length() == 32);
 }
 
-void SimpleFeature::set_blacklist(std::vector<std::string>&& blacklist) {
-  blacklist_ = blacklist;
+void SimpleFeature::set_blacklist(
+    std::initializer_list<const char* const> blacklist) {
+  blacklist_.assign(blacklist.begin(), blacklist.end());
 }
 
-void SimpleFeature::set_command_line_switch(std::string&& command_line_switch) {
-  command_line_switch_ = command_line_switch;
+void SimpleFeature::set_command_line_switch(
+    base::StringPiece command_line_switch) {
+  command_line_switch_ = command_line_switch.as_string();
 }
 
-void SimpleFeature::set_contexts(std::vector<Context>&& contexts) {
+void SimpleFeature::set_contexts(std::initializer_list<Context> contexts) {
   contexts_ = contexts;
 }
 
-void SimpleFeature::set_dependencies(std::vector<std::string>&& dependencies) {
-  dependencies_ = dependencies;
+void SimpleFeature::set_dependencies(
+    std::initializer_list<const char* const> dependencies) {
+  dependencies_.assign(dependencies.begin(), dependencies.end());
 }
 
-void SimpleFeature::set_extension_types(std::vector<Manifest::Type>&& types) {
+void SimpleFeature::set_extension_types(
+    std::initializer_list<Manifest::Type> types) {
   extension_types_ = types;
 }
 
-void SimpleFeature::set_matches(const std::vector<std::string>& matches) {
+void SimpleFeature::set_matches(
+    std::initializer_list<const char* const> matches) {
   matches_.ClearPatterns();
-  for (const std::string& pattern : matches)
+  for (const auto* pattern : matches)
     matches_.AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
 }
 
-void SimpleFeature::set_platforms(std::vector<Platform>&& platforms) {
+void SimpleFeature::set_platforms(std::initializer_list<Platform> platforms) {
   platforms_ = platforms;
 }
 
-void SimpleFeature::set_whitelist(std::vector<std::string>&& whitelist) {
-  whitelist_ = whitelist;
+void SimpleFeature::set_whitelist(
+    std::initializer_list<const char* const> whitelist) {
+  whitelist_.assign(whitelist.begin(), whitelist.end());
 }
 
 }  // namespace extensions

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "extensions/common/manifest.h"
 
@@ -102,7 +103,9 @@ class Feature {
   virtual ~Feature();
 
   const std::string& name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  // Note that this arg is passed as a StringPiece to avoid a lot of bloat from
+  // inlined std::string code.
+  void set_name(base::StringPiece name);
   bool no_parent() const { return no_parent_; }
 
   // Gets the platform the code is currently running on.
