@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.Browser;
 
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 
@@ -38,6 +39,8 @@ public class LauncherShortcutActivity extends Activity {
         newIntent.setData(Uri.parse(UrlConstants.NTP_URL));
         newIntent.setClass(this, ChromeLauncherActivity.class);
         newIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
+        newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
         IntentHandler.addTrustedIntentExtras(newIntent, this);
 
         if (intentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB)) {

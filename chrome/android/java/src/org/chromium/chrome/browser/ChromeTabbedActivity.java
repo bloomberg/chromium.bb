@@ -1276,7 +1276,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // the back button to close these tabs and restore selection to the previous tab.
             boolean isIncognito = IntentUtils.safeGetBooleanExtra(intent,
                     IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-            return getTabCreator(isIncognito).launchUrl(url, TabLaunchType.FROM_LINK, intent,
+            boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
+                    intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
+            return getTabCreator(isIncognito).launchUrl(
+                    url,
+                    fromLauncherShortcut ? TabLaunchType.FROM_CHROME_UI : TabLaunchType.FROM_LINK,
+                    intent,
                     mIntentHandlingTimeMs);
         } else {
             return getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
