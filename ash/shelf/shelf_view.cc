@@ -14,6 +14,7 @@
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/overflow_button.h"
+#include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -360,7 +361,8 @@ const int ShelfView::kMinimumDragDistance = 8;
 ShelfView::ShelfView(ShelfModel* model,
                      ShelfDelegate* delegate,
                      WmShelf* wm_shelf,
-                     Shelf* shelf)
+                     Shelf* shelf,
+                     ShelfBackgroundAnimator* background_animator)
     : model_(model),
       delegate_(delegate),
       wm_shelf_(wm_shelf),
@@ -388,7 +390,8 @@ ShelfView::ShelfView(ShelfModel* model,
       main_shelf_(nullptr),
       dragged_off_from_overflow_to_shelf_(false),
       is_repost_event_on_same_item_(false),
-      last_pressed_index_(-1) {
+      last_pressed_index_(-1),
+      background_animator_(background_animator) {
   DCHECK(model_);
   DCHECK(delegate_);
   DCHECK(wm_shelf_);
@@ -401,6 +404,8 @@ ShelfView::ShelfView(ShelfModel* model,
 ShelfView::~ShelfView() {
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
+  if (background_animator_)
+    background_animator_->RemoveObserver(this);
 }
 
 void ShelfView::Init() {
@@ -417,6 +422,9 @@ void ShelfView::Init() {
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
+
+  if (background_animator_)
+    background_animator_->AddObserver(this);
 
   // We'll layout when our bounds change.
 }
@@ -1370,7 +1378,7 @@ void ShelfView::ToggleOverflowBubble() {
     overflow_bubble_.reset(new OverflowBubble(wm_shelf_));
 
   ShelfView* overflow_view =
-      new ShelfView(model_, delegate_, wm_shelf_, shelf_);
+      new ShelfView(model_, delegate_, wm_shelf_, shelf_, nullptr);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
@@ -1545,6 +1553,11 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
                                     ->GetNativeWindow();
   if (gesture_handler_.ProcessGestureEvent(*event, target_window))
     event->StopPropagation();
+}
+
+void ShelfView::UpdateShelfItemBackground(int alpha) {
+  GetAppListButton()->SetBackgroundAlpha(alpha);
+  overflow_button_->SetBackgroundAlpha(alpha);
 }
 
 void ShelfView::ShelfItemAdded(int model_index) {

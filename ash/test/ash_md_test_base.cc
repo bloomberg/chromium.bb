@@ -5,7 +5,7 @@
 #include "ash/test/ash_md_test_base.h"
 
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/test/material_design_controller_test_api.h"
+#include "ash/common/test/material_design_controller_test_api.h"
 
 namespace ash {
 namespace test {

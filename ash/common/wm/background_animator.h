@@ -18,10 +18,14 @@ enum BackgroundAnimatorChangeType {
   BACKGROUND_CHANGE_IMMEDIATE
 };
 
+class BackgroundAnimator;
+
 // Delegate is notified any time the background changes.
 class ASH_EXPORT BackgroundAnimatorDelegate {
  public:
-  virtual void UpdateBackground(int alpha) = 0;
+  virtual void UpdateBackground(BackgroundAnimator* animator, int alpha) = 0;
+
+  virtual void BackgroundAnimationEnded(BackgroundAnimator* animator) = 0;
 
  protected:
   virtual ~BackgroundAnimatorDelegate() {}
@@ -38,6 +42,9 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   // Sets the transition time in ms.
   void SetDuration(int time_in_ms);
 
+  // Stops the animation. Does nothing if the animation is not running.
+  void Stop();
+
   // Sets whether a background is rendered. Initial value is false. If |type|
   // is |CHANGE_IMMEDIATE| and an animation is not in progress this notifies
   // the delegate immediately (synchronously from this method).
@@ -49,6 +56,7 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
 
   // gfx::AnimationDelegate overrides:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
  private:
   BackgroundAnimatorDelegate* delegate_;

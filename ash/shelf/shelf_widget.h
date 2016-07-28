@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/common/wm/background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
@@ -59,7 +59,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   Shelf* shelf() const { return shelf_.get(); }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
-  void CreateShelf(WmShelfAura* wm_shelf_aura);
+  void CreateShelf();
   void PostCreateShelf();
 
   // Set visibility of the shelf.
@@ -104,6 +104,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  WmShelfAura* wm_shelf_aura_;
+
   // Owned by the shelf container's aura::Window.
   ShelfLayoutManager* shelf_layout_manager_;
   std::unique_ptr<Shelf> shelf_;
@@ -112,7 +114,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
-  BackgroundAnimator background_animator_;
+  ShelfBackgroundAnimator background_animator_;
   bool activating_as_fallback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWidget);

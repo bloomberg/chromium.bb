@@ -41,13 +41,15 @@ const char Shelf::kNativeViewName[] = "ShelfView";
 
 Shelf::Shelf(ShelfModel* shelf_model,
              WmShelf* wm_shelf,
-             ShelfWidget* shelf_widget)
+             ShelfWidget* shelf_widget,
+             ShelfBackgroundAnimator* background_animator)
     : wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
       shelf_view_(new ShelfView(shelf_model,
                                 WmShell::Get()->shelf_delegate(),
                                 wm_shelf,
-                                this)),
+                                this,
+                                background_animator)),
       shelf_locking_manager_(wm_shelf) {
   DCHECK(wm_shelf_);
   shelf_view_->Init();

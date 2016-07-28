@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
-#define ASH_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
+#ifndef ASH_COMMON_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
+#define ASH_COMMON_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "base/macros.h"
@@ -35,4 +35,4 @@ class MaterialDesignControllerTestAPI {
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
+#endif  // ASH_COMMON_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_

@@ -496,7 +496,7 @@ void RootWindowController::ShowShelf() {
 void RootWindowController::CreateShelf() {
   if (shelf_widget_->shelf())
     return;
-  shelf_widget_->CreateShelf(wm_shelf_aura_.get());
+  shelf_widget_->CreateShelf();
 
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_aura_.get());
