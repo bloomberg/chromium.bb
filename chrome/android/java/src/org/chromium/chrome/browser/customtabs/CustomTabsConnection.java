@@ -69,6 +69,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CustomTabsConnection {
     private static final String TAG = "ChromeConnection";
     private static final String LOG_SERVICE_REQUESTS = "custom-tabs-log-service-requests";
+    // TODO(lizeb): Switch to a proper notification for page load metrics.
+    public static final int PAGE_LOAD_METRIC = 42;
+
     @VisibleForTesting
     static final String NO_PRERENDERING_KEY =
             "android.support.customtabs.maylaunchurl.NO_PRERENDERING";
@@ -103,6 +106,8 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private WebContents mSpareWebContents;
+    // TODO(lizeb): Remove once crbug.com/630303 is fixed.
+    private boolean mPageLoadMetricsEnabled;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -546,6 +551,37 @@ public class CustomTabsConnection {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
             // of exceptions. See crbug.com/517023.
+            return false;
+        }
+        return true;
+    }
+
+    // TODO(lizeb): Remove once crbug.com/630303 is fixed.
+    @VisibleForTesting
+    void enablePageLoadMetricsCallbacks() {
+        mPageLoadMetricsEnabled = true;
+    }
+
+    /**
+     * Notifies the application of a page load metric.
+     *
+     * TODD(lizeb): Move this to a proper method in {@link CustomTabsCallback} once one is
+     * available.
+     *
+     * @param session Session identifier.
+     * @param metricName Name of the page load metric.
+     * @param offsetMs Offset in ms from navigationStart.
+     */
+    boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName, long offsetMs) {
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (!mPageLoadMetricsEnabled) return false;
+        if (callback == null) return false;
+        Bundle args = new Bundle();
+        args.putLong(metricName, offsetMs);
+        try {
+            callback.onNavigationEvent(PAGE_LOAD_METRIC, args);
+        } catch (Exception e) {
+            // Pokemon exception handling, see above and crbug.com/517023.
             return false;
         }
         return true;

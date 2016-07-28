@@ -7,6 +7,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
+#endif  // OS_ANDROID
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
@@ -70,6 +73,10 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   tracker->AddObserver(
       base::WrapUnique(new HttpsEngagementPageLoadMetricsObserver(
           web_contents_->GetBrowserContext())));
+#if defined(OS_ANDROID)
+  tracker->AddObserver(
+      base::WrapUnique(new AndroidPageLoadMetricsObserver(web_contents_)));
+#endif  // OS_ANDROID
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering(

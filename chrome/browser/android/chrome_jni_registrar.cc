@@ -116,6 +116,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
+#include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
@@ -336,6 +337,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"OmniboxViewUtil", OmniboxViewUtil::RegisterOmniboxViewUtil},
     {"OverlayPanelContent", RegisterOverlayPanelContent},
     {"PlatformUtil", platform_util::RegisterPlatformUtil},
+    {"PageLoadMetrics", RegisterPageLoadMetricsBindings},
     {"PartnerBookmarksReader",
      PartnerBookmarksReader::RegisterPartnerBookmarksReader},
     {"PasswordGenerationPopup",

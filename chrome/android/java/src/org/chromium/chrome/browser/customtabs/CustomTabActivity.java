@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
@@ -97,15 +98,40 @@ public class CustomTabActivity extends ChromeActivity {
     private String mPrerenderedUrl;
     private boolean mHasPrerendered;
 
-    // Only the normal tab model is observed because there is no icognito tabmodel in Custom Tabs.
+    private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
+        private final CustomTabsConnection mConnection;
+        private final CustomTabsSessionToken mSession;
+        private final WebContents mWebContents;
+
+        public PageLoadMetricsObserver(CustomTabsConnection connection,
+                CustomTabsSessionToken session, WebContents webContents) {
+            mConnection = connection;
+            mSession = session;
+            mWebContents = webContents;
+        }
+
+        @Override
+        public void onFirstContentfulPaint(WebContents webContents, long firstContentfulPaintMs) {
+            if (webContents != mWebContents) return;
+
+            mConnection.notifyPageLoadMetric(
+                    mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT, firstContentfulPaintMs);
+        }
+    }
+
+    private PageLoadMetricsObserver mMetricsObserver;
+
+    // Only the normal tab model is observed because there is no incognito tabmodel in Custom Tabs.
     private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didAddTab(Tab tab, TabLaunchType type) {
+            PageLoadMetrics.addObserver(mMetricsObserver);
             tab.addObserver(mTabObserver);
         }
 
         @Override
         public void didCloseTab(int tabId, boolean incognito) {
+            PageLoadMetrics.removeObserver(mMetricsObserver);
             // Finish the activity after we intent out.
             if (getTabModelSelector().getCurrentModel().getCount() == 0) finish();
         }
@@ -393,6 +419,9 @@ public class CustomTabActivity extends ChromeActivity {
         tab.getTabRedirectHandler().updateIntent(getIntent());
         tab.getView().requestFocus();
         mTabObserver = new CustomTabObserver(getApplication(), mSession);
+
+        mMetricsObserver = new PageLoadMetricsObserver(
+                CustomTabsConnection.getInstance(getApplication()), mSession, webContents);
         tab.addObserver(mTabObserver);
         return tab;
     }
