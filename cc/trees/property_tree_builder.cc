@@ -569,7 +569,7 @@ bool AddTransformNodeIfNeeded(
     gfx::Vector2dF source_to_parent;
     if (source_index != parent_index) {
       gfx::Transform to_parent;
-      data_from_ancestor.property_trees->transform_tree.ComputeTransform(
+      data_from_ancestor.property_trees->transform_tree.ComputeTranslation(
           source_index, parent_index, &to_parent);
       source_to_parent = to_parent.To2dTranslation();
     }

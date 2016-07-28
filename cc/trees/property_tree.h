@@ -154,6 +154,14 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                         int dest_id,
                         gfx::Transform* transform) const;
 
+  // Computes the change of basis transform from node |source_id| to |dest_id|.
+  // This is used by scroll children to compute transform from their scroll
+  // parent space (source) to their parent space (destination) and it can atmost
+  // be a translation.
+  bool ComputeTranslation(int source_id,
+                          int dest_id,
+                          gfx::Transform* transform) const;
+
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
@@ -245,10 +253,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void FromProtobuf(const proto::PropertyTree& proto,
                     std::unordered_map<int, int>* node_id_to_index_map);
 
-  // Computes the combined transform between |source_id| and |dest_id| and
-  // returns false if the inverse of a singular transform was used. These two
-  // nodes must be on the same ancestor chain.
-  bool CombineTransformsBetween(int source_id,
+  // Computes the combined transform between |source_id| and |dest_id|. These
+  // two nodes must be on the same ancestor chain.
+  void CombineTransformsBetween(int source_id,
                                 int dest_id,
                                 gfx::Transform* transform) const;
 
@@ -590,6 +597,10 @@ class CC_EXPORT PropertyTrees final {
   bool ComputeTransformToTarget(int transform_id,
                                 int effect_id,
                                 gfx::Transform* transform) const;
+
+  bool ComputeTransformFromTarget(int transform_id,
+                                  int effect_id,
+                                  gfx::Transform* transform) const;
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;

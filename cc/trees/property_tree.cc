@@ -151,10 +151,20 @@ bool TransformTree::ComputeTransform(int source_id,
     return true;
 
   if (source_id > dest_id) {
-    return CombineTransformsBetween(source_id, dest_id, transform);
+    CombineTransformsBetween(source_id, dest_id, transform);
+    return true;
   }
 
   return CombineInversesBetween(source_id, dest_id, transform);
+}
+
+bool TransformTree::ComputeTranslation(int source_id,
+                                       int dest_id,
+                                       gfx::Transform* transform) const {
+  bool success = ComputeTransform(source_id, dest_id, transform);
+  DCHECK(
+      transform->IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)));
+  return success;
 }
 
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
@@ -198,7 +208,7 @@ bool TransformTree::IsDescendant(int desc_id, int source_id) const {
   return true;
 }
 
-bool TransformTree::CombineTransformsBetween(int source_id,
+void TransformTree::CombineTransformsBetween(int source_id,
                                              int dest_id,
                                              gfx::Transform* transform) const {
   DCHECK(source_id > dest_id);
@@ -219,7 +229,7 @@ bool TransformTree::CombineTransformsBetween(int source_id,
     transform->ConcatTransform(ToScreen(current->id));
     if (dest)
       transform->ConcatTransform(FromScreen(dest->id));
-    return true;
+    return;
   }
 
   // Flattening is defined in a way that requires it to be applied while
@@ -290,7 +300,6 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   }
 
   transform->ConcatTransform(combined_transform);
-  return true;
 }
 
 bool TransformTree::CombineInversesBetween(int source_id,
@@ -327,7 +336,7 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
   gfx::Transform transform = node->post_local;
   if (NeedsSourceToParentUpdate(node)) {
     gfx::Transform to_parent;
-    ComputeTransform(node->source_node_id, node->parent_id, &to_parent);
+    ComputeTranslation(node->source_node_id, node->parent_id, &to_parent);
     node->source_to_parent = to_parent.To2dTranslation();
   }
 
@@ -1961,29 +1970,44 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
                                              gfx::Transform* transform) const {
   transform->MakeIdentity();
 
-  int destination_transform_id;
+  int target_transform_id;
   if (effect_id == EffectTree::kInvalidNodeId) {
     // This can happen when PaintArtifactCompositor builds property trees as
     // it doesn't set effect ids on clip nodes. We want to compute transform
     // to the root in this case.
-    destination_transform_id = TransformTree::kRootNodeId;
+    target_transform_id = TransformTree::kRootNodeId;
   } else {
     const EffectNode* effect_node = effect_tree.Node(effect_id);
     DCHECK(effect_node->has_render_surface ||
            effect_node->id == EffectTree::kRootNodeId);
-    destination_transform_id = effect_node->transform_id;
+    target_transform_id = effect_node->transform_id;
   }
 
-  if (transform_id == destination_transform_id)
-    return true;
+  return transform_tree.ComputeTransform(transform_id, target_transform_id,
+                                         transform);
+}
 
-  if (transform_id > destination_transform_id) {
-    return transform_tree.CombineTransformsBetween(
-        transform_id, destination_transform_id, transform);
+bool PropertyTrees::ComputeTransformFromTarget(
+    int transform_id,
+    int effect_id,
+    gfx::Transform* transform) const {
+  transform->MakeIdentity();
+
+  int target_transform_id;
+  if (effect_id == EffectTree::kInvalidNodeId) {
+    // This can happen when PaintArtifactCompositor builds property trees as
+    // it doesn't set effect ids on clip nodes. We want to compute transform
+    // to the root in this case.
+    target_transform_id = TransformTree::kRootNodeId;
+  } else {
+    const EffectNode* effect_node = effect_tree.Node(effect_id);
+    DCHECK(effect_node->has_render_surface ||
+           effect_node->id == EffectTree::kRootNodeId);
+    target_transform_id = effect_node->transform_id;
   }
 
-  return transform_tree.CombineInversesBetween(
-      transform_id, destination_transform_id, transform);
+  return transform_tree.ComputeTransform(target_transform_id, transform_id,
+                                         transform);
 }
 
 }  // namespace cc

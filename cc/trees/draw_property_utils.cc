@@ -155,11 +155,10 @@ static ConditionalClip ComputeTargetRectInLocalSpace(
     int target_transform_id,
     int local_transform_id,
     const int target_effect_id) {
-  const TransformTree& transform_tree = property_trees->transform_tree;
   const EffectTree& effect_tree = property_trees->effect_tree;
   gfx::Transform target_to_local;
-  bool success = transform_tree.ComputeTransform(
-      target_transform_id, local_transform_id, &target_to_local);
+  bool success = property_trees->ComputeTransformFromTarget(
+      local_transform_id, target_effect_id, &target_to_local);
   if (!success)
     // If transform is not invertible, cannot apply clip.
     return ConditionalClip{false, gfx::RectF()};
@@ -521,8 +520,10 @@ void CalculateVisibleRects(
       target_to_layer = transform_tree.FromTarget(
           transform_node->id, layer->render_target_effect_tree_index());
     } else {
-      bool success = transform_tree.ComputeTransform(
-          target_node_id, transform_node->id, &target_to_layer);
+      const EffectNode* target_effect_node =
+          ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
+      bool success = property_trees->ComputeTransformFromTarget(
+          transform_node->id, target_effect_node->id, &target_to_layer);
       if (!success) {
         // An animated singular transform may become non-singular during the
         // animation, so we still need to compute a visible rect. In this
@@ -530,8 +531,6 @@ void CalculateVisibleRects(
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
-      const EffectNode* target_effect_node =
-          ContentsTargetEffectNode(layer->effect_tree_index(), effect_tree);
       if (target_effect_node->id != EffectTree::kContentsRootNodeId) {
         ConcatInverseSurfaceContentsScale(target_effect_node, &target_to_layer);
 #if DCHECK_IS_ON()
