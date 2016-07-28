@@ -20,8 +20,6 @@ assert(use_alsa)
 # GYP target: chromecast/media/media.gyp:libcast_media_1.0_audio
 shared_library("libcast_media_1.0_audio") {
   sources = [
-    "//chromecast/media/base/media_caps.cc",
-    "//chromecast/media/base/media_caps.h",
     "cast_media_shlib.cc",
     "media_codec_support_cast_audio.cc",
   ]
