@@ -4,11 +4,7 @@
 
 #include "components/previews/previews_experiments.h"
 
-#include <map>
-#include <string>
-
 #include "base/metrics/field_trial.h"
-#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -23,13 +19,8 @@ TEST_F(PreviewsExperimentsTest, TestFieldTrialOfflinePage) {
   EXPECT_FALSE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
   EXPECT_FALSE(IsOfflinePreviewsEnabled());
 
-  std::map<std::string, std::string> params;
-  params["show_offline_pages"] = "true";
-  ASSERT_TRUE(variations::AssociateVariationParams("ClientSidePreviews",
-                                                   "Enabled", params));
   base::FieldTrialList field_trial_list(nullptr);
-  ASSERT_TRUE(
-      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+  ASSERT_TRUE(EnableOfflinePreviewsForTesting());
 
   EXPECT_TRUE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
   EXPECT_TRUE(IsOfflinePreviewsEnabled());

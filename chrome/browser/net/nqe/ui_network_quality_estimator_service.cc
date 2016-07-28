@@ -96,6 +96,12 @@ void UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged(
   type_ = type;
 }
 
+void UINetworkQualityEstimatorService::SetEffectiveConnectionTypeForTesting(
+    net::NetworkQualityEstimator::EffectiveConnectionType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  type_ = type;
+}
+
 net::NetworkQualityEstimator::EffectiveConnectionType
 UINetworkQualityEstimatorService::GetEffectiveConnectionType() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

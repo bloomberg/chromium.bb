@@ -21,6 +21,9 @@ const char kEnabled[] = "Enabled";
 // Allow offline pages to show for prohibitively slow networks.
 const char kOfflinePagesSlowNetwork[] = "show_offline_pages";
 
+// The string that corresponds to enabled for the variation param experiments.
+const char kExperimentEnabled[] = "true";
+
 }  // namespace
 
 namespace previews {
@@ -44,7 +47,16 @@ bool IsOfflinePreviewsEnabled() {
   }
   std::map<std::string, std::string>::const_iterator it =
       experiment_params.find(kOfflinePagesSlowNetwork);
-  return it != experiment_params.end() && it->second == "true";
+  return it != experiment_params.end() && it->second == kExperimentEnabled;
+}
+
+bool EnableOfflinePreviewsForTesting() {
+  std::map<std::string, std::string> params;
+  params[kOfflinePagesSlowNetwork] = kExperimentEnabled;
+  return variations::AssociateVariationParams(kClientSidePreviewsFieldTrial,
+                                              kEnabled, params) &&
+         base::FieldTrialList::CreateFieldTrial(kClientSidePreviewsFieldTrial,
+                                                kEnabled);
 }
 
 }  // namespace previews

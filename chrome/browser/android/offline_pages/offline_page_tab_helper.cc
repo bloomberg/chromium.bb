@@ -10,10 +10,15 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/previews/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -22,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinePageTabHelper);
@@ -38,6 +44,24 @@ void ReportAccessedOfflinePage(content::BrowserContext* browser_context,
     OfflinePageUtils::MarkPageAccessed(browser_context, navigated_url);
 }
 
+// Whether using offline pages for slow networks is allowed and the network is
+// currently estimated to be prohibitively slow.
+bool ShouldUseOfflineForSlowNetwork(content::BrowserContext* context) {
+  if (!previews::IsOfflinePreviewsEnabled())
+    return false;
+  Profile* profile = Profile::FromBrowserContext(context);
+  UINetworkQualityEstimatorService* nqe_service =
+      UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+  if (!nqe_service)
+    return false;
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      effective_connection_type = nqe_service->GetEffectiveConnectionType();
+  return effective_connection_type >=
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
+      effective_connection_type <=
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+}
+
 class DefaultDelegate : public OfflinePageTabHelper::Delegate {
  public:
   DefaultDelegate() {}
@@ -50,6 +74,7 @@ class DefaultDelegate : public OfflinePageTabHelper::Delegate {
     *tab_id = base::IntToString(temp_tab_id);
     return true;
   }
+  base::Time Now() const override { return base::Time::Now(); }
 };
 }  // namespace
 
@@ -95,10 +120,17 @@ void OfflinePageTabHelper::DidStartNavigation(
     return;
   }
 
-  content::BrowserContext* context = web_contents()->GetBrowserContext();
   if (net::NetworkChangeNotifier::IsOffline()) {
     GetPagesForRedirectToOffline(
         RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK, navigated_url);
+    return;
+  }
+
+  content::BrowserContext* context = web_contents()->GetBrowserContext();
+  if (ShouldUseOfflineForSlowNetwork(context)) {
+    GetPagesForRedirectToOffline(
+        RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK,
+        navigated_url);
     return;
   }
 
@@ -199,7 +231,8 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
     const GURL& online_url,
     const MultipleOfflinePageItemResult& pages) {
   DCHECK(result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ||
-         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK);
+         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK ||
+         result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
 
   // When there is no valid tab android there is nowhere to show the offline
   // page, so we can leave.
@@ -223,10 +256,32 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
   }
 
   if (!selected_page) {
+    switch (result) {
+      case RedirectResult::REDIRECTED_ON_FLAKY_NETWORK:
+        ReportRedirectResultUMA(
+            RedirectResult::PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
+        return;
+      case RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK:
+        ReportRedirectResultUMA(
+            RedirectResult::PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
+        return;
+      case RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK:
+        ReportRedirectResultUMA(
+            RedirectResult::PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
+        return;
+      default:
+        NOTREACHED();
+        return;
+    }
+  }
+
+  // If the page is being loaded on a slow network, only use the offline page
+  // if it was created within the past day.
+  if (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK &&
+      delegate_->Now() - selected_page->creation_time >
+          base::TimeDelta::FromDays(1)) {
     ReportRedirectResultUMA(
-        result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ?
-        RedirectResult::PAGE_NOT_FOUND_ON_FLAKY_NETWORK :
-        RedirectResult::PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
+        RedirectResult::PAGE_NOT_FRESH_ON_PROHIBITIVELY_SLOW_NETWORK);
     return;
   }
 
@@ -273,4 +328,5 @@ void OfflinePageTabHelper::ReportRedirectResultUMA(RedirectResult result) {
       static_cast<int>(result),
       static_cast<int>(RedirectResult::REDIRECT_RESULT_MAX));
 }
+
 }  // namespace offline_pages

@@ -20,6 +20,11 @@ class UINetworkQualityEstimatorService : public KeyedService {
   net::NetworkQualityEstimator::EffectiveConnectionType
   GetEffectiveConnectionType() const;
 
+  // Tests can manually set EffectiveConnectionType, but browser tests should
+  // expect that the EffectiveConnectionType could change.
+  void SetEffectiveConnectionTypeForTesting(
+      net::NetworkQualityEstimator::EffectiveConnectionType type);
+
  private:
   class IONetworkQualityObserver;
 

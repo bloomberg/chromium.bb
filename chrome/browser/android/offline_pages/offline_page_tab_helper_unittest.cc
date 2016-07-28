@@ -11,22 +11,30 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_types.h"
+#include "components/previews/previews_experiments.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -59,8 +67,10 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 class TestDelegate : public OfflinePageTabHelper::Delegate {
  public:
-  TestDelegate(bool has_tab_android, std::string tab_id)
-      : has_tab_android_(has_tab_android), tab_id_(tab_id) {}
+  TestDelegate(bool has_tab_android,
+               std::string tab_id,
+               base::SimpleTestClock* clock)
+      : clock_(clock), has_tab_android_(has_tab_android), tab_id_(tab_id) {}
   ~TestDelegate() override {}
 
   // offline_pages::OfflinePageTabHelper::Delegate implementation:
@@ -71,7 +81,10 @@ class TestDelegate : public OfflinePageTabHelper::Delegate {
     return has_tab_android_;
   }
 
+  base::Time Now() const override { return clock_->Now(); }
+
  private:
+  base::SimpleTestClock* clock_;
   bool has_tab_android_;
   std::string tab_id_;
 };
@@ -84,7 +97,8 @@ class OfflinePageTabHelperTest :
     public base::SupportsWeakPtr<OfflinePageTabHelperTest> {
  public:
   OfflinePageTabHelperTest()
-      : network_change_notifier_(new TestNetworkChangeNotifier()) {}
+      : network_change_notifier_(new TestNetworkChangeNotifier()),
+        clock_(new base::SimpleTestClock) {}
   ~OfflinePageTabHelperTest() override {}
 
   void SetUp() override;
@@ -109,6 +123,8 @@ class OfflinePageTabHelperTest :
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
+  base::SimpleTestClock* clock() { return clock_.get(); }
+
  private:
   // OfflinePageTestArchiver::Observer implementation:
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
@@ -121,6 +137,8 @@ class OfflinePageTabHelperTest :
   std::unique_ptr<OfflinePageItem> offline_page_item_;
 
   base::HistogramTester histogram_tester_;
+
+  std::unique_ptr<base::SimpleTestClock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelperTest);
 };
@@ -140,7 +158,7 @@ void OfflinePageTabHelperTest::SetUp() {
   offline_page_tab_helper_ =
       OfflinePageTabHelper::FromWebContents(web_contents());
   offline_page_tab_helper_->SetDelegateForTesting(
-      base::MakeUnique<TestDelegate>(true, kTabId));
+      base::MakeUnique<TestDelegate>(true, kTabId, clock_.get()));
 
   // Sets up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -349,6 +367,47 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
   EXPECT_EQ(expected_offline_url, item->GetOfflineURL());
   EXPECT_EQ(kLastNNamespace, item->client_id.name_space);
   EXPECT_EQ(kTabId, item->client_id.id);
+}
+
+TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
+  SimulateHasNetworkConnectivity(true);
+  TestingProfile* test_profile = profile();
+  UINetworkQualityEstimatorService* nqe_service =
+      UINetworkQualityEstimatorServiceFactory::GetForProfile(test_profile);
+  nqe_service->SetEffectiveConnectionTypeForTesting(
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  clock()->SetNow(base::Time::Now());
+
+  StartLoad(kTestPageUrl);
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  // This is not included in the field trial, so it should not cause a redirect.
+  const OfflinePageItem* item =
+      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_FALSE(item);
+
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(previews::EnableOfflinePreviewsForTesting());
+
+  StartLoad(kTestPageUrl);
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  // This page should be fresh enough to cause a redirect.
+  item = OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_EQ(offline_url(), item->GetOfflineURL());
+  EXPECT_EQ(online_url(), item->url);
+
+  clock()->Advance(base::TimeDelta::FromDays(2));
+  StartLoad(kTestPageUrl);
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  // This page should not be fresh enough to cause a redirect.
+  item = OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_EQ(nullptr, item);
 }
 
 // This test saves another copy of page from Async Loading namespace

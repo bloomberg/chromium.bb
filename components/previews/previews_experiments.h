@@ -14,6 +14,10 @@ bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
 // prohibitvely slow networks is active.
 bool IsOfflinePreviewsEnabled();
 
+// Sets the appropriate state for field trial and variations to imitate the
+// offline pages field trial.
+bool EnableOfflinePreviewsForTesting();
+
 }  // namespace previews
 
 #endif  // COMPONENTS_PREVIEWS_PREVIEWS_EXPERIMENTS_H_

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/offline_pages/offline_page_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -32,6 +33,7 @@ class OfflinePageTabHelper :
     virtual ~Delegate() {}
     virtual bool GetTabId(content::WebContents* web_contents,
                           std::string* tab_id) const = 0;
+    virtual base::Time Now() const = 0;
   };
 
   // This enum is used for UMA reporting. It contains all possible outcomes of
@@ -46,6 +48,8 @@ class OfflinePageTabHelper :
   enum class RedirectResult {
     REDIRECTED_ON_DISCONNECTED_NETWORK = 0,
     PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK = 1,
+    // Flaky Network means the network reported an error when trying to fetch
+    // the resource.
     REDIRECTED_ON_FLAKY_NETWORK = 2,
     PAGE_NOT_FOUND_ON_FLAKY_NETWORK = 3,
     IGNORED_FLAKY_NETWORK_FORWARD_BACK = 4,
@@ -54,6 +58,11 @@ class OfflinePageTabHelper :
     SHOW_NET_ERROR_PAGE = 7,
     REDIRECT_LOOP_OFFLINE = 8,
     REDIRECT_LOOP_ONLINE = 9,
+    // Prohibitively slow means that the NetworkQualityEstimator reported a
+    // connection slow enough to warrant showing an offline page if available.
+    REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK = 10,
+    PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK = 11,
+    PAGE_NOT_FRESH_ON_PROHIBITIVELY_SLOW_NETWORK = 12,
     REDIRECT_RESULT_MAX,
   };
 
@@ -107,6 +116,7 @@ class OfflinePageTabHelper :
   // about the offline state of the current web contents.
   std::unique_ptr<OfflinePageItem> offline_page_;
   std::unique_ptr<Delegate> delegate_;
+
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelper);

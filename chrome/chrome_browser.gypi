@@ -3439,6 +3439,7 @@
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:password_manager_sync_browser',
             '../components/components.gyp:power',
+            '../components/components.gyp:previews',
             '../components/components.gyp:profile_metrics',
             '../components/components.gyp:proxy_config',
             '../components/components.gyp:renderer_context_menu',
