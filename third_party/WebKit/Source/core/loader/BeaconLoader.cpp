@@ -9,6 +9,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
@@ -28,14 +29,16 @@ namespace blink {
 namespace {
 
 class Beacon {
+    STACK_ALLOCATED();
 public:
     virtual bool serialize(ResourceRequest&, int, int&) const = 0;
     virtual unsigned long long size() const = 0;
+    virtual const AtomicString getContentType() const = 0;
 };
 
 class BeaconString final : public Beacon {
 public:
-    BeaconString(const String& data)
+    explicit BeaconString(const String& data)
         : m_data(data)
     {
     }
@@ -49,9 +52,11 @@ public:
     {
         RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data.utf8());
         request.setHTTPBody(entityBody);
-        request.setHTTPContentType("text/plain;charset=UTF-8");
+        request.setHTTPContentType(getContentType());
         return true;
     }
+
+    const AtomicString getContentType() const { return AtomicString("text/plain;charset=UTF-8"); }
 
 private:
     const String m_data;
@@ -59,9 +64,12 @@ private:
 
 class BeaconBlob final : public Beacon {
 public:
-    BeaconBlob(Blob* data)
+    explicit BeaconBlob(Blob* data)
         : m_data(data)
     {
+        const String& blobType = m_data->type();
+        if (!blobType.isEmpty() && isValidContentType(blobType))
+            m_contentType = AtomicString(blobType);
     }
 
     unsigned long long size() const override
@@ -80,20 +88,22 @@ public:
 
         request.setHTTPBody(entityBody.release());
 
-        const String& blobType = m_data->type();
-        if (!blobType.isEmpty() && isValidContentType(blobType))
-            request.setHTTPContentType(AtomicString(blobType));
+        if (!m_contentType.isEmpty())
+            request.setHTTPContentType(m_contentType);
 
         return true;
     }
 
+    const AtomicString getContentType() const { return m_contentType; }
+
 private:
-    const Persistent<Blob> m_data;
+    const Member<Blob> m_data;
+    AtomicString m_contentType;
 };
 
 class BeaconDOMArrayBufferView final : public Beacon {
 public:
-    BeaconDOMArrayBufferView(DOMArrayBufferView* data)
+    explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data)
         : m_data(data)
     {
     }
@@ -116,15 +126,19 @@ public:
         return true;
     }
 
+    const AtomicString getContentType() const { return nullAtom; }
+
 private:
-    const Persistent<DOMArrayBufferView> m_data;
+    const Member<DOMArrayBufferView> m_data;
 };
 
 class BeaconFormData final : public Beacon {
 public:
-    BeaconFormData(FormData* data)
+    explicit BeaconFormData(FormData* data)
         : m_data(data)
+        , m_entityBody(m_data->encodeMultiPartFormData())
     {
+        m_contentType = AtomicString("multipart/form-data; boundary=") + m_entityBody->boundary().data();
     }
 
     unsigned long long size() const override
@@ -135,22 +149,23 @@ public:
 
     bool serialize(ResourceRequest& request, int allowance, int& payloadLength) const override
     {
-        ASSERT(m_data);
-        RefPtr<EncodedFormData> entityBody = m_data->encodeMultiPartFormData();
-        unsigned long long entitySize = entityBody->sizeInBytes();
+        unsigned long long entitySize = m_entityBody->sizeInBytes();
         if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
             return false;
 
-        AtomicString contentType = AtomicString("multipart/form-data; boundary=") + entityBody->boundary().data();
-        request.setHTTPBody(entityBody.release());
-        request.setHTTPContentType(contentType);
+        request.setHTTPBody(m_entityBody.get());
+        request.setHTTPContentType(m_contentType);
 
         payloadLength = entitySize;
         return true;
     }
 
+    const AtomicString getContentType() const { return m_contentType; }
+
 private:
-    const Persistent<FormData> m_data;
+    const Member<FormData> m_data;
+    RefPtr<EncodedFormData> m_entityBody;
+    AtomicString m_contentType;
 };
 
 } // namespace
@@ -181,11 +196,16 @@ public:
         if (!beacon.serialize(request, allowance, payloadLength))
             return false;
 
+        const AtomicString contentType = beacon.getContentType();
+        CORSEnabled corsEnabled = IsCORSEnabled;
+        if (!contentType.isNull() && FetchUtils::isSimpleHeader(AtomicString("content-type"), contentType))
+            corsEnabled = NotCORSEnabled;
+
         FetchInitiatorInfo initiatorInfo;
         initiatorInfo.name = FetchInitiatorTypeNames::beacon;
 
         // The loader keeps itself alive until it receives a response and disposes itself.
-        BeaconLoader* loader = new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials);
+        BeaconLoader* loader = new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials, corsEnabled);
         ASSERT_UNUSED(loader, loader);
         return true;
     }
@@ -215,15 +235,19 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return Sender::send(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-BeaconLoader::BeaconLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
+BeaconLoader::BeaconLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed, CORSEnabled corsMode)
     : PingLoader(frame, request, initiatorInfo, credentialsAllowed)
     , m_beaconOrigin(frame->document()->getSecurityOrigin())
+    , m_redirectsFollowCORS(corsMode == IsCORSEnabled)
 {
 }
 
 void BeaconLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse, int64_t encodedDataLength)
 {
     passedNewRequest.setAllowStoredCredentials(true);
+    if (!m_redirectsFollowCORS)
+        return;
+
     ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
 
@@ -240,6 +264,8 @@ void BeaconLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewReq
         }
         // Cancel the load and self destruct.
         dispose();
+        // Signal WebURLLoader that the redirect musn't be followed.
+        passedNewRequest = WebURLRequest();
         return;
     }
     // FIXME: http://crbug.com/427429 is needed to correctly propagate

@@ -6,6 +6,7 @@
 #define BeaconLoader_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/ResourceLoaderOptions.h" // CORSEnabled
 #include "core/loader/PingLoader.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLLoaderClient.h"
@@ -36,9 +37,10 @@ public:
 private:
     class Sender;
 
-    BeaconLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
+    BeaconLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials, CORSEnabled);
 
     RefPtr<SecurityOrigin> m_beaconOrigin;
+    bool m_redirectsFollowCORS;
 
     // WebURLLoaderClient
     void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse&, int64_t encodedDataLength) override;
