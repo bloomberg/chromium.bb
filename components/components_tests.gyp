@@ -616,7 +616,6 @@
       'proximity_auth/ble/bluetooth_low_energy_connection_finder_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_connection_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_device_whitelist_unittest.cc',
-      'proximity_auth/ble/bluetooth_low_energy_weave_client_connection_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_weave_packet_generator_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_weave_packet_receiver_unittest.cc',
       'proximity_auth/bluetooth_connection_finder_unittest.cc',
