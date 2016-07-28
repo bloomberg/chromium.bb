@@ -196,7 +196,7 @@ class IncidentReportingServiceTest : public testing::Test {
   IncidentReportingServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         thread_task_runner_handle_(task_runner_),
-        ui_thread_(content::BrowserThread::UI),
+        ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         on_create_download_finder_action_(
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND),
