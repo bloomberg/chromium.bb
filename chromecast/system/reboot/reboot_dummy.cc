@@ -13,6 +13,10 @@
 
 namespace chromecast {
 
+void RebootShlib::Initialize(const std::vector<std::string>& /* argv */) {}
+
+void RebootShlib::Finalize() {}
+
 bool RebootShlib::IsSupported() {
   return false;
 }

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_INTERNAL_SYSTEM_REBOOT_REBOOT_UTIL_H_
-#define CHROMECAST_INTERNAL_SYSTEM_REBOOT_REBOOT_UTIL_H_
+#ifndef CHROMECAST_SYSTEM_REBOOT_REBOOT_UTIL_H_
+#define CHROMECAST_SYSTEM_REBOOT_REBOOT_UTIL_H_
+
+#include <string>
+#include <vector>
 
 #include "chromecast/public/reboot_shlib.h"
 
@@ -16,6 +19,9 @@ namespace chromecast {
 // prefer to use the RebootUtil interface.
 class RebootUtil {
  public:
+
+  static void Initialize(const std::vector<std::string>& argv);
+  static void Finalize();
 
   // Indicates if any RebootSources are supported for rebooting.
   static bool IsRebootSupported();
@@ -49,4 +55,4 @@ class RebootUtil {
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_INTERNAL_SYSTEM_REBOOT_REBOOT_UTIL_H_
+#endif  // CHROMECAST_SYSTEM_REBOOT_REBOOT_UTIL_H_

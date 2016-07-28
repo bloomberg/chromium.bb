@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_PUBLIC_REBOOT_SHLIB_H_
 #define CHROMECAST_PUBLIC_REBOOT_SHLIB_H_
 
+#include <string>
+#include <vector>
+
 #include "chromecast_export.h"
 
 namespace chromecast {
@@ -55,6 +58,12 @@ class CHROMECAST_EXPORT RebootShlib {
     // in an OTA update.
     FDR = 8,
   };
+
+  // Initializes any platform-specific reboot systems.
+  static void Initialize(const std::vector<std::string>& argv);
+
+  // Tears down and uninitializes any platform-specific reboot systems.
+  static void Finalize();
 
   // Returns whether this shlib is supported. If this returns true, it
   // indicates that IsRebootSourceSupported will be true for at least one
