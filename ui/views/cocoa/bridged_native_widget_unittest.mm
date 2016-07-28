@@ -19,6 +19,7 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
@@ -305,6 +306,9 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // |start|.
   void MakeSelection(int start, int end);
 
+  // Helper method to set the private |keyDownEvent_| field on |ns_view_|.
+  void SetKeyDownEvent(NSEvent* event);
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -425,6 +429,10 @@ void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
 
   for (size_t i = 0; i < delta; i++)
     [dummy_text_view_ doCommandBySelector:sel];
+}
+
+void BridgedNativeWidgetTest::SetKeyDownEvent(NSEvent* event) {
+  [ns_view_ setValue:event forKey:@"keyDownEvent_"];
 }
 
 void BridgedNativeWidgetTest::SetUp() {
@@ -884,9 +892,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
   InstallTextField("abc");
 
   // Simulate action messages generated when the key 'a' is pressed repeatedly
-  // and leads to the showing of an IME candidate window.
+  // and leads to the showing of an IME candidate window. To simulate an event,
+  // set the private keyDownEvent field on the BridgedContentView.
 
   // First an insertText: message with key 'a' is generated.
+  SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_A, 0));
   [ns_view_ insertText:@"a" replacementRange:EmptyRange()];
   [dummy_text_view_ insertText:@"a" replacementRange:EmptyRange()];
   EXPECT_EQ_3(NO, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
@@ -895,6 +906,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
   // Next the IME popup appears. On selecting the accented character using arrow
   // keys, setMarkedText action message is generated which replaces the earlier
   // inserted 'a'.
+  SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RIGHT, 0));
   [ns_view_ setMarkedText:@"à"
             selectedRange:NSMakeRange(0, 1)
          replacementRange:NSMakeRange(3, 1)];
@@ -905,6 +918,16 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
   EXPECT_EQ_RANGE_3(NSMakeRange(3, 1), [dummy_text_view_ markedRange],
                     [ns_view_ markedRange]);
   EXPECT_EQ_RANGE_3(NSMakeRange(3, 1), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+  EXPECT_NSEQ_3(@"abcà", GetExpectedText(), GetActualText());
+
+  // On pressing enter, the marked text is confirmed.
+  SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0));
+  [ns_view_ insertText:@"à" replacementRange:EmptyRange()];
+  [dummy_text_view_ insertText:@"à" replacementRange:EmptyRange()];
+  EXPECT_EQ_3(NO, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
+  EXPECT_EQ_RANGE_3(NSMakeRange(4, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
   EXPECT_NSEQ_3(@"abcà", GetExpectedText(), GetActualText());
 }

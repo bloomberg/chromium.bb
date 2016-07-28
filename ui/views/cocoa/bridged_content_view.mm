@@ -437,11 +437,22 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   if (textInputClient_ && ![self activeMenuController]) {
     // If a single character is inserted by keyDown's call to
     // interpretKeyEvents: then use InsertChar() to allow editing events to be
-    // merged.
-    if (isCharacterEvent)
-      textInputClient_->InsertChar(GetCharacterEventFromNSEvent(keyDownEvent_));
-    else
+    // merged. We use ui::VKEY_UNKOWN as the key code since it's not feasible to
+    // determine the correct key code for each unicode character. Also a correct
+    // keycode is not needed in the current context. Send ui::EF_NONE as the key
+    // modifier since |text| already accounts for the pressed key modifiers.
+
+    // Also, note we don't use |keyDownEvent_| to generate the synthetic
+    // ui::KeyEvent since for text inserted using an IME, [keyDownEvent_
+    // characters] might not be the same as |text|. This is because
+    // |keyDownEvent_| will correspond to the event that caused the composition
+    // text to be confirmed, say, Return key press.
+    if (isCharacterEvent) {
+      textInputClient_->InsertChar(ui::KeyEvent([text characterAtIndex:0],
+                                                ui::VKEY_UNKNOWN, ui::EF_NONE));
+    } else {
       textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+    }
     return;
   }
 
