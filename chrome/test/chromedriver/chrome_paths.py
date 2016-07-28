@@ -23,15 +23,9 @@ def GetTestData():
 
 def GetBuildDir(required_paths):
   """Returns the preferred build directory that contains given paths."""
-  dirs = ['out', 'build', 'xcodebuild']
-  rel_dirs = [os.path.join(x, 'Release') for x in dirs]
-  debug_dirs = [os.path.join(x, 'Debug') for x in dirs]
-  full_dirs = [os.path.join(GetSrc(), x) for x in rel_dirs + debug_dirs]
-  for build_dir in full_dirs:
-    for required_path in required_paths:
-      if not os.path.exists(os.path.join(build_dir, required_path)):
-        break
-    else:
-      return build_dir
-  raise RuntimeError('Cannot find build directory containing ' +
-                     ', '.join(required_paths))
+  build_dir = os.path.join(GetSrc(), 'out', 'Default')
+  for required_path in required_paths:
+    if not os.path.exists(os.path.join(build_dir, required_path)):
+      raise RuntimeError('Cannot find build directory containing ' +
+                         ', '.join(required_paths))
+  return build_dir
