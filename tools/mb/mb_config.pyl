@@ -247,7 +247,7 @@
       'WebKit Mac - WPTServe': 'swarming_gn_release_bot',
       'WebKit Win - WPTServe': 'swarming_gn_release_bot_minimal_symbols_x86',
       'Win 10 Fast Ring': 'gn_release_trybot_x64',
-      'Win deterministic': 'gn_release_bot_minimal_symbols_x86',
+      'Windows deterministic': 'gn_release_bot_minimal_symbols_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
     },
@@ -1279,7 +1279,7 @@
     ],
 
     'gn_asan_edge_v8_heap_debug_bot_hybrid': [
-      'gyp', 'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
+      'gn', 'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
     ],
 
     'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
@@ -1291,7 +1291,7 @@
     ],
 
     'gn_asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
-      'gyp', 'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap',
+      'gn', 'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap',
       'chrome_with_codecs', 'release_bot',
     ],
 
@@ -1770,7 +1770,7 @@
     ],
 
     'swarming_gn_asan_disable_nacl_clang_tot_full_symbols_static_release': [
-      'swarming', 'gyp', 'asan', 'clang_tot', 'full_symbols', 'static',
+      'swarming', 'gn', 'asan', 'clang_tot', 'full_symbols', 'static',
       'release',
     ],
 

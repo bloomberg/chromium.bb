@@ -452,7 +452,8 @@ class MetaBuildWrapper(object):
         self.Print('')
         continue
 
-      INTERNAL_MASTERS = ('official.desktop', 'official.desktop.continuous')
+      INTERNAL_MASTERS = ('official.desktop', 'official.desktop.continuous',
+                          'internal.client.kitchensync')
       if master in INTERNAL_MASTERS and not self.args.internal:
         # Skip these because the servers aren't accessible by default ...
         self.Print('  Skipped (internal)')
