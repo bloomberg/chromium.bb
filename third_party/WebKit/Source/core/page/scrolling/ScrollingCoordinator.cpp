@@ -439,10 +439,10 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
-        const LayoutObject* ownerLayoutObject = toLocalFrame(child)->ownerLayoutObject();
-        if (!ownerLayoutObject)
+        const LayoutItem ownerLayoutItem = toLocalFrame(child)->ownerLayoutItem();
+        if (ownerLayoutItem.isNull())
             continue;
-        const PaintLayer* containingLayer = ownerLayoutObject->enclosingLayer();
+        const PaintLayer* containingLayer = ownerLayoutItem.enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
             map->add(containingLayer, HeapVector<Member<const LocalFrame>>()).storedValue->value.append(toLocalFrame(child));
