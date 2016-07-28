@@ -1016,11 +1016,17 @@ bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
 
     bool active = false;
     bool activate_by_user = false;
+    // If the device entry is not found in prefs, it is likley a new audio
+    // device plugged in after the cros is powered down. We should ignore the
+    // previously saved active device, and select the active device by priority.
+    // crbug.com/622045.
     if (!audio_pref_handler_->GetDeviceActive(device, &active,
-                                              &activate_by_user) ||
-        !active) {
-      continue;
+                                              &activate_by_user)) {
+      return false;
     }
+
+    if (!active)
+      continue;
 
     if (!found_active_device) {
       found_active_device = true;

@@ -2372,6 +2372,32 @@ TEST_F(CrasAudioHandlerTest, PersistActiveSpeakerAcrossReboot) {
             cras_audio_handler_->GetPrimaryActiveOutputNode());
 }
 
+// Test the corner case that headphone is plugged in for the first time on
+// a cros device after the device is shutdown.
+// crbug.com/622045.
+TEST_F(CrasAudioHandlerTest, PlugInHeadphoneFirstTimeAfterPowerDown) {
+  // Simulate plugging headphone for the first on a cros device after it is
+  // powered down. Internal speaker is set up in audio prefs as active
+  // before the new cros session starts.
+  AudioNodeList audio_nodes_in_pref;
+  audio_nodes_in_pref.push_back(kInternalSpeaker);
+
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  audio_nodes.push_back(kHeadphone);
+
+  SetupCrasAudioHandlerWithActiveNodeInPref(
+      audio_nodes, audio_nodes_in_pref, AudioDevice(kInternalSpeaker), false);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify headphone becomes the active output.
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+}
+
 TEST_F(CrasAudioHandlerTest,
        PersistActiveUsbHeadphoneAcrossRebootUsbComeLater) {
   // Simulates the device was shut down with three audio devices, and

@@ -20,6 +20,7 @@ namespace chromeos {
 const uint64_t kInternalMicId = 10003;
 const uint64_t kHeadphoneId = 10002;
 const uint64_t kHDMIOutputId = 10006;
+const uint64_t kUSBMicId = 10004;
 const uint64_t kOtherTypeOutputId = 90001;
 const uint64_t kOtherTypeInputId = 90002;
 
@@ -31,6 +32,14 @@ const AudioDevice kInternalMic(AudioNode(true,
                                          "Internal Mic",
                                          false,
                                          0));
+const AudioDevice kUSBMic(AudioNode(true,
+                                    kUSBMicId,
+                                    kUSBMicId,
+                                    "Fake USB Mic",
+                                    "USB",
+                                    "USB Microphone",
+                                    false,
+                                    0));
 
 const AudioDevice kHeadphone(AudioNode(false,
                                        kHeadphoneId,
@@ -154,6 +163,10 @@ TEST_F(AudioDevicesPrefHandlerTest, TestDeviceStates) {
   EXPECT_TRUE(audio_pref_handler_->GetDeviceActive(kHDMIOutput, &active,
                                                    &activate_by_user));
   EXPECT_FALSE(active);
+
+  // Device not exist in device state prefs.
+  EXPECT_FALSE(audio_pref_handler_->GetDeviceActive(kUSBMic, &active,
+                                                    &activate_by_user));
 }
 
 }  // namespace chromeos

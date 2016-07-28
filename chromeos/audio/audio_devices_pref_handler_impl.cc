@@ -24,6 +24,10 @@ namespace {
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
 
+// Prefs keys.
+const char kActiveKey[] = "active";
+const char kActivateByUserKey[] = "activate_by_user";
+
 // Gets the device id string for storing audio preference. The format of
 // device string is a string consisting of 2 parts.
 // |integer from lower 32 bit of device id| :
@@ -89,9 +93,9 @@ void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
                                                   bool active,
                                                   bool activate_by_user) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("active", active);
+  dict->SetBoolean(kActiveKey, active);
   if (active)
-    dict->SetBoolean("activate_by_user", activate_by_user);
+    dict->SetBoolean(kActivateByUserKey, activate_by_user);
 
   device_state_settings_->Set(GetDeviceIdString(device), std::move(dict));
   SaveDevicesStatePref();
@@ -109,12 +113,12 @@ bool AudioDevicesPrefHandlerImpl::GetDeviceActive(const AudioDevice& device,
     LOG(ERROR) << "Could not get device state for device:" << device.ToString();
     return false;
   }
-  if (!dict->GetBoolean("active", active)) {
+  if (!dict->GetBoolean(kActiveKey, active)) {
     LOG(ERROR) << "Could not get active value for device:" << device.ToString();
     return false;
   }
 
-  if (*active && !dict->GetBoolean("activate_by_user", activate_by_user)) {
+  if (*active && !dict->GetBoolean(kActivateByUserKey, activate_by_user)) {
     LOG(ERROR) << "Could not get activate_by_user value for previously "
                   "active device:"
                << device.ToString();
