@@ -17,6 +17,9 @@
 #include "helpers.h"
 #include "util.h"
 
+#ifdef DRV_AMDGPU
+extern struct backend backend_amdgpu;
+#endif
 extern struct backend backend_cirrus;
 extern struct backend backend_evdi;
 #ifdef DRV_EXYNOS
@@ -52,6 +55,9 @@ static struct backend *drv_get_backend(int fd)
 		return NULL;
 
 	struct backend *backend_list[] = {
+#ifdef DRV_AMDGPU
+		&backend_amdgpu,
+#endif
 		&backend_cirrus,
 		&backend_evdi,
 #ifdef DRV_EXYNOS

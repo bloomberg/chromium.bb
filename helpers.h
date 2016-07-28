@@ -26,4 +26,5 @@ void drv_increment_reference_count(struct driver *drv, struct bo *bo,
 void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
 				   size_t plane);
 uint32_t drv_num_buffers_per_bo(struct bo *bo);
+uint32_t drv_log_base2(uint32_t value);
 #endif

@@ -356,3 +356,14 @@ uint32_t drv_num_buffers_per_bo(struct bo *bo)
 
 	return count;
 }
+
+uint32_t drv_log_base2(uint32_t value)
+{
+	int ret = 0;
+
+	while (value >>= 1)
+		++ret;
+
+	return ret;
+}
+
