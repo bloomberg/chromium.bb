@@ -49,8 +49,6 @@ const uint32_t kCompositorClientId = 1;
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
 
-}  // namespace
-
 class SoftwareDevice : public cc::SoftwareOutputDevice {
  public:
   SoftwareDevice(SkCanvas** canvas) : canvas_(canvas) {}
@@ -70,7 +68,10 @@ class SoftwareDevice : public cc::SoftwareOutputDevice {
   DISALLOW_COPY_AND_ASSIGN(SoftwareDevice);
 };
 
-class SoftwareOutputSurface : public cc::OutputSurface {
+}  // namespace
+
+class SynchronousCompositorOutputSurface::SoftwareOutputSurface
+    : public cc::OutputSurface {
  public:
   SoftwareOutputSurface(std::unique_ptr<SoftwareDevice> software_device)
       : cc::OutputSurface(nullptr, nullptr, std::move(software_device)) {}
@@ -78,6 +79,16 @@ class SoftwareOutputSurface : public cc::OutputSurface {
   // cc::OutputSurface implementation.
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
   void SwapBuffers(cc::CompositorFrame frame) override {}
+  void Reshape(const gfx::Size& size,
+               float scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha) override {
+    // Intentional no-op. Surface size controlled by embedder.
+  }
+
+  void SetSurfaceSize(const gfx::Size surface_size) {
+    surface_size_ = surface_size;
+  }
 };
 
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
@@ -149,6 +160,11 @@ bool SynchronousCompositorOutputSurface::BindToClient(
 
   cc::RendererSettings software_renderer_settings;
 
+  std::unique_ptr<SoftwareOutputSurface> output_surface(
+      new SoftwareOutputSurface(
+          base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)));
+  software_output_surface_ = output_surface.get();
+
   // The shared_bitmap_manager and gpu_memory_buffer_manager here are null as
   // this Display is only used for resourcesless software draws, where no
   // resources are included in the frame swapped from the compositor. So there
@@ -156,9 +172,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      nullptr /* begin_frame_source */,
-      base::MakeUnique<SoftwareOutputSurface>(
-          base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)),
+      nullptr /* begin_frame_source */, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get(),
                        surface_id_allocator_->client_id());
@@ -177,6 +191,7 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
       surface_id_allocator_->client_id());
   surface_manager_->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
+  software_output_surface_ = nullptr;
   display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
@@ -298,7 +313,6 @@ void SynchronousCompositorOutputSurface::DemandDrawHw(
   DCHECK(context_provider_.get());
   CancelFallbackTick();
 
-  surface_size_ = surface_size;
   client_->SetExternalTilePriorityConstraints(viewport_rect_for_tile_priority,
                                               transform_for_tile_priority);
   InvokeComposite(transform, viewport, clip);
@@ -319,9 +333,11 @@ void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
 
-  surface_size_ = gfx::Size(canvas->getBaseLayerSize().width(),
-                            canvas->getBaseLayerSize().height());
   base::AutoReset<bool> set_in_software_draw(&in_software_draw_, true);
+  display_->SetExternalViewport(clip);
+  display_->SetExternalClip(clip);
+  software_output_surface_->SetSurfaceSize(
+      gfx::SkISizeToSize(canvas->getBaseLayerSize()));
   InvokeComposite(transform, clip, clip);
 }
 

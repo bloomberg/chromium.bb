@@ -133,6 +133,10 @@ void Display::SetExternalClip(const gfx::Rect& clip) {
   external_clip_ = clip;
 }
 
+void Display::SetExternalViewport(const gfx::Rect& viewport) {
+  external_viewport_ = viewport;
+}
+
 void Display::SetOutputIsSecure(bool secure) {
   if (secure == output_is_secure_)
     return;
@@ -285,7 +289,9 @@ bool Display::DrawAndSwap() {
   }
 
   if (should_draw) {
-    gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
+    gfx::Rect device_viewport_rect = external_viewport_.IsEmpty()
+                                         ? gfx::Rect(current_surface_size_)
+                                         : external_viewport_;
     gfx::Rect device_clip_rect =
         external_clip_.IsEmpty() ? device_viewport_rect : external_clip_;
 
