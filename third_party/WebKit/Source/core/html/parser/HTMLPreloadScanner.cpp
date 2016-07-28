@@ -497,7 +497,6 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, std::unique_pt
     , m_inStyle(false)
     , m_inPicture(false)
     , m_inScript(false)
-    , m_isAppCacheEnabled(false)
     , m_isCSPEnabled(false)
     , m_templateCount(0)
     , m_documentParameters(std::move(documentParameters))
@@ -516,7 +515,7 @@ TokenPreloadScanner::~TokenPreloadScanner()
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint()
 {
     TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_inScript, m_isAppCacheEnabled, m_isCSPEnabled, m_templateCount));
+    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_inScript, m_isCSPEnabled, m_templateCount));
     return checkpoint;
 }
 
@@ -526,7 +525,6 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     const Checkpoint& checkpoint = m_checkpoints[checkpointIndex];
     m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
     m_inStyle = checkpoint.inStyle;
-    m_isAppCacheEnabled = checkpoint.isAppCacheEnabled;
     m_isCSPEnabled = checkpoint.isCSPEnabled;
     m_templateCount = checkpoint.templateCount;
 
@@ -658,10 +656,6 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
     if (!m_documentParameters->doHtmlPreloadScanning)
         return;
 
-    // Disable preload for documents with AppCache.
-    if (m_isAppCacheEnabled)
-        return;
-
     // http://crbug.com/434230 Disable preload for documents with CSP <meta> tags
     if (m_isCSPEnabled)
         return;
@@ -723,10 +717,6 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             if (!m_predictedBaseElementURL.isEmpty())
                 return;
             updatePredictedBaseURL(token);
-            return;
-        }
-        if (match(tagImpl, htmlTag) && token.getAttributeItem(manifestAttr)) {
-            m_isAppCacheEnabled = true;
             return;
         }
         if (match(tagImpl, metaTag)) {

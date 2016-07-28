@@ -103,11 +103,10 @@ private:
     void updatePredictedBaseURL(const Token&);
 
     struct Checkpoint {
-        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool inScript, bool isAppCacheEnabled, bool isCSPEnabled, size_t templateCount)
+        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool inScript, bool isCSPEnabled, size_t templateCount)
             : predictedBaseElementURL(predictedBaseElementURL)
             , inStyle(inStyle)
             , inScript(inScript)
-            , isAppCacheEnabled(isAppCacheEnabled)
             , isCSPEnabled(isCSPEnabled)
             , templateCount(templateCount)
         {
@@ -116,7 +115,6 @@ private:
         KURL predictedBaseElementURL;
         bool inStyle;
         bool inScript;
-        bool isAppCacheEnabled;
         bool isCSPEnabled;
         size_t templateCount;
     };
@@ -140,7 +138,6 @@ private:
     bool m_inStyle;
     bool m_inPicture;
     bool m_inScript;
-    bool m_isAppCacheEnabled;
     bool m_isCSPEnabled;
     PictureData m_pictureData;
     size_t m_templateCount;
