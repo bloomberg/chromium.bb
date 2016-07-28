@@ -164,5 +164,25 @@
         ],
       },
     },
+    {
+      'target_name': 'stylus_protocol',
+      'type': 'static_library',
+      'dependencies' : [
+        '../wayland/wayland.gyp:wayland_util',
+      ],
+      'sources': [
+        'include/protocol/stylus-unstable-v1-client-protocol.h',
+        'include/protocol/stylus-unstable-v1-server-protocol.h',
+        'protocol/stylus-protocol.c',
+      ],
+      'include_dirs': [
+        'include/protocol',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include/protocol',
+        ],
+      },
+    },
   ],
 }

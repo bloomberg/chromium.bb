@@ -169,3 +169,24 @@ source_set("gaming_input_protocol") {
 
   public_configs = [ ":gaming_input_protocol_config" ]
 }
+
+config("stylus_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("stylus_protocol") {
+  sources = [
+    "include/protocol/stylus-unstable-v1-client-protocol.h",
+    "include/protocol/stylus-unstable-v1-server-protocol.h",
+    "protocol/stylus-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":stylus_protocol_config" ]
+}
