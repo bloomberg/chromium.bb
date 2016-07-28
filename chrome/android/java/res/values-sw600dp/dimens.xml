@@ -12,11 +12,6 @@
     <dimen name="tab_title_favicon_start_padding">0dp</dimen>
     <dimen name="tab_title_favicon_end_padding">5dp</dimen>
 
-    <!-- Compositor Tab Title Dimensions -->
-    <dimen name="compositor_tab_title_bar_shadow_x_offset">0dp</dimen>
-    <dimen name="compositor_tab_title_bar_shadow_y_offset">0dp</dimen>
-    <dimen name="compositor_tab_title_bar_shadow_x_offset_incognito">0dp</dimen>
-    <dimen name="compositor_tab_title_bar_shadow_y_offset_incognito">0dp</dimen>
     <!-- The size of the text for tab titles. -->
     <dimen name="compositor_tab_title_text_size">14sp</dimen>
 

@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/nine_patch_layer.h"
@@ -136,6 +137,7 @@ void TabLayer::SetProperties(int id,
                              bool show_toolbar,
                              int default_theme_color,
                              int toolbar_background_color,
+                             int close_button_color,
                              bool anonymize_toolbar,
                              int toolbar_textbox_resource_id,
                              int toolbar_textbox_background_color,
@@ -489,15 +491,8 @@ void TabLayer::SetProperties(int id,
 
     if (toolbar_background_color != toolbar_background_color_) {
       toolbar_background_color_ = toolbar_background_color;
-      cc::FilterOperations filters;
-      SkScalar colorMatrix[] = {
-          SkColorGetR(tab_switcher_color) / 255.0f, 0, 0, 0, 0,
-          0, SkColorGetG(tab_switcher_color) / 255.0f, 0, 0, 0,
-          0, 0, SkColorGetB(tab_switcher_color) / 255.0f, 0, 0,
-          0, 0, 0, 1, 0,
-      };
-      filters.Append(cc::FilterOperation::CreateColorMatrixFilter(colorMatrix));
-      front_border_->SetFilters(filters);
+      front_border_->SetFilters(
+          *createSolidColorFilter(tab_switcher_color).get());
     }
   }
 
@@ -537,6 +532,13 @@ void TabLayer::SetProperties(int id,
 
   close_button_->SetHideLayerAndSubtree(!close_btn_visible);
   if (close_btn_visible) {
+
+    if (close_button_color != close_button_color_) {
+      close_button_color_ = close_button_color;
+      close_button_->SetFilters(
+          *createSolidColorFilter(close_button_color).get());
+    }
+
     close_button_->SetPosition(close_button_position);
     close_button_->SetBounds(close_button_size);
     // Non-linear alpha looks better.
@@ -636,6 +638,20 @@ void TabLayer::SetProperties(int id,
   }
 }
 
+std::unique_ptr<cc::FilterOperations> TabLayer::createSolidColorFilter(
+    int color) {
+  std::unique_ptr<cc::FilterOperations> filters =
+      base::WrapUnique(new cc::FilterOperations());
+  SkScalar colorMatrix[] = {
+      SkColorGetR(color) / 255.0f, 0, 0, 0, 0,
+      0, SkColorGetG(color) / 255.0f, 0, 0, 0,
+      0, 0, SkColorGetB(color) / 255.0f, 0, 0,
+      0, 0, 0, 1, 0,
+  };
+  filters->Append(cc::FilterOperation::CreateColorMatrixFilter(colorMatrix));
+  return filters;
+}
+
 scoped_refptr<cc::Layer> TabLayer::layer() {
   return layer_;
 }
@@ -646,6 +662,7 @@ TabLayer::TabLayer(bool incognito,
                    TabContentManager* tab_content_manager)
     : incognito_(incognito),
       toolbar_background_color_(0),
+      close_button_color_(0),
       tab_switcher_themes_enabled_(false),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),

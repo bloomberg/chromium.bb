@@ -79,10 +79,8 @@
     <color name="data_reduction_chart_background_color">#FAFAFA</color>
 
     <!-- Compositor Tab Title Colors -->
-    <color name="compositor_tab_title_bar_text">#555555</color>
+    <color name="compositor_tab_title_bar_text">#A3000000</color>
     <color name="compositor_tab_title_bar_text_incognito">#FFFFFFFF</color>
-    <color name="compositor_tab_title_bar_shadow">#AAFFFFFF</color>
-    <color name="compositor_tab_title_bar_shadow_incognito">#88000000</color>
 
     <!-- First Run Experience Colors -->
     <color name="fre_text_color">#000000</color>

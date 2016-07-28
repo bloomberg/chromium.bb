@@ -49,15 +49,6 @@ public class MockResourcesForLayout extends MockResources {
         mIntegers.put(
                 org.chromium.chrome.R.color.compositor_tab_title_bar_text_incognito, 0xFFffFFff);
         mIntegers.put(org.chromium.chrome.R.color.compositor_tab_title_bar_text, 0xFF555555);
-        mIntegers.put(
-                org.chromium.chrome.R.color.compositor_tab_title_bar_shadow_incognito, 0x88000000);
-        mIntegers.put(org.chromium.chrome.R.color.compositor_tab_title_bar_shadow, 0xAAffFFff);
-        mFloats.put(org.chromium.chrome.R.dimen.compositor_tab_title_bar_shadow_x_offset_incognito,
-                -0.6667f);
-        mFloats.put(org.chromium.chrome.R.dimen.compositor_tab_title_bar_shadow_x_offset, 0.6667f);
-        mFloats.put(org.chromium.chrome.R.dimen.compositor_tab_title_bar_shadow_y_offset_incognito,
-                -0.6667f);
-        mFloats.put(org.chromium.chrome.R.dimen.compositor_tab_title_bar_shadow_y_offset, 0.6667f);
         mFloats.put(R.dimen.tab_title_favicon_start_padding, 16.0f);
         mFloats.put(R.dimen.tab_title_favicon_end_padding, 7.0f);
         mFloats.put(org.chromium.chrome.R.dimen.compositor_tab_title_favicon_size, 16.0f);

@@ -21,6 +21,7 @@ public class ColorUtils {
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
     private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
     private static final float MAX_LUMINANCE_FOR_VALID_THEME_COLOR = 0.94f;
+    private static final float THEMED_FOREGROUND_BLACK_FRACTION = 0.64f;
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
@@ -164,5 +165,21 @@ public class ColorUtils {
      */
     public static boolean isValidThemeColor(int color) {
         return ColorUtils.getLightnessForColor(color) <= MAX_LUMINANCE_FOR_VALID_THEME_COLOR;
+    }
+
+    /**
+     * Compute a color to use for assets that sit on top of a themed background.
+     * @param themeColor The base theme color.
+     * @return A color to use for elements in the foreground (on top of the base theme color).
+     */
+    public static int getThemedAssetColor(int themeColor, boolean isIncognito) {
+        if (ColorUtils.shouldUseLightForegroundOnBackground(themeColor) || isIncognito) {
+            // Dark theme.
+            return Color.WHITE;
+        } else {
+            // Light theme.
+            return ColorUtils.getColorWithOverlay(themeColor, Color.BLACK,
+                    THEMED_FOREGROUND_BLACK_FRACTION);
+        }
     }
 }

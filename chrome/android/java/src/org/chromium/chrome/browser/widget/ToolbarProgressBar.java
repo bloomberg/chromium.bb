@@ -400,18 +400,12 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             return;
         }
 
-        // All other theme colors are computed.
-        if (!ColorUtils.shouldUseLightForegroundOnBackground(color) && !isIncognito) {
-            // Light theme.
-            setForegroundColor(ColorUtils.getColorWithOverlay(color, Color.BLACK,
-                    THEMED_FOREGROUND_BLACK_FRACTION));
-        } else {
-            // Dark theme.
-            setForegroundColor(Color.WHITE);
-            if (mAnimatingView != null) {
-                mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
-                        ANIMATION_WHITE_FRACTION));
-            }
+        setForegroundColor(ColorUtils.getThemedAssetColor(color, isIncognito));
+
+        if (mAnimatingView != null
+                && (ColorUtils.shouldUseLightForegroundOnBackground(color) || isIncognito)) {
+            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
+                    ANIMATION_WHITE_FRACTION));
         }
 
         setBackgroundColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,

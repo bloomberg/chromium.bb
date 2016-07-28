@@ -62,20 +62,20 @@ public class TabListSceneLayer extends SceneLayer {
                     ? ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color)
                     : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
 
-            // If theme colors are enabled in the tab switcher, the theme might require lighter
-            // text.
-            boolean isDarkTheme = t.isIncognito();
+            int closeButtonColor = ColorUtils.getThemedAssetColor(defaultThemeColor,
+                    t.isIncognito());
+
+            // If theme colors are enabled in the tab switcher, use them to color the assets.
             if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()) {
-                isDarkTheme |= ColorUtils.shouldUseLightForegroundOnBackground(
-                        t.getToolbarBackgroundColor());
+                closeButtonColor = ColorUtils.getThemedAssetColor(t.getToolbarBackgroundColor(),
+                        t.isIncognito());
             }
 
-            int closeBtnResource = isDarkTheme ? R.drawable.btn_tab_close_white_normal
-                                               : R.drawable.btn_tab_close_normal;
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
             // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part fully supports dp.
-            nativePutTabLayer(mNativePtr, t.getId(), R.id.control_container, closeBtnResource,
+            nativePutTabLayer(mNativePtr, t.getId(), R.id.control_container,
+                    R.drawable.btn_tab_close,
                     R.drawable.tabswitcher_border_frame_shadow,
                     R.drawable.tabswitcher_border_frame_decoration, R.drawable.logo_card_back,
                     R.drawable.tabswitcher_border_frame,
@@ -95,10 +95,10 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getShadowOpacity() * decoration, t.getBorderCloseButtonAlpha() * decoration,
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
-                    defaultThemeColor, t.getToolbarBackgroundColor(), t.anonymizeToolbar(),
-                    R.drawable.textbox, t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(),
-                    t.getToolbarAlpha(), t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
-                    true, t.insetBorderVertical());
+                    defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
+                    t.anonymizeToolbar(), R.drawable.textbox, t.getTextBoxBackgroundColor(),
+                    t.getTextBoxAlpha(), t.getToolbarAlpha(), t.getToolbarYOffset() * dpToPx,
+                    t.getSideBorderScale(), true, t.insetBorderVertical());
         }
         nativeFinishBuildingFrame(mNativePtr);
     }
@@ -146,8 +146,8 @@ public class TabListSceneLayer extends SceneLayer {
             float borderInnerShadowAlpha, float contourAlpha, float shadowAlpha, float closeAlpha,
             float closeBtnWidth, float staticToViewBlend, float borderScale, float saturation,
             float brightness, boolean showToolbar, int defaultThemeColor,
-            int toolbarBackgroundColor, boolean anonymizeToolbar, int toolbarTextBoxResource,
-            int toolbarTextBoxBackgroundColor, float toolbarTextBoxAlpha, float toolbarAlpha,
-            float toolbarYOffset, float sideBorderScale, boolean attachContent,
-            boolean insetVerticalBorder);
+            int toolbarBackgroundColor, int closeButtonColor, boolean anonymizeToolbar,
+            int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
+            float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
+            float sideBorderScale, boolean attachContent, boolean insetVerticalBorder);
 }
