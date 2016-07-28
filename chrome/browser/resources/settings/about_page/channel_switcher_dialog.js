@@ -55,7 +55,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** @private */
@@ -121,7 +121,6 @@ Polymer({
     if (selectedChannel == this.currentChannel_) {
       this.shouldShowButtons_ = null;
       this.warning_ = null;
-      this.$.dialog.notifyResize();
       return;
     }
 
@@ -145,7 +144,6 @@ Polymer({
         'aboutProductTitle');
       this.updateButtons_(true, false);
     }
-    this.$.dialog.notifyResize();
   },
 
   /**

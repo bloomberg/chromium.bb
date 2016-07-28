@@ -43,10 +43,10 @@ Polymer({
           /** @param {!CaTrustInfo} trustInfo */
           function(trustInfo) {
             this.trustInfo_ = trustInfo;
-            this.$.dialog.open();
+            this.$.dialog.showModal();
           }.bind(this));
     } else {
-      /** @type {!CrDialogElement} */ (this.$.dialog).open();
+      /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
     }
   },
 

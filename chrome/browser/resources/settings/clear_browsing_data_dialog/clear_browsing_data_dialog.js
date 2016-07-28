@@ -85,7 +85,7 @@ Polymer({
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
     this.browserProxy_.initialize().then(function(isRemoving) {
       this.clearingInProgress_ = isRemoving;
-      this.$.dialog.open();
+      this.$.dialog.showModal();
     }.bind(this));
   },
 
@@ -113,7 +113,6 @@ Polymer({
   updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
     this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
     this.$.syncedDataSentence.hidden = !syncing;
-    this.$.dialog.notifyResize();
     this.$.dialog.classList.add('fully-rendered');
   },
 
@@ -132,7 +131,7 @@ Polymer({
   },
 
   open: function() {
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /**
@@ -151,6 +150,11 @@ Polymer({
         if (!shouldShowNotice)
           this.$.dialog.close();
       }.bind(this));
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.$.dialog.cancel();
   },
 
   /**

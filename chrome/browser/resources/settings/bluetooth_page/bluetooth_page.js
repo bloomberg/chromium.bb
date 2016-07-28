@@ -531,7 +531,7 @@ Polymer({
     Polymer.dom.flush();
     var dialog = this.$$('#deviceDialog');
     dialog.open();
-    dialog.focus();
+    this.startDiscovery_();
   },
 
   /** @private */
@@ -541,7 +541,4 @@ Polymer({
     this.pairingDevice = null;
     this.pairingEvent = null;
   },
-
-  /** @private */
-  onDialogOpened_: function() { this.startDiscovery_(); },
 });

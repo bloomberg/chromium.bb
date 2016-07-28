@@ -234,7 +234,7 @@ cr.define('md_history.history_list_test', function() {
                            '2016-03-13');
               assertEquals(element.historyData_[4].dateRelativeDay,
                            '2016-03-11');
-              assertFalse(listContainer.$.dialog.opened);
+              assertFalse(listContainer.$.dialog.open);
               done();
             });
           });
@@ -242,7 +242,7 @@ cr.define('md_history.history_list_test', function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
 
           // Confirmation dialog should appear.
-          assertTrue(listContainer.$.dialog.opened);
+          assertTrue(listContainer.$.dialog.open);
 
           MockInteractions.tap(listContainer.$$('.action-button'));
         });
@@ -257,7 +257,7 @@ cr.define('md_history.history_list_test', function() {
           // Dialog should not appear when there is no item selected.
           MockInteractions.pressAndReleaseKeyOn(
             document.body, 46, '', 'Delete');
-          assertFalse(listContainer.$.dialog.opened);
+          assertFalse(listContainer.$.dialog.open);
 
           MockInteractions.tap(items[1].$.checkbox);
           MockInteractions.tap(items[2].$.checkbox);
@@ -274,14 +274,14 @@ cr.define('md_history.history_list_test', function() {
 
           MockInteractions.pressAndReleaseKeyOn(
             document.body, 46, '', 'Delete');
-          assertTrue(listContainer.$.dialog.opened);
+          assertTrue(listContainer.$.dialog.open);
 
           MockInteractions.tap(listContainer.$$('.cancel-button'));
-          assertFalse(listContainer.$.dialog.opened);
+          assertFalse(listContainer.$.dialog.open);
 
           MockInteractions.pressAndReleaseKeyOn(
             document.body, 8, '', 'Backspace');
-          assertTrue(listContainer.$.dialog.opened);
+          assertTrue(listContainer.$.dialog.open);
 
           MockInteractions.tap(listContainer.$$('.action-button'));
         });

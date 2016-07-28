@@ -59,7 +59,7 @@ Polymer({
     this.showStartupUrlDialog_ = true;
     this.async(function() {
       var dialog = this.$$('settings-startup-url-dialog');
-      dialog.addEventListener('iron-overlay-closed', function() {
+      dialog.addEventListener('close', function() {
         this.showStartupUrlDialog_ = false;
         this.startupUrlDialogModel_ = null;
       }.bind(this));

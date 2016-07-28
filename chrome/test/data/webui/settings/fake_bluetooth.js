@@ -63,7 +63,9 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    startDiscovery: assertNotReached,
+    startDiscovery: function(callback) {
+      callback();
+    },
 
     /** @override */
     stopDiscovery: assertNotReached,

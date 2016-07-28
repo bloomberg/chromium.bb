@@ -33,7 +33,7 @@ Polymer({
   is: 'settings-users-add-user-dialog',
 
   open: function() {
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** @private */

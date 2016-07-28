@@ -188,7 +188,7 @@ Polymer({
 
     dialog.open(this.categorySubtype);
 
-    dialog.addEventListener('iron-overlay-closed', function() {
+    dialog.addEventListener('close', function() {
       dialog.remove();
     });
   },

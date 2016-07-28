@@ -29,13 +29,13 @@ Polymer({
   ready: function() {
     this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
 
-    this.addEventListener('iron-overlay-canceled', function() {
+    this.addEventListener('cancel', function() {
       this.browserProxy_.onHideResetProfileDialog();
     }.bind(this));
   },
 
   open: function() {
-    this.$.dialog.open();
+    this.$.dialog.showModal();
     this.browserProxy_.onShowResetProfileDialog();
   },
 

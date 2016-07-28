@@ -33,11 +33,9 @@ settings.BluetoothAddDeviceBehavior = {
     },
   },
 
-  observers: ['deviceListChanged_(deviceList.*)'],
-
   /** @private */
   adapterStateChanged_: function() {
-    if (!this.adapterState.powered && this.$.dialog.opened)
+    if (!this.adapterState.powered)
       this.close();
   },
 
@@ -341,13 +339,22 @@ Polymer({
 
   open: function() {
     this.pinOrPass = '';
-    this.$.dialog.open();
+    this.getDialog_().showModal();
   },
 
-  close: function() { this.$.dialog.close(); },
+  close: function() {
+    var dialog = this.getDialog_();
+    if (dialog.open)
+      dialog.close();
+  },
 
-  /** @private */
-  deviceListChanged_: function(e) { this.$.dialog.notifyResize(); },
+  /**
+   * @return {!CrDialogElement}
+   * @private
+   */
+  getDialog_: function() {
+    return /** @type {!CrDialogElement} */ (this.$.dialog);
+  },
 
   /**
    * @param {string} dialogId
@@ -372,14 +379,11 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    // NOTE: tapping on an element with [dialog-dismiss] doesn't trigger an
-    // iron-overlay-cancel event, whereas tapping (X) or pressing Esc does.
-    // Using cancel() ensures all 3 ways to close the dialog run the same code.
-    this.$.dialog.cancel();
+    this.getDialog_().cancel();
   },
 
   /** @private */
-  onIronOverlayCanceled_: function() {
+  onDialogCanceled_: function() {
     if (this.dialogId == 'pairDevice')
       this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
   },

@@ -244,7 +244,7 @@ cr.define('certificate_manager_page', function() {
               assertEquals(caTrustInfo.email, !args.email);
               assertEquals(caTrustInfo.objSign, !args.objSign);
               // Check that the dialog is closed.
-              assertFalse(dialog.$.dialog.opened);
+              assertFalse(dialog.$.dialog.open);
             });
       });
 
@@ -313,7 +313,7 @@ cr.define('certificate_manager_page', function() {
       teardown(function() { dialog.remove(); });
 
       test('DeleteSuccess', function() {
-        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.dialog.open);
         // Check that the dialog title includes the certificate name.
         var titleEl = Polymer.dom(dialog.$.dialog).querySelector('.title');
         assertTrue(titleEl.textContent.includes(model.name));
@@ -325,7 +325,7 @@ cr.define('certificate_manager_page', function() {
             function(id) {
               assertEquals(model.id, id);
               // Check that the dialog is closed.
-              assertFalse(dialog.$.dialog.opened);
+              assertFalse(dialog.$.dialog.open);
             });
       });
 
@@ -376,7 +376,7 @@ cr.define('certificate_manager_page', function() {
         var passwordInputElement = passwordInputElements[0];
         var confirmPasswordInputElement = passwordInputElements[1];
 
-        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.dialog.open);
         assertTrue(dialog.$.ok.disabled);
 
         // Test that the 'OK' button is disabled when the password fields are
@@ -399,7 +399,7 @@ cr.define('certificate_manager_page', function() {
         return browserProxy.whenCalled(methodName).then(function(password) {
           assertEquals(passwordInputElement.value, password);
           // Check that the dialog is closed.
-          assertFalse(dialog.$.dialog.opened);
+          assertFalse(dialog.$.dialog.open);
         });
       });
 
@@ -448,7 +448,7 @@ cr.define('certificate_manager_page', function() {
       test('DecryptSuccess', function() {
         var passwordInputElement =
             Polymer.dom(dialog.$.dialog).querySelector('paper-input');
-        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.dialog.open);
         assertTrue(dialog.$.ok.disabled);
 
         // Test that the 'OK' button is disabled when the password field is
@@ -465,7 +465,7 @@ cr.define('certificate_manager_page', function() {
         return browserProxy.whenCalled(methodName).then(function(password) {
           assertEquals(passwordInputElement.value, password);
           // Check that the dialog is closed.
-          assertFalse(dialog.$.dialog.opened);
+          assertFalse(dialog.$.dialog.open);
         });
       });
 
@@ -500,7 +500,7 @@ cr.define('certificate_manager_page', function() {
       return eventToPromise(settings.CertificateActionEvent, subentry);
     };
 
-    suite('CertificateManagerPageTests', function() {
+    suite('CertificateSubentryTests', function() {
       setup(function() {
         browserProxy = new TestCertificatesBrowserProxy();
         settings.CertificatesBrowserProxyImpl.instance_ = browserProxy;
@@ -713,16 +713,37 @@ cr.define('certificate_manager_page', function() {
        * settings.CertificateActionEvent.
        * @param {string} dialogTagName The type of dialog to test.
        * @param {CertificateActionEventDetail} eventDetail
+       * @return {!Promise}
        */
       function testDialogOpensOnAction(dialogTagName, eventDetail)  {
         assertFalse(!!page.shadowRoot.querySelector(dialogTagName));
         page.fire(settings.CertificateActionEvent, eventDetail);
         Polymer.dom.flush();
-        assertTrue(!!page.shadowRoot.querySelector(dialogTagName));
+        var dialog = page.shadowRoot.querySelector(dialogTagName);
+        assertTrue(!!dialog);
+
+        if (dialog.$.dialog.open)
+          return Promise.resolve();
+
+        // Some dialogs are opened after some async operation to fetch initial
+        // data. Ensure that the underlying cr-dialog is actually opened by
+        // listening for changes for the 'open' attribute.
+        return new Promise(function(resolve, reject) {
+          var observer = new MutationObserver(function(mutations) {
+            assertEquals(1, mutations.length);
+            assertEquals('attributes', mutations[0].type);
+            assertEquals('open', mutations[0].attributeName);
+            observer.disconnect();
+            resolve();
+          });
+          observer.observe(
+              dialog.$.dialog,
+              {attributes: true, childList: false, characterData: false});
+        });
       }
 
       test('OpensDialog_DeleteConfirmation', function() {
-        testDialogOpensOnAction(
+        return testDialogOpensOnAction(
             'settings-certificate-delete-confirmation-dialog',
             /** @type {!CertificateActionEventDetail} */ ({
               action: CertificateAction.DELETE,
@@ -732,7 +753,7 @@ cr.define('certificate_manager_page', function() {
       });
 
       test('OpensDialog_PasswordEncryption', function() {
-        testDialogOpensOnAction(
+        return testDialogOpensOnAction(
             'settings-certificate-password-encryption-dialog',
             /** @type {!CertificateActionEventDetail} */ ({
               action: CertificateAction.EXPORT_PERSONAL,
@@ -742,7 +763,7 @@ cr.define('certificate_manager_page', function() {
       });
 
       test('OpensDialog_PasswordDecryption', function() {
-        testDialogOpensOnAction(
+        return testDialogOpensOnAction(
             'settings-certificate-password-decryption-dialog',
             /** @type {!CertificateActionEventDetail} */ ({
               action: CertificateAction.IMPORT,
@@ -752,7 +773,7 @@ cr.define('certificate_manager_page', function() {
       });
 
       test('OpensDialog_CaTrustEdit', function() {
-        testDialogOpensOnAction(
+        return testDialogOpensOnAction(
             'settings-ca-trust-edit-dialog',
             /** @type {!CertificateActionEventDetail} */ ({
               action: CertificateAction.EDIT,
@@ -762,7 +783,7 @@ cr.define('certificate_manager_page', function() {
       });
 
       test('OpensDialog_CaTrustImport', function() {
-        testDialogOpensOnAction(
+        return testDialogOpensOnAction(
             'settings-ca-trust-edit-dialog',
             /** @type {!CertificateActionEventDetail} */ ({
               action: CertificateAction.IMPORT,

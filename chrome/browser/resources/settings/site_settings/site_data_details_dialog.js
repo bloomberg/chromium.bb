@@ -53,11 +53,12 @@ Polymer({
     this.populateDialog_();
     this.listener_ = cr.addWebUIListener(
         'onTreeItemRemoved', this.onTreeItemRemoved_.bind(this));
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /**
    * Populates the dialog with the data about the site.
+   * @private
    */
   populateDialog_: function() {
     this.title_ = loadTimeData.getStringF('siteSettingsCookieDialog',
@@ -84,6 +85,7 @@ Polymer({
    * @param {string} currentPath The path constructed so far.
    * @param {string} targetId The id of the target leaf node to look for.
    * @return {string} The path of the node returned (or blank if not found).
+   * @private
    */
   nodePath_: function(node, currentPath, targetId) {
     if (node.data_.id == targetId)
@@ -104,6 +106,7 @@ Polymer({
    * Add the cookie data to the content section of this dialog.
    * @param {string} id The id of the cookie node to display.
    * @param {!settings.CookieTreeNode} site The current site.
+   * @private
    */
   populateItem_: function(id, site) {
     // Out with the old...
@@ -118,6 +121,7 @@ Polymer({
       site.addCookieData(root, node);
   },
 
+  /** @private */
   onTreeItemRemoved_: function(args) {
     this.entries_ = this.site_.getCookieList();
     if (args[0] == this.site_.data_.id || this.entries_.length == 0) {
@@ -134,6 +138,7 @@ Polymer({
 
   /**
    * A handler for when the user changes the dropdown box (switches cookies).
+   * @private
    */
   onItemSelected_: function(event) {
     this.populateItem_(event.detail.selected, this.site_);
@@ -150,6 +155,7 @@ Polymer({
 
   /**
    * A handler for when the user opts to remove a single cookie.
+   * @private
    */
   onRemove_: function(event) {
     this.browserProxy.removeCookie(this.nodePath_(
@@ -158,9 +164,16 @@ Polymer({
 
   /**
    * A handler for when the user opts to remove all cookies.
+   * @private
    */
   onRemoveAll_: function(event) {
     cr.removeWebUIListener(this.listener_);
     this.browserProxy.removeCookie(this.site_.data_.id);
+    this.$.dialog.close();
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.$.dialog.cancel();
   },
 });

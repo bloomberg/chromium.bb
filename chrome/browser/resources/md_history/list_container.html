@@ -46,7 +46,7 @@
       </template>
     </iron-pages>
 
-    <cr-dialog id="dialog">
+    <dialog is"cr-dialog" id="dialog">
       <div class="title">$i18n{removeSelected}</div>
       <div class="body">$i18n{deleteWarning}</div>
       <div class="button-container">
@@ -58,7 +58,7 @@
           $i18n{deleteConfirm}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
 
     <cr-shared-menu id="sharedMenu">
       <paper-item id="menuMoreButton" on-tap="onMoreFromSiteTap_">

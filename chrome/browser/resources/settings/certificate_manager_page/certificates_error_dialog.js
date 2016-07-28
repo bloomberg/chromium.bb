@@ -16,7 +16,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    /** @type {!CrDialogElement} */ (this.$.dialog).open();
+    /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
   /** @private */

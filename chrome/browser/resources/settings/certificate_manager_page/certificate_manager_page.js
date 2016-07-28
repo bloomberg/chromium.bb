@@ -158,7 +158,7 @@ Polymer({
     this.set(domIfBooleanName, true);
     this.async(function() {
       var dialog = this.$$(dialogTagName);
-      dialog.addEventListener('iron-overlay-closed', function() {
+      dialog.addEventListener('close', function() {
         this.set(domIfBooleanName, false);
       }.bind(this));
     }.bind(this));

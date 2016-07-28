@@ -32,7 +32,7 @@ Polymer({
    */
   open: function(type) {
     this.allowException = type == settings.PermissionValues.ALLOW;
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /**

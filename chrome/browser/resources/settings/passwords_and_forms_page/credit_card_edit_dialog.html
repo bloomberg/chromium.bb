@@ -34,7 +34,7 @@
     }
   </style>
   <template>
-    <cr-dialog id="dialog">
+    <dialog is="cr-dialog" id="dialog">
       <div class="title">[[title_]]</div>
       <div class="body">
         <paper-input id="nameInput" label="$i18n{creditCardName}"
@@ -72,7 +72,7 @@
         <paper-button id="saveButton" class="action-button"
             on-tap="onSaveButtonTap_">$i18n{save}</paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
   </template>
   <script src="/passwords_and_forms_page/credit_card_edit_dialog.js"></script>
 </dom-module>

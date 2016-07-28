@@ -45,7 +45,7 @@ Polymer({
       this.actionButtonText_ = loadTimeData.getString('add');
       this.$.actionButton.disabled = true;
     }
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** @private */

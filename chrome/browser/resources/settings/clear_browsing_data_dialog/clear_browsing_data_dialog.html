@@ -105,9 +105,7 @@
       }
     </style>
 
-    <!-- #notice correctly places its own backdrop above #dialog and under
-         itself, so when it is shown, #dialog should not use backdrop. -->
-    <cr-dialog id="dialog" with-backdrop="[[!showHistoryDeletionDialog_]]">
+    <dialog is="cr-dialog" id="dialog">
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">
@@ -163,7 +161,7 @@
       <div class="button-container">
         <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
         <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
-            dialog-dismiss>$i18n{cancel}</paper-button>
+            on-tap="onCancelTap_">$i18n{cancel}</paper-button>
         <paper-button class="action-button" disabled="[[clearingInProgress_]]"
             on-tap="onClearBrowsingDataTap_">
           $i18n{clearBrowsingData}
@@ -185,7 +183,7 @@
           </div>
         </div>
       </div>
-    </cr-dialog>
+    </dialog>
 
     <template is="dom-if" if="[[showHistoryDeletionDialog_]]" restamp>
       <settings-history-deletion-dialog id="notice"

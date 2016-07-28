@@ -12,8 +12,8 @@ Polymer({
   is: 'settings-history-deletion-dialog',
 
   /** @override */
-  ready: function() {
-    this.$.dialog.open();
+  attached: function() {
+    this.$.dialog.showModal();
   },
 
   /**

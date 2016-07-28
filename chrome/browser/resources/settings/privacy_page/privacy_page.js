@@ -44,17 +44,6 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
 
-  /** @suppress {missingProperties} */
-  attached: function() {
-    settings.main.rendered.then(function() {
-      if (this.showClearBrowsingDataDialog_) {
-        var dialog = this.$$('settings-clear-browsing-data-dialog').$.dialog;
-        // TODO(dbeam): cast to a CrDialogElement when it compiles.
-        dialog.refit();
-      }
-    }.bind(this));
-  },
-
   /**
    * @return {boolean} Whether the Clear Browsing Data dialog should be showing.
    * @private
@@ -87,12 +76,8 @@ Polymer({
     settings.navigateTo(settings.Route.CLEAR_BROWSER_DATA);
   },
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onIronOverlayClosed_: function(event) {
-    if (Polymer.dom(event).rootTarget.tagName == 'CR-DIALOG')
-      settings.navigateTo(settings.Route.PRIVACY);
+  /** @private */
+  onDialogClosed_: function() {
+    settings.navigateTo(settings.Route.PRIVACY);
   },
 });

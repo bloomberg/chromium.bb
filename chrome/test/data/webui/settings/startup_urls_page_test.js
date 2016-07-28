@@ -91,7 +91,7 @@ cr.define('settings_startup_urls_page', function() {
 
     test('Initialization_Add', function() {
       document.body.appendChild(dialog);
-      assertTrue(dialog.$.dialog.opened);
+      assertTrue(dialog.$.dialog.open);
 
       // Assert that the "Add" button is disabled.
       var actionButton = dialog.$.actionButton;
@@ -107,7 +107,7 @@ cr.define('settings_startup_urls_page', function() {
     test('Initialization_Edit', function() {
       dialog.model = createSampleUrlEntry();
       document.body.appendChild(dialog);
-      assertTrue(dialog.$.dialog.opened);
+      assertTrue(dialog.$.dialog.open);
 
       // Assert that the "Edit" button is enabled.
       var actionButton = dialog.$.actionButton;
@@ -161,7 +161,7 @@ cr.define('settings_startup_urls_page', function() {
       browserProxy.setUrlValidity(false);
       MockInteractions.tap(actionButton);
       return browserProxy.whenCalled(proxyMethodName).then(function() {
-        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.dialog.open);
 
         // Test that dialog is closed if the user submits a valid URL.
         browserProxy.setUrlValidity(true);
@@ -169,7 +169,7 @@ cr.define('settings_startup_urls_page', function() {
         MockInteractions.tap(actionButton);
         return browserProxy.whenCalled(proxyMethodName);
       }).then(function() {
-        assertFalse(dialog.$.dialog.opened);
+        assertFalse(dialog.$.dialog.open);
       });
     }
 

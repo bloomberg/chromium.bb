@@ -109,9 +109,7 @@
 
     /** @private */
     unstampAddressEditDialog_: function(e) {
-      var expectedDialog = this.$$('settings-address-edit-dialog').$.dialog;
-      if (Polymer.dom(e).rootTarget == expectedDialog)
-        this.activeAddress = null;
+      this.activeAddress = null;
     },
 
     /**
@@ -177,9 +175,7 @@
 
     /** @private */
     unstampCreditCardEditDialog_: function(e) {
-      var expectedDialog = this.$$('settings-credit-card-edit-dialog').$.dialog;
-      if (Polymer.dom(e).rootTarget == expectedDialog)
-        this.activeCreditCard = null;
+      this.activeCreditCard = null;
     },
 
     /**

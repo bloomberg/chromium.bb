@@ -46,7 +46,7 @@ Polymer({
     this.shadowRoot.appendChild(dialog);
     dialog.open();
 
-    dialog.addEventListener('iron-overlay-closed', function() {
+    dialog.addEventListener('close', function() {
       dialog.remove();
     });
   },

@@ -209,7 +209,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
         return browserProxy.whenCalled('cancelTurnOffFlow');
       }).then(function() {
         Polymer.dom.flush();
-        expectFalse(turnOffDialog.$.dialog.opened);
+        expectFalse(turnOffDialog.$.dialog.open);
       });
     });
   });

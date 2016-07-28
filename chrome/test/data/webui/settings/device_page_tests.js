@@ -440,7 +440,6 @@ cr.define('device_page_tests', function() {
         return Promise.all([
           fakeSystemDisplay.getInfoCalled.promise,
           fakeSystemDisplay.getLayoutCalled.promise,
-          new Promise(function(resolve, reject) { setTimeout(resolve); })
         ]);
       }).then(function() {
         // There should be a single display which should be primary and

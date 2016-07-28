@@ -91,9 +91,7 @@ Polymer({
 
   /** @private */
   unstampPasswordEditDialog_: function(e) {
-    var expectedDialog = this.$$('password-edit-dialog').$.dialog;
-    if (Polymer.dom(e).rootTarget == expectedDialog)
-      this.activePassword = null;
+    this.activePassword = null;
   },
 
   /**

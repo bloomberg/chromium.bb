@@ -113,7 +113,7 @@ cr.define('settings_privacy_page', function() {
       teardown(function() { element.remove(); });
 
       test('ClearBrowsingDataTap', function() {
-        assertTrue(element.$.dialog.opened);
+        assertTrue(element.$.dialog.open);
 
         var cancelButton = element.$$('.cancel-button');
         assertTrue(!!cancelButton);
@@ -132,7 +132,7 @@ cr.define('settings_privacy_page', function() {
 
         return testBrowserProxy.whenCalled('clearBrowsingData').then(
             function() {
-              assertTrue(element.$.dialog.opened);
+              assertTrue(element.$.dialog.open);
               assertTrue(cancelButton.disabled);
               assertTrue(actionButton.disabled);
               assertTrue(spinner.active);
@@ -145,7 +145,7 @@ cr.define('settings_privacy_page', function() {
               // Promise that was just resolved to execute before the
               // assertions.
             }).then(function() {
-              assertFalse(element.$.dialog.opened);
+              assertFalse(element.$.dialog.open);
               assertFalse(cancelButton.disabled);
               assertFalse(actionButton.disabled);
               assertFalse(spinner.active);
@@ -154,7 +154,7 @@ cr.define('settings_privacy_page', function() {
       });
 
       test('showHistoryDeletionDialog', function() {
-        assertTrue(element.$.dialog.opened);
+        assertTrue(element.$.dialog.open);
         var actionButton = element.$$('.action-button');
         assertTrue(!!actionButton);
 
@@ -178,8 +178,8 @@ cr.define('settings_privacy_page', function() {
               var noticeActionButton = notice.$$('.action-button');
               assertTrue(!!noticeActionButton);
 
-              assertTrue(element.$.dialog.opened);
-              assertTrue(notice.$.dialog.opened);
+              assertTrue(element.$.dialog.open);
+              assertTrue(notice.$.dialog.open);
 
               MockInteractions.tap(noticeActionButton);
 
@@ -190,13 +190,13 @@ cr.define('settings_privacy_page', function() {
               setTimeout(function() {
                 var notice = element.$$('#notice');
                 assertFalse(!!notice);
-                assertFalse(element.$.dialog.opened);
+                assertFalse(element.$.dialog.open);
               }, 0);
             });
       });
 
       test('Counters', function() {
-        assertTrue(element.$.dialog.opened);
+        assertTrue(element.$.dialog.open);
 
         // Initialize the browsing history pref, which should belong to the
         // first checkbox in the dialog.

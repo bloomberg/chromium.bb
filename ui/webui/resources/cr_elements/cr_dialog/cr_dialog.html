@@ -1,23 +1,27 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog-behavior/paper-dialog-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog-behavior/paper-dialog-shared-styles.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 
 <dom-module id="cr-dialog">
   <template>
-    <style include="paper-dialog-shared-styles">
+    <style>
       :host {
+        border: 0;
         border-radius: 2px;
+        bottom: 0;
+        color: inherit;
+        padding: 0;
+        top: 0;
       }
 
-      :host ::content > * {
-        /* Overrides paper-dialog-shared-styles. */
-        -webkit-padding-end: 0;
-        -webkit-padding-start: 0;
-        margin-bottom: 0;
-        margin-top: 0;
+      :host::backdrop {
+        background-color: rgba(0, 0, 0, 0.6);
+        bottom: 0;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
       }
 
       .title-container {
@@ -29,7 +33,7 @@
       }
 
       :host ::content .title {
-        font-size: 114.28%; /* (16px / 14px) * 100 */
+        font-size: 123.07%; /* (16px / 13px) * 100 */
       }
 
       #close {
@@ -61,12 +65,6 @@
         -webkit-padding-end: 24px;
         -webkit-padding-start: 24px;
         flex: 1;
-      }
-
-      :host ::content .body,
-      :host ::content .footer,
-      :host ::content paper-button {
-        font-size: 92.86%; /* (13px / 14px) * 100 */
       }
 
       :host ::content .button-container {

@@ -43,12 +43,14 @@ Polymer({
 
   open: function() {
     this.comitted_ = false;
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   close: function() {
     this.displayId = '';  // Will trigger displayIdChanged_.
-    this.$.dialog.close();
+
+    if (this.$.dialog.open)
+      this.$.dialog.close();
   },
 
   /** @private */

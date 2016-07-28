@@ -155,7 +155,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
       var section = document.createElement('settings-address-edit-dialog');
       section.address = address;
       document.body.appendChild(section);
-      section.addEventListener('iron-overlay-opened', function() {
+      section.addEventListener('on-update-address-wrapper', function() {
         resolve(section);
       });
     });
@@ -303,7 +303,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
         done();
       });
 
-      creditCardDialog.addEventListener('iron-overlay-closed', function() {
+      creditCardDialog.addEventListener('close', function() {
         // Test is |done| in a timeout in order to ensure that
         // 'save-credit-card' is NOT fired after this test.
         window.setTimeout(done, 100);
@@ -512,7 +512,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
           done();
         });
 
-        dialog.addEventListener('iron-overlay-closed', function() {
+        dialog.addEventListener('close', function() {
           // Test is |done| in a timeout in order to ensure that
           // 'save-address' is NOT fired after this test.
           window.setTimeout(done, 100);

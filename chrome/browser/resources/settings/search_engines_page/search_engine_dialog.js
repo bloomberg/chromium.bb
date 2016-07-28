@@ -66,7 +66,7 @@ Polymer({
       this.actionButtonText_ = loadTimeData.getString('add');
     }
 
-    this.addEventListener('iron-overlay-canceled', function() {
+    this.addEventListener('cancel', function() {
       this.browserProxy_.searchEngineEditCancelled();
     }.bind(this));
   },
@@ -76,7 +76,7 @@ Polymer({
     this.updateActionButtonState_();
     this.browserProxy_.searchEngineEditStarted(
         this.model ? this.model.modelIndex : this.DEFAULT_MODEL_INDEX);
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** @private */

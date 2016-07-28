@@ -80,7 +80,7 @@ Polymer({
     this.expirationYear = this.creditCard.expirationYear;
     this.expirationMonth = this.creditCard.expirationMonth;
 
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** Closes the dialog. */
@@ -93,7 +93,7 @@ Polymer({
    * @private
    */
   onCancelButtonTap_: function() {
-    this.close();
+    this.$.dialog.cancel();
   },
 
   /**

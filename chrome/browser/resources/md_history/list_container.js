@@ -97,7 +97,7 @@ Polymer({
     if (!loadTimeData.getBoolean('allowDeletingHistory'))
       return;
 
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /**

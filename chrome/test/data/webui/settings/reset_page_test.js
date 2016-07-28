@@ -151,30 +151,22 @@ cr.define('settings_reset_page', function() {
         MockInteractions.tap(resetPage.$.resetProfile);
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
-        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.dialog.open);
         var onDialogClosed = new Promise(
             function(resolve, reject) {
-              dialog.addEventListener('iron-overlay-closed', function() {
-                assertFalse(dialog.$.dialog.opened);
+              dialog.addEventListener('close', function() {
+                assertFalse(dialog.$.dialog.open);
                 resolve();
               });
             });
 
-        return new Promise(function(resolve, reject) {
-          resetPageBrowserProxy.whenCalled(
+        return resetPageBrowserProxy.whenCalled(
               'onShowResetProfileDialog').then(function() {
-            // Need to call requestAnimationFrame here, otherwise the dialog has
-            // not been registered to the IronOverlayManager at the time we
-            // attempt to close it (which prevents closing by 'esc' key from
-            // working).
-            window.requestAnimationFrame(function() {
-              closeDialogFn(dialog);
-              Promise.all([
-                onDialogClosed,
-                resetPageBrowserProxy.whenCalled('onHideResetProfileDialog'),
-              ]).then(resolve, reject);
-            });
-          });
+          closeDialogFn(dialog);
+          return Promise.all([
+            onDialogClosed,
+            resetPageBrowserProxy.whenCalled('onHideResetProfileDialog'),
+          ]);
         });
       }
 
@@ -188,12 +180,6 @@ cr.define('settings_reset_page', function() {
           return testOpenCloseResetProfileDialog(function(dialog) {
             // Test case where the 'close' button is clicked.
             MockInteractions.tap(dialog.$.dialog.getCloseButton());
-          });
-        }).then(function() {
-          return testOpenCloseResetProfileDialog(function(dialog) {
-            // Test case where the 'Esc' key is pressed.
-            MockInteractions.pressAndReleaseKeyOn(
-                dialog, 27 /* 'Esc' key code */);
           });
         });
       });
@@ -234,10 +220,14 @@ cr.define('settings_reset_page', function() {
           MockInteractions.tap(resetPage.$.powerwash);
           var dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
+          assertTrue(dialog.$.dialog.open);
           var onDialogClosed = new Promise(
-              function(resolve, reject) {
-                dialog.addEventListener('iron-overlay-closed', resolve);
+            function(resolve, reject) {
+              dialog.addEventListener('close', function() {
+                assertFalse(dialog.$.dialog.open);
+                resolve();
               });
+            });
 
           MockInteractions.tap(closeButtonFn(dialog));
           return Promise.all([

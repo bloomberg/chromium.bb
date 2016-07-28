@@ -210,7 +210,7 @@ Polymer({
 
   /** @private */
   onDisconnectTap_: function() {
-    this.$.disconnectDialog.open();
+    this.$.disconnectDialog.showModal();
   },
 
   /** @private */

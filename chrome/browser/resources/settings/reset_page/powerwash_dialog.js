@@ -12,7 +12,7 @@ Polymer({
 
   open: function() {
     settings.ResetBrowserProxyImpl.getInstance().onPowerwashDialogShow();
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** @private */

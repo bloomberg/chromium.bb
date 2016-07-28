@@ -58,7 +58,7 @@ Polymer({
   open: function() {
     this.getTurnOffStatus_().then(function(status) {
       this.status_ = status;
-      this.$.dialog.open();
+      this.$.dialog.showModal();
     }.bind(this));
 
     // The turn off flow status listener should only be active when the dialog
@@ -87,8 +87,8 @@ Polymer({
    * @private
    */
   handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
-    var dialog = /** @type {{opened: boolean}} */ this.$.dialog;
-    if (!easyUnlockEnabled && dialog.opened)
+    var dialog = /** @type {!CrDialogElement} */ this.$.dialog;
+    if (!easyUnlockEnabled && dialog.open)
       this.onCancelTap_();
   },
 

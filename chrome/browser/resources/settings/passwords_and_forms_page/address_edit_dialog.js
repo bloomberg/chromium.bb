@@ -107,14 +107,12 @@ Polymer({
  * @suppress {missingProperties}
  */
 (function() {
-      self.$.dialog.notifyResize();
-
       self.updateCanSave_();
 
       self.fire('on-update-address-wrapper');  // For easier testing.
 
-      if (!self.$.dialog.opened)
-        self.$.dialog.open();
+      if (!self.$.dialog.open)
+        self.$.dialog.showModal();
 })();
     });
   },
@@ -159,6 +157,11 @@ Polymer({
    */
   isDivision_: function(country) {
     return !country.countryCode;
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.$.dialog.cancel();
   },
 
   /**

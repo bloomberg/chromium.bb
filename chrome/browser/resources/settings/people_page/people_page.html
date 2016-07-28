@@ -285,7 +285,7 @@
 </if>
     </settings-animated-pages>
 
-    <cr-dialog id="disconnectDialog">
+    <dialog is="cr-dialog" id="disconnectDialog">
       <div class="title">$i18n{syncDisconnectTitle}</div>
       <div class="body">
         <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">
@@ -309,7 +309,7 @@
           $i18n{syncDisconnectConfirm}
         </paper-button>
       </div>
-    </cr-dialog>
+    </dialog>
 
 <if expr="chromeos">
     <template is="dom-if" if="[[easyUnlockEnabled_]]">

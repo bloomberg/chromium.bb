@@ -69,7 +69,7 @@
     </cr-shared-menu>
     <template is="dom-if" if="[[activeAddress]]" restamp>
       <settings-address-edit-dialog address="[[activeAddress]]"
-          on-iron-overlay-closed="unstampAddressEditDialog_">
+          on-close="unstampAddressEditDialog_">
       </settings-address-edit-dialog>
     </template>
     <div class="heading">$i18n{creditCards}</div>
@@ -120,7 +120,7 @@
     </cr-shared-menu>
     <template is="dom-if" if="[[activeCreditCard]]" restamp>
       <settings-credit-card-edit-dialog credit-card="[[activeCreditCard]]"
-          on-iron-overlay-closed="unstampCreditCardEditDialog_">
+          on-close="unstampCreditCardEditDialog_">
       </settings-credit-card-edit-dialog>
     </template>
   </template>

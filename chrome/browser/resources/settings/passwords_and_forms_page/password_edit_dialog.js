@@ -27,7 +27,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.password = '';
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   },
 
   /** Closes the dialog. */

@@ -158,7 +158,7 @@ cr.define('settings_people_page', function() {
           MockInteractions.tap(disconnectButton);
           Polymer.dom.flush();
 
-          assertTrue(peoplePage.$.disconnectDialog.opened);
+          assertTrue(peoplePage.$.disconnectDialog.open);
           assertFalse(peoplePage.$.deleteProfile.hidden);
 
           var disconnectConfirm = peoplePage.$.disconnectConfirm;
@@ -178,11 +178,11 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          assertFalse(peoplePage.$.disconnectDialog.opened);
+          assertFalse(peoplePage.$.disconnectDialog.open);
           MockInteractions.tap(disconnectButton);
           Polymer.dom.flush();
 
-          assertTrue(peoplePage.$.disconnectDialog.opened);
+          assertTrue(peoplePage.$.disconnectDialog.open);
           assertTrue(peoplePage.$.deleteProfile.hidden);
 
           var disconnectManagedProfileConfirm =
