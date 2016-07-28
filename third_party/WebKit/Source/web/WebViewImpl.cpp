@@ -2269,9 +2269,10 @@ void WebViewImpl::setFocus(bool enable)
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
+                focusedFrame->document()->updateStyleAndLayoutTree();
                 if (element->isTextFormControl()) {
                     element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
-                } else if (isContentEditable(*element)) {
+                } else if (hasEditableStyle(*element)) {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
@@ -2340,7 +2341,8 @@ bool WebViewImpl::setComposition(
     const EphemeralRange range = inputMethodController.compositionEphemeralRange();
     if (range.isNotNull()) {
         Node* node = range.startPosition().computeContainerNode();
-        if (!node || !isContentEditable(*node))
+        focused->document()->updateStyleAndLayoutTree();
+        if (!node || !hasEditableStyle(*node))
             return false;
     }
 
@@ -2538,7 +2540,8 @@ WebTextInputType WebViewImpl::textInputType()
             return WebTextInputTypeDateTimeField;
     }
 
-    if (isContentEditable(*element))
+    document->updateStyleAndLayoutTree();
+    if (hasEditableStyle(*element))
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;
@@ -2998,7 +3001,8 @@ void WebViewImpl::clearFocusedElement()
     // knows to remove selection from it. Otherwise, the text field is still
     // processing keyboard events even though focus has been moved to the page and
     // keystrokes get eaten as a result.
-    if (isContentEditable(*oldFocusedElement) || oldFocusedElement->isTextFormControl())
+    document->updateStyleAndLayoutTree();
+    if (hasEditableStyle(*oldFocusedElement) || oldFocusedElement->isTextFormControl())
         localFrame->selection().clear();
 }
 
@@ -3006,7 +3010,8 @@ void WebViewImpl::clearFocusedElement()
 // http://crbug.com/612560
 static bool isElementEditable(const Element* element)
 {
-    if (isContentEditable(*element))
+    element->document().updateStyleAndLayoutTree();
+    if (hasEditableStyle(*element))
         return true;
 
     if (element->isTextFormControl()) {

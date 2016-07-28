@@ -458,9 +458,10 @@ void WebFrameWidgetImpl::setFocus(bool enable)
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
+                focusedFrame->document()->updateStyleAndLayoutTree();
                 if (element->isTextFormControl()) {
                     element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
-                } else if (isContentEditable(*element)) {
+                } else if (hasEditableStyle(*element)) {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
@@ -517,7 +518,8 @@ bool WebFrameWidgetImpl::setComposition(
     const EphemeralRange range = inputMethodController.compositionEphemeralRange();
     if (range.isNotNull()) {
         Node* node = range.startPosition().computeContainerNode();
-        if (!node || !isContentEditable(*node))
+        focused->document()->updateStyleAndLayoutTree();
+        if (!node || !hasEditableStyle(*node))
             return false;
     }
 
@@ -715,7 +717,8 @@ WebTextInputType WebFrameWidgetImpl::textInputType()
             return WebTextInputTypeDateTimeField;
     }
 
-    if (isContentEditable(*element))
+    document->updateStyleAndLayoutTree();
+    if (hasEditableStyle(*element))
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;

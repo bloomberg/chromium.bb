@@ -426,16 +426,17 @@ bool AXLayoutObject::isEditable() const
     if (getLayoutObject() && getLayoutObject()->isTextControl())
         return true;
 
-    if (getNode() && isContentEditable(*getNode()))
+    m_layoutObject->document().updateStyleAndLayoutTree();
+    if (getNode() && hasEditableStyle(*getNode()))
         return true;
 
     if (isWebArea()) {
         Document& document = getLayoutObject()->document();
         HTMLElement* body = document.body();
-        if (body && isContentEditable(*body))
+        if (body && hasEditableStyle(*body))
             return true;
 
-        return isContentEditable(document);
+        return hasEditableStyle(document);
     }
 
     return AXNodeObject::isEditable();
@@ -445,16 +446,17 @@ bool AXLayoutObject::isEditable() const
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isRichlyEditable() const
 {
-    if (getNode() && isContentRichlyEditable(*getNode()))
+    m_layoutObject->document().updateStyleAndLayoutTree();
+    if (getNode() && hasRichlyEditableStyle(*getNode()))
         return true;
 
     if (isWebArea()) {
         Document& document = m_layoutObject->document();
         HTMLElement* body = document.body();
-        if (body && isContentRichlyEditable(*body))
+        if (body && hasRichlyEditableStyle(*body))
             return true;
 
-        return isContentRichlyEditable(document);
+        return hasRichlyEditableStyle(document);
     }
 
     return AXNodeObject::isRichlyEditable();

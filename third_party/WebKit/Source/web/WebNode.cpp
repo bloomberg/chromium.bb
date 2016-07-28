@@ -172,7 +172,8 @@ bool WebNode::isFocusable() const
 
 bool WebNode::isContentEditable() const
 {
-    return blink::isContentEditable(*m_private);
+    m_private->document().updateStyleAndLayoutTree();
+    return hasEditableStyle(*m_private);
 }
 
 bool WebNode::isInsideFocusableElementOrARIAWidget() const

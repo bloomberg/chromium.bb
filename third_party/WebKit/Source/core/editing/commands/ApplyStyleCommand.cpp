@@ -993,8 +993,8 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
 bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, HTMLElement* element, EditingState* editingState, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)
 {
     DCHECK(element);
-
-    if (!element->parentNode() || !isContentEditable(*element->parentNode()))
+    document().updateStyleAndLayoutTree();
+    if (!element->parentNode() || !hasEditableStyle(*element->parentNode()))
         return false;
 
     if (isStyledInlineElementToRemove(element)) {
@@ -1484,9 +1484,10 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(Node* passedStartNode, Node
     if (editingState->isAborted())
         return;
 
+    document().updateStyleAndLayoutTree();
     while (node) {
         Node* next = node->nextSibling();
-        if (isContentEditable(*node)) {
+        if (hasEditableStyle(*node)) {
             removeNode(node, editingState);
             if (editingState->isAborted())
                 return;

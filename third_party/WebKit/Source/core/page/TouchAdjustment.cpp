@@ -117,7 +117,8 @@ bool providesContextMenuItems(Node* node)
     ASSERT(node->layoutObject() || node->isShadowRoot());
     if (!node->layoutObject())
         return false;
-    if (isContentEditable(*node))
+    node->document().updateStyleAndLayoutTree();
+    if (hasEditableStyle(*node))
         return true;
     if (node->isLink())
         return true;
@@ -299,10 +300,11 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes, Subt
         // Consolidate bounds for editable content.
         if (editableAncestors.contains(candidate))
             continue;
-        if (isContentEditable(*candidate)) {
+        candidate->document().updateStyleAndLayoutTree();
+        if (hasEditableStyle(*candidate)) {
             Node* replacement = candidate;
             Node* parent = candidate->parentOrShadowHostNode();
-            while (parent && isContentEditable(*parent)) {
+            while (parent && hasEditableStyle(*parent)) {
                 replacement = parent;
                 if (editableAncestors.contains(replacement)) {
                     replacement = nullptr;

@@ -62,7 +62,8 @@ bool WebElement::isEditable() const
 {
     const Element* element = constUnwrap<Element>();
 
-    if (blink::isContentEditable(*element))
+    element->document().updateStyleAndLayoutTree();
+    if (hasEditableStyle(*element))
         return true;
 
     if (element->isTextFormControl()) {

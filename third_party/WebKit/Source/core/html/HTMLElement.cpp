@@ -1080,10 +1080,11 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 {
     if (!isSpatialNavigationEnabled(document().frame()) || !supportsFocus())
         return;
+    document().updateStyleAndLayoutTree();
     // if the element is a text form control (like <input type=text> or <textarea>)
     // or has contentEditable attribute on, we should enter a space or newline
     // even in spatial navigation mode instead of handling it as a "click" action.
-    if (isTextFormControl() || blink::isContentEditable(*this))
+    if (isTextFormControl() || hasEditableStyle(*this))
         return;
     int charCode = event->charCode();
     if (charCode == '\r' || charCode == ' ') {

@@ -47,7 +47,8 @@ void DeleteFromTextNodeCommand::doApply(EditingState*)
 {
     DCHECK(m_node);
 
-    if (!isContentEditable(*m_node))
+    document().updateStyleAndLayoutTree();
+    if (!hasEditableStyle(*m_node))
         return;
 
     TrackExceptionState exceptionState;

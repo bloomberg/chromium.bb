@@ -2123,7 +2123,8 @@ bool Node::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return isContentEditable(*this) || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
+    document().updateStyleAndLayoutTree();
+    return hasEditableStyle(*this) || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
 }
 
 bool Node::willRespondToTouchEvents()

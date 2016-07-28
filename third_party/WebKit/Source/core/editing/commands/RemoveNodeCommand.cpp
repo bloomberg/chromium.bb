@@ -45,10 +45,11 @@ RemoveNodeCommand::RemoveNodeCommand(Node* node, ShouldAssumeContentIsAlwaysEdit
 void RemoveNodeCommand::doApply(EditingState* editingState)
 {
     ContainerNode* parent = m_node->parentNode();
+    document().updateStyleAndLayoutTree();
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable
-        && !isContentEditable(*parent) && parent->inActiveDocument()))
+        && !hasEditableStyle(*parent) && parent->inActiveDocument()))
         return;
-    DCHECK(isContentEditable(*parent) || !parent->inActiveDocument()) << parent;
+    DCHECK(hasEditableStyle(*parent) || !parent->inActiveDocument()) << parent;
 
     m_parent = parent;
     m_refChild = m_node->nextSibling();

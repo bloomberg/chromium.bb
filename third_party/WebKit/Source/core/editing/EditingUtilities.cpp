@@ -258,6 +258,8 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b)
 enum EditableLevel { Editable, RichlyEditable };
 static bool hasEditableLevel(const Node& node, EditableLevel editableLevel)
 {
+    // TODO(yoichio): We should have this check.
+    // DCHECK(!needsLayoutTreeUpdate(node));
     if (node.isPseudoElement())
         return false;
 
@@ -297,18 +299,6 @@ static bool hasAXEditableLevel(const Node& node, EditableLevel editableLevel)
         return cache->rootAXEditableElement(&node);
 
     return false;
-}
-
-bool isContentEditable(const Node& node)
-{
-    node.document().updateStyleAndLayoutTree();
-    return hasEditableLevel(node, Editable);
-}
-
-bool isContentRichlyEditable(const Node& node)
-{
-    node.document().updateStyleAndLayoutTree();
-    return hasEditableLevel(node, RichlyEditable);
 }
 
 bool hasEditableStyle(const Node& node, EditableType editableType)
