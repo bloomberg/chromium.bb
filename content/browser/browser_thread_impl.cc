@@ -106,13 +106,18 @@ struct BrowserThreadGlobals {
                                           "BrowserBlocking",
                                           base::TaskPriority::USER_VISIBLE)) {
     memset(threads, 0, BrowserThread::ID_COUNT * sizeof(threads[0]));
+    memset(thread_ids, 0, BrowserThread::ID_COUNT * sizeof(thread_ids[0]));
     memset(thread_delegates, 0,
            BrowserThread::ID_COUNT * sizeof(thread_delegates[0]));
   }
 
-  // This lock protects |threads|. Do not read or modify that array
-  // without holding this lock. Do not block while holding this lock.
+  // This lock protects |threads| and |thread_ids|. Do not read or modify those
+  // arrays without holding this lock. Do not block while holding this lock.
   base::Lock lock;
+
+  // This array is protected by |lock|. IDs in this array are populated as soon
+  // as their respective thread is started and are never reset.
+  base::PlatformThreadId thread_ids[BrowserThread::ID_COUNT];
 
   // This array is protected by |lock|. The threads are not owned by this
   // array. Typically, the threads are owned on the UI thread by
@@ -135,6 +140,13 @@ base::LazyInstance<BrowserThreadGlobals>::Leaky
 BrowserThreadImpl::BrowserThreadImpl(ID identifier)
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
   Initialize();
+
+  // Unit tests may create multiple TestBrowserThreadBundles, causing the same
+  // BrowserThread ID to be reinitialized. We explicitly clear the thread ID
+  // here so Start() can sanity check.
+  BrowserThreadGlobals& globals = g_globals.Get();
+  base::AutoLock lock(globals.lock);
+  globals.thread_ids[identifier] = base::kInvalidThreadId;
 }
 
 BrowserThreadImpl::BrowserThreadImpl(ID identifier,
@@ -142,6 +154,12 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier,
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
+
+  // If constructed with an explicit message loop, this is a fake BrowserThread
+  // which runs on the current thread.
+  BrowserThreadGlobals& globals = g_globals.Get();
+  base::AutoLock lock(globals.lock);
+  globals.thread_ids[identifier] = base::PlatformThread::CurrentId();
 }
 
 // static
@@ -317,15 +335,28 @@ BrowserThreadImpl::~BrowserThreadImpl() {
 #endif
 }
 
+bool BrowserThreadImpl::Start() {
+  return StartWithOptions(base::Thread::Options());
+}
+
 bool BrowserThreadImpl::StartWithOptions(const Options& options) {
   // The global thread table needs to be locked while a new thread is
   // starting, as the new thread can asynchronously start touching the
   // table (and other thread's message_loop).
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  return Thread::StartWithOptions(options);
+  DCHECK_EQ(globals.thread_ids[identifier_], base::kInvalidThreadId);
+  bool result = Thread::StartWithOptions(options);
+  globals.thread_ids[identifier_] = GetThreadId();
+  return result;
 }
 
+bool BrowserThreadImpl::StartAndWaitForTesting() {
+  if (!Start())
+    return false;
+  WaitUntilThreadStarted();
+  return true;
+}
 // static
 bool BrowserThreadImpl::PostTaskHelper(
     BrowserThread::ID identifier,
@@ -425,9 +456,7 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK_GE(identifier, 0);
   DCHECK_LT(identifier, ID_COUNT);
-  return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
-             base::MessageLoop::current();
+  return base::PlatformThread::CurrentId() == globals.thread_ids[identifier];
 }
 
 // static
