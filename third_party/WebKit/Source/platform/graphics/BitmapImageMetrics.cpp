@@ -36,12 +36,40 @@ void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace)
 
     if (colorSpace) {
         SkColorSpace::GammaNamed skGamma = colorSpace->gammaNamed();
-        Gamma gamma =
-            (SkColorSpace::kLinear_GammaNamed == skGamma)      ? GammaLinear :
-            (SkColorSpace::kSRGB_GammaNamed == skGamma)        ? GammaSRGB :
-            (SkColorSpace::k2Dot2Curve_GammaNamed == skGamma)  ? Gamma2Dot2 :
-            (SkColorSpace::kNonStandard_GammaNamed == skGamma) ? GammaNonStandard :
-            GammaFail;
+
+        Gamma gamma;
+        switch (skGamma) {
+        case SkColorSpace::kLinear_GammaNamed:
+            gamma = GammaLinear;
+            break;
+        case SkColorSpace::kSRGB_GammaNamed:
+            gamma = GammaSRGB;
+            break;
+        case SkColorSpace::k2Dot2Curve_GammaNamed:
+            gamma = Gamma2Dot2;
+            break;
+        case SkColorSpace::kInvalid_GammaNamed:
+            gamma = GammaInvalid;
+            break;
+        default:
+            if (colorSpace->gammasAreMatching()) {
+                if (colorSpace->gammasAreValues()) {
+                    gamma = GammaExponent;
+                } else if (colorSpace->gammasAreParams()) {
+                    gamma = GammaParametric;
+                } else if (colorSpace->gammasAreTables()) {
+                    gamma = GammaTable;
+                } else if (colorSpace->gammasAreNamed()) {
+                    gamma = GammaNamed;
+                } else {
+                    gamma = GammaFail;
+                }
+            } else {
+                gamma = GammaNonStandard;
+            }
+            break;
+        }
+
         gammaNamedHistogram.count(gamma);
     } else {
         gammaNamedHistogram.count(GammaNull);

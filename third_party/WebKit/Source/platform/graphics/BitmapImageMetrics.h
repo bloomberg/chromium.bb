@@ -36,7 +36,12 @@ public:
         GammaNonStandard = 3,
         GammaNull = 4,
         GammaFail = 5,
-        GammaEnd = GammaFail + 1,
+        GammaInvalid = 6,
+        GammaExponent = 7,
+        GammaTable = 8,
+        GammaParametric = 9,
+        GammaNamed = 10,
+        GammaEnd = GammaNamed + 1,
     };
 
     static void countDecodedImageType(const String& type);
