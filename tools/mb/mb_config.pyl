@@ -118,12 +118,12 @@
       'Chromium Mac 10.9 Goma Canary (dbg)': 'gn_debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gn_debug_bot',
       'Chromium Win PGO Builder': [
-        'gyp_official_optimize_chrome_pgo_phase_1_x86',
-        'gyp_official_optimize_chrome_pgo_phase_2_x86'
+        'gn_official_optimize_chrome_pgo_phase_1_x86',
+        'gn_official_optimize_chrome_pgo_phase_2_x86'
       ],
       'Chromium Win x64 PGO Builder': [
-        'gyp_official_optimize_chrome_pgo_phase_1_x64',
-        'gyp_official_optimize_chrome_pgo_phase_2_x64',
+        'gn_official_optimize_chrome_pgo_phase_1_x64',
+        'gn_official_optimize_chrome_pgo_phase_2_x64',
       ],
       'Chromium Windows Analyze': 'gn_windows_analyze',
       'CrWin7Goma': 'gn_release_bot_minimal_symbols_x86',
@@ -651,13 +651,13 @@
       'win': 'gyp_official',
       'win-asan': 'gyp_official_syzyasan',
       'win-pgo': [
-        'gyp_official_chrome_pgo_phase_1_x86',
-        'gyp_official_chrome_pgo_phase_2_x86',
+        'gn_official_chrome_pgo_phase_1_x86',
+        'gn_official_chrome_pgo_phase_2_x86',
       ],
       'win64': 'gyp_official_x64',
       'win64-pgo': [
-        'gyp_official_chrome_pgo_phase_1_x64',
-        'gyp_official_chrome_pgo_phase_2_x64',
+        'gn_official_chrome_pgo_phase_1_x64',
+        'gn_official_chrome_pgo_phase_2_x64',
       ],
     },
 
@@ -942,8 +942,8 @@
       'win_optional_gpu_tests_rel':
         'swarming_gpu_tests_deqp_gles_gn_release_trybot_x86',
       'win_pgo': [
-        'gyp_official_optimize_chrome_pgo_phase_1_x86',
-        'gyp_official_optimize_chrome_pgo_phase_2_x86',
+        'gn_official_optimize_chrome_pgo_phase_1_x86',
+        'gn_official_optimize_chrome_pgo_phase_2_x86',
       ],
       'win_upload_clang': 'gn_release_bot',
       'win_chrome_official': 'gn_official_goma_minimal_symbols_x86',
@@ -1368,36 +1368,36 @@
       'gyp', 'official', 'six_concurrent_links',
     ],
 
-    'gyp_official_chrome_pgo_phase_1_x64': [
-      'gyp', 'official', 'chrome_pgo_phase_1', 'x64',
+    'gn_official_chrome_pgo_phase_1_x64': [
+      'gn', 'official', 'chrome_pgo_phase_1', 'x64',
     ],
 
-    'gyp_official_chrome_pgo_phase_2_x64': [
-      'gyp', 'official', 'chrome_pgo_phase_2', 'x64',
+    'gn_official_chrome_pgo_phase_2_x64': [
+      'gn', 'official', 'chrome_pgo_phase_2', 'x64',
     ],
 
-    'gyp_official_chrome_pgo_phase_1_x86': [
-      'gyp', 'official', 'chrome_pgo_phase_1', 'x86',
+    'gn_official_chrome_pgo_phase_1_x86': [
+      'gn', 'official', 'chrome_pgo_phase_1', 'x86',
     ],
 
-    'gyp_official_chrome_pgo_phase_2_x86': [
-      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
+    'gn_official_chrome_pgo_phase_2_x86': [
+      'gn', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
     ],
 
-    'gyp_official_optimize_chrome_pgo_phase_1_x64': [
-      'gyp', 'official_optimize', 'chrome_pgo_phase_1', 'x64',
+    'gn_official_optimize_chrome_pgo_phase_1_x64': [
+      'gn', 'official_optimize', 'chrome_pgo_phase_1', 'x64',
     ],
 
-    'gyp_official_optimize_chrome_pgo_phase_2_x64': [
-      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x64',
+    'gn_official_optimize_chrome_pgo_phase_2_x64': [
+      'gn', 'official_optimize', 'chrome_pgo_phase_2', 'x64',
     ],
 
-    'gyp_official_optimize_chrome_pgo_phase_1_x86': [
-      'gyp', 'official_optimize', 'chrome_pgo_phase_1', 'x86',
+    'gn_official_optimize_chrome_pgo_phase_1_x86': [
+      'gn', 'official_optimize', 'chrome_pgo_phase_1', 'x86',
     ],
 
-    'gyp_official_optimize_chrome_pgo_phase_2_x86': [
-      'gyp', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
+    'gn_official_optimize_chrome_pgo_phase_2_x86': [
+      'gn', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
     ],
 
     'gyp_official_x64': [
