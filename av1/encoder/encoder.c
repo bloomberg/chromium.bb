@@ -375,8 +375,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   // Delete sementation map
   aom_free(cpi->segmentation_map);
   cpi->segmentation_map = NULL;
-  aom_free(cpi->coding_context.last_frame_seg_map_copy);
-  cpi->coding_context.last_frame_seg_map_copy = NULL;
 
 #if CONFIG_REF_MV
   for (i = 0; i < NMV_CONTEXTS; ++i) {
@@ -484,9 +482,6 @@ static void save_coding_context(AV1_COMP *cpi) {
   av1_copy(cc->segment_pred_probs, cm->segp.pred_probs);
 #endif
 
-  memcpy(cpi->coding_context.last_frame_seg_map_copy, cm->last_frame_seg_map,
-         (cm->mi_rows * cm->mi_cols));
-
   av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
   av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
 
@@ -528,9 +523,6 @@ static void restore_coding_context(AV1_COMP *cpi) {
 #if !CONFIG_MISC_FIXES
   av1_copy(cm->segp.pred_probs, cc->segment_pred_probs);
 #endif
-
-  memcpy(cm->last_frame_seg_map, cpi->coding_context.last_frame_seg_map_copy,
-         (cm->mi_rows * cm->mi_cols));
 
   av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
   av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
@@ -1470,12 +1462,6 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
   // Create a map used to mark inactive areas.
   aom_free(cpi->active_map.map);
   CHECK_MEM_ERROR(cm, cpi->active_map.map,
-                  aom_calloc(cm->mi_rows * cm->mi_cols, 1));
-
-  // And a place holder structure is the coding context
-  // for use if we want to save and restore it
-  aom_free(cpi->coding_context.last_frame_seg_map_copy);
-  CHECK_MEM_ERROR(cm, cpi->coding_context.last_frame_seg_map_copy,
                   aom_calloc(cm->mi_rows * cm->mi_cols, 1));
 }
 

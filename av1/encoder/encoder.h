@@ -70,8 +70,6 @@ typedef struct {
   aom_prob segment_pred_probs[PREDICTION_PROBS];
 #endif
 
-  unsigned char *last_frame_seg_map_copy;
-
   // 0 = Intra, Last, GF, ARF
   signed char last_ref_lf_deltas[MAX_REF_FRAMES];
   // 0 = ZERO_MV, MV
