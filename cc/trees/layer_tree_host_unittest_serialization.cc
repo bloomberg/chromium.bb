@@ -20,6 +20,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,8 +81,9 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void TearDown() override {
     // Need to reset |in_paint_layer_contents_| to tear down.
-    layer_tree_host_src_->in_paint_layer_contents_ = false;
-    layer_tree_host_dst_->in_paint_layer_contents_ = false;
+
+    layer_tree_host_src_->GetLayerTree()->in_paint_layer_contents_ = false;
+    layer_tree_host_dst_->GetLayerTree()->in_paint_layer_contents_ = false;
 
     // Need to reset LayerTreeHost pointers before tear down.
     layer_tree_host_src_ = nullptr;
@@ -98,9 +100,11 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void VerifySerializationAndDeserialization() {
     proto::LayerTreeHost proto;
+    LayerTree* layer_tree_src = layer_tree_host_src_->GetLayerTree();
+    LayerTree* layer_tree_dst = layer_tree_host_dst_->GetLayerTree();
 
     std::unordered_set<Layer*> layers_that_should_push_properties_src =
-        layer_tree_host_src_->LayersThatShouldPushProperties();
+        layer_tree_src->LayersThatShouldPushProperties();
     std::vector<std::unique_ptr<SwapPromise>> swap_promises;
     layer_tree_host_src_->ToProtobufForCommit(&proto, &swap_promises);
     layer_tree_host_dst_->FromProtobufForCommit(proto);
@@ -148,14 +152,14 @@ class LayerTreeHostSerializationTest : public testing::Test {
               layer_tree_host_dst_->background_color_);
     EXPECT_EQ(layer_tree_host_src_->has_transparent_background_,
               layer_tree_host_dst_->has_transparent_background_);
-    EXPECT_EQ(layer_tree_host_src_->in_paint_layer_contents_,
-              layer_tree_host_dst_->in_paint_layer_contents_);
+    EXPECT_EQ(layer_tree_src->in_paint_layer_contents(),
+              layer_tree_dst->in_paint_layer_contents());
     EXPECT_EQ(layer_tree_host_src_->id_, layer_tree_host_dst_->id_);
     EXPECT_EQ(layer_tree_host_src_->next_commit_forces_redraw_,
               layer_tree_host_dst_->next_commit_forces_redraw_);
     for (auto* layer : layers_that_should_push_properties_src) {
-      EXPECT_TRUE(layer_tree_host_dst_->LayerNeedsPushPropertiesForTesting(
-          layer_tree_host_dst_->LayerById(layer->id())));
+      EXPECT_TRUE(layer_tree_dst->LayerNeedsPushPropertiesForTesting(
+          layer_tree_dst->LayerById(layer->id())));
     }
 
     if (layer_tree_host_src_->hud_layer_) {
@@ -280,8 +284,9 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
     // Set in_paint_layer_contents_ only after all calls to AddChild() have
     // finished to ensure it's allowed to do so at that time.
-    layer_tree_host_src_->in_paint_layer_contents_ =
-        !layer_tree_host_src_->in_paint_layer_contents_;
+    LayerTree* layer_tree_src = layer_tree_host_src_->GetLayerTree();
+    layer_tree_src->in_paint_layer_contents_ =
+        !layer_tree_src->in_paint_layer_contents();
 
     LayerSelectionBound sel_bound;
     sel_bound.edge_top = gfx::Point(14, 3);

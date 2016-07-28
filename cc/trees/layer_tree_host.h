@@ -40,6 +40,7 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/compositor_mode.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
@@ -295,9 +296,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   TaskRunnerProvider* task_runner_provider() const {
     return task_runner_provider_.get();
   }
-  AnimationHost* animation_host() const { return animation_host_.get(); }
-
-  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
+  AnimationHost* animation_host() const;
 
   bool has_output_surface() const { return !!current_output_surface_; }
 
@@ -357,13 +356,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void AddToElementMap(Layer* layer);
   void RemoveFromElementMap(Layer* layer);
 
-  void AddLayerShouldPushProperties(Layer* layer);
-  void RemoveLayerShouldPushProperties(Layer* layer);
-  std::unordered_set<Layer*>& LayersThatShouldPushProperties();
-  bool LayerNeedsPushPropertiesForTesting(Layer* layer);
-
-  void RegisterLayer(Layer* layer);
-  void UnregisterLayer(Layer* layer);
   // MutatorHostClient implementation.
   bool IsElementInList(ElementId element_id,
                        ElementListType list_type) const override;
@@ -431,6 +423,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   ClientPictureCache* client_picture_cache() const {
     return client_picture_cache_ ? client_picture_cache_.get() : nullptr;
   }
+
+  LayerTree* GetLayerTree() { return &layer_tree_; }
+  const LayerTree* GetLayerTree() const { return &layer_tree_; }
 
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
@@ -567,15 +562,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   EventListenerProperties event_listener_properties_[static_cast<size_t>(
       EventListenerClass::kNumClasses)];
 
-  std::unique_ptr<AnimationHost> animation_host_;
-
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
   // If set, then page scale animation has completed, but the client hasn't been
   // notified about it yet.
   bool did_complete_scale_animation_;
-
-  bool in_paint_layer_contents_;
 
   int id_;
   bool next_commit_forces_redraw_;
@@ -600,18 +591,15 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   PropertyTrees property_trees_;
 
-  using LayerIdMap = std::unordered_map<int, Layer*>;
-  LayerIdMap layer_id_map_;
-
   using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
   ElementLayersMap element_layers_map_;
-
-  // Set of layers that need to push properties.
-  std::unordered_set<Layer*> layers_that_should_push_properties_;
 
   uint32_t surface_client_id_;
   uint32_t next_surface_sequence_;
   uint32_t num_consecutive_frames_suitable_for_gpu_ = 0;
+
+  // Layer tree that hold layers.
+  LayerTree layer_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

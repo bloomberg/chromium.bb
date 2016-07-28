@@ -13,6 +13,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -104,7 +105,7 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
                               active_tree);
 }
 
-void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
+void TreeSynchronizer::PushLayerProperties(LayerTree* host_tree,
                                            LayerTreeImpl* impl_tree) {
   PushLayerPropertiesInternal(host_tree->LayersThatShouldPushProperties(),
                               impl_tree);

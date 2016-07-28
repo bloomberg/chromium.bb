@@ -200,26 +200,22 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(
-      layer_src_root->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_root->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_root.get()));
+  EXPECT_FALSE(layer_src_a->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_a.get()));
+  EXPECT_FALSE(layer_src_b->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b.get()));
   EXPECT_FALSE(
-      layer_src_a->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_a.get()));
-  EXPECT_FALSE(
-      layer_src_b->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_b.get()));
-  EXPECT_FALSE(
-      layer_src_b_mask->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b_mask->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_b_mask.get()));
   EXPECT_FALSE(
-      layer_src_b_replica->layer_tree_host()
-          ->LayerNeedsPushPropertiesForTesting(layer_src_b_replica.get()));
-  EXPECT_FALSE(
-      layer_src_c->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_c.get()));
-  EXPECT_FALSE(
-      layer_src_d->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_d.get()));
+      layer_src_b_replica->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+          layer_src_b_replica.get()));
+  EXPECT_FALSE(layer_src_c->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_c.get()));
+  EXPECT_FALSE(layer_src_d->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_d.get()));
 
   // All layers needs to push properties as their layer tree host changed.
   ASSERT_EQ(7, layer_update.layers_size());
@@ -240,26 +236,22 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(
-      layer_src_root->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_root->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_root.get()));
+  EXPECT_FALSE(layer_src_a->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_a.get()));
+  EXPECT_FALSE(layer_src_b->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b.get()));
   EXPECT_FALSE(
-      layer_src_a->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_a.get()));
-  EXPECT_FALSE(
-      layer_src_b->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_b.get()));
-  EXPECT_FALSE(
-      layer_src_b_mask->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b_mask->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_b_mask.get()));
   EXPECT_FALSE(
-      layer_src_b_replica->layer_tree_host()
-          ->LayerNeedsPushPropertiesForTesting(layer_src_b_replica.get()));
-  EXPECT_FALSE(
-      layer_src_c->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_c.get()));
-  EXPECT_FALSE(
-      layer_src_d->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_d.get()));
+      layer_src_b_replica->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+          layer_src_b_replica.get()));
+  EXPECT_FALSE(layer_src_c->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_c.get()));
+  EXPECT_FALSE(layer_src_d->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_d.get()));
 
   // Only 4 of the layers should have been serialized.
   ASSERT_EQ(4, layer_update.layers_size());
@@ -307,17 +299,15 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerializationSingleChild) {
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(
-      layer_src_root->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_root->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_root.get()));
+  EXPECT_FALSE(layer_src_b->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b.get()));
   EXPECT_FALSE(
-      layer_src_b->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_b.get()));
-  EXPECT_FALSE(
-      layer_src_b_mask->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+      layer_src_b_mask->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_b_mask.get()));
-  EXPECT_FALSE(
-      layer_src_c->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-          layer_src_c.get()));
+  EXPECT_FALSE(layer_src_c->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
+      layer_src_c.get()));
 
   // Only 2 of the layers should have been serialized.
   ASSERT_EQ(2, layer_update.layers_size());

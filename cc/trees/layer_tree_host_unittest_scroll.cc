@@ -1003,7 +1003,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
         EXPECT_TRUE(
-            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            scroll_layer->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
                 scroll_layer));
         break;
       case 1:
@@ -1011,7 +1011,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
         // still pick up scrolls that happen on the active layer during
         // commit.
         EXPECT_FALSE(
-            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            scroll_layer->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
                 scroll_layer));
         break;
     }

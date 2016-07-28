@@ -13,6 +13,7 @@
 namespace cc {
 
 class LayerImpl;
+class LayerTree;
 class LayerTreeHost;
 class LayerTreeImpl;
 class Layer;
@@ -28,7 +29,7 @@ class CC_EXPORT TreeSynchronizer {
 
   static void PushLayerProperties(LayerTreeImpl* pending_tree,
                                   LayerTreeImpl* active_tree);
-  static void PushLayerProperties(LayerTreeHost* host_tree,
+  static void PushLayerProperties(LayerTree* host_tree,
                                   LayerTreeImpl* impl_tree);
 
  private:

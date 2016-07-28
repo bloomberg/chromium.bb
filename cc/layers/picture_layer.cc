@@ -82,7 +82,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
-  DCHECK(!layer_tree_host() || !layer_tree_host()->in_paint_layer_contents());
+  DCHECK(!layer_tree_host() || !GetLayerTree()->in_paint_layer_contents());
   if (recording_source_)
     recording_source_->SetNeedsDisplayRect(layer_rect);
   Layer::SetNeedsDisplayRect(layer_rect);

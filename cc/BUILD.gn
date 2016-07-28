@@ -497,6 +497,8 @@ component("cc") {
     "trees/effect_node.h",
     "trees/latency_info_swap_promise_monitor.cc",
     "trees/latency_info_swap_promise_monitor.h",
+    "trees/layer_tree.cc",
+    "trees/layer_tree.h",
     "trees/layer_tree_host.cc",
     "trees/layer_tree_host.h",
     "trees/layer_tree_host_client.h",
