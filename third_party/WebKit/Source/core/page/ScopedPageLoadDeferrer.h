@@ -21,26 +21,21 @@
 #define ScopedPageLoadDeferrer_h
 
 #include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class LocalFrame;
 class Page;
 
 class CORE_EXPORT ScopedPageLoadDeferrer final {
     WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
     USING_FAST_MALLOC(ScopedPageLoadDeferrer);
 public:
-    explicit ScopedPageLoadDeferrer(Page* exclusion = nullptr);
+    explicit ScopedPageLoadDeferrer();
     ~ScopedPageLoadDeferrer();
 
-private:
-    void setDefersLoading(bool);
-
-    Vector<Persistent<Page>, 16> m_deferredPages;
+    static bool isActive();
 };
 
 } // namespace blink

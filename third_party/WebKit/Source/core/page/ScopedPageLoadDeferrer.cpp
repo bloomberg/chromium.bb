@@ -21,22 +21,32 @@
 #include "core/page/ScopedPageLoadDeferrer.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/HashSet.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
+namespace {
+
+unsigned s_deferralCount = 0;
+
+void setDefersLoading(bool isDeferred)
 {
-    for (Page* page : Page::ordinaryPages()) {
-        if (page == exclusion || page->defersLoading())
-            continue;
-        m_deferredPages.append(page);
-    }
+    for (const auto& page : Page::ordinaryPages())
+        page->setDefersLoading(isDeferred);
+}
+
+} // namespace
+
+ScopedPageLoadDeferrer::ScopedPageLoadDeferrer()
+{
+    if (++s_deferralCount > 1)
+        return;
 
     setDefersLoading(true);
     Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
@@ -44,15 +54,16 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 
 ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
 {
+    if (--s_deferralCount > 0)
+        return;
+
     setDefersLoading(false);
     Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
 }
 
-void ScopedPageLoadDeferrer::setDefersLoading(bool isDeferred)
+bool ScopedPageLoadDeferrer::isActive()
 {
-
-    for (const auto& page : m_deferredPages)
-        page->setDefersLoading(isDeferred);
+    return s_deferralCount > 0;
 }
 
 } // namespace blink

@@ -50,6 +50,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
+#include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -3214,6 +3215,44 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture)
     EXPECT_EQ(1, client.textChangesFromUserGesture());
     EXPECT_FALSE(UserGestureIndicator::processingUserGesture());
     frame->setAutofillClient(0);
+}
+
+// Verify that a WebView created with a ScopedPageLoadDeferrer already on the
+// stack defers its loads.
+TEST_F(WebViewTest, CreatedDuringLoadDeferral)
+{
+    {
+        WebViewImpl* webView = m_webViewHelper.initialize();
+        EXPECT_FALSE(webView->page()->defersLoading());
+    }
+
+    {
+        ScopedPageLoadDeferrer deferrer;
+        WebViewImpl* webView = m_webViewHelper.initialize();
+        EXPECT_TRUE(webView->page()->defersLoading());
+    }
+}
+
+// Verify that page loads are deferred until all ScopedPageLoadDeferrers are
+// destroyed.
+TEST_F(WebViewTest, NestedLoadDeferrals)
+{
+    WebViewImpl* webView = m_webViewHelper.initialize();
+    EXPECT_FALSE(webView->page()->defersLoading());
+
+    {
+        ScopedPageLoadDeferrer deferrer;
+        EXPECT_TRUE(webView->page()->defersLoading());
+
+        {
+            ScopedPageLoadDeferrer deferrer2;
+            EXPECT_TRUE(webView->page()->defersLoading());
+        }
+
+        EXPECT_TRUE(webView->page()->defersLoading());
+    }
+
+    EXPECT_FALSE(webView->page()->defersLoading());
 }
 
 } // namespace blink

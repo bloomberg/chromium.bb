@@ -276,7 +276,9 @@ void DocumentLoader::notifyFinished(Resource* resource)
 
 void DocumentLoader::finishedLoading(double finishTime)
 {
-    ASSERT(!m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
+    DCHECK(m_frame->loader().stateMachine()->creatingInitialEmptyDocument()
+        || !m_frame->page()->defersLoading()
+        || InspectorInstrumentation::isDebuggerPaused(m_frame));
 
     double responseEndTime = finishTime;
     if (!responseEndTime)
