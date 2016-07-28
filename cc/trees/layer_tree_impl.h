@@ -63,16 +63,11 @@ class CC_EXPORT LayerTreeImpl {
  public:
   // This is the number of times a fixed point has to be hit contiuously by a
   // layer to consider it as jittering.
-  const int kFixedPointHitsThreshold = 3;
-  static std::unique_ptr<LayerTreeImpl> create(
-      LayerTreeHostImpl* layer_tree_host_impl,
-      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-      scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
-      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll) {
-    return base::WrapUnique(
-        new LayerTreeImpl(layer_tree_host_impl, page_scale_factor,
-                          top_controls_shown_ratio, elastic_overscroll));
-  }
+  enum : int { kFixedPointHitsThreshold = 3 };
+  LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl,
+                scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+                scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
+                scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   virtual ~LayerTreeImpl();
 
   void Shutdown();
@@ -454,11 +449,6 @@ class CC_EXPORT LayerTreeImpl {
   void BuildLayerListForTesting();
 
  protected:
-  explicit LayerTreeImpl(
-      LayerTreeHostImpl* layer_tree_host_impl,
-      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-      scoped_refptr<SyncedTopControls> top_controls_shown_ratio,
-      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
                                     float min_page_scale_factor,

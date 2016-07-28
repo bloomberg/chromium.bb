@@ -37,7 +37,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
         top_controls_height_(top_controls_height),
         top_controls_show_threshold_(top_controls_show_threshold),
         top_controls_hide_threshold_(top_controls_hide_threshold) {
-    active_tree_ = LayerTreeImpl::create(
+    active_tree_ = base::MakeUnique<LayerTreeImpl>(
         &host_impl_, new SyncedProperty<ScaleGroup>, new SyncedTopControls,
         new SyncedElasticOverscroll);
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);

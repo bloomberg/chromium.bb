@@ -253,9 +253,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   SetDebugState(settings.initial_debug_state);
 
   // LTHI always has an active tree.
-  active_tree_ =
-      LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
-                            new SyncedTopControls, new SyncedElasticOverscroll);
+  active_tree_ = base::MakeUnique<LayerTreeImpl>(
+      this, new SyncedProperty<ScaleGroup>, new SyncedTopControls,
+      new SyncedElasticOverscroll);
   active_tree_->property_trees()->is_active = true;
 
   viewport_ = Viewport::Create(this);
@@ -1207,9 +1207,9 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayers();
   active_tree_ =
-      LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
-                            active_tree()->top_controls_shown_ratio(),
-                            active_tree()->elastic_overscroll());
+      base::MakeUnique<LayerTreeImpl>(this, active_tree()->page_scale_factor(),
+                                      active_tree()->top_controls_shown_ratio(),
+                                      active_tree()->elastic_overscroll());
   active_tree_->property_trees()->is_active = true;
   if (pending_tree_)
     pending_tree_->DetachLayers();
@@ -1943,13 +1943,14 @@ bool LayerTreeHostImpl::IsActivelyScrolling() const {
 
 void LayerTreeHostImpl::CreatePendingTree() {
   CHECK(!pending_tree_);
-  if (recycle_tree_)
+  if (recycle_tree_) {
     recycle_tree_.swap(pending_tree_);
-  else
-    pending_tree_ =
-        LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
-                              active_tree()->top_controls_shown_ratio(),
-                              active_tree()->elastic_overscroll());
+  } else {
+    pending_tree_ = base::MakeUnique<LayerTreeImpl>(
+        this, active_tree()->page_scale_factor(),
+        active_tree()->top_controls_shown_ratio(),
+        active_tree()->elastic_overscroll());
+  }
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
