@@ -9,6 +9,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "components/exo/pointer_delegate.h"
+#include "components/exo/pointer_stylus_delegate.h"
 #include "components/exo/surface.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -51,6 +52,8 @@ Pointer::Pointer(PointerDelegate* delegate)
 
 Pointer::~Pointer() {
   delegate_->OnPointerDestroying(this);
+  if (stylus_delegate_)
+    stylus_delegate_->OnPointerDestroying(this);
   if (surface_)
     surface_->RemoveSurfaceObserver(this);
   if (focus_) {
@@ -119,6 +122,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
         focus_->window()->GetCursor(gfx::ToFlooredPoint(location_)));
 }
 
+void Pointer::SetStylusDelegate(PointerStylusDelegate* delegate) {
+  stylus_delegate_ = delegate;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler overrides:
 
@@ -142,10 +149,23 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       delegate_->OnPointerEnter(target, event->location_f(),
                                 event->button_flags());
       location_ = event->location_f();
+      // Defaulting pointer_type to POINTER_TYPE_MOUSE prevents the tool change
+      // event from being fired when using a mouse.
+      pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
+
       focus_ = target;
       focus_->AddSurfaceObserver(this);
     }
     delegate_->OnPointerFrame();
+  }
+
+  // Report changes in pointer type. We treat unknown devices as a mouse.
+  auto new_pointer_type = event->pointer_details().pointer_type;
+  if (new_pointer_type == ui::EventPointerType::POINTER_TYPE_UNKNOWN)
+    new_pointer_type = ui::EventPointerType::POINTER_TYPE_MOUSE;
+  if (focus_ && stylus_delegate_ && new_pointer_type != pointer_type_) {
+    stylus_delegate_->OnPointerToolChange(new_pointer_type);
+    pointer_type_ = new_pointer_type;
   }
 
   switch (event->type()) {
@@ -160,14 +180,38 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       break;
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
-      // Generate motion event if location changed. We need to check location
-      // here as mouse movement can generate both "moved" and "entered" events
-      // but OnPointerMotion should only be called if location changed since
-      // OnPointerEnter was called.
-      if (focus_ && !SameLocation(event, location_)) {
-        delegate_->OnPointerMotion(event->time_stamp(), event->location_f());
-        delegate_->OnPointerFrame();
-        location_ = event->location_f();
+      if (focus_) {
+        bool send_frame = false;
+        // Generate motion event if location changed. We need to check location
+        // here as mouse movement can generate both "moved" and "entered" events
+        // but OnPointerMotion should only be called if location changed since
+        // OnPointerEnter was called.
+        if (!SameLocation(event, location_)) {
+          location_ = event->location_f();
+          delegate_->OnPointerMotion(event->time_stamp(), location_);
+          send_frame = true;
+        }
+        if (stylus_delegate_ &&
+            pointer_type_ != ui::EventPointerType::POINTER_TYPE_MOUSE) {
+          constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
+          gfx::Vector2dF new_tilt = gfx::Vector2dF(
+              event->pointer_details().tilt_x, event->pointer_details().tilt_y);
+          if (std::abs(new_tilt.x() - tilt_.x()) > kEpsilon ||
+              std::abs(new_tilt.y() - tilt_.y()) > kEpsilon) {
+            tilt_ = new_tilt;
+            stylus_delegate_->OnPointerTilt(event->time_stamp(), new_tilt);
+            send_frame = true;
+          }
+
+          float new_force = event->pointer_details().force;
+          if (std::abs(new_force - force_) > kEpsilon) {
+            force_ = new_force;
+            stylus_delegate_->OnPointerForce(event->time_stamp(), new_force);
+            send_frame = true;
+          }
+        }
+        if (send_frame)
+          delegate_->OnPointerFrame();
       }
       break;
     case ui::ET_SCROLL:

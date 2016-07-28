@@ -17,6 +17,7 @@
 #include <gaming-input-unstable-v1-server-protocol.h>       // NOLINT
 #include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
+#include <stylus-unstable-v1-server-protocol.h>             // NOLINT
 #include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
 #include <vsync-feedback-unstable-v1-server-protocol.h>     // NOLINT
 
@@ -53,6 +54,7 @@
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
+#include "components/exo/pointer_stylus_delegate.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -2892,6 +2894,81 @@ void bind_gaming_input(wl_client* client,
                     std::move(gaming_input_thread));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// pointer_stylus interface:
+
+class WaylandPointerStylusDelegate : public PointerStylusDelegate {
+ public:
+  WaylandPointerStylusDelegate(wl_resource* resource, Pointer* pointer)
+      : resource_(resource), pointer_(pointer) {
+    pointer_->SetStylusDelegate(this);
+  }
+  ~WaylandPointerStylusDelegate() override {
+    if (pointer_ != nullptr)
+      pointer_->SetStylusDelegate(nullptr);
+  }
+  void OnPointerDestroying(Pointer* pointer) override { pointer_ = nullptr; }
+  void OnPointerToolChange(ui::EventPointerType type) override {
+    uint wayland_type = ZWP_POINTER_STYLUS_V1_TOOL_TYPE_MOUSE;
+    if (type == ui::EventPointerType::POINTER_TYPE_PEN)
+      wayland_type = ZWP_POINTER_STYLUS_V1_TOOL_TYPE_PEN;
+    zwp_pointer_stylus_v1_send_tool_change(resource_, wayland_type);
+  }
+  void OnPointerForce(base::TimeTicks time_stamp, float force) override {
+    zwp_pointer_stylus_v1_send_force(resource_,
+                                     TimeTicksToMilliseconds(time_stamp),
+                                     wl_fixed_from_double(force));
+  }
+  void OnPointerTilt(base::TimeTicks time_stamp, gfx::Vector2dF tilt) override {
+    zwp_pointer_stylus_v1_send_tilt(
+        resource_, TimeTicksToMilliseconds(time_stamp),
+        wl_fixed_from_double(tilt.x()), wl_fixed_from_double(tilt.y()));
+  }
+
+ private:
+  wl_resource* resource_;
+  Pointer* pointer_;
+
+  // The client who own this pointer stylus instance.
+  wl_client* client() const { return wl_resource_get_client(resource_); }
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandPointerStylusDelegate);
+};
+
+void pointer_stylus_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zwp_pointer_stylus_v1_interface pointer_stylus_implementation = {
+    pointer_stylus_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
+// stylus interface:
+
+void stylus_get_pointer_stylus(wl_client* client,
+                               wl_resource* resource,
+                               uint32_t id,
+                               wl_resource* pointer_resource) {
+  Pointer* pointer = GetUserDataAs<Pointer>(pointer_resource);
+
+  wl_resource* stylus_resource =
+      wl_resource_create(client, &zwp_pointer_stylus_v1_interface, 1, id);
+
+  SetImplementation(stylus_resource, &pointer_stylus_implementation,
+                    base::WrapUnique(new WaylandPointerStylusDelegate(
+                        stylus_resource, pointer)));
+}
+
+const struct zwp_stylus_v1_interface stylus_implementation = {
+    stylus_get_pointer_stylus};
+
+void bind_stylus(wl_client* client, void* data, uint32_t version, uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_stylus_v1_interface, version, id);
+  wl_resource_set_implementation(resource, &stylus_implementation, data,
+                                 nullptr);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2932,6 +3009,8 @@ Server::Server(Display* display)
                    remote_shell_version, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zwp_gaming_input_v1_interface, 1,
                    display_, bind_gaming_input);
+  wl_global_create(wl_display_.get(), &zwp_stylus_v1_interface, 1, display_,
+                   bind_stylus);
 }
 
 Server::~Server() {}

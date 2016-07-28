@@ -27,6 +27,7 @@ class Widget;
 
 namespace exo {
 class PointerDelegate;
+class PointerStylusDelegate;
 class Surface;
 
 // This class implements a client pointer that represents one or more input
@@ -45,6 +46,9 @@ class Pointer : public ui::EventHandler,
   // (x, y) - (hotspot.x, hotspot.y), where (x, y) are the coordinates of the
   // pointer location, in surface local coordinates.
   void SetCursor(Surface* surface, const gfx::Point& hotspot);
+
+  // Set delegate for stylus events.
+  void SetStylusDelegate(PointerStylusDelegate* delegate);
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -73,6 +77,9 @@ class Pointer : public ui::EventHandler,
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
 
+  // The delegate instance that all stylus related events are dispatched to.
+  PointerStylusDelegate* stylus_delegate_ = nullptr;
+
   // The widget for the pointer cursor.
   std::unique_ptr<views::Widget> widget_;
 
@@ -90,6 +97,15 @@ class Pointer : public ui::EventHandler,
 
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
+
+  // The current pointer type.
+  ui::EventPointerType pointer_type_;
+
+  // The current pointer tilt.
+  gfx::Vector2dF tilt_;
+
+  // The current pointer force.
+  float force_;
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };
