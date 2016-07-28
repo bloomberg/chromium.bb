@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module media_router.interfaces;
+module media_router.mojom;
 
 // Represents an output sink to which media can be routed.
 struct MediaSink {

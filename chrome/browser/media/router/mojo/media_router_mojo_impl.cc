@@ -36,16 +36,16 @@
 
 namespace media_router {
 
-using SinkAvailability = interfaces::MediaRouter::SinkAvailability;
+using SinkAvailability = mojom::MediaRouter::SinkAvailability;
 
 namespace {
 
 std::unique_ptr<content::PresentationSessionMessage>
-ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
+ConvertToPresentationSessionMessage(mojom::RouteMessagePtr input) {
   DCHECK(!input.is_null());
   std::unique_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
-    case interfaces::RouteMessage::Type::TEXT: {
+    case mojom::RouteMessage::Type::TEXT: {
       DCHECK(input->message);
       DCHECK(!input->data);
       output.reset(new content::PresentationSessionMessage(
@@ -53,7 +53,7 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
       output->message = std::move(*input->message);
       return output;
     }
-    case interfaces::RouteMessage::Type::BINARY: {
+    case mojom::RouteMessage::Type::BINARY: {
       DCHECK(input->data);
       DCHECK(!input->message);
       output.reset(new content::PresentationSessionMessage(
@@ -81,7 +81,7 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
     extensions::EventPageTracker* event_page_tracker)
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
-      availability_(interfaces::MediaRouter::SinkAvailability::UNAVAILABLE),
+      availability_(mojom::MediaRouter::SinkAvailability::UNAVAILABLE),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -101,7 +101,7 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 void MediaRouterMojoImpl::BindToRequest(
     const extensions::Extension* extension,
     content::BrowserContext* context,
-    mojo::InterfaceRequest<interfaces::MediaRouter> request) {
+    mojo::InterfaceRequest<mojom::MediaRouter> request) {
   MediaRouterMojoImpl* impl = static_cast<MediaRouterMojoImpl*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);
@@ -110,12 +110,12 @@ void MediaRouterMojoImpl::BindToRequest(
 }
 
 void MediaRouterMojoImpl::BindToMojoRequest(
-    mojo::InterfaceRequest<interfaces::MediaRouter> request,
+    mojo::InterfaceRequest<mojom::MediaRouter> request,
     const extensions::Extension& extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   binding_.reset(
-      new mojo::Binding<interfaces::MediaRouter>(this, std::move(request)));
+      new mojo::Binding<mojom::MediaRouter>(this, std::move(request)));
   binding_->set_connection_error_handler(base::Bind(
       &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
 
@@ -145,8 +145,8 @@ void MediaRouterMojoImpl::OnConnectionError() {
 }
 
 void MediaRouterMojoImpl::RegisterMediaRouteProvider(
-    interfaces::MediaRouteProviderPtr media_route_provider_ptr,
-    const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
+    mojom::MediaRouteProviderPtr media_route_provider_ptr,
+    const mojom::MediaRouter::RegisterMediaRouteProviderCallback&
         callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_WIN)
@@ -186,7 +186,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 #endif
 }
 
-void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
+void MediaRouterMojoImpl::OnIssue(const mojom::IssuePtr issue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue->title;
   const Issue& issue_converted = issue.To<Issue>();
@@ -195,7 +195,7 @@ void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
 
 void MediaRouterMojoImpl::OnSinksReceived(
     const std::string& media_source,
-    std::vector<interfaces::MediaSinkPtr> sinks,
+    std::vector<mojom::MediaSinkPtr> sinks,
     const std::vector<std::string>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
@@ -238,7 +238,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
 }
 
 void MediaRouterMojoImpl::OnRoutesUpdated(
-    std::vector<interfaces::MediaRoutePtr> routes,
+    std::vector<mojom::MediaRoutePtr> routes,
     const std::string& media_source,
     const std::vector<std::string>& joinable_route_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -266,9 +266,9 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     bool incognito,
     const std::vector<MediaRouteResponseCallback>& callbacks,
-    interfaces::MediaRoutePtr media_route,
+    mojom::MediaRoutePtr media_route,
     const base::Optional<std::string>& error_text,
-    interfaces::RouteRequestResultCode result_code) {
+    mojom::RouteRequestResultCode result_code) {
   std::unique_ptr<RouteRequestResult> result;
   if (media_route.is_null()) {
     // An error occurred.
@@ -475,7 +475,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // If sink availability is UNAVAILABLE, then there is no need to call MRPM.
   // |observer| can be immediately notified with an empty list.
   sinks_query->observers.AddObserver(observer);
-  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
+  if (availability_ == mojom::MediaRouter::SinkAvailability::UNAVAILABLE) {
     observer->OnSinksUpdated(std::vector<MediaSink>(), std::vector<GURL>());
   } else {
     // Need to call MRPM to start observing sinks if the query is new.
@@ -511,7 +511,7 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     // UNAVAILABLE.
     // Otherwise, the MRPM would have discarded the queries already.
     if (availability_ !=
-        interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
+        mojom::MediaRouter::SinkAvailability::UNAVAILABLE) {
       SetWakeReason(MediaRouteProviderWakeReason::STOP_OBSERVING_MEDIA_SINKS);
       // The |sinks_queries_| entry will be removed in the immediate or deferred
       // |DoStopObservingMediaSinks| call.
@@ -723,7 +723,7 @@ void MediaRouterMojoImpl::DoSearchSinks(
     const std::string& domain,
     const MediaSinkSearchResponseCallback& sink_callback) {
   DVLOG_WITH_INSTANCE(1) << "SearchSinks";
-  auto sink_search_criteria = interfaces::SinkSearchCriteria::New();
+  auto sink_search_criteria = mojom::SinkSearchCriteria::New();
   sink_search_criteria->input = search_input;
   sink_search_criteria->domain = domain;
   media_route_provider_->SearchSinks(
@@ -732,7 +732,7 @@ void MediaRouterMojoImpl::DoSearchSinks(
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const std::string& route_id,
-    std::vector<interfaces::RouteMessagePtr> messages) {
+    std::vector<mojom::RouteMessagePtr> messages) {
   DVLOG_WITH_INSTANCE(1) << "OnRouteMessagesReceived";
 
   DCHECK(!messages.empty());
@@ -762,7 +762,7 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
     return;
 
   availability_ = availability;
-  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
+  if (availability_ == mojom::MediaRouter::SinkAvailability::UNAVAILABLE) {
     // Sinks are no longer available. MRPM has already removed all sink queries.
     for (auto& source_and_query : sinks_queries_) {
       auto* query = source_and_query.second;
@@ -782,14 +782,14 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
 
 void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
     const std::string& route_id,
-    interfaces::MediaRouter::PresentationConnectionState state) {
+    mojom::MediaRouter::PresentationConnectionState state) {
   NotifyPresentationConnectionStateChange(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
 }
 
 void MediaRouterMojoImpl::OnPresentationConnectionClosed(
     const std::string& route_id,
-    interfaces::MediaRouter::PresentationConnectionCloseReason reason,
+    mojom::MediaRouter::PresentationConnectionCloseReason reason,
     const std::string& message) {
   NotifyPresentationConnectionClose(
       route_id, mojo::PresentationConnectionCloseReasonFromMojo(reason),
@@ -799,8 +799,8 @@ void MediaRouterMojoImpl::OnPresentationConnectionClosed(
 void MediaRouterMojoImpl::OnTerminateRouteResult(
     const MediaRoute::Id& route_id,
     const base::Optional<std::string>& error_text,
-    interfaces::RouteRequestResultCode result_code) {
-  if (result_code != interfaces::RouteRequestResultCode::OK) {
+    mojom::RouteRequestResultCode result_code) {
+  if (result_code != mojom::RouteRequestResultCode::OK) {
     LOG(WARNING) << "Failed to terminate route " << route_id
                  << ": result_code = " << result_code << ", "
                  << error_text.value_or(std::string());
@@ -813,7 +813,7 @@ void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaSinks: " << source_id;
   // No need to call MRPM if there are no sinks available.
-  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE)
+  if (availability_ == mojom::MediaRouter::SinkAvailability::UNAVAILABLE)
     return;
 
   // No need to call MRPM if all observers have been removed in the meantime.

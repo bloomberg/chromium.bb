@@ -47,7 +47,7 @@ enum class MediaRouteProviderWakeReason;
 // Also handles the suspension and wakeup of the component extension.
 // Lives on the UI thread.
 class MediaRouterMojoImpl : public MediaRouterBase,
-                            public interfaces::MediaRouter {
+                            public mojom::MediaRouter {
  public:
   ~MediaRouterMojoImpl() override;
 
@@ -63,7 +63,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   static void BindToRequest(
       const extensions::Extension* extension,
       content::BrowserContext* context,
-      mojo::InterfaceRequest<interfaces::MediaRouter> request);
+      mojo::InterfaceRequest<mojom::MediaRouter> request);
 
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be
@@ -205,7 +205,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
   // Stores the ID of |extension| in |media_route_provider_extension_id_|.
   void BindToMojoRequest(
-      mojo::InterfaceRequest<interfaces::MediaRouter> request,
+      mojo::InterfaceRequest<mojom::MediaRouter> request,
       const extensions::Extension& extension);
 
   // Enqueues a closure for later execution by ExecutePendingRequests().
@@ -281,37 +281,37 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Error handler callback for |binding_| and |media_route_provider_|.
   void OnConnectionError();
 
-  // interfaces::MediaRouter implementation.
+  // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
-      interfaces::MediaRouteProviderPtr media_route_provider_ptr,
-      const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
+      mojom::MediaRouteProviderPtr media_route_provider_ptr,
+      const mojom::MediaRouter::RegisterMediaRouteProviderCallback&
           callback) override;
-  void OnIssue(interfaces::IssuePtr issue) override;
+  void OnIssue(mojom::IssuePtr issue) override;
   void OnSinksReceived(const std::string& media_source,
-                       std::vector<interfaces::MediaSinkPtr> sinks,
+                       std::vector<mojom::MediaSinkPtr> sinks,
                        const std::vector<std::string>& origins) override;
   void OnRoutesUpdated(
-      std::vector<interfaces::MediaRoutePtr> routes,
+      std::vector<mojom::MediaRoutePtr> routes,
       const std::string& media_source,
       const std::vector<std::string>& joinable_route_ids) override;
   void OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SinkAvailability availability) override;
+      mojom::MediaRouter::SinkAvailability availability) override;
   void OnPresentationConnectionStateChanged(
       const std::string& route_id,
-      interfaces::MediaRouter::PresentationConnectionState state) override;
+      mojom::MediaRouter::PresentationConnectionState state) override;
   void OnPresentationConnectionClosed(
       const std::string& route_id,
-      interfaces::MediaRouter::PresentationConnectionCloseReason reason,
+      mojom::MediaRouter::PresentationConnectionCloseReason reason,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,
-      std::vector<interfaces::RouteMessagePtr> messages) override;
+      std::vector<mojom::RouteMessagePtr> messages) override;
 
   // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
   // to the ID of the route that was terminated.
   void OnTerminateRouteResult(const MediaRoute::Id& route_id,
                               const base::Optional<std::string>& error_text,
-                              interfaces::RouteRequestResultCode result_code);
+                              mojom::RouteRequestResultCode result_code);
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
@@ -319,9 +319,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& presentation_id,
       bool incognito,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      interfaces::MediaRoutePtr media_route,
+      mojom::MediaRoutePtr media_route,
       const base::Optional<std::string>& error_text,
-      interfaces::RouteRequestResultCode result_code);
+      mojom::RouteRequestResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
   // component extension. If |success| is false, the pending request queue is
@@ -385,15 +385,15 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   IssueManager issue_manager_;
 
-  // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
-  std::unique_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
+  // Binds |this| to a Mojo connection stub for mojom::MediaRouter.
+  std::unique_ptr<mojo::Binding<mojom::MediaRouter>> binding_;
 
   // Mojo proxy object for the Media Route Provider Manager.
   // Set to null initially, and later set to the Provider Manager proxy object
   // passed in via |RegisterMediaRouteProvider()|.
   // This is set to null again when the component extension is suspended
   // if or a Mojo channel error occured.
-  interfaces::MediaRouteProviderPtr media_route_provider_;
+  mojom::MediaRouteProviderPtr media_route_provider_;
 
   // Id of the component extension. Used for managing its suspend/wake state
   // via event_page_tracker_.
@@ -410,7 +410,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   std::string instance_id_;
 
   // The last reported sink availability from the media route provider manager.
-  interfaces::MediaRouter::SinkAvailability availability_;
+  mojom::MediaRouter::SinkAvailability availability_;
 
   int wakeup_attempt_count_ = 0;
 

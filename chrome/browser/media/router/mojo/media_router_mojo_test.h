@@ -25,7 +25,7 @@ namespace media_router {
 
 class MediaRouterMojoImpl;
 
-class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
+class MockMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
   MockMediaRouteProvider();
   ~MockMediaRouteProvider() override;
@@ -88,14 +88,14 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
   void SearchSinks(
       const std::string& sink_id,
       const std::string& media_source,
-      interfaces::SinkSearchCriteriaPtr search_criteria,
+      mojom::SinkSearchCriteriaPtr search_criteria,
       const SearchSinksCallback& callback) override {
     SearchSinks_(sink_id, media_source, search_criteria, callback);
   }
   MOCK_METHOD4(SearchSinks_,
                void(const std::string& sink_id,
                     const std::string& media_source,
-                    interfaces::SinkSearchCriteriaPtr& search_criteria,
+                    mojom::SinkSearchCriteriaPtr& search_criteria,
                     const SearchSinksCallback& callback));
 
  private:
@@ -137,13 +137,13 @@ class MediaRouterMojoTest : public ::testing::Test {
   testing::NiceMock<MockEventPageTracker> mock_event_page_tracker_;
 
   // Mojo proxy object for |mock_media_router_|
-  media_router::interfaces::MediaRouterPtr media_router_proxy_;
+  media_router::mojom::MediaRouterPtr media_router_proxy_;
 
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
   std::unique_ptr<MediaRouterMojoImpl> mock_media_router_;
-  std::unique_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+  std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };

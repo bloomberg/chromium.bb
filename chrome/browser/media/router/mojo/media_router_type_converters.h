@@ -25,59 +25,59 @@ namespace mojo {
 
 // MediaSink conversion.
 media_router::MediaSink::IconType SinkIconTypeFromMojo(
-    media_router::interfaces::MediaSink::IconType type);
+    media_router::mojom::MediaSink::IconType type);
 
-media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
+media_router::mojom::MediaSink::IconType SinkIconTypeToMojo(
     media_router::MediaSink::IconType type);
 
 template <>
 struct TypeConverter<media_router::MediaSink,
-                     media_router::interfaces::MediaSinkPtr> {
+                     media_router::mojom::MediaSinkPtr> {
   static media_router::MediaSink Convert(
-      const media_router::interfaces::MediaSinkPtr& input);
+      const media_router::mojom::MediaSinkPtr& input);
 };
 
 // MediaRoute conversion.
 template <>
 struct TypeConverter<media_router::MediaRoute,
-                     media_router::interfaces::MediaRoutePtr> {
+                     media_router::mojom::MediaRoutePtr> {
   static media_router::MediaRoute Convert(
-      const media_router::interfaces::MediaRoutePtr& input);
+      const media_router::mojom::MediaRoutePtr& input);
 };
 
 template <>
 struct TypeConverter<std::unique_ptr<media_router::MediaRoute>,
-                     media_router::interfaces::MediaRoutePtr> {
+                     media_router::mojom::MediaRoutePtr> {
   static std::unique_ptr<media_router::MediaRoute> Convert(
-      const media_router::interfaces::MediaRoutePtr& input);
+      const media_router::mojom::MediaRoutePtr& input);
 };
 
 // Issue conversion.
 media_router::Issue::Severity IssueSeverityFromMojo(
-    media_router::interfaces::Issue::Severity severity);
+    media_router::mojom::Issue::Severity severity);
 
 media_router::IssueAction::Type IssueActionTypeFromMojo(
-    media_router::interfaces::Issue::ActionType action_type);
+    media_router::mojom::Issue::ActionType action_type);
 
 template <>
-struct TypeConverter<media_router::Issue, media_router::interfaces::IssuePtr> {
+struct TypeConverter<media_router::Issue, media_router::mojom::IssuePtr> {
   static media_router::Issue Convert(
-      const media_router::interfaces::IssuePtr& input);
+      const media_router::mojom::IssuePtr& input);
 };
 
 // PresentationConnectionState conversion.
 content::PresentationConnectionState PresentationConnectionStateFromMojo(
-    media_router::interfaces::MediaRouter::PresentationConnectionState state);
+    media_router::mojom::MediaRouter::PresentationConnectionState state);
 
 // PresentationConnectionCloseReason conversion.
 content::PresentationConnectionCloseReason
 PresentationConnectionCloseReasonFromMojo(
-    media_router::interfaces::MediaRouter::PresentationConnectionCloseReason
+    media_router::mojom::MediaRouter::PresentationConnectionCloseReason
         reason);
 
 // RouteRequestResult conversion.
 media_router::RouteRequestResult::ResultCode RouteRequestResultCodeFromMojo(
-    media_router::interfaces::RouteRequestResultCode result_code);
+    media_router::mojom::RouteRequestResultCode result_code);
 
 }  // namespace mojo
 

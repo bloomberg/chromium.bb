@@ -6,30 +6,30 @@
 
 #include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 
-using media_router::interfaces::IssuePtr;
-using media_router::interfaces::MediaRoutePtr;
-using media_router::interfaces::MediaSinkPtr;
+using media_router::mojom::IssuePtr;
+using media_router::mojom::MediaRoutePtr;
+using media_router::mojom::MediaSinkPtr;
 
 using PresentationConnectionState =
-    media_router::interfaces::MediaRouter::PresentationConnectionState;
+    media_router::mojom::MediaRouter::PresentationConnectionState;
 using PresentationConnectionCloseReason =
-    media_router::interfaces::MediaRouter::PresentationConnectionCloseReason;
-using RouteRequestResultCode = media_router::interfaces::RouteRequestResultCode;
+    media_router::mojom::MediaRouter::PresentationConnectionCloseReason;
+using RouteRequestResultCode = media_router::mojom::RouteRequestResultCode;
 
 namespace mojo {
 
 media_router::MediaSink::IconType SinkIconTypeFromMojo(
-    media_router::interfaces::MediaSink::IconType type) {
+    media_router::mojom::MediaSink::IconType type) {
   switch (type) {
-    case media_router::interfaces::MediaSink::IconType::CAST:
+    case media_router::mojom::MediaSink::IconType::CAST:
       return media_router::MediaSink::CAST;
-    case media_router::interfaces::MediaSink::IconType::CAST_AUDIO:
+    case media_router::mojom::MediaSink::IconType::CAST_AUDIO:
       return media_router::MediaSink::CAST_AUDIO;
-    case media_router::interfaces::MediaSink::IconType::CAST_AUDIO_GROUP:
+    case media_router::mojom::MediaSink::IconType::CAST_AUDIO_GROUP:
       return media_router::MediaSink::CAST_AUDIO_GROUP;
-    case media_router::interfaces::MediaSink::IconType::HANGOUT:
+    case media_router::mojom::MediaSink::IconType::HANGOUT:
       return media_router::MediaSink::HANGOUT;
-    case media_router::interfaces::MediaSink::IconType::GENERIC:
+    case media_router::mojom::MediaSink::IconType::GENERIC:
       return media_router::MediaSink::GENERIC;
     default:
       NOTREACHED() << "Unknown sink icon type " << type;
@@ -37,22 +37,22 @@ media_router::MediaSink::IconType SinkIconTypeFromMojo(
   }
 }
 
-media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
+media_router::mojom::MediaSink::IconType SinkIconTypeToMojo(
     media_router::MediaSink::IconType type) {
   switch (type) {
     case media_router::MediaSink::CAST:
-      return media_router::interfaces::MediaSink::IconType::CAST;
+      return media_router::mojom::MediaSink::IconType::CAST;
     case media_router::MediaSink::CAST_AUDIO:
-      return media_router::interfaces::MediaSink::IconType::CAST_AUDIO;
+      return media_router::mojom::MediaSink::IconType::CAST_AUDIO;
     case media_router::MediaSink::CAST_AUDIO_GROUP:
-      return media_router::interfaces::MediaSink::IconType::CAST_AUDIO_GROUP;
+      return media_router::mojom::MediaSink::IconType::CAST_AUDIO_GROUP;
     case media_router::MediaSink::HANGOUT:
-      return media_router::interfaces::MediaSink::IconType::HANGOUT;
+      return media_router::mojom::MediaSink::IconType::HANGOUT;
     case media_router::MediaSink::GENERIC:
-      return media_router::interfaces::MediaSink::IconType::GENERIC;
+      return media_router::mojom::MediaSink::IconType::GENERIC;
     default:
       NOTREACHED() << "Unknown sink icon type " << type;
-      return media_router::interfaces::MediaSink::IconType::GENERIC;
+      return media_router::mojom::MediaSink::IconType::GENERIC;
   }
 }
 
@@ -101,13 +101,13 @@ TypeConverter<std::unique_ptr<media_router::MediaRoute>,
 }
 
 media_router::Issue::Severity IssueSeverityFromMojo(
-    media_router::interfaces::Issue::Severity severity) {
+    media_router::mojom::Issue::Severity severity) {
   switch (severity) {
-    case media_router::interfaces::Issue::Severity::FATAL:
+    case media_router::mojom::Issue::Severity::FATAL:
       return media_router::Issue::FATAL;
-    case media_router::interfaces::Issue::Severity::WARNING:
+    case media_router::mojom::Issue::Severity::WARNING:
       return media_router::Issue::WARNING;
-    case media_router::interfaces::Issue::Severity::NOTIFICATION:
+    case media_router::mojom::Issue::Severity::NOTIFICATION:
       return media_router::Issue::NOTIFICATION;
     default:
       NOTREACHED() << "Unknown issue severity " << severity;
@@ -116,11 +116,11 @@ media_router::Issue::Severity IssueSeverityFromMojo(
 }
 
 media_router::IssueAction::Type IssueActionTypeFromMojo(
-    media_router::interfaces::Issue::ActionType action_type) {
+    media_router::mojom::Issue::ActionType action_type) {
   switch (action_type) {
-    case media_router::interfaces::Issue::ActionType::DISMISS:
+    case media_router::mojom::Issue::ActionType::DISMISS:
       return media_router::IssueAction::TYPE_DISMISS;
-    case media_router::interfaces::Issue::ActionType::LEARN_MORE:
+    case media_router::mojom::Issue::ActionType::LEARN_MORE:
       return media_router::IssueAction::TYPE_LEARN_MORE;
     default:
       NOTREACHED() << "Unknown issue action type " << action_type;
