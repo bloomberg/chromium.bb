@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,6 +31,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_entry.h"
@@ -96,6 +98,10 @@ const char kInstantSupportEnabled[] = "Instant support enabled";
 const char kInstantSupportDisabled[] = "Instant support disabled";
 const char kInstantSupportUnknown[] = "Instant support unknown";
 
+base::Feature kUseGoogleLocalNtp {
+  "UseGoogleLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 InstantSupportState StringToInstantSupportState(const base::string16& value) {
   if (value == base::ASCIIToUTF16(kInstantSupportEnabled))
     return INSTANT_SUPPORT_YES;
@@ -125,6 +131,20 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
       return template_url_service->GetDefaultSearchProvider();
   }
   return NULL;
+}
+
+bool DefaultSearchProviderIsGoogle(Profile* profile) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (!template_url_service)
+    return false;
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_provider)
+    return false;
+  return default_provider->GetEngineType(
+             template_url_service->search_terms_data()) ==
+         SearchEngineType::SEARCH_ENGINE_GOOGLE;
 }
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
@@ -241,16 +261,23 @@ NewTabURLState IsValidNewTabURL(Profile* profile, const GURL& new_tab_url) {
   return NEW_TAB_URL_VALID;
 }
 
-// On Chrome OS, if the session hasn't merged yet, we need to avoid loading the
-// remote NTP because that will trigger showing the merge session throttle
-// interstitial page, which can show for 5+ seconds. crbug.com/591530.
 bool ShouldShowLocalNewTab(const GURL& url, Profile* profile) {
 #if defined(OS_CHROMEOS)
+  // On Chrome OS, if the session hasn't merged yet, we need to avoid loading
+  // the remote NTP because that will trigger showing the merge session throttle
+  // interstitial page, which can show for 5+ seconds. crbug.com/591530.
   if (merge_session_throttling_utils::ShouldDelayRequestForProfile(profile) &&
       merge_session_throttling_utils::ShouldDelayUrl(url)) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)
+
+  if (!profile->IsOffTheRecord() &&
+      base::FeatureList::IsEnabled(kUseGoogleLocalNtp) &&
+      DefaultSearchProviderIsGoogle(profile)) {
+    return true;
+  }
+
   return false;
 }
 
