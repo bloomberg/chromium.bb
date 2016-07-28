@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -20,6 +21,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -330,13 +332,17 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
     }
   }
 
-  // For default view, draw bottom border for each item, except the last
-  // 2 items, which are the bottom header row and the one just above it.
-  if (is_default_bubble) {
-    const int last_item_with_border =
-        static_cast<int>(item_containers.size()) - 2;
-    for (int i = 0; i < last_item_with_border; ++i)
-      item_containers.at(i)->SetDrawBorder(true);
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    // For default view, draw bottom border for each item, except the last
+    // 2 items, which are the bottom header row and the one just above it.
+    if (is_default_bubble) {
+      const int last_item_with_border =
+          static_cast<int>(item_containers.size()) - 2;
+      for (int i = 0; i < last_item_with_border; ++i) {
+        item_containers.at(i)->SetBorder(views::Border::CreateSolidSidedBorder(
+            0, 0, 1, 0, kBorderLightColor));
+      }
+    }
   }
 
   if (focus_view)

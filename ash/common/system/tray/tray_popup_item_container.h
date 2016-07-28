@@ -18,8 +18,6 @@ class TrayPopupItemContainer : public views::View {
 
   ~TrayPopupItemContainer() override;
 
-  void SetDrawBorder(bool draw_border);
-
   bool active() { return active_; }
 
  private:
