@@ -13,3 +13,6 @@ RdpClientTest.Basic
 
 # https://crbug.com/581519
 Webrtc/ConnectionTest.Video/0
+
+# https://crbug.com/632248
+BackoffTimer.Basic
