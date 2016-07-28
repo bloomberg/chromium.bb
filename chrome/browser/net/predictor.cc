@@ -64,9 +64,12 @@ const double Predictor::kDiscardableExpectedValue = 0.05;
 const size_t Predictor::kMaxSpeculativeParallelResolves = 3;
 const int Predictor::kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;
 
-// TODO(csharrison): Tune this by observing UMA. We can probably get a lot
-// lower.
-const int Predictor::kMaxReferrers = 1000;
+// This number was obtained by the Net.Predictor.MRUIndex histogram on Canary
+// and Dev channel (M53). The database size was initialized to 1000, and the
+// histogram logged the index into the MRU in PrepareFrameSubresources. The
+// results showed that 99% of all accesses used the first 100 elements, and
+// 99.5% of all accesses used the first 170 elements.
+const int Predictor::kMaxReferrers = 100;
 
 // To control our congestion avoidance system, which discards a queue when
 // resolutions are "taking too long," we need an expected resolution time.
@@ -863,8 +866,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Peek here, and Get after logging the index into the MRU.
-  // TODO(csharrison): Remove this logic when the MRU size is tuned.
-  Referrers::iterator it = referrers_.Peek(url);
+  Referrers::iterator it = referrers_.Get(url);
   if (referrers_.end() == it) {
     // Only when we don't know anything about this url, make 2 connections
     // available.  We could do this completely via learning (by prepopulating
@@ -879,10 +881,6 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
     }
     return;
   }
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Predictor.MRUIndex",
-                              std::distance(referrers_.begin(), it), 1, 1000,
-                              50);
-  it = referrers_.Get(url);
   Referrer* referrer = &(it->second);
 
   referrer->IncrementUseCount();

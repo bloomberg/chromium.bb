@@ -29062,6 +29062,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.Predictor.MRUIndex">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    Dev data was collected which was good enough to make a decision on the size
+    of the predictor database.
+  </obsolete>
   <summary>
     The index into the predictor's MRU on navigation. This is the size the MRU
     had to be in order to effectively predict subresources for this navigation.
