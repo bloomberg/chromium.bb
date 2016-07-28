@@ -87,7 +87,7 @@ void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
   // We may cause a new BeginFrame to be run inside this method, but to help
   // avoid being reentrant to the caller of SurfaceDamaged, track when this is
   // happening with |inside_surface_damaged_|.
-  base::AutoReset<bool>(&inside_surface_damaged_, true);
+  base::AutoReset<bool> auto_reset(&inside_surface_damaged_, true);
 
   needs_draw_ = true;
 
