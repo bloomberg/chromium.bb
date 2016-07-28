@@ -8,6 +8,7 @@ import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.JavascriptInterface;
 import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
@@ -15,21 +16,36 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 
 /**
  * Tests for IME (input method editor) on Android WebView.
  */
 public class AwImeTest extends AwTestBase {
 
+    private static class TestJavascriptInterface {
+        private final CallbackHelper mFocusCallbackHelper = new CallbackHelper();
+
+        @JavascriptInterface
+        public void onEditorFocused() {
+            mFocusCallbackHelper.notifyCalled();
+        }
+
+        public CallbackHelper getFocusCallbackHelper() {
+            return mFocusCallbackHelper;
+        }
+    }
+
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private EditText mEditText;
+    private final TestJavascriptInterface mTestJavascriptInterface = new TestJavascriptInterface();
+    private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -38,13 +54,21 @@ public class AwImeTest extends AwTestBase {
                 mEditText = new EditText(getActivity());
                 getActivity().addView(mEditText);
                 getActivity().addView(mTestContainerView);
+                mTestContainerView.getAwContents().addJavascriptInterface(
+                        mTestJavascriptInterface, "test");
+                // Let's not test against real input method.
+                mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(
+                        mTestContainerView.getContentViewCore());
+                mTestContainerView.getContentViewCore().getImeAdapterForTest()
+                        .setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
             }
         });
+    }
 
-        final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
-
+    private void loadContentEditableBody() throws Exception {
         final String mime = "text/html";
         final String htmlDocument = "<html><body contenteditable id='editor'></body></html>";
+        final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
 
         loadDataSync(mTestContainerView.getAwContents(), loadHelper, htmlDocument, mime, false);
     }
@@ -70,19 +94,21 @@ public class AwImeTest extends AwTestBase {
         });
 
         enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
-        // This is the usual pattern for email client using webview:
-        // we want the cursor to be there even without tapping the editor.
+        // View focus may not have been propagated to the renderer process yet. If document is not
+        // yet focused, and focusing on an element is an invalid operation. See crbug.com/622151
+        // for details.
         executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(), mContentsClient,
-                "(function() {"
-                + "var sel = window.getSelection();"
-                + "var range = document.createRange();"
-                + "var editor = document.getElementById('editor');"
-                + "range.setStart(editor, 0);"
-                + "range.setEnd(editor, 0);"
-                + "range.collapse(false);"
-                + "sel.removeAllRanges();"
-                + "sel.addRange(range);"
-                + "})();");
+                "function onDocumentFocused() {\n"
+                + "  document.getElementById('editor').focus();\n"
+                + "  test.onEditorFocused();\n"
+                + "}\n"
+                + "(function() {\n"
+                + "if (document.hasFocus()) {\n"
+                + "  onDocumentFocused();"
+                + "} else {\n"
+                + "  window.addEventListener('focus', onDocumentFocused);\n"
+                + "}})();");
+        mTestJavascriptInterface.getFocusCallbackHelper().waitForCallback(0);
     }
 
     private void waitForNonNullInputConnection() throws InterruptedException {
@@ -96,10 +122,14 @@ public class AwImeTest extends AwTestBase {
         });
     }
 
+    /**
+     * Tests that moving from EditText to WebView keeps the keyboard showing.
+     */
     // https://crbug.com/569556
     @SmallTest
     @Feature({"AndroidWebView", "TextInput"})
     public void testPressNextFromEditTextAndType() throws Throwable {
+        loadContentEditableBody();
         focusOnEditTextAndShowKeyboard();
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
