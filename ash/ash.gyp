@@ -195,6 +195,8 @@
       'common/system/chromeos/network/vpn_delegate.h',
       'common/system/chromeos/network/vpn_list_view.cc',
       'common/system/chromeos/network/vpn_list_view.h',
+      'common/system/chromeos/palette/common_palette_tool.cc',
+      'common/system/chromeos/palette/common_palette_tool.h',
       'common/system/chromeos/palette/palette_ids.cc',
       'common/system/chromeos/palette/palette_ids.h',
       'common/system/chromeos/palette/palette_tool.cc',

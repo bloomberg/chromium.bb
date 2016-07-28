@@ -4,7 +4,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tool.h"
 
-#include "base/logging.h"
+#include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
