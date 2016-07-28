@@ -1062,6 +1062,7 @@ test("browser_tests") {
     }
     if (enable_nacl) {
       sources += [
+        "../browser/chrome_service_worker_browsertest.cc",
         "../browser/extensions/extension_nacl_browsertest.cc",
         "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc",
         "nacl/nacl_browsertest.cc",

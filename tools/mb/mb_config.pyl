@@ -163,7 +163,7 @@
       'ClangToTMac (dbg)':
         'swarming_gn_clang_tot_minimal_symbols_shared_debug',
       'ClangToTMacASan':
-        'swarming_gyp_asan_clang_tot_full_symbols_static_release',
+        'swarming_gn_asan_disable_nacl_clang_tot_full_symbols_static_release',
       'ClangToTMacASan tester': 'none',
       'ClangToTWin':
         'swarming_gn_clang_tot_official_minimal_symbols_static_release_x86',
@@ -362,10 +362,13 @@
         'gn_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'gn_msan_edge_release_bot',
       'MSAN Release (no origins)': 'gn_msan_no_origins_edge_release_bot',
-      'Mac ASAN Debug': 'gyp_asan_edge_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Debug':
+        'gn_asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot',
       'Mac ASAN Release Media':
-        'gyp_asan_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
-      'Mac ASAN Release': 'gyp_asan_edge_fuzzer_v8_heap_release_bot',
+        ('gn_asan_disable_nacl_edge_fuzzer_v8_heap_chrome'
+         '_with_codecs_release_bot'),
+      'Mac ASAN Release':
+        'gn_asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'gn_tsan_disable_nacl_line_tables_debug_bot',
       'TSAN Release': 'gn_tsan_disable_nacl_line_tables_release_bot',
       'Telemetry Harness Upload': 'none',
@@ -400,7 +403,7 @@
       'Linux ASan LSan Tests (1)': 'none',
       'Linux ASan Tests (sandboxed)': 'none',
       'Mac ASan 64 Builder':
-        'swarming_asan_lsan_full_symbols_gyp_release_trybot',
+        'swarming_asan_lsan_full_symbols_gn_disable_nacl_release_trybot',
       'Mac ASan 64 Tests (1)': 'none',
       'Linux Chromium OS ASan LSan Builder':
         'swarming_asan_lsan_chromeos_gn_release_trybot',
@@ -839,7 +842,8 @@
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_gn_release_trybot',
       'mac_chromium_archive_rel_ng': 'noswarming_gn_release_bot_mac_strip',
-      'mac_chromium_asan_rel_ng': 'swarming_asan_dcheck_gyp_release_bot',
+      'mac_chromium_asan_rel_ng':
+        'swarming_asan_dcheck_gn_disable_nacl_release_bot',
       'mac_chromium_asan_variable': 'findit',
       'mac_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'mac_chromium_compile_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
@@ -1238,6 +1242,11 @@
       'disable_nacl',
     ],
 
+    'gn_release_libfuzzer_asan': [
+      'gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'disable_nacl',
+    ],
+
     'gn_release_libfuzzer_msan': [
       'gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs', 'pdf_xfa',
       'disable_nacl',
@@ -1280,17 +1289,18 @@
       'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
-      'release_bot',
+    'gn_asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
+      'gyp', 'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap',
+      'chrome_with_codecs', 'release_bot',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_debug_symbols_static_bot': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap',  'debug_symbols_static_bot',
+    'gn_asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot': [
+      'gn', 'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap',
+      'debug_symbols_static_bot',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_release_bot': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+    'gn_asan_disable_nacl_edge_fuzzer_v8_heap_release_bot': [
+      'gn', 'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
@@ -1523,17 +1533,18 @@
       'swarming', 'android', 'gn', 'release_trybot', 'arm64',
     ],
 
-    'swarming_asan_dcheck_gyp_release_bot': [
-      'swarming', 'asan', 'dcheck_always_on', 'gyp', 'release_bot',
+    'swarming_asan_dcheck_gn_disable_nacl_release_bot': [
+      'swarming', 'asan', 'dcheck_always_on', 'gn', 'disable_nacl',
+      'release_bot',
     ],
 
     'swarming_asan_lsan_chromeos_gn_release_trybot': [
       'swarming', 'asan', 'lsan', 'chromeos', 'gn', 'release_trybot',
     ],
 
-    'swarming_asan_lsan_full_symbols_gyp_release_trybot': [
-      'swarming', 'asan', 'lsan', 'full_symbols', 'gyp', 'release_bot',
-      'dcheck_always_on',
+    'swarming_asan_lsan_full_symbols_gn_disable_nacl_release_trybot': [
+      'swarming', 'asan', 'lsan', 'full_symbols', 'gn', 'disable_nacl', 
+      'release_bot', 'dcheck_always_on',
     ],
 
     'swarming_asan_lsan_gn_release_bot': [
@@ -1757,7 +1768,7 @@
       'full_symbols', 'release',
     ],
 
-    'swarming_gyp_asan_clang_tot_full_symbols_static_release': [
+    'swarming_gn_asan_disable_nacl_clang_tot_full_symbols_static_release': [
       'swarming', 'gyp', 'asan', 'clang_tot', 'full_symbols', 'static',
       'release',
     ],
