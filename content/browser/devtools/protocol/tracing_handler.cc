@@ -179,8 +179,16 @@ Response TracingHandler::Start(
     const double* buffer_usage_reporting_interval,
     const std::string* transfer_mode,
     const std::unique_ptr<base::DictionaryValue>& config) {
-  if (IsTracing())
+  if (IsTracing()) {
+    if (!did_initiate_recording_ && IsStartupTracingActive()) {
+      // If tracing is already running because it was initiated by startup
+      // tracing, honor the transfer mode update, as that's the only way
+      // for the client to communicate it.
+      return_as_stream_ =
+          transfer_mode && *transfer_mode == start::kTransferModeReturnAsStream;
+    }
     return Response::InternalError("Tracing is already started");
+  }
 
   if (config && (categories || options)) {
     return Response::InternalError(
