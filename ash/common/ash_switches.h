@@ -29,6 +29,7 @@ ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullscreenAppList[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
+ASH_EXPORT extern const char kAshEnablePalette[];
 ASH_EXPORT extern const char kAshEnableUnifiedDesktop[];
 #endif
 ASH_EXPORT extern const char kAshEnableTouchView[];

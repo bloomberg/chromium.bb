@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -19,6 +20,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "base/command_line.h"
 #include "base/sys_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -47,8 +49,8 @@ const int kPaletteWidth = 360;
 
 // Returns true if the command line flag is present that enables the palette.
 bool IsPaletteEnabled() {
-  // TODO(jdufault): Hookup this function when the flag is in Chrome.
-  return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnablePalette);
 }
 
 // Creates a separator.

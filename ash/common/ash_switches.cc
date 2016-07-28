@@ -53,6 +53,9 @@ const char kAshEnableMagnifierKeyScroller[] =
 
 // Enables unified desktop mode.
 const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
+
+// Enables the palette next to the status area.
+const char kAshEnablePalette[] = "ash-enable-palette";
 #endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.
