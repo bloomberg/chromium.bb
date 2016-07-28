@@ -87,7 +87,6 @@ class BattOrSystemHealthLoadingMobile(_BattOrBenchmark):
     return 'battor.system_health_loading_mobile'
 
 
-@benchmark.Disabled('android')  # crbug.com/618330
 class BattOrPowerCases(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
@@ -96,7 +95,6 @@ class BattOrPowerCases(_BattOrBenchmark):
     return 'battor.power_cases'
 
 
-@benchmark.Disabled('android') # crbug.com/618330
 class BattOrPowerCasesNoChromeTrace(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
