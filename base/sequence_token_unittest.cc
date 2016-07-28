@@ -14,8 +14,8 @@ TEST(SequenceTokenTest, IsValid) {
 }
 
 TEST(SequenceTokenTest, OperatorEquals) {
-  const SequenceToken invalid_a;
-  const SequenceToken invalid_b;
+  SequenceToken invalid_a;
+  SequenceToken invalid_b;
   const SequenceToken valid_a = SequenceToken::Create();
   const SequenceToken valid_b = SequenceToken::Create();
 
@@ -31,8 +31,8 @@ TEST(SequenceTokenTest, OperatorEquals) {
 }
 
 TEST(SequenceTokenTest, OperatorNotEquals) {
-  const SequenceToken invalid_a;
-  const SequenceToken invalid_b;
+  SequenceToken invalid_a;
+  SequenceToken invalid_b;
   const SequenceToken valid_a = SequenceToken::Create();
   const SequenceToken valid_b = SequenceToken::Create();
 
