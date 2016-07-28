@@ -10,6 +10,9 @@
 #include "url/gurl.h"
 
 namespace web {
+
+class ResponseProvider;
+
 namespace test {
 
 // Sets up a web::test::HttpServer with a simple HtmlResponseProvider. The
@@ -21,6 +24,10 @@ void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses);
 // bundle path. web::test::MakeUrl should be used to rewrite URLs before doing
 // a request.
 void SetUpFileBasedHttpServer();
+
+// Sets up a web::test::HttpServer with a single custom provider.
+// Takes ownership of the provider.
+void SetUpHttpServer(std::unique_ptr<web::ResponseProvider> provider);
 
 }  // namespace test
 }  // namespace web

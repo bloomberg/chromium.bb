@@ -14,20 +14,18 @@ namespace web {
 namespace test {
 
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  DCHECK(server.IsRunning());
-  auto provider = base::MakeUnique<HtmlResponseProvider>(responses);
-
-  server.RemoveAllResponseProviders();
-  server.AddResponseProvider(std::move(provider));
+  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
 }
 
 void SetUpFileBasedHttpServer() {
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  DCHECK(server.IsRunning());
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  auto provider = base::MakeUnique<FileBasedResponseProvider>(path);
+  SetUpHttpServer(base::MakeUnique<FileBasedResponseProvider>(path));
+}
+
+void SetUpHttpServer(std::unique_ptr<web::ResponseProvider> provider) {
+  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+  DCHECK(server.IsRunning());
 
   server.RemoveAllResponseProviders();
   server.AddResponseProvider(std::move(provider));
