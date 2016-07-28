@@ -108,7 +108,7 @@ Polymer({
    * @private
    */
   onNoteTap_: function() {
-    this.$.pages.setSubpageChain(['note']);
+    settings.navigateTo(settings.Route.NOTES);
   },
 
   /**
