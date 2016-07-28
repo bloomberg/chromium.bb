@@ -11,21 +11,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
-#include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
@@ -64,8 +58,6 @@ class ChannelAssociatedGroupController
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(task_runner_->BelongsToCurrentThread());
-    thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    base::subtle::Release_Store(&is_thread_task_runner_set_, 1);
 
     connector_.reset(new mojo::Connector(
         std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
@@ -210,7 +202,7 @@ class ChannelAssociatedGroupController
   }
 
   void RaiseError() override {
-    if (IsRunningOnIPCThread()) {
+    if (task_runner_->BelongsToCurrentThread()) {
       connector_->RaiseError();
     } else {
       task_runner_->PostTask(
@@ -302,7 +294,7 @@ class ChannelAssociatedGroupController
 
       // It's not legal to make sync calls from the master endpoint's thread,
       // and in fact they must only happen from the proxy task runner.
-      DCHECK(!controller_->IsRunningOnIPCThread());
+      DCHECK(!controller_->task_runner_->BelongsToCurrentThread());
       DCHECK(controller_->proxy_task_runner_->BelongsToCurrentThread());
 
       // TODO(rockot): Implement sync waiting.
@@ -358,20 +350,8 @@ class ChannelAssociatedGroupController
     DCHECK(endpoints_.empty());
   }
 
-  bool IsRunningOnIPCThread() {
-    // |task_runner_| is always non-null but may incorrectly report that
-    // BelongsToCurrentThread() == false during shutdown. By the time shutdown
-    // occurs, |thread_task_runner_| will be non-null and is guaranteed to run
-    // tasks on the same thread as |task_runner_|.
-    base::subtle::Atomic32 has_thread_task_runner =
-        base::subtle::Acquire_Load(&is_thread_task_runner_set_);
-    if (has_thread_task_runner)
-      return thread_task_runner_->BelongsToCurrentThread();
-    return task_runner_->BelongsToCurrentThread();
-  }
-
   bool SendMessage(mojo::Message* message) {
-    if (IsRunningOnIPCThread()) {
+    if (task_runner_->BelongsToCurrentThread()) {
       DCHECK(thread_checker_.CalledOnValidThread());
       if (!connector_) {
         // Pipe may not be bound yet, so we queue the message.
@@ -611,14 +591,6 @@ class ChannelAssociatedGroupController
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // A TaskRunner that runs tasks on the same thread as |task_runner_| but which
-  // is used exclusively to do thread safety checking. This is an unfortunate
-  // consequence of bad interaction between some TaskRunner implementations and
-  // MessageLoop destruction which may cause the user-provided |task_runner_| to
-  // incorrectly report that BelongsToCurrentThread() == false during shutdown.
-  scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
-  base::subtle::Atomic32 is_thread_task_runner_set_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   const bool set_interface_id_namespace_bit_;
