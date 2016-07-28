@@ -30,6 +30,8 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -790,7 +792,8 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
   std::string provider_id;
   ContentSetting default_setting =
-      GetContentSettingsMap()->GetDefaultContentSetting(type, &provider_id);
+      HostContentSettingsMapFactory::GetForProfile(GetProfile())
+          ->GetDefaultContentSetting(type, &provider_id);
 
 #if defined(ENABLE_PLUGINS)
   default_setting =
@@ -832,6 +835,8 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
     ContentSettingsType type) {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
   MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
   std::string policy_pref = (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
       ? prefs::kAudioCaptureAllowed
@@ -840,7 +845,7 @@ void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
   settings.policy_disable = !prefs->GetBoolean(policy_pref) &&
       prefs->IsManagedPreference(policy_pref);
   settings.default_setting =
-      GetContentSettingsMap()->GetDefaultContentSetting(type, NULL);
+      settings_map->GetDefaultContentSetting(type, nullptr);
   settings.default_setting_initialized = true;
 
   UpdateFlashMediaLinksVisibility(type);
@@ -1007,13 +1012,12 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
     ContentSettingsType type) {
   MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
 
   base::ListValue exceptions;
-  site_settings::GetExceptionsFromHostContentSettingsMap(
-      GetContentSettingsMap(),
-      type,
-      web_ui(),
-      &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
+                                                         web_ui(), &exceptions);
 
   settings.exceptions.clear();
   for (base::ListValue::const_iterator entry = exceptions.begin();
@@ -1151,8 +1155,10 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
   base::ListValue exceptions;
-  site_settings::GetExceptionsFromHostContentSettingsMap(
-      GetContentSettingsMap(), type, web_ui(), &exceptions);
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
+                                                         web_ui(), &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
@@ -1182,7 +1188,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
 void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
     ContentSettingsType type) {
-  const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
+  const HostContentSettingsMap* otr_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOTRProfile());
   if (!otr_settings_map)
     return;
   base::ListValue exceptions;
@@ -1297,23 +1304,31 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   DCHECK(rv);
 
   // The fourth argument to this handler is optional.
-  std::string secondary_pattern;
+  std::string secondary_pattern_string;
   if (args->GetSize() >= 4U) {
-    rv = args->GetString(3, &secondary_pattern);
+    rv = args->GetString(3, &secondary_pattern_string);
     DCHECK(rv);
   }
 
+  Profile* profile = mode == "normal" ? GetProfile() : GetOTRProfile();
+  if (!profile)
+    return;
+
   HostContentSettingsMap* settings_map =
-      mode == "normal" ? GetContentSettingsMap() :
-                         GetOTRContentSettingsMap();
-  if (settings_map) {
-    settings_map->SetContentSettingCustomScope(
-        ContentSettingsPattern::FromString(pattern),
-        secondary_pattern.empty()
-            ? ContentSettingsPattern::Wildcard()
-            : ContentSettingsPattern::FromString(secondary_pattern),
-        type, std::string(), CONTENT_SETTING_DEFAULT);
-  }
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString(pattern);
+  ContentSettingsPattern secondary_pattern =
+      secondary_pattern_string.empty()
+          ? ContentSettingsPattern::Wildcard()
+          : ContentSettingsPattern::FromString(secondary_pattern_string);
+  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+      profile, primary_pattern, secondary_pattern, type,
+      PermissionSourceUI::SITE_SETTINGS);
+
+  settings_map->SetContentSettingCustomScope(
+      primary_pattern, secondary_pattern, type, std::string(),
+      CONTENT_SETTING_DEFAULT);
 }
 
 void ContentSettingsHandler::RemoveZoomLevelException(
@@ -1463,30 +1478,34 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
   ContentSettingsType type =
       site_settings::ContentSettingsTypeFromGroupName(type_string);
 
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    NOTREACHED();
-  } else {
-    HostContentSettingsMap* settings_map =
-        mode == "normal" ? GetContentSettingsMap() :
-                           GetOTRContentSettingsMap();
+  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
+         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+         type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
-    // The settings map could be null if the mode was OTR but the OTR profile
-    // got destroyed before we received this message.
-    if (!settings_map)
-      return;
+  Profile* profile = mode == "normal" ? GetProfile() : GetOTRProfile();
 
-    ContentSetting setting_type;
-    bool result =
-        content_settings::ContentSettingFromString(setting, &setting_type);
-    DCHECK(result);
+  // The profile could be nullptr if the mode was OTR but the OTR profile
+  // got destroyed before we received this message.
+  if (!profile)
+    return;
 
-    settings_map->SetContentSettingCustomScope(
-        ContentSettingsPattern::FromString(pattern),
-        ContentSettingsPattern::Wildcard(), type, std::string(), setting_type);
-    WebSiteSettingsUmaUtil::LogPermissionChange(type, setting_type);
-  }
+  ContentSetting setting_type;
+  bool result =
+      content_settings::ContentSettingFromString(setting, &setting_type);
+  DCHECK(result);
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+      profile, ContentSettingsPattern::FromString(pattern),
+      ContentSettingsPattern::Wildcard(), type,
+      PermissionSourceUI::SITE_SETTINGS);
+
+  settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(pattern),
+      ContentSettingsPattern::Wildcard(), type, std::string(), setting_type);
+  WebSiteSettingsUmaUtil::LogPermissionChange(type, setting_type);
 }
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
@@ -1508,9 +1527,8 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
       base::FundamentalValue(pattern.IsValid()));
 }
 
-HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
-  return HostContentSettingsMapFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
+Profile* ContentSettingsHandler::GetProfile() {
+  return Profile::FromWebUI(web_ui());
 }
 
 ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
@@ -1518,13 +1536,10 @@ ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
       GetBrowserContext(web_ui()));
 }
 
-HostContentSettingsMap*
-    ContentSettingsHandler::GetOTRContentSettingsMap() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->HasOffTheRecordProfile())
-    return HostContentSettingsMapFactory::GetForProfile(
-        profile->GetOffTheRecordProfile());
-  return NULL;
+Profile* ContentSettingsHandler::GetOTRProfile() {
+  return GetProfile()->HasOffTheRecordProfile()
+             ? GetProfile()->GetOffTheRecordProfile()
+             : nullptr;
 }
 
 void ContentSettingsHandler::RefreshFlashMediaSettings() {

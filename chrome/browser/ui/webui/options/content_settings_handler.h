@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class HostContentSettingsMap;
+class Profile;
 class ProtocolHandlerRegistry;
 
 namespace options {
@@ -235,12 +236,12 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   void ApplyWhitelist(ContentSettingsType content_type,
                       ContentSetting default_setting);
 
-  // Gets the HostContentSettingsMap for the normal profile.
-  HostContentSettingsMap* GetContentSettingsMap();
+  // Gets the normal profile.
+  Profile* GetProfile();
 
-  // Gets the HostContentSettingsMap for the incognito profile, or NULL if there
-  // is no active incognito session.
-  HostContentSettingsMap* GetOTRContentSettingsMap();
+  // Gets the incognito profile, or nullptr if there is no active incognito
+  // session.
+  Profile* GetOTRProfile();
 
   // Gets the ProtocolHandlerRegistry for the normal profile.
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();

@@ -50,6 +50,12 @@ class PermissionUtil {
                              ContentSettingsType content_type,
                              PermissionSourceUI source_ui);
 
+    ScopedRevocationReporter(Profile* profile,
+                             const ContentSettingsPattern& primary_pattern,
+                             const ContentSettingsPattern& secondary_pattern,
+                             ContentSettingsType content_type,
+                             PermissionSourceUI source_ui);
+
     ~ScopedRevocationReporter();
 
    private:

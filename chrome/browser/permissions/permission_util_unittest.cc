@@ -22,6 +22,10 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   GURL host("https://example.com");
+  ContentSettingsPattern host_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(host);
+  ContentSettingsPattern host_containing_wildcards_pattern =
+      ContentSettingsPattern::FromString("https://[*.]example.com/");
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
   PermissionSourceUI source_ui = PermissionSourceUI::SITE_SETTINGS;
 
@@ -68,4 +72,30 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
   }
   histograms.ExpectBucketCount("Permissions.Action.Geolocation",
                                PermissionAction::REVOKED, 2);
+
+  // Allow->Block with url pattern string triggers a revocation.
+  map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                     CONTENT_SETTING_ALLOW);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host_pattern, host_pattern, type, source_ui);
+    map->SetContentSettingCustomScope(host_pattern, host_pattern, type,
+                                      std::string(), CONTENT_SETTING_BLOCK);
+  }
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               PermissionAction::REVOKED, 3);
+
+  // Allow->Block with non url pattern string does not trigger a revocation.
+  map->SetContentSettingDefaultScope(host, host, type, std::string(),
+                                     CONTENT_SETTING_ALLOW);
+  {
+    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+        &profile, host_containing_wildcards_pattern, host_pattern, type,
+        source_ui);
+    map->SetContentSettingCustomScope(host_containing_wildcards_pattern,
+                                      host_pattern, type, std::string(),
+                                      CONTENT_SETTING_BLOCK);
+  }
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               PermissionAction::REVOKED, 3);
 }

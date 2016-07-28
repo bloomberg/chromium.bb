@@ -287,21 +287,16 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     UMA_HISTOGRAM_ENUMERATION(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
         num_values);
-    // Trigger Rappor sampling if it is a permission revoke action.
-    // TODO(tsergeant): Integrate this with the revocation recording performed
-    // in the permissions layer. See crbug.com/469221.
-    content::PermissionType permission_type;
-    if (PermissionUtil::GetPermissionType(type, &permission_type)) {
-      PermissionUmaUtil::PermissionRevoked(permission_type,
-                                           PermissionSourceUI::OIB,
-                                           this->site_url_, this->profile_);
-    }
   }
 
   // This is technically redundant given the histogram above, but putting the
   // total count of permission changes in another histogram makes it easier to
   // compare it against other kinds of actions in WebsiteSettings[PopupView].
   RecordWebsiteSettingsAction(WEBSITE_SETTINGS_CHANGED_PERMISSION);
+
+  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+      this->profile_, this->site_url_, this->site_url_, type,
+      PermissionSourceUI::OIB);
 
   content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
                                                 setting);

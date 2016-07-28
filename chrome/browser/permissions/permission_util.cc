@@ -94,19 +94,34 @@ PermissionUtil::ScopedRevocationReporter::ScopedRevocationReporter(
     is_initially_allowed_ = false;
     return;
   }
-  HostContentSettingsMap* map =
+  HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  ContentSetting initial_content_setting = map->GetContentSetting(
+  ContentSetting initial_content_setting = settings_map->GetContentSetting(
       primary_url_, secondary_url_, content_type_, std::string());
   is_initially_allowed_ = initial_content_setting == CONTENT_SETTING_ALLOW;
 }
 
+PermissionUtil::ScopedRevocationReporter::ScopedRevocationReporter(
+    Profile* profile,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    PermissionSourceUI source_ui)
+    : ScopedRevocationReporter(
+          profile,
+          GURL(primary_pattern.ToString()),
+          GURL((secondary_pattern == ContentSettingsPattern::Wildcard())
+                   ? primary_pattern.ToString()
+                   : secondary_pattern.ToString()),
+          content_type,
+          source_ui) {}
+
 PermissionUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
   if (!is_initially_allowed_)
     return;
-  HostContentSettingsMap* map =
+  HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  ContentSetting final_content_setting = map->GetContentSetting(
+  ContentSetting final_content_setting = settings_map->GetContentSetting(
       primary_url_, secondary_url_, content_type_, std::string());
   if (final_content_setting != CONTENT_SETTING_ALLOW) {
     PermissionType permission_type;
