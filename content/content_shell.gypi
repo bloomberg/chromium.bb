@@ -47,6 +47,7 @@
         '../components/url_formatter/url_formatter.gyp:url_formatter',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+        '../device/geolocation/geolocation.gyp:device_geolocation',
         '../gin/gin.gyp:gin',
         '../gpu/gpu.gyp:gpu',
         '../ipc/ipc.gyp:ipc',

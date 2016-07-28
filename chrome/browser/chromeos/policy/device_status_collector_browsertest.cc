@@ -51,9 +51,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/geolocation_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "device/geolocation/geolocation_provider.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/mount_points.h"
@@ -79,14 +79,14 @@ const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
 const char kPublicAccountId[] = "public_user@localhost";
 
-std::unique_ptr<content::Geoposition> mock_position_to_return_next;
+std::unique_ptr<device::Geoposition> mock_position_to_return_next;
 
-void SetMockPositionToReturnNext(const content::Geoposition &position) {
-  mock_position_to_return_next.reset(new content::Geoposition(position));
+void SetMockPositionToReturnNext(const device::Geoposition& position) {
+  mock_position_to_return_next.reset(new device::Geoposition(position));
 }
 
 void MockPositionUpdateRequester(
-    const content::GeolocationProvider::LocationUpdateCallback& callback) {
+    const device::GeolocationProvider::LocationUpdateCallback& callback) {
   if (!mock_position_to_return_next.get())
     return;
 
@@ -96,7 +96,7 @@ void MockPositionUpdateRequester(
   // harness, the callback is invoked synchronously upon request, leading to a
   // request-callback loop. The loop is broken by returning the mock position
   // only once.
-  std::unique_ptr<content::Geoposition> position(
+  std::unique_ptr<device::Geoposition> position(
       mock_position_to_return_next.release());
   callback.Run(*position);
 }
@@ -787,15 +787,14 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
 }
 
 TEST_F(DeviceStatusCollectorTest, Location) {
-  content::Geoposition valid_fix;
+  device::Geoposition valid_fix;
   valid_fix.latitude = 4.3;
   valid_fix.longitude = -7.8;
   valid_fix.accuracy = 3.;
   valid_fix.timestamp = Time::Now();
 
-  content::Geoposition invalid_fix;
-  invalid_fix.error_code =
-      content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  device::Geoposition invalid_fix;
+  invalid_fix.error_code = device::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   invalid_fix.timestamp = Time::Now();
 
   // Check that when device location reporting is disabled, no location is
