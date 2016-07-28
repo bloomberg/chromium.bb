@@ -147,7 +147,7 @@ bool BrowsingDataSettingsFunction::RunSync() {
   browsing_data::TimePeriod period =
       static_cast<browsing_data::TimePeriod>(period_pref);
   double since = 0;
-  if (period != browsing_data::EVERYTHING) {
+  if (period != browsing_data::ALL_TIME) {
     base::Time time = browsing_data::CalculateBeginDeleteTime(period);
     since = time.ToJsTime();
   }

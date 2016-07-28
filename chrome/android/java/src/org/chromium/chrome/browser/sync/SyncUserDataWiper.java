@@ -43,7 +43,7 @@ public class SyncUserDataWiper {
                                 promise.fulfill(null);
                             }
                         },
-                        SYNC_DATA_TYPES, TimePeriod.EVERYTHING);
+                        SYNC_DATA_TYPES, TimePeriod.ALL_TIME);
             }
         });
 

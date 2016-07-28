@@ -827,7 +827,7 @@ public class ChromeApplication extends ContentApplication {
             // OnBrowsingDataRemoverDone() is called, in which case we may have to reload as well.
             // Check if it can happen.
             instance.clearBrowsingData(
-                    null, new int[]{ BrowsingDataType.CACHE }, TimePeriod.EVERYTHING);
+                    null, new int[]{ BrowsingDataType.CACHE }, TimePeriod.ALL_TIME);
         }
     }
 

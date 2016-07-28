@@ -34,7 +34,7 @@ class HostedAppsCounterTest : public testing::Test {
     extension_registry_ = extensions::ExtensionRegistry::Get(profile_.get());
 
     SetHostedAppsDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   // Adding and removing apps and extensions. ----------------------------------

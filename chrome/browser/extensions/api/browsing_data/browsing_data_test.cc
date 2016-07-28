@@ -136,7 +136,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     EXPECT_TRUE(options->GetDouble("since", &since));
 
     double expected_since = 0;
-    if (since_pref != browsing_data::EVERYTHING) {
+    if (since_pref != browsing_data::ALL_TIME) {
       base::Time time = CalculateBeginDeleteTime(since_pref);
       expected_since = time.ToJsTime();
     }
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
 
 // Test the processing of the 'delete since' preference.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSince) {
-  SetSinceAndVerify(browsing_data::EVERYTHING);
+  SetSinceAndVerify(browsing_data::ALL_TIME);
   SetSinceAndVerify(browsing_data::LAST_HOUR);
   SetSinceAndVerify(browsing_data::LAST_DAY);
   SetSinceAndVerify(browsing_data::LAST_WEEK);

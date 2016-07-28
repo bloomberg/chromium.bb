@@ -49,7 +49,7 @@ class HistoryCounterTest : public SyncTest {
         browser()->profile()->GetRequestContext()));
 
     SetHistoryDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   void AddVisit(const std::string url) {
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
   WaitForCounting();
   EXPECT_EQ(8u, GetLocalResult());
 
-  SetDeletionPeriodPref(browsing_data::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::ALL_TIME);
   WaitForCounting();
   EXPECT_EQ(9u, GetLocalResult());
 }

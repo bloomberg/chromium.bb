@@ -298,7 +298,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                         activity.getString(R.string.clear_browsing_data_period_week)),
                 new TimePeriodSpinnerOption(TimePeriod.FOUR_WEEKS,
                         activity.getString(R.string.clear_browsing_data_period_four_weeks)),
-                new TimePeriodSpinnerOption(TimePeriod.EVERYTHING,
+                new TimePeriodSpinnerOption(TimePeriod.ALL_TIME,
                         activity.getString(R.string.clear_browsing_data_period_everything))};
 
         return options;

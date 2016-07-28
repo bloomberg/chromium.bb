@@ -278,7 +278,7 @@ BrowsingDataRemover::TimeRange BrowsingDataRemover::Period(
     case browsing_data::FOUR_WEEKS:
       content::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
       break;
-    case browsing_data::EVERYTHING:
+    case browsing_data::ALL_TIME:
       content::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
   }

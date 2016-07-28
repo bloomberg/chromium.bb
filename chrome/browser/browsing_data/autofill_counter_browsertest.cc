@@ -36,7 +36,7 @@ class AutofillCounterTest : public InProcessBrowserTest {
         browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
     SetAutofillDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   // Autocomplete suggestions --------------------------------------------------

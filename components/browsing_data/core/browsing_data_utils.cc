@@ -22,7 +22,7 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period) {
     case FOUR_WEEKS:
       diff = base::TimeDelta::FromHours(4 * 7 * 24);
       break;
-    case EVERYTHING:
+    case ALL_TIME:
       delete_begin_time = base::Time();
       break;
   }

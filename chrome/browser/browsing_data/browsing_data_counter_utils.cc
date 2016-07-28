@@ -93,7 +93,7 @@ base::string16 GetCounterTextFromResult(
     static const int kBytesInAMegabyte = 1024 * 1024;
     if (cache_size_bytes >= kBytesInAMegabyte) {
       base::string16 formatted_size = FormatBytesMBOrHigher(cache_size_bytes);
-      text = time_period == browsing_data::EVERYTHING
+      text = time_period == browsing_data::ALL_TIME
                  ? formatted_size
                  : l10n_util::GetStringFUTF16(
                        IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE, formatted_size);

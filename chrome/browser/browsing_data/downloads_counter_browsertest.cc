@@ -45,7 +45,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         content::BrowserContext::GetDownloadManager(
             browser()->profile()->GetOffTheRecordProfile());
     SetDownloadsDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   void TearDownOnMainThread() override {
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, TimeRanges) {
   SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   EXPECT_EQ(8u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::ALL_TIME);
   EXPECT_EQ(11u, GetResult());
 }
 

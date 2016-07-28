@@ -34,7 +34,7 @@ class CacheCounterTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
     SetCacheDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   void SetCacheDeletionPref(bool value) {
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::ALL_TIME);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
 }

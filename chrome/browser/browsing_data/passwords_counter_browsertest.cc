@@ -27,7 +27,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     store_ = PasswordStoreFactory::GetForProfile(
         browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
     SetPasswordsDeletionPref(true);
-    SetDeletionPeriodPref(browsing_data::EVERYTHING);
+    SetDeletionPeriodPref(browsing_data::ALL_TIME);
   }
 
   void AddLogin(const std::string& origin,
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
-  SetDeletionPeriodPref(browsing_data::EVERYTHING);
+  SetDeletionPeriodPref(browsing_data::ALL_TIME);
   WaitForCounting();
   EXPECT_EQ(4u, GetResult());
 }
