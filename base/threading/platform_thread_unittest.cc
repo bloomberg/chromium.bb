@@ -12,8 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
-#include <sys/types.h>
-#include <unistd.h>
 #include "base/threading/platform_thread_internal_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -235,17 +233,6 @@ const ThreadPriority kThreadPriorityTestValues[] = {
     ThreadPriority::NORMAL,
     ThreadPriority::BACKGROUND};
 
-bool IsBumpingPriorityAllowed() {
-#if defined(OS_POSIX)
-  // Only root can raise thread priority on POSIX environment. On Linux, users
-  // who have CAP_SYS_NICE permission also can raise the thread priority, but
-  // libcap.so would be needed to check the capability.
-  return geteuid() == 0;
-#else
-  return true;
-#endif
-}
-
 class ThreadPriorityTestThread : public FunctionTestThread {
  public:
   explicit ThreadPriorityTestThread(ThreadPriority priority)
@@ -273,8 +260,9 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 // Test changing a created thread's priority (which has different semantics on
 // some platforms).
 TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
-  const bool bumping_priority_allowed = IsBumpingPriorityAllowed();
-  if (bumping_priority_allowed) {
+  const bool increase_priority_allowed =
+      PlatformThread::CanIncreaseCurrentThreadPriority();
+  if (increase_priority_allowed) {
     // Bump the priority in order to verify that new threads are started with
     // normal priority.
     PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
@@ -282,7 +270,7 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
 
   // Toggle each supported priority on the thread and confirm it affects it.
   for (size_t i = 0; i < arraysize(kThreadPriorityTestValues); ++i) {
-    if (!bumping_priority_allowed &&
+    if (!increase_priority_allowed &&
         kThreadPriorityTestValues[i] >
             PlatformThread::GetCurrentThreadPriority()) {
       continue;

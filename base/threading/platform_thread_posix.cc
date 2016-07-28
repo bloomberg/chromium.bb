@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <memory>
 
@@ -23,8 +25,6 @@
 
 #if defined(OS_LINUX)
 #include <sys/syscall.h>
-#elif defined(OS_ANDROID)
-#include <sys/types.h>
 #endif
 
 namespace base {
@@ -216,6 +216,18 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 
 // Mac has its own Set/GetCurrentThreadPriority() implementations.
 #if !defined(OS_MACOSX)
+
+// static
+bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+#if defined(OS_NACL)
+  return false;
+#else
+  // Only root can raise thread priority on POSIX environment. On Linux, users
+  // who have CAP_SYS_NICE permission also can raise the thread priority, but
+  // libcap.so would be needed to check the capability.
+  return geteuid() == 0;
+#endif  // defined(OS_NACL)
+}
 
 // static
 void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
