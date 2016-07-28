@@ -652,7 +652,7 @@ void BaseRenderingContext2D::stroke(Path2D* domPath)
 
 void BaseRenderingContext2D::fillRect(double x, double y, double width, double height)
 {
-    trackDrawCall(FillRect);
+    trackDrawCall(FillRect, nullptr, width, height);
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
@@ -688,7 +688,7 @@ static void strokeRectOnCanvas(const FloatRect& rect, SkCanvas* canvas, const Sk
 
 void BaseRenderingContext2D::strokeRect(double x, double y, double width, double height)
 {
-    trackDrawCall(StrokeRect);
+    trackDrawCall(StrokeRect, nullptr, width, height);
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
@@ -949,7 +949,7 @@ static bool isDrawScalingDown(const FloatRect& srcRect, const FloatRect& dstRect
 
 void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
 {
-    trackDrawCall(DrawImage);
+    trackDrawCall(DrawImage, nullptr, dstRect.width(), dstRect.height());
 
     int initialSaveCount = c->getSaveCount();
     SkPaint imagePaint = *paint;
@@ -1296,6 +1296,7 @@ ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, Excepti
 ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw, double sh, ExceptionState& exceptionState) const
 {
     m_usageCounters.numGetImageDataCalls++;
+    m_usageCounters.areaGetImageDataCalls += sw * sh;
     if (!originClean())
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
     else if (!sw || !sh)
@@ -1362,6 +1363,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy,
 void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState& exceptionState)
 {
     m_usageCounters.numPutImageDataCalls++;
+    m_usageCounters.areaPutImageDataCalls += dirtyWidth * dirtyHeight;
     if (data->data()->bufferBase()->isNeutered()) {
         exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
         return;
@@ -1519,21 +1521,14 @@ void BaseRenderingContext2D::checkOverdraw(const SkRect& rect, const SkPaint* pa
     imageBuffer()->willOverwriteCanvas();
 }
 
-void BaseRenderingContext2D::trackDrawCall(DrawCallType callType, Path2D* path2d)
+void BaseRenderingContext2D::trackDrawCall(DrawCallType callType, Path2D* path2d, int width, int height)
 {
     m_usageCounters.numDrawCalls[callType]++;
 
-    if (callType == FillPath) {
-        SkPath skPath;
-        if (path2d) {
-            skPath = path2d->path().getSkPath();
-        } else {
-            skPath = m_path.getSkPath();
-        }
-        if (!(skPath.getConvexity() == SkPath::kConvex_Convexity)) {
-            m_usageCounters.numNonConvexFillPathCalls++;
-        }
-    }
+    double boundingRectWidth = static_cast<double>(width);
+    double boundingRectHeight = static_cast<double>(height);
+    double boundingRectArea = boundingRectWidth * boundingRectHeight;
+    double boundingRectPerimeter = (2.0 * boundingRectWidth) + (2.0 * boundingRectHeight);
 
     if (callType == FillText
         || callType == FillPath
@@ -1542,6 +1537,29 @@ void BaseRenderingContext2D::trackDrawCall(DrawCallType callType, Path2D* path2d
         || callType == FillRect
         || callType == StrokeRect) {
 
+        SkPath skPath;
+        if (path2d) {
+            skPath = path2d->path().getSkPath();
+        } else {
+            skPath = m_path.getSkPath();
+        }
+
+        if (callType == FillPath && !(skPath.getConvexity() == SkPath::kConvex_Convexity)) {
+            m_usageCounters.numNonConvexFillPathCalls++;
+        }
+
+        if (!(callType == FillRect || callType == StrokeRect || callType == DrawImage)) {
+            // The correct width and height were not passed as parameters
+            const SkRect& boundingRect = skPath.getBounds();
+            boundingRectWidth = static_cast<double>(std::abs(boundingRect.width()));
+            boundingRectHeight = static_cast<double>(std::abs(boundingRect.height()));
+            boundingRectArea = boundingRectWidth * boundingRectHeight;
+            boundingRectPerimeter = 2.0 * boundingRectWidth + 2.0 * boundingRectHeight;
+        }
+
+        m_usageCounters.boundingBoxPerimeterDrawCalls[callType] += boundingRectPerimeter;
+        m_usageCounters.boundingBoxAreaDrawCalls[callType] += boundingRectArea;
+
         CanvasStyle* canvasStyle;
         if (callType == FillText || callType == FillPath || callType == FillRect) {
             canvasStyle = state().fillStyle();
@@ -1549,17 +1567,39 @@ void BaseRenderingContext2D::trackDrawCall(DrawCallType callType, Path2D* path2d
             canvasStyle = state().strokeStyle();
         }
 
-        if (canvasStyle->getCanvasGradient()) {
+        CanvasGradient* gradient = canvasStyle->getCanvasGradient();
+        if (gradient) {
             m_usageCounters.numGradients++;
-        }
-
-        if (canvasStyle->getCanvasPattern()) {
+            if (gradient->getGradient()->isRadial()) {
+                m_usageCounters.boundingBoxAreaFillType[BaseRenderingContext2D::RadialGradientFillType] += boundingRectArea;
+            } else {
+                m_usageCounters.boundingBoxAreaFillType[BaseRenderingContext2D::LinearGradientFillType] += boundingRectArea;
+            }
+        } else if (canvasStyle->getCanvasPattern()) {
             m_usageCounters.numPatterns++;
+            m_usageCounters.boundingBoxAreaFillType[BaseRenderingContext2D::PatternFillType] += boundingRectArea;
+        } else {
+            m_usageCounters.boundingBoxAreaFillType[BaseRenderingContext2D::ColorFillType] += boundingRectArea;
         }
     }
 
-    if (state().shadowBlur() > 0.0 && SkColorGetA(state().shadowColor()) > 0) {
-        m_usageCounters.numBlurredShadows++;
+    if (callType == DrawImage) {
+        m_usageCounters.boundingBoxPerimeterDrawCalls[DrawImage] += boundingRectPerimeter;
+        m_usageCounters.boundingBoxAreaDrawCalls[DrawImage] += boundingRectArea;
+    }
+
+    if (callType == FillText
+        || callType == FillPath
+        || callType == StrokeText
+        || callType == StrokePath
+        || callType == FillRect
+        || callType == StrokeRect
+        || callType == DrawImage) {
+        if (state().shadowBlur() > 0.0 && SkColorGetA(state().shadowColor()) > 0) {
+            m_usageCounters.numBlurredShadows++;
+            m_usageCounters.boundingBoxAreaTimesShadowBlurSquared += boundingRectArea * state().shadowBlur() * state().shadowBlur();
+            m_usageCounters.boundingBoxPerimeterTimesShadowBlurSquared += boundingRectPerimeter * state().shadowBlur() * state().shadowBlur();
+        }
     }
 
     if (state().hasComplexClip()) {
@@ -1583,15 +1623,23 @@ DEFINE_TRACE(BaseRenderingContext2D)
 
 BaseRenderingContext2D::UsageCounters::UsageCounters() :
     numDrawCalls {0, 0, 0, 0, 0, 0},
+    boundingBoxPerimeterDrawCalls {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    boundingBoxAreaDrawCalls {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    boundingBoxAreaFillType {0.0, 0.0, 0.0, 0.0},
     numNonConvexFillPathCalls(0),
     numGradients(0),
     numPatterns(0),
     numDrawWithComplexClips(0),
     numBlurredShadows(0),
+    boundingBoxAreaTimesShadowBlurSquared(0.0),
+    boundingBoxPerimeterTimesShadowBlurSquared(0.0),
     numFilters(0),
     numGetImageDataCalls(0),
+    areaGetImageDataCalls(0.0),
     numPutImageDataCalls(0),
+    areaPutImageDataCalls(0.0),
     numClearRectCalls(0),
-    numDrawFocusCalls(0) {}
+    numDrawFocusCalls(0),
+    numFramesSinceReset(0) {}
 
 } // namespace blink

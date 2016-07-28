@@ -346,6 +346,8 @@ void HTMLCanvasElement::didFinalizeFrame()
     if (m_pendingRenderingModeSwitch && !buffer()->isAccelerated()) {
         m_pendingRenderingModeSwitch = false;
     }
+
+    m_context->incrementFrameCount();
 }
 
 void HTMLCanvasElement::didDisableAcceleration()

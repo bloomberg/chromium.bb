@@ -1097,4 +1097,10 @@ bool CanvasRenderingContext2D::isAccelerationOptimalForCanvasContent() const
     return true;
 }
 
+void CanvasRenderingContext2D::resetUsageTracking()
+{
+    UsageCounters newCounters;
+    m_usageCounters = newCounters;
+}
+
 } // namespace blink

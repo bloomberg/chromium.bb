@@ -143,17 +143,14 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
     int numReps = 100;
     for (int i = 0; i < numReps; i++) {
         context2d()->beginPath();
-        context2d()->fillRect(10, 10, 100, 100);
-
         context2d()->moveTo(1, 1);
         context2d()->lineTo(4, 1);
         context2d()->lineTo(4, 4);
         context2d()->lineTo(2, 2);
         context2d()->lineTo(1, 4);
-
-        context2d()->fillText("Hello World!!!", 10, 10, 1);
         context2d()->fill(); // path is not convex
 
+        context2d()->fillText("Hello World!!!", 10, 10, 1);
         context2d()->fillRect(10, 10, 100, 100);
         context2d()->fillText("Hello World!!!", 10, 10);
 
@@ -163,6 +160,8 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
         context2d()->lineTo(4, 4);
         context2d()->lineTo(1, 4);
         context2d()->fill(); // path is convex
+
+        context2d()->fillRect(10, 10, 100, 100);
     }
 
     EXPECT_EQ(numReps * 2, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillPath]);
@@ -170,21 +169,46 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, FillTracking)
     EXPECT_EQ(numReps, context2d()->getUsage().numNonConvexFillPathCalls);
     EXPECT_EQ(numReps * 2, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillText]);
 
+
+    // areas
+    EXPECT_NEAR(static_cast<double>(numReps * (100 * 100)     * 2), context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::FillRect], 1.0);
+    EXPECT_NEAR(static_cast<double>(numReps * (2*100 + 2*100) * 2), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::FillRect], 1.0);
+
+    EXPECT_TRUE(static_cast<double>(numReps * (100 * 100)     * 2) < context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::ColorFillType]);
+    EXPECT_TRUE(static_cast<double>(numReps * (100 * 100)     * 2) * 1.1 > context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::ColorFillType]);
+
+    EXPECT_NEAR(static_cast<double>(numReps * (3 * 3)     * 2), context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::FillPath], 1.0);
+    EXPECT_NEAR(static_cast<double>(numReps * (2*3 + 2*3) * 2), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::FillPath], 1.0);
+
+    EXPECT_TRUE(context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::FillText] > 0.0);
+    EXPECT_TRUE(context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::StrokeText] == 0.0);
+
+
+
     // create gradient
     CanvasGradient* gradient;
     gradient = context2d()->createLinearGradient(0, 0, 100, 100);
     context2d()->setFillStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
-    context2d()->fillRect(10, 10, 100, 100);
+    context2d()->fillRect(10, 10, 100, 20);
     EXPECT_EQ(1, context2d()->getUsage().numGradients);
+    EXPECT_NEAR(100 * 20, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::LinearGradientFillType], 1.0);
+
+    NonThrowableExceptionState exceptionState;
+    gradient = context2d()->createRadialGradient(0, 0, 100, 100, 200, 200, exceptionState);
+    context2d()->setFillStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
+    context2d()->fillRect(10, 10, 100, 20);
+    EXPECT_EQ(2, context2d()->getUsage().numGradients);
+    EXPECT_NEAR(100 * 20, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::RadialGradientFillType], 1.0);
 
     // create pattern
-    NonThrowableExceptionState exceptionState;
+    NonThrowableExceptionState exceptionState2;
     ExecutionContext* execCtx = canvasElement().getExecutionContext();
-    CanvasPattern* canvasPattern = context2d()->createPattern(execCtx, &m_opaqueBitmap, "repeat-x", exceptionState);
+    CanvasPattern* canvasPattern = context2d()->createPattern(execCtx, &m_opaqueBitmap, "repeat-x", exceptionState2);
     StringOrCanvasGradientOrCanvasPattern pattern = StringOrCanvasGradientOrCanvasPattern::fromCanvasPattern(canvasPattern);
     context2d()->setFillStyle(pattern);
-    context2d()->fillRect(10, 10, 100, 100);
+    context2d()->fillRect(10, 10, 200, 100);
     EXPECT_EQ(1, context2d()->getUsage().numPatterns);
+    EXPECT_NEAR(200 * 100, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::PatternFillType], 1.0);
 
     // Other fill method
     context2d()->fill(Path2D::create("Hello World!!!"));
@@ -203,17 +227,17 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking)
 
     int numReps = 100;
     for (int i = 0; i < numReps; i++) {
-        context2d()->beginPath();
         context2d()->strokeRect(10, 10, 100, 100);
 
+        context2d()->beginPath();
         context2d()->moveTo(1, 1);
         context2d()->lineTo(4, 1);
         context2d()->lineTo(4, 4);
         context2d()->lineTo(2, 2);
         context2d()->lineTo(1, 4);
+        context2d()->stroke();
 
         context2d()->strokeText("Hello World!!!", 10, 10, 1);
-        context2d()->stroke();
 
         context2d()->strokeRect(10, 10, 100, 100);
         context2d()->strokeText("Hello World!!!", 10, 10);
@@ -223,12 +247,18 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking)
     EXPECT_EQ(numReps * 2, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::StrokeRect]);
     EXPECT_EQ(numReps * 2, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::StrokeText]);
 
+    EXPECT_NEAR(static_cast<double>(numReps * (100 * 100)     * 2), context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::StrokeRect], 1.0);
+    EXPECT_NEAR(static_cast<double>(numReps * (2*100 + 2*100) * 2), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::StrokeRect], 1.0);
+    EXPECT_NEAR(static_cast<double>(numReps * (3 * 3)), context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::StrokePath], 1.0);
+    EXPECT_NEAR(static_cast<double>(numReps * (2*3 + 2*3)), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::StrokePath], 1.0);
+
     // create gradient
     CanvasGradient* gradient;
     gradient = context2d()->createLinearGradient(0, 0, 100, 100);
     context2d()->setStrokeStyle(StringOrCanvasGradientOrCanvasPattern::fromCanvasGradient(gradient));
     context2d()->strokeRect(10, 10, 100, 100);
     EXPECT_EQ(1, context2d()->getUsage().numGradients);
+    EXPECT_NEAR(100 * 100, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::LinearGradientFillType], 1.0);
 
     // create pattern
     NonThrowableExceptionState exceptionState;
@@ -238,6 +268,7 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, StrokeTracking)
     context2d()->setStrokeStyle(pattern);
     context2d()->strokeRect(10, 10, 100, 100);
     EXPECT_EQ(1, context2d()->getUsage().numPatterns);
+    EXPECT_NEAR(100 * 100, context2d()->getUsage().boundingBoxAreaFillType[BaseRenderingContext2D::PatternFillType], 1.0);
 
     // Other stroke method
     context2d()->stroke(Path2D::create("Hello World!!!"));
@@ -257,19 +288,29 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ImageTracking)
     NonThrowableExceptionState exceptionState;
 
     int numReps = 5;
+    int imgWidth = 100;
+    int imgHeight = 200;
     for (int i = 0; i < numReps; i++) {
         context2d()->putImageData(m_fullImageData.get(), 0, 0, exceptionState);
-        context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
-        context2d()->getImageData(0, 0, 1, 1, exceptionState);
+        context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, imgWidth, imgHeight, exceptionState);
+        context2d()->getImageData(0, 0, 10, 100, exceptionState);
     }
+
+    EXPECT_NEAR(numReps * imgWidth * imgHeight, context2d()->getUsage().boundingBoxAreaDrawCalls[BaseRenderingContext2D::DrawImage], 0.1);
+    EXPECT_NEAR(numReps * (2*imgWidth + 2*imgHeight), context2d()->getUsage().boundingBoxPerimeterDrawCalls[BaseRenderingContext2D::DrawImage], 0.1);
 
     context2d()->setFilter("blur(5px)");
     context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, 10, 10, exceptionState);
 
     EXPECT_EQ(numReps, context2d()->getUsage().numPutImageDataCalls);
+    EXPECT_NE(0, context2d()->getUsage().areaPutImageDataCalls);
+    EXPECT_NEAR(numReps * m_fullImageData.get()->width() * m_fullImageData.get()->height(), context2d()->getUsage().areaPutImageDataCalls, 0.1);
+
     EXPECT_EQ(numReps + 1, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::DrawImage]);
     EXPECT_EQ(numReps, context2d()->getUsage().numGetImageDataCalls);
+
     EXPECT_EQ(1, context2d()->getUsage().numFilters);
+    EXPECT_NEAR(numReps * 10 * 100, context2d()->getUsage().areaGetImageDataCalls, 0.1);
 
     EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillPath]);
     EXPECT_EQ(0, context2d()->getUsage().numNonConvexFillPathCalls);
@@ -359,17 +400,94 @@ TEST_F(CanvasRenderingContextUsageTrackingTest, ShadowsTracking)
     context2d()->fillRect(0, 0, 1, 1);
 
     EXPECT_EQ(0, context2d()->getUsage().numBlurredShadows);
+    EXPECT_NEAR(0.0, context2d()->getUsage().boundingBoxAreaTimesShadowBlurSquared, 0.1);
+    EXPECT_NEAR(0.0, context2d()->getUsage().boundingBoxPerimeterTimesShadowBlurSquared, 0.1);
 
     int numReps = 5;
+    double shadowBlur = 0.5;
     for (int i = 0; i < numReps; i++) {
         context2d()->beginPath();
-        context2d()->setShadowBlur(0.5);
+        context2d()->setShadowBlur(shadowBlur);
         context2d()->setShadowColor("rgba(255, 0, 0, 0.5)");
         context2d()->setShadowOffsetX(1.0);
         context2d()->setShadowOffsetY(1.0);
-        context2d()->fillRect(0, 0, 1, 1);
+        context2d()->fillRect(0, 0, 3, 10);
     }
     EXPECT_EQ(numReps, context2d()->getUsage().numBlurredShadows);
+
+    double areaTimesShadowBlurSquared = shadowBlur * shadowBlur * numReps * 3 * 10;
+    double perimeterTimesShadowBlurSquared = shadowBlur * shadowBlur * numReps * (2*3 + 2*10);
+    EXPECT_NEAR(areaTimesShadowBlurSquared, context2d()->getUsage().boundingBoxAreaTimesShadowBlurSquared, 0.1);
+    EXPECT_NEAR(perimeterTimesShadowBlurSquared, context2d()->getUsage().boundingBoxPerimeterTimesShadowBlurSquared, 0.1);
+
+    double shadowBlur2 = 4.5;
+    context2d()->beginPath();
+    context2d()->setShadowBlur(shadowBlur2);
+    context2d()->moveTo(1, 1);
+    context2d()->lineTo(4, 1);
+    context2d()->lineTo(4, 4);
+    context2d()->lineTo(2, 2);
+    context2d()->lineTo(1, 4);
+    context2d()->fill();
+
+    areaTimesShadowBlurSquared += 3.0 * 3.0 * shadowBlur2 * shadowBlur2;
+    perimeterTimesShadowBlurSquared += (2*3 + 2*3) * shadowBlur2 * shadowBlur2;
+    EXPECT_NEAR(areaTimesShadowBlurSquared, context2d()->getUsage().boundingBoxAreaTimesShadowBlurSquared, 0.1);
+    EXPECT_NEAR(perimeterTimesShadowBlurSquared, context2d()->getUsage().boundingBoxPerimeterTimesShadowBlurSquared, 0.1);
+
+    NonThrowableExceptionState exceptionState;
+    int imgWidth = 100;
+    int imgHeight = 200;
+    for (int i = 0; i < numReps; i++) {
+        context2d()->putImageData(m_fullImageData.get(), 0, 0, exceptionState);
+        context2d()->setShadowBlur(shadowBlur2);
+        context2d()->drawImage(canvasElement().getExecutionContext(), &m_opaqueBitmap, 0, 0, 1, 1, 0, 0, imgWidth, imgHeight, exceptionState);
+        context2d()->getImageData(0, 0, 1, 1, exceptionState);
+    }
+
+    areaTimesShadowBlurSquared += imgWidth * imgHeight * shadowBlur2 * shadowBlur2 * numReps;
+    perimeterTimesShadowBlurSquared += (2*imgWidth + 2*imgHeight) * shadowBlur2 * shadowBlur2 * numReps;
+    EXPECT_NEAR(areaTimesShadowBlurSquared, context2d()->getUsage().boundingBoxAreaTimesShadowBlurSquared, 0.1);
+    EXPECT_NEAR(perimeterTimesShadowBlurSquared, context2d()->getUsage().boundingBoxPerimeterTimesShadowBlurSquared, 0.1);
+}
+
+TEST_F(CanvasRenderingContextUsageTrackingTest, incrementFrameCount)
+{
+    createContext(NonOpaque);
+    EXPECT_EQ(0, context2d()->getUsage().numFramesSinceReset);
+
+    context2d()->incrementFrameCount();
+    EXPECT_EQ(1, context2d()->getUsage().numFramesSinceReset);
+
+    context2d()->incrementFrameCount();
+    context2d()->incrementFrameCount();
+    EXPECT_EQ(3, context2d()->getUsage().numFramesSinceReset);
+}
+
+
+TEST_F(CanvasRenderingContextUsageTrackingTest, resetUsageTracking)
+{
+    createContext(NonOpaque);
+    EXPECT_EQ(0, context2d()->getUsage().numFramesSinceReset);
+
+    context2d()->incrementFrameCount();
+    context2d()->incrementFrameCount();
+    EXPECT_EQ(2, context2d()->getUsage().numFramesSinceReset);
+
+    const int numReps = 100;
+    for (int i = 0; i < numReps; i++) {
+        context2d()->fillRect(10, 10, 100, 100);
+    }
+    EXPECT_EQ(numReps, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillRect]);
+
+    context2d()->resetUsageTracking();
+    EXPECT_EQ(0, context2d()->getUsage().numFramesSinceReset);
+    EXPECT_EQ(0, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillRect]);
+
+    for (int i = 0; i < numReps; i++) {
+        context2d()->fillRect(10, 10, 100, 100);
+    }
+    EXPECT_EQ(numReps, context2d()->getUsage().numDrawCalls[BaseRenderingContext2D::FillRect]);
 }
 
 } // namespace UsageTrackingTests

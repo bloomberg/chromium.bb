@@ -168,6 +168,10 @@ public:
 
     bool isAccelerationOptimalForCanvasContent() const;
 
+    void resetUsageTracking();
+
+    void incrementFrameCount() { m_usageCounters.numFramesSinceReset++; };
+
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 

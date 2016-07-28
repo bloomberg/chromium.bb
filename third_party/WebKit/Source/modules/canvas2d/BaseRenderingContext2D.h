@@ -162,22 +162,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    struct UsageCounters {
-        int numDrawCalls[7]; // use DrawCallType enum as index
-        int numNonConvexFillPathCalls;
-        int numGradients;
-        int numPatterns;
-        int numDrawWithComplexClips;
-        int numBlurredShadows;
-        int numFilters;
-        int numGetImageDataCalls;
-        int numPutImageDataCalls;
-        int numClearRectCalls;
-        int numDrawFocusCalls;
-
-        UsageCounters();
-    };
-
     enum DrawCallType {
         StrokePath = 0,
         FillPath,
@@ -185,7 +169,40 @@ public:
         FillText,
         StrokeText,
         FillRect,
-        StrokeRect
+        StrokeRect,
+        DrawCallTypeCount // used to specify the size of storage arrays
+    };
+
+    enum PathFillType {
+        ColorFillType,
+        LinearGradientFillType,
+        RadialGradientFillType,
+        PatternFillType,
+        PathFillTypeCount // used to specify the size of storage arrays
+    };
+
+    struct UsageCounters {
+        int numDrawCalls[DrawCallTypeCount]; // use DrawCallType enum as index
+        double boundingBoxPerimeterDrawCalls[DrawCallTypeCount];
+        double boundingBoxAreaDrawCalls[DrawCallTypeCount];
+        double boundingBoxAreaFillType[PathFillTypeCount];
+        int numNonConvexFillPathCalls;
+        int numGradients;
+        int numPatterns;
+        int numDrawWithComplexClips;
+        int numBlurredShadows;
+        double boundingBoxAreaTimesShadowBlurSquared;
+        double boundingBoxPerimeterTimesShadowBlurSquared;
+        int numFilters;
+        int numGetImageDataCalls;
+        double areaGetImageDataCalls;
+        int numPutImageDataCalls;
+        double areaPutImageDataCalls;
+        int numClearRectCalls;
+        int numDrawFocusCalls;
+        int numFramesSinceReset;
+
+        UsageCounters();
     };
 
     const UsageCounters& getUsage();
@@ -214,7 +231,7 @@ protected:
     HeapVector<Member<CanvasRenderingContext2DState>> m_stateStack;
     AntiAliasingMode m_clipAntialiasing;
 
-    void trackDrawCall(DrawCallType, Path2D* path2d = nullptr);
+    void trackDrawCall(DrawCallType, Path2D* path2d = nullptr, int width = 0, int height = 0);
 
     mutable UsageCounters m_usageCounters;
 
