@@ -127,3 +127,20 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenBubble) {
   EXPECT_TRUE(controller());
   EXPECT_TRUE(view()->active());
 }
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenDifferentBubbles) {
+  // Open the autosignin bubble first.
+  DoWithSwizzledNSWindow(^{
+    ScopedVector<autofill::PasswordForm> local_credentials;
+    local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+    SetupAutoSignin(std::move(local_credentials));
+  });
+  EXPECT_TRUE(controller());
+  EXPECT_TRUE(view()->active());
+
+  // Open the save bubble. The previous one is closed twice (with and without
+  // animation). It shouldn't cause DCHECK.
+  DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
+  EXPECT_TRUE(controller());
+  EXPECT_TRUE(view()->active());
+}

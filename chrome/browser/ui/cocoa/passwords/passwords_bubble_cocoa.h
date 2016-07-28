@@ -27,6 +27,7 @@ class ManagePasswordsBubbleCocoa {
   static void Show(content::WebContents* webContents, bool user_action);
 
   // Closes and deletes the bubble.
+  void Close(bool no_animation);
   void Close();
 
   // Sets the location bar icon that should be updated with state changes.
@@ -54,10 +55,6 @@ class ManagePasswordsBubbleCocoa {
 
   // The location bar icon corresponding to the bubble.
   ManagePasswordsIcon* icon_;
-
-  // Whether there is currently a close operation taking place. Prevents
-  // multiple attempts to close the window.
-  bool closing_;
 
   // The view controller for the bubble. Weak; owns itself. Must be nilled
   // after the bubble is closed.
