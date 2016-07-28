@@ -19,6 +19,7 @@ mojom("interfaces") {
     "gpu.mojom",
     "gpu_memory_buffer.mojom",
     "gpu_service.mojom",
+    "ime.mojom",
     "mus_constants.mojom",
     "surface.mojom",
     "user_access_manager.mojom",

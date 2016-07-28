@@ -1,0 +1,10 @@
+{
+  "manifest_version":  1,
+  "name": "mojo:test_ime",
+  "display_name": "Test IME Driver",
+  "capabilities": {
+    "provided": {
+      "app": [ "ui::mojom::IMEDriver" ]
+    }
+  }
+}

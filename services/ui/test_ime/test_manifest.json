@@ -1,0 +1,10 @@
+{
+  "manifest_version":  1,
+  "name": "exe:test_ime_unittests",
+  "display_name": "IME Service Unittests",
+  "capabilities": {
+    "required": {
+      "*": { "interfaces":  [ "ui::mojom::IMEDriver" ] }
+    }
+  }
+}

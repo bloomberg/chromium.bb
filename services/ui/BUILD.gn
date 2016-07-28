@@ -13,6 +13,7 @@ group("all") {
   testonly = true
   deps = [
     ":ui",
+    "//services/ui/test_ime",
     "//services/ui/test_wm",
   ]
 }

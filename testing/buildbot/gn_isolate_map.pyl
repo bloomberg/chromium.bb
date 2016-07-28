@@ -581,6 +581,10 @@
       "../../",
     ],
   },
+  "test_ime_unittests": {
+    "label": "//services/ui/test_ime:test_ime_unittests",
+    "type": "windowed_test_launcher",
+  },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",
     "type": "console_test_launcher",
