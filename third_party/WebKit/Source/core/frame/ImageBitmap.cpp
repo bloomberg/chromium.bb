@@ -363,6 +363,18 @@ ImageBitmap::ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32
     m_image->setOriginClean(isImageBitmapOriginClean);
 }
 
+static PassRefPtr<SkImage> scaleSkImage(PassRefPtr<SkImage> skImage, unsigned resizeWidth, unsigned resizeHeight, SkFilterQuality resizeQuality)
+{
+    SkImageInfo resizedInfo = SkImageInfo::Make(resizeWidth, resizeHeight, kN32_SkColorType, kUnpremul_SkAlphaType);
+    std::unique_ptr<uint8_t[]> resizedPixels = wrapArrayUnique(new uint8_t[resizeWidth * resizeHeight * resizedInfo.bytesPerPixel()]);
+    SkPixmap pixmap(resizedInfo, resizedPixels.release(), resizeWidth * resizedInfo.bytesPerPixel());
+    skImage->scalePixels(pixmap, resizeQuality);
+    return fromSkSp(SkImage::MakeFromRaster(pixmap, [](const void* pixels, void*)
+        {
+            delete[] static_cast<const uint8_t*>(pixels);
+        }, nullptr));
+}
+
 ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
     // TODO(xidachen): implement the resize option
@@ -375,16 +387,19 @@ ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const Imag
         unsigned char* srcAddr = data->data()->data();
         int srcHeight = data->size().height();
         int dstHeight = parsedOptions.cropRect.height();
-        // TODO (xidachen): skia doesn't support SkImage::NewRasterCopy from a kRGBA color type.
-        // For now, we swap R and B channel and uses kBGRA color type.
-        SkImageInfo info = SkImageInfo::Make(parsedOptions.cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+
+        // Using kN32 type, swizzle input if necessary.
+        SkImageInfo info = SkImageInfo::Make(parsedOptions.cropRect.width(), dstHeight, kN32_SkColorType, kUnpremul_SkAlphaType);
         int srcPixelBytesPerRow = info.bytesPerPixel() * data->size().width();
         int dstPixelBytesPerRow = info.bytesPerPixel() * parsedOptions.cropRect.width();
+        RefPtr<SkImage> skImage;
         if (parsedOptions.cropRect == IntRect(IntPoint(), data->size())) {
-            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
-            m_image = StaticBitmapImage::create(fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, srcAddr, dstPixelBytesPerRow))));
+            if (kN32_SkColorType == kBGRA_8888_SkColorType)
+                swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
+            skImage = fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, srcAddr, dstPixelBytesPerRow)));
             // restore the original ImageData
-            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
+            if (kN32_SkColorType == kBGRA_8888_SkColorType)
+                swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
         } else {
             std::unique_ptr<uint8_t[]> copiedDataBuffer = wrapArrayUnique(new uint8_t[dstHeight * dstPixelBytesPerRow]());
             if (!srcRect.isEmpty()) {
@@ -405,17 +420,26 @@ ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const Imag
                     else
                         dstStartCopyPosition = (dstPoint.y() + i) * dstPixelBytesPerRow + dstPoint.x() * info.bytesPerPixel();
                     for (int j = 0; j < srcEndCopyPosition - srcStartCopyPosition; j++) {
-                        if (j % 4 == 0)
-                            copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j + 2];
-                        else if (j % 4 == 2)
-                            copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j - 2];
-                        else
+                        // swizzle when necessary
+                        if (kN32_SkColorType == kBGRA_8888_SkColorType) {
+                            if (j % 4 == 0)
+                                copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j + 2];
+                            else if (j % 4 == 2)
+                                copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j - 2];
+                            else
+                                copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j];
+                        } else {
                             copiedDataBuffer[dstStartCopyPosition + j] = srcAddr[srcStartCopyPosition + j];
+                        }
                     }
                 }
             }
-            m_image = StaticBitmapImage::create(newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow));
+            skImage = newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow);
         }
+        if (parsedOptions.shouldScaleInput)
+            m_image = StaticBitmapImage::create(scaleSkImage(skImage, parsedOptions.resizeWidth, parsedOptions.resizeHeight, parsedOptions.resizeQuality));
+        else
+            m_image = StaticBitmapImage::create(skImage);
         m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
         return;
     }
@@ -435,10 +459,20 @@ ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const Imag
     if (parsedOptions.cropRect.y() < 0)
         dstPoint.setY(-parsedOptions.cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
+    RefPtr<SkImage> skImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
     if (parsedOptions.flipY)
-        m_image = StaticBitmapImage::create(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get(), PremultiplyAlpha));
-    else
-        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
+        skImage = flipSkImageVertically(skImage.get(), PremultiplyAlpha);
+    if (parsedOptions.shouldScaleInput) {
+        sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(parsedOptions.resizeWidth, parsedOptions.resizeHeight);
+        if (!surface)
+            return;
+        SkPaint paint;
+        paint.setFilterQuality(parsedOptions.resizeQuality);
+        SkRect dstDrawRect = SkRect::MakeWH(parsedOptions.resizeWidth, parsedOptions.resizeHeight);
+        surface->getCanvas()->drawImageRect(skImage.get(), dstDrawRect, &paint);
+        skImage = fromSkSp(surface->makeImageSnapshot());
+    }
+    m_image = StaticBitmapImage::create(skImage);
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, Optional<IntRect> cropRect, const ImageBitmapOptions& options)

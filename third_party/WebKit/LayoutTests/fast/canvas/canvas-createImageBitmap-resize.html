@@ -148,4 +148,12 @@ promise_test(function() {
     var testCanvas = initializeTestCanvas();
     return createImageBitmap(testCanvas).then(testImageBitmap);
 }, 'createImageBitmap from an ImageBitmap with resize option.');
+
+// ImageData
+promise_test(function() {
+    var canvas = initializeTestCanvas();
+    var ctx = canvas.getContext("2d");
+    var data = ctx.getImageData(0, 0, 20, 20);
+    return testImageBitmap(data);
+}, 'createImageBitmap from an ImageData with resize option.');
 </script>
