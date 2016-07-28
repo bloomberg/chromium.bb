@@ -154,6 +154,8 @@ per-file policy_strings.grdp=file://components/policy/OWNERS
 
 per-file precache.gypi=file://components/precache/OWNERS
 
+per-file previews.gypi=file://components/previews/OWNERS
+
 per-file printing.gypi=file://components/printing/OWNERS
 
 per-file profile_metrics.gypi=file://components/profile_metrics/OWNERS

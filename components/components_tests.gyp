@@ -665,6 +665,9 @@
       'prefs/pref_value_store_unittest.cc',
       'prefs/scoped_user_pref_update_unittest.cc',
     ],
+    'previews_unittest_sources': [
+      'previews/previews_experiments_unittest.cc',
+    ],
     'query_parser_unittest_sources': [
       'query_parser/query_parser_unittest.cc',
       'query_parser/snippet_unittest.cc',
@@ -1081,6 +1084,7 @@
         '<@(precache_unittest_sources)',
         '<@(proxy_config_unittest_sources)',
         '<@(prefs_unittest_sources)',
+        '<@(previews_unittest_sources)',
         '<@(query_parser_unittest_sources)',
         '<@(rappor_unittest_sources)',
         '<@(search_engines_unittest_sources)',
@@ -1216,6 +1220,7 @@
         'components.gyp:password_manager_sync_browser',
         'components.gyp:precache_core',
         'components.gyp:pref_registry_test_support',
+        'components.gyp:previews',
         'components.gyp:proxy_config',
         'components.gyp:query_parser',
         'components.gyp:rappor',
