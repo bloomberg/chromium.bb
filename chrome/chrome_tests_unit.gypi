@@ -226,7 +226,6 @@
       'browser/search/contextual_search_policy_handler_android_unittest.cc',
       'browser/search/iframe_source_unittest.cc',
       'browser/search/thumbnail_source_unittest.cc',
-      'browser/search_engines/search_provider_install_data_unittest.cc',
 
       # TODO(hashimoto): those tests should be componentized and moved to
       # //components:components_unittests, http://crbug.com/527882.

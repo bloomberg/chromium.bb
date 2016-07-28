@@ -95,6 +95,8 @@
     [MeasureAs=WindowCaptureEvents] void captureEvents();
     [MeasureAs=WindowReleaseEvents] void releaseEvents();
 
+    [Replaceable, SameObject] readonly attribute External external;
+
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-window-interface
     // FIXME: The optional pseudoElt argument should have no default.

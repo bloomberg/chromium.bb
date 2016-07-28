@@ -26,6 +26,7 @@ class DOMVisualViewport;
 class DOMWindowCSS;
 class Document;
 class Element;
+class External;
 class Frame;
 class FrameRequestCallback;
 class History;
@@ -179,8 +180,10 @@ public:
     // Custom elements
     virtual CustomElementsRegistry* customElements(ScriptState*) const = 0;
 
+    // Obsolete APIs
     void captureEvents() { }
     void releaseEvents() { }
+    External* external() const;
 
     // FIXME: This handles both window[index] and window.frames[index]. However,
     // the spec exposes window.frames[index] across origins but not

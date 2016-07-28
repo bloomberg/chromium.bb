@@ -2771,10 +2771,6 @@
     'chrome_browser_search_engines_sources': [
       'browser/search_engines/chrome_template_url_service_client.cc',
       'browser/search_engines/chrome_template_url_service_client.h',
-      'browser/search_engines/search_provider_install_data.cc',
-      'browser/search_engines/search_provider_install_data.h',
-      'browser/search_engines/search_provider_install_state_impl.cc',
-      'browser/search_engines/search_provider_install_state_impl.h',
       'browser/search_engines/template_url_fetcher_factory.cc',
       'browser/search_engines/template_url_fetcher_factory.h',
       'browser/search_engines/template_url_service_factory.cc',
@@ -3402,7 +3398,6 @@
 	    'budget_proto',
             'common_mojo_bindings',
             'common_net',
-            'common_search_provider_mojom',
             'debugger',
             'installer_util',
             '../cc/cc.gyp:cc',

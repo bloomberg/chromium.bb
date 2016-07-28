@@ -7616,6 +7616,7 @@ interface webkitURL
     attribute document
     attribute event
     attribute eventSender
+    attribute external
     attribute frameElement
     attribute frames
     attribute gamepadController

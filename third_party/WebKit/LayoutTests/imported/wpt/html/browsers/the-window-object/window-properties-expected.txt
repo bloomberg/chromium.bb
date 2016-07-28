@@ -150,7 +150,7 @@ FAIL Window replaceable attribute: statusbar assert_equals: expected "function" 
 FAIL Window replaceable attribute: toolbar assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: frames assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: parent assert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: external assert_true: external in window expected true got false
+FAIL Window replaceable attribute: external assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: length assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: screen assert_equals: expected "function" but got "undefined"
 FAIL Window replaceable attribute: scrollX assert_equals: expected "function" but got "undefined"

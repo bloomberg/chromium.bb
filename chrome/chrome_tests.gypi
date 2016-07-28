@@ -308,7 +308,6 @@
       'browser/extensions/webstore_reinstaller_browsertest.cc',
       'browser/extensions/webstore_startup_installer_browsertest.cc',
       'browser/extensions/window_open_apitest.cc',
-      'browser/external_extension_browsertest.cc',
       'browser/fast_shutdown_browsertest.cc',
       'browser/favicon/content_favicon_driver_browsertest.cc',
       'browser/first_run/first_run_browsertest.cc',

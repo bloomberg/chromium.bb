@@ -344,7 +344,6 @@ split_static_library("browser") {
       "//chrome/browser/devtools",
       "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
       "//chrome/browser/resources:component_extension_resources",
-      "//chrome/common:search_provider_mojom",
       "//chrome/common/net",
       "//chrome/installer/util:with_no_strings",
       "//components/about_handler",

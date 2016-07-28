@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "chrome/common/search_provider.h"
 #include "chrome/common/web_application_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -69,8 +68,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status,
 IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
                           OMNIBOX_FOCUS_CHANGE_REASON_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusState, OMNIBOX_FOCUS_STATE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(search_provider::OSDDType,
-                          search_provider::OSDD_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)

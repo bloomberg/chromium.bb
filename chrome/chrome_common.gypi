@@ -86,7 +86,6 @@
       'common/search/search_types.h',
       'common/search/search_urls.cc',
       'common/search/search_urls.h',
-      'common/search_provider.h',
       'common/secure_origin_whitelist.cc',
       'common/secure_origin_whitelist.h',
       'common/spellcheck_bdict_language.h',
@@ -642,24 +641,6 @@
         'proto_out_dir': 'chrome/common/safe_browsing',
       },
       'includes': [ '../build/protoc.gypi' ],
-    },
-    {
-      # GN version: //chrome/common:search_provider_mojom
-      'target_name': 'common_search_provider_mojom',
-      'type': 'static_library',
-      'sources': [
-        'common/search_provider.mojom',
-      ],
-      'variables': {
-        'mojom_typemaps': [
-          '../url/mojo/gurl.typemap',
-        ],
-      },
-      'dependencies': [
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../url/url.gyp:url_mojom',
-      ],
-      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
     {
       'target_name': 'common_mojo_bindings_mojom',

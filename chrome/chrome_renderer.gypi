@@ -22,8 +22,6 @@
       'renderer/content_settings_observer.cc',
       'renderer/content_settings_observer.h',
       'renderer/custom_menu_commands.h',
-      'renderer/external_extension.cc',
-      'renderer/external_extension.h',
       'renderer/instant_restricted_id_cache.h',
       'renderer/loadtimes_extension_bindings.cc',
       'renderer/loadtimes_extension_bindings.h',
@@ -251,7 +249,6 @@
       'dependencies': [
         'common',
         'common_mojo_bindings',
-        'common_search_provider_mojom',
         'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',

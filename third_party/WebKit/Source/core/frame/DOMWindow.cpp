@@ -9,6 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/MessageEvent.h"
+#include "core/frame/External.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameConsole.h"
@@ -116,6 +117,12 @@ DOMWindow* DOMWindow::top() const
         return nullptr;
 
     return frame()->tree().top()->domWindow();
+}
+
+External* DOMWindow::external() const
+{
+    DEFINE_STATIC_LOCAL(Persistent<External>, external, (new External));
+    return external;
 }
 
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const

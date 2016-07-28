@@ -72,7 +72,6 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/search_provider_install_state_impl.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -966,10 +965,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
-  host->GetInterfaceRegistry()->AddInterface(
-      base::Bind(&SearchProviderInstallStateImpl::Create, id, profile),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI));
 #if defined(ENABLE_SPELLCHECK)
   host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
