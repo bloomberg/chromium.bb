@@ -31,6 +31,10 @@
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 
+#if defined(OS_WIN)
+#include "ui/display/win/dpi.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -304,7 +308,7 @@ int CustomFrameView::IconSize() const {
 #if defined(OS_WIN)
   // This metric scales up if either the titlebar height or the titlebar font
   // size are increased.
-  return GetSystemMetrics(SM_CYSMICON);
+  return display::win::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
   return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
