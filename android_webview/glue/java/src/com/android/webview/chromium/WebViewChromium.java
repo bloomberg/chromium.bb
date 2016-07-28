@@ -202,7 +202,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         AwContentsStatics.setRecordFullDocument(sRecordWholeDocumentEnabledByApi
                 || mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP);
 
-        mAwContents = new AwContents(mFactory.getBrowserContext(), mWebView, mContext,
+        mAwContents = new AwContents(mFactory.getBrowserContextOnUiThread(), mWebView, mContext,
                 new InternalAccessAdapter(), new WebViewNativeDrawGLFunctorFactory(),
                 mContentsClientAdapter, mWebSettings.getAwSettings());
 

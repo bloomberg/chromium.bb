@@ -12,7 +12,6 @@ import android.webkit.WebStorage;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.webview_shell.WebViewThreadTestActivity;
 
 /**
@@ -84,7 +83,6 @@ public class WebViewThreadTest extends ActivityInstrumentationTestCase2<WebViewT
         });
     }
 
-    @DisabledTest
     @SmallTest
     public void testWebViewInitByWebStorage() throws InterruptedException {
         initThenCreateWebViewOnUiThread(new Runnable() {
