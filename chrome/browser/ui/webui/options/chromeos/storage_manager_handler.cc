@@ -269,10 +269,16 @@ void StorageManagerHandler::OnGetDownloadsSize(int64_t size) {
 void StorageManagerHandler::UpdateDriveCacheSize() {
   if (updating_drive_cache_size_)
     return;
-  updating_drive_cache_size_ = true;
 
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(Profile::FromWebUI(web_ui()));
+  if (!file_system)
+    return;
+
+  // Shows the item "Offline cache" and start calculating size.
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "options.StorageManager.showDriveCacheItem");
+  updating_drive_cache_size_ = true;
   file_system->CalculateCacheSize(
       base::Bind(&StorageManagerHandler::OnGetDriveCacheSize,
                  weak_ptr_factory_.GetWeakPtr()));

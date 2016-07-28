@@ -131,6 +131,7 @@ cr.define('options', function() {
      * @private
      */
     setDriveCacheSize_: function(size) {
+      assert(!$('storage-manager-item-drive-cache').hidden);
       $('storage-manager-size-drive-cache').textContent = size;
     },
 
@@ -161,6 +162,14 @@ cr.define('options', function() {
     setArcSize_: function(size) {
       assert(!$('storage-manager-item-arc').hidden);
       $('storage-manager-size-arc').textContent = size;
+    },
+
+    /**
+     * Shows the item "Offline files" on the overlay UI.
+     * @private
+     */
+    showDriveCacheItem_: function() {
+      $('storage-manager-item-drive-cache').hidden = false;
     },
 
     /**
@@ -205,6 +214,7 @@ cr.define('options', function() {
     'setOtherUsersSize',
     'setSizeStat',
     'showArcItem',
+    'showDriveCacheItem',
   ]);
 
   return {
