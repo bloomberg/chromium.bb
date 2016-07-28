@@ -74,6 +74,11 @@ InspectorTest.evaluateFunctionInOverlay = function(func, callback)
     }
 }
 
+InspectorTest.waitForOverlayRepaint = function(callback)
+{
+    InspectorTest.invokePageFunctionAsync("requestAnimationFrame", callback);
+}
+
 var lastEvalId = 0;
 var pendingEvalRequests = {};
 

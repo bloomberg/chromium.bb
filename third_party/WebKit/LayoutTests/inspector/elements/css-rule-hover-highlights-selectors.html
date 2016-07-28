@@ -42,7 +42,7 @@ function test()
             {
                 var section = InspectorTest.firstMatchedStyleSection();
                 section._highlight();
-                testRunner.layoutAndPaintAsyncThen(onHighlighted);
+                InspectorTest.waitForOverlayRepaint(onHighlighted);
             }
 
             function onHighlighted()
@@ -64,7 +64,7 @@ function test()
             {
                 var section = InspectorTest.firstMatchedStyleSection();
                 section._highlight();
-                testRunner.layoutAndPaintAsyncThen(onHighlighted);
+                InspectorTest.waitForOverlayRepaint(onHighlighted);
             }
 
             function onHighlighted()
