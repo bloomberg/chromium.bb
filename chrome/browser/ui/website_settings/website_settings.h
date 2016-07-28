@@ -143,14 +143,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     return site_identity_status_;
   }
 
-  base::string16 site_connection_details() const {
-    return site_connection_details_;
-  }
-
-  base::string16 site_identity_details() const {
-    return site_identity_details_;
-  }
-
   base::string16 organization_name() const {
     return organization_name_;
   }
