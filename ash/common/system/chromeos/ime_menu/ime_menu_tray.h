@@ -9,7 +9,9 @@
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_background_view.h"
+#include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "base/macros.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 
 namespace views {
 class Label;
@@ -19,8 +21,11 @@ namespace ash {
 class StatusAreaWidget;
 class WmWindow;
 
-// The tray item for IME menu.
-class ASH_EXPORT ImeMenuTray : public TrayBackgroundView, public IMEObserver {
+// The tray item for IME menu, which shows the detailed view of a null single
+// item.
+class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
+                               public IMEObserver,
+                               public views::TrayBubbleView::Delegate {
  public:
   explicit ImeMenuTray(WmShelf* wm_shelf);
   ~ImeMenuTray() override;
@@ -36,6 +41,20 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView, public IMEObserver {
   void OnIMERefresh() override;
   void OnIMEMenuActivationChanged(bool is_activated) override;
 
+  // views::TrayBubbleView::Delegate:
+  void BubbleViewDestroyed() override;
+  void OnMouseEnteredView() override;
+  void OnMouseExitedView() override;
+  base::string16 GetAccessibleNameForBubble() override;
+  gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
+                          AnchorType anchor_type,
+                          AnchorAlignment anchor_alignment) const override;
+  void OnBeforeBubbleWidgetInit(
+      views::Widget* anchor_widget,
+      views::Widget* bubble_widget,
+      views::Widget::InitParams* params) const override;
+  void HideBubble(const views::TrayBubbleView* bubble_view) override;
+
  private:
   // To allow the test class to access |label_|.
   friend class ImeMenuTrayTest;
@@ -43,9 +62,14 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView, public IMEObserver {
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
 
-  // Highlights the button and shows the IME menu tray bubble if |is_active| is
-  // true; otherwise, lowlights the button and hides the menu.
-  void SetTrayActivation(bool is_active);
+  // Shows the IME menu bubble and highlights the button.
+  void ShowImeMenuBubble();
+
+  // Hides the IME menu bubble and lowlights the button.
+  void HideImeMenuBubble();
+
+  // Bubble for default and detailed views.
+  std::unique_ptr<TrayBubbleWrapper> bubble_;
 
   views::Label* label_;
   IMEInfo current_ime_;

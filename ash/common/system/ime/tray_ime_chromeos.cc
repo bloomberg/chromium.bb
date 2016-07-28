@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -84,90 +85,51 @@ class IMEDefaultView : public TrayItemMore {
   DISALLOW_COPY_AND_ASSIGN(IMEDefaultView);
 };
 
-class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
+class IMEDetailedView : public ImeListView {
  public:
   IMEDetailedView(SystemTrayItem* owner,
                   LoginStatus login,
                   bool show_keyboard_toggle)
-      : TrayDetailsView(owner), login_(login) {
+      : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME),
+        login_(login) {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
     IMEPropertyInfoList property_list;
     delegate->GetCurrentIMEProperties(&property_list);
-    Update(list, property_list, show_keyboard_toggle);
+    Update(list, property_list, show_keyboard_toggle,
+           ImeListView::HIDE_SINGLE_IME);
   }
 
   ~IMEDetailedView() override {}
 
   void Update(const IMEInfoList& list,
               const IMEPropertyInfoList& property_list,
-              bool show_keyboard_toggle) {
-    Reset();
-    ime_map_.clear();
-    property_map_.clear();
-    CreateScrollableList();
-
-    if (list.size() > 1)
-      AppendIMEList(list);
-    if (!property_list.empty())
-      AppendIMEProperties(property_list);
-
-    if (show_keyboard_toggle) {
-      if (list.size() > 1 || !property_list.empty())
-        AddScrollSeparator();
-      AppendKeyboardStatus();
-    }
-
+              bool show_keyboard_toggle,
+              SingleImeBehavior single_ime_behavior) override {
+    ImeListView::Update(list, property_list, show_keyboard_toggle,
+                        single_ime_behavior);
     if (login_ != LoginStatus::NOT_LOGGED_IN && login_ != LoginStatus::LOCKED &&
         !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
       AppendSettings();
     AppendHeaderEntry();
-
-    Layout();
-    SchedulePaint();
   }
 
  private:
+  // ImeListView:
+  void OnViewClicked(views::View* sender) override {
+    ImeListView::OnViewClicked(sender);
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    if (sender == footer()->content()) {
+      TransitionToDefaultView();
+    } else if (sender == settings_) {
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_IME_SHOW_DETAILED);
+      delegate->ShowIMESettings();
+    }
+  }
+
   void AppendHeaderEntry() { CreateSpecialRow(IDS_ASH_STATUS_TRAY_IME, this); }
-
-  // Appends the IMEs to the scrollable area of the detailed view.
-  void AppendIMEList(const IMEInfoList& list) {
-    DCHECK(ime_map_.empty());
-    for (size_t i = 0; i < list.size(); i++) {
-      HoverHighlightView* container = new SelectableHoverHighlightView(
-          this, list[i].name, list[i].selected);
-      scroll_content()->AddChildView(container);
-      ime_map_[container] = list[i].id;
-    }
-  }
-
-  // Appends the IME listed to the scrollable area of the detailed
-  // view.
-  void AppendIMEProperties(const IMEPropertyInfoList& property_list) {
-    DCHECK(property_map_.empty());
-    for (size_t i = 0; i < property_list.size(); i++) {
-      HoverHighlightView* container = new SelectableHoverHighlightView(
-          this, property_list[i].name, property_list[i].selected);
-      if (i == 0)
-        container->SetBorder(views::Border::CreateSolidSidedBorder(
-            1, 0, 0, 0, kBorderLightColor));
-      scroll_content()->AddChildView(container);
-      property_map_[container] = property_list[i].key;
-    }
-  }
-
-  void AppendKeyboardStatus() {
-    HoverHighlightView* container = new HoverHighlightView(this);
-    int id = keyboard::IsKeyboardEnabled()
-                 ? IDS_ASH_STATUS_TRAY_DISABLE_KEYBOARD
-                 : IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD;
-    container->AddLabel(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(id),
-        gfx::ALIGN_LEFT, false /* highlight */);
-    scroll_content()->AddChildView(container);
-    keyboard_status_ = container;
-  }
 
   void AppendSettings() {
     HoverHighlightView* container = new HoverHighlightView(this);
@@ -179,44 +141,9 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
     settings_ = container;
   }
 
-  // Overridden from ViewClickListener.
-  void OnViewClicked(views::View* sender) override {
-    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-    if (sender == footer()->content()) {
-      TransitionToDefaultView();
-    } else if (sender == settings_) {
-      WmShell::Get()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_IME_SHOW_DETAILED);
-      delegate->ShowIMESettings();
-    } else if (sender == keyboard_status_) {
-      WmShell::Get()->ToggleIgnoreExternalKeyboard();
-    } else {
-      std::map<views::View*, std::string>::const_iterator ime_find;
-      ime_find = ime_map_.find(sender);
-      if (ime_find != ime_map_.end()) {
-        WmShell::Get()->RecordUserMetricsAction(
-            UMA_STATUS_AREA_IME_SWITCH_MODE);
-        std::string ime_id = ime_find->second;
-        delegate->SwitchIME(ime_id);
-        GetWidget()->Close();
-      } else {
-        std::map<views::View*, std::string>::const_iterator prop_find;
-        prop_find = property_map_.find(sender);
-        if (prop_find != property_map_.end()) {
-          const std::string key = prop_find->second;
-          delegate->ActivateIMEProperty(key);
-          GetWidget()->Close();
-        }
-      }
-    }
-  }
-
   LoginStatus login_;
 
-  std::map<views::View*, std::string> ime_map_;
-  std::map<views::View*, std::string> property_map_;
   views::View* settings_;
-  views::View* keyboard_status_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
 };
@@ -260,7 +187,8 @@ void TrayIME::Update() {
     default_->UpdateLabel(GetDefaultViewLabel(ime_list_.size() > 1));
   }
   if (detailed_)
-    detailed_->Update(ime_list_, property_list_, ShouldShowKeyboardToggle());
+    detailed_->Update(ime_list_, property_list_, ShouldShowKeyboardToggle(),
+                      ImeListView::HIDE_SINGLE_IME);
 }
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {

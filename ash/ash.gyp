@@ -166,6 +166,8 @@
       'common/system/chromeos/enterprise/enterprise_domain_observer.h',
       'common/system/chromeos/enterprise/tray_enterprise.cc',
       'common/system/chromeos/enterprise/tray_enterprise.h',
+      'common/system/chromeos/ime_menu/ime_list_view.cc',
+      'common/system/chromeos/ime_menu/ime_list_view.h',
       'common/system/chromeos/ime_menu/ime_menu_tray.cc',
       'common/system/chromeos/ime_menu/ime_menu_tray.h',
       'common/system/chromeos/keyboard_brightness_controller.cc',

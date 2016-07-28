@@ -4,10 +4,12 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
@@ -17,39 +19,34 @@ using base::UTF8ToUTF16;
 
 namespace ash {
 
+ImeMenuTray* GetTray() {
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->ime_menu_tray_for_testing();
+}
+
 class ImeMenuTrayTest : public test::AshTestBase {
  public:
   ImeMenuTrayTest() {}
   ~ImeMenuTrayTest() override {}
 
-  ImeMenuTray* ime_menu_tray() { return ime_menu_tray_.get(); }
-
-  // test::AshTestBase:
-  void SetUp() override {
-    test::AshTestBase::SetUp();
-    ime_menu_tray_.reset(new ImeMenuTray(GetPrimaryShelf()));
-  }
-
-  void TearDown() override {
-    ime_menu_tray_.reset();
-    test::AshTestBase::TearDown();
-  }
-
  protected:
   // Returns true if the IME menu tray is visible.
-  bool IsVisible() { return ime_menu_tray_->visible(); }
+  bool IsVisible() { return GetTray()->visible(); }
 
   // Returns the label text of the tray.
-  const base::string16& GetTrayText() { return ime_menu_tray_->label_->text(); }
+  const base::string16& GetTrayText() { return GetTray()->label_->text(); }
 
   // Returns true if the background color of the tray is active.
   bool IsTrayBackgroundActive() {
-    return ime_menu_tray_->draw_background_as_active();
+    return GetTray()->draw_background_as_active();
+  }
+
+  // Returns true if the IME menu bubble has been shown.
+  bool IsBubbleShown() {
+    return (GetTray()->bubble_ && GetTray()->bubble_->bubble_view());
   }
 
  private:
-  std::unique_ptr<ImeMenuTray> ime_menu_tray_;
-
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTrayTest);
 };
 
@@ -105,18 +102,21 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
 
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  ime_menu_tray()->PerformAction(tap);
+  GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
 
-  ime_menu_tray()->PerformAction(tap);
+  GetTray()->PerformAction(tap);
   EXPECT_FALSE(IsTrayBackgroundActive());
+  EXPECT_FALSE(IsBubbleShown());
 
   // If disabling the IME menu feature when the menu tray is activated, the tray
   // element will be deactivated.
-  ime_menu_tray()->PerformAction(tap);
+  GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
   WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
   EXPECT_FALSE(IsVisible());
+  EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(IsTrayBackgroundActive());
 }
 

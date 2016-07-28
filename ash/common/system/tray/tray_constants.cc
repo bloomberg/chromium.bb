@@ -31,6 +31,8 @@ const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
 
 // Size of IME menu tray.
 const int kTrayImeIconSize = 40;
+const int kTrayImeBottomRowPadding = 5;
+const int kTrayImeBottomRowPaddingBetweenItems = 2;
 
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
