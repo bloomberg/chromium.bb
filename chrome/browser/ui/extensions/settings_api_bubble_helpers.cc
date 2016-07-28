@@ -65,7 +65,8 @@ void MaybeShowExtensionControlledSearchNotification(
   if (AutocompleteMatch::IsSearchType(match_type) &&
       match_type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser);
+    if (browser)
+      ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser);
   }
 }
 
