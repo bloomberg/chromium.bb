@@ -281,7 +281,7 @@ def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
     'initial_size': cache.initial_size,
     'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
     'items_hot': base64.b64encode(
-        large.pack(sorted(set(cache.linked) - set(cache.added)))),
+        large.pack(sorted(set(cache.used) - set(cache.added)))),
   }
 
 

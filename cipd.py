@@ -368,7 +368,8 @@ def get_client(
       # cache by hashing it.
       version_digest = hashlib.sha1(version).hexdigest()
       try:
-        instance_id = version_cache.read(version_digest)
+        with version_cache.getfileobj(version_digest) as f:
+          instance_id = f.read()
       except isolateserver.CacheMiss:
         instance_id = resolve_version(
             service_url, package_name, version, timeout=timeoutfn())
@@ -394,7 +395,9 @@ def get_client(
     binary_path = unicode(os.path.join(cache_dir, 'cipd' + EXECUTABLE_SUFFIX))
     if fs.isfile(binary_path):
       file_path.remove(binary_path)
-    instance_cache.link(instance_id, binary_path, 0511, False)  # -r-x--x--x
+
+    with instance_cache.getfileobj(instance_id) as f:
+      isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
 
     yield CipdClient(binary_path)
 

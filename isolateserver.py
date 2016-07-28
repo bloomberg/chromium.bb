@@ -5,16 +5,18 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 import base64
-import functools
 import errno
+import functools
+import io
 import logging
 import optparse
 import os
 import re
 import signal
+import stat
 import sys
 import tempfile
 import threading
@@ -147,6 +149,120 @@ def file_write(path, content_generator):
       total += len(d)
       f.write(d)
   return total
+
+
+def fileobj_path(fileobj):
+  """Return file system path for file like object or None.
+
+  The returned path is guaranteed to exist and can be passed to file system
+  operations like copy.
+  """
+  name = getattr(fileobj, 'name', None)
+  if name is None:
+    return
+
+  # If the file like object was created using something like open("test.txt")
+  # name will end up being a str (such as a function outside our control, like
+  # the standard library). We want all our paths to be unicode objects, so we
+  # decode it.
+  if not isinstance(name, unicode):
+    name = name.decode(sys.getfilesystemencoding())
+
+  if fs.exists(name):
+    return name
+
+
+# TODO(tansell): Replace fileobj_copy with shutil.copyfileobj once proper file
+# wrappers have been created.
+def fileobj_copy(
+    dstfileobj, srcfileobj, size=-1,
+    chunk_size=isolated_format.DISK_FILE_CHUNK):
+  """Copy data from srcfileobj to dstfileobj.
+
+  Providing size means exactly that amount of data will be copied (if there
+  isn't enough data, an IOError exception is thrown). Otherwise all data until
+  the EOF marker will be copied.
+  """
+  if size == -1 and hasattr(srcfileobj, 'tell'):
+    if srcfileobj.tell() != 0:
+      raise IOError('partial file but not using size')
+
+  written = 0
+  while written != size:
+    readsize = chunk_size
+    if size > 0:
+      readsize = min(readsize, size-written)
+    data = srcfileobj.read(readsize)
+    if not data:
+      if size == -1:
+        break
+      raise IOError('partial file, got %s, wanted %s' % (written, size))
+    dstfileobj.write(data)
+    written += len(data)
+
+
+def putfile(srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
+  """Put srcfileobj at the given dstpath with given mode.
+
+  The function aims to do this as efficiently as possible while still allowing
+  any possible file like object be given.
+
+  Creating a tree of hardlinks has a few drawbacks:
+  - tmpfs cannot be used for the scratch space. The tree has to be on the same
+    partition as the cache.
+  - involves a write to the inode, which advances ctime, cause a metadata
+    writeback (causing disk seeking).
+  - cache ctime cannot be used to detect modifications / corruption.
+  - Some file systems (NTFS) have a 64k limit on the number of hardlink per
+    partition. This is why the function automatically fallbacks to copying the
+    file content.
+  - /proc/sys/fs/protected_hardlinks causes an additional check to ensure the
+    same owner is for all hardlinks.
+  - Anecdotal report that ext2 is known to be potentially faulty on high rate
+    of hardlink creation.
+
+  Creating a tree of symlinks has a few drawbacks:
+  - Tasks running the equivalent of os.path.realpath() will get the naked path
+    and may fail.
+  - Windows:
+    - Symlinks are reparse points:
+      https://msdn.microsoft.com/library/windows/desktop/aa365460.aspx
+      https://msdn.microsoft.com/library/windows/desktop/aa363940.aspx
+    - Symbolic links are Win32 paths, not NT paths.
+      https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
+    - Symbolic links are supported on Windows 7 and later only.
+    - SeCreateSymbolicLinkPrivilege is needed, which is not present by
+      default.
+    - SeCreateSymbolicLinkPrivilege is *stripped off* by UAC when a restricted
+      RID is present in the token;
+      https://msdn.microsoft.com/en-us/library/bb530410.aspx
+  """
+  srcpath = fileobj_path(srcfileobj)
+  if srcpath and size == -1:
+    readonly = file_mode is None or (
+        file_mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH))
+
+    if readonly:
+      # If the file is read only we can link the file
+      if use_symlink:
+        link_mode = file_path.SYMLINK_WITH_FALLBACK
+      else:
+        link_mode = file_path.HARDLINK_WITH_FALLBACK
+    else:
+      # If not read only, we must copy the file
+      link_mode = file_path.COPY
+
+    file_path.link_file(dstpath, srcpath, link_mode)
+  else:
+    # Need to write out the file
+    with fs.open(dstpath, 'wb') as dstfileobj:
+      fileobj_copy(dstfileobj, srcfileobj, size)
+
+  assert fs.exists(dstpath)
+
+  # file_mode of 0 is actually valid, so need explicit check.
+  if file_mode is not None:
+    fs.chmod(dstpath, file_mode)
 
 
 def zip_compress(content_generator, level=7):
@@ -1223,7 +1339,7 @@ class LocalCache(object):
     self._initial_number_items = 0
     self._initial_size = 0
     self._evicted = []
-    self._linked = []
+    self._used = []
 
   def __contains__(self, digest):
     raise NotImplementedError()
@@ -1245,16 +1361,16 @@ class LocalCache(object):
     return self._evicted[:]
 
   @property
+  def used(self):
+    return self._used[:]
+
+  @property
   def initial_number_items(self):
     return self._initial_number_items
 
   @property
   def initial_size(self):
     return self._initial_size
-
-  @property
-  def linked(self):
-    return self._linked[:]
 
   def cached_set(self):
     """Returns a set of all cached digests (always a new object)."""
@@ -1280,55 +1396,18 @@ class LocalCache(object):
     """Removes item from cache if it's there."""
     raise NotImplementedError()
 
-  def read(self, digest):
-    """Returns contents of the cached item as a single str."""
+  def getfileobj(self, digest):
+    """Returns a readable file like object.
+
+    If file exists on the file system it will have a .name attribute with an
+    absolute path to the file.
+    """
     raise NotImplementedError()
 
   def write(self, digest, content):
     """Reads data from |content| generator and stores it in cache.
 
     Returns digest to simplify chaining.
-    """
-    raise NotImplementedError()
-
-  def link(self, digest, dest, file_mode, use_symlink):
-    """Ensures file at |dest| has same content as cached |digest|.
-
-    If file_mode is provided, it is used to set the executable bit if
-    applicable.
-
-    The function may copy the content, create a hardlink and if use_symlink is
-    True, create a symlink if possible.
-
-    Creating a tree of hardlinks has a few drawbacks:
-    - tmpfs cannot be used for the scratch space. The tree has to be on the same
-      partition as the cache.
-    - involves a write to the inode, which advances ctime, cause a metadata
-      writeback (causing disk seeking).
-    - cache ctime cannot be used to detect modifications / corruption.
-    - Some file systems (NTFS) have a 64k limit on the number of hardlink per
-      partition. This is why the function automatically fallbacks to copying the
-      file content.
-    - /proc/sys/fs/protected_hardlinks causes an additional check to ensure the
-      same owner is for all hardlinks.
-    - Anecdotal report that ext2 is known to be potentially faulty on high rate
-      of hardlink creation.
-
-    Creating a tree of symlinks has a few drawbacks:
-    - Tasks running the equivalent of os.path.realpath() will get the naked path
-      and may fail.
-    - Windows:
-      - Symlinks are reparse points:
-        https://msdn.microsoft.com/library/windows/desktop/aa365460.aspx
-        https://msdn.microsoft.com/library/windows/desktop/aa363940.aspx
-      - Symbolic links are Win32 paths, not NT paths.
-        https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
-      - Symbolic links are supported on Windows 7 and later only.
-      - SeCreateSymbolicLinkPrivilege is needed, which is not present by
-        default.
-      - SeCreateSymbolicLinkPrivilege is *stripped off* by UAC when a restricted
-        RID is present in the token;
-        https://msdn.microsoft.com/en-us/library/bb530410.aspx
     """
     raise NotImplementedError()
 
@@ -1366,12 +1445,14 @@ class MemoryCache(LocalCache):
       if v is not None:
         self._evicted.add(v)
 
-  def read(self, digest):
+  def getfileobj(self, digest):
     with self._lock:
       try:
-        return self._contents[digest]
+        d = self._contents[digest]
       except KeyError:
         raise CacheMiss(digest)
+      self._used.append(len(d))
+    return io.BytesIO(d)
 
   def write(self, digest, content):
     # Assemble whole stream before taking the lock.
@@ -1380,16 +1461,6 @@ class MemoryCache(LocalCache):
       self._contents[digest] = data
       self._added.append(len(data))
     return digest
-
-  def link(self, digest, dest, file_mode, use_symlink):
-    """Since data is kept in memory, there is no filenode to hardlink/symlink.
-    """
-    data = self.read(digest)
-    file_write(dest, [data])
-    if file_mode is not None:
-      fs.chmod(dest, file_mode & self._file_mode_mask)
-    with self._lock:
-      self._linked.append(len(data))
 
 
 class CachePolicies(object):
@@ -1557,10 +1628,12 @@ class DiskCache(LocalCache):
       self._lru.pop(digest)
       self._delete_file(digest, UNKNOWN_FILE_SIZE)
 
-  def read(self, digest):
+  def getfileobj(self, digest):
     try:
-      with fs.open(self._path(digest), 'rb') as f:
-        return f.read()
+      f = fs.open(self._path(digest), 'rb')
+      with self._lock:
+        self._used.append(self._lru[digest])
+      return f
     except IOError:
       raise CacheMiss(digest)
 
@@ -1590,28 +1663,6 @@ class DiskCache(LocalCache):
     with self._lock:
       self._add(digest, size)
     return digest
-
-  def link(self, digest, dest, file_mode, use_symlink):
-    """Links the file to |dest|.
-
-    Note that the file permission bits are on the file node, not the directory
-    entry, so changing the access bit on any of the directory entries for the
-    file node will affect them all.
-    """
-    path = self._path(digest)
-    mode = (
-        file_path.SYMLINK_WITH_FALLBACK if use_symlink
-        else file_path.HARDLINK_WITH_FALLBACK)
-    if not file_path.link_file(dest, path, mode):
-      # Report to the server that it failed with more details. We'll want to
-      # squash them all.
-      on_error.report('Failed to link\n%s -> %s' % (path, dest))
-
-    if file_mode is not None:
-      # Ignores all other bits.
-      fs.chmod(dest, file_mode & 0500)
-    with self._lock:
-      self._linked.append(self._lru[digest])
 
   def _load(self):
     """Loads state of the cache from json file.
@@ -1804,7 +1855,8 @@ class IsolatedBundle(object):
       # Wait until some *.isolated file is fetched, parse it.
       item_hash = fetch_queue.wait(pending)
       item = pending.pop(item_hash)
-      item.load(fetch_queue.cache.read(item_hash))
+      with fetch_queue.cache.getfileobj(item_hash) as f:
+        item.load(f.read())
 
       # Start fetching included *.isolated files.
       for new_child in item.children:
@@ -1842,8 +1894,14 @@ class IsolatedBundle(object):
       # overridden files must not be fetched.
       if filepath not in self.files:
         self.files[filepath] = properties
+
+        # Make sure if the isolated is read only, the mode doesn't have write
+        # bits.
+        if 'm' in properties and self.read_only:
+          properties['m'] &= ~(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
+
+        # Preemptively request hashed files.
         if 'h' in properties:
-          # Preemptively request files.
           logging.debug('fetching %s', filepath)
           fetch_queue.add(
               properties['h'], properties['s'], threading_utils.PRIORITY_MED)
@@ -2007,12 +2065,19 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
           # Wait for any item to finish fetching to cache.
           digest = fetch_queue.wait(remaining)
 
-          # Link corresponding files to a fetched item in cache.
+          # Create the files in the destination using item in cache as the
+          # source.
           for filepath, props in remaining.pop(digest):
-            dest = os.path.join(outdir, filepath)
-            if os.path.exists(dest):
-              raise AlreadyExists('File %s already exists' % dest)
-            cache.link(digest, dest, props.get('m'), use_symlinks)
+            fullpath = os.path.join(outdir, filepath)
+
+            with cache.getfileobj(digest) as srcfileobj:
+              file_mode = props.get('m')
+              if file_mode:
+                # Ignore all bits apart from the user
+                file_mode &= 0700
+              putfile(
+                  srcfileobj, fullpath, file_mode,
+                  use_symlink=use_symlinks)
 
           # Report progress.
           duration = time.time() - last_update

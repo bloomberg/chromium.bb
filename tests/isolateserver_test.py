@@ -10,6 +10,7 @@ import collections
 import hashlib
 import json
 import logging
+import io
 import os
 import StringIO
 import sys
@@ -149,6 +150,134 @@ class MockedStorageApi(isolateserver.StorageApi):
       if item.digest in self.missing_hashes:
         missing[item] = self.missing_hashes[item.digest]
     return missing
+
+
+class UtilsTest(TestCase):
+  """Tests for helper methods in isolateserver file."""
+
+  def assertFile(self, path, contents):
+    self.assertTrue(fs.exists(path), 'File %s doesn\'t exist!' % path)
+    self.assertMultiLineEqual(contents, fs.open(path, 'rb').read())
+
+  def test_file_read(self):
+    # TODO(maruel): Write test for file_read generator (or remove it).
+    pass
+
+  def test_file_write(self):
+    # TODO(maruel): Write test for file_write generator (or remove it).
+    pass
+
+  def test_fileobj_path(self):
+    # No path on in-memory objects
+    self.assertIs(None, isolateserver.fileobj_path(io.BytesIO('hello')))
+
+    # Path on opened files
+    thisfile = os.path.abspath(__file__.decode(sys.getfilesystemencoding()))
+    f = fs.open(thisfile)
+    result = isolateserver.fileobj_path(f)
+    self.assertIsInstance(result, unicode)
+    self.assertSequenceEqual(result, thisfile)
+
+    # Path on temporary files
+    tf = tempfile.NamedTemporaryFile()
+    result = isolateserver.fileobj_path(tf)
+    self.assertIsInstance(result, unicode)
+    self.assertSequenceEqual(result, tf.name)
+
+    # No path on files which are no longer on the file system
+    tf = tempfile.NamedTemporaryFile(delete=False)
+    fs.unlink(tf.name.decode(sys.getfilesystemencoding()))
+    self.assertIs(None, isolateserver.fileobj_path(tf))
+
+  def test_fileobj_copy_simple(self):
+    inobj = io.BytesIO('hello')
+    outobj = io.BytesIO()
+
+    isolateserver.fileobj_copy(outobj, inobj)
+    self.assertEqual('hello', outobj.getvalue())
+
+  def test_fileobj_copy_partial(self):
+    inobj = io.BytesIO('adatab')
+    outobj = io.BytesIO()
+    inobj.read(1)
+
+    isolateserver.fileobj_copy(outobj, inobj, size=4)
+    self.assertEqual('data', outobj.getvalue())
+
+  def test_fileobj_copy_partial_file_no_size(self):
+    with self.assertRaises(IOError):
+      inobj = io.BytesIO('hello')
+      outobj = io.BytesIO()
+
+      inobj.read(1)
+      isolateserver.fileobj_copy(outobj, inobj)
+
+  def test_fileobj_copy_size_but_file_short(self):
+    with self.assertRaises(IOError):
+      inobj = io.BytesIO('hello')
+      outobj = io.BytesIO()
+
+      isolateserver.fileobj_copy(outobj, inobj, size=10)
+
+  def test_putfile(self):
+    tmpoutdir = None
+    tmpindir = None
+
+    try:
+      tmpindir = tempfile.mkdtemp(prefix='isolateserver_test')
+      infile = os.path.join(tmpindir, u'in')
+      with fs.open(infile, 'wb') as f:
+        f.write('data')
+
+      tmpoutdir = tempfile.mkdtemp(prefix='isolateserver_test')
+
+      # Copy as fileobj
+      fo = os.path.join(tmpoutdir, u'fo')
+      isolateserver.putfile(io.BytesIO('data'), fo)
+      self.assertEqual(True, fs.exists(fo))
+      self.assertEqual(False, fs.islink(fo))
+      self.assertFile(fo, 'data')
+
+      # Copy with partial fileobj
+      pfo = os.path.join(tmpoutdir, u'pfo')
+      fobj = io.BytesIO('adatab')
+      fobj.read(1)  # Read the 'a'
+      isolateserver.putfile(fobj, pfo, size=4)
+      self.assertEqual(True, fs.exists(pfo))
+      self.assertEqual(False, fs.islink(pfo))
+      self.assertEqual('b', fobj.read())
+      self.assertFile(pfo, 'data')
+
+      # Copy as not readonly
+      cp = os.path.join(tmpoutdir, u'cp')
+      with fs.open(infile, 'rb') as f:
+        isolateserver.putfile(f, cp, file_mode=0755)
+      self.assertEqual(True, fs.exists(cp))
+      self.assertEqual(False, fs.islink(cp))
+      self.assertFile(cp, 'data')
+
+      # Use hardlink
+      hl = os.path.join(tmpoutdir, u'hl')
+      with fs.open(infile, 'rb') as f:
+        isolateserver.putfile(f, hl, use_symlink=False)
+      self.assertEqual(True, fs.exists(hl))
+      self.assertEqual(False, fs.islink(hl))
+      self.assertFile(hl, 'data')
+
+      # Use symlink
+      sl = os.path.join(tmpoutdir, u'sl')
+      with fs.open(infile, 'rb') as f:
+        isolateserver.putfile(f, sl, use_symlink=True)
+      self.assertEqual(True, fs.exists(sl))
+      self.assertEqual(True, fs.islink(sl))
+      self.assertEqual('data', fs.open(sl, 'rb').read())
+      self.assertFile(sl, 'data')
+
+    finally:
+      if tmpindir:
+        file_path.rmtree(tmpindir)
+      if tmpoutdir:
+        file_path.rmtree(tmpoutdir)
 
 
 class StorageTest(TestCase):
@@ -723,9 +852,12 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
       pending.discard(fetched)
 
     # Ensure fetched same data as was pushed.
-    self.assertEqual(
-        [i.buffer for i in items],
-        [cache.read(i.digest) for i in items])
+    actual = []
+    for i in items:
+      with cache.getfileobj(i.digest) as f:
+        actual.append(f.read())
+
+    self.assertEqual([i.buffer for i in items], actual)
 
   def test_push_and_fetch(self):
     self.run_push_and_fetch_test('default')
@@ -839,18 +971,19 @@ class IsolateServerDownloadTest(TestCase):
     }
     self.assertEqual(expected, actual)
 
-  def test_download_isolated(self):
+  def test_download_isolated_simple(self):
     # Test downloading an isolated tree.
     actual = {}
-    def file_write_mock(key, generator):
-      actual[key] = ''.join(generator)
-    self.mock(isolateserver, 'file_write', file_write_mock)
+    def putfile_mock(
+        srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
+      actual[dstpath] = srcfileobj.read()
+    self.mock(isolateserver, 'putfile', putfile_mock)
     self.mock(os, 'makedirs', lambda _: None)
     server = 'http://example.com'
     files = {
       os.path.join('a', 'foo'): 'Content',
       'b': 'More content',
-      }
+    }
     isolated = {
       'command': ['Absurb', 'command'],
       'relative_cwd': 'a',
@@ -1023,27 +1156,13 @@ class DiskCacheTest(TestCase):
     h_a = self.to_hash('a')[0]
     with self.get_cache() as cache:
       cache.write(h_a, 'a')
-      self.assertEqual('a', cache.read(h_a))
+      with cache.getfileobj(h_a) as f:
+        self.assertEqual('a', f.read())
 
     with self.get_cache() as cache:
       cache.evict(h_a)
       with self.assertRaises(isolateserver.CacheMiss):
-        cache.read(h_a)
-
-  def test_link(self):
-    self._free_disk = 1100
-    cache = self.get_cache()
-    h_a = self.to_hash('a')[0]
-    cache.write(h_a, 'a')
-    mapped = tempfile.mkdtemp(prefix='isolateserver_test')
-    try:
-      cache.link(h_a, os.path.join(mapped, u'hl'), False, False)
-      cache.link(h_a, os.path.join(mapped, u'sl'), False, True)
-      self.assertEqual(sorted(['hl', 'sl']), sorted(os.listdir(mapped)))
-      self.assertEqual(False, fs.islink(os.path.join(mapped, u'hl')))
-      self.assertEqual(True, fs.islink(os.path.join(mapped, u'sl')))
-    finally:
-      file_path.rmtree(mapped)
+        cache.getfileobj(h_a)
 
   def test_policies_free_disk(self):
     with self.assertRaises(isolateserver.Error):
