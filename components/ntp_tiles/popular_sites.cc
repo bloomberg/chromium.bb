@@ -176,19 +176,26 @@ PopularSites::PopularSites(
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
     net::URLRequestContextGetter* download_context,
-    const base::FilePath& directory,
-    bool force_download,
-    const FinishedCallback& callback)
-    : callback_(callback),
-      is_fallback_(false),
+    const base::FilePath& directory)
+    : blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
+      prefs_(prefs),
+      template_url_service_(template_url_service),
+      variations_(variations_service),
+      download_context_(download_context),
       local_path_(directory.empty()
                       ? base::FilePath()
                       : directory.AppendASCII(kPopularSitesLocalFilename)),
-      prefs_(prefs),
-      download_context_(download_context),
-      blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
-      weak_ptr_factory_(this) {
+      is_fallback_(false),
+      weak_ptr_factory_(this) {}
+
+PopularSites::~PopularSites() {}
+
+void PopularSites::StartFetch(bool force_download,
+                              const FinishedCallback& callback) {
+  DCHECK(!callback_);
+  callback_ = callback;
+
   const base::Time last_download_time = base::Time::FromInternalValue(
       prefs_->GetInt64(kPopularSitesLastDownloadPref));
   const base::TimeDelta time_since_last_download =
@@ -198,11 +205,11 @@ PopularSites::PopularSites(
   const bool download_time_is_future = base::Time::Now() < last_download_time;
 
   const std::string country =
-      GetCountryToUse(prefs, template_url_service, variations_service);
-  const std::string version = GetVersionToUse(prefs);
+      GetCountryToUse(prefs_, template_url_service_, variations_);
+  const std::string version = GetVersionToUse(prefs_);
 
   const GURL override_url =
-      GURL(prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
+      GURL(prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
   pending_url_ = override_url.is_valid() ? override_url
                                          : GetPopularSitesURL(country, version);
   const bool url_changed =
@@ -230,8 +237,6 @@ PopularSites::PopularSites(
       base::Bind(&PopularSites::OnReadFileDone, weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(file_data))));
 }
-
-PopularSites::~PopularSites() {}
 
 GURL PopularSites::LastURL() const {
   return GURL(prefs_->GetString(kPopularSitesURLPref));

@@ -151,20 +151,14 @@ MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 MostVisitedSites::MostVisitedSites(
     scoped_refptr<base::SequencedWorkerPool> blocking_pool,
     PrefService* prefs,
-    const TemplateURLService* template_url_service,
-    variations::VariationsService* variations_service,
-    net::URLRequestContextGetter* download_context,
-    const base::FilePath& popular_sites_directory,
     scoped_refptr<history::TopSites> top_sites,
     SuggestionsService* suggestions,
+    PopularSites* popular_sites,
     MostVisitedSitesSupervisor* supervisor)
     : prefs_(prefs),
-      template_url_service_(template_url_service),
-      variations_service_(variations_service),
-      download_context_(download_context),
-      popular_sites_directory_(popular_sites_directory),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
+      popular_sites_(popular_sites),
       supervisor_(supervisor),
       observer_(nullptr),
       num_sites_(0),
@@ -173,8 +167,7 @@ MostVisitedSites::MostVisitedSites(
       recorded_uma_(false),
       scoped_observer_(this),
       mv_source_(SUGGESTIONS_SERVICE),
-      blocking_pool_(std::move(blocking_pool)),
-      blocking_runner_(blocking_pool_->GetTaskRunnerWithShutdownBehavior(
+      blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
   DCHECK(suggestions_service_);
@@ -198,12 +191,11 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   observer_ = observer;
   num_sites_ = num_sites;
 
-  if (ShouldShowPopularSites() && NeedPopularSites(prefs_, num_sites_)) {
-    popular_sites_.reset(new PopularSites(
-        blocking_pool_, prefs_, template_url_service_, variations_service_,
-        download_context_, popular_sites_directory_, false,
-        base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
-                   base::Unretained(this))));
+  if (popular_sites_ && ShouldShowPopularSites() &&
+      NeedPopularSites(prefs_, num_sites_)) {
+    popular_sites_->StartFetch(
+        false, base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
+                          base::Unretained(this)));
   } else {
     received_popular_sites_ = true;
   }

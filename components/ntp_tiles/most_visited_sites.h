@@ -151,12 +151,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   MostVisitedSites(scoped_refptr<base::SequencedWorkerPool> blocking_pool,
                    PrefService* prefs,
-                   const TemplateURLService* template_url_service,
-                   variations::VariationsService* variations_service,
-                   net::URLRequestContextGetter* download_context,
-                   const base::FilePath& popular_sites_directory,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
+                   PopularSites* popular_sites,
                    MostVisitedSitesSupervisor* supervisor);
 
   ~MostVisitedSites() override;
@@ -236,12 +233,9 @@ class MostVisitedSites : public history::TopSitesObserver,
                        ChangeReason change_reason) override;
 
   PrefService* prefs_;
-  const TemplateURLService* template_url_service_;
-  variations::VariationsService* variations_service_;
-  net::URLRequestContextGetter* download_context_;
-  base::FilePath popular_sites_directory_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
+  PopularSites* const popular_sites_;
   MostVisitedSitesSupervisor* supervisor_;
 
   Observer* observer_;
@@ -269,12 +263,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   MostVisitedSource mv_source_;
 
-  std::unique_ptr<PopularSites> popular_sites_;
-
   SuggestionsVector current_suggestions_;
 
   base::ThreadChecker thread_checker_;
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
   scoped_refptr<base::TaskRunner> blocking_runner_;
 
   // For callbacks may be run after destruction.

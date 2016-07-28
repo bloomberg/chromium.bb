@@ -66,9 +66,11 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
       content::BrowserThread::GetBlockingPool(), profile->GetPrefs(),
       TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),
-      ChromePopularSites::GetDirectory(), false,
+      ChromePopularSites::GetDirectory()));
+  popular_sites_->StartFetch(
+      false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
-                 base::Unretained(this), false)));
+                 base::Unretained(this), false));
 }
 
 void PopularSitesInternalsMessageHandler::HandleUpdate(
@@ -107,7 +109,8 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
       content::BrowserThread::GetBlockingPool(), prefs,
       TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),
-      ChromePopularSites::GetDirectory(), true, callback));
+      ChromePopularSites::GetDirectory()));
+  popular_sites_->StartFetch(true, callback);
 }
 
 void PopularSitesInternalsMessageHandler::HandleViewJson(

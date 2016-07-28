@@ -157,14 +157,17 @@ void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
     : supervisor_(profile),
+      popular_sites_(BrowserThread::GetBlockingPool(),
+                     profile->GetPrefs(),
+                     TemplateURLServiceFactory::GetForProfile(profile),
+                     g_browser_process->variations_service(),
+                     profile->GetRequestContext(),
+                     ChromePopularSites::GetDirectory()),
       most_visited_(BrowserThread::GetBlockingPool(),
                     profile->GetPrefs(),
-                    TemplateURLServiceFactory::GetForProfile(profile),
-                    g_browser_process->variations_service(),
-                    profile->GetRequestContext(),
-                    ChromePopularSites::GetDirectory(),
                     TopSitesFactory::GetForProfile(profile),
                     SuggestionsServiceFactory::GetForProfile(profile),
+                    &popular_sites_,
                     &supervisor_) {
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.
