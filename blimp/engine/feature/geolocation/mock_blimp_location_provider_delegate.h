@@ -26,7 +26,7 @@ class MockBlimpLocationProviderDelegate
   MOCK_METHOD0(RequestRefresh, void());
   MOCK_METHOD1(
       SetUpdateCallback,
-      void(const base::Callback<void(const device::Geoposition&)>& callback));
+      void(const base::Callback<void(const content::Geoposition&)>& callback));
 
  private:
   base::WeakPtrFactory<MockBlimpLocationProviderDelegate> weak_factory_;

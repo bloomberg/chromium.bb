@@ -16,7 +16,6 @@ include_rules = [
   "+courgette",
   "+device/bluetooth",
   "+device/core",
-  "+device/geolocation",
   "+device/hid",
   "+device/media_transfer_protocol",
   "+device/usb",

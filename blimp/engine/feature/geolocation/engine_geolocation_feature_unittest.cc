@@ -13,9 +13,8 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/geolocation.pb.h"
 #include "blimp/net/test_common.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geoposition.h"
-#include "device/geolocation/location_provider.h"
+#include "content/public/browser/location_provider.h"
+#include "content/public/common/geoposition.h"
 #include "net/base/test_completion_callback.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,8 +107,8 @@ class EngineGeolocationFeatureTest : public testing::Test {
     location_provider_->SetUpdateCallback(mock_callback_);
   }
 
-  void OnLocationUpdate(const device::LocationProvider* provider,
-                        const device::Geoposition& geoposition) {
+  void OnLocationUpdate(const content::LocationProvider* provider,
+                        const content::Geoposition& geoposition) {
     received_position = geoposition;
   }
 
@@ -118,14 +117,14 @@ class EngineGeolocationFeatureTest : public testing::Test {
   MockBlimpMessageProcessor* out_processor_;
 
   EngineGeolocationFeature feature_;
-  std::unique_ptr<device::LocationProvider> location_provider_;
-  device::LocationProvider::LocationProviderUpdateCallback mock_callback_;
-  device::Geoposition received_position;
+  std::unique_ptr<content::LocationProvider> location_provider_;
+  content::LocationProvider::LocationProviderUpdateCallback mock_callback_;
+  content::Geoposition received_position;
 };
 
 TEST_F(EngineGeolocationFeatureTest, LocationReceived) {
   SendMockLocationMessage(&feature_);
-  EXPECT_EQ(device::Geoposition::ERROR_CODE_NONE,
+  EXPECT_EQ(content::Geoposition::ERROR_CODE_NONE,
             received_position.error_code);
   EXPECT_EQ(-42.0, received_position.latitude);
   EXPECT_EQ(17.3, received_position.longitude);
@@ -136,13 +135,13 @@ TEST_F(EngineGeolocationFeatureTest, LocationReceived) {
 TEST_F(EngineGeolocationFeatureTest, ErrorRecieved) {
   SendMockErrorMessage(&feature_, GeolocationErrorMessage::PERMISSION_DENIED,
                        "PERMISSION_DENIED");
-  EXPECT_EQ(device::Geoposition::ERROR_CODE_PERMISSION_DENIED,
+  EXPECT_EQ(content::Geoposition::ERROR_CODE_PERMISSION_DENIED,
             received_position.error_code);
   EXPECT_EQ("PERMISSION_DENIED", received_position.error_message);
 
   SendMockErrorMessage(&feature_, GeolocationErrorMessage::POSITION_UNAVAILABLE,
                        "POSITION_UNAVAILABLE");
-  EXPECT_EQ(device::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE,
+  EXPECT_EQ(content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE,
             received_position.error_code);
   EXPECT_EQ("POSITION_UNAVAILABLE", received_position.error_message);
 }

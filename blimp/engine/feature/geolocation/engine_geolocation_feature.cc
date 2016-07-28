@@ -12,15 +12,15 @@
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/geolocation.pb.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/location_provider.h"
-#include "device/geolocation/geoposition.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/location_provider.h"
+#include "content/public/common/geoposition.h"
 #include "net/base/net_errors.h"
 
 namespace blimp {
 namespace engine {
 namespace {
-class BlimpGeolocationDelegate : public device::GeolocationDelegate {
+class BlimpGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit BlimpGeolocationDelegate(
       base::WeakPtr<BlimpLocationProvider::Delegate> feature_delegate) {
@@ -29,7 +29,7 @@ class BlimpGeolocationDelegate : public device::GeolocationDelegate {
 
   bool UseNetworkLocationProviders() final { return false; }
 
-  std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider()
+  std::unique_ptr<content::LocationProvider> OverrideSystemLocationProvider()
       final {
     return base::WrapUnique(new BlimpLocationProvider(feature_delegate_));
   }
@@ -40,21 +40,21 @@ class BlimpGeolocationDelegate : public device::GeolocationDelegate {
   DISALLOW_COPY_AND_ASSIGN(BlimpGeolocationDelegate);
 };
 
-device::Geoposition::ErrorCode ConvertErrorCode(
+content::Geoposition::ErrorCode ConvertErrorCode(
     const GeolocationErrorMessage::ErrorCode& error_code) {
   switch (error_code) {
     case GeolocationErrorMessage::PERMISSION_DENIED:
-      return device::Geoposition::ErrorCode::ERROR_CODE_PERMISSION_DENIED;
+      return content::Geoposition::ErrorCode::ERROR_CODE_PERMISSION_DENIED;
     case GeolocationErrorMessage::POSITION_UNAVAILABLE:
-      return device::Geoposition::ErrorCode::ERROR_CODE_POSITION_UNAVAILABLE;
+      return content::Geoposition::ErrorCode::ERROR_CODE_POSITION_UNAVAILABLE;
     case GeolocationErrorMessage::TIMEOUT:
-      return device::Geoposition::ErrorCode::ERROR_CODE_TIMEOUT;
+      return content::Geoposition::ErrorCode::ERROR_CODE_TIMEOUT;
   }
 }
 
-device::Geoposition ConvertLocationMessage(
+content::Geoposition ConvertLocationMessage(
     const GeolocationCoordinatesMessage& coordinates) {
-  device::Geoposition output;
+  content::Geoposition output;
   output.latitude = coordinates.latitude();
   output.longitude = coordinates.longitude();
   output.altitude = coordinates.altitude();
@@ -63,7 +63,7 @@ device::Geoposition ConvertLocationMessage(
   output.heading = coordinates.heading();
   output.speed = coordinates.speed();
   output.timestamp = base::Time::Now();
-  output.error_code = device::Geoposition::ErrorCode::ERROR_CODE_NONE;
+  output.error_code = content::Geoposition::ErrorCode::ERROR_CODE_NONE;
   return output;
 }
 
@@ -79,7 +79,7 @@ void EngineGeolocationFeature::set_outgoing_message_processor(
   outgoing_message_processor_ = std::move(message_processor);
 }
 
-device::GeolocationDelegate*
+content::GeolocationDelegate*
 EngineGeolocationFeature::CreateGeolocationDelegate() {
   return new BlimpGeolocationDelegate(weak_factory_.GetWeakPtr());
 }
@@ -95,14 +95,14 @@ void EngineGeolocationFeature::ProcessMessage(
     case GeolocationMessage::kCoordinates: {
       const GeolocationCoordinatesMessage& location =
           geolocation_message.coordinates();
-      device::Geoposition output = ConvertLocationMessage(location);
+      content::Geoposition output = ConvertLocationMessage(location);
       NotifyCallback(output);
       break;
     }
     case GeolocationMessage::kError: {
       const GeolocationErrorMessage& error_message =
           geolocation_message.error();
-      device::Geoposition output;
+      content::Geoposition output;
       output.error_message = error_message.error_message();
       output.error_code = ConvertErrorCode(error_message.error_code());
       NotifyCallback(output);
@@ -119,7 +119,7 @@ void EngineGeolocationFeature::ProcessMessage(
 }
 
 void EngineGeolocationFeature::NotifyCallback(
-    const device::Geoposition& position) {
+    const content::Geoposition& position) {
   geoposition_received_callback_.Run(position);
 }
 

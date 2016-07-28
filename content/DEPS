@@ -53,7 +53,8 @@ include_rules = [
   # embedder.
   #
   # There are a couple of specific parts of content that are excepted
-  # from this rule, e.g. content/browser/speech/DEPS. These are cases of
+  # from this rule, see content/browser/speech/DEPS and
+  # content/browser/geolocation/DEPS.  Both of these are cases of
   # implementations that are strongly tied to Google servers, i.e. we
   # don't expect alternate implementations to be provided by the
   # embedder.

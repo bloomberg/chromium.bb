@@ -49,6 +49,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -56,13 +57,12 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/geoposition.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
@@ -468,13 +468,13 @@ Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
 }
 
 void OverrideGeolocation(double latitude, double longitude) {
-  device::Geoposition position;
+  content::Geoposition position;
   position.latitude = latitude;
   position.longitude = longitude;
   position.altitude = 0.;
   position.accuracy = 0.;
   position.timestamp = base::Time::Now();
-  device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
+  content::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 }
 

@@ -50,11 +50,11 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
@@ -188,12 +188,12 @@ namespace shell {
 namespace {
 
 // A provider of services for Geolocation.
-class CastGeolocationDelegate : public device::GeolocationDelegate {
+class CastGeolocationDelegate : public content::GeolocationDelegate {
  public:
   explicit CastGeolocationDelegate(CastBrowserContext* context)
       : context_(context) {}
 
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() override {
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() override {
     return new CastAccessTokenStore(context_);
   }
 
@@ -470,7 +470,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
   ::media::InitializeMediaLibrary();
 
-  device::GeolocationProvider::SetGeolocationDelegate(
+  content::GeolocationProvider::SetGeolocationDelegate(
       new CastGeolocationDelegate(cast_browser_process_->browser_context()));
 
   // Initializing metrics service and network delegates must happen after cast
