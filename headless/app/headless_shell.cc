@@ -334,6 +334,11 @@ int main(int argc, const char** argv) {
         command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   }
 
+  if (command_line.HasSwitch(headless::switches::kUseGL)) {
+    builder.SetGLImplementation(
+        command_line.GetSwitchValueASCII(headless::switches::kUseGL));
+  }
+
   return HeadlessBrowserMain(
       builder.Build(),
       base::Bind(&HeadlessShell::OnStart, base::Unretained(&shell)));

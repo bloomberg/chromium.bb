@@ -27,5 +27,9 @@ const char kRepl[] = "repl";
 // Save a screenshot of the loaded page.
 const char kScreenshot[] = "screenshot";
 
+// Sets the GL implementation to use. Use a blank string to disable GL
+// rendering.
+const char kUseGL[] = "use-gl";
+
 }  // namespace switches
 }  // namespace headless

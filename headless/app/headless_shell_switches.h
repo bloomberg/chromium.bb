@@ -12,6 +12,7 @@ extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
 extern const char kRepl[];
 extern const char kScreenshot[];
+extern const char kUseGL[];
 }  // namespace switches
 }  // namespace headless
 

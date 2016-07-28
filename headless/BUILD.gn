@@ -276,6 +276,7 @@ static_library("headless_lib") {
     "//content/public/renderer",
     "//content/public/utility",
     "//net",
+    "//third_party/mesa:osmesa",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
