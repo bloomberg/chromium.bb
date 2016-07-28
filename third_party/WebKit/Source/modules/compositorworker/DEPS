@@ -6,6 +6,7 @@ include_rules = [
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/compositorworker",
+    "+modules/worklet",
     "+platform",
     "+public/platform",
     "-web",

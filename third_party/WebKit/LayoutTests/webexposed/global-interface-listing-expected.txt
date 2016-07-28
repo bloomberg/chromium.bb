@@ -7602,6 +7602,7 @@ interface webkitURL
 [GLOBAL OBJECT]
     attribute GCController
     attribute accessibilityController
+    attribute animationWorklet
     attribute applicationCache
     attribute caches
     attribute chrome
