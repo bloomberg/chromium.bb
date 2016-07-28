@@ -49,6 +49,11 @@ class SerialIoHandlerPosix : public SerialIoHandler,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerPosix() override;
 
+  void AttemptRead(bool within_read);
+  void RunReadCompleted(bool within_read,
+                        int bytes_read,
+                        serial::ReceiveError error);
+
   // base::MessageLoopForIO::Watcher implementation.
   void OnFileCanWriteWithoutBlocking(int fd) override;
   void OnFileCanReadWithoutBlocking(int fd) override;

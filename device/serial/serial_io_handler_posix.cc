@@ -124,6 +124,12 @@ void SerialIoHandlerPosix::ReadImpl() {
   DCHECK(file().IsValid());
 
   EnsureWatchingReads();
+
+  // Try to read immediately. This is needed because on some platforms
+  // (e.g., OSX) there may not be a notification from the message loop
+  // when the fd is ready to read immediately after it is opened. There
+  // is no danger of blocking because the fd is opened with async flag.
+  AttemptRead(true);
 }
 
 void SerialIoHandlerPosix::WriteImpl() {
@@ -294,18 +300,25 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fd, file().GetPlatformFile());
 
+  AttemptRead(false);
+}
+
+void SerialIoHandlerPosix::AttemptRead(bool within_read) {
   if (pending_read_buffer()) {
     int bytes_read = HANDLE_EINTR(read(file().GetPlatformFile(),
                                        pending_read_buffer(),
                                        pending_read_buffer_len()));
     if (bytes_read < 0) {
-      if (errno == ENXIO) {
-        ReadCompleted(0, serial::ReceiveError::DEVICE_LOST);
+      if (errno == EAGAIN) {
+        // The fd does not have data to read yet so continue waiting.
+        return;
+      } else if (errno == ENXIO) {
+        RunReadCompleted(within_read, 0, serial::ReceiveError::DEVICE_LOST);
       } else {
-        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
+        RunReadCompleted(within_read, 0, serial::ReceiveError::SYSTEM_ERROR);
       }
     } else if (bytes_read == 0) {
-      ReadCompleted(0, serial::ReceiveError::DEVICE_LOST);
+      RunReadCompleted(within_read, 0, serial::ReceiveError::DEVICE_LOST);
     } else {
       bool break_detected = false;
       bool parity_error_detected = false;
@@ -314,11 +327,14 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
                             bytes_read, break_detected, parity_error_detected);
 
       if (break_detected) {
-        ReadCompleted(new_bytes_read, serial::ReceiveError::BREAK);
+        RunReadCompleted(within_read, new_bytes_read,
+                         serial::ReceiveError::BREAK);
       } else if (parity_error_detected) {
-        ReadCompleted(new_bytes_read, serial::ReceiveError::PARITY_ERROR);
+        RunReadCompleted(within_read, new_bytes_read,
+                         serial::ReceiveError::PARITY_ERROR);
       } else {
-        ReadCompleted(new_bytes_read, serial::ReceiveError::NONE);
+        RunReadCompleted(within_read, new_bytes_read,
+                         serial::ReceiveError::NONE);
       }
     }
   } else {
@@ -327,6 +343,15 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
     is_watching_reads_ = false;
     file_read_watcher_.StopWatchingFileDescriptor();
   }
+}
+
+void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
+                                            int bytes_read,
+                                            serial::ReceiveError error) {
+  if (within_read)
+    QueueReadCompleted(bytes_read, error);
+  else
+    ReadCompleted(bytes_read, error);
 }
 
 void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
