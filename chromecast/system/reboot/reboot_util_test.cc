@@ -8,25 +8,27 @@
 
 namespace chromecast {
 
-TEST(RebootUtil, SingleSetGetLastRebootType) {
-  if (RebootUtil::SetLastRebootType(RebootShlib::RebootSource::FORCED)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootType(),
+TEST(RebootUtil, SingleSetGetLastRebootSource) {
+  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FORCED)) {
+    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
               RebootShlib::RebootSource::FORCED);
   }
 }
 
-TEST(RebootUtil, MultipleSetGetLastRebootType) {
-  if (RebootUtil::SetLastRebootType(RebootShlib::RebootSource::FORCED)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootType(),
+TEST(RebootUtil, MultipleSetGetLastRebootSource) {
+  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FORCED)) {
+    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
               RebootShlib::RebootSource::FORCED);
   }
 
-  if (RebootUtil::SetLastRebootType(RebootShlib::RebootSource::OTA)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootType(), RebootShlib::RebootSource::OTA);
+  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::OTA)) {
+    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
+              RebootShlib::RebootSource::OTA);
   }
 
-  if (RebootUtil::SetLastRebootType(RebootShlib::RebootSource::FDR)) {
-    EXPECT_EQ(RebootUtil::GetLastRebootType(), RebootShlib::RebootSource::FDR);
+  if (RebootUtil::SetLastRebootSource(RebootShlib::RebootSource::FDR)) {
+    EXPECT_EQ(RebootUtil::GetLastRebootSource(),
+              RebootShlib::RebootSource::FDR);
   }
 }
 
