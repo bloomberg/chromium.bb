@@ -607,12 +607,12 @@ UpdateEngineClient* UpdateEngineClient::Create(
 bool UpdateEngineClient::IsTargetChannelMoreStable(
     const std::string& current_channel,
     const std::string& target_channel) {
-  auto cix = std::find(kReleaseChannelsList,
-                       kReleaseChannelsList + arraysize(kReleaseChannelsList),
-                       current_channel);
-  auto tix = std::find(kReleaseChannelsList,
-                       kReleaseChannelsList + arraysize(kReleaseChannelsList),
-                       target_channel);
+  const char** cix = std::find(
+      kReleaseChannelsList,
+      kReleaseChannelsList + arraysize(kReleaseChannelsList), current_channel);
+  const char** tix = std::find(
+      kReleaseChannelsList,
+      kReleaseChannelsList + arraysize(kReleaseChannelsList), target_channel);
   return tix > cix;
 }
 
