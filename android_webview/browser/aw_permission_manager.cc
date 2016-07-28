@@ -18,7 +18,21 @@
 using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
+using RequestPermissionsCallback =
+    base::Callback<void(const std::vector<PermissionStatus>&)>;
+
 namespace android_webview {
+
+namespace {
+
+void PermissionRequestResponseCallbackWrapper(
+    const base::Callback<void(PermissionStatus)>& callback,
+    const std::vector<PermissionStatus>& vector) {
+  DCHECK_EQ(vector.size(), 1ul);
+  callback.Run(vector[0]);
+}
+
+}  // namespace
 
 class LastRequestResultCache {
  public:
@@ -131,29 +145,76 @@ class LastRequestResultCache {
   DISALLOW_COPY_AND_ASSIGN(LastRequestResultCache);
 };
 
-struct AwPermissionManager::PendingRequest {
+class AwPermissionManager::PendingRequest {
  public:
-  PendingRequest(PermissionType permission,
+  PendingRequest(const std::vector<PermissionType> permissions,
                  GURL requesting_origin,
                  GURL embedding_origin,
-                 content::RenderFrameHost* render_frame_host,
-                 const base::Callback<void(PermissionStatus)>& callback)
-    : permission(permission),
-      requesting_origin(requesting_origin),
-      embedding_origin(embedding_origin),
-      render_process_id(render_frame_host->GetProcess()->GetID()),
-      render_frame_id(render_frame_host->GetRoutingID()),
-      callback(callback) {
+                 int render_process_id,
+                 int render_frame_id,
+                 const RequestPermissionsCallback callback)
+      : permissions(permissions),
+        requesting_origin(requesting_origin),
+        embedding_origin(embedding_origin),
+        render_process_id(render_process_id),
+        render_frame_id(render_frame_id),
+        callback(callback),
+        results(permissions.size(), PermissionStatus::DENIED),
+        cancelled_(false) {
+    for (size_t i = 0; i < permissions.size(); ++i)
+      permission_index_map_.insert(std::make_pair(permissions[i], i));
   }
 
   ~PendingRequest() = default;
 
-  PermissionType permission;
+  void SetPermissionStatus(PermissionType type, PermissionStatus status) {
+    auto result = permission_index_map_.find(type);
+    if (result == permission_index_map_.end()) {
+      NOTREACHED();
+      return;
+    }
+    DCHECK(!IsCompleted());
+    results[result->second] = status;
+    resolved_permissions_.insert(type);
+  }
+
+  PermissionStatus GetPermissionStatus(PermissionType type) {
+    auto result = permission_index_map_.find(type);
+    if (result == permission_index_map_.end()) {
+      NOTREACHED();
+      return PermissionStatus::DENIED;
+    }
+    return results[result->second];
+  }
+
+  bool HasPermissionType(PermissionType type) {
+    return permission_index_map_.find(type) != permission_index_map_.end();
+  }
+
+  bool IsCompleted() const {
+    return results.size() == resolved_permissions_.size();
+  }
+
+  bool IsCompleted(PermissionType type) const {
+    return resolved_permissions_.count(type) != 0;
+  }
+
+  void Cancel() { cancelled_ = true; }
+
+  bool IsCancelled() const { return cancelled_; }
+
+  std::vector<PermissionType> permissions;
   GURL requesting_origin;
   GURL embedding_origin;
   int render_process_id;
   int render_frame_id;
-  base::Callback<void(PermissionStatus)> callback;
+  RequestPermissionsCallback callback;
+  std::vector<PermissionStatus> results;
+
+ private:
+  std::map<PermissionType, size_t> permission_index_map_;
+  std::set<PermissionType> resolved_permissions_;
+  bool cancelled_;
 };
 
 AwPermissionManager::AwPermissionManager()
@@ -163,6 +224,7 @@ AwPermissionManager::AwPermissionManager()
 }
 
 AwPermissionManager::~AwPermissionManager() {
+  CancelPermissionRequests();
 }
 
 int AwPermissionManager::RequestPermission(
@@ -171,92 +233,10 @@ int AwPermissionManager::RequestPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
-  int render_process_id = render_frame_host->GetProcess()->GetID();
-  int render_frame_id = render_frame_host->GetRoutingID();
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_frame_id);
-  if (!delegate) {
-    DVLOG(0) << "Dropping permission request for "
-             << static_cast<int>(permission);
-    callback.Run(PermissionStatus::DENIED);
-    return kNoPendingOperation;
-  }
-
-  // Do not delegate any requests which are already pending.
-  bool should_delegate_request = true;
-  for (PendingRequestsMap::Iterator<PendingRequest> it(&pending_requests_);
-       !it.IsAtEnd(); it.Advance()) {
-    if (permission == it.GetCurrentValue()->permission) {
-      should_delegate_request = false;
-      break;
-    }
-  }
-
-  const GURL& embedding_origin =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetLastCommittedURL().GetOrigin();
-
-  int request_id = kNoPendingOperation;
-  switch (permission) {
-    case PermissionType::GEOLOCATION:
-      request_id = pending_requests_.Add(new PendingRequest(
-          permission, requesting_origin,
-          embedding_origin, render_frame_host,
-          callback));
-      if (should_delegate_request) {
-        delegate->RequestGeolocationPermission(
-            requesting_origin,
-            base::Bind(&OnRequestResponse,
-                       weak_ptr_factory_.GetWeakPtr(), request_id,
-                       callback));
-      }
-      break;
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      request_id = pending_requests_.Add(new PendingRequest(
-          permission, requesting_origin,
-          embedding_origin, render_frame_host,
-          callback));
-      if (should_delegate_request) {
-        delegate->RequestProtectedMediaIdentifierPermission(
-            requesting_origin,
-            base::Bind(&OnRequestResponse,
-                       weak_ptr_factory_.GetWeakPtr(), request_id,
-                       callback));
-      }
-      break;
-    case PermissionType::MIDI_SYSEX:
-      request_id = pending_requests_.Add(new PendingRequest(
-          permission, requesting_origin,
-          embedding_origin, render_frame_host,
-          callback));
-      if (should_delegate_request) {
-        delegate->RequestMIDISysexPermission(
-            requesting_origin,
-            base::Bind(&OnRequestResponse,
-                       weak_ptr_factory_.GetWeakPtr(), request_id,
-                       callback));
-      }
-      break;
-    case PermissionType::AUDIO_CAPTURE:
-    case PermissionType::VIDEO_CAPTURE:
-    case PermissionType::NOTIFICATIONS:
-    case PermissionType::PUSH_MESSAGING:
-    case PermissionType::DURABLE_STORAGE:
-    case PermissionType::BACKGROUND_SYNC:
-      NOTIMPLEMENTED() << "RequestPermission is not implemented for "
-                       << static_cast<int>(permission);
-      callback.Run(PermissionStatus::DENIED);
-      break;
-    case PermissionType::MIDI:
-      callback.Run(PermissionStatus::GRANTED);
-      break;
-    case PermissionType::NUM:
-      NOTREACHED() << "PermissionType::NUM was not expected here.";
-      callback.Run(PermissionStatus::DENIED);
-      break;
-  }
-  return request_id;
+  return RequestPermissions(
+      std::vector<PermissionType>(1, permission), render_frame_host,
+      requesting_origin, user_gesture,
+      base::Bind(&PermissionRequestResponseCallbackWrapper, callback));
 }
 
 int AwPermissionManager::RequestPermissions(
@@ -264,118 +244,234 @@ int AwPermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(
-        const std::vector<PermissionStatus>&)>& callback) {
-  NOTIMPLEMENTED() << "RequestPermissions has not been implemented in WebView";
-
-  std::vector<PermissionStatus> result(permissions.size());
-  const GURL& embedding_origin =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetLastCommittedURL().GetOrigin();
-
-  for (PermissionType type : permissions) {
-    result.push_back(GetPermissionStatus(
-        type, requesting_origin, embedding_origin));
+    const base::Callback<void(const std::vector<PermissionStatus>&)>&
+        callback) {
+  if (permissions.empty()) {
+    callback.Run(std::vector<PermissionStatus>());
+    return kNoPendingOperation;
   }
 
-  callback.Run(result);
-  return kNoPendingOperation;
+  const GURL& embedding_origin = LastCommittedOrigin(render_frame_host);
+
+  PendingRequest* pending_request =
+      new PendingRequest(permissions, requesting_origin, embedding_origin,
+                         GetRenderProcessID(render_frame_host),
+                         GetRenderFrameID(render_frame_host), callback);
+  std::vector<bool> should_delegate_requests =
+      std::vector<bool>(permissions.size(), true);
+  for (size_t i = 0; i < permissions.size(); ++i) {
+    for (PendingRequestsMap::Iterator<PendingRequest> it(&pending_requests_);
+         !it.IsAtEnd(); it.Advance()) {
+      if (it.GetCurrentValue()->HasPermissionType(permissions[i]) &&
+          it.GetCurrentValue()->requesting_origin == requesting_origin) {
+        if (it.GetCurrentValue()->IsCompleted(permissions[i])) {
+          pending_request->SetPermissionStatus(
+              permissions[i],
+              it.GetCurrentValue()->GetPermissionStatus(permissions[i]));
+        }
+        should_delegate_requests[i] = false;
+        break;
+      }
+    }
+  }
+
+  int request_id = pending_requests_.Add(pending_request);
+
+  AwBrowserPermissionRequestDelegate* delegate = GetDelegate(
+      pending_request->render_process_id, pending_request->render_frame_id);
+
+  for (size_t i = 0; i < permissions.size(); ++i) {
+    if (!should_delegate_requests[i])
+      continue;
+
+    if (!delegate) {
+      DVLOG(0) << "Dropping permissions request for "
+               << static_cast<int>(permissions[i]);
+      pending_request->SetPermissionStatus(permissions[i],
+                                           PermissionStatus::DENIED);
+      continue;
+    }
+
+    switch (permissions[i]) {
+      case PermissionType::GEOLOCATION:
+        delegate->RequestGeolocationPermission(
+            pending_request->requesting_origin,
+            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                       request_id, permissions[i]));
+        break;
+      case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+        delegate->RequestProtectedMediaIdentifierPermission(
+            pending_request->requesting_origin,
+            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                       request_id, permissions[i]));
+        break;
+      case PermissionType::MIDI_SYSEX:
+        delegate->RequestMIDISysexPermission(
+            pending_request->requesting_origin,
+            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                       request_id, permissions[i]));
+        break;
+      case PermissionType::AUDIO_CAPTURE:
+      case PermissionType::VIDEO_CAPTURE:
+      case PermissionType::NOTIFICATIONS:
+      case PermissionType::PUSH_MESSAGING:
+      case PermissionType::DURABLE_STORAGE:
+      case PermissionType::BACKGROUND_SYNC:
+        NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
+                         << static_cast<int>(permissions[i]);
+        pending_request->SetPermissionStatus(permissions[i],
+                                             PermissionStatus::DENIED);
+        break;
+      case PermissionType::MIDI:
+        pending_request->SetPermissionStatus(permissions[i],
+                                             PermissionStatus::GRANTED);
+        break;
+      case PermissionType::NUM:
+        NOTREACHED() << "PermissionType::NUM was not expected here.";
+        pending_request->SetPermissionStatus(permissions[i],
+                                             PermissionStatus::DENIED);
+        break;
+    }
+  }
+
+  // If delegate resolve the permission synchronously, all requests could be
+  // already resolved here.
+  if (!pending_requests_.Lookup(request_id))
+    return kNoPendingOperation;
+
+  // If requests are resolved without calling delegate functions, e.g.
+  // PermissionType::MIDI is permitted within the previous for-loop, all
+  // requests could be already resolved, but still in the |pending_requests_|
+  // without invoking the callback.
+  if (pending_request->IsCompleted()) {
+    std::vector<PermissionStatus> results = pending_request->results;
+    pending_requests_.Remove(request_id);
+    callback.Run(results);
+    return kNoPendingOperation;
+  }
+
+  return request_id;
 }
 
 // static
 void AwPermissionManager::OnRequestResponse(
     const base::WeakPtr<AwPermissionManager>& manager,
     int request_id,
-    const base::Callback<void(PermissionStatus)>& callback,
+    PermissionType permission,
     bool allowed) {
+  // All delegate functions should be cancelled when the manager runs
+  // destructor. Therefore |manager| should be always valid here.
+  DCHECK(manager);
+
   PermissionStatus status =
       allowed ? PermissionStatus::GRANTED : PermissionStatus::DENIED;
-  if (manager.get()) {
-    PendingRequest* pending_request =
-        manager->pending_requests_.Lookup(request_id);
+  PendingRequest* pending_request =
+      manager->pending_requests_.Lookup(request_id);
 
-    for (PendingRequestsMap::Iterator<PendingRequest> it(
-            &manager->pending_requests_);
-         !it.IsAtEnd(); it.Advance()) {
-      if (pending_request->permission == it.GetCurrentValue()->permission &&
-          it.GetCurrentKey() != request_id) {
-        it.GetCurrentValue()->callback.Run(status);
-        manager->pending_requests_.Remove(it.GetCurrentKey());
+  manager->result_cache_->SetResult(permission,
+                                    pending_request->requesting_origin,
+                                    pending_request->embedding_origin, status);
+
+  std::vector<int> complete_request_ids;
+  std::vector<std::pair<const RequestPermissionsCallback,
+                        std::vector<PermissionStatus>>>
+      complete_request_pairs;
+  for (PendingRequestsMap::Iterator<PendingRequest> it(
+           &manager->pending_requests_);
+       !it.IsAtEnd(); it.Advance()) {
+    if (!it.GetCurrentValue()->HasPermissionType(permission) ||
+        it.GetCurrentValue()->requesting_origin !=
+            pending_request->requesting_origin) {
+      continue;
+    }
+    it.GetCurrentValue()->SetPermissionStatus(permission, status);
+    if (it.GetCurrentValue()->IsCompleted()) {
+      complete_request_ids.push_back(it.GetCurrentKey());
+      if (!it.GetCurrentValue()->IsCancelled()) {
+        complete_request_pairs.push_back(std::make_pair(
+            it.GetCurrentValue()->callback, it.GetCurrentValue()->results));
       }
     }
-
-    manager->result_cache_->SetResult(
-        pending_request->permission,
-        pending_request->requesting_origin,
-        pending_request->embedding_origin,
-        status);
-    manager->pending_requests_.Remove(request_id);
   }
-  callback.Run(status);
+  for (auto id : complete_request_ids)
+    manager->pending_requests_.Remove(id);
+  for (auto pair : complete_request_pairs)
+    pair.first.Run(pair.second);
 }
 
 void AwPermissionManager::CancelPermissionRequest(int request_id) {
   PendingRequest* pending_request = pending_requests_.Lookup(request_id);
-  if (!pending_request)
+  if (!pending_request || pending_request->IsCancelled())
     return;
+  pending_request->Cancel();
 
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(pending_request->render_process_id,
-          pending_request->render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  DCHECK(web_contents);
+  const GURL& embedding_origin = pending_request->embedding_origin;
+  const GURL& requesting_origin = pending_request->requesting_origin;
+  for (auto permission : pending_request->permissions)
+    result_cache_->ClearResult(permission, requesting_origin, embedding_origin);
 
-  // The caller is canceling (presumably) the most recent request. Assuming the
-  // request did not complete, the user did not respond to the requset.
-  // Thus, assume we do not know the result.
-  const GURL& embedding_origin = web_contents
-          ->GetLastCommittedURL().GetOrigin();
-  result_cache_->ClearResult(
-      pending_request->permission,
-      pending_request->requesting_origin,
-      embedding_origin);
+  AwBrowserPermissionRequestDelegate* delegate = GetDelegate(
+      pending_request->render_process_id, pending_request->render_frame_id);
 
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(
-          pending_request->render_process_id,
-          pending_request->render_frame_id);
-  if (!delegate) {
+  for (auto permission : pending_request->permissions) {
+    // If the permission was already resolved, we do not need to cancel it.
+    if (pending_request->IsCompleted(permission))
+      continue;
+
+    // If another pending_request waits for the same permission being resolved,
+    // we should not cancel the delegate's request.
+    bool should_not_cancel_ = false;
+    for (PendingRequestsMap::Iterator<PendingRequest> it(&pending_requests_);
+         !it.IsAtEnd(); it.Advance()) {
+      if (it.GetCurrentValue() != pending_request &&
+          it.GetCurrentValue()->HasPermissionType(permission) &&
+          it.GetCurrentValue()->requesting_origin == requesting_origin &&
+          !it.GetCurrentValue()->IsCompleted(permission)) {
+        should_not_cancel_ = true;
+        break;
+      }
+    }
+    if (should_not_cancel_)
+      continue;
+
+    switch (permission) {
+      case PermissionType::GEOLOCATION:
+        if (delegate)
+          delegate->CancelGeolocationPermissionRequests(requesting_origin);
+        break;
+      case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+        if (delegate)
+          delegate->CancelProtectedMediaIdentifierPermissionRequests(
+              requesting_origin);
+        break;
+      case PermissionType::MIDI_SYSEX:
+        if (delegate)
+          delegate->CancelMIDISysexPermissionRequests(requesting_origin);
+        break;
+      case PermissionType::NOTIFICATIONS:
+      case PermissionType::PUSH_MESSAGING:
+      case PermissionType::DURABLE_STORAGE:
+      case PermissionType::AUDIO_CAPTURE:
+      case PermissionType::VIDEO_CAPTURE:
+      case PermissionType::BACKGROUND_SYNC:
+        NOTIMPLEMENTED() << "CancelPermission not implemented for "
+                         << static_cast<int>(permission);
+        break;
+      case PermissionType::MIDI:
+        // There is nothing to cancel so this is simply ignored.
+        break;
+      case PermissionType::NUM:
+        NOTREACHED() << "PermissionType::NUM was not expected here.";
+        break;
+    }
+    pending_request->SetPermissionStatus(permission, PermissionStatus::DENIED);
+  }
+
+  // If there are still active requests, we should not remove request_id here,
+  // but just do not invoke a relevant callback when the request is resolved in
+  // OnRequestResponse().
+  if (pending_request->IsCompleted())
     pending_requests_.Remove(request_id);
-    return;
-  }
-
-  switch (pending_request->permission) {
-    case PermissionType::GEOLOCATION:
-      delegate->CancelGeolocationPermissionRequests(
-          pending_request->requesting_origin);
-      break;
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      delegate->CancelProtectedMediaIdentifierPermissionRequests(
-          pending_request->requesting_origin);
-      break;
-    case PermissionType::MIDI_SYSEX:
-      delegate->CancelMIDISysexPermissionRequests(
-          pending_request->requesting_origin);
-      break;
-    case PermissionType::NOTIFICATIONS:
-    case PermissionType::PUSH_MESSAGING:
-    case PermissionType::DURABLE_STORAGE:
-    case PermissionType::AUDIO_CAPTURE:
-    case PermissionType::VIDEO_CAPTURE:
-    case PermissionType::BACKGROUND_SYNC:
-      NOTIMPLEMENTED() << "CancelPermission not implemented for "
-                       << static_cast<int>(pending_request->permission);
-      break;
-    case PermissionType::MIDI:
-      // There is nothing to cancel so this is simply ignored.
-      break;
-    case PermissionType::NUM:
-      NOTREACHED() << "PermissionType::NUM was not expected here.";
-      break;
-  }
-
-  pending_requests_.Remove(request_id);
 }
 
 void AwPermissionManager::ResetPermission(PermissionType permission,
@@ -415,6 +511,39 @@ int AwPermissionManager::SubscribePermissionStatusChange(
 
 void AwPermissionManager::UnsubscribePermissionStatusChange(
     int subscription_id) {
+}
+
+void AwPermissionManager::CancelPermissionRequests() {
+  std::vector<int> request_ids;
+  for (PendingRequestsMap::Iterator<PendingRequest> it(&pending_requests_);
+       !it.IsAtEnd(); it.Advance()) {
+    request_ids.push_back(it.GetCurrentKey());
+  }
+  for (auto request_id : request_ids)
+    CancelPermissionRequest(request_id);
+  DCHECK(pending_requests_.IsEmpty());
+}
+
+int AwPermissionManager::GetRenderProcessID(
+    content::RenderFrameHost* render_frame_host) {
+  return render_frame_host->GetProcess()->GetID();
+}
+
+int AwPermissionManager::GetRenderFrameID(
+    content::RenderFrameHost* render_frame_host) {
+  return render_frame_host->GetRoutingID();
+}
+
+GURL AwPermissionManager::LastCommittedOrigin(
+    content::RenderFrameHost* render_frame_host) {
+  return content::WebContents::FromRenderFrameHost(render_frame_host)
+      ->GetLastCommittedURL().GetOrigin();
+}
+
+AwBrowserPermissionRequestDelegate* AwPermissionManager::GetDelegate(
+    int render_process_id, int render_frame_id) {
+  return AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                    render_frame_id);
 }
 
 }  // namespace android_webview

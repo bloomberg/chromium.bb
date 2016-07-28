@@ -15,6 +15,7 @@
 
 namespace android_webview {
 
+class AwBrowserPermissionRequestDelegate;
 class LastRequestResultCache;
 
 class AwPermissionManager : public content::PermissionManager {
@@ -57,9 +58,18 @@ class AwPermissionManager : public content::PermissionManager {
       override;
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
+ protected:
+  void CancelPermissionRequests();
+
  private:
-  struct PendingRequest;
+  class PendingRequest;
   using PendingRequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
+
+  virtual int GetRenderProcessID(content::RenderFrameHost* render_frame_host);
+  virtual int GetRenderFrameID(content::RenderFrameHost* render_frame_host);
+  virtual GURL LastCommittedOrigin(content::RenderFrameHost* render_frame_host);
+  virtual AwBrowserPermissionRequestDelegate* GetDelegate(int render_process_id,
+                                                          int render_frame_id);
 
   // The weak pointer to this is used to clean up any information which is
   // stored in the pending request or result cache maps. However, the callback
@@ -68,7 +78,7 @@ class AwPermissionManager : public content::PermissionManager {
   static void OnRequestResponse(
       const base::WeakPtr<AwPermissionManager>& manager,
       int request_id,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
+      content::PermissionType permission,
       bool allowed);
 
   PendingRequestsMap pending_requests_;

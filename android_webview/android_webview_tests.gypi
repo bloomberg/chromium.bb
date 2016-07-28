@@ -147,8 +147,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/android_webview_unittests',
       ],
       'sources': [
-        'browser/aw_static_cookie_policy_unittest.cc',
         'browser/aw_form_database_service_unittest.cc',
+        'browser/aw_permission_manager_unittest.cc',
+        'browser/aw_static_cookie_policy_unittest.cc',
         'browser/browser_view_renderer_unittest.cc',
         'browser/net/android_stream_reader_url_request_job_unittest.cc',
         'browser/net/aw_cookie_store_wrapper_unittest.cc',
