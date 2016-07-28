@@ -23,10 +23,10 @@ function test()
         panel.searchableView().showSearchField();
         InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
         var action = new WebInspector.AdvancedSearchView.ActionDelegate();
-        action._showSearch().then(function(searchView) {
-            InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
-            InspectorTest.completeTest();
-        });
+        action._showSearch();
+        var searchView = /** @type {!WebInspector.AdvancedSearchView} */ (self.runtime.sharedInstance(WebInspector.AdvancedSearchView));
+        InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
+        InspectorTest.completeTest();
     }
 
     function findString(sourceFrame, string)
