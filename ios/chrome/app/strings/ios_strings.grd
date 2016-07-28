@@ -168,9 +168,6 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB" desc="Title of the keyboard shortcut to reopen a recently closed tab. [Length: 20 em] [iOS only]">
         Reopen Closed Tab
       </message>
-      <message name="IDS_IOS_LOCATION_USAGE_CANCEL" desc="Title for the alert button to cancel sending location for Omnibox queries [Length: 20em] [iOS only]">
-        Not Now
-      </message>
 
       <message name="IDS_IOS_FLAGS_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
         Contextual Search

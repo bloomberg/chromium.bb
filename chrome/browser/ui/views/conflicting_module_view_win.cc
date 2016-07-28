@@ -16,6 +16,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -126,7 +127,7 @@ base::string16 ConflictingModuleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_CONFLICTS_LEARN_MORE
-                                       : IDS_CONFLICTS_NOT_NOW);
+                                       : IDS_NOT_NOW);
 }
 
 void ConflictingModuleView::Init() {

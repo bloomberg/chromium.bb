@@ -7,8 +7,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
@@ -33,14 +33,8 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
   const int kDialogWidth = 400;
-#if defined(OS_CHROMEOS)
-  const int kProductNameID = IDS_SHORT_PRODUCT_OS_NAME;
-#else
-  const int kProductNameID = IDS_PRODUCT_NAME;
-#endif
-  const base::string16 product_name = l10n_util::GetStringUTF16(kProductNameID);
   views::MessageBoxView::InitParams params(
-      l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name));
+      l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED));
   params.message_width = kDialogWidth;
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(params);
@@ -69,7 +63,11 @@ bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {
 }
 
 base::string16 UpdateRecommendedMessageBox::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+#if defined(OS_CHROMEOS)
+  return base::string16();
+#else
+  return l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED_DIALOG_TITLE);
+#endif
 }
 
 void UpdateRecommendedMessageBox::DeleteDelegate() {

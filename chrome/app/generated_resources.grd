@@ -6999,16 +6999,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
             Learn More
         </message>
-        <message name="IDS_CONFLICTS_NOT_NOW" desc="The Not Now button in the conflicting module bubble">
-            Not Now
-        </message>
         </if>
         <if expr="not use_titlecase">
         <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
             Learn more
-        </message>
-        <message name="IDS_CONFLICTS_NOT_NOW" desc="The Not Now button in the conflicting module bubble">
-            Not now
         </message>
         </if>
       </if> <!-- is_win -->
@@ -8806,9 +8800,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_LESS_OPTIONS_LABEL" desc="Label of the toggle element to switch between showing more or less printing options in the Print Preview.">
           Fewer settings
-        </message>
-        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL" desc="Label of button to cancel the Google Cloud Print promotion.">
-          Not now
         </message>
         <message name="IDS_PRINT_PREVIEW_COULD_NOT_PRINT" desc="Error message when printing fails in the print preview">
           Printing failed. Please check your printer and try again.
@@ -12698,34 +12689,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL_FOR_REAUTH" desc="The text for the choice to not allow autofilling for reauth pages in about:flags">
         Disallow for reauth
       </message>
-
-      <!-- Update Recommended dialog -->
-      <if expr="not chromeos">
-        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is out of date because it hasn't been relaunched in a while. An update is available and will be applied as soon as you relaunch.
-        </message>
-        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button label for relaunching and updating Chrome.">
-          Relaunch
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> needs to be restarted to apply the update.
-        </message>
-        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button label for restarting and updating Chrome OS.">
-          Restart
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_NOT_NOW" desc="The button label for delaying the relaunch and updating Chrome.">
-          Not now
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_NOT_NOW" desc="In Tile Case: The button label for delaying the relaunch and updating Chrome.">
-          Not Now
-        </message>
-      </if>
 
       <!-- Extra Mac UI Strings -->
       <if expr="is_macosx">

@@ -1091,6 +1091,27 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         No Thanks
       </message>
 
+      <!-- Update Recommended dialog -->
+      <if expr="not chromeos">
+        <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
+          Relaunch Chromium
+        </message>
+        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
+          Chromium is out of date because it hasn't been relaunched in a while. An update is available and will be applied as soon as you relaunch.
+        </message>
+        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button in the Update Recommended dialog which updates and relaunches Chrome.">
+          Relaunch
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
+          Chromium OS needs to be restarted to apply the update.
+        </message>
+        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button in the Update Recommended dialog which updates and restarts Chrome OS.">
+          Restart
+        </message>
+      </if>
+
       <!-- Update bubble -->
       <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
         Reinstall Chromium

@@ -11,7 +11,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -47,7 +46,7 @@
 - (void)showAuthorizationAlert {
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_LOCATION_AUTHORIZATION_ALERT);
-  NSString* cancel = l10n_util::GetNSString(IDS_IOS_LOCATION_USAGE_CANCEL);
+  NSString* cancel = l10n_util::GetNSString(IDS_NOT_NOW);
   NSString* ok = l10n_util::GetNSString(IDS_OK);
 
   // Use a UIAlertController to match the style of the iOS system location
