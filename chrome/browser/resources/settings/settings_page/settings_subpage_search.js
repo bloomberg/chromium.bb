@@ -14,6 +14,11 @@ Polymer({
 
   behaviors: [CrSearchFieldBehavior],
 
+  /** @return {!HTMLInputElement} */
+  getSearchInput: function() {
+    return this.$.searchInput;
+  },
+
   /** @private */
   onTapClear_: function() {
     this.setValue('');
