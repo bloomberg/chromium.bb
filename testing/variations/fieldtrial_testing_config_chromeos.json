@@ -135,7 +135,10 @@
     ],
     "PasswordSmartBubble": [
         {
-            "group_name": "3-Times"
+            "group_name": "3-Times",
+            "params": {
+                "dismissal_count": "3"
+            }
         }
     ],
     "PointerEvent": [
