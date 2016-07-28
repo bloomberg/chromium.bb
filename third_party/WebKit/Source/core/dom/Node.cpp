@@ -903,7 +903,7 @@ void Node::reattachWhitespaceSiblingsIfNeeded(Text* start)
     for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
         if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
             bool hadLayoutObject = !!sibling->layoutObject();
-            toText(sibling)->reattachIfNeeded();
+            toText(sibling)->reattachLayoutTreeIfNeeded();
             // If sibling's layout object status didn't change we don't need to continue checking
             // other siblings since their layout object status won't change either.
             if (!!sibling->layoutObject() == hadLayoutObject)

@@ -354,7 +354,7 @@ void Text::attachLayoutTree(const AttachContext& context)
     CharacterData::attachLayoutTree(context);
 }
 
-void Text::reattachIfNeeded(const AttachContext& context)
+void Text::reattachLayoutTreeIfNeeded(const AttachContext& context)
 {
     bool layoutObjectIsNeeded = false;
     ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this);

@@ -57,7 +57,7 @@ public:
     void updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);
 
     void attachLayoutTree(const AttachContext& = AttachContext()) final;
-    void reattachIfNeeded(const AttachContext& = AttachContext());
+    void reattachLayoutTreeIfNeeded(const AttachContext& = AttachContext());
 
     bool canContainRangeEndPoint() const final { return true; }
     NodeType getNodeType() const override;
