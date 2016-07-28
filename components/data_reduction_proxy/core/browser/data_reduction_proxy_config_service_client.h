@@ -276,9 +276,6 @@ class DataReductionProxyConfigServiceClient
   // Time when the IP address last changed.
   base::TimeTicks last_ip_address_change_;
 
-  // True if QUIC can be used to connect to data reduction proxy server.
-  bool quic_enabled_;
-
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 

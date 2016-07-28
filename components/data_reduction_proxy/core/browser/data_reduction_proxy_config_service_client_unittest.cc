@@ -130,9 +130,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
   }
 
-  void Init(bool use_mock_client_socket_factory,
-            bool enable_quic_in_params,
-            const std::string& quic_field_trial_group) {
+  void Init(bool use_mock_client_socket_factory) {
     if (!use_mock_client_socket_factory)
       mock_socket_factory_.reset(nullptr);
     test_context_ =
@@ -145,21 +143,12 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
             .SkipSettingsInitialization()
             .Build();
 
-    std::unique_ptr<net::HttpNetworkSession::Params> params(
-        new net::HttpNetworkSession::Params());
-    params->enable_quic = enable_quic_in_params;
-    context_->set_http_network_session_params(std::move(params));
     context_->set_client_socket_factory(mock_socket_factory_.get());
     test_context_->AttachToURLRequestContext(context_storage_.get());
     delegate_ = test_context_->io_data()->CreateProxyDelegate();
     context_->set_proxy_delegate(delegate_.get());
 
     context_->Init();
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!quic_field_trial_group.empty()) {
-      base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
-                                             quic_field_trial_group);
-    }
 
     test_context_->InitSettings();
     ResetBackoffEntryReleaseTime();
@@ -369,51 +358,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return context_.get();
   }
 
-  void TestQuicProxy(bool enable_quic_in_params,
-                     const std::string& quic_field_trial_group,
-                     bool enable_trusted_spdy_proxy_field_trial,
-                     const std::string& expected_primary_proxy,
-                     const std::string& expected_fallback_proxy,
-                     net::ProxyServer::Scheme expected_primary_proxy_scheme) {
-    Init(true, enable_quic_in_params, quic_field_trial_group);
-
-    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-    base::FieldTrialList::CreateFieldTrial(
-        params::GetTrustedSpdyProxyFieldTrialName(),
-        enable_trusted_spdy_proxy_field_trial ? "Enabled" : "Control");
-
-    // Use a remote config.
-    AddMockSuccess();
-
-    SetDataReductionProxyEnabled(true, true);
-
-    config_client()->RetrieveConfig();
-    RunUntilIdle();
-    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
-              config_client()->GetDelay());
-
-    // Verify that the proxies were set properly.
-    const net::ProxyServer expected_primary_proxy_server(
-        expected_primary_proxy_scheme,
-        net::ProxyServer::FromURI(expected_primary_proxy,
-                                  expected_primary_proxy_scheme)
-            .host_port_pair());
-    EXPECT_EQ(std::vector<net::ProxyServer>(
-                  {expected_primary_proxy_server,
-                   net::ProxyServer::FromURI(expected_fallback_proxy,
-                                             net::ProxyServer::SCHEME_HTTP)}),
-              GetConfiguredProxiesForHttp());
-
-    // Test that the trusted SPDY proxy is updated correctly after each config
-    // retrieval. Currently, only the HTTPS proxies are marked as trusted.
-    bool expect_proxy_is_trusted =
-        expected_primary_proxy_scheme == net::ProxyServer::SCHEME_HTTPS &&
-        enable_trusted_spdy_proxy_field_trial;
-
-    EXPECT_EQ(expect_proxy_is_trusted,
-              IsTrustedSpdyProxy(expected_primary_proxy_server));
-  }
-
  private:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<net::TestURLRequestContext> context_;
@@ -460,60 +404,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigServiceClientTest);
 };
 
-// Tests that QUIC proxy is not used when QUIC is not enabled globally.
-TEST_F(DataReductionProxyConfigServiceClientTest, DisableQuic) {
-  TestQuicProxy(false, "Control", false, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_HTTPS);
-}
-
-// Tests that QUIC proxy is not used when the session is not in data reduction
-// proxy's QUIC experiment.
-TEST_F(DataReductionProxyConfigServiceClientTest, EnableQuicOnlyInParams) {
-  TestQuicProxy(true, "", true, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_HTTPS);
-}
-
-// Tests that QUIC proxy is not used when the session is in the control group of
-// data reduction proxy's QUIC experiment.
-TEST_F(DataReductionProxyConfigServiceClientTest,
-       EnableQuicOnlyInParamsControlGroup) {
-  TestQuicProxy(true, "Control", true, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_HTTPS);
-}
-
-// Tests that QUIC proxy is not used when QUIC is not enabled globally.
-TEST_F(DataReductionProxyConfigServiceClientTest, EnableQuicOnlyViaFieldTrial) {
-  TestQuicProxy(false, "Enabled", true, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_HTTPS);
-}
-
-// Tests that QUIC proxy is used when all conditions are satisfied, and Chromium
-// is in the "Enabled" field trial group.
-TEST_F(DataReductionProxyConfigServiceClientTest,
-       EnableQuicButNotTrustedSpdyProxy) {
-  TestQuicProxy(true, "Enabled", false, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_QUIC);
-}
-
-// Tests that QUIC proxy is used when all conditions are satisfied, and Chromium
-// is in the "Enabled_NoControl" field trial group.
-TEST_F(DataReductionProxyConfigServiceClientTest,
-       EnableQuicPrefixMatchingButNotTrustedSpdyProxy) {
-  TestQuicProxy(true, "Enabled_NoControl", false, kSuccessOrigin,
-                kSuccessFallback, net::ProxyServer::SCHEME_QUIC);
-}
-
-// Tests the interaction of the QUIC experiment with the trusted SPDY proxy
-// experiment.
-TEST_F(DataReductionProxyConfigServiceClientTest,
-       EnableQuicAndTrustedSpdyProxy) {
-  TestQuicProxy(true, "Enabled", true, kSuccessOrigin, kSuccessFallback,
-                net::ProxyServer::SCHEME_QUIC);
-}
-
 // Tests that backoff values increases with every time config cannot be fetched.
 TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
-  Init(true, false, std::string());
+  Init(true);
   // Use a local/static config.
   base::HistogramTester histogram_tester;
   AddMockFailure();
@@ -552,7 +445,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 
 // Tests that the config is read successfully on the first attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
-  Init(true, false, std::string());
+  Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
@@ -568,7 +461,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
 // proxies are not used if the secure check failed.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        RemoteConfigSuccessWithSecureCheckFail) {
-  Init(true, false, std::string());
+  Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, false);
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
@@ -584,7 +477,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // proxies are not used if the secure proxy check fails later after some time.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        RemoteConfigSuccessWithDelayedSecureCheckFail) {
-  Init(true, false, std::string());
+  Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
@@ -609,7 +502,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Tests that the config is read successfully on the second attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        RemoteConfigSuccessAfterFailure) {
-  Init(true, false, std::string());
+  Init(true);
   base::HistogramTester histogram_tester;
 
   AddMockFailure();
@@ -641,7 +534,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 
 // Verifies that the config is fetched successfully after IP address changes.
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
-  Init(true, false, std::string());
+  Init(true);
   const struct {
     bool secure_proxies_allowed;
   } tests[] = {
@@ -693,7 +586,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
 // some time.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        OnIPAddressChangeDelayedSecureProxyCheckFail) {
-  Init(true, false, std::string());
+  Init(true);
 
   SetDataReductionProxyEnabled(true, true);
   config_client()->RetrieveConfig();
@@ -738,7 +631,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Verifies that fetching the remote config has no effect if the config client
 // is disabled.
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
-  Init(true, false, std::string());
+  Init(true);
   config_client()->SetEnabled(false);
   SetDataReductionProxyEnabled(true, true);
   config_client()->RetrieveConfig();
@@ -765,7 +658,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
 // Verifies the correctness of AuthFailure when the session key in the request
 // headers matches the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
-  Init(true, false, std::string());
+  Init(true);
   net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   net::HttpRequestHeaders request_headers;
@@ -851,7 +744,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
 // headers do not match the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        AuthFailureWithRequestHeaders) {
-  Init(true, false, std::string());
+  Init(true);
   net::HttpRequestHeaders request_headers;
   const char kSessionKeyRequestHeaders[] = "123";
   ASSERT_NE(kOldSuccessSessionKey, kSessionKeyRequestHeaders);
@@ -907,7 +800,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Verifies that requests that were not proxied through data saver proxy due to
 // missing config are recorded properly.
 TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
-  Init(false, false, std::string());
+  Init(false);
   const struct {
     std::string url;
     bool enabled_by_user;
@@ -963,7 +856,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
 // Tests that remote config can be applied after the serialized config has been
 // applied.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
-  Init(true, false, std::string());
+  Init(true);
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
@@ -982,7 +875,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
 // secure proxies are not used.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigWithSecureTransportRestricted) {
-  Init(true, false, std::string());
+  Init(true);
 
   AddMockSuccess();
 
@@ -1001,7 +894,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // retrieved successfully.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigAfterReceipt) {
-  Init(true, false, std::string());
+  Init(true);
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
@@ -1022,7 +915,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Tests that a local serialized config can be applied successfully if remote
 // config has not been fetched so far.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
-  Init(true, false, std::string());
+  Init(true);
   SetDataReductionProxyEnabled(true, true);
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
@@ -1043,7 +936,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
 // correctly to 0.0f.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigZeroReportingFraction) {
-  Init(true, false, std::string());
+  Init(true);
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(
       zero_reporting_fraction_encoded_config());
@@ -1054,7 +947,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // correctly to 0.0f when the pingback is not set in the protobuf.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigEmptyReportingFraction) {
-  Init(true, false, std::string());
+  Init(true);
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(
       empty_reporting_fraction_encoded_config());
@@ -1065,7 +958,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // correctly to 1.0f.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigOneReportingFraction) {
-  Init(true, false, std::string());
+  Init(true);
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(
       one_reporting_fraction_encoded_config());
@@ -1076,7 +969,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // correctly to 0.5f.
 TEST_F(DataReductionProxyConfigServiceClientTest,
        ApplySerializedConfigHalfReportingFraction) {
-  Init(true, false, std::string());
+  Init(true);
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(
       half_reporting_fraction_encoded_config());
@@ -1087,7 +980,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Verifies the correctness of fetching config when Chromium is in background
 // and foreground.
 TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
-  Init(true, false, std::string());
+  Init(true);
   SetDataReductionProxyEnabled(true, true);
 
   {
