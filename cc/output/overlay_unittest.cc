@@ -1823,7 +1823,27 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadAllValidFilters) {
   }
 }
 
-TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadFilterScale) {
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadOpacityFilterScale) {
+  filters_.Append(FilterOperation::CreateOpacityFilter(0.8f));
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 2), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(1U, ca_layer_list_.size());
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBlurFilterScale) {
+  filters_.Append(FilterOperation::CreateBlurFilter(0.8f));
+  quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
+                filters_, gfx::Vector2dF(1, 2), background_filters_);
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
+}
+
+TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadDropShadowFilterScale) {
+  filters_.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(10, 20),
+                                                          1.0f, SK_ColorGREEN));
   quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
                 kOverlayRect, render_pass_id_, 0, gfx::Vector2dF(), gfx::Size(),
                 filters_, gfx::Vector2dF(1, 2), background_filters_);

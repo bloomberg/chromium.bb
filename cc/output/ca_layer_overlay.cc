@@ -103,8 +103,6 @@ bool ConvertAndAppendFilterOperation(
 CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
                                  const RenderPassDrawQuad* quad,
                                  CALayerOverlay* ca_layer_overlay) {
-  if (quad->filters_scale != gfx::Vector2dF(1, 1))
-    return CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE;
   if (quad->background_filters.size() != 0)
     return CA_LAYER_FAILED_RENDER_PASS_BACKGROUND_FILTERS;
   if (quad->mask_resource_id() != 0)
@@ -115,6 +113,17 @@ CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
         operation, &ca_layer_overlay->filter_effects);
     if (!success)
       return CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION;
+  }
+
+  if (quad->filters_scale != gfx::Vector2dF(1, 1)) {
+    for (const ui::CARendererLayerParams::FilterEffect& effect :
+         ca_layer_overlay->filter_effects) {
+      using FilterEffectType = ui::CARendererLayerParams::FilterEffectType;
+      if (effect.type == FilterEffectType::BLUR ||
+          effect.type == FilterEffectType::DROP_SHADOW) {
+        return CA_LAYER_FAILED_RENDER_PASS_FILTER_SCALE;
+      }
+    }
   }
 
   ca_layer_overlay->render_pass_id = quad->render_pass_id;

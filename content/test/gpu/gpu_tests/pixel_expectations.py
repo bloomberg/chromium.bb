@@ -26,3 +26,7 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel.SolidColorBackground', ['mac', 'android'], bug=624256)
+
+    # TODO(erikchen) check / generate reference images.
+    self.Fail('Pixel.CSSFilterEffects', ['mac'], bug=581526)
+    self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
