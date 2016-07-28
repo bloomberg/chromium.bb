@@ -37746,6 +37746,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Events.InternalError" enum="InternalErrorLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
+  <obsolete>
+    Deprecated in favor of PageLoad.Internal.ErrorCode.
+  </obsolete>
   <summary>
     Counts of various internal error conditions in the page_load_metrics system.
   </summary>
@@ -37813,6 +37816,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     any timing IPCs. This metric is only intended to help understand the cases
     where committed page loads don't receive timing IPCs. Please contact
     bmcquade@chromium.org before using this metric.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.ErrorCode" enum="InternalErrorLoadEvent">
+  <owner>csharrison@chromium.org</owner>
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Counts of various internal error conditions in the page_load_metrics system.
   </summary>
 </histogram>
 
@@ -80818,8 +80829,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6"
       label="Multiple aborted provisional loads at navigation start"/>
   <int value="7"
-      label="User input received while not tracking a relevant committed load"/>
+      label="User input received while not tracking a relevant committed load
+             (deprecated)"/>
   <int value="8" label="Inter process TimeTicks skew"/>
+  <int value="9" label="No commit or failed provisional load received"/>
 </enum>
 
 <enum name="InterruptReason" type="int">

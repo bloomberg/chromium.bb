@@ -100,6 +100,10 @@ enum InternalErrorLoadEvent {
   // renderer process and the system clock has inter process time tick skew.
   ERR_INTER_PROCESS_TIME_TICK_SKEW,
 
+  // At the time a PageLoadTracker was destroyed, we had received neither a
+  // commit nor a failed provisional load.
+  ERR_NO_COMMIT_OR_FAILED_PROVISIONAL_LOAD,
+
   // Add values before this final count.
   ERR_LAST_ENTRY,
 };

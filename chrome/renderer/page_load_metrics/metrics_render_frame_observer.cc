@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -95,7 +96,9 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
   if (!url.SchemeIsHTTPOrHTTPS())
     return false;
 
-  const blink::WebURLResponse& url_response = frame->dataSource()->response();
+  // Ignore NTP loads.
+  if (SearchBouncer::GetInstance()->IsNewTabPage(url))
+    return false;
 
   // Ignore non-HTML documents (e.g. SVG). Note that images are treated by
   // Blink as HTML documents, so to exclude images, we must perform
@@ -104,6 +107,7 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
     return false;
 
   // Ignore non-HTML mime types (e.g. images).
+  const blink::WebURLResponse& url_response = frame->dataSource()->response();
   std::string mime_type = url_response.mimeType().utf8();
   if (mime_type != "text/html" && mime_type != "application/xhtml+xml")
     return false;

@@ -36,7 +36,7 @@ namespace page_load_metrics {
 
 namespace internal {
 
-const char kErrorEvents[] = "PageLoad.Events.InternalError";
+const char kErrorEvents[] = "PageLoad.Internal.ErrorCode";
 const char kAbortChainSizeReload[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.Reload";
 const char kAbortChainSizeForwardBack[] =
@@ -266,26 +266,26 @@ PageLoadTracker::~PageLoadTracker() {
   if (did_stop_tracking_)
     return;
 
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
-  DCHECK_NE(static_cast<bool>(info.time_to_commit),
-            static_cast<bool>(failed_provisional_load_info_));
-  if (info.time_to_commit && timing_.IsEmpty()) {
-    RecordInternalError(ERR_NO_IPCS_RECEIVED);
-    const base::TimeTicks commit_time =
-        navigation_start_ + info.time_to_commit.value();
-    PAGE_LOAD_HISTOGRAM(internal::kCommitToCompleteNoTimingIPCs,
-                        base::TimeTicks::Now() - commit_time);
-  }
-  // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
-  // chain length added to the next navigation. Take care not to double count
-  // them. Also do not double count committed loads, which call this already.
-  if (commit_time_.is_null() && abort_type_ != ABORT_UNKNOWN_NAVIGATION)
-    LogAbortChainHistograms(nullptr);
+  if (commit_time_.is_null()) {
+    if (!failed_provisional_load_info_)
+      RecordInternalError(ERR_NO_COMMIT_OR_FAILED_PROVISIONAL_LOAD);
 
+    // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
+    // chain length added to the next navigation. Take care not to double count
+    // them. Also do not double count committed loads, which call this already.
+    if (abort_type_ != ABORT_UNKNOWN_NAVIGATION)
+      LogAbortChainHistograms(nullptr);
+  } else if (timing_.IsEmpty()) {
+    RecordInternalError(ERR_NO_IPCS_RECEIVED);
+    PAGE_LOAD_HISTOGRAM(internal::kCommitToCompleteNoTimingIPCs,
+                        base::TimeTicks::Now() - commit_time_);
+  }
+
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
-    } else {
+    } else if (info.time_to_commit) {
       observer->OnComplete(timing_, info);
     }
   }
@@ -908,22 +908,23 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     const PageLoadTiming& timing,
     const PageLoadMetadata& metadata) {
+  // We may receive notifications from frames that have been navigated away
+  // from. We simply ignore them.
+  if (render_frame_host != web_contents()->GetMainFrame()) {
+    RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
+    return;
+  }
+
+  // While timings arriving for the wrong frame are expected, we do not expect
+  // any of the errors below. Thus, we track occurrences of all errors below,
+  // rather than returning early after encountering an error.
+
   bool error = false;
   if (!committed_load_) {
     RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
     error = true;
   }
 
-  // We may receive notifications from frames that have been navigated away
-  // from. We simply ignore them.
-  if (render_frame_host != web_contents()->GetMainFrame()) {
-    RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
-    error = true;
-  }
-
-  // For urls like chrome://newtab, the renderer and browser disagree,
-  // so we have to double check that the renderer isn't sending data from a
-  // bad url like https://www.google.com/_/chrome/newtab.
   if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
     RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
     error = true;
