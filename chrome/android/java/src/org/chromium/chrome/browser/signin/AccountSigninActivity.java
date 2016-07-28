@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -192,5 +193,11 @@ public class AccountSigninActivity extends AppCompatActivity
             default:
                 assert false : "Invalid access point.";
         }
+    }
+
+    // AccountSigninView.Delegate implementation.
+    @Override
+    public Activity getActivity() {
+        return this;
     }
 }

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.FragmentManager;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
@@ -20,6 +20,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
@@ -79,9 +81,9 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      */
     public interface Delegate {
         /**
-         * Provides a FragmentManager for the view to create dialogs.
+         * Provides an Activity for the view to create dialogs.
          */
-        public FragmentManager getFragmentManager();
+        public Activity getActivity();
     }
 
     private static final String TAG = "AccountSigninView";
@@ -253,7 +255,8 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         if (!mAccountNames.get(accountToSelect).equals(oldAccountNames.get(oldSelectedAccount))) {
             // Any dialogs that may have been showing are now invalid (they were created for the
             // previously selected account).
-            ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
+            ConfirmSyncDataStateMachine
+                    .cancelAllDialogs(mDelegate.getActivity().getFragmentManager());
 
             if (mAccountNames.containsAll(oldAccountNames)) {
                 // A new account has been added and no accounts have been deleted. We will have
@@ -350,6 +353,11 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     }
 
     private void showConfirmSigninPageAccountTrackerServiceCheck() {
+        if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(getContext(),
+                new UserRecoverableErrorHandler.ModalDialog(mDelegate.getActivity()))) {
+            return;
+        }
+
         // Disable the buttons to prevent them being clicked again while waiting for the callbacks.
         setButtonsEnabled(false);
 
@@ -376,7 +384,8 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     private void showConfirmSigninPagePreviousAccountCheck() {
         String accountName = getSelectedAccountName();
         ConfirmSyncDataStateMachine.run(PrefServiceBridge.getInstance().getSyncLastAccountName(),
-                accountName, ImportSyncType.PREVIOUS_DATA_FOUND, mDelegate.getFragmentManager(),
+                accountName, ImportSyncType.PREVIOUS_DATA_FOUND,
+                mDelegate.getActivity().getFragmentManager(),
                 getContext(), new ConfirmImportSyncDataDialog.Listener() {
                     @Override
                     public void onConfirm(boolean wipeData) {
