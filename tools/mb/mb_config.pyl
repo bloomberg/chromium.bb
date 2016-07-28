@@ -537,7 +537,7 @@
       'Win 8 Perf (3)': 'none',
       'Win 8 Perf (4)': 'none',
       'Win 8 Perf (5)': 'none',
-      'Win Builder': 'gyp_official_goma_minimal_symbols_x86',
+      'Win Builder': 'gn_official_goma_minimal_symbols_x86',
       'Win Zenbook Perf (1)': 'none',
       'Win Zenbook Perf (2)': 'none',
       'Win Zenbook Perf (3)': 'none',
@@ -648,13 +648,13 @@
 
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
-      'win': 'gyp_official',
+      'win': 'gn_official',
       'win-asan': 'gyp_official_syzyasan',
       'win-pgo': [
         'gn_official_chrome_pgo_phase_1_x86',
         'gn_official_chrome_pgo_phase_2_x86',
       ],
-      'win64': 'gyp_official_x64',
+      'win64': 'gn_official_x64',
       'win64-pgo': [
         'gn_official_chrome_pgo_phase_1_x64',
         'gn_official_chrome_pgo_phase_2_x64',
@@ -668,10 +668,10 @@
       'precise64 beta': 'gn_official',
       'precise64 stable': 'gn_official',
       'precise64 trunk': 'gn_official',
-      'win beta': 'gyp_official_six_concurrent_links',
-      'win stable': 'gyp_official_six_concurrent_links',
-      'win trunk': 'gyp_official_six_concurrent_links',
-      'win64 trunk': 'gyp_official_x64_six_concurrent_links',
+      'win beta': 'gn_official_six_concurrent_links',
+      'win stable': 'gn_official_six_concurrent_links',
+      'win trunk': 'gn_official_six_concurrent_links',
+      'win64 trunk': 'gn_official_x64_six_concurrent_links',
     },
 
     'tryserver.blink': {
@@ -1200,8 +1200,8 @@
       'gn', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
-    'gyp_official_goma_minimal_symbols_x86': [
-      'gyp', 'official', 'goma', 'minimal_symbols', 'x86',
+    'gn_official_goma_minimal_symbols_x86': [
+      'gn', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
     'gn_release_bot': [
@@ -1364,8 +1364,8 @@
       'gyp', 'official', 'syzyasan',
     ],
 
-    'gyp_official_six_concurrent_links': [
-      'gyp', 'official', 'six_concurrent_links',
+    'gn_official_six_concurrent_links': [
+      'gn', 'official', 'six_concurrent_links',
     ],
 
     'gn_official_chrome_pgo_phase_1_x64': [
@@ -1400,12 +1400,12 @@
       'gn', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
     ],
 
-    'gyp_official_x64': [
-      'gyp', 'official', 'x64',
+    'gn_official_x64': [
+      'gn', 'official', 'x64',
     ],
 
-    'gyp_official_x64_six_concurrent_links': [
-      'gyp', 'official', 'x64', 'six_concurrent_links',
+    'gn_official_x64_six_concurrent_links': [
+      'gn', 'official', 'x64', 'six_concurrent_links',
     ],
 
     'gn_release_trybot_x86': [
