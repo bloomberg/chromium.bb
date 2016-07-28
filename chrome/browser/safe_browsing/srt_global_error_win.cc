@@ -8,17 +8,25 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/installer/util/install_util.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -43,9 +51,35 @@ const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
 // A switch to add to the command line when executing the SRT.
 const char kChromePromptSwitch[] = "chrome-prompt";
+const char kChromeVersionSwitch[] = "chrome-version";
+const char kChromeSystemInstallSwitch[] = "chrome-system-install";
+const char kChromeChannelSwitch[] = "chrome-channel";
+const char kEnableCrashReporting[] = "enable-crash-reporting";
+const char kUmaUserSwitch[] = "uma-user";
+
+// Encodes Chrome's channel as an integer to be passed to the SRT on the command
+// line. The SRT binary expects to recieve Chrome's channel encoded as:
+//     0: unknown; 1: canary; 2: dev; 3: beta; 4: stable.
+int ChannelAsInt() {
+  switch (chrome::GetChannel()) {
+    case version_info::Channel::UNKNOWN:
+      return 0;
+    case version_info::Channel::CANARY:
+      return 1;
+    case version_info::Channel::DEV:
+      return 2;
+    case version_info::Channel::BETA:
+      return 3;
+    case version_info::Channel::STABLE:
+      return 4;
+    default:
+      return 0;
+  }
+}
 
 void MaybeExecuteSRTFromBlockingPool(
     const base::FilePath& downloaded_path,
+    bool metrics_enabled,
     const scoped_refptr<SingleThreadTaskRunner>& task_runner,
     const base::Closure& success_callback,
     const base::Closure& failure_callback) {
@@ -57,6 +91,21 @@ void MaybeExecuteSRTFromBlockingPool(
     if (base::ReplaceFile(downloaded_path, executable_path, nullptr)) {
       base::CommandLine srt_command_line(executable_path);
       srt_command_line.AppendSwitch(kChromePromptSwitch);
+      srt_command_line.AppendSwitchASCII(kChromeVersionSwitch,
+                                         version_info::GetVersionNumber());
+      srt_command_line.AppendSwitchASCII(kChromeChannelSwitch,
+                                         base::IntToString(ChannelAsInt()));
+
+      base::FilePath chrome_exe_path;
+      PathService::Get(base::FILE_EXE, &chrome_exe_path);
+      if (!InstallUtil::IsPerUserInstall(chrome_exe_path))
+        srt_command_line.AppendSwitch(kChromeSystemInstallSwitch);
+
+      if (metrics_enabled) {
+        srt_command_line.AppendSwitch(kUmaUserSwitch);
+        srt_command_line.AppendSwitch(kEnableCrashReporting);
+      }
+
       base::Process srt_process(
           base::LaunchProcess(srt_command_line, base::LaunchOptions()));
       if (srt_process.IsValid()) {
@@ -181,12 +230,15 @@ void SRTGlobalError::MaybeExecuteSRT() {
   // from the global_error_service_ in the call to RemoveGlobalError. This means
   // that it is safe to use base::Unretained here.
   BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&MaybeExecuteSRTFromBlockingPool, downloaded_path_,
-                            base::ThreadTaskRunnerHandle::Get(),
-                            base::Bind(&SRTGlobalError::OnUserinteractionDone,
-                                       base::Unretained(this)),
-                            base::Bind(&SRTGlobalError::FallbackToDownloadPage,
-                                       base::Unretained(this))));
+      FROM_HERE,
+      base::Bind(
+          &MaybeExecuteSRTFromBlockingPool, downloaded_path_,
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
+          base::ThreadTaskRunnerHandle::Get(),
+          base::Bind(&SRTGlobalError::OnUserinteractionDone,
+                     base::Unretained(this)),
+          base::Bind(&SRTGlobalError::FallbackToDownloadPage,
+                     base::Unretained(this))));
 }
 
 void SRTGlobalError::FallbackToDownloadPage() {

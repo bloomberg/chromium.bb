@@ -58,6 +58,7 @@ class IncidentReportingService;
 class SafeBrowsingService;
 class SafeBrowsingUIManager;
 class SRTFetcher;
+class SRTGlobalError;
 }
 
 namespace speech {
@@ -96,6 +97,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
   friend class safe_browsing::SRTFetcher;
+  friend class safe_browsing::SRTGlobalError;
   friend class safe_browsing::DownloadSBClient;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
