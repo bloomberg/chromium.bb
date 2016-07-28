@@ -1106,7 +1106,7 @@ error::Error GLES2DecoderImpl::HandleCopyTexSubImage3D(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyTexSubImage3D", "height < 0");
     return error::kNoError;
   }
-  glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
+  DoCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
                       height);
   return error::kNoError;
 }

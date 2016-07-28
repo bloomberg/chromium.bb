@@ -1007,6 +1007,18 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei width,
       GLsizei height);
 
+  // Wrapper for CopyTexSubImage3D.
+  void DoCopyTexSubImage3D(
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLint zoffset,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height);
+
   void DoCopyTextureCHROMIUM(GLuint source_id,
                              GLuint dest_id,
                              GLenum internal_format,
@@ -13019,7 +13031,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       CopyTexImageResourceManager::CopyTexImageRequiresBlit(feature_info_.get(),
                                                             format);
   if (requires_luma_blit &&
-      !InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
+      !InitializeCopyTexImageBlitter(func_name)) {
     return;
   }
 
@@ -13234,6 +13246,59 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
                           copyHeight);
     }
   }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::DoCopyTexSubImage3D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLint zoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height) {
+  const char* func_name = "glCopyTexSubImage3D";
+  DCHECK(!ShouldDeferReads());
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "unknown texture for target");
+    return;
+  }
+  Texture* texture = texture_ref->texture();
+  GLenum type = 0;
+  GLenum internal_format = 0;
+  if (!texture->GetLevelType(target, level, &type, &internal_format) ||
+      !texture->ValidForTexture(
+          target, level, xoffset, yoffset, zoffset, width, height, 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "bad dimensions.");
+    return;
+  }
+
+  if (!CheckBoundReadFramebufferValid(func_name,
+                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+    return;
+  }
+
+  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+  GLenum read_type = GetBoundReadFrameBufferTextureType();
+  if (!ValidateCopyTexFormat(func_name, internal_format,
+                             read_format, read_type)) {
+    return;
+  }
+
+  // TODO(yunchao): Follow-up CLs are necessary. For instance, feedback loop
+  // detection, emulation of unsized formats in core profile, clear the 3d
+  // textures if it is uncleared, out-of-bounds reading, etc.
+
+  glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
+                      height);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.

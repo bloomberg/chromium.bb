@@ -179,9 +179,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/framebuffer-completeness-unaffected.html',
         ['mac'], bug=604053)
 
-    self.Fail('deqp/functional/gles3/negativetextureapi.html',
-        ['mac'], bug=483282)
-
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac'], bug=483282)
 
@@ -622,8 +619,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/instancedrendering.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['linux', 'amd'], bug=483282)

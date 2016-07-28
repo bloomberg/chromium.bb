@@ -317,18 +317,6 @@ TEST_P(GLES2DecoderTest1, CopyTexSubImage2DInvalidArgs7_0) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, CopyTexSubImage3DValidArgs) {
-  EXPECT_CALL(*gl_, CopyTexSubImage3D(GL_TEXTURE_3D, 2, 3, 4, 5, 6, 7, 8, 9));
-  SpecializedSetup<cmds::CopyTexSubImage3D, 0>(true);
-  cmds::CopyTexSubImage3D cmd;
-  cmd.Init(GL_TEXTURE_3D, 2, 3, 4, 5, 6, 7, 8, 9);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest1, CreateProgramValidArgs) {
   EXPECT_CALL(*gl_, CreateProgram()).WillOnce(Return(kNewServiceId));
   SpecializedSetup<cmds::CreateProgram, 0>(true);

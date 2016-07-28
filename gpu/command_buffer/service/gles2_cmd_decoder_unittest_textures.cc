@@ -1075,6 +1075,144 @@ TEST_P(GLES2DecoderTest, CompressedTexImage3DFailsOnES2) {
   }
 }
 
+TEST_P(GLES2DecoderTest, CopyTexSubImage3DFailsOnES2) {
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+
+  CopyTexSubImage3D cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           0, 0, 0,
+           0, 0,
+           kWidth,
+           kHeight);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, CopyTexSubImage3DFaiures) {
+  const GLenum kTarget = GL_TEXTURE_3D;
+  const GLint kLevel = 1;
+  const GLint kXoffset = 0;
+  const GLint kYoffset = 0;
+  const GLint kZoffset = 0;
+  const GLint kX = 0;
+  const GLint kY = 0;
+  const GLsizei kWidth = 2;
+  const GLsizei kHeight = 2;
+  const GLsizei kDepth = 2;
+
+  CopyTexSubImage3D cmd;
+
+  // No texture bound
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Incompatible format / type
+  // The default format/type of default read buffer is RGB/UNSIGNED_BYTE
+  const GLint kInternalFormat = GL_RGBA8;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+  DoTexImage3D(kTarget, kLevel, kInternalFormat, kWidth, kHeight, kDepth, 0,
+               kFormat, kType, kSharedMemoryId, kSharedMemoryOffset);
+
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, CopyTexSubImage3DCheckArgs) {
+  const GLenum kTarget = GL_TEXTURE_3D;
+  const GLint kLevel = 1;
+  const GLint kInternalFormat = GL_RGB8;
+  const GLint kXoffset = 0;
+  const GLint kYoffset = 0;
+  const GLint kZoffset = 0;
+  const GLint kX = 0;
+  const GLint kY = 0;
+  const GLsizei kWidth = 2;
+  const GLsizei kHeight = 2;
+  const GLsizei kDepth = 2;
+  const GLsizei kBorder = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+  DoTexImage3D(kTarget, kLevel, kInternalFormat, kWidth, kHeight, kDepth,
+               kBorder, kFormat, kType, kSharedMemoryId, kSharedMemoryOffset);
+
+  // Valid args
+  EXPECT_CALL(*gl_,
+              CopyTexSubImage3D(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+                                kX, kY, kWidth, kHeight))
+      .Times(1)
+      .RetiresOnSaturation();
+  CopyTexSubImage3D cmd;
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Bad target
+  cmd.Init(GL_TEXTURE_2D, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  // Bad Level
+  cmd.Init(kTarget, -1, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, 0, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad xoffest / yoffset of 3D texture
+  cmd.Init(kTarget, kLevel, -1, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, kLevel, 1, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, kLevel, kXoffset, -1, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, kLevel, kXoffset, 1, kZoffset,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad zoffset: zoffset specifies the layer of the 3D texture to be replaced
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, -1,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kDepth,
+           kX, kY, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad width / height
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth + 1, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(kTarget, kLevel, kXoffset, kYoffset, kZoffset,
+           kX, kY, kWidth, kHeight + 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
   const uint32_t kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;

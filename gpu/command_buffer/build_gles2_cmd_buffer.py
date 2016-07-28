@@ -2647,6 +2647,8 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'CopyTexSubImage3D': {
+    'decoder_func': 'DoCopyTexSubImage3D',
+    'unit_test': False,
     'defer_reads': True,
     'unsafe': True,
     'trace_level': 1,
