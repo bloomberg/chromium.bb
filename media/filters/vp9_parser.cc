@@ -218,10 +218,10 @@ void Vp9Parser::ReadQuantization(Vp9QuantizationParams* quants) {
     quants->y_dc_delta = reader_.ReadSignedLiteral(4);
 
   if (reader_.ReadBool())
-    quants->uv_ac_delta = reader_.ReadSignedLiteral(4);
+    quants->uv_dc_delta = reader_.ReadSignedLiteral(4);
 
   if (reader_.ReadBool())
-    quants->uv_dc_delta = reader_.ReadSignedLiteral(4);
+    quants->uv_ac_delta = reader_.ReadSignedLiteral(4);
 }
 
 void Vp9Parser::ReadSegmentationMap() {
