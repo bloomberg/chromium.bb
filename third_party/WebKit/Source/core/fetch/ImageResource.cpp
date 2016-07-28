@@ -209,8 +209,8 @@ void ImageResource::destroyDecodedDataIfPossible()
 {
     if (!m_image)
         return;
-    if ((!hasClientsOrObservers() && !isLoading() && m_image->hasOneRef() && m_image->isBitmapImage()) || !errorOccurred())
-        m_image->destroyDecodedData();
+    CHECK(!errorOccurred());
+    m_image->destroyDecodedData();
 }
 
 void ImageResource::doResetAnimation()
@@ -221,7 +221,8 @@ void ImageResource::doResetAnimation()
 
 void ImageResource::allClientsAndObserversRemoved()
 {
-    if (m_image && !errorOccurred()) {
+    if (m_image) {
+        CHECK(!errorOccurred());
         // If possible, delay the resetting until back at the event loop.
         // Doing so after a conservative GC prevents resetAnimation() from
         // upsetting ongoing animation updates (crbug.com/613709)
