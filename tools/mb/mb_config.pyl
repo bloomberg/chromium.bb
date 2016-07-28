@@ -376,7 +376,7 @@
       'Win ASan Release Media':
         'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'gyp_asan_fuzzer_v8_heap_release_bot_x86',
-      'Win SyzyASAN LKGR': 'gyp_syzyasan_no_pch_win_z7_x86',
+      'Win SyzyASAN LKGR': 'gn_syzyasan_no_pch_x86',
     },
 
     'chromium.mac': {
@@ -551,7 +551,7 @@
       'Chromium ASAN - debug': 'gn_asan_lsan_edge_debug_bot',
       'Chromium ASAN (symbolized)':
         'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
-      'Chromium Win SyzyASAN': 'gyp_syzyasan_no_pch_win_z7_x86',
+      'Chromium Win SyzyASAN': 'gn_syzyasan_no_pch_x86',
       'Linux ASAN Builder': 'swarming_asan_lsan_gn_release_bot',
       'Linux Debug Builder': 'gn_debug_bot',
       'Linux Snapshot Builder': 'gn_release_bot',
@@ -649,7 +649,7 @@
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
       'win': 'gn_official',
-      'win-asan': 'gyp_official_syzyasan',
+      'win-asan': 'gn_official_syzyasan',
       'win-pgo': [
         'gn_official_chrome_pgo_phase_1_x86',
         'gn_official_chrome_pgo_phase_2_x86',
@@ -919,7 +919,7 @@
         'swarming_gpu_tests_gn_release_trybot_x86',
       'win_chromium_dbg_ng': 'swarming_gn_debug_trybot_x86',
       'win_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot_x86',
-      'win_chromium_syzyasan_rel': 'swarming_gyp_syzyasan_release_trybot_x86',
+      'win_chromium_syzyasan_rel': 'swarming_gn_syzyasan_release_trybot_x86',
       'win_chromium_variable': 'findit',
       'win_chromium_variable_archive': 'findit',
       'win_chromium_variable_chrome': 'findit',
@@ -1360,8 +1360,8 @@
       'gn', 'official', 'goma', 'chromeos',
     ],
 
-    'gyp_official_syzyasan': [
-      'gyp', 'official', 'syzyasan',
+    'gn_official_syzyasan': [
+      'gn', 'official', 'syzyasan',
     ],
 
     'gn_official_six_concurrent_links': [
@@ -1416,8 +1416,8 @@
       'gn', 'shared_release_bot', 'minimal_symbols', 'x86',
     ],
 
-    'gyp_syzyasan_no_pch_win_z7_x86': [
-      'gyp', 'syzyasan', 'no_pch', 'win_z7', 'x86',
+    'gn_syzyasan_no_pch_x86': [
+      'gn', 'syzyasan', 'no_pch', 'x86',
     ],
 
     'gn_tsan_disable_nacl_line_tables_debug_bot': [
@@ -1879,8 +1879,8 @@
       'swarming', 'gn', 'release_trybot', 'arm', 'crosscompile',
     ],
 
-    'swarming_gyp_syzyasan_release_trybot_x86': [
-      'swarming', 'gyp', 'syzyasan', 'release_trybot', 'x86',
+    'swarming_gn_syzyasan_release_trybot_x86': [
+      'swarming', 'gn', 'syzyasan', 'release_trybot', 'x86',
     ],
 
     'swarming_tsan_disable_nacl_gn_release_bot': [
@@ -2352,11 +2352,6 @@
     'win_analyze': {
       'gn_args': 'use_vs_code_analysis=true',
       'gyp_defines': 'win_analyze=1',
-    },
-
-    'win_z7': {
-      'gn_args': 'error', # TODO(GYP): implement win_z7=true
-      'gyp_defines': 'win_z7=1',
     },
 
     'x64': {
