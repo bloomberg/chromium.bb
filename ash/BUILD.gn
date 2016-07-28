@@ -409,8 +409,9 @@ test("ash_unittests") {
       # Talks to ChromeOS system services.
       "wm/lock_state_controller_unittest.cc",
 
-      # Accelerometer is only available on Chrome OS.
+      # Maximize mode is only available on Chrome OS.
       "wm/maximize_mode/maximize_mode_controller_unittest.cc",
+      "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
 
       # Can't resize on Windows Ash. http://crbug.com/165962
       "autoclick/autoclick_unittest.cc",

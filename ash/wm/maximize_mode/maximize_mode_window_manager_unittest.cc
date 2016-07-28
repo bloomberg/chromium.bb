@@ -12,6 +12,7 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
@@ -34,10 +35,6 @@
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
-
-// TODO(skuhne): These tests are failing on Widows because maximized is there
-// differently handled. Fix this!
-#if !defined(OS_WIN)
 
 class MaximizeModeWindowManagerTest : public test::AshTestBase {
  public:
@@ -1586,6 +1583,106 @@ TEST_F(MaximizeModeWindowManagerTest, DontMaximizeDockedWindows) {
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
 }
 
-#endif  // OS_WIN
+namespace {
+
+class TestObserver : public wm::WindowStateObserver {
+ public:
+  TestObserver(){};
+  ~TestObserver() override{};
+
+  // wm::WindowStateObserver:
+  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+                                  wm::WindowStateType old_type) override {
+    pre_count_++;
+    last_old_state_ = old_type;
+  }
+
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   wm::WindowStateType old_type) override {
+    post_count_++;
+    EXPECT_EQ(last_old_state_, old_type);
+  }
+
+  int GetPreCountAndReset() {
+    int r = pre_count_;
+    pre_count_ = 0;
+    return r;
+  }
+
+  int GetPostCountAndReset() {
+    int r = post_count_;
+    post_count_ = 0;
+    return r;
+  }
+
+  wm::WindowStateType GetLastOldStateAndReset() {
+    wm::WindowStateType r = last_old_state_;
+    last_old_state_ = wm::WINDOW_STATE_TYPE_DEFAULT;
+    return r;
+  }
+
+ private:
+  int pre_count_ = 0;
+  int post_count_ = 0;
+  wm::WindowStateType last_old_state_ = wm::WINDOW_STATE_TYPE_DEFAULT;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+}  // namespace
+
+TEST_F(MaximizeModeWindowManagerTest, StateTyepChange) {
+  TestObserver observer;
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+
+  CreateMaximizeModeWindowManager();
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->AddObserver(&observer);
+
+  window->Show();
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(0, observer.GetPreCountAndReset());
+  EXPECT_EQ(0, observer.GetPostCountAndReset());
+
+  // Window is already in maximized mode.
+  wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
+  window_state->OnWMEvent(&maximize_event);
+  EXPECT_EQ(0, observer.GetPreCountAndReset());
+  EXPECT_EQ(0, observer.GetPostCountAndReset());
+
+  wm::WMEvent fullscreen_event(wm::WM_EVENT_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen_event);
+  EXPECT_EQ(1, observer.GetPreCountAndReset());
+  EXPECT_EQ(1, observer.GetPostCountAndReset());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MAXIMIZED,
+            observer.GetLastOldStateAndReset());
+
+  window_state->OnWMEvent(&maximize_event);
+  EXPECT_EQ(1, observer.GetPreCountAndReset());
+  EXPECT_EQ(1, observer.GetPostCountAndReset());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_FULLSCREEN,
+            observer.GetLastOldStateAndReset());
+
+  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
+  window_state->OnWMEvent(&minimize_event);
+  EXPECT_EQ(1, observer.GetPreCountAndReset());
+  EXPECT_EQ(1, observer.GetPostCountAndReset());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MAXIMIZED,
+            observer.GetLastOldStateAndReset());
+
+  wm::WMEvent restore_event(wm::WM_EVENT_NORMAL);
+  window_state->OnWMEvent(&restore_event);
+  EXPECT_EQ(1, observer.GetPreCountAndReset());
+  EXPECT_EQ(1, observer.GetPostCountAndReset());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MINIMIZED,
+            observer.GetLastOldStateAndReset());
+
+  window_state->RemoveObserver(&observer);
+
+  DestroyMaximizeModeWindowManager();
+}
 
 }  // namespace ash

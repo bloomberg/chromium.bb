@@ -254,20 +254,9 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
           !window_state->CanMaximize()) ||
          target_state == wm::WINDOW_STATE_TYPE_FULLSCREEN);
 
-  if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED) {
-    if (current_state_type_ == wm::WINDOW_STATE_TYPE_MINIMIZED)
-      return;
-
-    current_state_type_ = target_state;
-    window_state->window()->SetVisibilityAnimationType(
-        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-    window_state->window()->Hide();
-    if (window_state->IsActive())
-      window_state->Deactivate();
-    return;
-  }
-
   if (current_state_type_ == target_state) {
+    if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED)
+      return;
     // If the state type did not change, update it accordingly.
     UpdateBounds(window_state, animated);
     return;
@@ -277,7 +266,17 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
   current_state_type_ = target_state;
   window_state->UpdateWindowShowStateFromStateType();
   window_state->NotifyPreStateTypeChange(old_state_type);
-  UpdateBounds(window_state, animated);
+
+  if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED) {
+    window_state->window()->SetVisibilityAnimationType(
+        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+    window_state->window()->Hide();
+    if (window_state->IsActive())
+      window_state->Deactivate();
+  } else {
+    UpdateBounds(window_state, animated);
+  }
+
   window_state->NotifyPostStateTypeChange(old_state_type);
 
   if (old_state_type == wm::WINDOW_STATE_TYPE_PINNED ||

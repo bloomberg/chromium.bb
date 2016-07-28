@@ -14,6 +14,8 @@ class WindowState;
 
 class ASH_EXPORT WindowStateObserver {
  public:
+  virtual ~WindowStateObserver() {}
+
   // Following observer methods are different from kWindowShowStatekey
   // property change as they will be invoked when the window
   // gets left/right maximized, and auto positioned. |old_type| is the value
