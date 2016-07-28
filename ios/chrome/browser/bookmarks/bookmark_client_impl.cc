@@ -50,7 +50,7 @@ void BookmarkClientImpl::GetTypedCountForNodes(
           browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
   history::URLDatabase* url_db =
       history_service ? history_service->InMemoryDatabase() : nullptr;
-  for (const auto& node : nodes) {
+  for (const auto* node : nodes) {
     // If |url_db| is the InMemoryDatabase, it might not cache all URLRows, but
     // it guarantees to contain those with |typed_count| > 0. Thus, if fetching
     // the URLRow fails, it is safe to assume that its |typed_count| is 0.

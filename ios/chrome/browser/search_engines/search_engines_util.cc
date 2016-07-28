@@ -40,11 +40,11 @@ void UpdateSearchEngine(TemplateURLService* service) {
   // Instead, this will in a first pass makes google as the default engine. In
   // a second pass, it will remove all other search engine. At last, in a third
   // pass, it will add all new engine but google.
-  for (const auto& engine : old_engines) {
+  for (auto* engine : old_engines) {
     if (engine->prepopulate_id() == kGoogleEnginePrepopulatedId)
       service->SetUserSelectedDefaultSearchProvider(engine);
   }
-  for (const auto& engine : old_engines) {
+  for (auto* engine : old_engines) {
     if (engine->prepopulate_id() != kGoogleEnginePrepopulatedId)
       service->Remove(engine);
   }
