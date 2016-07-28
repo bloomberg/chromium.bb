@@ -1371,6 +1371,4 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-
 
 crbug.com/630996 [ Win7 Win10 Linux ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Skip ]
 
-crbug.com/619452 editing/spelling/inline_spelling_markers.html [ NeedsRebaseline ]
-crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi.html [ NeedsRebaseline ]
 crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
