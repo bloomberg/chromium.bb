@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/output_surface.h"
@@ -17,6 +18,7 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
                                    int max_pending_swaps)
     : begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
+      inside_surface_damaged_(false),
       output_surface_lost_(false),
       root_surface_resources_locked_(true),
       inside_begin_frame_deadline_interval_(false),
@@ -82,6 +84,11 @@ void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
                surface_id.ToString());
 
+  // We may cause a new BeginFrame to be run inside this method, but to help
+  // avoid being reentrant to the caller of SurfaceDamaged, track when this is
+  // happening with |inside_surface_damaged_|.
+  base::AutoReset<bool>(&inside_surface_damaged_, true);
+
   needs_draw_ = true;
 
   if (surface_id == root_surface_id_) {
@@ -138,6 +145,22 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   TRACE_EVENT2("cc", "DisplayScheduler::BeginFrame", "args", args.AsValue(),
                "now", now);
 
+  if (inside_surface_damaged_) {
+    // Repost this so that we don't run a missed BeginFrame on the same
+    // callstack. Otherwise we end up running unexpected scheduler actions
+    // immediately while inside some other action (such as submitting a
+    // CompositorFrame for a SurfaceFactory).
+    DCHECK_EQ(args.type, BeginFrameArgs::MISSED);
+    DCHECK(missed_begin_frame_task_.IsCancelled());
+    missed_begin_frame_task_.Reset(base::Bind(
+        base::IgnoreResult(&DisplayScheduler::OnBeginFrameDerivedImpl),
+        // The CancelableCallback will not run after it is destroyed, which
+        // happens when |this| is destroyed.
+        base::Unretained(this), args));
+    task_runner_->PostTask(FROM_HERE, missed_begin_frame_task_.callback());
+    return true;
+  }
+
   // If we get another BeginFrame before the previous deadline,
   // synchronously trigger the previous deadline before progressing.
   if (inside_begin_frame_deadline_interval_) {
@@ -150,6 +173,12 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
       BeginFrameArgs::DefaultEstimatedParentDrawTime();
   inside_begin_frame_deadline_interval_ = true;
   ScheduleBeginFrameDeadline();
+
+  // If we get another BeginFrame before a posted missed frame, just drop the
+  // missed frame. Also if this was the missed frame, drop the Callback inside
+  // it. Do this last because this might be the missed frame and we don't want
+  // to destroy |args| prematurely.
+  missed_begin_frame_task_.Cancel();
 
   return true;
 }
@@ -283,6 +312,9 @@ void DisplayScheduler::AttemptDrawAndSwap() {
     if (observing_begin_frame_source_) {
       observing_begin_frame_source_ = false;
       begin_frame_source_->RemoveObserver(this);
+      // A missed BeginFrame may be queued, so drop that too if we're going to
+      // stop listening.
+      missed_begin_frame_task_.Cancel();
     }
   }
 }

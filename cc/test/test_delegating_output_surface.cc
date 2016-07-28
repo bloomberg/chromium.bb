@@ -118,10 +118,12 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
       frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
+  bool synchronous = !display_->has_scheduler();
+
   surface_factory_->SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
       base::Bind(&TestDelegatingOutputSurface::DrawCallback,
-                 weak_ptrs_.GetWeakPtr()));
+                 weak_ptrs_.GetWeakPtr(), synchronous));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_)
     surface_factory_->RequestCopyOfSurface(delegated_surface_id_,
@@ -132,8 +134,17 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
     display_->DrawAndSwap();
 }
 
-void TestDelegatingOutputSurface::DrawCallback() {
-  client_->DidSwapBuffersComplete();
+void TestDelegatingOutputSurface::DrawCallback(bool synchronous) {
+  // This is the frame ack to unthrottle the next frame, not actually a notice
+  // that drawing is done.
+  if (synchronous) {
+    // For synchronous draws, this must be posted to a new stack because we are
+    // still the original call to SwapBuffers, and we want to leave that before
+    // saying that it is done.
+    OutputSurface::PostSwapBuffersComplete();
+  } else {
+    client_->DidSwapBuffersComplete();
+  }
 }
 
 void TestDelegatingOutputSurface::ForceReclaimResources() {
