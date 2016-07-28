@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -38,6 +39,8 @@ namespace content {
 namespace {
 
 base::FilePath GetFilePathForJSResource(const std::string& path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
+
   std::string binding_path = "gen/" + path + ".js";
 #if defined(OS_WIN)
   base::ReplaceChars(binding_path, "//", "\\", &binding_path);
@@ -53,6 +56,8 @@ bool got_message = false;
 // up the generated file from disk and returns it.
 bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
+
   if (id.find(".mojom") != std::string::npos) {
     std::string contents;
     CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
@@ -198,6 +203,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existance_check;
   const base::FilePath test_file_path(GetFilePathForJSResource(resource_path));
   if (base::PathExists(test_file_path))
     return true;

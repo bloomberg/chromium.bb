@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -60,13 +61,18 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
   base::FilePath test_path;
-  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
-  test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
-  test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
-  test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
 
-  // Sanity check the file name.
-  EXPECT_TRUE(base::PathExists(test_path));
+    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
+    test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
+    test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
+    test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));
+
+    // Sanity check the file name.
+    EXPECT_TRUE(base::PathExists(test_path));
+  }
+
   GURL test_url = net::FilePathToFileURL(test_path);
 
   GURL::Replacements replacements;

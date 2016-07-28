@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -102,7 +103,12 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
   void StopTracing() {
     CHECK(message_loop_runner_.get() == NULL)
         << "Calling StopTracing more than once";
-    trace_log_->SetDisabled();
+
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_thread_join_caused_by_test;
+      trace_log_->SetDisabled();
+    }
+
     message_loop_runner_ = new MessageLoopRunner;
     trace_log_->Flush(base::Bind(
         &WebRtcGetUserMediaBrowserTest::OnTraceDataCollected,

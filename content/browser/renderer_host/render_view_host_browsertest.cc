@@ -87,11 +87,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   EXPECT_EQ(1, observer.navigation_count());
 
   // But should be set to the original page when reading MHTML.
-  base::FilePath content_test_data_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &content_test_data_dir));
-  test_url = net::FilePathToFileURL(
-      content_test_data_dir.AppendASCII("google.mht"));
-  NavigateToURL(shell(), test_url);
+  NavigateToURL(shell(), GetTestUrl(nullptr, "google.mht"));
   EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
 }
 

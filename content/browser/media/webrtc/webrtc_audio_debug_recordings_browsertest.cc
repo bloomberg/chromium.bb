@@ -7,6 +7,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -173,8 +174,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   NavigateToURL(shell(), GURL(""));
 
   base::FilePath base_file;
-  ASSERT_TRUE(CreateTemporaryFile(&base_file));
-  base::DeleteFile(base_file, false);
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_creating_test_path;
+    ASSERT_TRUE(CreateTemporaryFile(&base_file));
+    base::DeleteFile(base_file, false);
+  }
 
   // This fakes the behavior of another open tab with webrtc-internals, and
   // enabling AEC dump in that tab, then disabling it.
@@ -190,14 +194,20 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
   base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
                                                             render_process_id);
-  EXPECT_FALSE(base::PathExists(aec_dump_file));
-  base::DeleteFile(aec_dump_file, false);
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    EXPECT_FALSE(base::PathExists(aec_dump_file));
+    base::DeleteFile(aec_dump_file, false);
+  }
 
   // Verify that the expected input audio file doesn't exist.
   base::FilePath input_audio_file =
       GetExpectedInputAudioFileName(base_file, render_process_id);
-  EXPECT_FALSE(base::PathExists(input_audio_file));
-  base::DeleteFile(input_audio_file, false);
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    EXPECT_FALSE(base::PathExists(input_audio_file));
+    base::DeleteFile(input_audio_file, false);
+  }
 }
 
 // Timing out on ARM linux bot: http://crbug.com/238490

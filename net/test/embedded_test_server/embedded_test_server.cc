@@ -52,6 +52,7 @@ EmbeddedTestServer::EmbeddedTestServer(Type type)
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (is_using_ssl_) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_importing_test_cert;
     TestRootCerts* root_certs = TestRootCerts::GetInstance();
     base::FilePath certs_dir(GetTestCertsDirectory());
     root_certs->AddFromFile(certs_dir.AppendASCII("root_ca_cert.pem"));
@@ -63,6 +64,13 @@ EmbeddedTestServer::~EmbeddedTestServer() {
 
   if (Started() && !ShutdownAndWaitUntilComplete()) {
     LOG(ERROR) << "EmbeddedTestServer failed to shut down.";
+  }
+
+  {
+    // Thread::Join induced by test code should cause an assert.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+
+    io_thread_.reset();
   }
 }
 
@@ -118,6 +126,7 @@ bool EmbeddedTestServer::InitializeAndListen() {
 }
 
 void EmbeddedTestServer::InitializeSSLServerContext() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_ssl_initialization;
   base::FilePath certs_dir(GetTestCertsDirectory());
   std::string cert_name = GetCertificateName();
 
@@ -258,6 +267,8 @@ std::string EmbeddedTestServer::GetCertificateName() const {
 scoped_refptr<X509Certificate> EmbeddedTestServer::GetCertificate() const {
   DCHECK(is_using_ssl_);
   base::FilePath certs_dir(GetTestCertsDirectory());
+
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_importing_test_cert;
   return ImportCertFromFile(certs_dir, GetCertificateName());
 }
 

@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_launcher.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_process_host.h"
@@ -79,6 +80,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
     return;
 #endif
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::CommandLine new_test =
@@ -120,6 +122,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_BrowserCrash) {
 
 // Tests that browser tests print the callstack on asserts.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::CommandLine new_test =

@@ -37,12 +37,18 @@ class WebContents;
 // The file for the tests is all located in
 // content/test/data/dir/<file>
 // The returned path is FilePath format.
+//
+// A null |dir| indicates the root directory - i.e.
+// content/test/data/<file>
 base::FilePath GetTestFilePath(const char* dir, const char* file);
 
 // Generate the URL for testing a particular test.
 // HTML for the tests is all located in
 // test_root_directory/dir/<file>
 // The returned path is GURL format.
+//
+// A null |dir| indicates the root directory - i.e.
+// content/test/data/<file>
 GURL GetTestUrl(const char* dir, const char* file);
 
 // Navigates |window| to |url|, blocking until the navigation finishes.

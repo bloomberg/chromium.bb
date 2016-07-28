@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -684,13 +685,19 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "note.html");
   base::FilePath xml_file_path = GetTestFilePath("dom_serializer", "note.xml");
-  // Read original contents for later comparison.
+
   std::string original_contents;
-  ASSERT_TRUE(base::ReadFileToString(xml_file_path, &original_contents));
+  {
+    // Read original contents for later comparison.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verifications;
+    ASSERT_TRUE(base::ReadFileToString(xml_file_path, &original_contents));
+  }
+
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
   GURL xml_file_url = net::FilePathToFileURL(xml_file_path);
   ASSERT_TRUE(file_url.SchemeIsFile());
+
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
@@ -704,9 +711,14 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
 IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
-  // Read original contents for later comparison .
+
   std::string original_contents;
-  ASSERT_TRUE(base::ReadFileToString(page_file_path, &original_contents));
+  {
+    // Read original contents for later comparison .
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verifications;
+    ASSERT_TRUE(base::ReadFileToString(page_file_path, &original_contents));
+  }
+
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
   ASSERT_TRUE(file_url.SchemeIsFile());

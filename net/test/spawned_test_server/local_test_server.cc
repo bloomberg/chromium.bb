@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -94,6 +95,8 @@ bool LocalTestServer::Start() {
 }
 
 bool LocalTestServer::StartInBackground() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_code;
+
   // Get path to Python server script.
   base::FilePath testserver_path;
   if (!GetTestServerPath(&testserver_path))

@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/byte_stream.h"
@@ -654,10 +655,13 @@ class DownloadContentTest : public ContentBrowserTest {
                   const int64_t file_size) {
     std::string file_contents;
 
-    bool read = base::ReadFileToString(path, &file_contents);
-    EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
-    if (!read)
-      return false;  // Couldn't read the file.
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+      bool read = base::ReadFileToString(path, &file_contents);
+      EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
+      if (!read)
+        return false;  // Couldn't read the file.
+    }
 
     // Note: we don't handle really large files (more than size_t can hold)
     // so we will fail in that case.
@@ -684,9 +688,15 @@ class DownloadContentTest : public ContentBrowserTest {
     return observer->WaitForFinished();
   }
 
+  static bool PathExists(const base::FilePath& path) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+    return base::PathExists(path);
+  }
+
   static void ReadAndVerifyFileContents(int seed,
                                         int64_t expected_size,
                                         const base::FilePath& path) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     ASSERT_TRUE(file.IsValid());
     int64_t file_length = file.GetLength();
@@ -1385,8 +1395,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   WaitForInterrupt(download);
 
   // Delete the intermediate file.
-  ASSERT_TRUE(base::PathExists(download->GetFullPath()));
-  ASSERT_TRUE(base::DeleteFile(download->GetFullPath(), false));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_testing;
+    ASSERT_TRUE(PathExists(download->GetFullPath()));
+    ASSERT_TRUE(base::DeleteFile(download->GetFullPath(), false));
+  }
 
   parameters.ClearInjectedErrors();
   request_handler.StartServing(parameters);
@@ -1587,14 +1600,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
 
   base::FilePath intermediate_path = download->GetFullPath();
   ASSERT_FALSE(intermediate_path.empty());
-  ASSERT_TRUE(base::PathExists(intermediate_path));
+  ASSERT_TRUE(PathExists(intermediate_path));
 
   download->Cancel(true /* user_cancel */);
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
 
   // The intermediate file should now be gone.
-  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
   EXPECT_TRUE(download->GetFullPath().empty());
 }
 
@@ -1609,14 +1622,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveInterruptedDownload) {
 
   base::FilePath intermediate_path = download->GetFullPath();
   ASSERT_FALSE(intermediate_path.empty());
-  ASSERT_TRUE(base::PathExists(intermediate_path));
+  ASSERT_TRUE(PathExists(intermediate_path));
 
   download->Remove();
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
 
   // The intermediate file should now be gone.
-  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveCompletedDownload) {
@@ -1632,13 +1645,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveCompletedDownload) {
 
   // The target path should exist.
   base::FilePath target_path(download->GetTargetFilePath());
-  EXPECT_TRUE(base::PathExists(target_path));
+  EXPECT_TRUE(PathExists(target_path));
   download->Remove();
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
 
   // The file should still exist.
-  EXPECT_TRUE(base::PathExists(target_path));
+  EXPECT_TRUE(PathExists(target_path));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
@@ -1653,7 +1666,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
 
   base::FilePath intermediate_path(download->GetFullPath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(base::PathExists(intermediate_path));
+  EXPECT_TRUE(PathExists(intermediate_path));
 
   // Resume and remove download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
@@ -1676,7 +1689,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
   parameters.on_start_handler.Reset();
@@ -1703,7 +1716,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
 
   base::FilePath intermediate_path(download->GetFullPath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(base::PathExists(intermediate_path));
+  EXPECT_TRUE(PathExists(intermediate_path));
 
   // Resume and cancel download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
@@ -1727,7 +1740,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   RunAllPendingInMessageLoop(BrowserThread::IO);
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(base::PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
   parameters.on_start_handler.Reset();
@@ -1755,8 +1768,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumedDownload) {
   base::FilePath intermediate_path(download->GetFullPath());
   base::FilePath target_path(download->GetTargetFilePath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(base::PathExists(intermediate_path));
-  EXPECT_FALSE(base::PathExists(target_path));
+  EXPECT_TRUE(PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(target_path));
 
   // Resume and remove download. We don't expect OnDownloadCreated() calls.
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
@@ -1770,8 +1783,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumedDownload) {
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(base::PathExists(intermediate_path));
-  EXPECT_FALSE(base::PathExists(target_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
@@ -1788,8 +1801,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
   base::FilePath intermediate_path(download->GetFullPath());
   base::FilePath target_path(download->GetTargetFilePath());
   ASSERT_FALSE(intermediate_path.empty());
-  EXPECT_TRUE(base::PathExists(intermediate_path));
-  EXPECT_FALSE(base::PathExists(target_path));
+  EXPECT_TRUE(PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(target_path));
 
   // Resume and remove download. We don't expect OnDownloadCreated() calls.
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
@@ -1803,8 +1816,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::FILE);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(base::PathExists(intermediate_path));
-  EXPECT_FALSE(base::PathExists(target_path));
+  EXPECT_FALSE(PathExists(intermediate_path));
+  EXPECT_FALSE(PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
@@ -1832,7 +1845,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -1874,9 +1887,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
   std::vector<char> buffer(kIntermediateSize);
   request_handler.GetPatternBytes(
       parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
-  ASSERT_EQ(
-      kIntermediateSize,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
+                                                 buffer.data(), buffer.size()));
+  }
 
   url_chain.push_back(request_handler.url());
 
@@ -1892,7 +1907,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -1921,9 +1936,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::vector<char> buffer(kIntermediateSize);
   request_handler.GetPatternBytes(
       parameters.pattern_generator_seed + 1, 0, buffer.size(), buffer.data());
-  ASSERT_EQ(
-      kIntermediateSize,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
+                                                 buffer.data(), buffer.size()));
+  }
 
   url_chain.push_back(request_handler.url());
 
@@ -1939,7 +1956,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -1968,9 +1985,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::vector<char> buffer(kIntermediateSize);
   request_handler.GetPatternBytes(
       parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
-  ASSERT_EQ(
-      kIntermediateSize,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
+                                                 buffer.data(), buffer.size()));
+  }
   // SHA-256 hash of the pattern bytes in buffer.
   static const uint8_t kPartialHash[] = {
       0x77, 0x14, 0xfd, 0x83, 0x06, 0x15, 0x10, 0x7a, 0x47, 0x15, 0xd3,
@@ -1992,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -2026,9 +2045,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
 
   const int kIntermediateSize = 1331;
   std::vector<char> buffer(kIntermediateSize);
-  ASSERT_EQ(
-      kIntermediateSize,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
+                                                 buffer.data(), buffer.size()));
+  }
   // SHA-256 hash of the expected pattern bytes in buffer. This doesn't match
   // the current contents of the intermediate file which should all be 0.
   static const uint8_t kPartialHash[] = {
@@ -2051,7 +2072,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -2101,9 +2122,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
   std::vector<char> buffer(kIntermediateSize - 100);
   request_handler.GetPatternBytes(
       parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
-  ASSERT_EQ(
-      kIntermediateSize - 100,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(
+        kIntermediateSize - 100,
+        base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  }
   url_chain.push_back(request_handler.url());
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
@@ -2118,7 +2142,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());
@@ -2166,9 +2190,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
   std::vector<char> buffer(kIntermediateSize + 100);
   request_handler.GetPatternBytes(
       parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
-  ASSERT_EQ(
-      kIntermediateSize + 100,
-      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    ASSERT_EQ(
+        kIntermediateSize + 100,
+        base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  }
   url_chain.push_back(request_handler.url());
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
@@ -2183,7 +2210,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
   download->Resume();
   WaitForCompletion(download);
 
-  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
                             download->GetTargetFilePath());

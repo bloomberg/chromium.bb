@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
@@ -20,6 +21,7 @@
 #include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 
@@ -139,11 +141,12 @@ void DumpAccessibilityEventsTest::OnDiffFailed() {
 
 void DumpAccessibilityEventsTest::RunEventTest(
     const base::FilePath::CharType* file_path) {
-  base::FilePath dir_test_data;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(dir_test_data.AppendASCII("accessibility")
-      .AppendASCII("event"));
-  ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+  base::FilePath test_path = GetTestFilePath("accessibility", "event");
+
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+  }
 
   base::FilePath event_file = test_path.Append(base::FilePath(file_path));
   RunTest(event_file, "accessibility/event");

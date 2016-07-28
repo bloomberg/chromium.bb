@@ -441,6 +441,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
   EXPECT_TRUE(NavigateToURL(shell(), form_url));
 
   // Prepare a file to upload.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
   base::ScopedTempDir temp_dir;
   base::FilePath file_path;
   std::string file_content("test-file-content");

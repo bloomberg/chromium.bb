@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
@@ -425,9 +426,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   base::FilePath log_file(FILE_PATH_LITERAL("LOG"));
   base::FilePath log_file_path =
       GetContext()->data_path().Append(leveldb_dir).Append(log_file);
-  int64_t size;
-  EXPECT_TRUE(base::GetFileSize(log_file_path, &size));
-  EXPECT_GT(size, 0);
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    int64_t size;
+    EXPECT_TRUE(base::GetFileSize(log_file_path, &size));
+    EXPECT_GT(size, 0);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
