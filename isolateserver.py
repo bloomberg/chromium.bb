@@ -28,6 +28,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from libs import arfile
 from utils import file_path
 from utils import fs
 from utils import logging_utils
@@ -2071,13 +2072,28 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
             fullpath = os.path.join(outdir, filepath)
 
             with cache.getfileobj(digest) as srcfileobj:
-              file_mode = props.get('m')
-              if file_mode:
-                # Ignore all bits apart from the user
-                file_mode &= 0700
-              putfile(
-                  srcfileobj, fullpath, file_mode,
-                  use_symlink=use_symlinks)
+              filetype = props.get('t', 'basic')
+
+              if filetype == 'basic':
+                file_mode = props.get('m')
+                if file_mode:
+                  # Ignore all bits apart from the user
+                  file_mode &= 0700
+                putfile(
+                    srcfileobj, fullpath, file_mode,
+                    use_symlink=use_symlinks)
+
+              elif filetype == 'ar':
+                basedir = os.path.dirname(fullpath)
+                extractor = arfile.ArFileReader(srcfileobj, fullparse=False)
+                for ai, ifd in extractor:
+                  fp = os.path.normpath(os.path.join(basedir, ai.name))
+                  file_path.ensure_tree(os.path.dirname(fp))
+                  putfile(ifd, fp, 0700, ai.size)
+
+              else:
+                raise isolated_format.IsolatedError(
+                      'Unknown file type %r', filetype)
 
           # Report progress.
           duration = time.time() - last_update

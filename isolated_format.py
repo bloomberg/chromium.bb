@@ -18,7 +18,7 @@ from utils import tools
 
 
 # Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.4'
+ISOLATED_FILE_VERSION = '1.5'
 
 
 # Chunk size to use when doing disk I/O.
@@ -36,6 +36,8 @@ SUPPORTED_ALGOS = {
 
 # Used for serialization.
 SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
+
+SUPPORTED_FILE_TYPES = ['basic', 'ar']
 
 
 class IsolatedError(ValueError):
@@ -506,6 +508,10 @@ def load_isolated(content, algo):
           elif subsubkey == 's':
             if not isinstance(subsubvalue, (int, long)):
               raise IsolatedError('Expected int or long, got %r' % subsubvalue)
+          elif subsubkey == 't':
+            if subsubvalue not in SUPPORTED_FILE_TYPES:
+              raise IsolatedError('Expected one of \'%s\', got %r' % (
+                  ', '.join(sorted(SUPPORTED_FILE_TYPES)), subsubvalue))
           else:
             raise IsolatedError('Unknown subsubkey %s' % subsubkey)
         if bool('h' in subvalue) == bool('l' in subvalue):

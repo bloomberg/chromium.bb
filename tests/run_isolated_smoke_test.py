@@ -67,6 +67,48 @@ CONTENTS = {
           print >> sys.stderr, 'Unexpected content: %s' % actual
           sys.exit(1)
       print('Success')""",
+  'archive': (
+      '!<arch>\n'
+      '#1/5            '
+      '1447140471  1000  1000  100640  '
+      '12        '
+      '\x60\n'
+      'a/foo'
+      'Content'
+      'b               '
+      '1447140471  1000  1000  100640  '
+      '12        '
+      '\x60\n'
+      'More content'),
+  'archive_files.py': """if True:
+      import os, sys
+      ROOT_DIR = os.path.dirname(os.path.abspath(
+          __file__.decode(sys.getfilesystemencoding())))
+      expected = ['a', 'archive_files.py', 'b']
+      actual = sorted(os.listdir(ROOT_DIR))
+      if expected != actual:
+        print >> sys.stderr, 'Expected list doesn\\'t match:'
+        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        sys.exit(1)
+      expected = ['foo']
+      actual = sorted(os.listdir(os.path.join(ROOT_DIR, 'a')))
+      if expected != actual:
+        print >> sys.stderr, 'Expected list doesn\\'t match:'
+        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        sys.exit(2)
+      # Check that a/foo has right contents.
+      with open(os.path.join(ROOT_DIR, 'a/foo'), 'rb') as f:
+        d = f.read()
+        if d != 'Content':
+          print >> sys.stderr, 'a/foo contained %r' % d
+          sys.exit(3)
+      # Check that b has right contents.
+      with open(os.path.join(ROOT_DIR, 'b'), 'rb') as f:
+        d = f.read()
+        if d != 'More content':
+          print >> sys.stderr, 'b contained %r' % d
+          sys.exit(4)
+      print('Success')""",
 }
 
 
@@ -107,6 +149,20 @@ CONTENTS['manifest2.isolated'] = json.dumps(
       'includes': [
         isolateserver_mock.hash_content(CONTENTS['manifest1.isolated']),
       ],
+    })
+
+
+CONTENTS['archive.isolated'] = json.dumps(
+    {
+      'command': ['python', 'archive_files.py'],
+      'files': {
+        'archive': {
+          'h': isolateserver_mock.hash_content(CONTENTS['archive']),
+          's': len(CONTENTS['archive']),
+          't': 'ar',
+        },
+        'archive_files.py': file_meta('archive_files.py'),
+      },
     })
 
 
@@ -325,6 +381,22 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('manifest2.isolated'),
       self._store('repeated_files.py'),
       self._store('repeated_files.isolated'),
+    ]
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
+    self.assertEqual('', err)
+    self.assertEqual('Success\n', out)
+    self.assertEqual(0, returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEqual(sorted(expected), actual)
+
+  def test_archive(self):
+    # Loads an .isolated that includes an ar archive.
+    isolated_hash = self._store('archive.isolated')
+    expected = [
+      'state.json',
+      isolated_hash,
+      self._store('archive'),
+      self._store('archive_files.py'),
     ]
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', err)
