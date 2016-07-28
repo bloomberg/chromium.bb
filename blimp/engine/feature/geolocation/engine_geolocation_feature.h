@@ -10,11 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "blimp/engine/feature/geolocation/blimp_location_provider.h"
 #include "blimp/net/blimp_message_processor.h"
-
-namespace device {
-class GeolocationDelegate;
-struct Geoposition;
-}
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/location_provider.h"
+#include "content/public/common/geoposition.h"
 
 namespace blimp {
 namespace engine {
@@ -30,14 +28,14 @@ class EngineGeolocationFeature : public BlimpMessageProcessor,
   void set_outgoing_message_processor(
       std::unique_ptr<BlimpMessageProcessor> message_processor);
 
-  device::GeolocationDelegate* CreateGeolocationDelegate();
+  content::GeolocationDelegate* CreateGeolocationDelegate();
 
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
-  void NotifyCallback(const device::Geoposition& position);
+  void NotifyCallback(const content::Geoposition& position);
 
   // BlimpLocationProvider::Delegate implementation.
   void RequestAccuracy(

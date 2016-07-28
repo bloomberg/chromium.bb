@@ -20,15 +20,15 @@
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "device/geolocation/access_token_store.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,11 +41,11 @@
 namespace android_webview {
 namespace {
 
-class AwAccessTokenStore : public device::AccessTokenStore {
+class AwAccessTokenStore : public content::AccessTokenStore {
  public:
   AwAccessTokenStore() { }
 
-  // device::AccessTokenStore implementation
+  // content::AccessTokenStore implementation
   void LoadAccessTokens(const LoadAccessTokensCallback& request) override {
     AccessTokenStore::AccessTokenMap access_token_map;
     // AccessTokenMap and net::URLRequestContextGetter not used on Android,
@@ -62,11 +62,11 @@ class AwAccessTokenStore : public device::AccessTokenStore {
 };
 
 // A provider of Geolocation services to override AccessTokenStore.
-class AwGeolocationDelegate : public device::GeolocationDelegate {
+class AwGeolocationDelegate : public content::GeolocationDelegate {
  public:
   AwGeolocationDelegate() = default;
 
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
+  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
     return new AwAccessTokenStore();
   }
 
@@ -127,7 +127,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
 
-  device::GeolocationProvider::SetGeolocationDelegate(
+  content::GeolocationProvider::SetGeolocationDelegate(
       new AwGeolocationDelegate());
 
   AwDevToolsDiscoveryProvider::Install();

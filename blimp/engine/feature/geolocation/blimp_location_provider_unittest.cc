@@ -31,11 +31,11 @@ class BlimpLocationProviderTest : public testing::Test {
   void SetUp() override {}
 
   MOCK_METHOD2(OnLocationUpdate,
-               void(const device::LocationProvider* provider,
-                    const device::Geoposition& geoposition));
+               void(const content::LocationProvider* provider,
+                    const content::Geoposition& geoposition));
 
  protected:
-  device::LocationProvider::LocationProviderUpdateCallback mock_callback_;
+  content::LocationProvider::LocationProviderUpdateCallback mock_callback_;
   std::unique_ptr<MockBlimpLocationProviderDelegate> delegate_;
   std::unique_ptr<BlimpLocationProvider> location_provider_;
 
@@ -137,12 +137,12 @@ TEST_F(BlimpLocationProviderTest, OnPermissionGrantedHandlesNullDelegate) {
 }
 
 TEST_F(BlimpLocationProviderTest, SetUpdateCallbackPropagatesCallback) {
-  base::Callback<void(const device::Geoposition&)> callback;
+  base::Callback<void(const content::Geoposition&)> callback;
   EXPECT_CALL(*delegate_, SetUpdateCallback(_)).WillOnce(SaveArg<0>(&callback));
   EXPECT_CALL(*this, OnLocationUpdate(location_provider_.get(), _)).Times(1);
 
   location_provider_->SetUpdateCallback(mock_callback_);
-  callback.Run(device::Geoposition());
+  callback.Run(content::Geoposition());
 }
 
 TEST_F(BlimpLocationProviderTest, SetUpdateCallbackHandlesNullDelegate) {

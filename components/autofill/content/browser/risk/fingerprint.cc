@@ -30,15 +30,15 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/font_list_async.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/geoposition.h"
 #include "content/public/common/webplugininfo.h"
-#include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
 #include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -200,7 +200,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(std::unique_ptr<base::ListValue> fonts);
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
-  void OnGotGeoposition(const device::Geoposition& geoposition);
+  void OnGotGeoposition(const content::Geoposition& geoposition);
 
   // If all of the asynchronous data has been loaded, calls |callback_| with
   // the fingerprint data.
@@ -234,7 +234,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   std::unique_ptr<base::ListValue> fonts_;
   std::vector<content::WebPluginInfo> plugins_;
   bool waiting_on_plugins_;
-  device::Geoposition geoposition_;
+  content::Geoposition geoposition_;
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
   // if not all asynchronous data has been loaded.
@@ -244,7 +244,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   base::Callback<void(std::unique_ptr<Fingerprint>)> callback_;
 
   // The callback used as an "observer" of the GeolocationProvider.
-  std::unique_ptr<device::GeolocationProvider::Subscription>
+  std::unique_ptr<content::GeolocationProvider::Subscription>
       geolocation_subscription_;
 
   // For invalidating asynchronous callbacks that might arrive after |this|
@@ -310,7 +310,7 @@ FingerprintDataLoader::FingerprintDataLoader(
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Load geolocation data.
-  geolocation_subscription_ = device::GeolocationProvider::GetInstance()->
+  geolocation_subscription_ = content::GeolocationProvider::GetInstance()->
       AddLocationUpdateCallback(
           base::Bind(&FingerprintDataLoader::OnGotGeoposition,
                       weak_ptr_factory_.GetWeakPtr()),
@@ -340,12 +340,12 @@ void FingerprintDataLoader::OnGotPlugins(
 }
 
 void FingerprintDataLoader::OnGotGeoposition(
-    const device::Geoposition& geoposition) {
+    const content::Geoposition& geoposition) {
   DCHECK(!geoposition_.Validate());
 
   geoposition_ = geoposition;
   DCHECK(geoposition_.Validate() ||
-         geoposition_.error_code != device::Geoposition::ERROR_CODE_NONE);
+         geoposition_.error_code != content::Geoposition::ERROR_CODE_NONE);
   geolocation_subscription_.reset();
 
   MaybeFillFingerprint();
@@ -360,7 +360,7 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
        fonts_ &&
        !waiting_on_plugins_ &&
        (geoposition_.Validate() ||
-        geoposition_.error_code != device::Geoposition::ERROR_CODE_NONE))) {
+        geoposition_.error_code != content::Geoposition::ERROR_CODE_NONE))) {
     FillFingerprint();
     delete this;
   }
@@ -410,7 +410,7 @@ void FingerprintDataLoader::FillFingerprint() {
 
   // TODO(isherman): Record more user behavior data.
   if (geoposition_.Validate() &&
-      geoposition_.error_code == device::Geoposition::ERROR_CODE_NONE) {
+      geoposition_.error_code == content::Geoposition::ERROR_CODE_NONE) {
     Fingerprint::UserCharacteristics::Location* location =
         fingerprint->mutable_user_characteristics()->mutable_location();
     location->set_altitude(geoposition_.altitude);

@@ -73,6 +73,7 @@
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_client.h"

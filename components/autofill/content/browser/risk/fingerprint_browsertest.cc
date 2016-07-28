@@ -12,11 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
+#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/geoposition.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
-#include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -186,7 +186,7 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
 
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
-  device::Geoposition position;
+  content::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;
   position.altitude = kAltitude;
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   position.timestamp =
       base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(kGeolocationTime);
-  device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
+  content::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 
   blink::WebScreenInfo screen_info;

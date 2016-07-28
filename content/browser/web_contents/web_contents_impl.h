@@ -57,6 +57,7 @@ class BrowserPluginGuest;
 class DateTimeChooserAndroid;
 class DownloadItem;
 class FindRequestManager;
+class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class LoaderIOThreadNotifier;
@@ -453,7 +454,7 @@ class CONTENT_EXPORT WebContentsImpl
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
-  device::GeolocationServiceContext* GetGeolocationServiceContext() override;
+  GeolocationServiceContext* GetGeolocationServiceContext() override;
   WakeLockServiceContext* GetWakeLockServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
@@ -1347,8 +1348,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Whether the last JavaScript dialog shown was suppressed. Used for testing.
   bool last_dialog_suppressed_;
 
-  std::unique_ptr<device::GeolocationServiceContext>
-      geolocation_service_context_;
+  std::unique_ptr<GeolocationServiceContext> geolocation_service_context_;
 
   std::unique_ptr<WakeLockServiceContext> wake_lock_service_context_;
 

@@ -13,7 +13,7 @@
 namespace chromeos {
 
 // This structure represents Google Maps Geolocation response.
-// Based on device/geolocation/geoposition.h .
+// Based on content/public/common/geoposition.h .
 struct CHROMEOS_EXPORT Geoposition {
   // Geolocation API client status.
   // (Server status is reported in "error_code" field.)

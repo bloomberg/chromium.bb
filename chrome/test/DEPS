@@ -7,7 +7,6 @@ include_rules = [
   "+chromeos",
   "+components",
   "+device/bluetooth/dbus",
-  "+device/geolocation",
   "+extensions",
   "+mojo",
   "+services",

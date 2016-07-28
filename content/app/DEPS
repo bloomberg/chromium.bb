@@ -3,7 +3,6 @@ include_rules = [
   "+content",
   "+device/battery",
   "+device/bluetooth",
-  "+device/geolocation",
   "+device/power_save_blocker",
   "+device/usb",
   "+device/vibration",
