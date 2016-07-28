@@ -17,11 +17,8 @@ extern const char kHistogramCommit[];
 extern const char kHistogramFirstLayout[];
 extern const char kHistogramFirstTextPaint[];
 extern const char kHistogramDomContentLoaded[];
-extern const char kHistogramDomLoadingToDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
-extern const char kHistogramFirstContentfulPaintImmediate[];
-extern const char kHistogramDomLoadingToFirstContentfulPaint[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
 
