@@ -560,7 +560,7 @@ InspectorTest.checkUILocation = function(uiSourceCode, lineNumber, columnNumber,
 
 InspectorTest.scriptFormatter = function()
 {
-    return self.runtime.instancesPromise(WebInspector.SourcesView.EditorAction).then(function(editorActions) {
+    return self.runtime.allInstances(WebInspector.SourcesView.EditorAction).then(function(editorActions) {
         for (var i = 0; i < editorActions.length; ++i) {
             if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
                 return editorActions[i];
