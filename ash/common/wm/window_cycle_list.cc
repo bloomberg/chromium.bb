@@ -38,6 +38,26 @@ WmWindow* GetWindowBelow(WmWindow* window) {
   return (iter != children.begin()) ? *(iter - 1) : nullptr;
 }
 
+// This background paints a |Painter| but fills the view's layer's size rather
+// than the view's size.
+class LayerFillBackgroundPainter : public views::Background {
+ public:
+  explicit LayerFillBackgroundPainter(std::unique_ptr<views::Painter> painter)
+      : painter_(std::move(painter)) {}
+
+  ~LayerFillBackgroundPainter() override {}
+
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    views::Painter::PaintPainterAt(canvas, painter_.get(),
+                                   gfx::Rect(view->layer()->size()));
+  }
+
+ private:
+  std::unique_ptr<views::Painter> painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerFillBackgroundPainter);
+};
+
 // This class restores and moves a window to the front of the stacking order for
 // the duration of the class's scope.
 class ScopedShowWindow : public WmWindowObserver {
@@ -228,10 +248,13 @@ class WindowCycleView : public views::View {
     }
 
     const float kHighlightCornerRadius = 4;
-    highlight_view_->set_background(views::Background::CreateBackgroundPainter(
-        true, views::Painter::CreateRoundRectWith1PxBorderPainter(
-                  SkColorSetA(SK_ColorWHITE, 0x4D),
-                  SkColorSetA(SK_ColorWHITE, 0x33), kHighlightCornerRadius)));
+    // The background needs to be painted to fill the layer, not the View,
+    // because the layer animates bounds changes but the View's bounds change
+    // immediately.
+    highlight_view_->set_background(new LayerFillBackgroundPainter(
+        base::WrapUnique(views::Painter::CreateRoundRectWith1PxBorderPainter(
+            SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
+            kHighlightCornerRadius))));
     highlight_view_->SetPaintToLayer(true);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
     // The selection highlight also animates all bounds changes and never
