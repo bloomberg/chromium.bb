@@ -51,7 +51,6 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/input_method_event_handler.h"
-#include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
@@ -596,7 +595,6 @@ Shell::~Shell() {
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
-  RemovePreTargetHandler(keyboard_metrics_filter_.get());
   RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(modality_filter_.get());
 
@@ -888,9 +886,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   system_gesture_filter_.reset(new SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());
-
-  keyboard_metrics_filter_.reset(new KeyboardUMAEventFilter);
-  AddPreTargetHandler(keyboard_metrics_filter_.get());
 
 #if defined(OS_CHROMEOS)
   sticky_keys_controller_.reset(new StickyKeysController);

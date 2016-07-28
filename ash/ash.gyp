@@ -598,8 +598,6 @@
       'host/transformer_helper.h',
       'ime/input_method_event_handler.cc',
       'ime/input_method_event_handler.h',
-      'keyboard_uma_event_filter.cc',
-      'keyboard_uma_event_filter.h',
       'link_handler_model.cc',
       'link_handler_model.h',
       'link_handler_model_factory.cc',

@@ -95,7 +95,6 @@ class EventTransformationHandler;
 class FirstRunHelper;
 class GPUSupport;
 class HighContrastController;
-class KeyboardUMAEventFilter;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
@@ -581,9 +580,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.
   std::unique_ptr<OverlayEventFilter> overlay_filter_;
-
-  // An event filter for logging keyboard-related metrics.
-  std::unique_ptr<KeyboardUMAEventFilter> keyboard_metrics_filter_;
 
   // An event filter which handles moving and resizing windows.
   std::unique_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;

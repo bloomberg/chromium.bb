@@ -19048,7 +19048,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InputMethod.VirtualKeyboard.GestureTypingEvent"
     enum="IMEGestureTypingEvent">
-  <owner>stevet@chromium.org</owner>
+  <owner>girard@chromium.org</owner>
   <summary>Text input events related to gesture typing.</summary>
 </histogram>
 
@@ -19087,7 +19087,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InputMethod.VirtualKeyboard.TapCount">
-  <owner>stevet@chromium.org</owner>
+  <owner>girard@chromium.org</owner>
   <summary>
     The number of times the virtual keyboard was tapped while the virtual
     keyboard was alive. Recorded when the virtual keyboard is closed.
@@ -20148,7 +20148,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Keyboard.KeystrokeDeltas" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 07/2016 in crbug.com/631204 with KeyboardUmaEventFilter removal.
+  </obsolete>
+  <owner>girard@chromium.org</owner>
   <summary>
     The time between keystrokes in Aura text fields. The only keystrokes that
     are measured are ones that produce a printable character and are not over 5
