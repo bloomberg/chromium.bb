@@ -114,9 +114,15 @@ void ScheduledAction::execute(LocalFrame* frame)
     ScriptState::Scope scope(m_scriptState.get());
     if (!m_function.isEmpty()) {
         DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
+        v8::Local<v8::Function> function = m_function.newLocal(m_scriptState->isolate());
+        ScriptState* scriptStateForFunc = ScriptState::from(function->CreationContext());
+        if (!scriptStateForFunc->contextIsValid()) {
+            DVLOG(1) << "ScheduledAction::execute " << this << ": function's context is empty";
+            return;
+        }
         Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
-        V8ScriptRunner::callFunction(m_function.newLocal(m_scriptState->isolate()), frame->document(), m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
+        V8ScriptRunner::callFunction(function, frame->document(), m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
     } else {
         DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
         frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));
@@ -128,12 +134,23 @@ void ScheduledAction::execute(LocalFrame* frame)
 void ScheduledAction::execute(WorkerGlobalScope* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
-    ASSERT(m_scriptState->contextIsValid());
+
+    if (!m_scriptState->contextIsValid()) {
+        DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
+        return;
+    }
+
     if (!m_function.isEmpty()) {
         ScriptState::Scope scope(m_scriptState.get());
+        v8::Local<v8::Function> function = m_function.newLocal(m_scriptState->isolate());
+        ScriptState* scriptStateForFunc = ScriptState::from(function->CreationContext());
+        if (!scriptStateForFunc->contextIsValid()) {
+            DVLOG(1) << "ScheduledAction::execute " << this << ": function's context is empty";
+            return;
+        }
         Vector<v8::Local<v8::Value>> info;
         createLocalHandlesForArgs(&info);
-        V8ScriptRunner::callFunction(m_function.newLocal(m_scriptState->isolate()), worker, m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
+        V8ScriptRunner::callFunction(function, worker, m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
     } else {
         worker->scriptController()->evaluate(m_code);
     }
