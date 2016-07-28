@@ -572,10 +572,7 @@ class ReportStage(generic_stages.BuilderStage,
       db: CIDBConnection instance.
 
     Returns:
-      If an index file is uploaded then a dict is returned where each value
-        is the same (the URL for the uploaded HTML index) and the keys are
-        the boards it applies to, including None if applicable.  If no index
-        file is uploaded then this returns None.
+      The URL of the timeline is returned.
     """
     archive = builder_run.GetArchive()
     archive_path = archive.archive_path
@@ -597,6 +594,49 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Prepare html head.
     title = ('Build Stages Timeline: %s / %s (%s config)' %
+             (board_names, builder_run.GetVersion(), config.name))
+
+    commands.GenerateHtmlTimeline(timeline, rows, title=title)
+    commands.UploadArchivedFile(
+        archive_path, [archive.upload_url], os.path.basename(timeline),
+        debug=self._run.debug, acl=self.acl)
+    return os.path.join(archive.download_url_file, timeline_file)
+
+  def _UploadSlavesTimeline(self, builder_run, build_id, db):
+    """Upload an HTML timeline for the slaves at remote archive location.
+
+    Args:
+      builder_run: BuilderRun object for this run.
+      build_id: CIDB id for the master build.
+      db: CIDBConnection instance.
+
+    Returns:
+      The URL of the timeline is returned if slave builds exists.  If no
+        slave builds exists then this returns None.
+    """
+    archive = builder_run.GetArchive()
+    archive_path = archive.archive_path
+
+    config = builder_run.config
+    boards = config.boards
+    if boards:
+      board_names = ' '.join(boards)
+    else:
+      boards = [None]
+      board_names = '<no board>'
+
+    timeline_file = 'timeline-slaves.html'
+    timeline = os.path.join(archive_path, timeline_file)
+
+    # Gather information about this build from CIDB.
+    statuses = db.GetSlaveStatuses(build_id)
+    if statuses is None or len(statuses) == 0:
+      return None
+    rows = list(('%s - %s' % (s['build_config'], s['build_number']),
+                 s['start_time'], s['finish_time']) for s in statuses)
+
+    # Prepare html head.
+    title = ('Slave Builds Timeline: %s / %s (%s config)' %
              (board_names, builder_run.GetVersion(), config.name))
 
     commands.GenerateHtmlTimeline(timeline, rows, title=title)
@@ -674,6 +714,10 @@ class ReportStage(generic_stages.BuilderStage,
       if db is not None:
         timeline = self._UploadBuildStagesTimeline(builder_run, build_id, db)
         logging.PrintBuildbotLink('Build stages timeline', timeline)
+
+        timeline = self._UploadSlavesTimeline(builder_run, build_id, db)
+        if timeline is not None:
+          logging.PrintBuildbotLink('Slaves timeline', timeline)
 
       # Generate links to archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the link
