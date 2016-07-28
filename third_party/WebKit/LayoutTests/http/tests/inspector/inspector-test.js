@@ -902,7 +902,7 @@ InspectorTest.dumpLoadedModules = function(next)
     var modules = self.runtime._modules;
     modules.sort(moduleSorter);
     for (var i = 0; i < modules.length; ++i) {
-        if (modules[i]._loaded)
+        if (modules[i]._loadedForTest)
             InspectorTest.addResult("    " + modules[i]._descriptor.name);
     }
     if (next)

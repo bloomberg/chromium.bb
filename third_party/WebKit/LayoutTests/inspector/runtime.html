@@ -9,7 +9,7 @@ function test()
     {
         var modules = self.runtime._modules;
         for (var module of modules) {
-            if (module._loaded)
+            if (module._loadedForTest)
                 return module;
         }
 
