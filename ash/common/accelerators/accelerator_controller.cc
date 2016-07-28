@@ -199,6 +199,32 @@ void HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
   ime_control_delegate->HandleSwitchIme(accelerator);
 }
 
+bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
+                            const ui::Accelerator& previous_accelerator) {
+  if (accelerator.key_code() == ui::VKEY_LWIN) {
+    // If something else was pressed between the Search key (LWIN)
+    // being pressed and released, then ignore the release of the
+    // Search key.
+    if (previous_accelerator.type() != ui::ET_KEY_PRESSED ||
+        previous_accelerator.key_code() != ui::VKEY_LWIN) {
+      return false;
+    }
+
+    // When spoken feedback is enabled, we should neither toggle the list nor
+    // consume the key since Search+Shift is one of the shortcuts the a11y
+    // feature uses. crbug.com/132296
+    if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
+      return false;
+  }
+  return true;
+}
+
+void HandleToggleAppList(const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_LWIN)
+    base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
+  WmShell::Get()->ToggleAppList();
+}
+
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP2)
     base::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
@@ -633,6 +659,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandlePreviousIme(ime_control_delegate_.get());
     case SWITCH_IME:
       return CanHandleSwitchIme(ime_control_delegate_.get(), accelerator);
+    case TOGGLE_APP_LIST:
+      return CanHandleToggleAppList(accelerator, previous_accelerator);
     case WINDOW_CYCLE_SNAP_DOCK_LEFT:
     case WINDOW_CYCLE_SNAP_DOCK_RIGHT:
       return CanHandleWindowSnapOrDock();
@@ -774,6 +802,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SWITCH_IME:
       HandleSwitchIme(ime_control_delegate_.get(), accelerator);
+      break;
+    case TOGGLE_APP_LIST:
+      HandleToggleAppList(accelerator);
       break;
     case TOGGLE_FULLSCREEN:
       HandleToggleFullscreen(accelerator);

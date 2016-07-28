@@ -11,7 +11,6 @@
 
 #include "ash/accelerators/accelerator_commands_aura.h"
 #include "ash/common/accelerators/debug_commands.h"
-#include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
@@ -279,32 +278,6 @@ void HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
 }
 
-bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
-                            const ui::Accelerator& previous_accelerator) {
-  if (accelerator.key_code() == ui::VKEY_LWIN) {
-    // If something else was pressed between the Search key (LWIN)
-    // being pressed and released, then ignore the release of the
-    // Search key.
-    if (previous_accelerator.type() != ui::ET_KEY_PRESSED ||
-        previous_accelerator.key_code() != ui::VKEY_LWIN) {
-      return false;
-    }
-
-    // When spoken feedback is enabled, we should neither toggle the list nor
-    // consume the key since Search+Shift is one of the shortcuts the a11y
-    // feature uses. crbug.com/132296
-    if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
-      return false;
-  }
-  return true;
-}
-
-void HandleToggleAppList(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_LWIN)
-    base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
-  WmShell::Get()->ToggleAppList();
-}
-
 gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   // TODO(oshima): Consider adding a command line option to control
   // wallpaper images for testing.
@@ -426,7 +399,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
-    case TOGGLE_APP_LIST:
     case UNPIN:
       return true;
 
@@ -473,8 +445,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
       return accelerators::IsInternalDisplayZoomEnabled();
     case SHOW_MESSAGE_CENTER_BUBBLE:
       return CanHandleShowMessageCenterBubble();
-    case TOGGLE_APP_LIST:
-      return CanHandleToggleAppList(accelerator, previous_accelerator);
     case UNPIN:
       return CanHandleUnpin();
 
@@ -613,9 +583,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case TAKE_WINDOW_SCREENSHOT:
       HandleTakeWindowScreenshot(screenshot_delegate_.get());
-      break;
-    case TOGGLE_APP_LIST:
-      HandleToggleAppList(accelerator);
       break;
     case UNPIN:
       accelerators::Unpin();

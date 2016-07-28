@@ -48,7 +48,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
-    case TOGGLE_APP_LIST:
     case UNPIN:
       NOTIMPLEMENTED();
       return false;
