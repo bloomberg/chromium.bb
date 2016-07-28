@@ -419,11 +419,9 @@ TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
   GURL url = net::URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   NavigateAndCommit(url);
   for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
-    scoped_refptr<SavePackage> save_package(new SavePackage(contents()));
-    save_package->page_url_ = GURL(kSuggestedSaveNames[i].page_url);
-    save_package->title_ = kSuggestedSaveNames[i].page_title;
-
-    base::FilePath save_name = save_package->GetSuggestedNameForSaveAs(
+    base::FilePath save_name = SavePackage::GetSuggestedNameForSaveAs(
+        kSuggestedSaveNames[i].page_title,
+        GURL(kSuggestedSaveNames[i].page_url),
         kSuggestedSaveNames[i].ensure_html_extension, std::string());
     EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value()) <<
         "Test case " << i;

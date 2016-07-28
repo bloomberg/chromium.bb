@@ -303,9 +303,12 @@ class CONTENT_EXPORT SavePackage
   static GURL GetUrlToBeSaved(WebContents* web_contents);
 
   static base::FilePath CreateDirectoryOnFileThread(
+      const base::string16& title,
+      const GURL& page_url,
+      bool can_save_as_complete,
+      const std::string& mime_type,
       const base::FilePath& website_save_dir,
       const base::FilePath& download_save_dir,
-      const base::FilePath& suggested_filename,
       bool skip_dir_check);
   void ContinueGetSaveInfo(bool can_save_as_complete,
                            const base::FilePath& suggested_path);
@@ -335,7 +338,9 @@ class CONTENT_EXPORT SavePackage
 
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
-  base::FilePath GetSuggestedNameForSaveAs(
+  static base::FilePath GetSuggestedNameForSaveAs(
+      const base::string16& title,
+      const GURL& page_url,
       bool can_save_as_complete,
       const std::string& contents_mime_type);
 

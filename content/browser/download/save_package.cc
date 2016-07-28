@@ -1238,11 +1238,13 @@ void SavePackage::CompleteSavableResourceLinksResponse() {
   }
 }
 
+// static
 base::FilePath SavePackage::GetSuggestedNameForSaveAs(
+    const base::string16& title,
+    const GURL& page_url,
     bool can_save_as_complete,
     const std::string& contents_mime_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FilePath name_with_proper_ext = base::FilePath::FromUTF16Unsafe(title_);
+  base::FilePath name_with_proper_ext = base::FilePath::FromUTF16Unsafe(title);
 
   // If the page's title matches its URL, use the URL. Try to use the last path
   // component or if there is none, the domain as the file name.
@@ -1253,11 +1255,11 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
   // back to a URL, and if it matches the original page URL, we know the page
   // had no title (or had a title equal to its URL, which is fine to treat
   // similarly).
-  if (title_ == url_formatter::FormatUrl(page_url_)) {
+  if (title == url_formatter::FormatUrl(page_url)) {
     std::string url_path;
-    if (!page_url_.SchemeIs(url::kDataScheme)) {
+    if (!page_url.SchemeIs(url::kDataScheme)) {
       std::vector<std::string> url_parts = base::SplitString(
-          page_url_.path(), "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+          page_url.path(), "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (!url_parts.empty()) {
         for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
           url_path = url_parts[i];
@@ -1266,7 +1268,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
         }
       }
       if (url_path.empty())
-        url_path = page_url_.host();
+        url_path = page_url.host();
     } else {
       url_path = "dataurl";
     }
@@ -1287,6 +1289,8 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
 
 // static
 base::FilePath SavePackage::EnsureHtmlExtension(const base::FilePath& name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
   base::FilePath::StringType ext = name.Extension();
   if (!ext.empty())
     ext.erase(ext.begin());  // Erase preceding '.'.
@@ -1302,6 +1306,8 @@ base::FilePath SavePackage::EnsureHtmlExtension(const base::FilePath& name) {
 // static
 base::FilePath SavePackage::EnsureMimeExtension(const base::FilePath& name,
     const std::string& contents_mime_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
   // Start extension at 1 to skip over period if non-empty.
   base::FilePath::StringType ext = name.Extension();
   if (!ext.empty())
@@ -1353,23 +1359,28 @@ void SavePackage::GetSaveInfo() {
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
-  base::FilePath suggested_filename =
-      GetSuggestedNameForSaveAs(can_save_as_complete, mime_type);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SavePackage::CreateDirectoryOnFileThread, website_save_dir,
-                 download_save_dir, suggested_filename, skip_dir_check),
+      base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
+                 can_save_as_complete, mime_type, website_save_dir,
+                 download_save_dir, skip_dir_check),
       base::Bind(&SavePackage::ContinueGetSaveInfo, this,
                  can_save_as_complete));
 }
 
 // static
 base::FilePath SavePackage::CreateDirectoryOnFileThread(
+    const base::string16& title,
+    const GURL& page_url,
+    bool can_save_as_complete,
+    const std::string& mime_type,
     const base::FilePath& website_save_dir,
     const base::FilePath& download_save_dir,
-    const base::FilePath& suggested_filename,
     bool skip_dir_check) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  base::FilePath suggested_filename = GetSuggestedNameForSaveAs(
+      title, page_url, can_save_as_complete, mime_type);
 
   base::FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
