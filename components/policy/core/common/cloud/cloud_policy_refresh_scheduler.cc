@@ -79,10 +79,24 @@ CloudPolicyRefreshScheduler::~CloudPolicyRefreshScheduler() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void CloudPolicyRefreshScheduler::SetRefreshDelay(int64_t refresh_delay) {
+void CloudPolicyRefreshScheduler::SetDesiredRefreshDelay(
+    int64_t refresh_delay) {
   refresh_delay_ms_ = std::min(std::max(refresh_delay, kRefreshDelayMinMs),
                                kRefreshDelayMaxMs);
   ScheduleRefresh();
+}
+
+int64_t CloudPolicyRefreshScheduler::GetActualRefreshDelay() const {
+  // Returns the refresh delay, possibly modified/lengthened due to the presence
+  // of invalidations (we don't have to poll as often if we have policy
+  // invalidations because policy invalidations provide for timely refreshes.
+  if (invalidations_available_) {
+    // If policy invalidations are available then periodic updates are done at
+    // a much lower rate; otherwise use the |refresh_delay_ms_| value.
+    return std::max(refresh_delay_ms_, kWithInvalidationsRefreshDelayMs);
+  } else {
+    return refresh_delay_ms_;
+  }
 }
 
 void CloudPolicyRefreshScheduler::RefreshSoon() {
@@ -227,24 +241,18 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     return;
   }
 
-  // If policy invalidations are available then periodic updates are done at
-  // a much lower rate; otherwise use the |refresh_delay_ms_| value.
-  int64_t refresh_delay_ms = invalidations_available_
-                                 ? kWithInvalidationsRefreshDelayMs
-                                 : refresh_delay_ms_;
-
   // If there is a registration, go by the client's status. That will tell us
   // what the appropriate refresh delay should be.
   switch (client_->status()) {
     case DM_STATUS_SUCCESS:
       if (store_->is_managed())
-        RefreshAfter(refresh_delay_ms);
+        RefreshAfter(GetActualRefreshDelay());
       else
         RefreshAfter(kUnmanagedRefreshDelayMs);
       return;
     case DM_STATUS_SERVICE_ACTIVATION_PENDING:
     case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
-      RefreshAfter(refresh_delay_ms);
+      RefreshAfter(GetActualRefreshDelay());
       return;
     case DM_STATUS_REQUEST_FAILED:
     case DM_STATUS_TEMPORARY_UNAVAILABLE:

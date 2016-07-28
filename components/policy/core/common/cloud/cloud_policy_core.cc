@@ -105,7 +105,7 @@ void CloudPolicyCore::RemoveObserver(CloudPolicyCore::Observer* observer) {
 
 void CloudPolicyCore::UpdateRefreshDelayFromPref() {
   if (refresh_scheduler_ && refresh_delay_)
-    refresh_scheduler_->SetRefreshDelay(refresh_delay_->GetValue());
+    refresh_scheduler_->SetDesiredRefreshDelay(refresh_delay_->GetValue());
 }
 
 }  // namespace policy

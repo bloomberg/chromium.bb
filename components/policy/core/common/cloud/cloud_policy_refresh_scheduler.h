@@ -48,10 +48,14 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   ~CloudPolicyRefreshScheduler() override;
 
   base::Time last_refresh() const { return last_refresh_; }
-  int64_t refresh_delay() const { return refresh_delay_ms_; }
 
-  // Sets the refresh delay to |refresh_delay| (subject to min/max clamping).
-  void SetRefreshDelay(int64_t refresh_delay);
+  // Sets the refresh delay to |refresh_delay| (actual refresh delay may vary
+  // due to min/max clamping, changes to delay due to invalidations, etc).
+  void SetDesiredRefreshDelay(int64_t refresh_delay);
+
+  // Returns the current fixed refresh delay (can vary depending on whether
+  // invalidations are available or not).
+  int64_t GetActualRefreshDelay() const;
 
   // Requests a policy refresh to be performed soon.
   void RefreshSoon();

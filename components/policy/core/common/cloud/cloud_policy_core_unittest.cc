@@ -119,15 +119,17 @@ TEST_F(CloudPolicyCoreTest, RefreshScheduler) {
   core_.StartRefreshScheduler();
   ASSERT_TRUE(core_.refresh_scheduler());
 
-  int default_refresh_delay = core_.refresh_scheduler()->refresh_delay();
+  int default_refresh_delay =
+      core_.refresh_scheduler()->GetActualRefreshDelay();
 
   const int kRefreshRate = 1000 * 60 * 60;
   prefs_.SetInteger(policy_prefs::kUserPolicyRefreshRate, kRefreshRate);
   core_.TrackRefreshDelayPref(&prefs_, policy_prefs::kUserPolicyRefreshRate);
-  EXPECT_EQ(kRefreshRate, core_.refresh_scheduler()->refresh_delay());
+  EXPECT_EQ(kRefreshRate, core_.refresh_scheduler()->GetActualRefreshDelay());
 
   prefs_.ClearPref(policy_prefs::kUserPolicyRefreshRate);
-  EXPECT_EQ(default_refresh_delay, core_.refresh_scheduler()->refresh_delay());
+  EXPECT_EQ(default_refresh_delay,
+            core_.refresh_scheduler()->GetActualRefreshDelay());
 
   EXPECT_EQ(1, core_connected_callback_count_);
   EXPECT_EQ(1, refresh_scheduler_started_callback_count_);

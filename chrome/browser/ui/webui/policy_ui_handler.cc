@@ -137,7 +137,7 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
 
   base::TimeDelta refresh_interval =
       base::TimeDelta::FromMilliseconds(refresh_scheduler ?
-          refresh_scheduler->refresh_delay() :
+          refresh_scheduler->GetActualRefreshDelay() :
           policy::CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
   base::Time last_refresh_time = refresh_scheduler ?
       refresh_scheduler->last_refresh() : base::Time();

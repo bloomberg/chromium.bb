@@ -62,7 +62,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     EXPECT_EQ(0u, task_runner_->GetPendingTasks().size());
     CloudPolicyRefreshScheduler* scheduler =
         new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_);
-    scheduler->SetRefreshDelay(kPolicyRefreshRate);
+    scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
     return scheduler;
   }
 
@@ -197,7 +197,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
   client_.NotifyPolicyFetched();
   client_.NotifyRegistrationStateChanged();
   client_.NotifyClientError();
-  scheduler->SetRefreshDelay(12 * 60 * 60 * 1000);
+  scheduler->SetDesiredRefreshDelay(12 * 60 * 60 * 1000);
   store_.NotifyStoreLoaded();
   store_.NotifyStoreError();
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
@@ -215,13 +215,15 @@ TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoon) {
 TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
-  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
 
   // The scheduler has scheduled refreshes at the initial refresh rate.
   EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
 
   // Signal that invalidations are available.
   scheduler->SetInvalidationServiceAvailability(true);
+  EXPECT_EQ(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs,
+            scheduler->GetActualRefreshDelay());
   EXPECT_EQ(3u, task_runner_->GetPendingTasks().size());
 
   CheckInitialRefresh(true);
@@ -242,7 +244,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
 TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
-  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
 
   // Signal that invalidations are not available. The scheduler will not
   // schedule refreshes since the available state is not changed.
@@ -253,6 +255,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
 
   // This scheduled the initial refresh.
   CheckInitialRefresh(false);
+  EXPECT_EQ(kPolicyRefreshRate, scheduler->GetActualRefreshDelay());
 
   // Perform that fetch now.
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
@@ -271,7 +274,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
 TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsOffAndOn) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
-  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
   scheduler->SetInvalidationServiceAvailability(true);
   // Initial fetch.
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
@@ -298,7 +301,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsOffAndOn) {
 TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsDisconnected) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
-  scheduler->SetRefreshDelay(kPolicyRefreshRate);
+  scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
   scheduler->SetInvalidationServiceAvailability(true);
   // Initial fetch.
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
@@ -327,7 +330,7 @@ class CloudPolicyRefreshSchedulerSteadyStateTest
 
   void SetUp() override {
     refresh_scheduler_.reset(CreateRefreshScheduler());
-    refresh_scheduler_->SetRefreshDelay(kPolicyRefreshRate);
+    refresh_scheduler_->SetDesiredRefreshDelay(kPolicyRefreshRate);
     CloudPolicyRefreshSchedulerTest::SetUp();
     last_update_ = base::Time::NowFromSystemTime();
     client_.NotifyPolicyFetched();
@@ -366,15 +369,15 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnStoreError) {
 
 TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, RefreshDelayChange) {
   const int delay_short_ms = 5 * 60 * 1000;
-  refresh_scheduler_->SetRefreshDelay(delay_short_ms);
+  refresh_scheduler_->SetDesiredRefreshDelay(delay_short_ms);
   CheckTiming(CloudPolicyRefreshScheduler::kRefreshDelayMinMs);
 
   const int delay_ms = 12 * 60 * 60 * 1000;
-  refresh_scheduler_->SetRefreshDelay(delay_ms);
+  refresh_scheduler_->SetDesiredRefreshDelay(delay_ms);
   CheckTiming(delay_ms);
 
   const int delay_long_ms = 20 * 24 * 60 * 60 * 1000;
-  refresh_scheduler_->SetRefreshDelay(delay_long_ms);
+  refresh_scheduler_->SetDesiredRefreshDelay(delay_long_ms);
   CheckTiming(CloudPolicyRefreshScheduler::kRefreshDelayMaxMs);
 }
 
