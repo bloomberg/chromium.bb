@@ -42,6 +42,7 @@ group("deps_no_options") {
       ":default_sanitizer_ldflags",
     ]
     deps = []
+    public_deps = []
 
     data = [
       "//tools/valgrind/asan/",
@@ -62,9 +63,7 @@ group("deps_no_options") {
       deps += [ "//third_party/instrumented_libraries:deps" ]
     }
     if (use_custom_libcxx) {
-      public_deps = [
-        "//buildtools/third_party/libc++:libcxx_proxy",
-      ]
+      public_deps += [ "//buildtools/third_party/libc++:libcxx_proxy" ]
       data += [ "$root_out_dir/libc++.so" ]
     }
     if (is_mac) {
@@ -72,9 +71,7 @@ group("deps_no_options") {
         ":copy_asan_runtime",
       ]
 
-      public_deps = [
-        ":asan_runtime_bundle_data",
-      ]
+      public_deps += [ ":asan_runtime_bundle_data" ]
     }
   }
 }
