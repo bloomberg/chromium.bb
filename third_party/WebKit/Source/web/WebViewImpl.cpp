@@ -172,7 +172,6 @@
 #include "web/SpeechRecognitionClientProxy.h"
 #include "web/StorageQuotaClientImpl.h"
 #include "web/ValidationMessageClientImpl.h"
-#include "web/ViewportAnchor.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -477,6 +476,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client, WebPageVisibilityState visibilit
     allInstances().add(this);
 
     m_pageImportanceSignals.setObserver(client);
+    m_resizeViewportAnchor = new ResizeViewportAnchor(*m_page);
 }
 
 WebViewImpl::~WebViewImpl()
@@ -1857,7 +1857,7 @@ void WebViewImpl::didUpdateTopControls()
         // needed since the top controls adjustment will change the maximum
         // scroll offset and we may need to reposition them to keep the user's
         // apparent position unchanged.
-        ResizeViewportAnchor anchor(*view, visualViewport);
+        ResizeViewportAnchor::ResizeScope resizeScope(*m_resizeViewportAnchor);
 
         float topControlsViewportAdjustment =
             topControls().layoutHeight() - topControls().contentOffset();
@@ -1935,7 +1935,7 @@ void WebViewImpl::resizeWithTopControls(const WebSize& newSize, float topControl
         RotationViewportAnchor anchor(*view, visualViewport, viewportAnchorCoords, pageScaleConstraintsSet());
         resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
     } else {
-        ResizeViewportAnchor anchor(*view, visualViewport);
+        ResizeViewportAnchor::ResizeScope resizeScope(*m_resizeViewportAnchor);
         resizeViewWhileAnchored(view, topControlsHeight, topControlsShrinkLayout);
     }
     sendResizeEventAndRepaint();
@@ -4051,7 +4051,7 @@ void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)
 {
     FrameView* view = webframe->frame()->view();
     if (webframe == mainFrame())
-        view->resize(mainFrameSize());
+        m_resizeViewportAnchor->resizeFrameView(mainFrameSize());
     else
         view->resize(webframe->frameView()->size());
 }

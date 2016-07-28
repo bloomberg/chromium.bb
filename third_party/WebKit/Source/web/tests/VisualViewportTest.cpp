@@ -1825,4 +1825,24 @@ TEST_P(ParameterizedVisualViewportTest, PinchZoomGestureScrollsVisualViewportOnl
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0), frameView.scrollPositionDouble());
 }
 
+TEST_P(ParameterizedVisualViewportTest, ResizeWithScrollAnchoring)
+{
+    bool wasScrollAnchoringEnabled = RuntimeEnabledFeatures::scrollAnchoringEnabled();
+    RuntimeEnabledFeatures::setScrollAnchoringEnabled(true);
+
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+
+    registerMockedHttpURLLoad("icb-relative-content.html");
+    navigateTo(m_baseURL + "icb-relative-content.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    frameView.layoutViewportScrollableArea()->setScrollPosition(DoublePoint(700, 500), ProgrammaticScroll);
+
+    webViewImpl()->resize(IntSize(400, 300));
+    EXPECT_POINT_EQ(DoublePoint(300, 200), frameView.layoutViewportScrollableArea()->scrollPositionDouble());
+
+    RuntimeEnabledFeatures::setScrollAnchoringEnabled(wasScrollAnchoringEnabled);
+}
+
 } // namespace

@@ -10,7 +10,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
-#include "web/ViewportAnchor.h"
 
 namespace blink {
 
@@ -27,7 +26,7 @@ class VisualViewport;
 // viewport origin maintains its orientation relative to the anchor. If there is
 // no node or it is lost during the resize, we fall back to the resize anchor
 // logic.
-class RotationViewportAnchor : public ViewportAnchor {
+class RotationViewportAnchor {
     STACK_ALLOCATED();
 public:
     RotationViewportAnchor(FrameView& rootFrameView, VisualViewport&, const FloatSize& anchorInInnerViewCoords, PageScaleConstraintsSet&);
@@ -40,6 +39,9 @@ private:
     FloatPoint getInnerOrigin(const FloatSize& innerSize) const;
 
     void computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& visualViewportOffset) const;
+
+    Member<FrameView> m_rootFrameView;
+    Member<VisualViewport> m_visualViewport;
 
     float m_oldPageScaleFactor;
     float m_oldMinimumPageScaleFactor;

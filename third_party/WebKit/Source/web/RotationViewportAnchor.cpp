@@ -84,7 +84,8 @@ RotationViewportAnchor::RotationViewportAnchor(
     VisualViewport& visualViewport,
     const FloatSize& anchorInInnerViewCoords,
     PageScaleConstraintsSet& pageScaleConstraintsSet)
-    : ViewportAnchor(rootFrameView, visualViewport)
+    : m_rootFrameView(&rootFrameView)
+    , m_visualViewport(&visualViewport)
     , m_anchorInInnerViewCoords(anchorInInnerViewCoords)
     , m_pageScaleConstraintsSet(pageScaleConstraintsSet)
 {

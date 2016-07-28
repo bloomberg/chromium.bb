@@ -58,6 +58,7 @@
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/PageWidgetDelegate.h"
+#include "web/ResizeViewportAnchor.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
 #include "web/WebExport.h"
@@ -773,6 +774,8 @@ private:
     // split is complete, since in out-of-process iframes the page can be
     // visible, but the WebView should not be used as a widget.
     bool m_overrideCompositorVisibility;
+
+    Persistent<ResizeViewportAnchor> m_resizeViewportAnchor;
 };
 
 // We have no ways to check if the specified WebView is an instance of

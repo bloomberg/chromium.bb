@@ -4,22 +4,41 @@
 
 #include "web/ResizeViewportAnchor.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatSize.h"
 
 namespace blink {
 
-ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, VisualViewport& visualViewport)
-    : ViewportAnchor(rootFrameView, visualViewport)
-    , m_visualViewportInDocument(rootFrameView.getScrollableArea()->scrollPositionDouble())
+void ResizeViewportAnchor::resizeFrameView(IntSize size)
 {
+    FrameView* frameView = rootFrameView();
+    DCHECK(frameView);
+
+    ScrollableArea* rootViewport = frameView->getScrollableArea();
+    DoublePoint position = rootViewport->scrollPositionDouble();
+
+    frameView->resize(size);
+    m_drift += rootViewport->scrollPositionDouble() - position;
 }
 
-ResizeViewportAnchor::~ResizeViewportAnchor()
+void ResizeViewportAnchor::endScope()
 {
+    if (--m_scopeCount > 0)
+        return;
+
+    FrameView* frameView = rootFrameView();
+    if (!frameView)
+        return;
+
+    VisualViewport& visualViewport = m_page->frameHost().visualViewport();
+    DoublePoint visualViewportInDocument =
+        frameView->getScrollableArea()->scrollPositionDouble() - m_drift;
+
     // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
     // assumes we can just set a sub-pixel precision offset on the FrameView.
     // While we "can" do this, the offset that will be shipped to CC will be the
@@ -28,22 +47,22 @@ ResizeViewportAnchor::~ResizeViewportAnchor()
     // replace this with RFV::setScrollPosition once Blink is sub-pixel scroll
     // offset aware. crbug.com/414283.
 
-    ScrollableArea* rootViewport = m_rootFrameView->getScrollableArea();
+    ScrollableArea* rootViewport = frameView->getScrollableArea();
     ScrollableArea* layoutViewport =
-        m_rootFrameView->layoutViewportScrollableArea();
+        frameView->layoutViewportScrollableArea();
 
     // Clamp the scroll offset of each viewport now so that we force any invalid
     // offsets to become valid so we can compute the correct deltas.
-    m_visualViewport->clampToBoundaries();
+    visualViewport.clampToBoundaries();
     layoutViewport->setScrollPosition(
         layoutViewport->scrollPositionDouble(), ProgrammaticScroll);
 
-    DoubleSize delta = m_visualViewportInDocument
+    DoubleSize delta = visualViewportInDocument
         - rootViewport->scrollPositionDouble();
 
-    m_visualViewport->move(toFloatSize(delta));
+    visualViewport.move(toFloatSize(delta));
 
-    delta = m_visualViewportInDocument
+    delta = visualViewportInDocument
         - rootViewport->scrollPositionDouble();
 
     // Since the main thread FrameView has integer scroll offsets, scroll it to
@@ -59,9 +78,19 @@ ResizeViewportAnchor::~ResizeViewportAnchor()
         layoutViewport->scrollPosition() + layoutDelta,
         ProgrammaticScroll);
 
-    delta = m_visualViewportInDocument
+    delta = visualViewportInDocument
         - rootViewport->scrollPositionDouble();
-    m_visualViewport->move(toFloatSize(delta));
+    visualViewport.move(toFloatSize(delta));
+    m_drift = DoubleSize();
+}
+
+FrameView* ResizeViewportAnchor::rootFrameView()
+{
+    if (Frame* frame = m_page->mainFrame()) {
+        if (frame->isLocalFrame())
+            return toLocalFrame(frame)->view();
+    }
+    return nullptr;
 }
 
 } // namespace blink
