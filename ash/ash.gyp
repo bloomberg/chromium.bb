@@ -203,6 +203,8 @@
       'common/system/chromeos/palette/palette_tool_manager.h',
       'common/system/chromeos/palette/palette_tray.cc',
       'common/system/chromeos/palette/palette_tray.h',
+      'common/system/chromeos/palette/palette_utils.cc',
+      'common/system/chromeos/palette/palette_utils.h',
       'common/system/chromeos/power/battery_notification.cc',
       'common/system/chromeos/power/battery_notification.h',
       'common/system/chromeos/power/dual_role_notification.cc',

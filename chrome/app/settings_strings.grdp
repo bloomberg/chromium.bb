@@ -1742,6 +1742,17 @@
       Change language and input settings
     </message>
 
+    <!-- Note -->
+    <message name="IDS_SETTINGS_NOTE_TITLE" desc="Title of the note-taking settings page.">
+      Note
+    </message>
+    <message name="IDS_SETTINGS_NOTE_DEFAULT_APP_AUTO_LAUNCH" desc="Label that tells the user that the note-taking app will be auto-launched on eject input events.">
+      Auto-launch the note-app
+    </message>
+    <message name="IDS_SETTINGS_NOTE_FIND_MORE_APPS" desc="URL label that opens up the Play Store to a curated list of note-taking applications.">
+      Find more note-taking applications
+    </message>
+
     <!-- Display -->
     <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
       Displays

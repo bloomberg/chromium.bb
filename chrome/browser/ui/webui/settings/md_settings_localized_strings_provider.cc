@@ -489,6 +489,15 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, keyboard_strings,
                           arraysize(keyboard_strings));
 
+  LocalizedString note_strings[] = {
+    {"noteTitle", IDS_SETTINGS_NOTE_TITLE},
+    {"noteDefaultAppAutoLaunch", IDS_SETTINGS_NOTE_DEFAULT_APP_AUTO_LAUNCH},
+    {"noteFindMoreApps", IDS_SETTINGS_NOTE_FIND_MORE_APPS}
+  };
+  AddLocalizedStringsBulk(html_source, note_strings,
+                          arraysize(note_strings));
+
+
   LocalizedString display_strings[] = {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
       {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},

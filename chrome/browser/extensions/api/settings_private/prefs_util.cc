@@ -257,6 +257,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["settings.language.enabled_extension_imes"] =
       settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["settings.launch_note_app_on_eject_event"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Device settings.
   (*s_whitelist)["settings.touchpad.enable_tap_to_click"] =

@@ -276,6 +276,10 @@ void Preferences::RegisterProfilePrefs(
       language_prefs::kXkbAutoRepeatIntervalInMs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
+  registry->RegisterBooleanPref(
+      prefs::kLaunchNoteAppOnEjectEvent, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 

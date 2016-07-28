@@ -36,6 +36,7 @@
 #include "grit/settings_resources_map.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
@@ -106,6 +107,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   if (easy_unlock_handler)
     AddSettingsPageUIHandler(easy_unlock_handler);
 
+  html_source->AddBoolean("noteAllowed", ash::IsPaletteEnabled());
   html_source->AddBoolean("quickUnlockEnabled",
                           chromeos::IsQuickUnlockEnabled());
 #endif

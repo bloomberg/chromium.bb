@@ -142,6 +142,7 @@ cr.define('settings', function() {
   r.POINTERS = r.DEVICE.createChild('/pointer-overlay', 'pointers');
   r.KEYBARD = r.DEVICE.createChild('/keyboard-overlay', 'keyboard');
   r.DISPLAY = r.DEVICE.createChild('/display', 'display');
+  r.NOTES = r.DEVICE.createChild('/note', 'note');
 </if>
 
   r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');

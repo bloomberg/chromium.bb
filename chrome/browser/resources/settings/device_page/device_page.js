@@ -39,6 +39,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    noteAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('noteAllowed');
+      },
+      readOnly: true,
+    },
   },
 
   observers: [
@@ -92,6 +101,14 @@ Polymer({
    */
   onKeyboardTap_: function() {
     this.$.pages.setSubpageChain(['keyboard']);
+  },
+
+  /**
+   * Handler for tapping the Keyboard settings menu item.
+   * @private
+   */
+  onNoteTap_: function() {
+    this.$.pages.setSubpageChain(['note']);
   },
 
   /**

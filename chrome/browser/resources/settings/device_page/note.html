@@ -1,0 +1,29 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="settings-note">
+  <template>
+    <style include="settings-shared"></style>
+
+    <div class="settings-box">
+      <settings-checkbox
+          pref="{{prefs.settings.launch_note_app_on_eject_event}}"
+          label="$i18n{noteDefaultAppAutoLaunch}">
+      </settings-checkbox>
+    </div>
+
+    <div class="settings-box">
+      <!-- TODO(jdufault): This should launch an intent (using the
+        enable-intent-picker flag) that opens up the play store to a curated
+        list of apps. -->
+      <a is="action-link" target="_blank"
+         href="https://chrome.google.com/webstore/category/apps">
+        $i18n{noteFindMoreApps}
+      </a>
+    </div>
+
+  </template>
+  <script src="note.js"></script>
+</dom-module>

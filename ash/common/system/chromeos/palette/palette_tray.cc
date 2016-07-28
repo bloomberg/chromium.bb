@@ -12,6 +12,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/palette/palette_tool.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -46,12 +47,6 @@ const int kVerticalShelfVerticalPadding = 5;
 
 // Width of the palette itself (dp).
 const int kPaletteWidth = 360;
-
-// Returns true if the command line flag is present that enables the palette.
-bool IsPaletteEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnablePalette);
-}
 
 // Creates a separator.
 views::Separator* CreateSeparator(views::Separator::Orientation orientation) {
