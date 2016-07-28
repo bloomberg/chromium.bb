@@ -465,7 +465,6 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
     if (!immersive_mode_controller_->ShouldHideTabIndicators())
       top += TabStrip::GetImmersiveHeight();
   }
-  // Raise the |infobar_container_| by its vertical overlap.
   infobar_container_->SetVisible(InfobarVisible());
   infobar_container_->SetBounds(
       vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
