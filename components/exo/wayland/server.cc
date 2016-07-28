@@ -1599,7 +1599,6 @@ class WaylandRemoteShell : public ash::ShellObserver,
   }
 
   // Overridden from ash::ShellObserver:
-  void OnDisplayWorkAreaInsetsChanged() override { SendConfigure(); }
   void OnMaximizeModeStarted() override {
     SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET);
     send_configure_after_layout_change_ = true;

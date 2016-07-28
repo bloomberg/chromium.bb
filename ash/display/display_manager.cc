@@ -289,7 +289,12 @@ bool DisplayManager::UpdateWorkAreaOfDisplay(int64_t display_id,
   DCHECK(display);
   gfx::Rect old_work_area = display->work_area();
   display->UpdateWorkAreaFromInsets(insets);
-  return old_work_area != display->work_area();
+  bool workarea_changed = old_work_area != display->work_area();
+  if (workarea_changed) {
+    screen_->NotifyMetricsChanged(
+        *display, display::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  }
+  return workarea_changed;
 }
 
 void DisplayManager::SetOverscanInsets(int64_t display_id,

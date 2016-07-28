@@ -131,13 +131,6 @@ void AshPopupAlignmentDelegate::UpdateWorkArea() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ShellObserver:
-
-void AshPopupAlignmentDelegate::OnDisplayWorkAreaInsetsChanged() {
-  UpdateWorkArea();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // WmShelfObserver:
 
 void AshPopupAlignmentDelegate::WillChangeVisibilityState(

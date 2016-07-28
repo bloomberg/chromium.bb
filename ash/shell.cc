@@ -313,8 +313,6 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
           contains, insets)) {
     return;
   }
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnDisplayWorkAreaInsetsChanged());
 }
 
 void Shell::OnLoginStateChanged(LoginStatus status) {

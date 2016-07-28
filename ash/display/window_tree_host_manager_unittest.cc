@@ -417,7 +417,7 @@ TEST_P(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
+  EXPECT_EQ(2, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   gfx::Insets insets(5, 5, 5, 5);
@@ -436,7 +436,9 @@ TEST_P(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayout(display::DisplayPlacement::BOTTOM);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
+  // TODO (oshima): work area changes twice because ShelfLayoutManager updates
+  // to its own insets.
+  EXPECT_EQ(2, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());

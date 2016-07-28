@@ -160,10 +160,12 @@ TEST_P(DisplayManagerTest, UpdateDisplayTest) {
   EXPECT_EQ("0,0 500x500",
             display_manager()->GetDisplayAt(0).bounds().ToString());
 
-  EXPECT_EQ("1 1 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ("2 1 0", GetCountSummary());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[1].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
-  EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
+  EXPECT_EQ("500,0 400x400", changed()[0].bounds().ToString());
+  EXPECT_EQ("0,0 500x500", changed()[1].bounds().ToString());
   // Secondary display is on right.
   EXPECT_EQ("500,0 400x400", added()[0].bounds().ToString());
   EXPECT_EQ("0,501 400x400",
@@ -185,7 +187,8 @@ TEST_P(DisplayManagerTest, UpdateDisplayTest) {
   // Add secondary.
   UpdateDisplay("1+1-1000x600,1002+0-600x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0 1 0", GetCountSummary());
+  EXPECT_EQ("1 1 0", GetCountSummary());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), changed()[0].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
   // Secondary display is on right.
   EXPECT_EQ("1000,0 600x400", added()[0].bounds().ToString());
@@ -270,7 +273,7 @@ TEST_P(DisplayManagerTest, EmulatorTest) {
   display_manager()->AddRemoveDisplay();
   // Update primary and add seconary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0 1 0", GetCountSummary());
+  EXPECT_EQ("1 1 0", GetCountSummary());
   reset();
 
   display_manager()->AddRemoveDisplay();
@@ -280,7 +283,7 @@ TEST_P(DisplayManagerTest, EmulatorTest) {
 
   display_manager()->AddRemoveDisplay();
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0 1 0", GetCountSummary());
+  EXPECT_EQ("1 1 0", GetCountSummary());
 }
 
 // Tests support for 3 displays.
@@ -302,11 +305,15 @@ TEST_P(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
   EXPECT_EQ("960,0 400x300",
             display_manager()->GetDisplayAt(2).bounds().ToString());
 
-  EXPECT_EQ("1 2 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ("3 2 0", GetCountSummary());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(2).id(), changed()[1].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[2].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
   EXPECT_EQ(display_manager()->GetDisplayAt(2).id(), added()[1].id());
-  EXPECT_EQ("0,0 640x480", changed()[0].bounds().ToString());
+  EXPECT_EQ("640,0 320x200", changed()[0].bounds().ToString());
+  EXPECT_EQ("960,0 400x300", changed()[1].bounds().ToString());
+  EXPECT_EQ("0,0 640x480", changed()[2].bounds().ToString());
   // Secondary and terniary displays are on right.
   EXPECT_EQ("640,0 320x200", added()[0].bounds().ToString());
   EXPECT_EQ("1000,0 320x200",

@@ -56,7 +56,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
                       const display::Display& display) {
     alignment_delegate->StartObserving(display::Screen::GetScreen(), display);
     // Update the layout
-    alignment_delegate->OnDisplayWorkAreaInsetsChanged();
+    alignment_delegate->UpdateWorkArea();
   }
 
   void SetAlignmentDelegate(

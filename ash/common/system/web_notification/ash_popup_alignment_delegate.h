@@ -72,9 +72,6 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // Compute the new work area.
   void UpdateWorkArea();
 
-  // Overridden from ShellObserver:
-  void OnDisplayWorkAreaInsetsChanged() override;
-
   // WmShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
