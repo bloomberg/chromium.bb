@@ -177,7 +177,6 @@ http/tests/security/no-javascript-refresh.php
 inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
 media/media-load-event.html
-media/video-autoplay.html
 printing/css2.1/page-break-before-001.html
 storage/domstorage/localstorage/simple-usage.html
 storage/storagequota-query-usage.html
@@ -206,6 +205,7 @@ userstyles/simple-stylesheet.html
 virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
 virtual/prefer_compositing_to_lcd_text/compositing/scrollbars/scrollbar-large-overflow-rectangle.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
+virtual/media-gpu-accelerated/media/video-autoplay.html
 virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-play.html
 virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html
 virtual/media-gpu-accelerated/http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html

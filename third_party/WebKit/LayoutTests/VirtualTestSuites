@@ -93,6 +93,11 @@
     "args": ["--use-gpu-in-tests"]
   },
   {
+    "prefix": "media-gpu-accelerated",
+    "base": "media",
+    "args": ["--use-gpu-in-tests"]
+  },
+  {
     "prefix": "android",
     "base": "media/mediadocument",
     "args": ["--enable-features=MediaDocumentDownloadButton"]
