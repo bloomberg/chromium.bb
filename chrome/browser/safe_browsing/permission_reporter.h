@@ -62,6 +62,7 @@ class PermissionReporter {
                   PermissionRequestGestureType gesture_type);
 
  private:
+  friend class PermissionReporterBrowserTest;
   friend class PermissionReporterTest;
 
   // Used by tests. This constructor allows tests to have access to the

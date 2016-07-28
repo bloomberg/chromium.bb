@@ -73,6 +73,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                               PermissionRequestGestureType gesture_type);
 
  private:
+  friend class PermissionReporterBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
                            TestSafeBrowsingHitUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest, TestThreatDetailsUrl);

@@ -396,8 +396,6 @@ void PermissionUmaUtil::RecordPermissionAction(
     const GURL& requesting_origin,
     Profile* profile) {
   if (IsOptedIntoPermissionActionReporting(profile)) {
-    // TODO(stefanocs): Add browsertests to make sure the reports are being
-    // sent.
     g_browser_process->safe_browsing_service()
         ->ui_manager()
         ->ReportPermissionAction(requesting_origin, permission, action,

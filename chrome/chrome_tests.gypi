@@ -893,6 +893,7 @@
       'browser/speech/speech_recognition_browsertest.cc',
     ],
     'chrome_browser_tests_full_safe_browsing_sources': [
+      'browser/safe_browsing/permission_reporter_browsertest.cc',
       'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
       'browser/safe_browsing/safe_browsing_service_browsertest.cc',
       'renderer/safe_browsing/phishing_classifier_browsertest.cc',

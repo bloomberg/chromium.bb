@@ -10,10 +10,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/permission_type.h"
-#include "net/url_request/report_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::PermissionType;
@@ -53,52 +53,19 @@ struct base::Feature kFeatureOffByDefault {
   kFeatureOffByDefaultName, base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-// A mock ReportSender that keeps track of the last report sent.
-class MockReportSender : public net::ReportSender {
- public:
-  MockReportSender() : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {
-    number_of_reports_ = 0;
-  }
-
-  ~MockReportSender() override {}
-
-  void Send(const GURL& report_uri, const std::string& report) override {
-    latest_report_uri_ = report_uri;
-    latest_report_ = report;
-    number_of_reports_++;
-  }
-
-  const GURL& latest_report_uri() { return latest_report_uri_; }
-
-  const std::string& latest_report() { return latest_report_; }
-
-  int GetAndResetNumberOfReportsSent() {
-    int new_reports = number_of_reports_;
-    number_of_reports_ = 0;
-    return new_reports;
-  }
-
- private:
-  GURL latest_report_uri_;
-  std::string latest_report_;
-  int number_of_reports_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockReportSender);
-};
-
 }  // namespace
 
 class PermissionReporterTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mock_report_sender_ = new MockReportSender;
+    mock_report_sender_ = new MockPermissionReportSender;
     clock_ = new base::SimpleTestClock;
     permission_reporter_.reset(new PermissionReporter(
         base::WrapUnique(mock_report_sender_), base::WrapUnique(clock_)));
   }
 
   // Owned by |permission_reporter_|.
-  MockReportSender* mock_report_sender_;
+  MockPermissionReportSender* mock_report_sender_;
 
   // Owned by |permission_reporter_|.
   base::SimpleTestClock* clock_;

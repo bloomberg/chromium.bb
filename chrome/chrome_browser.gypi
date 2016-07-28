@@ -2627,6 +2627,8 @@
     'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.cc',
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.h',
+      'browser/safe_browsing/mock_permission_report_sender.cc',
+      'browser/safe_browsing/mock_permission_report_sender.h',
       'browser/safe_browsing/permission_reporter.cc',
       'browser/safe_browsing/permission_reporter.h',
       'browser/safe_browsing/ping_manager.cc',
