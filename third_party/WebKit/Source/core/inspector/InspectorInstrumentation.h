@@ -89,19 +89,6 @@ private:
     bool m_result;
 };
 
-class CORE_EXPORT FrontendCounter {
-    STATIC_ONLY(FrontendCounter);
-private:
-    friend void frontendCreated();
-    friend void frontendDeleted();
-    friend bool hasFrontends();
-    static int s_frontendCounter;
-};
-
-inline void frontendCreated() { atomicIncrement(&FrontendCounter::s_frontendCounter); }
-inline void frontendDeleted() { atomicDecrement(&FrontendCounter::s_frontendCounter); }
-inline bool hasFrontends() { return acquireLoad(&FrontendCounter::s_frontendCounter); }
-
 CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
 CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
 

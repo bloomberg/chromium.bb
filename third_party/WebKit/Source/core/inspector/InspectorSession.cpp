@@ -30,8 +30,6 @@ InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFra
     , m_instrumentingAgents(instrumentingAgents)
     , m_inspectorBackendDispatcher(new protocol::UberDispatcher(this))
 {
-    InspectorInstrumentation::frontendCreated();
-
     if (savedState) {
         std::unique_ptr<protocol::Value> state = protocol::parseJSON(*savedState);
         if (state)
@@ -74,7 +72,6 @@ void InspectorSession::dispose()
         m_agents[i - 1]->dispose();
     m_agents.clear();
     m_v8Session.reset();
-    InspectorInstrumentation::frontendDeleted();
 }
 
 void InspectorSession::dispatchProtocolMessage(const String& method, const String& message)

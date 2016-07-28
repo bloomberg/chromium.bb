@@ -170,8 +170,6 @@ JavaScriptDialog::~JavaScriptDialog()
         pageAgent->didRunJavaScriptDialog(m_result);
 }
 
-int FrontendCounter::s_frontendCounter = 0;
-
 bool isDebuggerPaused(LocalFrame*)
 {
     return MainThreadDebugger::instance()->isPaused();

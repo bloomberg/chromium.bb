@@ -115,11 +115,9 @@ void DOMWindowEventQueue::close()
 {
     m_isClosed = true;
     m_pendingEventTimer->stop();
-    if (InspectorInstrumentation::hasFrontends()) {
-        for (const auto& queuedEvent : m_queuedEvents) {
-            if (queuedEvent)
-                InspectorInstrumentation::asyncTaskCanceled(queuedEvent->target()->getExecutionContext(), queuedEvent);
-        }
+    for (const auto& queuedEvent : m_queuedEvents) {
+        if (queuedEvent)
+            InspectorInstrumentation::asyncTaskCanceled(queuedEvent->target()->getExecutionContext(), queuedEvent);
     }
     m_queuedEvents.clear();
 }
