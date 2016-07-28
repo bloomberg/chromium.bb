@@ -57,11 +57,12 @@ static INLINE aom_prob clip_prob(int p) {
   return (p > 255) ? 255 : (p < 1) ? 1 : p;
 }
 
-static INLINE aom_prob get_prob(int num, int den) {
-  return (den == 0) ? 128u : clip_prob(((int64_t)num * 256 + (den >> 1)) / den);
+static INLINE aom_prob get_prob(unsigned int num, unsigned int den) {
+  if (den == 0) return 128u;
+  return clip_prob((int)(((int64_t)num * 256 + (den >> 1)) / den));
 }
 
-static INLINE aom_prob get_binary_prob(int n0, int n1) {
+static INLINE aom_prob get_binary_prob(unsigned int n0, unsigned int n1) {
   return get_prob(n0, n0 + n1);
 }
 
@@ -93,8 +94,7 @@ static INLINE aom_prob mode_mv_merge_probs(aom_prob pre_prob,
   } else {
     const unsigned int count = AOMMIN(den, MODE_MV_COUNT_SAT);
     const unsigned int factor = count_to_update_factor[count];
-    const aom_prob prob =
-        clip_prob(((int64_t)(ct[0]) * 256 + (den >> 1)) / den);
+    const aom_prob prob = get_prob(ct[0], den);
     return weighted_prob(pre_prob, prob, factor);
   }
 }
