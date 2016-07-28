@@ -1221,6 +1221,8 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
   if ([text isKindOfClass:[NSAttributedString class]])
     text = [text string];
+
+  textInputClient_->DeleteRange(gfx::Range(replacementRange));
   ui::CompositionText composition;
   composition.text = base::SysNSStringToUTF16(text);
   composition.selection = gfx::Range(selectedRange);

@@ -879,6 +879,36 @@ TEST_F(BridgedNativeWidgetTest, TextInput_Compose) {
                     GetExpectedSelectionRange(), GetActualSelectionRange());
 }
 
+// Test IME composition for accented characters.
+TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
+  InstallTextField("abc");
+
+  // Simulate action messages generated when the key 'a' is pressed repeatedly
+  // and leads to the showing of an IME candidate window.
+
+  // First an insertText: message with key 'a' is generated.
+  [ns_view_ insertText:@"a" replacementRange:EmptyRange()];
+  [dummy_text_view_ insertText:@"a" replacementRange:EmptyRange()];
+  EXPECT_EQ_3(NO, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
+  EXPECT_NSEQ_3(@"abca", GetExpectedText(), GetActualText());
+
+  // Next the IME popup appears. On selecting the accented character using arrow
+  // keys, setMarkedText action message is generated which replaces the earlier
+  // inserted 'a'.
+  [ns_view_ setMarkedText:@"à"
+            selectedRange:NSMakeRange(0, 1)
+         replacementRange:NSMakeRange(3, 1)];
+  [dummy_text_view_ setMarkedText:@"à"
+                    selectedRange:NSMakeRange(0, 1)
+                 replacementRange:NSMakeRange(3, 1)];
+  EXPECT_EQ_3(YES, [dummy_text_view_ hasMarkedText], [ns_view_ hasMarkedText]);
+  EXPECT_EQ_RANGE_3(NSMakeRange(3, 1), [dummy_text_view_ markedRange],
+                    [ns_view_ markedRange]);
+  EXPECT_EQ_RANGE_3(NSMakeRange(3, 1), GetExpectedSelectionRange(),
+                    GetActualSelectionRange());
+  EXPECT_NSEQ_3(@"abcà", GetExpectedText(), GetActualText());
+}
+
 // Test moving the caret left and right using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_MoveLeftRight) {
   InstallTextField("foo");
