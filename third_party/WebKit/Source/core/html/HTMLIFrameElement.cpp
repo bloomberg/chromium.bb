@@ -63,6 +63,8 @@ DOMTokenList* HTMLIFrameElement::sandbox() const
 
 DOMTokenList* HTMLIFrameElement::permissions() const
 {
+    if (!const_cast<HTMLIFrameElement*>(this)->initializePermissionsAttribute())
+        return nullptr;
     return m_permissions.get();
 }
 
