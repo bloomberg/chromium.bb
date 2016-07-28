@@ -977,6 +977,7 @@ bool AddEffectNodeIfNeeded(
 
   node.opacity = Opacity(layer);
   node.blend_mode = BlendMode(layer);
+  node.unscaled_mask_target_size = layer->bounds();
   node.has_render_surface = should_create_render_surface;
   node.has_copy_request = HasCopyRequest(layer);
   node.filters = Filters(layer);

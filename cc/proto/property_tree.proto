@@ -87,11 +87,12 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 26
+// NEXT ID: 27
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
   optional SkXfermode.Mode blend_mode = 25;
+  optional Size unscaled_mask_target_size = 26;
   optional bool has_render_surface = 3;
   optional bool has_copy_request = 4;
   optional bool hidden_by_backface_visibility = 14;

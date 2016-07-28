@@ -50,6 +50,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          background_filters == other.background_filters &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
+         unscaled_mask_target_size == other.unscaled_mask_target_size &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
@@ -98,6 +99,8 @@ void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_replica_mask_layer_id(replica_mask_layer_id);
   Vector2dFToProto(surface_contents_scale,
                    data->mutable_surface_contents_scale());
+  SizeToProto(unscaled_mask_target_size,
+              data->mutable_unscaled_mask_target_size());
 }
 
 void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
@@ -111,6 +114,7 @@ void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
   opacity = data.opacity();
   screen_space_opacity = data.screen_space_opacity();
   blend_mode = SkXfermodeModeFromProto(data.blend_mode());
+  unscaled_mask_target_size = ProtoToSize(data.unscaled_mask_target_size());
   has_render_surface = data.has_render_surface();
   has_copy_request = data.has_copy_request();
   hidden_by_backface_visibility = data.hidden_by_backface_visibility();
