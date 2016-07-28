@@ -48,8 +48,12 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kDisableWebRtcHWEncoding);
 #endif
 #if defined(OS_WIN)
-  gpu_preferences.enable_accelerated_vpx_decode =
-      command_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
+  gpu_preferences.enable_accelerated_vpx_decode = true;
+  uint32_t enable_vpx_decode;
+  if (GetUintFromSwitch(command_line, switches::kEnableAcceleratedVpxDecode,
+                        &enable_vpx_decode)) {
+    gpu_preferences.enable_accelerated_vpx_decode = !!enable_vpx_decode;
+  }
   gpu_preferences.enable_zero_copy_dxgi_video =
       command_line->HasSwitch(switches::kEnableZeroCopyDxgiVideo);
   gpu_preferences.enable_nv12_dxgi_video =

@@ -21,6 +21,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -58,6 +59,13 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+  gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
+
+  bool accelerated_vpx_disabled =
+      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
+#if defined(OS_WIN)
+  accelerated_vpx_disabled |= !gpu_preferences.enable_accelerated_vpx_decode;
+#endif
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
     {"2d_canvas",
@@ -141,9 +149,9 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
                        gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
                        manager->IsFeatureBlacklisted(
                            gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
-     command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
-     "Accelerated VPx video decode has been disabled, either via blacklist,"
-     " about:flags or the command line.",
+     accelerated_vpx_disabled,
+     "Accelerated VPx video decode has been disabled, either via blacklist"
+     " or the command line.",
      true},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
