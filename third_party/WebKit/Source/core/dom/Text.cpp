@@ -368,8 +368,8 @@ void Text::reattachLayoutTreeIfNeeded(const AttachContext& context)
     if (layoutObjectIsNeeded == !!layoutObject())
         return;
 
-    // The following is almost the same as Node::reattach() except that we create a layoutObject only if needed.
-    // Not calling reattach() to avoid repeated calls to Text::textLayoutObjectIsNeeded().
+    // The following is almost the same as Node::reattachLayoutTree() except that we create a layoutObject only if needed.
+    // Not calling reattachLayoutTree() to avoid repeated calls to Text::textLayoutObjectIsNeeded().
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
@@ -389,7 +389,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
             layoutItem.setText(dataImpl());
         clearNeedsStyleRecalc();
     } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
-        reattach();
+        reattachLayoutTree();
         if (this->layoutObject())
             reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
     }

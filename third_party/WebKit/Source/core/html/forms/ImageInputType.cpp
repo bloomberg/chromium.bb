@@ -271,7 +271,7 @@ void ImageInputType::reattachFallbackContent()
     // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
     // reattach synchronously here.
     if (element().document().inStyleRecalc())
-        element().reattach();
+        element().reattachLayoutTree();
     else
         element().lazyReattachIfAttached();
 }

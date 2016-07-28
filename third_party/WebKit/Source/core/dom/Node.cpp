@@ -861,7 +861,7 @@ Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Nod
     return nullptr;
 }
 
-void Node::reattach(const AttachContext& context)
+void Node::reattachLayoutTree(const AttachContext& context)
 {
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;

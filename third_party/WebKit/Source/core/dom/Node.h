@@ -519,7 +519,7 @@ public:
     // the node's layout object from the layout tree and delete it.
     virtual void detachLayoutTree(const AttachContext& = AttachContext());
 
-    void reattach(const AttachContext& = AttachContext());
+    void reattachLayoutTree(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
 
     // Returns true if recalcStyle should be called on the object, if there is such a method (on Document and Element).
