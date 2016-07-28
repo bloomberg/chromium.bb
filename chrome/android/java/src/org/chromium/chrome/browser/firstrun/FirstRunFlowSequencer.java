@@ -166,10 +166,12 @@ public abstract class FirstRunFlowSequencer  {
             enableCrashUpload();
         }
 
-        // We show the sign-in page if sync is allowed, and this is not an EDU device, and
+        // We show the sign-in page if sync is allowed, and not signed in, and this is not an EDU
+        // device, and
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
         final boolean offerSignInOk = isSyncAllowed()
+                && !isSignedIn()
                 && !forceEduSignIn
                 && (!shouldSkipFirstUseHints() || googleAccounts.length > 0);
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
