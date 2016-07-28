@@ -375,28 +375,20 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transf
     if (this == ancestor)
         return;
 
-    if (mode & IsFixed && m_frameView)
-        transformState.move(m_frameView->scrollOffset());
-
-    if (mode & UseTransforms && shouldUseTransformFromContainer(0)) {
-        TransformationMatrix t;
-        getTransformFromContainer(0, LayoutSize(), t);
-        transformState.applyTransform(t);
-    }
-
     if (mode & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             // A LayoutView is a containing block for fixed-position elements, so don't carry this state across frames.
-            mode &= ~IsFixed;
+            parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode & ~IsFixed);
 
-            transformState.move(-frame()->view()->scrollOffset());
             transformState.move(parentDocLayoutObject->contentBoxOffset());
-
-            parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode);
+            transformState.move(-frame()->view()->scrollOffset());
         }
     } else {
         ASSERT(!ancestor);
     }
+
+    if (mode & IsFixed)
+        transformState.move(frame()->view()->scrollOffset());
 }
 
 void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint&) const

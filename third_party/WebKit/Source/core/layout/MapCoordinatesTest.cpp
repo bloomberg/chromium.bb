@@ -545,6 +545,33 @@ TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled)
     EXPECT_EQ(FloatPoint(10, -7930), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, IFrameTransformed)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<iframe style='transform: scale(2)' id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
+        "</iframe>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; } #target { width: 200px; height: 8000px}</style><div id=target></div>");
+
+    document().view()->updateAllLifecyclePhases();
+
+    frameDocument.view()->setScrollPosition(DoublePoint(0.0, 1000), ProgrammaticScroll);
+    frameDocument.view()->updateAllLifecyclePhases();
+
+    Element* target = frameDocument.getElementById("target");
+    ASSERT_TRUE(target);
+    FloatPoint mappedPoint = mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(200, 200), TraverseDocumentBoundaries | UseTransforms);
+
+    // Derivation:
+    // (200, 200) -> (-50, -50)  (Adjust for transform origin of scale, which is at the center of the 500x500 iframe)
+    // (-50, -50) -> (-25, -25)  (Divide by 2 to invert the scale)
+    // (-25, -25) -> (225, 225)  (Add the origin back in)
+    // (225, 225) -> (225, 1225) (Adjust by scroll offset of y=1000)
+    EXPECT_EQ(FloatPoint(225, 1225), mappedPoint);
+}
+
 TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
