@@ -294,8 +294,6 @@ protected:
     ResourceRequest m_resourceRequest;
     Member<ResourceLoader> m_loader;
 
-    ResourceResponse m_response;
-
     RefPtr<SharedBuffer> m_data;
 
 private:
@@ -358,6 +356,8 @@ private:
     double m_responseTimestamp;
 
     Timer<Resource> m_cancelTimer;
+
+    ResourceResponse m_response;
 };
 
 class ResourceFactory {

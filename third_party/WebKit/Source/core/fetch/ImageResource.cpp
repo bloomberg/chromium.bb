@@ -358,7 +358,7 @@ inline void ImageResource::createImage()
     if (m_image)
         return;
 
-    if (m_response.mimeType() == "image/svg+xml") {
+    if (response().mimeType() == "image/svg+xml") {
         m_image = SVGImage::create(this);
     } else {
         m_image = BitmapImage::create(this);
@@ -456,7 +456,7 @@ void ImageResource::responseReceived(const ResourceResponse& response, std::uniq
         m_multipartParser = new MultipartImageResourceParser(response, response.multipartBoundary(), this);
     Resource::responseReceived(response, std::move(handle));
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
-        m_devicePixelRatioHeaderValue = m_response.httpHeaderField(HTTPNames::Content_DPR).toFloat(&m_hasDevicePixelRatioHeaderValue);
+        m_devicePixelRatioHeaderValue = this->response().httpHeaderField(HTTPNames::Content_DPR).toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
             m_devicePixelRatioHeaderValue = 1.0;
             m_hasDevicePixelRatioHeaderValue = false;
@@ -540,7 +540,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
 {
     if (m_resourceRequest.loFiState() != WebURLRequest::LoFiOn)
         return;
-    if (isLoaded() && !m_response.httpHeaderField("chrome-proxy").contains("q=low"))
+    if (isLoaded() && !response().httpHeaderField("chrome-proxy").contains("q=low"))
         return;
     m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
@@ -564,7 +564,7 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
 {
     ASSERT(m_multipartParser);
 
-    m_response = response;
+    setResponse(response);
     if (m_multipartParsingState == MultipartParsingState::WaitingForFirstPart) {
         // We have nothing to do because we don't have any data.
         m_multipartParsingState = MultipartParsingState::ParsingFirstPart;

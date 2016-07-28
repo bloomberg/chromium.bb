@@ -115,8 +115,8 @@ void RawResource::didAddClient(ResourceClient* c)
             return;
     }
 
-    if (!m_response.isNull())
-        client->responseReceived(this, m_response, nullptr);
+    if (!response().isNull())
+        client->responseReceived(this, response(), nullptr);
     if (!clientWeak || !hasClient(c))
         return;
     if (m_data)
@@ -153,7 +153,7 @@ void RawResource::responseReceived(const ResourceResponse& response, std::unique
     while (RawResourceClient* c = w.next()) {
         // |handle| is cleared when passed, but it's not a problem because
         // |handle| is null when there are two or more clients, as asserted.
-        c->responseReceived(this, m_response, std::move(handle));
+        c->responseReceived(this, this->response(), std::move(handle));
     }
 
     // If we successfully revalidated, we won't get appendData() calls.

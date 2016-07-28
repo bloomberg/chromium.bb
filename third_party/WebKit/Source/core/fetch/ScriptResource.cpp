@@ -105,7 +105,7 @@ void ScriptResource::destroyDecodedDataForFailedRevalidation()
 
 bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
-    return parseContentTypeOptionsHeader(m_response.httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(httpContentType());
+    return parseContentTypeOptionsHeader(response().httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(httpContentType());
 }
 
 void ScriptResource::setIntegrityDisposition(ScriptIntegrityDisposition disposition)

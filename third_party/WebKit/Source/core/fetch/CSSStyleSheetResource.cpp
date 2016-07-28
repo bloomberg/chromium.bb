@@ -82,7 +82,7 @@ void CSSStyleSheetResource::didAddClient(ResourceClient* c)
     Resource::didAddClient(c);
 
     if (!isLoading())
-        static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), encoding(), this);
+        static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), response().url(), encoding(), this);
 }
 
 const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
@@ -107,7 +107,7 @@ void CSSStyleSheetResource::checkNotify()
 
     ResourceClientWalker<StyleSheetResourceClient> w(clients());
     while (StyleSheetResourceClient* c = w.next())
-        c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), encoding(), this);
+        c->setCSSStyleSheet(m_resourceRequest.url(), response().url(), encoding(), this);
     // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
     m_decodedSheetText = String();
 }
