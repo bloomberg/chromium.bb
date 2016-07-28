@@ -871,6 +871,8 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
+# Broken on Win10
+crbug.com/632217 [ Win10 ] svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Failure ]
 
 # These fail in the leak detector: http://crbug.com/612924#c4
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
