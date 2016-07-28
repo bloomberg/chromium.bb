@@ -217,32 +217,40 @@ void PermissionUmaUtil::PermissionRequested(PermissionType permission,
                           profile);
 }
 
-void PermissionUmaUtil::PermissionGranted(PermissionType permission,
-                                          const GURL& requesting_origin,
-                                          Profile* profile) {
+void PermissionUmaUtil::PermissionGranted(
+    PermissionType permission,
+    PermissionRequestGestureType gesture_type,
+    const GURL& requesting_origin,
+    Profile* profile) {
   RecordPermissionAction(permission, GRANTED, PermissionSourceUI::PROMPT,
-                         requesting_origin, profile);
+                         gesture_type, requesting_origin, profile);
 }
 
-void PermissionUmaUtil::PermissionDenied(PermissionType permission,
-                                         const GURL& requesting_origin,
-                                         Profile* profile) {
+void PermissionUmaUtil::PermissionDenied(
+    PermissionType permission,
+    PermissionRequestGestureType gesture_type,
+    const GURL& requesting_origin,
+    Profile* profile) {
   RecordPermissionAction(permission, DENIED, PermissionSourceUI::PROMPT,
-                         requesting_origin, profile);
+                         gesture_type, requesting_origin, profile);
 }
 
-void PermissionUmaUtil::PermissionDismissed(PermissionType permission,
-                                            const GURL& requesting_origin,
-                                            Profile* profile) {
+void PermissionUmaUtil::PermissionDismissed(
+    PermissionType permission,
+    PermissionRequestGestureType gesture_type,
+    const GURL& requesting_origin,
+    Profile* profile) {
   RecordPermissionAction(permission, DISMISSED, PermissionSourceUI::PROMPT,
-                         requesting_origin, profile);
+                         gesture_type, requesting_origin, profile);
 }
 
-void PermissionUmaUtil::PermissionIgnored(PermissionType permission,
-                                          const GURL& requesting_origin,
-                                          Profile* profile) {
+void PermissionUmaUtil::PermissionIgnored(
+    PermissionType permission,
+    PermissionRequestGestureType gesture_type,
+    const GURL& requesting_origin,
+    Profile* profile) {
   RecordPermissionAction(permission, IGNORED, PermissionSourceUI::PROMPT,
-                         requesting_origin, profile);
+                         gesture_type, requesting_origin, profile);
 }
 
 void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
@@ -255,8 +263,11 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
       permission == PermissionType::GEOLOCATION ||
       permission == PermissionType::AUDIO_CAPTURE ||
       permission == PermissionType::VIDEO_CAPTURE) {
-    RecordPermissionAction(permission, REVOKED, source_ui, revoked_origin,
-                           profile);
+    // An unknown gesture type is passed in since gesture type is only
+    // applicable in prompt UIs where revocations are not possible.
+    RecordPermissionAction(permission, REVOKED, source_ui,
+                           PermissionRequestGestureType::UNKNOWN,
+                           revoked_origin, profile);
   }
 }
 
@@ -377,20 +388,20 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   return true;
 }
 
-void PermissionUmaUtil::RecordPermissionAction(PermissionType permission,
-                                               PermissionAction action,
-                                               PermissionSourceUI source_ui,
-                                               const GURL& requesting_origin,
-                                               Profile* profile) {
+void PermissionUmaUtil::RecordPermissionAction(
+    PermissionType permission,
+    PermissionAction action,
+    PermissionSourceUI source_ui,
+    PermissionRequestGestureType gesture_type,
+    const GURL& requesting_origin,
+    Profile* profile) {
   if (IsOptedIntoPermissionActionReporting(profile)) {
     // TODO(stefanocs): Add browsertests to make sure the reports are being
     // sent.
-    // TODO(stefanocs): Get the actual |user_gesture| from permission layer.
     g_browser_process->safe_browsing_service()
         ->ui_manager()
         ->ReportPermissionAction(requesting_origin, permission, action,
-                                 source_ui,
-                                 PermissionRequestGestureType::UNKNOWN);
+                                 source_ui, gesture_type);
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

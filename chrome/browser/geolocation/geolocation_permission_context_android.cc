@@ -37,7 +37,8 @@ void GeolocationPermissionContextAndroid::RequestPermission(
   if (!location_settings_->CanSitesRequestLocationPermission(web_contents)) {
     PermissionDecided(id, requesting_frame_origin,
                       web_contents->GetLastCommittedURL().GetOrigin(),
-                      callback, false /* persist */, CONTENT_SETTING_BLOCK);
+                      user_gesture, callback, false /* persist */,
+                      CONTENT_SETTING_BLOCK);
     return;
   }
 

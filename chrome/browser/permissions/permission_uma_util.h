@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 
+enum class PermissionRequestGestureType;
 class GURL;
 class Profile;
 
@@ -69,15 +70,19 @@ class PermissionUmaUtil {
                                   const GURL& embedding_origin,
                                   Profile* profile);
   static void PermissionGranted(content::PermissionType permission,
+                                PermissionRequestGestureType gesture_type,
                                 const GURL& requesting_origin,
                                 Profile* profile);
   static void PermissionDenied(content::PermissionType permission,
+                               PermissionRequestGestureType gesture_type,
                                const GURL& requesting_origin,
                                Profile* profile);
   static void PermissionDismissed(content::PermissionType permission,
+                                  PermissionRequestGestureType gesture_type,
                                   const GURL& requesting_origin,
                                   Profile* profile);
   static void PermissionIgnored(content::PermissionType permission,
+                                PermissionRequestGestureType gesture_type,
                                 const GURL& requesting_origin,
                                 Profile* profile);
   static void PermissionRevoked(content::PermissionType permission,
@@ -117,6 +122,7 @@ class PermissionUmaUtil {
   static void RecordPermissionAction(content::PermissionType permission,
                                      PermissionAction action,
                                      PermissionSourceUI source_ui,
+                                     PermissionRequestGestureType gesture_type,
                                      const GURL& requesting_origin,
                                      Profile* profile);
 

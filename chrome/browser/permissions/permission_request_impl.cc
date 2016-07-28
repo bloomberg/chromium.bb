@@ -33,8 +33,8 @@ PermissionRequestImpl::PermissionRequestImpl(
 PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_) {
-    PermissionUmaUtil::PermissionIgnored(permission_type_, request_origin_,
-                                         profile_);
+    PermissionUmaUtil::PermissionIgnored(permission_type_, GetGestureType(),
+                                         request_origin_, profile_);
   }
 }
 

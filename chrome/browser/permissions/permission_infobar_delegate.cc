@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -11,9 +12,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
-  if (!action_taken_)
-    PermissionUmaUtil::PermissionIgnored(permission_type_, requesting_origin_,
-                                         profile_);
+  // TODO(stefanocs): Pass the actual |gesture_type| value to PermissionUmaUtil.
+  if (!action_taken_) {
+    PermissionUmaUtil::PermissionIgnored(permission_type_,
+                                         PermissionRequestGestureType::UNKNOWN,
+                                         requesting_origin_, profile_);
+  }
 }
 
 PermissionInfobarDelegate::PermissionInfobarDelegate(

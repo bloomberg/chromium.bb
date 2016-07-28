@@ -11,6 +11,7 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -206,17 +207,22 @@ void PermissionQueueController::OnPermissionSet(
 
   // TODO(miguelg): move the permission persistence to
   // PermissionContextBase once all the types are moved there.
+  // TODO(stefanocs): Pass the actual |gesture_type| value to PermissionUmaUtil.
   if (update_content_setting) {
     UpdateContentSetting(requesting_frame, embedder, allowed);
-    if (allowed)
-      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_frame,
-                                           profile_);
-    else
-      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_frame,
-                                          profile_);
+    if (allowed) {
+      PermissionUmaUtil::PermissionGranted(
+          permission_type_, PermissionRequestGestureType::UNKNOWN,
+          requesting_frame, profile_);
+    } else {
+      PermissionUmaUtil::PermissionDenied(permission_type_,
+                                          PermissionRequestGestureType::UNKNOWN,
+                                          requesting_frame, profile_);
+    }
   } else {
-    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_frame,
-                                           profile_);
+    PermissionUmaUtil::PermissionDismissed(
+        permission_type_, PermissionRequestGestureType::UNKNOWN,
+        requesting_frame, profile_);
   }
 
   // Cancel this request first, then notify listeners.  TODO(pkasting): Why

@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -177,12 +178,12 @@ void PermissionContextBase::DecidePermission(
   if (!permission_request_manager)
     return;
   std::unique_ptr<PermissionRequest> request_ptr(new PermissionRequestImpl(
-          requesting_origin, permission_type_, profile_, user_gesture,
-          base::Bind(&PermissionContextBase::PermissionDecided,
-                     weak_factory_.GetWeakPtr(), id, requesting_origin,
-                     embedding_origin, callback),
-          base::Bind(&PermissionContextBase::CleanUpRequest,
-                     weak_factory_.GetWeakPtr(), id)));
+      requesting_origin, permission_type_, profile_, user_gesture,
+      base::Bind(&PermissionContextBase::PermissionDecided,
+                 weak_factory_.GetWeakPtr(), id, requesting_origin,
+                 embedding_origin, user_gesture, callback),
+      base::Bind(&PermissionContextBase::CleanUpRequest,
+                 weak_factory_.GetWeakPtr(), id)));
   PermissionRequest* request = request_ptr.get();
 
   bool inserted =
@@ -190,11 +191,13 @@ void PermissionContextBase::DecidePermission(
   DCHECK(inserted) << "Duplicate id " << id.ToString();
   permission_request_manager->AddRequest(request);
 #else
+  // TODO(stefanocs): Pass |user_gesture| to CreateInfoBarRequest to record
+  // permission actions in infobar.
   GetQueueController()->CreateInfoBarRequest(
       id, requesting_origin, embedding_origin,
       base::Bind(&PermissionContextBase::PermissionDecided,
                  weak_factory_.GetWeakPtr(), id, requesting_origin,
-                 embedding_origin, callback,
+                 embedding_origin, user_gesture, callback,
                  // the queue controller takes care of persisting the
                  // permission
                  false));
@@ -205,25 +208,30 @@ void PermissionContextBase::PermissionDecided(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
+    bool user_gesture,
     const BrowserPermissionCallback& callback,
     bool persist,
     ContentSetting content_setting) {
 #if !defined(OS_ANDROID)
   // Infobar persistence and its related UMA is tracked on the infobar
   // controller directly.
+  PermissionRequestGestureType gesture_type =
+      user_gesture ? PermissionRequestGestureType::GESTURE
+                   : PermissionRequestGestureType::NO_GESTURE;
   if (persist) {
     DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
            content_setting == CONTENT_SETTING_BLOCK);
-    if (content_setting == CONTENT_SETTING_ALLOW)
-      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_origin,
-                                           profile_);
-    else
-      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_origin,
-                                          profile_);
+    if (content_setting == CONTENT_SETTING_ALLOW) {
+      PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
+                                           requesting_origin, profile_);
+    } else {
+      PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
+                                          requesting_origin, profile_);
+    }
   } else {
     DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
-    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_origin,
-                                           profile_);
+    PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
+                                           requesting_origin, profile_);
   }
 #endif
 

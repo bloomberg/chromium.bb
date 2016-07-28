@@ -115,6 +115,7 @@ class PermissionContextBase : public KeyedService {
   void PermissionDecided(const PermissionRequestID& id,
                          const GURL& requesting_origin,
                          const GURL& embedding_origin,
+                         bool user_gesture,
                          const BrowserPermissionCallback& callback,
                          bool persist,
                          ContentSetting content_setting);

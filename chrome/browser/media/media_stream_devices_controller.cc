@@ -72,14 +72,20 @@ bool ContentTypeIsRequested(content::PermissionType type,
 }
 
 using PermissionActionCallback =
-    base::Callback<void(content::PermissionType, const GURL&, Profile*)>;
+    base::Callback<void(content::PermissionType,
+                        PermissionRequestGestureType,
+                        const GURL&,
+                        Profile*)>;
 
 void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
                                   content::PermissionType permission_type,
                                   Profile* profile,
                                   PermissionActionCallback callback) {
   if (ContentTypeIsRequested(permission_type, request)) {
-    callback.Run(permission_type, request.security_origin, profile);
+    // TODO(stefanocs): Pass the actual |gesture_type| once this file has been
+    // refactored into PermissionContext.
+    callback.Run(permission_type, PermissionRequestGestureType::UNKNOWN,
+                 request.security_origin, profile);
   }
 }
 
