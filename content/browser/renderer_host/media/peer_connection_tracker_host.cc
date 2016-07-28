@@ -13,7 +13,7 @@ namespace content {
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(
     int render_process_id,
-    WebRTCEventLogHost* event_log_host)
+    const base::WeakPtr<WebRTCEventLogHost>& event_log_host)
     : BrowserMessageFilter(PeerConnectionTrackerMsgStart),
       render_process_id_(render_process_id),
       event_log_host_(event_log_host) {
@@ -76,12 +76,14 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
       info.url,
       info.rtc_configuration,
       info.constraints);
-  event_log_host_->PeerConnectionAdded(info.lid);
+  if (event_log_host_)
+    event_log_host_->PeerConnectionAdded(info.lid);
 }
 
 void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(peer_pid(), lid);
-  event_log_host_->PeerConnectionRemoved(lid);
+  if (event_log_host_)
+    event_log_host_->PeerConnectionRemoved(lid);
 }
 
 void PeerConnectionTrackerHost::OnUpdatePeerConnection(

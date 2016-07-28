@@ -40,6 +40,8 @@ class CONTENT_EXPORT WebRTCEventLogHost {
   // PeerConnection was removed in the corresponding render process.
   void PeerConnectionRemoved(int peer_connection_local_id);
 
+  base::WeakPtr<WebRTCEventLogHost> GetWeakPtr();
+
  private:
   // Actually start the eventlog for a single PeerConnection using the path
   // stored in base_file_path_.

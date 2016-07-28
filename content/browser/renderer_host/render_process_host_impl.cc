@@ -938,8 +938,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       blob_storage_context.get()));
 
 #if defined(ENABLE_WEBRTC)
-  peer_connection_tracker_host_ =
-      new PeerConnectionTrackerHost(GetID(), &webrtc_eventlog_host_);
+  peer_connection_tracker_host_ = new PeerConnectionTrackerHost(
+      GetID(), webrtc_eventlog_host_.GetWeakPtr());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(
       GetID(), browser_context->GetResourceContext()->GetMediaDeviceIDSalt(),

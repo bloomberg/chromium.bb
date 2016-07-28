@@ -125,6 +125,10 @@ bool WebRTCEventLogHost::StopWebRTCEventLog() {
   return true;
 }
 
+base::WeakPtr<WebRTCEventLogHost> WebRTCEventLogHost::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool WebRTCEventLogHost::StartEventLogForPeerConnection(
     int peer_connection_local_id) {
   if (number_active_log_files_ < kMaxNumberLogFiles) {
