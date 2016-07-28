@@ -68,7 +68,7 @@ void MockBluetoothAdapter::AddMockDevice(
 
 BluetoothAdapter::ConstDeviceList MockBluetoothAdapter::GetConstMockDevices() {
   BluetoothAdapter::ConstDeviceList devices;
-  for (auto& it : mock_devices_) {
+  for (auto* it : mock_devices_) {
     devices.push_back(it);
   }
   return devices;
@@ -76,7 +76,7 @@ BluetoothAdapter::ConstDeviceList MockBluetoothAdapter::GetConstMockDevices() {
 
 BluetoothAdapter::DeviceList MockBluetoothAdapter::GetMockDevices() {
   BluetoothAdapter::DeviceList devices;
-  for (auto& it : mock_devices_) {
+  for (auto* it : mock_devices_) {
     devices.push_back(it);
   }
   return devices;

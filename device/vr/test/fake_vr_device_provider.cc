@@ -30,7 +30,7 @@ void FakeVRDeviceProvider::RemoveDevice(VRDevice* device) {
 void FakeVRDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   std::vector<VRDevice*>::iterator iter;
 
-  for (auto device : devices_) {
+  for (auto* device : devices_) {
     devices->push_back(device);
   }
 }

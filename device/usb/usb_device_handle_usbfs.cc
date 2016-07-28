@@ -737,7 +737,7 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
 }
 
 void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
-  for (const auto& urb : urbs) {
+  for (auto* urb : urbs) {
     Transfer* this_transfer = static_cast<Transfer*>(urb->usercontext);
     DCHECK_EQ(urb, &this_transfer->urb);
     auto it = std::find_if(

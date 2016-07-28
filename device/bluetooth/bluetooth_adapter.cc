@@ -336,7 +336,7 @@ BluetoothAdapter::GetMergedDiscoveryFilterHelper(
   bool first_merge = true;
 
   std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
-  for (const auto& iter : temp) {
+  for (auto* iter : temp) {
     const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
 
     if (!iter->IsActive())

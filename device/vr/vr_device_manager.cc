@@ -86,7 +86,7 @@ mojo::Array<VRDisplayPtr> VRDeviceManager::GetVRDevices() {
     provider->GetDevices(&devices);
 
   mojo::Array<VRDisplayPtr> out_devices;
-  for (const auto& device : devices) {
+  for (auto* device : devices) {
     if (device->id() == VR_DEVICE_LAST_ID)
       continue;
 

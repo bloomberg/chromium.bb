@@ -170,7 +170,7 @@ BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
   FinishPendingTasks();
 
   std::vector<BluetoothDevice*> devices = adapter_win_->GetDevices();
-  for (auto device : devices) {
+  for (auto* device : devices) {
     if (device->GetAddress() == device_address)
       return device;
   }

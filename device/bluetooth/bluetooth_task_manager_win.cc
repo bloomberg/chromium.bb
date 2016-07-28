@@ -788,7 +788,7 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
     return false;
   }
 
-  for (auto gatt_service_device : gatt_service_devices) {
+  for (auto* gatt_service_device : gatt_service_devices) {
     // Only care about the service devices with |device_address|.
     if (BluetoothAddressToCanonicalString(gatt_service_device->address) !=
         device_address) {
@@ -812,8 +812,8 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
 
     // Associate service device to corresponding service record. Attribute
     // handle is unique on one device.
-    for (auto gatt_service : gatt_services) {
-      for (auto service_record_state : *service_record_states) {
+    for (auto* gatt_service : gatt_services) {
+      for (auto* service_record_state : *service_record_states) {
         if (service_record_state->attribute_handle ==
             gatt_service->attribute_handle) {
           service_record_state->path = gatt_service_device->path;

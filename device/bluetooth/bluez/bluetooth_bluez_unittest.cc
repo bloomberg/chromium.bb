@@ -56,7 +56,7 @@ void SaveConnectionInfo(BluetoothDevice::ConnectionInfo* out,
 int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
                             const char* address) {
   int idx = -1;
-  for (auto& device : devices) {
+  for (auto* device : devices) {
     ++idx;
     if (device->GetAddress().compare(address) == 0)
       return idx;
@@ -1467,7 +1467,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscovery) {
   ASSERT_TRUE(discovery_sessions_[0]->IsActive());
   ASSERT_TRUE(df->Equals(*discovery_sessions_[0]->GetDiscoveryFilter()));
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_NE(nullptr, filter);
   EXPECT_EQ("le", *filter->transport);
   EXPECT_EQ(-60, *filter->rssi);
@@ -1531,7 +1531,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryFail) {
   ASSERT_FALSE(adapter_->IsDiscovering());
   ASSERT_EQ((size_t)0, discovery_sessions_.size());
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_EQ(nullptr, filter);
 }
 
@@ -1595,7 +1595,7 @@ TEST_F(BluetoothBlueZTest, QueuedSetDiscoveryFilterBeforeStartDiscovery) {
   ASSERT_TRUE(discovery_sessions_[1]->IsActive());
   ASSERT_TRUE(df2->Equals(*discovery_sessions_[1]->GetDiscoveryFilter()));
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_NE(nullptr, filter);
   EXPECT_EQ("auto", *filter->transport);
   EXPECT_EQ(-65, *filter->rssi);
@@ -1699,7 +1699,7 @@ TEST_F(BluetoothBlueZTest, QueuedSetDiscoveryFilterBeforeStartDiscoveryFail) {
   ASSERT_TRUE(discovery_sessions_[0]->IsActive());
   ASSERT_TRUE(df2->Equals(*discovery_sessions_[0]->GetDiscoveryFilter()));
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_NE(nullptr, filter);
   EXPECT_EQ("bredr", *filter->transport);
   EXPECT_EQ(-65, *filter->rssi);
@@ -1756,7 +1756,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterAfterStartDiscovery) {
   null_instance.reset();
   ASSERT_EQ(discovery_sessions_[0]->GetDiscoveryFilter(), null_instance.get());
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_EQ(nullptr, filter);
 
   BluetoothDiscoveryFilter* df =
@@ -1856,14 +1856,14 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_EQ(1, observer.discovering_changed_count());
       observer.Reset();
 
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1000"));
     } else if (i == 1) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1872,7 +1872,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1001"));
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1020"));
     } else if (i == 2) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1900,7 +1900,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
     message_loop_.Run();
 
     if (i == 0) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-65, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1911,7 +1911,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1003"));
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1020"));
     } else if (i == 1) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-65, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1922,7 +1922,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1003"));
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1020"));
     } else if (i == 2) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-65, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1978,7 +1978,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
     message_loop_.Run();
 
     if (i == 0) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -1987,7 +1987,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1003"));
       EXPECT_NE(uuids.end(), std::find(uuids.begin(), uuids.end(), "1020"));
     } else if (i == 1 || i == 2) {
-      auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+      auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
@@ -2032,7 +2032,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
   for (int i = 0; i < 6; i++)
     EXPECT_FALSE(discovery_sessions_[i]->IsActive());
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_EQ(nullptr, filter);
 }
 
@@ -2058,7 +2058,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
 
   message_loop_.Run();
 
-  auto filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
+  auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
   EXPECT_EQ("le", *filter->transport);
   EXPECT_EQ(-15, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());

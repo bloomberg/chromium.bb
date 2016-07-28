@@ -473,7 +473,7 @@ void BluetoothLowEnergyWrapperFake::
   if (target_characteristic == nullptr)
     target_characteristic = remembered_characteristic_;
   CHECK(target_characteristic);
-  for (const auto& observer : target_characteristic->observers) {
+  for (auto* observer : target_characteristic->observers) {
     GattCharacteristicObserverTable::const_iterator it =
         gatt_characteristic_observers_.find(observer);
     // Check if |observer| has been unregistered by UnregisterGattEvent.

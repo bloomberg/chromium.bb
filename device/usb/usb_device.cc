@@ -80,7 +80,7 @@ void UsbDevice::OnDisconnect() {
   // Swap out the handle list as HandleClosed() will try to modify it.
   std::list<UsbDeviceHandle*> handles;
   handles.swap(handles_);
-  for (auto handle : handles_)
+  for (auto* handle : handles_)
     handle->Close();
 }
 

@@ -42,7 +42,7 @@ void BluetoothTestAndroid::SetUp() {
 
 void BluetoothTestAndroid::TearDown() {
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  for (auto& device : devices) {
+  for (auto* device : devices) {
     DeleteDevice(device);
   }
   EXPECT_EQ(0, gatt_open_connections_);

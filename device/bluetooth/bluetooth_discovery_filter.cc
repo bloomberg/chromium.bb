@@ -63,13 +63,13 @@ void BluetoothDiscoveryFilter::GetUUIDs(
     std::set<device::BluetoothUUID>& out_uuids) const {
   out_uuids.clear();
 
-  for (auto& uuid : uuids_)
+  for (auto* uuid : uuids_)
     out_uuids.insert(*uuid);
 }
 
 void BluetoothDiscoveryFilter::AddUUID(const device::BluetoothUUID& uuid) {
   DCHECK(uuid.IsValid());
-  for (auto& uuid_it : uuids_) {
+  for (auto* uuid_it : uuids_) {
     if (*uuid_it == uuid)
       return;
   }
@@ -82,7 +82,7 @@ void BluetoothDiscoveryFilter::CopyFrom(
   transport_ = filter.transport_;
 
   if (filter.uuids_.size()) {
-    for (auto& uuid : filter.uuids_)
+    for (auto* uuid : filter.uuids_)
       AddUUID(*uuid);
   } else
     uuids_.clear();
