@@ -109,7 +109,7 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       effective_context_type_(effective_context_type),
       safe_builtins_(this),
       isolate_(v8_context->GetIsolate()),
-      url_(web_frame_ ? GURL(web_frame_->document().url()) : GURL()),
+      url_(web_frame_ ? GetDataSourceURLForFrame(web_frame_) : GURL()),
       runner_(new Runner(this)) {
   VLOG(1) << "Created context:\n" << GetDebugString();
   gin::PerContextData* gin_data = gin::PerContextData::From(v8_context);

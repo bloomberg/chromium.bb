@@ -140,21 +140,8 @@ const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
     // Isolated worlds (content script).
     extension_id = ScriptInjection::GetHostIdForIsolatedWorld(world_id);
   } else {
-    // For looking up the extension associated with this frame, we either want
-    // to use the current url or possibly the data source url (which this frame
-    // may be navigating to shortly), depending on the security origin of the
-    // frame. We don't always want to use the data source url because some
-    // frames (eg iframes and windows created via window.open) briefly contain
-    // an about:blank script context that is scriptable by their parent/opener
-    // before they finish navigating.
-    GURL frame_url(frame->document().url());
-    GURL data_src_url = ScriptContext::GetDataSourceURLForFrame(frame);
-    if (frame_url.is_empty() && data_src_url.is_valid() &&
-        frame->getSecurityOrigin().canAccess(
-            blink::WebSecurityOrigin::create(data_src_url))) {
-      frame_url = data_src_url;
-    }
-
+    // Extension pages (chrome-extension:// URLs).
+    GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
     frame_url = ScriptContext::GetEffectiveDocumentURL(frame, frame_url,
                                                        use_effective_url);
     extension_id =
