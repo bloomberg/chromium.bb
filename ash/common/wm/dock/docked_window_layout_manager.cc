@@ -385,6 +385,16 @@ class DockedWindowLayoutManager::ShelfWindowObserver : public WmWindowObserver {
                              const gfx::Rect& new_bounds) override {
     shelf_bounds_in_screen_ =
         window->GetParent()->ConvertRectToScreen(new_bounds);
+
+    // When the shelf is auto-hidden, it has an invisible height of 3px used
+    // as a hit region which is specific to Chrome OS MD (for non-MD, the 3
+    // pixels are visible). In computing the work area we should consider a
+    // hidden shelf as having a height of 0 (for non-MD, shelf height is 3).
+    if (docked_layout_manager_->shelf()->GetAutoHideState() ==
+        ShelfAutoHideState::SHELF_AUTO_HIDE_HIDDEN) {
+      shelf_bounds_in_screen_.set_height(
+          GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE));
+    }
     docked_layout_manager_->OnShelfBoundsChanged();
   }
 
