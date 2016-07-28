@@ -74,7 +74,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
   SafeBrowsingProtocolManagerTest()
       : runner_(new base::TestSimpleTaskRunner),
         runner_handler_(runner_),
-        io_thread_(content::BrowserThread::IO, base::MessageLoop::current()) {}
+        io_thread_(content::BrowserThread::IO) {}
 
   ~SafeBrowsingProtocolManagerTest() override {}
 

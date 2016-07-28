@@ -256,10 +256,6 @@ BrowserProcessImpl::BrowserProcessImpl(
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
-#if defined(ENABLE_EXTENSIONS)
-  extensions::ExtensionsBrowserClient::Set(nullptr);
-#endif
-
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->RemoveObserver(this);
 #endif  // !defined(OS_ANDROID)

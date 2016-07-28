@@ -478,10 +478,8 @@ UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   // shutting down.
   // TODO(devlin): Duplicate this check in IOThreadExtensionFunction. It's
   // tricky because checking IsShuttingDown has to be called from the UI thread.
-  extensions::ExtensionsBrowserClient* browser_client =
-      extensions::ExtensionsBrowserClient::Get();
-  DCHECK(!browser_client || browser_client->IsShuttingDown() || did_respond_ ||
-         ignore_all_did_respond_for_testing_do_not_use)
+  DCHECK(extensions::ExtensionsBrowserClient::Get()->IsShuttingDown() ||
+         did_respond_ || ignore_all_did_respond_for_testing_do_not_use)
       << name_;
 }
 

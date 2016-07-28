@@ -138,11 +138,6 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpOnMainThread();
   }
 
-  void TearDownOnMainThread() override {
-    event_listener_.reset();
-    ExtensionBrowserTest::TearDownOnMainThread();
-  }
-
   scoped_refptr<const extensions::Extension> LoadExtension(
       const base::FilePath::CharType* path) {
     base::FilePath full_path;
@@ -261,9 +256,6 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
 }
 
 IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
-  event_listener_->Reply(std::string());
-  event_listener_.reset();
-
   EXPECT_TRUE(test_server_.UpdatePolicyData(
       dm_protocol::kChromeExtensionPolicyType, kTestExtension2, kTestPolicy2));
   // Installing a new extension doesn't trigger another policy fetch because

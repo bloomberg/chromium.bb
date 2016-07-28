@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,9 +25,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
                     base::MessageLoop* message_loop);
   ~BrowserThreadImpl() override;
 
-  bool Start();
   bool StartWithOptions(const Options& options);
-  bool StartAndWaitForTesting();
 
   static void ShutdownThreadPool();
 
