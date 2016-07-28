@@ -20,10 +20,6 @@
   -webkit-padding-end: 4px;
 }
 
-.cast-mode-list {
-  background-color: var(--paper-teal-700);
-}
-
 #close-button {
   -webkit-margin-start: auto;
   height: 31px;
@@ -34,10 +30,6 @@
   -webkit-margin-start: auto;
   -webkit-padding-end: 16px;
   -webkit-padding-start: 24px;
-}
-
-.filter {
-  background-color: var(--paper-deep-purple-500);
 }
 
 #header {
@@ -73,6 +65,8 @@ paper-icon-button {
   padding-top: 10px;
 }
 
+.cast-mode-list,
+.filter,
 .route-details,
 .sink-list {
   background-color: var(--paper-blue-700);
