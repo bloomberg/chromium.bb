@@ -462,6 +462,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     moveCachedNonBlockingResourceToBlocking(resource, request);
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource, isStaticData);
+    TRACE_EVENT_INSTANT1("blink", "ResourceFetcher::determineRevalidationPolicy", TRACE_EVENT_SCOPE_THREAD, "revalidationPolicy", policy);
 
     updateMemoryCacheStats(resource, policy, request, factory, isStaticData);
 
