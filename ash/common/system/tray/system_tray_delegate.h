@@ -26,11 +26,16 @@ class TimeTicks;
 }
 
 namespace ash {
+struct IMEInfo;
+struct IMEPropertyInfo;
 
 class CustodianInfoTrayObserver;
 class ShutdownPolicyObserver;
 class SystemTray;
 class SystemTrayItem;
+
+using IMEInfoList = std::vector<IMEInfo>;
+using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
 
 struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
@@ -61,30 +66,6 @@ struct ASH_EXPORT BluetoothDeviceInfo {
 
 using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 
-struct ASH_EXPORT IMEPropertyInfo {
-  IMEPropertyInfo();
-  ~IMEPropertyInfo();
-
-  bool selected;
-  std::string key;
-  base::string16 name;
-};
-
-using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
-
-struct ASH_EXPORT IMEInfo {
-  IMEInfo();
-  IMEInfo(const IMEInfo& other);
-  ~IMEInfo();
-
-  bool selected;
-  bool third_party;
-  std::string id;
-  base::string16 name;
-  base::string16 medium_name;
-  base::string16 short_name;
-};
-
 struct ASH_EXPORT UpdateInfo {
   enum UpdateSeverity {
     UPDATE_NORMAL,
@@ -100,8 +81,6 @@ struct ASH_EXPORT UpdateInfo {
   bool update_required;
   bool factory_reset_required;
 };
-
-using IMEInfoList = std::vector<IMEInfo>;
 
 class CastConfigDelegate;
 class NetworkingConfigDelegate;

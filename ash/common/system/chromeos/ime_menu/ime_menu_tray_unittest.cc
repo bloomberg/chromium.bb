@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"

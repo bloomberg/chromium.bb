@@ -282,6 +282,8 @@
       'common/system/tray/fixed_sized_scroll_view.h',
       'common/system/tray/hover_highlight_view.cc',
       'common/system/tray/hover_highlight_view.h',
+      'common/system/tray/ime_info.cc',
+      'common/system/tray/ime_info.h',
       'common/system/tray/label_tray_view.cc',
       'common/system/tray/label_tray_view.h',
       'common/system/tray/special_popup_row.cc',

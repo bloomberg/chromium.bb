@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/system_tray_delegate.h"
 
+#include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
 
 namespace ash {
@@ -20,16 +21,6 @@ BluetoothDeviceInfo::BluetoothDeviceInfo()
     : connected(false), connecting(false), paired(false) {}
 
 BluetoothDeviceInfo::~BluetoothDeviceInfo() {}
-
-IMEInfo::IMEInfo() : selected(false), third_party(false) {}
-
-IMEInfo::IMEInfo(const IMEInfo& other) = default;
-
-IMEInfo::~IMEInfo() {}
-
-IMEPropertyInfo::IMEPropertyInfo() : selected(false) {}
-
-IMEPropertyInfo::~IMEPropertyInfo() {}
 
 UpdateInfo::UpdateInfo()
     : severity(UPDATE_NORMAL),

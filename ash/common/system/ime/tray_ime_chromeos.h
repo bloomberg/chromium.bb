@@ -10,7 +10,7 @@
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
@@ -19,7 +19,6 @@ class Label;
 }
 
 namespace ash {
-struct IMEInfo;
 
 namespace tray {
 class IMEDefaultView;

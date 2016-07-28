@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
 
