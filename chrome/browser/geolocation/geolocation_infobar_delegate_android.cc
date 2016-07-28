@@ -14,21 +14,24 @@
 infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
+    bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
-          new GeolocationInfoBarDelegateAndroid(requesting_frame, profile,
-                                                callback))));
+          new GeolocationInfoBarDelegateAndroid(requesting_frame, user_gesture,
+                                                profile, callback))));
 }
 
 GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
     const GURL& requesting_frame,
+    bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::GEOLOCATION,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                user_gesture,
                                 profile,
                                 callback),
       requesting_frame_(requesting_frame) {}

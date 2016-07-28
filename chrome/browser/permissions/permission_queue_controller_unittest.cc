@@ -99,10 +99,10 @@ TEST_F(PermissionQueueControllerTests, OneObservationPerInfoBarCancelled) {
   ObservationCountingQueueController queue_controller(profile());
   GURL url("http://www.example.com/geolocation");
   base::Callback<void(ContentSetting)> callback;
-  queue_controller.CreateInfoBarRequest(
-      RequestID(0), url, url, callback);
-  queue_controller.CreateInfoBarRequest(
-      RequestID(1), url, url, callback);
+  queue_controller.CreateInfoBarRequest(RequestID(0), url, url,
+                                        false /* user_gesture */, callback);
+  queue_controller.CreateInfoBarRequest(RequestID(1), url, url,
+                                        false /* user_gesture */, callback);
   queue_controller.CancelInfoBarRequest(RequestID(0));
   EXPECT_EQ(1, queue_controller.call_count());
 }
@@ -111,8 +111,8 @@ TEST_F(PermissionQueueControllerTests, FailOnBadPattern) {
   ObservationCountingQueueController queue_controller(profile());
   GURL url("chrome://settings");
   base::Callback<void(ContentSetting)> callback;
-  queue_controller.CreateInfoBarRequest(
-      RequestID(0), url, url, callback);
+  queue_controller.CreateInfoBarRequest(RequestID(0), url, url,
+                                        false /* user_gesture */, callback);
   queue_controller.CancelInfoBarRequest(RequestID(0));
   EXPECT_EQ(0, queue_controller.call_count());
 }

@@ -29,6 +29,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   PermissionInfobarDelegate(const GURL& requesting_origin,
                             content::PermissionType permission_type,
                             ContentSettingsType content_settings_type,
+                            bool user_gesture,
                             Profile* profile,
                             const PermissionSetCallback& callback);
   ~PermissionInfobarDelegate() override;
@@ -51,6 +52,7 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   bool action_taken_;
   content::PermissionType permission_type_;
   ContentSettingsType content_settings_type_;
+  bool user_gesture_;
   Profile* const profile_;
   const PermissionSetCallback callback_;
 

@@ -191,10 +191,8 @@ void PermissionContextBase::DecidePermission(
   DCHECK(inserted) << "Duplicate id " << id.ToString();
   permission_request_manager->AddRequest(request);
 #else
-  // TODO(stefanocs): Pass |user_gesture| to CreateInfoBarRequest to record
-  // permission actions in infobar.
   GetQueueController()->CreateInfoBarRequest(
-      id, requesting_origin, embedding_origin,
+      id, requesting_origin, embedding_origin, user_gesture,
       base::Bind(&PermissionContextBase::PermissionDecided,
                  weak_factory_.GetWeakPtr(), id, requesting_origin,
                  embedding_origin, user_gesture, callback,

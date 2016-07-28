@@ -40,6 +40,7 @@ class PermissionQueueController : public content::NotificationObserver {
   void CreateInfoBarRequest(const PermissionRequestID& id,
                             const GURL& requesting_frame,
                             const GURL& embedder,
+                            bool user_gesture,
                             const PermissionDecidedCallback& callback);
 
   // Cancels a specific infobar request.
@@ -51,6 +52,7 @@ class PermissionQueueController : public content::NotificationObserver {
   void OnPermissionSet(const PermissionRequestID& id,
                        const GURL& requesting_frame,
                        const GURL& embedder,
+                       bool user_gesture,
                        bool update_content_setting,
                        bool allowed);
 

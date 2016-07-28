@@ -119,7 +119,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     bool update_content_setting = response != CONTENT_SETTING_ASK;
     bool allowed = response == CONTENT_SETTING_ALLOW;
     context->GetInfoBarController()->OnPermissionSet(
-        id, url, url, update_content_setting, allowed);
+        id, url, url, false /* user_gesture */, update_content_setting,
+        allowed);
 #else
     PermissionRequestManager* manager =
         PermissionRequestManager::FromWebContents(web_contents());

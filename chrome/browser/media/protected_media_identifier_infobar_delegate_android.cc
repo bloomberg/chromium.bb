@@ -16,23 +16,26 @@
 infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
+    bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
           new ProtectedMediaIdentifierInfoBarDelegateAndroid(
-              requesting_frame, profile, callback))));
+              requesting_frame, user_gesture, profile, callback))));
 }
 
 ProtectedMediaIdentifierInfoBarDelegateAndroid::
     ProtectedMediaIdentifierInfoBarDelegateAndroid(
         const GURL& requesting_frame,
+        bool user_gesture,
         Profile* profile,
         const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(
           requesting_frame,
           content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
           CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+          user_gesture,
           profile,
           callback),
       requesting_frame_(requesting_frame) {}

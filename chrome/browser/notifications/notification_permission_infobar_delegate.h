@@ -17,11 +17,13 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
   // added.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const GURL& requesting_frame,
+                                   bool user_gesture,
                                    Profile* profile,
                                    const PermissionSetCallback& callback);
 
  private:
   NotificationPermissionInfobarDelegate(const GURL& requesting_frame,
+                                        bool user_gesture,
                                         Profile* profile,
                                         const PermissionSetCallback& callback);
   ~NotificationPermissionInfobarDelegate() override;

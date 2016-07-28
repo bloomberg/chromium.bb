@@ -12,11 +12,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
-  // TODO(stefanocs): Pass the actual |gesture_type| value to PermissionUmaUtil.
   if (!action_taken_) {
-    PermissionUmaUtil::PermissionIgnored(permission_type_,
-                                         PermissionRequestGestureType::UNKNOWN,
-                                         requesting_origin_, profile_);
+    PermissionUmaUtil::PermissionIgnored(
+        permission_type_,
+        user_gesture_ ? PermissionRequestGestureType::GESTURE
+                      : PermissionRequestGestureType::NO_GESTURE,
+        requesting_origin_, profile_);
   }
 }
 
@@ -24,12 +25,14 @@ PermissionInfobarDelegate::PermissionInfobarDelegate(
     const GURL& requesting_origin,
     content::PermissionType permission_type,
     ContentSettingsType content_settings_type,
+    bool user_gesture,
     Profile* profile,
     const base::Callback<void(bool, bool)>& callback)
     : requesting_origin_(requesting_origin),
       action_taken_(false),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
+      user_gesture_(user_gesture),
       profile_(profile),
       callback_(callback) {}
 
