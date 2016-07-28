@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
+#import "ios/chrome/browser/chrome_coordinator.h"
 
 namespace web {
 struct ContextMenuParams;
@@ -15,7 +16,9 @@ struct ContextMenuParams;
 
 // Abstracts displaying context menus for all device form factors. Will show a
 // sheet on the phone and use a popover on a tablet.
-@interface ContextMenuCoordinator : NSObject
+// Once this coordinator is stopped, the underlying alert and any menu items
+// which have been added are deleted.
+@interface ContextMenuCoordinator : ChromeCoordinator
 
 // Whether the context menu is visible. This will be true after |-start| is
 // called until a subsequent |-stop|.
@@ -23,17 +26,20 @@ struct ContextMenuParams;
 
 // Initializes with details provided in |params|. Context menu will be presented
 // from |viewController|.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                    params:(const web::ContextMenuParams&)params
+    NS_DESIGNATED_INITIALIZER;
+
+// Used for downstream compatibility.
 - (instancetype)initWithViewController:(UIViewController*)viewController
                                 params:(const web::ContextMenuParams&)params;
 
+// Params are needed for the initialization.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
 // Adds an item at the end of the menu if |visible| is false.
 - (void)addItemWithTitle:(NSString*)title action:(ProceduralBlock)action;
-
-// Displays the context menu.
-- (void)start;
-// Dismisses the context menu. Any menu items which have been added will be
-// cleared after this call.
-- (void)stop;
 
 @end
 

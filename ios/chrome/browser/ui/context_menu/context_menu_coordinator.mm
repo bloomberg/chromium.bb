@@ -4,117 +4,71 @@
 
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 
-#import "base/ios/weak_nsobject.h"
+#import <UIKit/UIKit.h>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
-#import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 
 @interface ContextMenuCoordinator () {
-  // Underlying system alert.
-  base::scoped_nsobject<UIAlertController> _alertController;
-  // View controller which will be used to present the |_alertController|.
-  base::WeakNSObject<UIViewController> _presentingViewController;
-  // Parameters that define what is shown in the context menu.
-  web::ContextMenuParams _params;
+  // Coordinator handling the alert.
+  base::scoped_nsobject<ActionSheetCoordinator> _alertCoordinator;
 }
-// Redefined to readwrite.
-@property(nonatomic, readwrite, getter=isVisible) BOOL visible;
-// Lazy initializer to create the |_alert|.
-@property(nonatomic, readonly) UIAlertController* alertController;
-// Called when the alert is dismissed to perform cleanup.
-- (void)alertDismissed;
 @end
 
 @implementation ContextMenuCoordinator
-@synthesize visible = _visible;
 
-- (instancetype)initWithViewController:(UIViewController*)viewController
-                                params:(const web::ContextMenuParams&)params {
-  self = [super init];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                    params:
+                                        (const web::ContextMenuParams&)params {
+  self = [super initWithBaseViewController:viewController];
   if (self) {
-    _params = params;
-    _presentingViewController.reset(viewController);
+    CGRect rect = CGRectMake(params.location.x, params.location.y, 1.0, 1.0);
+    _alertCoordinator.reset([[ActionSheetCoordinator alloc]
+        initWithBaseViewController:viewController
+                             title:params.menu_title
+                           message:nil
+                              rect:rect
+                              view:params.view]);
   }
   return self;
 }
 
-#pragma mark - Object Lifecycle
+- (instancetype)initWithViewController:(UIViewController*)viewController
+                                params:(const web::ContextMenuParams&)params {
+  return [self initWithBaseViewController:viewController params:params];
+}
 
-- (void)dealloc {
-  [self stop];
-  [super dealloc];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark - Public Methods
 
 - (void)addItemWithTitle:(NSString*)title action:(ProceduralBlock)actionBlock {
-  if (self.visible) {
-    return;
-  }
-  base::WeakNSObject<ContextMenuCoordinator> weakSelf(self);
-  [self.alertController
-      addAction:[UIAlertAction actionWithTitle:title
-                                         style:UIAlertActionStyleDefault
-                                       handler:^(UIAlertAction*) {
-                                         [weakSelf alertDismissed];
-                                         actionBlock();
-                                       }]];
+  [_alertCoordinator addItemWithTitle:title
+                               action:actionBlock
+                                style:UIAlertActionStyleDefault];
 }
 
 - (void)start {
-  // Check that the view is still visible on screen, otherwise just return and
-  // don't show the context menu.
-  if (![_params.view window] &&
-      ![_params.view isKindOfClass:[UIWindow class]]) {
-    return;
-  }
-
-  [_presentingViewController presentViewController:self.alertController
-                                          animated:YES
-                                        completion:nil];
-  self.visible = YES;
+  [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
+                               action:nil
+                                style:UIAlertActionStyleCancel];
+  [_alertCoordinator start];
 }
 
 - (void)stop {
-  [_alertController dismissViewControllerAnimated:NO completion:nil];
-  self.visible = NO;
-  _alertController.reset();
+  [_alertCoordinator stop];
 }
 
 #pragma mark - Property Implementation
 
-- (UIAlertController*)alertController {
-  if (!_alertController) {
-    DCHECK([_params.view isDescendantOfView:[_presentingViewController view]]);
-    UIAlertController* alert = [UIAlertController
-        alertControllerWithTitle:_params.menu_title
-                         message:nil
-                  preferredStyle:UIAlertControllerStyleActionSheet];
-    alert.popoverPresentationController.sourceView = _params.view;
-    alert.popoverPresentationController.sourceRect =
-        CGRectMake(_params.location.x, _params.location.y, 1.0, 1.0);
-
-    base::WeakNSObject<ContextMenuCoordinator> weakSelf(self);
-    UIAlertAction* cancelAction =
-        [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                                 style:UIAlertActionStyleCancel
-                               handler:^(UIAlertAction*) {
-                                 [weakSelf alertDismissed];
-                               }];
-    [alert addAction:cancelAction];
-
-    _alertController.reset([alert retain]);
-  }
-  return _alertController;
-}
-
-#pragma mark - Private Methods
-
-- (void)alertDismissed {
-  self.visible = NO;
-  _alertController.reset();
+- (BOOL)isVisible {
+  return [_alertCoordinator isVisible];
 }
 
 @end

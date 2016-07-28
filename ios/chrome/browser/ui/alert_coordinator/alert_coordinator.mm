@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 
 #import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_block.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
