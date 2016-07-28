@@ -3067,7 +3067,7 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
 
     double delay;
     String refreshURL;
-    if (!parseHTTPRefresh(content, httpRefreshType == HttpRefreshFromMetaTag, delay, refreshURL))
+    if (!parseHTTPRefresh(content, httpRefreshType == HttpRefreshFromMetaTag ? isHTMLSpace<UChar> : nullptr, delay, refreshURL))
         return;
     if (refreshURL.isEmpty())
         refreshURL = url().getString();

@@ -97,7 +97,9 @@ PLATFORM_EXPORT ContentDispositionType getContentDispositionType(const String&);
 PLATFORM_EXPORT bool isValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool isValidHTTPFieldContentRFC7230(const String&);
 PLATFORM_EXPORT bool isValidHTTPToken(const String&);
-PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& delay, String& url);
+// |matcher| specifies a function to check a whitespace character. if |nullptr|
+// is specified, ' ' and '\t' are treated as whitespace characters.
+PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh, WTF::CharacterMatchFunctionPtr matcher, double& delay, String& url);
 PLATFORM_EXPORT double parseDate(const String&);
 
 // Given a Media Type (like "foo/bar; baz=gazonk" - usually from the
