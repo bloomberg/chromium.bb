@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -138,6 +139,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Register prefs used by Clear Browsing Data UI.
   registry->RegisterIntegerPref(
       prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
+  registry->RegisterIntegerPref(
+      browsing_data::prefs::kDeleteTimePeriod, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   ios::GetChromeBrowserProvider()->RegisterProfilePrefs(registry);
 }

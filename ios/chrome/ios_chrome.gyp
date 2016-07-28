@@ -52,6 +52,7 @@
         '../../components/components.gyp:bookmarks_browser',
         '../../components/components.gyp:browser_sync_browser',
         '../../components/components.gyp:browser_sync_common',
+        '../../components/components.gyp:browsing_data_core',
         '../../components/components.gyp:component_updater',
         '../../components/components.gyp:content_settings_core_browser',
         '../../components/components.gyp:cookie_config',
