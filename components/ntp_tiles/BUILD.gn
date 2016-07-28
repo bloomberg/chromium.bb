@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(!is_ios)  # TODO(sfiera): support iOS http://crbug.com/617966
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -32,7 +30,6 @@ static_library("ntp_tiles") {
     "//components/google/core/browser",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/safe_json",
     "//components/search_engines",
     "//components/variations",
     "//components/variations/service",

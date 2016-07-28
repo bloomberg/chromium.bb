@@ -38,6 +38,11 @@ class TemplateURLService;
 
 namespace ntp_tiles {
 
+using ParseJSONCallback = base::Callback<void(
+    const std::string& unsafe_json,
+    const base::Callback<void(std::unique_ptr<base::Value>)>& success_callback,
+    const base::Callback<void(const std::string&)>& error_callback)>;
+
 // Downloads and provides a list of suggested popular sites, for display on
 // the NTP when there are not enough personalized suggestions. Caches the
 // downloaded file on disk to avoid re-downloading on every startup.
@@ -66,7 +71,8 @@ class PopularSites : public net::URLFetcherDelegate {
                const TemplateURLService* template_url_service,
                variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
-               const base::FilePath& directory);
+               const base::FilePath& directory,
+               ParseJSONCallback parse_json);
 
   // Starts the process of retrieving popular sites. When they are available,
   // invokes |callback| with the result, on the same thread as the caller. Never
@@ -115,6 +121,7 @@ class PopularSites : public net::URLFetcherDelegate {
   variations::VariationsService* const variations_;
   net::URLRequestContextGetter* const download_context_;
   base::FilePath const local_path_;
+  ParseJSONCallback parse_json_;
 
   // Set by StartFetch() and called after fetch completes.
   FinishedCallback callback_;

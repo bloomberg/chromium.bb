@@ -25,6 +25,7 @@
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/popular_sites.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
@@ -162,7 +163,8 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
                      TemplateURLServiceFactory::GetForProfile(profile),
                      g_browser_process->variations_service(),
                      profile->GetRequestContext(),
-                     ChromePopularSites::GetDirectory()),
+                     ChromePopularSites::GetDirectory(),
+                     base::Bind(safe_json::SafeJsonParser::Parse)),
       most_visited_(BrowserThread::GetBlockingPool(),
                     profile->GetPrefs(),
                     TopSitesFactory::GetForProfile(profile),

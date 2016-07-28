@@ -32,11 +32,6 @@
         'ntp_tiles/switches.cc',
       ],
       'conditions': [
-        ['OS != "ios"', {
-          'dependencies': [
-            'safe_json',
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             'ntp_tiles_jni_headers',

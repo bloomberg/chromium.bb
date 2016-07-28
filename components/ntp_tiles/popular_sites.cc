@@ -25,7 +25,6 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
@@ -176,7 +175,8 @@ PopularSites::PopularSites(
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
     net::URLRequestContextGetter* download_context,
-    const base::FilePath& directory)
+    const base::FilePath& directory,
+    ParseJSONCallback parse_json)
     : blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       prefs_(prefs),
@@ -186,6 +186,7 @@ PopularSites::PopularSites(
       local_path_(directory.empty()
                       ? base::FilePath()
                       : directory.AppendASCII(kPopularSitesLocalFilename)),
+      parse_json_(std::move(parse_json)),
       is_fallback_(false),
       weak_ptr_factory_(this) {}
 
@@ -296,7 +297,7 @@ void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  safe_json::SafeJsonParser::Parse(
+  parse_json_.Run(
       json_string,
       base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&PopularSites::OnJsonParseFailed,
