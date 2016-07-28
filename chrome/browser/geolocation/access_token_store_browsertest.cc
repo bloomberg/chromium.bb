@@ -8,11 +8,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/access_token_store.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "device/geolocation/access_token_store.h"
 
-using content::AccessTokenStore;
+using device::AccessTokenStore;
 using content::BrowserThread;
 
 namespace {

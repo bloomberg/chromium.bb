@@ -260,8 +260,14 @@
             'autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h',
             'autofill/core/browser/autofill_save_card_infobar_mobile.h',
           ],
-        }]
+        }],
+        ['OS!="ios"', {
+          'dependencies': [
+          '../device/geolocation/geolocation.gyp:device_geolocation',
+          ]
+        }],
       ],
+
     },
 
     {

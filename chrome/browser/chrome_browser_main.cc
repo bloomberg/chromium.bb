@@ -141,8 +141,6 @@
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/geolocation_delegate.h"
-#include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -153,6 +151,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "device/geolocation/geolocation_delegate.h"
+#include "device/geolocation/geolocation_provider.h"
 #include "grit/platform_locale_settings.h"
 #include "media/base/media_resources.h"
 #include "net/base/net_module.h"
@@ -278,11 +278,11 @@ using content::BrowserThread;
 namespace {
 
 // A provider of Geolocation services to override AccessTokenStore.
-class ChromeGeolocationDelegate : public content::GeolocationDelegate {
+class ChromeGeolocationDelegate : public device::GeolocationDelegate {
  public:
   ChromeGeolocationDelegate() = default;
 
-  scoped_refptr<content::AccessTokenStore> CreateAccessTokenStore() final {
+  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
     return new ChromeAccessTokenStore();
   }
 
@@ -1221,7 +1221,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
 
-  content::GeolocationProvider::SetGeolocationDelegate(
+  device::GeolocationProvider::SetGeolocationDelegate(
       new ChromeGeolocationDelegate());
 
   return content::RESULT_CODE_NORMAL_EXIT;

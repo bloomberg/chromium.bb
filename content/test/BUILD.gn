@@ -78,6 +78,7 @@ static_library("test_support") {
     "//content/renderer:for_content_tests",
     "//content/shell:pak",
     "//content/utility:for_content_tests",
+    "//device/geolocation:device_geolocation",
     "//device/nfc:mojo_bindings",
     "//ipc:test_support",
     "//media",
@@ -190,6 +191,7 @@ static_library("test_support") {
 
   if (is_android) {
     deps += [
+      "//device/geolocation:geolocation_java",
       "//media/capture/video/android:android",
       "//ui/android",
       "//ui/shell_dialogs",
@@ -771,9 +773,6 @@ test("content_unittests") {
   if (is_linux) {
     if (use_dbus) {
       deps += [ "//dbus:test_support" ]
-    } else {
-      sources -=
-          [ "../browser/geolocation/wifi_data_provider_linux_unittest.cc" ]
     }
   }
   if (is_win) {
@@ -791,7 +790,6 @@ test("content_unittests") {
     ]
   }
   if (is_chromeos) {
-    sources -= [ "../browser/geolocation/wifi_data_provider_linux_unittest.cc" ]
     deps += [ "//chromeos" ]
   }
   if (is_android) {
@@ -800,8 +798,6 @@ test("content_unittests") {
                     ".",
                     "//content")
     sources -= [
-      "../browser/geolocation/network_location_provider_unittest.cc",
-      "../browser/geolocation/wifi_data_provider_common_unittest.cc",
       "../browser/power_usage_monitor_impl_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
@@ -810,6 +806,7 @@ test("content_unittests") {
     deps += [
       "//base:base_java_unittest_support",
       "//content/public/android:content_java",
+      "//device/geolocation:geolocation_java",
       "//v8:v8_external_startup_data_assets",
     ]
 

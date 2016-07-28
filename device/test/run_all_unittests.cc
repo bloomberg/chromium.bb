@@ -11,6 +11,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
+#include "device/geolocation/android/geolocation_jni_registrar.h"
 #include "device/power_save_blocker/power_save_blocker_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #endif
@@ -18,6 +19,7 @@
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   device::android::RegisterBluetoothJni(base::android::AttachCurrentThread());
+  device::android::RegisterGeolocationJni(base::android::AttachCurrentThread());
   device::android::RegisterPowerSaveBlockerJni(
       base::android::AttachCurrentThread());
   device::android::RegisterUsbJni(base::android::AttachCurrentThread());

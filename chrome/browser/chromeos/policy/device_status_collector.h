@@ -23,8 +23,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
-#include "content/public/browser/geolocation_provider.h"
-#include "content/public/common/geoposition.h"
+#include "device/geolocation/geolocation_provider.h"
+#include "device/geolocation/geoposition.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "ui/base/idle/idle.h"
 
@@ -53,8 +53,8 @@ class DeviceStatusCollector {
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
   typedef base::Callback<void(
-      const content::GeolocationProvider::LocationUpdateCallback& callback)>
-          LocationUpdateRequester;
+      const device::GeolocationProvider::LocationUpdateCallback& callback)>
+      LocationUpdateRequester;
 
   using VolumeInfoFetcher = base::Callback<
     std::vector<enterprise_management::VolumeInfo>(
@@ -188,8 +188,8 @@ class DeviceStatusCollector {
 
   void ScheduleGeolocationUpdateRequest();
 
-  // content::GeolocationUpdateCallback implementation.
-  void ReceiveGeolocationUpdate(const content::Geoposition&);
+  // device::GeolocationUpdateCallback implementation.
+  void ReceiveGeolocationUpdate(const device::Geoposition&);
 
   // Callback invoked to update our cached disk information.
   void ReceiveVolumeInfo(
@@ -228,7 +228,7 @@ class DeviceStatusCollector {
   std::string os_version_;
   std::string firmware_version_;
 
-  content::Geoposition position_;
+  device::Geoposition position_;
 
   // Cached disk volume information.
   std::vector<enterprise_management::VolumeInfo> volume_info_;
@@ -270,7 +270,7 @@ class DeviceStatusCollector {
   // way to mock geolocation exists.
   LocationUpdateRequester location_update_requester_;
 
-  std::unique_ptr<content::GeolocationProvider::Subscription>
+  std::unique_ptr<device::GeolocationProvider::Subscription>
       geolocation_subscription_;
 
   // Cached values of the reporting settings from the device policy.

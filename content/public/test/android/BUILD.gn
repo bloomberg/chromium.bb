@@ -25,6 +25,7 @@ android_library("content_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
+    "//device/geolocation:geolocation_java_test_support",
   ]
   java_files = [
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestBase.java",
@@ -37,7 +38,6 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/util/HistoryUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/JavaScriptUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/KeyUtils.java",
-    "javatests/src/org/chromium/content/browser/test/util/MockLocationProvider.java",
     "javatests/src/org/chromium/content/browser/test/util/MockOrientationObserver.java",
     "javatests/src/org/chromium/content/browser/test/util/OrientationChangeObserverCriteria.java",
     "javatests/src/org/chromium/content/browser/test/util/RenderProcessLimit.java",
