@@ -30,10 +30,6 @@ struct ContextMenuParams;
                                     params:(const web::ContextMenuParams&)params
     NS_DESIGNATED_INITIALIZER;
 
-// Used for downstream compatibility.
-- (instancetype)initWithViewController:(UIViewController*)viewController
-                                params:(const web::ContextMenuParams&)params;
-
 // Params are needed for the initialization.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;

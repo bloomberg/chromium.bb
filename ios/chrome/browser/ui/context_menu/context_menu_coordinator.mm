@@ -36,11 +36,6 @@
   return self;
 }
 
-- (instancetype)initWithViewController:(UIViewController*)viewController
-                                params:(const web::ContextMenuParams&)params {
-  return [self initWithBaseViewController:viewController params:params];
-}
-
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController {
   NOTREACHED();
   return nil;
