@@ -101,6 +101,7 @@
       'browser/chrome_navigation_browsertest.cc',
       'browser/chrome_plugin_browsertest.cc',
       'browser/chrome_security_exploit_browsertest.cc',
+      'browser/chrome_service_worker_browsertest.cc',
       'browser/chrome_site_per_process_browsertest.cc',
       'browser/chrome_switches_browsertest.cc',
       'browser/collected_cookies_browsertest.cc',
@@ -2329,7 +2330,6 @@
         }],
         ['disable_nacl==0', {
           'sources':[
-            'browser/chrome_service_worker_browsertest.cc',
             'browser/extensions/extension_nacl_browsertest.cc',
             'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
           ],
