@@ -144,28 +144,6 @@ class BrowsingDataRemover : public KeyedService
     MAX_CHOICE_VALUE
   };
 
-  // When BrowsingDataRemover successfully removes data, a notification of type
-  // NOTIFICATION_BROWSING_DATA_REMOVED is triggered with a Details object of
-  // this type.
-  struct NotificationDetails {
-    NotificationDetails();
-    NotificationDetails(const NotificationDetails& details);
-    NotificationDetails(base::Time removal_begin,
-                       int removal_mask,
-                       int origin_type_mask);
-    ~NotificationDetails();
-
-    // The beginning of the removal time range.
-    base::Time removal_begin;
-
-    // The removal mask (see the RemoveDataMask enum for details).
-    int removal_mask;
-
-    // The origin type mask (see BrowsingDataHelper::OriginTypeMask for
-    // details).
-    int origin_type_mask;
-  };
-
   struct TimeRange {
     TimeRange(base::Time begin, base::Time end) : begin(begin), end(end) {}
     bool operator==(const TimeRange& other) const;
@@ -191,10 +169,6 @@ class BrowsingDataRemover : public KeyedService
    protected:
     virtual ~Observer() {}
   };
-
-  using Callback = base::Callback<void(const NotificationDetails&)>;
-  using CallbackSubscription = std::unique_ptr<
-      base::CallbackList<void(const NotificationDetails&)>::Subscription>;
 
   // The completion inhibitor can artificially delay completion of the browsing
   // data removal process. It is used during testing to simulate scenarios in
@@ -228,14 +202,6 @@ class BrowsingDataRemover : public KeyedService
     completion_inhibitor_ = inhibitor;
   }
 
-  // Add a callback to the list of callbacks to be called during a browsing data
-  // removal event. Returns a subscription object that can be used to
-  // un-register the callback.
-  // TODO(crbug.com/483528): Make this non-static and merge it with the Observer
-  // interface.
-  static CallbackSubscription RegisterOnBrowsingDataRemovedCallback(
-      const Callback& callback);
-
   // Removes the specified items related to browsing for all origins that match
   // the provided |origin_type_mask| (see BrowsingDataHelper::OriginTypeMask).
   void Remove(const TimeRange& time_range,
@@ -264,6 +230,15 @@ class BrowsingDataRemover : public KeyedService
   void OverrideWebappRegistryForTesting(
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
+
+  // Parameters of the last call are exposed to be used by tests. Removal and
+  // origin type masks equal to -1 mean that no removal has ever been executed.
+  // TODO(msramek): If other consumers than tests are interested in this,
+  // consider returning them in OnBrowsingDataRemoverDone() callback.
+  const base::Time& GetLastUsedBeginTime();
+  const base::Time& GetLastUsedEndTime();
+  int GetLastUsedRemovalMask();
+  int GetLastUsedOriginTypeMask();
 
  protected:
   // Use BrowsingDataRemoverFactory::GetForBrowserContext to get an instance of

@@ -120,20 +120,6 @@ using content::DOMStorageContext;
 
 namespace {
 
-using CallbackList =
-    base::CallbackList<void(const BrowsingDataRemover::NotificationDetails&)>;
-
-// Contains all registered callbacks for browsing data removed notifications.
-CallbackList* g_on_browsing_data_removed_callbacks = nullptr;
-
-// Accessor for |*g_on_browsing_data_removed_callbacks|. Creates a new object
-// the first time so that it always returns a valid object.
-CallbackList* GetOnBrowsingDataRemovedCallbacks() {
-  if (!g_on_browsing_data_removed_callbacks)
-    g_on_browsing_data_removed_callbacks = new CallbackList();
-  return g_on_browsing_data_removed_callbacks;
-}
-
 void UIThreadTrampolineHelper(const base::Closure& callback) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
@@ -266,30 +252,6 @@ void ClearChannelIDsOnIOThread(
 BrowsingDataRemover::CompletionInhibitor*
     BrowsingDataRemover::completion_inhibitor_ = nullptr;
 
-BrowsingDataRemover::NotificationDetails::NotificationDetails()
-    : removal_begin(base::Time()),
-      removal_mask(-1),
-      origin_type_mask(-1) {
-}
-
-BrowsingDataRemover::NotificationDetails::NotificationDetails(
-    const BrowsingDataRemover::NotificationDetails& details)
-    : removal_begin(details.removal_begin),
-      removal_mask(details.removal_mask),
-      origin_type_mask(details.origin_type_mask) {
-}
-
-BrowsingDataRemover::NotificationDetails::NotificationDetails(
-    base::Time removal_begin,
-    int removal_mask,
-    int origin_type_mask)
-    : removal_begin(removal_begin),
-      removal_mask(removal_mask),
-      origin_type_mask(origin_type_mask) {
-}
-
-BrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
-
 bool BrowsingDataRemover::TimeRange::operator==(
     const BrowsingDataRemover::TimeRange& other) const {
   return begin == other.begin && end == other.end;
@@ -327,6 +289,8 @@ BrowsingDataRemover::BrowsingDataRemover(
     content::BrowserContext* browser_context)
     : profile_(Profile::FromBrowserContext(browser_context)),
       is_removing_(false),
+      remove_mask_(-1),
+      origin_type_mask_(-1),
 #if BUILDFLAG(ANDROID_JAVA_UI)
       webapp_registry_(new WebappRegistry()),
 #endif
@@ -1069,6 +1033,23 @@ void BrowsingDataRemover::OverrideWebappRegistryForTesting(
 }
 #endif
 
+const base::Time& BrowsingDataRemover::GetLastUsedBeginTime() {
+  return delete_begin_;
+}
+
+const base::Time& BrowsingDataRemover::GetLastUsedEndTime() {
+  return delete_end_;
+}
+
+int BrowsingDataRemover::GetLastUsedRemovalMask() {
+  return remove_mask_;
+}
+
+int BrowsingDataRemover::GetLastUsedOriginTypeMask() {
+  return origin_type_mask_;
+}
+
+
 void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
     HostContentSettingsMap* content_settings_map,
     ContentSettingsType content_type,
@@ -1128,13 +1109,6 @@ void BrowsingDataRemover::OnKeywordsLoaded() {
 
 void BrowsingDataRemover::Notify() {
   SetRemoving(false);
-
-  // Notify observers.
-  BrowsingDataRemover::NotificationDetails details(delete_begin_, remove_mask_,
-      origin_type_mask_);
-
-  GetOnBrowsingDataRemovedCallbacks()->Notify(details);
-
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBrowsingDataRemoverDone());
 }
 
@@ -1323,11 +1297,4 @@ void BrowsingDataRemover::OnClearedDomainReliabilityMonitor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_domain_reliability_monitor_ = false;
   NotifyIfDone();
-}
-
-// static
-BrowsingDataRemover::CallbackSubscription
-    BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-        const BrowsingDataRemover::Callback& callback) {
-  return GetOnBrowsingDataRemovedCallbacks()->Add(callback);
 }

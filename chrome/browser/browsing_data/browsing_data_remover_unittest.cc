@@ -1025,15 +1025,11 @@ class BrowsingDataRemoverTest : public testing::Test {
   BrowsingDataRemoverTest()
       : profile_(new TestingProfile()),
         clear_domain_reliability_tester_(GetProfile()) {
-    callback_subscription_ =
-        BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-            base::Bind(&BrowsingDataRemoverTest::NotifyWithDetails,
-                       base::Unretained(this)));
+    remover_ =
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
-    remover->OverrideWebappRegistryForTesting(
+    remover_->OverrideWebappRegistryForTesting(
         std::unique_ptr<WebappRegistry>(new TestWebappRegistry()));
 #endif
   }
@@ -1065,8 +1061,6 @@ class BrowsingDataRemoverTest : public testing::Test {
     TestStoragePartition storage_partition;
     remover->OverrideStoragePartitionForTesting(&storage_partition);
 
-    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
-
     int origin_type_mask = BrowsingDataHelper::UNPROTECTED_WEB;
     if (include_protected_origins)
       origin_type_mask |= BrowsingDataHelper::PROTECTED_WEB;
@@ -1090,8 +1084,6 @@ class BrowsingDataRemoverTest : public testing::Test {
     TestStoragePartition storage_partition;
     remover->OverrideStoragePartitionForTesting(&storage_partition);
 
-    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
-
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveImpl(BrowsingDataRemover::Period(period), remove_mask,
                         filter_builder, BrowsingDataHelper::UNPROTECTED_WEB);
@@ -1108,31 +1100,20 @@ class BrowsingDataRemoverTest : public testing::Test {
 
   void DestroyProfile() { profile_.reset(); }
 
-  base::Time GetBeginTime() {
-    return called_with_details_->removal_begin;
+  const base::Time& GetBeginTime() {
+    return remover_->GetLastUsedBeginTime();
   }
 
   int GetRemovalMask() {
-    return called_with_details_->removal_mask;
+    return remover_->GetLastUsedRemovalMask();
   }
 
   int GetOriginTypeMask() {
-    return called_with_details_->origin_type_mask;
+    return remover_->GetLastUsedOriginTypeMask();
   }
 
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
     return storage_partition_removal_data_;
-  }
-
-  // Callback for browsing data removal events.
-  void NotifyWithDetails(
-      const BrowsingDataRemover::NotificationDetails& details) {
-    // We're not taking ownership of the details object, but storing a copy of
-    // it locally.
-    called_with_details_.reset(
-        new BrowsingDataRemover::NotificationDetails(details));
-
-    callback_subscription_.reset();
   }
 
   MockExtensionSpecialStoragePolicy* CreateMockPolicy() {
@@ -1167,11 +1148,10 @@ class BrowsingDataRemoverTest : public testing::Test {
     return clear_domain_reliability_tester_;
   }
 
- protected:
-  std::unique_ptr<BrowsingDataRemover::NotificationDetails>
-      called_with_details_;
-
  private:
+  // Cached pointer to BrowsingDataRemover for access to testing methods.
+  BrowsingDataRemover* remover_;
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
@@ -1180,8 +1160,6 @@ class BrowsingDataRemoverTest : public testing::Test {
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy_;
 #endif
-
-  BrowsingDataRemover::CallbackSubscription callback_subscription_;
 
   // Needed to mock out DomainReliabilityService, even for unrelated tests.
   ClearDomainReliabilityTester clear_domain_reliability_tester_;
@@ -2174,15 +2152,33 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
   EXPECT_TRUE(tester.HasOrigin(autofill::kSettingsOrigin));
 }
 
+class InspectableCompletionObserver
+    : public BrowsingDataRemoverCompletionObserver {
+ public:
+  explicit InspectableCompletionObserver(BrowsingDataRemover* remover)
+      : BrowsingDataRemoverCompletionObserver(remover) {}
+  ~InspectableCompletionObserver() override {}
+
+  bool called() { return called_; }
+
+ protected:
+  void OnBrowsingDataRemoverDone() override {
+    BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone();
+    called_ = true;
+  }
+
+ private:
+  bool called_ = false;
+};
+
 TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
   // The |completion_inhibitor| on the stack should prevent removal sessions
   // from completing until after ContinueToCompletion() is called.
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
 
-  called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
-
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  InspectableCompletionObserver completion_observer(remover);
   remover->Remove(BrowsingDataRemover::Unbounded(),
                   BrowsingDataRemover::REMOVE_HISTORY,
                   BrowsingDataHelper::UNPROTECTED_WEB);
@@ -2193,26 +2189,24 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
   completion_inhibitor.BlockUntilNearCompletion();
   base::RunLoop().RunUntilIdle();
 
-  // Verify that the completion notification has not yet been broadcasted.
-  EXPECT_EQ(-1, GetRemovalMask());
-  EXPECT_EQ(-1, GetOriginTypeMask());
+  // Verify that the removal has not yet been completed and the observer has
+  // not been called.
+  EXPECT_TRUE(remover->is_removing());
+  EXPECT_FALSE(completion_observer.called());
 
   // Now run the removal process until completion, and verify that observers are
   // now notified, and the notifications is sent out.
-  BrowsingDataRemoverCompletionObserver completion_observer(remover);
   completion_inhibitor.ContinueToCompletion();
   completion_observer.BlockUntilCompletion();
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
+  EXPECT_FALSE(remover->is_removing());
+  EXPECT_TRUE(completion_observer.called());
 }
 
 TEST_F(BrowsingDataRemoverTest, EarlyShutdown) {
-  called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
-
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
-  BrowsingDataRemoverCompletionObserver completion_observer(remover);
+  InspectableCompletionObserver completion_observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
   remover->Remove(BrowsingDataRemover::Unbounded(),
                   BrowsingDataRemover::REMOVE_HISTORY,
@@ -2220,15 +2214,15 @@ TEST_F(BrowsingDataRemoverTest, EarlyShutdown) {
 
   completion_inhibitor.BlockUntilNearCompletion();
 
-  // Verify that the completion notification has not yet been broadcasted.
-  EXPECT_EQ(-1, GetRemovalMask());
-  EXPECT_EQ(-1, GetOriginTypeMask());
+  // Verify that the deletion has not yet been completed and the observer has
+  // not been called.
+  EXPECT_TRUE(remover->is_removing());
+  EXPECT_FALSE(completion_observer.called());
 
   // Destroying the profile should trigger the notification.
   DestroyProfile();
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
-  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
+  EXPECT_TRUE(completion_observer.called());
 
   // Finishing after shutdown shouldn't break anything.
   completion_inhibitor.ContinueToCompletion();
