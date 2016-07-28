@@ -114,7 +114,7 @@ MediaCodecStatus NdkMediaCodecBridge::QueueInputBuffer(
     int index,
     const uint8_t* data,
     size_t data_size,
-    const base::TimeDelta& presentation_time) {
+    base::TimeDelta presentation_time) {
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -136,7 +136,7 @@ MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
     const std::vector<char>& iv,
     const SubsampleEntry* subsamples,
     int subsamples_size,
-    const base::TimeDelta& presentation_time) {
+    base::TimeDelta presentation_time) {
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -186,7 +186,7 @@ void NdkMediaCodecBridge::QueueEOS(int input_buffer_index) {
 }
 
 MediaCodecStatus NdkMediaCodecBridge::DequeueInputBuffer(
-    const base::TimeDelta& timeout,
+    base::TimeDelta timeout,
     int* index) {
   *index = AMediaCodec_dequeueInputBuffer(media_codec_.get(),
                                           timeout.InMicroseconds());
@@ -199,7 +199,7 @@ MediaCodecStatus NdkMediaCodecBridge::DequeueInputBuffer(
 }
 
 MediaCodecStatus NdkMediaCodecBridge::DequeueOutputBuffer(
-    const base::TimeDelta& timeout,
+    base::TimeDelta timeout,
     int* index,
     size_t* offset,
     size_t* size,

@@ -34,7 +34,7 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     const std::string& key_id,
     const std::string& iv,
     const std::vector<SubsampleEntry>& subsamples,
-    const base::TimeDelta& presentation_time) {
+    base::TimeDelta presentation_time) {
   const std::vector<char> key_vec(key_id.begin(), key_id.end());
   const std::vector<char> iv_vec(iv.begin(), iv.end());
   return QueueSecureInputBuffer(index, data, data_size, key_vec, iv_vec,

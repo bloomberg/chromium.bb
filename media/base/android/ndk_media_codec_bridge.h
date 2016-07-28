@@ -30,11 +30,10 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
   MediaCodecStatus GetOutputSize(gfx::Size* size) override;
   MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus GetOutputChannelCount(int* channel_count) override;
-  MediaCodecStatus QueueInputBuffer(
-      int index,
-      const uint8_t* data,
-      size_t data_size,
-      const base::TimeDelta& presentation_time) override;
+  MediaCodecStatus QueueInputBuffer(int index,
+                                    const uint8_t* data,
+                                    size_t data_size,
+                                    base::TimeDelta presentation_time) override;
   using MediaCodecBridge::QueueSecureInputBuffer;
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
@@ -44,11 +43,11 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
       const std::vector<char>& iv,
       const SubsampleEntry* subsamples,
       int subsamples_size,
-      const base::TimeDelta& presentation_time) override;
+      base::TimeDelta presentation_time) override;
   void QueueEOS(int input_buffer_index) override;
-  MediaCodecStatus DequeueInputBuffer(const base::TimeDelta& timeout,
+  MediaCodecStatus DequeueInputBuffer(base::TimeDelta timeout,
                                       int* index) override;
-  MediaCodecStatus DequeueOutputBuffer(const base::TimeDelta& timeout,
+  MediaCodecStatus DequeueOutputBuffer(base::TimeDelta timeout,
                                        int* index,
                                        size_t* offset,
                                        size_t* size,

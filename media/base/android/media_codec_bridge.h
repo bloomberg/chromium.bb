@@ -88,7 +88,7 @@ class MEDIA_EXPORT MediaCodecBridge {
       int index,
       const uint8_t* data,
       size_t data_size,
-      const base::TimeDelta& presentation_time) = 0;
+      base::TimeDelta presentation_time) = 0;
 
   // Similar to the above call, but submits a buffer that is encrypted.  Note:
   // NULL |subsamples| indicates the whole buffer is encrypted.  If |data| is
@@ -101,7 +101,7 @@ class MEDIA_EXPORT MediaCodecBridge {
       const std::string& key_id,
       const std::string& iv,
       const std::vector<SubsampleEntry>& subsamples,
-      const base::TimeDelta& presentation_time);
+      base::TimeDelta presentation_time);
 
   // Same QueueSecureInputBuffer overriden for the use with MediaSourcePlayer
   // and MediaCodecPlayer.
@@ -115,7 +115,7 @@ class MEDIA_EXPORT MediaCodecBridge {
       const std::vector<char>& iv,
       const SubsampleEntry* subsamples,
       int subsamples_size,
-      const base::TimeDelta& presentation_time) = 0;
+      base::TimeDelta presentation_time) = 0;
 
   // Submits an empty buffer with a EOS (END OF STREAM) flag.
   virtual void QueueEOS(int input_buffer_index) = 0;
@@ -126,7 +126,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // MEDIA_CODEC_ERROR if unexpected error happens.
   // Note: Never use infinite timeout as this would block the decoder thread and
   // prevent the decoder job from being released.
-  virtual MediaCodecStatus DequeueInputBuffer(const base::TimeDelta& timeout,
+  virtual MediaCodecStatus DequeueInputBuffer(base::TimeDelta timeout,
                                               int* index) = 0;
 
   // Dequeues an output buffer, block at most timeout_us microseconds.
@@ -139,7 +139,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // TODO(xhwang): Can we drop |end_of_stream| and return
   // MEDIA_CODEC_OUTPUT_END_OF_STREAM?
   virtual MediaCodecStatus DequeueOutputBuffer(
-      const base::TimeDelta& timeout,
+      base::TimeDelta timeout,
       int* index,
       size_t* offset,
       size_t* size,

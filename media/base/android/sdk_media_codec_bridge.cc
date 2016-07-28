@@ -155,7 +155,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
     int index,
     const uint8_t* data,
     size_t data_size,
-    const base::TimeDelta& presentation_time) {
+    base::TimeDelta presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
@@ -179,7 +179,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     const std::vector<char>& iv,
     const SubsampleEntry* subsamples,
     int subsamples_size,
-    const base::TimeDelta& presentation_time) {
+    base::TimeDelta presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
@@ -243,7 +243,7 @@ void SdkMediaCodecBridge::QueueEOS(int input_buffer_index) {
 }
 
 MediaCodecStatus SdkMediaCodecBridge::DequeueInputBuffer(
-    const base::TimeDelta& timeout,
+    base::TimeDelta timeout,
     int* index) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result = Java_MediaCodecBridge_dequeueInputBuffer(
@@ -257,7 +257,7 @@ MediaCodecStatus SdkMediaCodecBridge::DequeueInputBuffer(
 }
 
 MediaCodecStatus SdkMediaCodecBridge::DequeueOutputBuffer(
-    const base::TimeDelta& timeout,
+    base::TimeDelta timeout,
     int* index,
     size_t* offset,
     size_t* size,
