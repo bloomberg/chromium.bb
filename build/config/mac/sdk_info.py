@@ -6,6 +6,9 @@ import os
 import subprocess
 import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+import mac_toolchain
+
 # This script prints information about the build system, the operating
 # system and the iOS or Mac SDK (depending on the platform "iphonesimulator",
 # "iphoneos" or "macosx" generally).
@@ -56,6 +59,9 @@ if __name__ == '__main__':
         'usage: %s [iphoneos|iphonesimulator|macosx]\n' %
         os.path.basename(sys.argv[0]))
     sys.exit(1)
+
+  # Try using the toolchain in mac_files.
+  mac_toolchain.SetToolchainEnvironment()
 
   settings = {}
   FillMachineOSBuild(settings)
