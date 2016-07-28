@@ -248,6 +248,19 @@
             chrome:buttonColor="@color/light_active_color"
             chrome:buttonRaised="false"/>
 
+        <Button
+            android:id="@+id/more_button"
+            style="@style/ButtonCompatBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="@string/more"
+            android:textAllCaps="true"
+            android:textColor="@color/light_active_color"
+            android:textSize="14sp"
+            android:drawableEnd="@drawable/down_arrow"
+            android:drawablePadding="8dp"
+            android:visibility="gone"/>
+
         <View
             android:id="@+id/positive_button_end_padding"
             android:layout_width="0dp"

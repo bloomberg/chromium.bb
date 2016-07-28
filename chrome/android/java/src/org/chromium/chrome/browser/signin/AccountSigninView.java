@@ -94,6 +94,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     private AccountSigninChooseView mSigninChooseView;
     private ButtonCompat mPositiveButton;
     private Button mNegativeButton;
+    private Button mMoreButton;
     private Listener mListener;
     private Delegate mDelegate;
     private String mForcedAccountName;
@@ -138,6 +139,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
         mPositiveButton = (ButtonCompat) findViewById(R.id.positive_button);
         mNegativeButton = (Button) findViewById(R.id.negative_button);
+        mMoreButton = (Button) findViewById(R.id.more_button);
 
         // A workaround for Android support library ignoring padding set in XML. b/20307607
         int padding = getResources().getDimensionPixelSize(R.dimen.fre_button_padding);
@@ -153,7 +155,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                 new AccountSigninConfirmationView.Observer() {
                     @Override
                     public void onScrolledToBottom() {
-                        setPositiveButtonEnabled();
+                        setUpMoreButtonVisible(false);
                     }
                 });
         mSigninAccountImage = (ImageView) findViewById(R.id.signin_account_image);
@@ -334,7 +336,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
         setButtonsEnabled(true);
         setUpConfirmButton();
-        setPositiveButtonDisabled();
         setUpUndoButton();
 
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
@@ -427,7 +428,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                 }
             });
         }
-        setPositiveButtonEnabled();
+        setUpMoreButtonVisible(false);
     }
 
     private void setUpUndoButton() {
@@ -452,6 +453,28 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                 mListener.onAccountSelected(getSelectedAccountName(), false);
             }
         });
+        setUpMoreButtonVisible(true);
+    }
+
+    /*
+    * mMoreButton is used to scroll mSigninConfirmationView down. It displays at the same position
+    * as mPositiveButton.
+    */
+    private void setUpMoreButtonVisible(boolean enabled) {
+        if (enabled) {
+            mPositiveButton.setVisibility(View.GONE);
+            mMoreButton.setVisibility(View.VISIBLE);
+            mMoreButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mSigninConfirmationView.smoothScrollBy(0, mSigninConfirmationView.getHeight());
+                    RecordUserAction.record("Signin_MoreButton_Shown");
+                }
+            });
+        } else {
+            mPositiveButton.setVisibility(View.VISIBLE);
+            mMoreButton.setVisibility(View.GONE);
+        }
     }
 
     private void setNegativeButtonVisible(boolean enabled) {
@@ -504,18 +527,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      */
     public boolean isInForcedAccountMode() {
         return mForcedAccountName != null;
-    }
-
-    private void setPositiveButtonEnabled() {
-        mPositiveButton.setTextColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.signin_head_background));
-        mPositiveButton.setEnabled(true);
-    }
-
-    private void setPositiveButtonDisabled() {
-        mPositiveButton.setTextColor(ApiCompatibilityUtils.getColor(
-                getResources(), R.color.signin_disabled_button_text_color));
-        mPositiveButton.setEnabled(false);
     }
 
     private String getSelectedAccountName() {
