@@ -1279,7 +1279,8 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
                                       const QueryOptions& options,
                                       QueryResults* result) {
   URLRows text_matches;
-  db_->GetTextMatches(text_query, &text_matches);
+  db_->GetTextMatchesWithAlgorithm(text_query, options.matching_algorithm,
+                                   &text_matches);
 
   std::vector<URLResult> matching_visits;
   VisitVector visits;  // Declare outside loop to prevent re-construction.

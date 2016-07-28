@@ -25,6 +25,7 @@
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/common/thumbnail_score.h"
+#include "components/query_parser/query_parser.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -271,6 +272,9 @@ struct QueryOptions {
   // Allows the caller to specify how duplicate URLs in the result set should
   // be handled. The default is REMOVE_DUPLICATES.
   DuplicateHandling duplicate_policy;
+
+  // Allows the caller to specify the matching algorithm for text queries.
+  query_parser::MatchingAlgorithm matching_algorithm;
 
   // Helpers to get the effective parameters values, since a value of 0 means
   // "unspecified".
