@@ -5919,11 +5919,18 @@ void RenderFrameImpl::SendUpdateState() {
 
 void RenderFrameImpl::MaybeEnableMojoBindings() {
   int enabled_bindings = RenderProcess::current()->GetEnabledBindings();
-  // BINDINGS_POLICY_WEB_UI and BINDINGS_POLICY_MOJO are mutually exclusive.
-  // They both provide access to Mojo bindings, but do so in incompatible ways.
-  const int kMojoAndWebUiBindings =
-      BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO;
-  DCHECK_NE(enabled_bindings & kMojoAndWebUiBindings, kMojoAndWebUiBindings);
+  // BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO and BINDINGS_POLICY_HEADLESS
+  // are mutually exclusive. They provide access to Mojo bindings, but do so in
+  // incompatible ways.
+  const int kAllBindingsTypes =
+      BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO | BINDINGS_POLICY_HEADLESS;
+
+  // Make sure that at most one of BINDINGS_POLICY_WEB_UI, BINDINGS_POLICY_MOJO
+  // and BINDINGS_POLICY_HEADLESS have been set.
+  // NOTE x & (x - 1) == 0 is true iff x is zero or a power of two.
+  DCHECK_EQ((enabled_bindings & kAllBindingsTypes) &
+                ((enabled_bindings & kAllBindingsTypes) - 1),
+            0);
 
   // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
   // creating another one. It is not kept as a member, as it deletes itself when
@@ -5933,9 +5940,11 @@ void RenderFrameImpl::MaybeEnableMojoBindings() {
 
   if (IsMainFrame() &&
       enabled_bindings & BINDINGS_POLICY_WEB_UI) {
-    new MojoBindingsController(this, false /* for_layout_tests */);
+    new MojoBindingsController(this, MojoBindingsType::FOR_WEB_UI);
   } else if (enabled_bindings & BINDINGS_POLICY_MOJO) {
-    new MojoBindingsController(this, true /* for_layout_tests */);
+    new MojoBindingsController(this, MojoBindingsType::FOR_LAYOUT_TESTS);
+  } else if (enabled_bindings & BINDINGS_POLICY_HEADLESS) {
+    new MojoBindingsController(this, MojoBindingsType::FOR_HEADLESS);
   }
 }
 

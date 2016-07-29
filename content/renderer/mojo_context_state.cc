@@ -18,6 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
+#include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/mojo_main_runner.h"
 #include "gin/converter.h"
 #include "gin/modules/module_registry.h"
@@ -90,17 +91,28 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
   return source_iter->second;
 }
 
+std::string GetModulePrefixForBindingsType(MojoBindingsType bindings_type,
+                                           blink::WebFrame* frame) {
+  switch (bindings_type) {
+    case MojoBindingsType::FOR_WEB_UI:
+      return frame->getSecurityOrigin().toString().utf8() + "/";
+    case MojoBindingsType::FOR_LAYOUT_TESTS:
+      return "layout-test-mojom://";
+    case MojoBindingsType::FOR_HEADLESS:
+      return "headless-mojom://";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 MojoContextState::MojoContextState(blink::WebFrame* frame,
                                    v8::Local<v8::Context> context,
-                                   bool for_layout_tests)
+                                   MojoBindingsType bindings_type)
     : frame_(frame),
       module_added_(false),
-      module_prefix_(for_layout_tests
-                         ? "layout-test-mojom://"
-                         : frame_->getSecurityOrigin().toString().utf8() +
-                               "/") {
+      module_prefix_(GetModulePrefixForBindingsType(bindings_type, frame)) {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   gin::ContextHolder* context_holder = context_data->context_holder();
   runner_.reset(new MojoMainRunner(frame_, context_holder));
@@ -109,7 +121,7 @@ MojoContextState::MojoContextState(blink::WebFrame* frame,
   content::RenderFrame::FromWebFrame(frame)
       ->EnsureMojoBuiltinsAreAvailable(context_holder->isolate(), context);
   v8::Local<v8::Object> install_target;
-  if (for_layout_tests) {
+  if (bindings_type == MojoBindingsType::FOR_LAYOUT_TESTS) {
     // In layout tests we install the module system under 'mojo.define'
     // for now to avoid globally exposing something as generic as 'define'.
     //

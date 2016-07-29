@@ -20,6 +20,8 @@ namespace content {
 
 class MojoContextState;
 
+enum class MojoBindingsType { FOR_WEB_UI, FOR_LAYOUT_TESTS, FOR_HEADLESS };
+
 // MojoBindingsController is responsible for enabling the renderer side of mojo
 // bindings. It creates (and destroys) a MojoContextState at the appropriate
 // times and handles the necessary browser messages. MojoBindingsController
@@ -28,7 +30,8 @@ class MojoBindingsController
     : public RenderFrameObserver,
       public RenderFrameObserverTracker<MojoBindingsController> {
  public:
-  MojoBindingsController(RenderFrame* render_frame, bool for_layout_tests);
+  MojoBindingsController(RenderFrame* render_frame,
+                         MojoBindingsType bindings_type);
   void RunScriptsAtDocumentStart();
   void RunScriptsAtDocumentReady();
 
@@ -45,7 +48,7 @@ class MojoBindingsController
   void DidClearWindowObject() override;
   void OnDestruct() override;
 
-  const bool for_layout_tests_;
+  const MojoBindingsType bindings_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoBindingsController);
 };

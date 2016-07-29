@@ -13,9 +13,15 @@
 #include "content/public/browser/storage_partition.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
+#include "headless/public/util/black_hole_protocol_handler.h"
+#include "headless/public/util/in_memory_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 
 namespace headless {
+
+namespace {
+const char kHeadlessMojomProtocol[] = "headless-mojom";
+}
 
 // Contains net::URLRequestContextGetter required for resource loading.
 // Must be destructed on the IO thread as per content::ResourceContext
@@ -190,7 +196,7 @@ void HeadlessBrowserContextImpl::SetOptionsForTesting(
 }
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
-    : browser_(browser) {}
+    : browser_(browser), enable_http_and_https_if_mojo_used_(false) {}
 
 HeadlessBrowserContext::Builder::~Builder() = default;
 
@@ -203,10 +209,58 @@ HeadlessBrowserContext::Builder::SetProtocolHandlers(
   return *this;
 }
 
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::AddJsMojoBindings(
+    const std::string& mojom_name,
+    const std::string& js_bindings) {
+  mojo_bindings_.emplace_back(mojom_name, js_bindings);
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
+    bool enable_http_and_https_if_mojo_used) {
+  enable_http_and_https_if_mojo_used_ = enable_http_and_https_if_mojo_used;
+  return *this;
+}
+
 std::unique_ptr<HeadlessBrowserContext>
 HeadlessBrowserContext::Builder::Build() {
+  if (!mojo_bindings_.empty()) {
+    std::unique_ptr<InMemoryProtocolHandler> headless_mojom_protocol_handler(
+        new InMemoryProtocolHandler());
+    for (const MojoBindings& binding : mojo_bindings_) {
+      headless_mojom_protocol_handler->InsertResponse(
+          binding.mojom_name,
+          InMemoryProtocolHandler::Response(binding.js_bindings,
+                                            "application/javascript"));
+    }
+    DCHECK(protocol_handlers_.find(kHeadlessMojomProtocol) ==
+           protocol_handlers_.end());
+    protocol_handlers_[kHeadlessMojomProtocol] =
+        std::move(headless_mojom_protocol_handler);
+
+    // Unless you know what you're doing it's unsafe to allow http/https for a
+    // context with mojo bindings.
+    if (!enable_http_and_https_if_mojo_used_) {
+      protocol_handlers_[url::kHttpScheme] =
+          base::WrapUnique(new BlackHoleProtocolHandler());
+      protocol_handlers_[url::kHttpsScheme] =
+          base::WrapUnique(new BlackHoleProtocolHandler());
+    }
+  }
+
   return base::WrapUnique(new HeadlessBrowserContextImpl(
       std::move(protocol_handlers_), browser_->options()));
 }
+
+HeadlessBrowserContext::Builder::MojoBindings::MojoBindings() {}
+
+HeadlessBrowserContext::Builder::MojoBindings::MojoBindings(
+    const std::string& mojom_name,
+    const std::string& js_bindings)
+    : mojom_name(mojom_name), js_bindings(js_bindings) {}
+
+HeadlessBrowserContext::Builder::MojoBindings::~MojoBindings() {}
 
 }  // namespace headless

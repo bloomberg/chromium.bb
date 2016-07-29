@@ -5,8 +5,10 @@
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
@@ -16,13 +18,13 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_client_impl.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/aura/window.h"
 
 namespace headless {
@@ -86,6 +88,7 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
       base::WrapUnique(new HeadlessWebContentsImpl(
           content::WebContents::Create(create_params), browser));
 
+  headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
   headless_web_contents->InitializeScreen(parent_window, builder->window_size_);
   if (!headless_web_contents->OpenURL(builder->initial_url_))
     return nullptr;
@@ -120,7 +123,8 @@ void HeadlessWebContentsImpl::InitializeScreen(aura::Window* parent_window,
 HeadlessWebContentsImpl::HeadlessWebContentsImpl(
     content::WebContents* web_contents,
     HeadlessBrowserImpl* browser)
-    : web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(browser)),
+    : content::WebContentsObserver(web_contents),
+      web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(browser)),
       web_contents_(web_contents),
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       browser_(browser) {
@@ -129,6 +133,23 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   web_contents_->Close();
+}
+
+void HeadlessWebContentsImpl::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (!mojo_services_.empty()) {
+    render_frame_host->GetRenderViewHost()->AllowBindings(
+        content::BINDINGS_POLICY_HEADLESS);
+  }
+
+  shell::InterfaceRegistry* interface_registry =
+      render_frame_host->GetInterfaceRegistry();
+
+  for (const MojoService& service : mojo_services_) {
+    interface_registry->AddInterface(service.service_name,
+                                     service.service_factory,
+                                     browser_->BrowserMainThread());
+  }
 }
 
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
@@ -206,8 +227,25 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetBrowserContext(
   return *this;
 }
 
+HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
+    const std::string& service_name,
+    const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
+        service_factory) {
+  mojo_services_.emplace_back(service_name, service_factory);
+  return *this;
+}
+
 HeadlessWebContents* HeadlessWebContents::Builder::Build() {
   return browser_->CreateWebContents(this);
 }
+
+HeadlessWebContents::Builder::MojoService::MojoService() {}
+
+HeadlessWebContents::Builder::MojoService::MojoService(
+    const std::string& service_name,
+    const base::Callback<void(mojo::ScopedMessagePipeHandle)>& service_factory)
+    : service_name(service_name), service_factory(service_factory) {}
+
+HeadlessWebContents::Builder::MojoService::~MojoService() {}
 
 }  // namespace headless

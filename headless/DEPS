@@ -1,6 +1,7 @@
 include_rules = [
   "+components/devtools_http_handler",
   "+content/public",
+  "+mojo/public",
   "+net",
   "+ui/base",
   "+ui/base/resource",
@@ -9,4 +10,5 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gl",
   "+ui/ozone/public",
+  "+services/shell/public",
 ]

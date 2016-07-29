@@ -27,10 +27,10 @@ struct MojoContextStateData : public base::SupportsUserData::Data {
 }  // namespace
 
 MojoBindingsController::MojoBindingsController(RenderFrame* render_frame,
-                                               bool for_layout_tests)
+                                               MojoBindingsType bindings_type)
     : RenderFrameObserver(render_frame),
       RenderFrameObserverTracker<MojoBindingsController>(render_frame),
-      for_layout_tests_(for_layout_tests) {}
+      bindings_type_(bindings_type) {}
 
 MojoBindingsController::~MojoBindingsController() {
 }
@@ -41,7 +41,7 @@ void MojoBindingsController::CreateContextState() {
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   MojoContextStateData* data = new MojoContextStateData;
-  data->state.reset(new MojoContextState(frame, context, for_layout_tests_));
+  data->state.reset(new MojoContextState(frame, context, bindings_type_));
   context_data->SetUserData(kMojoContextStateKey, data);
 }
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -258,8 +259,14 @@ static_library("headless_lib") {
     "public/headless_web_contents.h",
     "public/internal/message_dispatcher.h",
     "public/internal/value_conversions.h",
+    "public/util/black_hole_protocol_handler.cc",
+    "public/util/black_hole_protocol_handler.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
+    "public/util/in_memory_protocol_handler.cc",
+    "public/util/in_memory_protocol_handler.h",
+    "public/util/in_memory_request_job.cc",
+    "public/util/in_memory_request_job.h",
     "public/util/user_agent.cc",
     "public/util/user_agent.h",
   ]
@@ -276,6 +283,7 @@ static_library("headless_lib") {
     "//content/public/renderer",
     "//content/public/utility",
     "//net",
+    "//services/shell/public/cpp",
     "//third_party/mesa:osmesa",
     "//ui/aura",
     "//ui/base",
@@ -329,8 +337,41 @@ action("client_api_generator_tests") {
   ]
 }
 
+mojom("embedder_mojo_for_testing") {
+  sources = [
+    "lib/embedder_test.mojom",
+  ]
+}
+
+grit("headless_browsertest_resources_grit") {
+  source = "lib/headless_browsertest_resources.grd"
+  outputs = [
+    "grit/headless_browsertest_resources.h",
+    "$root_gen_dir/headless/headless_browsertest_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "mojom_root=" + rebase_path(root_gen_dir),
+  ]
+  deps = [
+    ":embedder_mojo_for_testing__generator",
+  ]
+  resource_ids = "lib/headless_browsertest_resource_ids"
+}
+
+repack("headless_browser_tests_pak") {
+  sources = [
+    "$root_gen_dir/headless/headless_browsertest_resources.pak",
+  ]
+  output = "$root_out_dir/headless_browser_tests.pak"
+  deps = [
+    ":headless_browsertest_resources_grit",
+  ]
+}
+
 test("headless_browsertests") {
   sources = [
+    "lib/embedder_mojo_browsertest.cc",
     "lib/headless_browser_browsertest.cc",
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
@@ -344,9 +385,15 @@ test("headless_browsertests") {
     "test/test_url_request_job.h",
   ]
 
+  data = [
+    "$root_out_dir/headless_browser_tests.pak",
+  ]
+
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
+    ":embedder_mojo_for_testing",
+    ":headless_browser_tests_pak",
     "//base",
     "//content/test:test_support",
     "//headless:headless_lib",
