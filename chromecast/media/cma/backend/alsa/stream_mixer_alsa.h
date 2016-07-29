@@ -185,7 +185,8 @@ class StreamMixerAlsa {
 
   void WriteFrames();
   bool TryWriteFrames();
-  void WriteMixedPcm(const ::media::AudioBus& mixed, int frames);
+  void WriteMixedPcm(const ::media::AudioBus& mixed, int frames,
+      bool is_silence);
   void UpdateRenderingDelay(int newly_pushed_frames);
   ssize_t BytesPerOutputFormatSample();
 

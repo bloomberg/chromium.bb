@@ -787,7 +787,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
     }
 
     mixed_->Zero();
-    WriteMixedPcm(*mixed_, chunk_size);
+    WriteMixedPcm(*mixed_, chunk_size, true /* is_silence */);
     return true;
   }
 
@@ -814,7 +814,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
     }
   }
 
-  WriteMixedPcm(*mixed_, chunk_size);
+  WriteMixedPcm(*mixed_, chunk_size, false /* is_silence */);
   return true;
 }
 
@@ -823,7 +823,7 @@ ssize_t StreamMixerAlsa::BytesPerOutputFormatSample() {
 }
 
 void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
-                                    int frames) {
+                                    int frames, bool is_silence) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   CHECK_PCM_INITIALIZED();
 
@@ -844,7 +844,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
   mixed.ToInterleaved(frames, BytesPerOutputFormatSample(),
                       interleaved_.data());
   // Filter, send to observers, and post filter
-  if (pre_loopback_filter_) {
+  if (pre_loopback_filter_ && !is_silence) {
     pre_loopback_filter_->ProcessInterleaved(interleaved_.data(), frames);
   }
 
@@ -854,7 +854,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
                               interleaved_.data(), interleaved_size);
   }
 
-  if (post_loopback_filter_) {
+  if (post_loopback_filter_ && !is_silence) {
     post_loopback_filter_->ProcessInterleaved(interleaved_.data(), frames);
   }
 
