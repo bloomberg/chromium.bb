@@ -1346,7 +1346,7 @@
             "overlays": "public",
             "uprev": false,
             "vm_tests": [
-                "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 5400\n}"
+                "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
             ]
         },
         "test-ap": {
@@ -1767,7 +1767,7 @@
         ],
         "description": "Telemetry Builds",
         "vm_tests": [
-            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 5400\n}"
+            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
         ]
     },
     "amd64-generic-telemetry": {
@@ -27388,7 +27388,7 @@
         ],
         "description": "Telemetry Builds",
         "vm_tests": [
-            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 5400\n}"
+            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
         ]
     },
     "x86-generic-telemetry": {

@@ -1035,8 +1035,8 @@ def GetConfig():
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
       vm_tests=[config_lib.VMTestConfig(constants.TELEMETRY_SUITE_TEST_TYPE,
-                                        # Add an extra 30 minutes.
-                                        timeout=90 * 60)],
+                                        # Add an extra 60 minutes.
+                                        timeout=120 * 60)],
       description='Telemetry Builds',
   )
 
