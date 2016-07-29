@@ -38,64 +38,64 @@ SyncEngineContext::SyncEngineContext(
 }
 
 SyncEngineContext::~SyncEngineContext() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 drive::DriveServiceInterface* SyncEngineContext::GetDriveService() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return drive_service_.get();
 }
 
 drive::DriveUploaderInterface* SyncEngineContext::GetDriveUploader() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return drive_uploader_.get();
 }
 
 base::WeakPtr<TaskLogger> SyncEngineContext::GetTaskLogger() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return task_logger_;
 }
 
 MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return metadata_database_.get();
 }
 
 std::unique_ptr<MetadataDatabase> SyncEngineContext::PassMetadataDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return std::move(metadata_database_);
 }
 
 RemoteChangeProcessor* SyncEngineContext::GetRemoteChangeProcessor() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return remote_change_processor_;
 }
 
 base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return ui_task_runner_.get();
 }
 
 base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return worker_task_runner_.get();
 }
 
 base::SequencedWorkerPool* SyncEngineContext::GetWorkerPool() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return worker_pool_.get();
 }
 
 void SyncEngineContext::SetMetadataDatabase(
     std::unique_ptr<MetadataDatabase> metadata_database) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (metadata_database)
     metadata_database_ = std::move(metadata_database);
 }
 
 void SyncEngineContext::SetRemoteChangeProcessor(
     RemoteChangeProcessor* remote_change_processor) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(remote_change_processor);
   remote_change_processor_ = remote_change_processor;
 }

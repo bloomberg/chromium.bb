@@ -15,7 +15,7 @@ SequenceCheckerImpl::SequenceCheckerImpl() {
 
 SequenceCheckerImpl::~SequenceCheckerImpl() = default;
 
-bool SequenceCheckerImpl::CalledOnValidSequencedThread() const {
+bool SequenceCheckerImpl::CalledOnValidSequence() const {
   AutoLock auto_lock(lock_);
   EnsureSequenceTokenAssigned();
 

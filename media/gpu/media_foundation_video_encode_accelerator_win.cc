@@ -82,7 +82,7 @@ MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator()
 MediaFoundationVideoEncodeAccelerator::
     ~MediaFoundationVideoEncodeAccelerator() {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   DCHECK(!encoder_thread_.IsRunning());
   DCHECK(!encoder_task_weak_factory_.HasWeakPtrs());
@@ -91,7 +91,7 @@ MediaFoundationVideoEncodeAccelerator::
 VideoEncodeAccelerator::SupportedProfiles
 MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   SupportedProfiles profiles;
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
@@ -121,7 +121,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (PIXEL_FORMAT_I420 != format) {
     DLOG(ERROR) << "Input format not supported= "
@@ -209,7 +209,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MediaFoundationVideoEncodeAccelerator::EncodeTask,
@@ -220,7 +220,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     const BitstreamBuffer& buffer) {
   DVLOG(3) << __FUNCTION__ << ": buffer size=" << buffer.size();
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (buffer.size() < bitstream_buffer_size_) {
     DLOG(ERROR) << "Output BitstreamBuffer isn't big enough: " << buffer.size()
@@ -251,7 +251,7 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t framerate) {
   DVLOG(3) << __FUNCTION__ << ": bitrate=" << bitrate
            << ": framerate=" << framerate;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -262,7 +262,7 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
 
 void MediaFoundationVideoEncodeAccelerator::Destroy() {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Cancel all callbacks.
   client_ptr_factory_.reset();
@@ -285,7 +285,7 @@ void MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization() {
 }
 
 bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   HRESULT hr = encoder_->GetStreamLimits(
       &input_stream_count_min_, &input_stream_count_max_,
@@ -351,7 +351,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
 }
 
 bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   HRESULT hr = encoder_.QueryInterface(IID_ICodecAPI, codec_api_.ReceiveVoid());
   RETURN_ON_HR_FAILURE(hr, "Couldn't get ICodecAPI", false);

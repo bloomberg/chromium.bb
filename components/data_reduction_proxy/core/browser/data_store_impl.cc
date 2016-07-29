@@ -47,11 +47,11 @@ DataStoreImpl::DataStoreImpl(const base::FilePath& profile_path)
 }
 
 DataStoreImpl::~DataStoreImpl() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void DataStoreImpl::InitializeOnDBThread() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(!db_);
 
   DataStore::Status status = OpenDB();
@@ -61,7 +61,7 @@ void DataStoreImpl::InitializeOnDBThread() {
 
 DataStore::Status DataStoreImpl::Get(base::StringPiece key,
                                      std::string* value) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (!db_)
     return MISC_ERROR;
@@ -78,7 +78,7 @@ DataStore::Status DataStoreImpl::Get(base::StringPiece key,
 
 DataStore::Status DataStoreImpl::Put(
     const std::map<std::string, std::string>& map) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (!db_)
     return MISC_ERROR;
@@ -97,7 +97,7 @@ DataStore::Status DataStoreImpl::Put(
 }
 
 DataStore::Status DataStoreImpl::Delete(base::StringPiece key) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   if (!db_)
     return MISC_ERROR;
@@ -112,7 +112,7 @@ DataStore::Status DataStoreImpl::Delete(base::StringPiece key) {
 }
 
 DataStore::Status DataStoreImpl::OpenDB() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   leveldb::Options options;
   options.create_if_missing = true;
@@ -145,7 +145,7 @@ DataStore::Status DataStoreImpl::OpenDB() {
 }
 
 void DataStoreImpl::RecreateDB() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   LOG(WARNING) << "Deleting corrupt Data Reduction Proxy LevelDB";
   db_.reset(nullptr);

@@ -60,7 +60,7 @@ Thread::~Thread() {
 }
 
 bool Thread::Start() {
-  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
 
   Options options;
 #if defined(OS_WIN)
@@ -71,7 +71,7 @@ bool Thread::Start() {
 }
 
 bool Thread::StartWithOptions(const Options& options) {
-  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   DCHECK(!message_loop_);
   DCHECK(!IsRunning());
 #if defined(OS_WIN)
@@ -117,7 +117,7 @@ bool Thread::StartWithOptions(const Options& options) {
 }
 
 bool Thread::StartAndWaitForTesting() {
-  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   bool result = Start();
   if (!result)
     return false;
@@ -126,7 +126,7 @@ bool Thread::StartAndWaitForTesting() {
 }
 
 bool Thread::WaitUntilThreadStarted() const {
-  DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   if (!message_loop_)
     return false;
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -138,7 +138,7 @@ void Thread::Stop() {
   // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
   // enable this check, until then synchronization with Start() via
   // |thread_lock_| is required...
-  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   AutoLock lock(thread_lock_);
 
   if (thread_.is_null())
@@ -164,7 +164,7 @@ void Thread::Stop() {
 void Thread::StopSoon() {
   // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
   // enable this check.
-  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequence());
 
   if (stopping_ || !message_loop_)
     return;
@@ -184,7 +184,7 @@ PlatformThreadId Thread::GetThreadId() const {
 bool Thread::IsRunning() const {
   // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
   // enable this check.
-  // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+  // DCHECK(owning_sequence_checker_.CalledOnValidSequence());
 
   // If the thread's already started (i.e. |message_loop_| is non-null) and not
   // yet requested to stop (i.e. |stopping_| is false) we can just return true.

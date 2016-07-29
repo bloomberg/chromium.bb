@@ -25,7 +25,7 @@ FakeSyncWorker::~FakeSyncWorker() {
 
 void FakeSyncWorker::Initialize(
     std::unique_ptr<SyncEngineContext> sync_engine_context) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   sync_engine_context_ = std::move(sync_engine_context);
   status_map_.clear();
@@ -34,7 +34,7 @@ void FakeSyncWorker::Initialize(
 
 void FakeSyncWorker::RegisterOrigin(const GURL& origin,
                                     const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // TODO(peria): Check how it should act on installing installed app?
   status_map_[origin] = REGISTERED;
   callback.Run(SYNC_STATUS_OK);
@@ -42,7 +42,7 @@ void FakeSyncWorker::RegisterOrigin(const GURL& origin,
 
 void FakeSyncWorker::EnableOrigin(const GURL& origin,
                                   const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // TODO(peria): Check how it should act on enabling non-installed app?
   status_map_[origin] = ENABLED;
   callback.Run(SYNC_STATUS_OK);
@@ -50,7 +50,7 @@ void FakeSyncWorker::EnableOrigin(const GURL& origin,
 
 void FakeSyncWorker::DisableOrigin(const GURL& origin,
                                    const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // TODO(peria): Check how it should act on disabling non-installed app?
   status_map_[origin] = DISABLED;
   callback.Run(SYNC_STATUS_OK);
@@ -59,7 +59,7 @@ void FakeSyncWorker::DisableOrigin(const GURL& origin,
 void FakeSyncWorker::UninstallOrigin(const GURL& origin,
                                      RemoteFileSyncService::UninstallFlag flag,
                                      const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // TODO(peria): Check how it should act on uninstalling non-installed app?
   status_map_[origin] = UNINSTALLED;
   callback.Run(SYNC_STATUS_OK);
@@ -67,23 +67,23 @@ void FakeSyncWorker::UninstallOrigin(const GURL& origin,
 
 void FakeSyncWorker::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   callback.Run(SYNC_STATUS_OK, storage::FileSystemURL());
 }
 
 void FakeSyncWorker::SetRemoteChangeProcessor(
     RemoteChangeProcessorOnWorker* remote_change_processor_on_worker) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 RemoteServiceState FakeSyncWorker::GetCurrentState() const {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return REMOTE_SERVICE_OK;
 }
 
 void FakeSyncWorker::GetOriginStatusMap(
     const RemoteFileSyncService::StatusMapCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   std::unique_ptr<RemoteFileSyncService::OriginStatusMap> status_map(
       new RemoteFileSyncService::OriginStatusMap);
@@ -111,17 +111,17 @@ void FakeSyncWorker::GetOriginStatusMap(
 }
 
 std::unique_ptr<base::ListValue> FakeSyncWorker::DumpFiles(const GURL& origin) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return nullptr;
 }
 
 std::unique_ptr<base::ListValue> FakeSyncWorker::DumpDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return nullptr;
 }
 
 void FakeSyncWorker::SetSyncEnabled(bool enabled) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   sync_enabled_ = enabled;
 
   if (enabled)
@@ -131,7 +131,7 @@ void FakeSyncWorker::SetSyncEnabled(bool enabled) {
 }
 
 void FakeSyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   FOR_EACH_OBSERVER(
       Observer,
       observers_,
@@ -144,18 +144,18 @@ void FakeSyncWorker::ApplyLocalChange(const FileChange& local_change,
                                       const SyncFileMetadata& local_metadata,
                                       const storage::FileSystemURL& url,
                                       const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   callback.Run(SYNC_STATUS_OK);
 }
 
 void FakeSyncWorker::ActivateService(RemoteServiceState service_state,
                                      const std::string& description) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   UpdateServiceState(service_state, description);
 }
 
 void FakeSyncWorker::DeactivateService(const std::string& description) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE, description);
 }
 
@@ -170,7 +170,7 @@ void FakeSyncWorker::AddObserver(Observer* observer) {
 
 void FakeSyncWorker::UpdateServiceState(RemoteServiceState state,
                                         const std::string& description) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   FOR_EACH_OBSERVER(
       Observer, observers_,

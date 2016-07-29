@@ -116,13 +116,13 @@ TaskGroupSampler::~TaskGroupSampler() {
 }
 
 double TaskGroupSampler::RefreshCpuUsage() {
-  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   return process_metrics_->GetCPUUsage();
 }
 
 MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
-  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   MemoryUsageStats memory_usage;
 #if defined(OS_MACOSX)
@@ -166,21 +166,21 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
 }
 
 int TaskGroupSampler::RefreshIdleWakeupsPerSecond() {
-  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   return process_metrics_->GetIdleWakeupsPerSecond();
 }
 
 #if defined(OS_LINUX)
 int TaskGroupSampler::RefreshOpenFdCount() {
-  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   return process_metrics_->GetOpenFdCount();
 }
 #endif  // defined(OS_LINUX)
 
 bool TaskGroupSampler::RefreshProcessPriority() {
-  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   return process_.IsProcessBackgrounded();
 }

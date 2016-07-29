@@ -101,12 +101,12 @@ NotificationDatabase::NotificationDatabase(const base::FilePath& path)
     : path_(path) {}
 
 NotificationDatabase::~NotificationDatabase() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 NotificationDatabase::Status NotificationDatabase::Open(
     bool create_if_missing) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
 
   if (!create_if_missing) {
@@ -144,7 +144,7 @@ NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
     int64_t notification_id,
     const GURL& origin,
     NotificationDatabaseData* notification_database_data) const {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
   DCHECK_GE(notification_id, kFirstNotificationId);
   DCHECK(origin.is_valid());
@@ -190,7 +190,7 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& notification_database_data,
     int64_t* notification_id) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
   DCHECK(notification_id);
   DCHECK(origin.is_valid());
@@ -224,7 +224,7 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
 NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
     int64_t notification_id,
     const GURL& origin) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(STATE_INITIALIZED, state_);
   DCHECK_GE(notification_id, kFirstNotificationId);
   DCHECK(origin.is_valid());
@@ -251,7 +251,7 @@ NotificationDatabase::DeleteAllNotificationDataForServiceWorkerRegistration(
 }
 
 NotificationDatabase::Status NotificationDatabase::Destroy() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   leveldb::Options options;
   if (IsInMemoryDatabase()) {
@@ -294,7 +294,7 @@ NotificationDatabase::ReadAllNotificationDataInternal(
     const GURL& origin,
     int64_t service_worker_registration_id,
     std::vector<NotificationDatabaseData>* notification_data_vector) const {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(notification_data_vector);
 
   const std::string prefix = CreateDataPrefix(origin);
@@ -330,7 +330,7 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     const GURL& origin,
     int64_t service_worker_registration_id,
     std::set<int64_t>* deleted_notification_set) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(deleted_notification_set);
   DCHECK(origin.is_valid());
 

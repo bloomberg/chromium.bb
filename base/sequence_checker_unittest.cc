@@ -64,50 +64,49 @@ class SequenceCheckerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SequenceCheckerTest);
 };
 
-void ExpectCalledOnValidSequencedThread(SequenceCheckerImpl* sequence_checker) {
+void ExpectCalledOnValidSequence(SequenceCheckerImpl* sequence_checker) {
   ASSERT_TRUE(sequence_checker);
 
   // This should bind |sequence_checker| to the current sequence if it wasn't
   // already bound to a sequence.
-  EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
+  EXPECT_TRUE(sequence_checker->CalledOnValidSequence());
 
   // Since |sequence_checker| is now bound to the current sequence, another call
-  // to CalledOnValidSequencedThread() should return true.
-  EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
+  // to CalledOnValidSequence() should return true.
+  EXPECT_TRUE(sequence_checker->CalledOnValidSequence());
 }
 
-void ExpectCalledOnValidSequencedThreadWithSequenceToken(
+void ExpectCalledOnValidSequenceWithSequenceToken(
     SequenceCheckerImpl* sequence_checker,
     SequenceToken sequence_token) {
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(sequence_token);
-  ExpectCalledOnValidSequencedThread(sequence_checker);
+  ExpectCalledOnValidSequence(sequence_checker);
 }
 
-void ExpectNotCalledOnValidSequencedThread(
-    SequenceCheckerImpl* sequence_checker) {
+void ExpectNotCalledOnValidSequence(SequenceCheckerImpl* sequence_checker) {
   ASSERT_TRUE(sequence_checker);
-  EXPECT_FALSE(sequence_checker->CalledOnValidSequencedThread());
+  EXPECT_FALSE(sequence_checker->CalledOnValidSequence());
 }
 
 }  // namespace
 
 TEST_F(SequenceCheckerTest, CallsAllowedOnSameThreadNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
-  EXPECT_TRUE(sequence_checker.CalledOnValidSequencedThread());
+  EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 }
 
 TEST_F(SequenceCheckerTest, CallsAllowedOnSameThreadSameSequenceToken) {
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
   SequenceCheckerImpl sequence_checker;
-  EXPECT_TRUE(sequence_checker.CalledOnValidSequencedThread());
+  EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 }
 
 TEST_F(SequenceCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
-  RunCallbackThread thread(Bind(&ExpectNotCalledOnValidSequencedThread,
-                                Unretained(&sequence_checker)));
+  RunCallbackThread thread(
+      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)));
 }
 
 TEST_F(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
@@ -116,11 +115,10 @@ TEST_F(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(sequence_token);
   SequenceCheckerImpl sequence_checker;
-  EXPECT_TRUE(sequence_checker.CalledOnValidSequencedThread());
+  EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 
-  RunCallbackThread thread(
-      Bind(&ExpectCalledOnValidSequencedThreadWithSequenceToken,
-           Unretained(&sequence_checker), sequence_token));
+  RunCallbackThread thread(Bind(&ExpectCalledOnValidSequenceWithSequenceToken,
+                                Unretained(&sequence_checker), sequence_token));
 }
 
 TEST_F(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
@@ -136,11 +134,11 @@ TEST_F(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
     // Different SequenceToken.
     ScopedSetSequenceTokenForCurrentThread
         scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
-    EXPECT_FALSE(sequence_checker->CalledOnValidSequencedThread());
+    EXPECT_FALSE(sequence_checker->CalledOnValidSequence());
   }
 
   // No SequenceToken.
-  EXPECT_FALSE(sequence_checker->CalledOnValidSequencedThread());
+  EXPECT_FALSE(sequence_checker->CalledOnValidSequence());
 }
 
 TEST_F(SequenceCheckerTest, DetachFromSequence) {
@@ -155,11 +153,11 @@ TEST_F(SequenceCheckerTest, DetachFromSequence) {
   sequence_checker->DetachFromSequence();
 
   {
-    // Verify that CalledOnValidSequencedThread() returns true when called with
+    // Verify that CalledOnValidSequence() returns true when called with
     // a different sequence token after a call to DetachFromSequence().
     ScopedSetSequenceTokenForCurrentThread
         scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
-    EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
+    EXPECT_TRUE(sequence_checker->CalledOnValidSequence());
   }
 }
 
@@ -167,12 +165,12 @@ TEST_F(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   sequence_checker.DetachFromSequence();
 
-  // Verify that CalledOnValidSequencedThread() returns true when called on a
+  // Verify that CalledOnValidSequence() returns true when called on a
   // different thread after a call to DetachFromSequence().
   RunCallbackThread thread(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)));
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)));
 
-  EXPECT_FALSE(sequence_checker.CalledOnValidSequencedThread());
+  EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
 }
 
 TEST_F(SequenceCheckerTest, SequencedWorkerPool_SameSequenceTokenValid) {
@@ -180,11 +178,9 @@ TEST_F(SequenceCheckerTest, SequencedWorkerPool_SameSequenceTokenValid) {
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   FlushSequencedWorkerPoolForTesting();
 }
 
@@ -193,21 +189,17 @@ TEST_F(SequenceCheckerTest, SequencedWorkerPool_DetachSequenceTokenValid) {
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   FlushSequencedWorkerPoolForTesting();
 
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "B");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "B");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "B");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "B");
   FlushSequencedWorkerPoolForTesting();
 }
 
@@ -217,19 +209,17 @@ TEST_F(SequenceCheckerTest,
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   FlushSequencedWorkerPoolForTesting();
 
-  PostToSequencedWorkerPool(Bind(&ExpectNotCalledOnValidSequencedThread,
-                                 Unretained(&sequence_checker)),
-                            "B");
-  PostToSequencedWorkerPool(Bind(&ExpectNotCalledOnValidSequencedThread,
-                                 Unretained(&sequence_checker)),
-                            "B");
+  PostToSequencedWorkerPool(
+      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)),
+      "B");
+  PostToSequencedWorkerPool(
+      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)),
+      "B");
   FlushSequencedWorkerPoolForTesting();
 }
 
@@ -239,14 +229,12 @@ TEST_F(SequenceCheckerTest,
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   FlushSequencedWorkerPoolForTesting();
 
-  EXPECT_FALSE(sequence_checker.CalledOnValidSequencedThread());
+  EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
 }
 
 TEST_F(SequenceCheckerTest,
@@ -255,16 +243,14 @@ TEST_F(SequenceCheckerTest,
   sequence_checker.DetachFromSequence();
 
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequencedThread, Unretained(&sequence_checker)),
-      "A");
+      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
   FlushSequencedWorkerPoolForTesting();
 
   SequencedWorkerPoolOwner second_pool_owner(kNumWorkerThreads, "test2");
   second_pool_owner.pool()->PostNamedSequencedWorkerTask(
-      "A", FROM_HERE, base::Bind(&ExpectNotCalledOnValidSequencedThread,
+      "A", FROM_HERE, base::Bind(&ExpectNotCalledOnValidSequence,
                                  base::Unretained(&sequence_checker)));
   second_pool_owner.pool()->FlushForTesting();
 }

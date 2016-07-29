@@ -89,7 +89,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
   }
 
   ~WorkerObserver() override {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
   }
 
   void OnPendingFileListUpdated(int item_count) override {
@@ -99,7 +99,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
       return;
     }
 
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnPendingFileListUpdated,
@@ -119,7 +119,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
       return;
     }
 
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnFileStatusChanged,
@@ -135,7 +135,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
       return;
     }
 
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::UpdateServiceState,

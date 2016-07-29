@@ -1002,7 +1002,7 @@ class ChecksSequenceOnDestruction
   friend class RefCountedThreadSafe<ChecksSequenceOnDestruction>;
 
   ~ChecksSequenceOnDestruction() {
-    EXPECT_TRUE(sequence_checker_.CalledOnValidSequencedThread());
+    EXPECT_TRUE(sequence_checker_.CalledOnValidSequence());
   }
 
   SequenceCheckerImpl sequence_checker_;

@@ -46,8 +46,8 @@ class IDMap {
   IDMap() : iteration_depth_(0), next_id_(1), check_on_null_data_(false) {
     // A number of consumers of IDMap create it on one thread but always
     // access it from a different, but consistent, thread (or sequence)
-    // post-construction. The first call to CalledOnValidSequencedThread()
-    // will re-bind it.
+    // post-construction. The first call to CalledOnValidSequence() will re-bind
+    // it.
     sequence_checker_.DetachFromSequence();
   }
 
@@ -65,7 +65,7 @@ class IDMap {
 
   // Adds a view with an automatically generated unique ID. See AddWithID.
   KeyType Add(T* data) {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     DCHECK(!check_on_null_data_ || data);
     KeyType this_id = next_id_;
     DCHECK(data_.find(this_id) == data_.end()) << "Inserting duplicate item";
@@ -79,14 +79,14 @@ class IDMap {
   // this function, or allow this object to generate IDs and call Add. These
   // two methods may not be mixed, or duplicate IDs may be generated
   void AddWithID(T* data, KeyType id) {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     DCHECK(!check_on_null_data_ || data);
     DCHECK(data_.find(id) == data_.end()) << "Inserting duplicate item";
     data_[id] = data;
   }
 
   void Remove(KeyType id) {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     typename HashTable::iterator i = data_.find(id);
     if (i == data_.end()) {
       NOTREACHED() << "Attempting to remove an item not in the list";
@@ -107,7 +107,7 @@ class IDMap {
   // how the existing value is treated, the IDMap does not delete the existing
   // value being replaced.
   T* Replace(KeyType id, T* new_data) {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     DCHECK(!check_on_null_data_ || new_data);
     typename HashTable::iterator i = data_.find(id);
     if (i == data_.end()) {
@@ -121,7 +121,7 @@ class IDMap {
   }
 
   void Clear() {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     if (iteration_depth_ == 0) {
       Releaser<OS, 0>::release_all(&data_);
     } else {
@@ -132,12 +132,12 @@ class IDMap {
   }
 
   bool IsEmpty() const {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     return size() == 0u;
   }
 
   T* Lookup(KeyType id) const {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     typename HashTable::const_iterator i = data_.find(id);
     if (i == data_.end())
       return NULL;
@@ -145,7 +145,7 @@ class IDMap {
   }
 
   size_t size() const {
-    DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     return data_.size() - removed_ids_.size();
   }
 
@@ -180,7 +180,7 @@ class IDMap {
     }
 
     ~Iterator() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
 
       // We're going to decrement iteration depth. Make sure it's greater than
       // zero so that it doesn't become negative.
@@ -191,29 +191,29 @@ class IDMap {
     }
 
     bool IsAtEnd() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
       return iter_ == map_->data_.end();
     }
 
     KeyType GetCurrentKey() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
       return iter_->first;
     }
 
     ReturnType* GetCurrentValue() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
       return iter_->second;
     }
 
     void Advance() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
       ++iter_;
       SkipRemovedEntries();
     }
 
    private:
     void Init() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequencedThread());
+      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
       ++map_->iteration_depth_;
       SkipRemovedEntries();
     }

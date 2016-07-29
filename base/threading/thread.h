@@ -178,7 +178,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // external synchronization catches the unsynchronized effects of Start().
     // TODO(gab): Despite all of the above this test has to be disabled for now
     // per crbug.com/629139#c6.
-    // DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread() ||
+    // DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
     //        id_ == PlatformThread::CurrentId() || message_loop_)
     //     << id_ << " vs " << PlatformThread::CurrentId();
     return message_loop_;
@@ -194,7 +194,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // called from the underlying thread itself.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
     // Refer to the DCHECK and comment inside |message_loop()|.
-    DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread() ||
+    DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
            id_ == PlatformThread::CurrentId() || message_loop_)
         << id_ << " vs " << PlatformThread::CurrentId();
     return message_loop_ ? message_loop_->task_runner() : nullptr;
@@ -229,7 +229,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   static bool GetThreadWasQuitProperly();
 
   void set_message_loop(MessageLoop* message_loop) {
-    DCHECK(owning_sequence_checker_.CalledOnValidSequencedThread());
+    DCHECK(owning_sequence_checker_.CalledOnValidSequence());
     message_loop_ = message_loop;
   }
 

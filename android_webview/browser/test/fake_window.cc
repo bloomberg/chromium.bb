@@ -161,7 +161,7 @@ void FakeWindow::DrawFunctorOnRT(FakeFunctor* functor,
 }
 
 void FakeWindow::CheckCurrentlyOnUIThread() {
-  DCHECK(ui_checker_.CalledOnValidSequencedThread());
+  DCHECK(ui_checker_.CalledOnValidSequence());
 }
 
 void FakeWindow::CreateRenderThreadIfNeeded() {
@@ -206,7 +206,7 @@ void FakeWindow::DestroyOnRT(base::WaitableEvent* sync) {
 }
 
 void FakeWindow::CheckCurrentlyOnRT() {
-  DCHECK(rt_checker_.CalledOnValidSequencedThread());
+  DCHECK(rt_checker_.CalledOnValidSequence());
 }
 
 FakeFunctor::FakeFunctor() : window_(nullptr) {}

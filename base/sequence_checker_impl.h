@@ -28,10 +28,10 @@ class BASE_EXPORT SequenceCheckerImpl {
 
   // Returns true if called in sequence with previous calls to this method and
   // the constructor.
-  bool CalledOnValidSequencedThread() const WARN_UNUSED_RESULT;
+  bool CalledOnValidSequence() const WARN_UNUSED_RESULT;
 
   // Unbinds the checker from the currently associated sequence. The checker
-  // will be re-bound on the next call to CalledOnValidSequencedThread().
+  // will be re-bound on the next call to CalledOnValidSequence().
   void DetachFromSequence();
 
  private:

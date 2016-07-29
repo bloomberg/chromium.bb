@@ -463,8 +463,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
 }
 
 void InProcessCommandBuffer::CheckSequencedThread() {
-  DCHECK(!sequence_checker_ ||
-         sequence_checker_->CalledOnValidSequencedThread());
+  DCHECK(!sequence_checker_ || sequence_checker_->CalledOnValidSequence());
 }
 
 void InProcessCommandBuffer::OnContextLostOnGpuThread() {

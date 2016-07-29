@@ -56,17 +56,17 @@ ImageDecoder::~ImageDecoder() {
 
 ImageDecoder::ImageRequest::ImageRequest()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 ImageDecoder::ImageRequest::ImageRequest(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 ImageDecoder::ImageRequest::~ImageRequest() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   ImageDecoder::Cancel(this);
 }
 

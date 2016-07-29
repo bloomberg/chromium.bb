@@ -22,9 +22,7 @@ namespace base {
 // the right version for your build configuration.
 class SequenceCheckerDoNothing {
  public:
-  bool CalledOnValidSequencedThread() const {
-    return true;
-  }
+  bool CalledOnValidSequence() const { return true; }
 
   void DetachFromSequence() {}
 };
@@ -39,7 +37,7 @@ class SequenceCheckerDoNothing {
 // class MyClass {
 //  public:
 //   void Foo() {
-//     DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+//     DCHECK(sequence_checker_.CalledOnValidSequence());
 //     ... (do stuff) ...
 //   }
 //
@@ -47,7 +45,7 @@ class SequenceCheckerDoNothing {
 //   SequenceChecker sequence_checker_;
 // }
 //
-// In Release mode, CalledOnValidSequencedThread() will always return true.
+// In Release mode, CalledOnValidSequence() will always return true.
 #if ENABLE_SEQUENCE_CHECKER
 class SequenceChecker : public SequenceCheckerImpl {
 };

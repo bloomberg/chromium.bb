@@ -73,7 +73,7 @@ DataUsageStore::DataUsageStore(DataStore* db)
 }
 
 DataUsageStore::~DataUsageStore() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void DataUsageStore::LoadDataUsage(std::vector<DataUsageBucket>* data_usage) {
@@ -93,7 +93,7 @@ void DataUsageStore::LoadDataUsage(std::vector<DataUsageBucket>* data_usage) {
 }
 
 void DataUsageStore::LoadCurrentDataUsageBucket(DataUsageBucket* current) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(current);
 
   std::string current_index_string;
@@ -117,7 +117,7 @@ void DataUsageStore::LoadCurrentDataUsageBucket(DataUsageBucket* current) {
 
 void DataUsageStore::StoreCurrentDataUsageBucket(
     const DataUsageBucket& current) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(current_bucket_index_ >= 0 &&
          current_bucket_index_ < kNumDataUsageBuckets);
 

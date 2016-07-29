@@ -161,7 +161,7 @@ MediaGalleryFileType MediaPathFilter::GetType(const base::FilePath& path) {
 }
 
 void MediaPathFilter::EnsureInitialized() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (initialized_)
     return;
 

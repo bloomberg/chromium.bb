@@ -21,7 +21,7 @@ QuotaReservationManager::QuotaReservationManager(
 }
 
 QuotaReservationManager::~QuotaReservationManager() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void QuotaReservationManager::ReserveQuota(
@@ -63,7 +63,7 @@ scoped_refptr<QuotaReservationBuffer>
 QuotaReservationManager::GetReservationBuffer(
     const GURL& origin,
     FileSystemType type) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(origin.is_valid());
   QuotaReservationBuffer** buffer =
       &reservation_buffers_[std::make_pair(origin, type)];
@@ -76,7 +76,7 @@ QuotaReservationManager::GetReservationBuffer(
 
 void QuotaReservationManager::ReleaseReservationBuffer(
     QuotaReservationBuffer* reservation_buffer) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   std::pair<GURL, FileSystemType> key(reservation_buffer->origin(),
                                       reservation_buffer->type());
   DCHECK_EQ(reservation_buffers_[key], reservation_buffer);

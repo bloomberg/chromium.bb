@@ -81,7 +81,7 @@ ThreadPipeManager::ThreadPipeManager(
           new ConnectionThreadPipeManager(connection_handler)) {}
 
 ThreadPipeManager::~ThreadPipeManager() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   connection_task_runner_->DeleteSoon(FROM_HERE,
                                       connection_pipe_manager_.release());
@@ -90,7 +90,7 @@ ThreadPipeManager::~ThreadPipeManager() {
 std::unique_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
     BlimpMessage::FeatureCase feature_case,
     BlimpMessageProcessor* incoming_processor) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Creates an outgoing pipe and a proxy for forwarding messages
   // from features on the caller thread to network components on the

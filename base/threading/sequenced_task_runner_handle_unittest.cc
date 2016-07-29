@@ -46,7 +46,7 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
   static void CheckValidSequence(
       std::unique_ptr<SequenceCheckerImpl> sequence_checker,
       const Closure& callback) {
-    EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
+    EXPECT_TRUE(sequence_checker->CalledOnValidSequence());
     callback.Run();
   }
 

@@ -27,13 +27,13 @@ RemoteChangeProcessorOnWorker::RemoteChangeProcessorOnWorker(
 }
 
 RemoteChangeProcessorOnWorker::~RemoteChangeProcessorOnWorker() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void RemoteChangeProcessorOnWorker::PrepareForProcessRemoteChange(
     const storage::FileSystemURL& url,
     const PrepareChangeCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -49,7 +49,7 @@ void RemoteChangeProcessorOnWorker::ApplyRemoteChange(
     const base::FilePath& local_path,
     const storage::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -66,7 +66,7 @@ void RemoteChangeProcessorOnWorker::FinalizeRemoteSync(
     const storage::FileSystemURL& url,
     bool clear_local_changes,
     const base::Closure& completion_callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -83,7 +83,7 @@ void RemoteChangeProcessorOnWorker::RecordFakeLocalChange(
     const storage::FileSystemURL& url,
     const FileChange& change,
     const SyncStatusCallback& callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,

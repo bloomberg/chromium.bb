@@ -41,7 +41,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
     const drive::UploadNewFileOptions& options,
     const drive::UploadCompletionCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(sequece_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequece_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -65,7 +65,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
     const drive::UploadExistingFileOptions& options,
     const drive::UploadCompletionCallback& callback,
     const google_apis::ProgressCallback& progress_callback) {
-  DCHECK(sequece_checker_.CalledOnValidSequencedThread());
+  DCHECK(sequece_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
