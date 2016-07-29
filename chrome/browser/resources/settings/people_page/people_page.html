@@ -126,7 +126,7 @@
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <div class="settings-box two-line" on-tap="onSyncTap_"
-              actionable$="[[!syncStatus.managed]]">
+              id="customize-sync" actionable$="[[!syncStatus.managed]]">
             <div class="icon-container">
               <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
               </iron-icon>

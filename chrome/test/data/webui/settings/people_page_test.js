@@ -214,6 +214,33 @@ cr.define('settings_people_page', function() {
           assertTrue(activityControls.hidden);
         });
       });
+
+      test('CustomizeSyncDisabledForManagedSignin', function() {
+        assertFalse(!!peoplePage.$$('#customize-sync'));
+
+        return browserProxy.whenCalled('getSyncStatus').then(function() {
+          cr.webUIListenerCallback('sync-status-changed', {
+            signedIn: true,
+            syncSystemEnabled: true,
+          });
+          Polymer.dom.flush();
+
+          var customizeSync = peoplePage.$$('#customize-sync');
+          assertTrue(!!customizeSync);
+          assertTrue(customizeSync.hasAttribute('actionable'));
+        }).then(function() {
+          cr.webUIListenerCallback('sync-status-changed', {
+            managed: true,
+            signedIn: true,
+            syncSystemEnabled: true,
+          });
+          Polymer.dom.flush();
+
+          var customizeSync = peoplePage.$$('#customize-sync');
+          assertTrue(!!customizeSync);
+          assertFalse(customizeSync.hasAttribute('actionable'));
+        });
+      });
     });
   }
 
