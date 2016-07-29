@@ -27,6 +27,9 @@ import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
  * UI-less Chrome.
  */
 public class WebApkActivity extends WebappActivity {
+    /** Detects whether the associated Web Manifest changes. */
+    private ManifestUpgradeDetector mManifestUpgradeDetector = null;
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -143,6 +146,18 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+
+        // TODO(hanxi): Ask WebApk's update manager whether to check resource updates.
+        if (mManifestUpgradeDetector == null) {
+            mManifestUpgradeDetector =
+                    new ManifestUpgradeDetector(getActivityTab(), mWebappInfo);
+        }
+        mManifestUpgradeDetector.start();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         initializeChildProcessCreationParams(false);
@@ -163,5 +178,13 @@ public class WebApkActivity extends WebappActivity {
                     extraBindFlag, LibraryProcessType.PROCESS_CHILD);
         }
         ChildProcessCreationParams.set(params);
+    }
+
+    @Override
+    protected void onDestroyInternal() {
+        if (mManifestUpgradeDetector != null) {
+            mManifestUpgradeDetector.destroy();
+        }
+        super.onDestroyInternal();
     }
 }

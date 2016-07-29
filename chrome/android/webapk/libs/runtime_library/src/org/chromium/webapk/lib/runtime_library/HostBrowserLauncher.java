@@ -37,6 +37,9 @@ public class HostBrowserLauncher {
     private static final String META_DATA_ICON_URL = "iconUrl";
     private static final String META_DATA_WEB_MANIFEST_URL = "webManifestUrl";
 
+    // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
+    private static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
+
     /**
      * Key for passing app icon id in Bundle to {@link #launch()}.
      */
@@ -83,8 +86,8 @@ public class HostBrowserLauncher {
         String name = metaBundle.getString(META_DATA_NAME);
         String displayMode = metaBundle.getString(META_DATA_DISPLAY_MODE);
         String orientation = metaBundle.getString(META_DATA_ORIENTATION);
-        long themeColor = getLongFromBundle(metaBundle, META_DATA_THEME_COLOR);
-        long backgroundColor = getLongFromBundle(metaBundle, META_DATA_BACKGROUND_COLOR);
+        long themeColor = getColorFromBundle(metaBundle, META_DATA_THEME_COLOR);
+        long backgroundColor = getColorFromBundle(metaBundle, META_DATA_BACKGROUND_COLOR);
         boolean isIconGenerated = TextUtils.isEmpty(metaBundle.getString(META_DATA_ICON_URL));
         String webManifestUrl = metaBundle.getString(META_DATA_WEB_MANIFEST_URL);
         Log.v(TAG, "Url of the WebAPK: " + url);
@@ -135,13 +138,14 @@ public class HostBrowserLauncher {
     }
 
     /**
-     * Gets a long from a Bundle. The long should be terminated with 'L'. This function is more
-     * reliable than Bundle#getLong() which returns 0 if the value is below Float.MAX_VALUE.
+     * Gets the long value of a color from a Bundle. The long should be terminated with 'L'. This
+     * function is more reliable than Bundle#getLong() which returns 0 if the value is below
+     * Float.MAX_VALUE. Returns {@link MANIFEST_COLOR_INVALID_OR_MISSING} when the color is missing.
      */
-    private static long getLongFromBundle(Bundle bundle, String key) {
+    private static long getColorFromBundle(Bundle bundle, String key) {
         String value = bundle.getString(key);
         if (value == null || !value.endsWith("L")) {
-            return 0;
+            return MANIFEST_COLOR_INVALID_OR_MISSING;
         }
         try {
             return Long.parseLong(value.substring(0, value.length() - 1));

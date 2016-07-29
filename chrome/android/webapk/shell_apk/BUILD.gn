@@ -22,8 +22,8 @@ declare_args() {
   webapk_scope_url = "https://www.template.com"
   webapk_display_mode = "standalone"
   webapk_orientation = "portrait"
-  webapk_theme_color = "4288230399L"  #0xFF9933FF
-  webapk_background_color = "4291624959L"  #0xFFCCFFFF
+  webapk_theme_color = "2147483648L"  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
+  webapk_background_color = "2147483648L"  #HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
 
   # The URL of the app icon. Empty if the app icon is generated.
   webapk_icon_url = "http://www.template.com/icon.png"
