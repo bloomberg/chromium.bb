@@ -87,7 +87,7 @@ void TabDesktopMediaList::Refresh() {
   std::vector<std::pair<DesktopMediaID, gfx::ImageSkia>> favicon_pairs;
 
   // Enumerate all tabs with their titles and favicons for a user profile.
-  for (auto browser : browsers) {
+  for (auto* browser : browsers) {
     const TabStripModel* tab_strip_model = browser->tab_strip_model();
     DCHECK(tab_strip_model);
 

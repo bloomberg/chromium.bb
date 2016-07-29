@@ -400,7 +400,7 @@ void PresentationFrameManager::OnPresentationSessionStarted(
     const RenderFrameHostId& render_frame_host_id,
     const content::PresentationSessionInfo& session,
     const MediaRoute::Id& route_id) {
-  auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
+  auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
   presentation_frame->OnPresentationSessionStarted(session, route_id);
 }
 
@@ -408,7 +408,7 @@ void PresentationFrameManager::OnDefaultPresentationSessionStarted(
     const PresentationRequest& request,
     const content::PresentationSessionInfo& session,
     const MediaRoute::Id& route_id) {
-  auto presentation_frame =
+  auto* presentation_frame =
       presentation_frames_.get(request.render_frame_host_id());
   if (presentation_frame)
     presentation_frame->OnPresentationSessionStarted(session, route_id);
@@ -422,14 +422,14 @@ void PresentationFrameManager::OnDefaultPresentationSessionStarted(
 const MediaRoute::Id PresentationFrameManager::GetRouteId(
     const RenderFrameHostId& render_frame_host_id,
     const std::string& presentation_id) const {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame ? presentation_frame->GetRouteId(presentation_id)
                             : "";
 }
 
 const std::vector<MediaRoute::Id> PresentationFrameManager::GetRouteIds(
     const RenderFrameHostId& render_frame_host_id) const {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame ? presentation_frame->GetRouteIds()
                             : std::vector<MediaRoute::Id>();
 }
@@ -438,7 +438,7 @@ bool PresentationFrameManager::SetScreenAvailabilityListener(
     const RenderFrameHostId& render_frame_host_id,
     content::PresentationScreenAvailabilityListener* listener) {
   DCHECK(listener);
-  auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
+  auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
   return presentation_frame->SetScreenAvailabilityListener(listener);
 }
 
@@ -446,7 +446,7 @@ bool PresentationFrameManager::RemoveScreenAvailabilityListener(
     const RenderFrameHostId& render_frame_host_id,
     content::PresentationScreenAvailabilityListener* listener) {
   DCHECK(listener);
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame &&
          presentation_frame->RemoveScreenAvailabilityListener(listener);
 }
@@ -454,7 +454,7 @@ bool PresentationFrameManager::RemoveScreenAvailabilityListener(
 bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(
     const RenderFrameHostId& render_frame_host_id,
     const MediaSource::Id& source_id) const {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame &&
          presentation_frame->HasScreenAvailabilityListenerForTest(source_id);
 }
@@ -464,7 +464,7 @@ void PresentationFrameManager::ListenForConnectionStateChange(
     const content::PresentationSessionInfo& connection,
     const content::PresentationConnectionStateChangedCallback&
         state_changed_cb) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   if (presentation_frame) {
     presentation_frame->ListenForConnectionStateChange(connection,
                                                        state_changed_cb);
@@ -508,13 +508,13 @@ void PresentationFrameManager::SetDefaultPresentationUrl(
 void PresentationFrameManager::AddDelegateObserver(
     const RenderFrameHostId& render_frame_host_id,
     DelegateObserver* observer) {
-  auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
+  auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
   presentation_frame->set_delegate_observer(observer);
 }
 
 void PresentationFrameManager::RemoveDelegateObserver(
     const RenderFrameHostId& render_frame_host_id) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   if (presentation_frame) {
     presentation_frame->set_delegate_observer(nullptr);
     presentation_frames_.erase(render_frame_host_id);
@@ -535,7 +535,7 @@ void PresentationFrameManager::RemoveDefaultPresentationRequestObserver(
 
 void PresentationFrameManager::Reset(
     const RenderFrameHostId& render_frame_host_id) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   if (presentation_frame)
     presentation_frame->Reset();
 
@@ -550,7 +550,7 @@ void PresentationFrameManager::RemoveConnection(
     const RenderFrameHostId& render_frame_host_id,
     const MediaRoute::Id& route_id,
     const std::string& presentation_id) {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
+  auto* presentation_frame = presentation_frames_.get(render_frame_host_id);
   if (presentation_frame)
     presentation_frame->RemoveConnection(route_id, presentation_id);
 }
