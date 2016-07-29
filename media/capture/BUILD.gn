@@ -97,9 +97,7 @@ component("capture") {
   if (is_android) {
     public_deps += [
       "content/android",
-      "content/android:screen_capture_java",
       "video/android",
-      "video/android:capture_java",
     ]
     deps += [
       "content/android:screen_capture_jni_headers",

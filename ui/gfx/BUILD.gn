@@ -328,10 +328,7 @@ component("gfx") {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    deps += [
-      ":gfx_jni_headers",
-      "//base:base_java",
-    ]
+    deps += [ ":gfx_jni_headers" ]
     libs = [
       "android",
       "jnigraphics",

@@ -76,10 +76,6 @@ if (is_android) {
   generate_jni("jni_headers") {
     sources = java_sources_needing_jni
     jni_package = "vr"
-
-    public_deps = [
-      "//third_party/cardboard-java:cardboard-java",
-    ]
   }
 
   android_library("java") {

@@ -336,6 +336,25 @@ template("write_build_config") {
           rebase_path(invoker.bundled_srcjars, root_build_dir)
       args += [ "--bundled-srcjars=$_rebased_bundled_srcjars" ]
     }
+    if (current_toolchain != default_toolchain) {
+      # This has to be a built-time error rather than a GN assert because many
+      # packages have a mix of java and non-java targets. For example, the
+      # following would fail even though nothing depends on :bar(//baz):
+      #
+      # shared_library("foo") {
+      # }
+      #
+      # android_library("bar") {
+      #   deps = [ ":foo(//baz)" ]
+      #   assert(current_toolchain == default_toolchain)
+      # }
+      _msg = [
+        "Tried to build an Android target in a non-default toolchain.",
+        "target: " + get_label_info(":$target_name", "label_with_toolchain"),
+        "default_toolchain: $default_toolchain",
+      ]
+      args += [ "--fail=$_msg" ]
+    }
   }
 }
 

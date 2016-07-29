@@ -279,11 +279,15 @@ def main(argv):
       help='Path to the proguard .info output for this apk.')
   parser.add_option('--has-alternative-locale-resource', action='store_true',
       help='Whether there is alternative-locale-resource in direct deps')
+  parser.add_option('--fail',
+      help='GYP-list of error message lines to fail with.')
 
   options, args = parser.parse_args(argv)
 
   if args:
     parser.error('No positional arguments should be given.')
+  if options.fail:
+    parser.error('\n'.join(build_utils.ParseGypList(options.fail)))
 
   required_options_map = {
       'java_binary': ['build_config', 'jar_path'],

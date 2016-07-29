@@ -273,10 +273,7 @@ component("gl") {
 
     libs = [ "android" ]
 
-    deps += [
-      ":gl_jni_headers",
-      "//ui/android:ui_java",
-    ]
+    deps += [ ":gl_jni_headers" ]
   }
 }
 
