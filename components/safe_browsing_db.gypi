@@ -48,6 +48,8 @@
         'safe_browsing_db/v4_database.cc',
         'safe_browsing_db/v4_local_database_manager.h',
         'safe_browsing_db/v4_local_database_manager.cc',
+        'safe_browsing_db/v4_rice.h',
+        'safe_browsing_db/v4_rice.cc',
         'safe_browsing_db/v4_store.h',
         'safe_browsing_db/v4_store.cc',
         'safe_browsing_db/v4_update_protocol_manager.h',
