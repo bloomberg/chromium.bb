@@ -308,8 +308,6 @@
       'common/system/tray/throbber_view.h',
       'common/system/tray/tray_background_view.cc',
       'common/system/tray/tray_background_view.h',
-      'common/system/tray/tray_bar_button_with_title.cc',
-      'common/system/tray/tray_bar_button_with_title.h',
       'common/system/tray/tray_bubble_wrapper.cc',
       'common/system/tray/tray_bubble_wrapper.h',
       'common/system/tray/tray_constants.cc',
