@@ -183,7 +183,7 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   // Allows UI to load extensionview.
   // TODO(haibinlu): limit object-src to current extension once crbug/514866
   // is fixed.
-  html_source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
+  html_source->OverrideContentSecurityPolicyObjectSrc("object-src chrome:;");
 
   AddLocalizedStrings(html_source.get());
   AddMediaRouterUIResources(html_source.get());
