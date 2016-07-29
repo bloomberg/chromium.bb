@@ -6,7 +6,6 @@ package org.chromium.webapk.shell_apk;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.util.Log;
@@ -41,6 +40,8 @@ public class HostBrowserClassLoader {
 
     /*
      * ClassLoader for WebAPK dex. Static so that the same ClassLoader is used for app's lifetime.
+     * The ClassLoader is re-created if the host browser is upgraded while the WebAPK is still
+     * running.
      */
     private static ClassLoader sClassLoader;
 
@@ -52,8 +53,15 @@ public class HostBrowserClassLoader {
      */
     public static ClassLoader getClassLoaderInstance(Context context, String canaryClassName) {
         assertRunningOnUiThread();
-        if (sClassLoader == null) {
-            sClassLoader = createClassLoader(context, canaryClassName);
+        Context remoteContext = WebApkUtils.getHostBrowserContext(context);
+        if (remoteContext == null) {
+            Log.w(TAG, "Failed to get remote context.");
+            return null;
+        }
+
+        if (sClassLoader == null || !canReuseClassLoaderInstance(context, remoteContext)) {
+            sClassLoader =
+                    createClassLoader(context, remoteContext, new DexLoader(), canaryClassName);
         }
         return sClassLoader;
     }
@@ -61,16 +69,13 @@ public class HostBrowserClassLoader {
     /**
      * Creates ClassLoader for WebAPK dex.
      * @param context WebAPK's context.
+     * @param remoteContext Host browser's context.
      * @param canaryClassName Class to load to check that ClassLoader is valid.
+     * @param dexLoader DexLoader for creating ClassLoader.
      * @return The ClassLoader.
      */
-    private static ClassLoader createClassLoader(Context context, String canaryClassName) {
-        Context remoteContext = WebApkUtils.getHostBrowserContext(context);
-        if (remoteContext == null) {
-            Log.w(TAG, "Failed to get remote context.");
-            return null;
-        }
-
+    public static ClassLoader createClassLoader(
+            Context context, Context remoteContext, DexLoader dexLoader, String canaryClassName) {
         SharedPreferences preferences =
                 context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
 
@@ -82,14 +87,27 @@ public class HostBrowserClassLoader {
         File localDexDir = context.getDir("dex", Context.MODE_PRIVATE);
         if (newRuntimeDexVersion != runtimeDexVersion) {
             Log.w(TAG, "Delete cached dex files.");
-            DexLoader.deleteCachedDexes(localDexDir);
+            dexLoader.deleteCachedDexes(localDexDir);
         }
 
         String dexAssetName = WebApkVersionUtils.getRuntimeDexName(newRuntimeDexVersion);
         File remoteDexFile =
                 new File(remoteContext.getDir("dex", Context.MODE_PRIVATE), dexAssetName);
-        return DexLoader.load(remoteContext, dexAssetName, canaryClassName,
-                remoteDexFile, localDexDir);
+        return dexLoader.load(
+                remoteContext, dexAssetName, canaryClassName, remoteDexFile, localDexDir);
+    }
+
+    /**
+     * Returns whether {@link sClassLoader} can be reused.
+     */
+    public static boolean canReuseClassLoaderInstance(Context context, Context remoteContext) {
+        // WebAPK may still be running when the host browser gets upgraded. Prevent ClassLoader from
+        // getting reused in this scenario.
+        SharedPreferences preferences =
+                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        int cachedRemoteVersionCode = preferences.getInt(REMOTE_VERSION_CODE_PREF, -1);
+        int remoteVersionCode = getVersionCode(remoteContext);
+        return remoteVersionCode == cachedRemoteVersionCode;
     }
 
     /**
@@ -104,26 +122,32 @@ public class HostBrowserClassLoader {
         // The "runtime dex" version only changes when {@link remoteContext}'s APK version code
         // changes. Checking the APK's version code is less expensive than reading from the APK's
         // assets.
-        PackageInfo remotePackageInfo = null;
-        try {
-            remotePackageInfo = remoteContext.getPackageManager().getPackageInfo(
-                    remoteContext.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Failed to get remote package info.");
-            return -1;
-        }
-
+        int remoteVersionCode = getVersionCode(remoteContext);
         int cachedRemoteVersionCode = preferences.getInt(REMOTE_VERSION_CODE_PREF, -1);
-        if (cachedRemoteVersionCode == remotePackageInfo.versionCode) {
+        if (cachedRemoteVersionCode == remoteVersionCode) {
             return -1;
         }
 
         int runtimeDexVersion = readAssetContentsToInt(remoteContext, "webapk_dex_version.txt");
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(REMOTE_VERSION_CODE_PREF, remotePackageInfo.versionCode);
+        editor.putInt(REMOTE_VERSION_CODE_PREF, remoteVersionCode);
         editor.putInt(RUNTIME_DEX_VERSION_PREF, runtimeDexVersion);
         editor.apply();
         return runtimeDexVersion;
+    }
+
+    /**
+     * Returns version code of {@link context}'s APK.
+     */
+    private static int getVersionCode(Context context) {
+        try {
+            return context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0)
+                    .versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Failed to get remote package info.");
+        }
+        return -1;
     }
 
     /**

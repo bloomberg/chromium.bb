@@ -17,6 +17,7 @@ import java.io.OutputStream;
 
 /**
  * Creates ClassLoader for .dex file in a remote Context's APK.
+ * Non static for the sake of tests.
  */
 public class DexLoader {
     private static final int BUFFER_SIZE = 16 * 1024;
@@ -33,7 +34,7 @@ public class DexLoader {
      *                    {@link #load()}.
      * @return The ClassLoader. Returns null on an error.
      */
-    public static ClassLoader load(Context remoteContext, String dexName, String canaryClassName,
+    public ClassLoader load(Context remoteContext, String dexName, String canaryClassName,
             File remoteDexFile, File localDexDir) {
         File localDexFile = new File(localDexDir, dexName);
 
@@ -74,7 +75,7 @@ public class DexLoader {
      * Deletes any files cached by {@link #load()}.
      * @param localDexDir Cache directory passed to {@link #load()}.
      */
-    public static void deleteCachedDexes(File localDexDir) {
+    public void deleteCachedDexes(File localDexDir) {
         deleteChildren(localDexDir);
     }
 

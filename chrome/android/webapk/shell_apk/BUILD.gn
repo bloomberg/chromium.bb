@@ -63,18 +63,9 @@ android_resources("shell_apk_resources") {
   custom_package = "org.chromium.webapk.shell_apk"
 }
 
-android_library("dex_loader_java") {
-  java_files = [ "src/org/chromium/webapk/shell_apk/DexLoader.java" ]
-}
-
-# Template for WebAPK. When a WebAPK is generated:
-# - Android manifest is customized to the website.
-# - App icon is extracted from the website and added to the APK's resources.
-android_apk("webapk") {
-  android_manifest = shell_apk_manifest
-  android_manifest_dep = ":shell_apk_manifest"
-  apk_name = "WebApk.$webapk_manifest_package_origin"
+android_library("webapk_java") {
   java_files = [
+    "src/org/chromium/webapk/shell_apk/DexLoader.java",
     "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
     "src/org/chromium/webapk/shell_apk/NotificationSettingsLauncherActivity.java",
@@ -86,9 +77,20 @@ android_apk("webapk") {
     "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
   ]
   deps = [
-    ":dex_loader_java",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common:common_java",
+  ]
+}
+
+# Template for WebAPK. When a WebAPK is generated:
+# - Android manifest is customized to the website.
+# - App icon is extracted from the website and added to the APK's resources.
+android_apk("webapk") {
+  android_manifest = shell_apk_manifest
+  android_manifest_dep = ":shell_apk_manifest"
+  apk_name = "WebApk.$webapk_manifest_package_origin"
+  deps = [
+    ":webapk_java",
   ]
   if (!is_java_debug) {
     proguard_enabled = true
@@ -104,11 +106,20 @@ android_library("shell_apk_javatests") {
   java_files =
       [ "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java" ]
   deps = [
-    ":dex_loader_java",
+    ":webapk_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android/webapk/libs/common:common_java",
     "//content/public/test/android:content_java_test_support",
   ]
   srcjar_deps = [ "javatests/dex_optimizer:dex_optimizer_service_aidl" ]
+}
+
+junit_binary("webapk_shell_apk_junit_tests") {
+  java_files = [ "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java" ]
+  deps = [
+    ":webapk_java",
+    "//base:base_junit_test_support",
+    "//chrome/android/webapk/libs/common:common_java",
+  ]
 }
