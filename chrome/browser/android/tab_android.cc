@@ -65,7 +65,6 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -81,6 +80,7 @@
 #include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "ui/android/view_android.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
@@ -170,13 +170,6 @@ GURL TabAndroid::GetURL() const {
 bool TabAndroid::LoadIfNeeded() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env).obj());
-}
-
-content::ContentViewCore* TabAndroid::GetContentViewCore() const {
-  if (!web_contents())
-    return NULL;
-
-  return content::ContentViewCore::FromWebContents(web_contents());
 }
 
 Profile* TabAndroid::GetProfile() const {
@@ -373,16 +366,13 @@ void TabAndroid::InitWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean incognito,
-    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env,
-                                                         jcontent_view_core);
-  DCHECK(content_view_core);
-  DCHECK(content_view_core->GetWebContents());
+  web_contents_.reset(
+      content::WebContents::FromJavaWebContents(jweb_contents.obj()));
+  DCHECK(web_contents_.get());
 
-  web_contents_.reset(content_view_core->GetWebContents());
   AttachTabHelpers(web_contents_.get());
 
   SetWindowSessionID(session_window_id_.id());
@@ -428,7 +418,7 @@ void TabAndroid::InitWebContents(
   if (instant_service)
     instant_service->AddObserver(this);
 
-  content_layer_->InsertChild(content_view_core->GetLayer(), 0);
+  content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
 }
 
 void TabAndroid::UpdateDelegates(
@@ -449,9 +439,8 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
                                     jboolean delete_native) {
   DCHECK(web_contents());
 
-  content::ContentViewCore* content_view_core = GetContentViewCore();
-  if (content_view_core)
-    content_view_core->GetLayer()->RemoveFromParent();
+  if (web_contents()->GetNativeView())
+    web_contents()->GetNativeView()->GetLayer()->RemoveFromParent();
 
   notification_registrar_.Remove(
       this,
@@ -874,31 +863,31 @@ void TabAndroid::AttachToTabContentManager(
     tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
 }
 
-void TabAndroid::AttachOverlayContentViewCore(
+void TabAndroid::AttachOverlayWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents,
     jboolean visible) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env,
-                                                         jcontent_view_core);
-  DCHECK(content_view_core);
+  WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents.obj());
+  DCHECK(web_contents);
+  DCHECK(web_contents->GetNativeView());
 
-  content_view_core->GetLayer()->SetHideLayerAndSubtree(!visible);
-  content_layer_->AddChild(content_view_core->GetLayer());
+  web_contents->GetNativeView()->GetLayer()->SetHideLayerAndSubtree(!visible);
+  content_layer_->AddChild(web_contents->GetNativeView()->GetLayer());
 }
 
-void TabAndroid::DetachOverlayContentViewCore(
+void TabAndroid::DetachOverlayWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcontent_view_core) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env,
-                                                         jcontent_view_core);
-  DCHECK(content_view_core);
+    const JavaParamRef<jobject>& jweb_contents) {
+  WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents.obj());
+  DCHECK(web_contents);
+  DCHECK(web_contents->GetNativeView());
 
-  if (content_view_core->GetLayer()->parent() == content_layer_)
-    content_view_core->GetLayer()->RemoveFromParent();
+  if (web_contents->GetNativeView()->GetLayer()->parent() == content_layer_)
+    web_contents->GetNativeView()->GetLayer()->RemoveFromParent();
 }
 
 static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -202,13 +202,6 @@ ContentViewCore* ContentViewCore::FromWebContents(
   return ContentViewCoreImpl::FromWebContents(web_contents);
 }
 
-// static
-ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
-                                                           jobject obj) {
-  return reinterpret_cast<ContentViewCore*>(
-      Java_ContentViewCore_getNativeContentViewCore(env, obj));
-}
-
 ContentViewCoreImpl::ContentViewCoreImpl(
     JNIEnv* env,
     jobject obj,
@@ -872,10 +865,6 @@ ContentViewCoreImpl::GetViewAndroidDelegate() const {
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
   return view_.GetWindowAndroid();
-}
-
-cc::Layer* ContentViewCoreImpl::GetLayer() const {
-  return view_.GetLayer();
 }
 
 ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() {

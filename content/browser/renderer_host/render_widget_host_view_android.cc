@@ -1171,7 +1171,7 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
 
   return std::unique_ptr<
       ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
-      content_view_core_->GetLayer(),
+      content_view_core_->GetViewAndroid()->GetLayer(),
       ui::GetScaleFactorForNativeView(GetNativeView()),
       // Use the activity context (instead of the application context) to ensure
       // proper handle theming.
@@ -1424,7 +1424,7 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
   if (overscroll_controller_) {
     needs_animate |= overscroll_controller_->Animate(
-        frame_time, content_view_core_->GetLayer());
+        frame_time, content_view_core_->GetViewAndroid()->GetLayer());
   }
   if (selection_controller_)
     needs_animate |= selection_controller_->Animate(frame_time);

@@ -25,7 +25,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
@@ -83,11 +82,10 @@ ContextualSearchDelegate::~ContextualSearchDelegate() {
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core,
+    content::WebContents* web_contents,
     bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection, use_resolved_search_term, content_view_core,
-      may_send_base_page_url,
+      selection, use_resolved_search_term, web_contents, may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::StartSearchTermRequestFromSelection,
                  AsWeakPtr()));
 }
@@ -95,11 +93,10 @@ void ContextualSearchDelegate::StartSearchTermResolutionRequest(
 void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core,
+    content::WebContents* web_contents,
     bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection, use_resolved_search_term, content_view_core,
-      may_send_base_page_url,
+      selection, use_resolved_search_term, web_contents, may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::SaveSurroundingText, AsWeakPtr()));
   // TODO(donnd): clear the context here, since we're done with it (but risky).
 }
@@ -233,15 +230,13 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
 void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core,
+    content::WebContents* web_contents,
     bool may_send_base_page_url,
     HandleSurroundingsCallback callback) {
-  DCHECK(content_view_core);
-  DCHECK(content_view_core->GetWebContents());
+  DCHECK(web_contents);
   DCHECK(!callback.is_null());
   DCHECK(!selection.empty());
-  RenderFrameHost* focused_frame =
-      content_view_core->GetWebContents()->GetFocusedFrame();
+  RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   if (!focused_frame) {
     callback.Run(base::string16(), 0, 0);
     return;
@@ -249,7 +244,7 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
   // Immediately cancel any request that's in flight, since we're building a new
   // context (and the response disposes of any existing context).
   search_term_fetcher_.reset();
-  BuildContext(selection, use_resolved_search_term, content_view_core,
+  BuildContext(selection, use_resolved_search_term, web_contents,
                may_send_base_page_url);
   focused_frame->RequestTextSurroundingSelection(
       callback, field_trial_->GetSurroundingSize());
@@ -258,17 +253,17 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
 void ContextualSearchDelegate::BuildContext(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core,
+    content::WebContents* web_contents,
     bool may_send_base_page_url) {
   // Decide if the URL should be sent with the context.
-  GURL page_url(content_view_core->GetWebContents()->GetURL());
+  GURL page_url(web_contents->GetURL());
   GURL url_to_send;
   if (may_send_base_page_url &&
       CanSendPageURL(page_url, ProfileManager::GetActiveUserProfile(),
                      template_url_service_)) {
     url_to_send = page_url;
   }
-  std::string encoding(content_view_core->GetWebContents()->GetEncoding());
+  std::string encoding(web_contents->GetEncoding());
   context_.reset(new ContextualSearchContext(
       selection, use_resolved_search_term, url_to_send, encoding));
 }

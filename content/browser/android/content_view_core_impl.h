@@ -63,7 +63,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   ui::WindowAndroid* GetWindowAndroid() const override;
   const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
       const override;
-  cc::Layer* GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
   void PauseOrResumeGeolocation(bool should_pause) override;
 

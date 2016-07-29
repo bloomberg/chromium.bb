@@ -45,7 +45,6 @@ class TabContentManager;
 }
 
 namespace content {
-class ContentViewCore;
 class WebContents;
 }
 
@@ -112,7 +111,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Helper methods to make it easier to access objects from the associated
   // WebContents.  Can return NULL.
-  content::ContentViewCore* GetContentViewCore() const;
   Profile* GetProfile() const;
   browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
@@ -164,7 +162,7 @@ class TabAndroid : public CoreTabHelperDelegate,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean incognito,
-      const base::android::JavaParamRef<jobject>& jcontent_view_core,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
   void UpdateDelegates(
@@ -247,16 +245,16 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jtab_content_manager);
 
-  void AttachOverlayContentViewCore(
+  void AttachOverlayWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jcontent_view_core,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
       jboolean visible);
 
-  void DetachOverlayContentViewCore(
+  void DetachOverlayWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jcontent_view_core);
+      const base::android::JavaParamRef<jobject>& jweb_contents);
 
   bool HasPrerenderedUrl(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,

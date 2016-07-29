@@ -1652,7 +1652,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         assert !mOverlayContentViewCores.contains(content);
         mOverlayContentViewCores.add(content);
-        if (attachLayer) nativeAttachOverlayContentViewCore(mNativeTabAndroid, content, visible);
+        if (attachLayer) {
+            nativeAttachOverlayWebContents(mNativeTabAndroid, content.getWebContents(), visible);
+        }
         for (TabObserver observer : mObservers) {
             observer.onOverlayContentViewCoreAdded(this, content);
         }
@@ -1674,7 +1676,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         assert mOverlayContentViewCores.contains(content);
         mOverlayContentViewCores.remove(content);
 
-        nativeDetachOverlayContentViewCore(mNativeTabAndroid, content);
+        nativeDetachOverlayWebContents(mNativeTabAndroid, content.getWebContents());
     }
 
     /**
@@ -1853,10 +1855,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
             assert mNativeTabAndroid != 0;
-            nativeInitWebContents(
-                    mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
-                    new TabContextMenuPopulator(mDelegateFactory.createContextMenuPopulator(this),
-                            this));
+            nativeInitWebContents(mNativeTabAndroid, mIncognito, mContentViewCore.getWebContents(),
+                    mWebContentsDelegate,
+                    new TabContextMenuPopulator(
+                            mDelegateFactory.createContextMenuPopulator(this), this));
 
             // TODO(shaktisahu): Add logic for blimp version of navigation handler.
             mNavigationHandler = new TabWebContentsNavigationHandler(getWebContents());
@@ -3260,7 +3262,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            ContentViewCore contentViewCore, TabWebContentsDelegateAndroid delegate,
+            WebContents webContents, TabWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
@@ -3286,9 +3288,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,
             TabContentManager tabContentManager);
-    private native void nativeAttachOverlayContentViewCore(long nativeTabAndroid,
-            ContentViewCore content, boolean visible);
-    private native void nativeDetachOverlayContentViewCore(long nativeTabAndroid,
-            ContentViewCore content);
+    private native void nativeAttachOverlayWebContents(
+            long nativeTabAndroid, WebContents webContents, boolean visible);
+    private native void nativeDetachOverlayWebContents(
+            long nativeTabAndroid, WebContents webContents);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
 }

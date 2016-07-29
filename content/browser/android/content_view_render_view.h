@@ -32,10 +32,10 @@ class ContentViewRenderView : public CompositorClient {
 
   // Methods called from Java via JNI -----------------------------------------
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void SetCurrentContentViewCore(
+  void SetCurrentWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jlong native_content_view_core);
+      const base::android::JavaParamRef<jobject>& jweb_contents);
   void SurfaceCreated(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
   void SurfaceDestroyed(JNIEnv* env,

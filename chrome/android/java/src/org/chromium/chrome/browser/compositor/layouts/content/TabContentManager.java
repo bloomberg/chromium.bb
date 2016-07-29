@@ -229,8 +229,8 @@ public class TabContentManager {
                         mThumbnailScale);
                 nativePageBitmap.recycle();
             } else {
-                nativeCacheTab(mNativeTabContentManager, tab, tab.getContentViewCore(),
-                        mThumbnailScale);
+                if (tab.getWebContents() == null) return;
+                nativeCacheTab(mNativeTabContentManager, tab, mThumbnailScale);
             }
         }
     }
@@ -318,8 +318,8 @@ public class TabContentManager {
     private native long nativeInit(int defaultCacheSize, int approximationCacheSize,
             int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);
-    private native void nativeCacheTab(long nativeTabContentManager, Object tab,
-            Object contentViewCore, float thumbnailScale);
+    private native void nativeCacheTab(
+            long nativeTabContentManager, Object tab, float thumbnailScale);
     private native void nativeCacheTabWithBitmap(long nativeTabContentManager, Object tab,
             Object bitmap, float thumbnailScale);
     private native void nativeInvalidateIfChanged(long nativeTabContentManager, int tabId,

@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /***
@@ -128,10 +129,10 @@ public class ContentViewRenderView extends FrameLayout {
 
         if (mContentViewCore != null) {
             mContentViewCore.onPhysicalBackingSizeChanged(getWidth(), getHeight());
-            nativeSetCurrentContentViewCore(mNativeContentViewRenderView,
-                                            mContentViewCore.getNativeContentViewCore());
+            nativeSetCurrentWebContents(
+                    mNativeContentViewRenderView, mContentViewCore.getWebContents());
         } else {
-            nativeSetCurrentContentViewCore(mNativeContentViewRenderView, 0);
+            nativeSetCurrentWebContents(mNativeContentViewRenderView, null);
         }
     }
 
@@ -182,8 +183,8 @@ public class ContentViewRenderView extends FrameLayout {
 
     private native long nativeInit(long rootWindowNativePointer);
     private native void nativeDestroy(long nativeContentViewRenderView);
-    private native void nativeSetCurrentContentViewCore(long nativeContentViewRenderView,
-            long nativeContentViewCore);
+    private native void nativeSetCurrentWebContents(
+            long nativeContentViewRenderView, WebContents webContents);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,

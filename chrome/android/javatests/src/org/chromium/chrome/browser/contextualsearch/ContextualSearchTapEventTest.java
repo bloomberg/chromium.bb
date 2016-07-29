@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHos
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContextualSearchClient;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.touch_selection.SelectionEventType;
@@ -103,7 +104,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         @Override
         protected void nativeGatherSurroundingText(long nativeContextualSearchManager,
                 String selection, boolean useResolvedSearchTerm,
-                ContentViewCore baseContentViewCore, boolean maySendBasePageUrl) {}
+                WebContents webContents, boolean maySendBasePageUrl) {}
 
         /**
          * @return A stubbed ContentViewCore for mocking text selection.

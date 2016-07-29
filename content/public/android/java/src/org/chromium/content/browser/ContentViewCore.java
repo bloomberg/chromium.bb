@@ -1031,15 +1031,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return mNativeContentViewCore != 0;
     }
 
-    /**
-     * This is only useful for passing over JNI to native code that requires ContentViewCore*.
-     * @return native ContentViewCore pointer.
-     */
-    @CalledByNative
-    long getNativeContentViewCore() {
-        return mNativeContentViewCore;
-    }
-
     public void setContentViewClient(ContentViewClient client) {
         if (client == null) {
             throw new IllegalArgumentException("The client can't be null.");

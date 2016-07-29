@@ -19,15 +19,15 @@
 #include "components/contextual_search/common/overlay_page_notifier_service.mojom.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchManager_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
-using content::ContentViewCore;
+using content::WebContents;
 
 // This class manages the native behavior of the Contextual Search feature.
 // Instances of this class are owned by the Java ContextualSearchManager.
@@ -64,18 +64,18 @@ void ContextualSearchManager::StartSearchTermResolutionRequest(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_selection,
     jboolean j_use_resolved_search_term,
-    const JavaParamRef<jobject>& j_base_content_view_core,
+    const JavaParamRef<jobject>& j_base_web_contents,
     jboolean j_may_send_base_page_url) {
-  ContentViewCore* base_content_view_core =
-      ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
-  DCHECK(base_content_view_core);
+  WebContents* base_web_contents =
+      WebContents::FromJavaWebContents(j_base_web_contents.obj());
+  DCHECK(base_web_contents);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
   bool use_resolved_search_term = j_use_resolved_search_term;
   bool may_send_base_page_url = j_may_send_base_page_url;
   // Calls back to OnSearchTermResolutionResponse.
   delegate_->StartSearchTermResolutionRequest(
-      selection, use_resolved_search_term, base_content_view_core,
+      selection, use_resolved_search_term, base_web_contents,
       may_send_base_page_url);
 }
 
@@ -84,17 +84,17 @@ void ContextualSearchManager::GatherSurroundingText(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_selection,
     jboolean j_use_resolved_search_term,
-    const JavaParamRef<jobject>& j_base_content_view_core,
+    const JavaParamRef<jobject>& j_base_web_contents,
     jboolean j_may_send_base_page_url) {
-  ContentViewCore* base_content_view_core =
-      ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
-  DCHECK(base_content_view_core);
+  WebContents* base_web_contents =
+      WebContents::FromJavaWebContents(j_base_web_contents.obj());
+  DCHECK(base_web_contents);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
   bool use_resolved_search_term = j_use_resolved_search_term;
   bool may_send_base_page_url = j_may_send_base_page_url;
   delegate_->GatherAndSaveSurroundingText(selection, use_resolved_search_term,
-                                          base_content_view_core,
+                                          base_web_contents,
                                           may_send_base_page_url);
 }
 
@@ -171,15 +171,13 @@ void ContextualSearchManager::OnIcingSelectionAvailable(
 void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
     JNIEnv* env,
     jobject obj,
-    jobject j_overlay_content_view_core) {
-  ContentViewCore* overlay_content_view_core =
-      ContentViewCore::GetNativeContentViewCore(env,
-                                                j_overlay_content_view_core);
+    const JavaParamRef<jobject>& j_overlay_web_contents) {
+  WebContents* overlay_web_contents =
+      WebContents::FromJavaWebContents(j_overlay_web_contents.obj());
+  DCHECK(overlay_web_contents);
   // Tell our Overlay Notifier Service that this is currently a CS page.
   content::RenderFrameHost* render_frame_host =
-      overlay_content_view_core->GetWebContents()
-          ->GetRenderViewHost()
-          ->GetMainFrame();
+      overlay_web_contents->GetRenderViewHost()->GetMainFrame();
   DCHECK(render_frame_host);
   contextual_search::mojom::OverlayPageNotifierServicePtr page_notifier_service;
   render_frame_host->GetRemoteInterfaces()->GetInterface(

@@ -31,14 +31,12 @@ namespace content {
 
 class WebContents;
 
-// Native side of the ContentViewCore.java, which is the primary way of
-// communicating with the native Chromium code on Android.  This is a
-// public interface used by native code outside of the content module.
+// DEPRECATED. Do not add methods.
+// Refer to the public WebContents interface or elsewhere instead.
 class CONTENT_EXPORT ContentViewCore {
  public:
   // Returns the existing ContentViewCore for |web_contents|, or nullptr.
   static ContentViewCore* FromWebContents(WebContents* web_contents);
-  static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 
   virtual WebContents* GetWebContents() const = 0;
 
@@ -51,7 +49,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
       const = 0;
-  virtual cc::Layer* GetLayer() const = 0;
 
  protected:
  ~ContentViewCore() {}

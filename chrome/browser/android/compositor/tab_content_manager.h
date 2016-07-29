@@ -77,7 +77,6 @@ class TabContentManager : public ThumbnailCacheObserver {
   void CacheTab(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jobject>& tab,
-                const base::android::JavaParamRef<jobject>& content_view_core,
                 jfloat thumbnail_scale);
   void CacheTabWithBitmap(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,

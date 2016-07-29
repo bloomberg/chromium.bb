@@ -39,7 +39,7 @@ class ContextualSearchManager
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_selection,
       jboolean j_use_resolved_search_term,
-      const base::android::JavaParamRef<jobject>& j_base_content_view_core,
+      const base::android::JavaParamRef<jobject>& j_base_web_contents,
       jboolean j_may_send_base_page_url);
 
   // Gathers the surrounding text around the selection and saves it locally.
@@ -49,7 +49,7 @@ class ContextualSearchManager
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_selection,
       jboolean j_use_resolved_search_term,
-      const base::android::JavaParamRef<jobject>& j_base_content_view_core,
+      const base::android::JavaParamRef<jobject>& j_base_web_contents,
       jboolean j_may_send_base_page_url);
 
   // Gets the target language for translation purposes.
@@ -62,11 +62,11 @@ class ContextualSearchManager
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // Enables the Contextual Search JS API for the given |ContentViewCore|.
+  // Enables the Contextual Search JS API for the given |WebContents|.
   void EnableContextualSearchJsApiForOverlay(
       JNIEnv* env,
       jobject obj,
-      jobject j_overlay_content_view_core);
+      const base::android::JavaParamRef<jobject>& j_web_contents);
 
   // ContextualSearchJsApiHandler overrides:
   void SetCaption(std::string caption, bool does_answer) override;

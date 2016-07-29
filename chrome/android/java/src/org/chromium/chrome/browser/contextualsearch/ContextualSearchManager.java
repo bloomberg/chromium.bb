@@ -46,6 +46,7 @@ import org.chromium.content.browser.ContextualSearchClient;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -456,7 +457,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             // the user activates a Voice Search.
             nativeGatherSurroundingText(mNativeContextualSearchManagerPtr,
                     mSelectionController.getSelectedText(), NEVER_USE_RESOLVED_SEARCH_TERM,
-                    getBaseContentView(), mPolicy.maySendBasePageUrl());
+                    getBaseContentView().getWebContents(), mPolicy.maySendBasePageUrl());
         }
 
         mWereSearchResultsSeen = false;
@@ -502,7 +503,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         ContentViewCore baseContentView = getBaseContentView();
         if (baseContentView != null) {
             nativeStartSearchTermResolutionRequest(mNativeContextualSearchManagerPtr, selection,
-                    ALWAYS_USE_RESOLVED_SEARCH_TERM, getBaseContentView(),
+                    ALWAYS_USE_RESOLVED_SEARCH_TERM, getBaseContentView().getWebContents(),
                     mPolicy.maySendBasePageUrl());
         }
     }
@@ -933,7 +934,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             if (mPolicy.isContextualSearchJsApiEnabled()) {
                 // Enable the Contextual Search JavaScript API between our service and the new view.
                 nativeEnableContextualSearchJsApiForOverlay(
-                        mNativeContextualSearchManagerPtr, contentViewCore);
+                        mNativeContextualSearchManagerPtr, contentViewCore.getWebContents());
             }
 
             // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
@@ -1363,13 +1364,13 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private native long nativeInit();
     private native void nativeDestroy(long nativeContextualSearchManager);
     private native void nativeStartSearchTermResolutionRequest(long nativeContextualSearchManager,
-            String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
+            String selection, boolean useResolvedSearchTerm, WebContents baseWebContents,
             boolean maySendBasePageUrl);
     protected native void nativeGatherSurroundingText(long nativeContextualSearchManager,
-            String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
+            String selection, boolean useResolvedSearchTerm, WebContents baseWebContents,
             boolean maySendBasePageUrl);
     private native void nativeEnableContextualSearchJsApiForOverlay(
-            long nativeContextualSearchManager, ContentViewCore overlayContentViewCore);
+            long nativeContextualSearchManager, WebContents overlayWebContents);
     // Don't call these directly, instead call the private methods that cache the results.
     private native String nativeGetTargetLanguage(long nativeContextualSearchManager);
     private native String nativeGetAcceptLanguages(long nativeContextualSearchManager);
