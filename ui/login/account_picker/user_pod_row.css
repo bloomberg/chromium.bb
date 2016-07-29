@@ -46,6 +46,7 @@ pin-keyboard {
 
 .pod.flying-pin-pod {
   transition: height 180ms ease-in-out,
+              left 180ms ease-in-out,
               top 180ms ease-in-out,
               width 180ms ease-in-out;
 }
@@ -216,11 +217,17 @@ html[dir=rtl] .main-pane {
 }
 
 .name-container {
-  transition: transform 180ms;
+  transition: transform 180ms,
+              opacity 180ms ease-in-out 180ms,
+              visibility 180ms ease-in-out 180ms;
+  opacity : 1;
+  visibility: visible;
 }
 
-.pod.focused .name-container {
-  display: none;
+.name-container.pin-enabled {
+  opacity : 0;
+  transition: none;
+  visibility: hidden;
 }
 
 .pod.focused.multiprofiles-policy-applied .name-container {

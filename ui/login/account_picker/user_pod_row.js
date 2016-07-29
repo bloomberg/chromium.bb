@@ -59,6 +59,9 @@ cr.define('login', function() {
   var POD_ROW_PADDING = 10;
   var DESKTOP_ROW_PADDING = 32;
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
+  var CROS_PIN_POD_WIDTH = 270;
+  var CROS_PIN_POD_HEIGHT = 594;
+  var PIN_EXTRA_WIDTH = 90;
 
   /**
    * Minimal padding between user pod and virtual keyboard.
@@ -825,22 +828,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets the authorization element of the pod.
-     * @type {!HTMLDivElement}
-     */
-    get authElement() {
-      return this.querySelector('.auth-container');
-    },
-
-    /**
-     * Gets image pane element.
-     * @type {!HTMLDivElement}
-     */
-    get imagePaneElement() {
-      return this.querySelector('.user-image-pane');
-    },
-
-    /**
      * Gets image element.
      * @type {!HTMLImageElement}
      */
@@ -890,14 +877,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets the pin-container of the pod.
-     * @type {!HTMLDivElement}
-     */
-    get pinContainer() {
-      return this.querySelector('.pin-container');
-    },
-
-    /**
      * Gets the pin-keyboard of the pod.
      * @type {!HTMLElement}
      */
@@ -911,14 +890,6 @@ cr.define('login', function() {
      */
     get reauthWarningElement() {
       return this.querySelector('.reauth-hint-container');
-    },
-
-    /**
-     * Gets the signed in indicator of the pod.
-     * @type {!HTMLDivElement}
-     */
-    get signInElement() {
-      return this.querySelector('.signed-in-indicator');
     },
 
     /**
@@ -1126,21 +1097,26 @@ cr.define('login', function() {
       this.classList.toggle('flying-pin-pod', enable);
     },
 
-    setPinVisibility: function(visible) {
-      var elements = [this, this.authElement, this.imagePaneElement,
-                      this.imageElement, this.pinContainer];
+    updatePinClass_: function(element, enable) {
+      element.classList.toggle('pin-enabled', enable);
+      element.classList.toggle('pin-disabled', !enable);
+    },
 
-      for (var idx = 0; idx < elements.length; idx++) {
-        var currentElement = elements[idx];
-        currentElement.classList.toggle('pin-enabled', visible);
-        currentElement.classList.toggle('pin-disabled', !visible);
-      }
+    setPinVisibility: function(visible) {
+      var elements = this.getElementsByClassName('pin-tag');
+      for (var i = 0; i < elements.length; ++i)
+        this.updatePinClass_(elements[i], visible);
+      this.updatePinClass_(this, visible);
 
       // Set the focus to the input element after showing/hiding pin keyboard.
       if (visible)
         this.pinKeyboard.focus();
       else
         this.mainInput.focus();
+    },
+
+    isPinShown: function() {
+      return this.classList.contains('pin-enabled');
     },
 
     setUserPodIconType: function(userTypeClass) {
@@ -1178,7 +1154,7 @@ cr.define('login', function() {
      */
     get mainInput() {
       if (this.isAuthTypePassword) {
-        if (this.pinContainer.classList.contains('pin-enabled'))
+        if (this.isPinShown() && this.pinKeyboard.inputElement)
           return this.pinKeyboard.inputElement;
         return this.passwordElement;
       } else if (this.isAuthTypeOnlineSignIn) {
@@ -2982,6 +2958,28 @@ cr.define('login', function() {
     },
 
     /**
+     * Calculates the row and column of the given |pod|.
+     * @param {UserPod} pod Pod we want the row and column of.
+     * @param {number} columns Columns in the podrow.
+     * @param {number} rows Rows in the podrow.
+     * @return {{columns: number, rows: number}}
+     * @private
+     */
+    findPodLocation_: function(pod, columns, rows) {
+      var column = -1;
+      var row = -1;
+      var index = this.pods.indexOf(pod);
+      if (index >= 0) {
+        row = Math.floor(index / columns);
+        column = index % columns;
+      }
+      else {
+        console.error('Pod not found in pod row.');
+      }
+      return {column: column, row: row};
+    },
+
+    /**
      * Places pods onto their positions onto pod grid.
      * @private
      */
@@ -3001,25 +2999,38 @@ cr.define('login', function() {
           this.columnsToWidth_(columns), this.rowsToHeight_(rows));
       var height = this.userPodHeight_;
       var width = this.userPodWidth_;
+      var pinPodLocation = { column: columns + 1, row: rows + 1 };
+      if (this.focusedPod_ && this.focusedPod_.isPinShown())
+        pinPodLocation = this.findPodLocation_(this.focusedPod_, columns, rows);
+
       this.pods.forEach(function(pod, index) {
         if (index >= maxPodsNumber) {
            pod.hidden = true;
            return;
         }
         pod.hidden = false;
-        if (pod.offsetHeight != height) {
+        if (pod.offsetHeight != height &&
+            pod.offsetHeight != CROS_PIN_POD_HEIGHT) {
           console.error('Pod offsetHeight (' + pod.offsetHeight +
               ') and POD_HEIGHT (' + height + ') are not equal.');
         }
-        if (pod.offsetWidth != width) {
+        if (pod.offsetWidth != width &&
+            pod.offsetWidth != CROS_PIN_POD_WIDTH) {
           console.error('Pod offsetWidth (' + pod.offsetWidth +
               ') and POD_WIDTH (' + width + ') are not equal.');
         }
         var column = index % columns;
         var row = Math.floor(index / columns);
+        var offsetFromPin = 0;
+        if (row == pinPodLocation.row) {
+          offsetFromPin = PIN_EXTRA_WIDTH / 2;
+          if (column <= pinPodLocation.column)
+            offsetFromPin *= -1;
+        }
+
         var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
                                                 POD_ROW_PADDING;
-        pod.left = rowPadding + column * (width + margin);
+        pod.left = rowPadding + column * (width + margin) + offsetFromPin;
 
         // On desktop, we want the rows to always be equally spaced.
         pod.top = isDesktopUserManager ? row * (height + rowPadding) :
@@ -3090,6 +3101,7 @@ cr.define('login', function() {
         if (pod != podToFocus) {
           pod.isActionBoxMenuHovered = false;
           pod.classList.remove('focused');
+          pod.setPinVisibility(false);
           // On Desktop, the faded style is not set correctly, so we should
           // manually fade out non-focused pods if there is a focused pod.
           if (pod.user.isDesktopUser && podToFocus)
@@ -3107,6 +3119,7 @@ cr.define('login', function() {
       var hadFocus = !!this.focusedPod_;
       this.focusedPod_ = podToFocus;
       if (podToFocus) {
+        this.setFocusedPodPinVisibility(true);
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         if (!podToFocus.multiProfilesPolicyApplied) {
@@ -3129,6 +3142,7 @@ cr.define('login', function() {
         this.scrollFocusedPodIntoView();
       }
       this.insideFocusPod_ = false;
+      this.placePods_();
     },
 
     /**
