@@ -17,7 +17,8 @@ String CSSCustomPropertyDeclaration::customCSSText() const
 {
     if (m_value)
         return m_value->tokenRange().serialize();
-    return emptyString();
+    DCHECK(m_valueId != CSSValueInternalVariableValue);
+    return getValueName(m_valueId);
 }
 
 } // namespace blink

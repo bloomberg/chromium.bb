@@ -21,15 +21,16 @@
 test(function() {
   assert_equals(getComputedStyle(container).getPropertyValue("--a"), " green");
   assert_equals(getComputedStyle(a).getPropertyValue("--a"), " green");
-  assert_equals(a.style.getPropertyValue("--a"), " inherit");
+  assert_equals(a.style.getPropertyValue("--a"), "inherit");
+  assert_equals(a.style.cssText, "--a: inherit;");
 }, 'The special inherit value can be read from inline style.');
 
 test(function() {
   a.style.setProperty("--a", "inherit");
-  assert_equals(a.style.getPropertyValue("--a"), " inherit");
+  assert_equals(a.style.getPropertyValue("--a"), "inherit");
 }, 'The special inherit value can be read after setting.')
 
 test(function() {
-  assert_equals(document.styleSheets[0].rules[1].style.getPropertyValue("--a"), " inherit");
+  assert_equals(document.styleSheets[0].rules[1].style.getPropertyValue("--a"), "inherit");
 }, 'The special inherit value can be read from a declared rule.')
 </script>

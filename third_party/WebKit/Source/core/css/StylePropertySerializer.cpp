@@ -184,6 +184,8 @@ String StylePropertySerializer::getCustomPropertyText(const PropertyValueForSeri
     const CSSCustomPropertyDeclaration* value = toCSSCustomPropertyDeclaration(property.value());
     result.append(value->name());
     result.append(':');
+    if (!value->value())
+        result.append(' ');
     result.append(value->customCSSText());
     if (property.isImportant())
         result.append(" !important");
