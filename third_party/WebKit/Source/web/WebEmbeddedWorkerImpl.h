@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class ParentFrameTaskRunners;
 class ServiceWorkerGlobalScopeProxy;
 class WebLocalFrameImpl;
 class WebServiceWorkerNetworkProvider;
@@ -108,6 +109,8 @@ private:
 
     // Kept around only while main script loading is ongoing.
     RefPtr<WorkerScriptLoader> m_mainScriptLoader;
+
+    std::unique_ptr<ParentFrameTaskRunners> m_mainThreadTaskRunners;
 
     std::unique_ptr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;

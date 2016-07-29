@@ -39,6 +39,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
@@ -271,6 +272,8 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 
 void WebSharedWorkerImpl::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
 {
+    // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
+    // consider using m_mainThreadTaskRunners->getLoadingTaskRunner() instead.
     m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
@@ -351,6 +354,13 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         m_mainScriptLoader->responseAddressSpace(),
         m_mainScriptLoader->originTrialTokens(),
         std::move(workerSettings));
+
+    // We have a dummy document here for loading but it doesn't really represent
+    // the document/frame of associated document(s) for this worker. Here we
+    // populate the task runners with null document not to confuse the frame
+    // scheduler (which will end up using the thread's default task runner).
+    m_mainThreadTaskRunners = ParentFrameTaskRunners::create(nullptr);
+
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());

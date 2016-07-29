@@ -2264,6 +2264,8 @@
             'workers/InProcessWorkerObjectProxy.h',
             'workers/MainThreadWorkletGlobalScope.cpp',
             'workers/MainThreadWorkletGlobalScope.h',
+            'workers/ParentFrameTaskRunners.cpp',
+            'workers/ParentFrameTaskRunners.h',
             'workers/SharedWorker.cpp',
             'workers/SharedWorker.h',
             'workers/SharedWorkerGlobalScope.cpp',
