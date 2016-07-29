@@ -17,11 +17,12 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
   function createWindow(tabUrls) {
     var tabs = tabUrls.map(function(tabUrl) {
-      return {sessionId: 0, timestamp: 0, title: tabUrl, url: tabUrl};
+      return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
     });
 
     return {
       tabs: tabs,
+      sessionId: '123',
       userVisibleTimestamp: "A while ago"
     };
   }
@@ -186,6 +187,26 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('click synced tab', function(done) {
+        setForeignSessions(
+            [createSession(
+                'Chromebook', [createWindow(['https://example.com'])])],
+            true);
+
+        registerMessageCallback('openForeignSession', this, function(args) {
+          assertEquals('Chromebook', args[0], 'sessionTag is correct');
+          assertEquals('123', args[1], 'windowId is correct');
+          assertEquals('456', args[2], 'tabId is correct');
+          done();
+        });
+
+        flush().then(function() {
+          var cards = getCards();
+          var anchor = cards[0].root.querySelector('a');
+          MockInteractions.tap(anchor);
+        });
+      });
+
       test('show sign in promo', function() {
         updateSignInState(false);
         return flush().then(function() {
@@ -264,6 +285,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         element.syncedDevices = [];
         element.searchTerm = '';
         element.guestSession_ = false;
+        registerMessageCallback('openForeignSession', this, undefined);
       });
     });
   }

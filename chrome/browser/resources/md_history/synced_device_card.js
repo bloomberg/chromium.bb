@@ -35,8 +35,6 @@ Polymer({
 
     searchTerm: String,
 
-    windowId: Number,
-
     sessionTag: String,
   },
 
@@ -54,10 +52,10 @@ Polymer({
    * @private
    */
   openTab_: function(e) {
-    var model = /** @type {ForeignSessionTab} */(e.model);
+    var tab = /** @type {ForeignSessionTab} */(e.model.tab);
     var srcEvent = /** @type {Event} */(e.detail.sourceEvent);
     md_history.BrowserService.getInstance().openForeignSessionTab(
-        this.sessionTag, model.windowId, model.sessionId, srcEvent);
+        this.sessionTag, tab.windowId, tab.sessionId, srcEvent);
     e.preventDefault();
   },
 
