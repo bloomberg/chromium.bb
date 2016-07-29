@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/common/url_constants.h"
@@ -220,4 +221,23 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
 
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, BadXhtml) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // When an XHTML page contains invalid XML, it causes a paint of the error
+  // message without a layout. Page load metrics currently treats this as an
+  // error. Eventually, we'll fix this by special casing the handling of
+  // documents with non-well-formed XML on the blink side. See crbug.com/627607
+  // for more.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/page_load_metrics/badxml.xhtml"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
+  histogram_tester_.ExpectBucketCount(page_load_metrics::internal::kErrorEvents,
+                                      page_load_metrics::ERR_BAD_TIMING_IPC, 1);
 }

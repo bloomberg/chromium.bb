@@ -15,6 +15,7 @@ namespace internal {
 // navigation start to the event in question.
 extern const char kHistogramCommit[];
 extern const char kHistogramFirstLayout[];
+extern const char kHistogramFirstPaint[];
 extern const char kHistogramFirstTextPaint[];
 extern const char kHistogramDomContentLoaded[];
 extern const char kHistogramLoad[];

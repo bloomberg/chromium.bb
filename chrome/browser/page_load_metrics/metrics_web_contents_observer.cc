@@ -158,8 +158,10 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   }
 
   if (!EventsInOrder(timing.first_layout, timing.first_paint)) {
-    NOTREACHED() << "Invalid first_layout " << timing.first_layout
-                 << " for first_paint " << timing.first_paint;
+    // This can happen when we process an XHTML document that doesn't contain
+    // well formed XML. See crbug.com/627607.
+    DLOG(ERROR) << "Invalid first_layout " << timing.first_layout
+                << " for first_paint " << timing.first_paint;
     return false;
   }
 
