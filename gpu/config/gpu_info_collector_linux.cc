@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -247,8 +248,6 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string gl_version = gpu_info->gl_version;
-  if (base::StartsWith(gl_version, "OpenGL ES", base::CompareCase::SENSITIVE))
-    gl_version = gl_version.substr(10);
   std::vector<std::string> pieces = base::SplitString(
       gl_version, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
       base::SPLIT_WANT_NONEMPTY);
@@ -257,14 +256,23 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   if (pieces.size() < 3)
     return kCollectInfoNonFatalFailure;
 
-  std::string driver_version = pieces[2];
-  size_t pos = driver_version.find_first_not_of("0123456789.");
-  if (pos == 0)
-    return kCollectInfoNonFatalFailure;
-  if (pos != std::string::npos)
-    driver_version = driver_version.substr(0, pos);
+  // Search from the end for the first piece that starts with major.minor or
+  // major.minor.micro but assume the driver version cannot be in the first two
+  // pieces.
+  re2::RE2 pattern("([\\d]+\\.[\\d]+(\\.[\\d]+)?).*");
+  std::string driver_version;
+  auto it = pieces.rbegin();
+  while (pieces.rend() - it > 2) {
+    bool parsed = re2::RE2::FullMatch(*it, pattern, &driver_version);
+    if (parsed)
+      break;
+    ++it;
+  }
 
-  gpu_info->driver_vendor = pieces[1];
+  if (driver_version.empty())
+    return kCollectInfoNonFatalFailure;
+
+  gpu_info->driver_vendor = *(++it);
   gpu_info->driver_version = driver_version;
   return kCollectInfoSuccess;
 }
