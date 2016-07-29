@@ -296,9 +296,9 @@ struct BASE_EXPORT SystemMemoryInfoKB {
   int dirty;
 
   // vmstats data.
-  int pswpin;
-  int pswpout;
-  int pgmajfault;
+  unsigned long pswpin;
+  unsigned long pswpout;
+  unsigned long pgmajfault;
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)

@@ -687,12 +687,16 @@ bool ParseProcVmstat(const std::string& vmstat_data,
     if (tokens.size() != 2)
       continue;
 
+    uint64_t val;
+    if (!StringToUint64(tokens[1], &val))
+      continue;
+
     if (tokens[0] == "pswpin") {
-      StringToInt(tokens[1], &meminfo->pswpin);
+      meminfo->pswpin = val;
     } else if (tokens[0] == "pswpout") {
-      StringToInt(tokens[1], &meminfo->pswpout);
+      meminfo->pswpout = val;
     } else if (tokens[0] == "pgmajfault") {
-      StringToInt(tokens[1], &meminfo->pgmajfault);
+      meminfo->pgmajfault = val;
     }
   }
 
