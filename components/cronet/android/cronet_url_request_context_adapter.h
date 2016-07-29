@@ -98,12 +98,6 @@ class CronetURLRequestContextAdapter
   // Called on main Java thread to initialize URLRequestContext.
   void InitRequestContextOnMainThread();
 
-  // Enables the network quality estimator.
-  // TODO(tbansal):  http://crbug.com/618034 Remove this API.
-  void EnableNetworkQualityEstimator(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
-
   // Configures the network quality estimator to observe localhost requests, and
   // to consider smaller responses when observing throughput for testing. This
   // should be called after the network quality estimator has been enabled.
@@ -144,10 +138,6 @@ class CronetURLRequestContextAdapter
 
   // Gets the file thread. Create one if there is none.
   base::Thread* GetFileThread();
-
-  // Instantiate and configure the network quality estimator.
-  // TODO(tbansal):  http://crbug.com/618034 Remove this API.
-  void EnableNetworkQualityEstimatorOnNetworkThread();
 
   // Configures the network quality estimator to observe requests to localhost,
   // as well as to use smaller responses when estimating throughput. This

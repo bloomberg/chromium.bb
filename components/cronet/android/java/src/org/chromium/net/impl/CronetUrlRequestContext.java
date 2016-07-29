@@ -63,7 +63,6 @@ public class CronetUrlRequestContext extends CronetEngine {
     private long mUrlRequestContextAdapter = 0;
     private Thread mNetworkThread;
 
-    private Executor mNetworkQualityExecutor;
     private boolean mNetworkQualityEstimatorEnabled;
 
     /**
@@ -261,46 +260,6 @@ public class CronetUrlRequestContext extends CronetEngine {
         return nativeGetHistogramDeltas();
     }
 
-    /**
-     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
-     * embedders have switched to using a request finished listener that
-     * provides its own executor.
-     */
-    @Override
-    public void setRequestFinishedListenerExecutor(Executor executor) {
-        if (!mNetworkQualityEstimatorEnabled) {
-            throw new IllegalStateException("Network quality estimator not enabled");
-        }
-        if (executor == null) {
-            throw new NullPointerException("Request finished listener requires an executor");
-        }
-        if (mNetworkQualityExecutor != null) {
-            throw new NullPointerException("Request finished listener executor already set");
-        }
-        mNetworkQualityExecutor = executor;
-    }
-
-    /**
-     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
-     * embedders have switched to using CronetEngine builder for enabling
-     * network quality estimator.
-     */
-    @Override
-    public void enableNetworkQualityEstimator(Executor executor) {
-        if (mNetworkQualityEstimatorEnabled) {
-            throw new IllegalStateException("Network quality estimator already enabled");
-        }
-        mNetworkQualityEstimatorEnabled = true;
-        if (executor == null) {
-            throw new NullPointerException("Network quality estimator requires an executor");
-        }
-        mNetworkQualityExecutor = executor;
-        synchronized (mLock) {
-            checkHaveAdapter();
-            nativeEnableNetworkQualityEstimator(mUrlRequestContextAdapter);
-        }
-    }
-
     @VisibleForTesting
     @Override
     public void configureNetworkQualityEstimatorForTesting(
@@ -379,11 +338,6 @@ public class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
-    /**
-     * TODO(tbansal):  http://crbug.com/618034 Remove this API once all
-     * embedders have switched to using a request finished listener that
-     * provides its own executor.
-     */
     @Override
     public void addRequestFinishedListener(RequestFinishedListener listener) {
         synchronized (mFinishedListenerLock) {
@@ -391,9 +345,6 @@ public class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
-    /**
-     * TODO(tbansal):  http://crbug.com/618034 Remove this API.
-     */
     @Override
     public void removeRequestFinishedListener(RequestFinishedListener listener) {
         synchronized (mFinishedListenerLock) {
@@ -590,9 +541,6 @@ public class CronetUrlRequestContext extends CronetEngine {
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeConfigureNetworkQualityEstimatorForTesting(
             long nativePtr, boolean useLocalHostRequests, boolean useSmallerResponses);
-
-    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeEnableNetworkQualityEstimator(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeProvideRTTObservations(long nativePtr, boolean should);

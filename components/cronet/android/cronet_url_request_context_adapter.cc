@@ -467,25 +467,6 @@ void CronetURLRequestContextAdapter::ConfigureNetworkQualityEstimatorForTesting(
                  use_smaller_responses));
 }
 
-void CronetURLRequestContextAdapter::
-    EnableNetworkQualityEstimatorOnNetworkThread() {
-  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
-  DCHECK(!network_quality_estimator_);
-  network_quality_estimator_.reset(new net::NetworkQualityEstimator(
-      std::unique_ptr<net::ExternalEstimateProvider>(),
-      std::map<std::string, std::string>()));
-  context_->set_network_quality_estimator(network_quality_estimator_.get());
-}
-
-void CronetURLRequestContextAdapter::EnableNetworkQualityEstimator(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
-  PostTaskToNetworkThread(
-      FROM_HERE, base::Bind(&CronetURLRequestContextAdapter::
-                                EnableNetworkQualityEstimatorOnNetworkThread,
-                            base::Unretained(this)));
-}
-
 void CronetURLRequestContextAdapter::ProvideRTTObservationsOnNetworkThread(
     bool should) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
