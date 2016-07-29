@@ -512,7 +512,7 @@ bool HFSBTreeIterator::Next() {
   GetLeafData<uint16_t>();  // keyLength
   auto parent_id = OSSwapBigToHostInt32(*GetLeafData<uint32_t>());
   auto key_string_length = OSSwapBigToHostInt16(*GetLeafData<uint16_t>());
-  auto key_string =
+  auto* key_string =
       reinterpret_cast<uint16_t*>(&leaf_data_[current_leaf_offset_]);
   for (uint16_t i = 0;
        i < key_string_length;
@@ -528,7 +528,7 @@ bool HFSBTreeIterator::Next() {
   current_leaf_offset_ -= sizeof(int16_t);
   switch (current_record_.record_type) {
     case kHFSPlusFolderRecord: {
-      auto folder = GetLeafData<HFSPlusCatalogFolder>();
+      auto* folder = GetLeafData<HFSPlusCatalogFolder>();
       ConvertBigEndian(folder);
       ++leaf_records_read_;
       ++current_leaf_records_read_;
@@ -554,7 +554,7 @@ bool HFSBTreeIterator::Next() {
       break;
     }
     case kHFSPlusFileRecord: {
-      auto file = GetLeafData<HFSPlusCatalogFile>();
+      auto* file = GetLeafData<HFSPlusCatalogFile>();
       ConvertBigEndian(file);
       ++leaf_records_read_;
       ++current_leaf_records_read_;
@@ -621,7 +621,7 @@ bool HFSBTreeIterator::ReadCurrentLeaf() {
     return false;
   }
 
-  auto leaf = reinterpret_cast<BTNodeDescriptor*>(&leaf_data_[0]);
+  auto* leaf = reinterpret_cast<BTNodeDescriptor*>(&leaf_data_[0]);
   ConvertBigEndian(leaf);
   if (leaf->kind != kBTLeafNode) {
     DLOG(ERROR) << "Node " << current_leaf_number_ << " is not a leaf";

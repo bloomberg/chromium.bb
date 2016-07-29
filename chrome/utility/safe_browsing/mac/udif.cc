@@ -457,25 +457,25 @@ bool UDIFParser::ParseBlkx() {
     return false;
   }
 
-  auto resource_fork = base::mac::GetValueFromDictionary<CFDictionaryRef>(
+  auto* resource_fork = base::mac::GetValueFromDictionary<CFDictionaryRef>(
       plist.get(), CFSTR("resource-fork"));
   if (!resource_fork) {
     DLOG(ERROR) << "No resource-fork entry in plist";
     return false;
   }
 
-  auto blkx = base::mac::GetValueFromDictionary<CFArrayRef>(resource_fork,
-                                                            CFSTR("blkx"));
+  auto* blkx = base::mac::GetValueFromDictionary<CFArrayRef>(resource_fork,
+                                                             CFSTR("blkx"));
   if (!blkx) {
     DLOG(ERROR) << "No blkx entry in resource-fork";
     return false;
   }
 
   for (CFIndex i = 0; i < CFArrayGetCount(blkx); ++i) {
-    auto block_dictionary =
+    auto* block_dictionary =
         base::mac::CFCast<CFDictionaryRef>(CFArrayGetValueAtIndex(blkx, i));
-    auto data = base::mac::GetValueFromDictionary<CFDataRef>(block_dictionary,
-                                                             CFSTR("Data"));
+    auto* data = base::mac::GetValueFromDictionary<CFDataRef>(block_dictionary,
+                                                              CFSTR("Data"));
     if (!data) {
       DLOG(ERROR) << "Skipping block " << i
                   << " because it has no Data section";
