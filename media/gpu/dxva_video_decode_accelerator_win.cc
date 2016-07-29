@@ -1668,7 +1668,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       }
 
       pending_sample->picture_buffer_id = index->second->id();
-      index->second->set_available(false);
+      index->second->set_bound();
       if (share_nv12_textures_) {
         main_thread_task_runner_->PostTask(
             FROM_HERE,

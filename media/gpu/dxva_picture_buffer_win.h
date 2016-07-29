@@ -27,6 +27,7 @@ class DXVAVideoDecodeAccelerator;
 // available for rendering, the texture information, etc.
 class DXVAPictureBuffer {
  public:
+  enum State { UNUSED, BOUND, COPYING, IN_CLIENT, WAITING_TO_REUSE };
   static linked_ptr<DXVAPictureBuffer> Create(
       const DXVAVideoDecodeAccelerator& decoder,
       const PictureBuffer& buffer,
@@ -44,15 +45,14 @@ class DXVAPictureBuffer {
       ID3D11Texture2D* dx11_texture,
       int input_buffer_id);
 
-  bool available() const { return available_; }
-
-  void set_available(bool available) { available_ = available; }
+  bool available() const { return state_ == UNUSED; }
 
   int id() const { return picture_buffer_.id(); }
 
   gfx::Size size() const { return picture_buffer_.size(); }
+  void set_bound();
 
-  virtual bool waiting_to_reuse() const;
+  bool waiting_to_reuse() const { return state_ == WAITING_TO_REUSE; }
   virtual gl::GLFence* reuse_fence();
 
   // Called when the source surface |src_surface| is copied to the destination
@@ -64,7 +64,7 @@ class DXVAPictureBuffer {
  protected:
   explicit DXVAPictureBuffer(const PictureBuffer& buffer);
 
-  bool available_;
+  State state_ = UNUSED;
   PictureBuffer picture_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAPictureBuffer);
@@ -87,15 +87,11 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
                                            IDirect3DSurface9* dest_surface,
                                            ID3D11Texture2D* dx11_texture,
                                            int input_buffer_id) override;
-  bool waiting_to_reuse() const override;
   gl::GLFence* reuse_fence() override;
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
 
  protected:
-  // This is true if the decoder is currently waiting on the fence before
-  // reusing the buffer.
-  bool waiting_to_reuse_;
   EGLSurface decoding_surface_;
 
   std::unique_ptr<gl::GLFence> reuse_fence_;
@@ -162,10 +158,6 @@ class EGLStreamCopyPictureBuffer : public DXVAPictureBuffer {
 
  private:
   EGLStreamKHR stream_;
-
-  // True if the copy has been completed and it has not been set for reuse
-  // yet.
-  bool frame_in_consumer_ = false;
 
   // This ID3D11Texture2D interface pointer is used to hold a reference to the
   // MFT decoder texture during the course of a copy operation. This reference

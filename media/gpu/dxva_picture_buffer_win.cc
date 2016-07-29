@@ -87,8 +87,9 @@ bool DXVAPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   return false;
 }
 
-bool DXVAPictureBuffer::waiting_to_reuse() const {
-  return false;
+void DXVAPictureBuffer::set_bound() {
+  DCHECK_EQ(UNUSED, state_);
+  state_ = BOUND;
 }
 
 gl::GLFence* DXVAPictureBuffer::reuse_fence() {
@@ -102,7 +103,7 @@ bool DXVAPictureBuffer::CopySurfaceComplete(IDirect3DSurface9* src_surface,
 }
 
 DXVAPictureBuffer::DXVAPictureBuffer(const PictureBuffer& buffer)
-    : available_(true), picture_buffer_(buffer) {}
+    : picture_buffer_(buffer) {}
 
 bool DXVAPictureBuffer::BindSampleToTexture(
     base::win::ScopedComPtr<IMFSample> sample) {
@@ -197,11 +198,12 @@ bool PbufferPictureBuffer::InitializeTexture(
 }
 
 void PbufferPictureBuffer::ResetReuseFence() {
+  DCHECK_EQ(IN_CLIENT, state_);
   if (!reuse_fence_ || !reuse_fence_->ResetSupported())
     reuse_fence_.reset(gl::GLFence::Create());
   else
     reuse_fence_->ResetState();
-  waiting_to_reuse_ = true;
+  state_ = WAITING_TO_REUSE;
 }
 
 bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
@@ -209,6 +211,8 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
     IDirect3DSurface9* dest_surface,
     ID3D11Texture2D* dx11_texture,
     int input_buffer_id) {
+  DCHECK_EQ(BOUND, state_);
+  state_ = COPYING;
   DCHECK(dest_surface || dx11_texture);
   if (dx11_texture) {
     // Grab a reference on the decoder texture. This reference will be released
@@ -257,10 +261,6 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   return true;
 }
 
-bool PbufferPictureBuffer::waiting_to_reuse() const {
-  return waiting_to_reuse_;
-}
-
 gl::GLFence* PbufferPictureBuffer::reuse_fence() {
   return reuse_fence_.get();
 }
@@ -268,7 +268,8 @@ gl::GLFence* PbufferPictureBuffer::reuse_fence() {
 bool PbufferPictureBuffer::CopySurfaceComplete(
     IDirect3DSurface9* src_surface,
     IDirect3DSurface9* dest_surface) {
-  DCHECK(!available());
+  DCHECK_EQ(COPYING, state_);
+  state_ = IN_CLIENT;
 
   GLint current_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
@@ -303,7 +304,6 @@ bool PbufferPictureBuffer::CopySurfaceComplete(
 
 PbufferPictureBuffer::PbufferPictureBuffer(const PictureBuffer& buffer)
     : DXVAPictureBuffer(buffer),
-      waiting_to_reuse_(false),
       decoding_surface_(NULL),
       texture_share_handle_(nullptr),
       keyed_mutex_value_(0),
@@ -321,6 +321,7 @@ PbufferPictureBuffer::~PbufferPictureBuffer() {
 }
 
 bool PbufferPictureBuffer::ReusePictureBuffer() {
+  DCHECK_NE(UNUSED, state_);
   DCHECK(decoding_surface_);
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   eglReleaseTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
@@ -328,8 +329,7 @@ bool PbufferPictureBuffer::ReusePictureBuffer() {
   decoder_surface_.Release();
   target_surface_.Release();
   decoder_dx11_texture_.Release();
-  waiting_to_reuse_ = false;
-  set_available(true);
+  state_ = UNUSED;
   if (egl_keyed_mutex_) {
     HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
     RETURN_ON_FAILURE(hr == S_OK, "Could not release sync mutex", false);
@@ -392,6 +392,7 @@ bool EGLStreamPictureBuffer::Initialize() {
 }
 
 bool EGLStreamPictureBuffer::ReusePictureBuffer() {
+  DCHECK_NE(UNUSED, state_);
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   if (stream_) {
@@ -402,13 +403,14 @@ bool EGLStreamPictureBuffer::ReusePictureBuffer() {
     dx11_decoding_texture_.Release();
     current_d3d_sample_.Release();
   }
-  set_available(true);
+  state_ = UNUSED;
   return true;
 }
 
 bool EGLStreamPictureBuffer::BindSampleToTexture(
     base::win::ScopedComPtr<IMFSample> sample) {
-  DCHECK(!available());
+  DCHECK_EQ(BOUND, state_);
+  state_ = IN_CLIENT;
 
   current_d3d_sample_ = sample;
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
@@ -535,6 +537,8 @@ bool EGLStreamCopyPictureBuffer::CopyOutputSampleDataToPictureBuffer(
     IDirect3DSurface9* dest_surface,
     ID3D11Texture2D* dx11_texture,
     int input_buffer_id) {
+  DCHECK_EQ(BOUND, state_);
+  state_ = COPYING;
   DCHECK(dx11_texture);
   // Grab a reference on the decoder texture. This reference will be released
   // when we receive a notification that the copy was completed or when the
@@ -552,9 +556,10 @@ bool EGLStreamCopyPictureBuffer::CopyOutputSampleDataToPictureBuffer(
 bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
     IDirect3DSurface9* src_surface,
     IDirect3DSurface9* dest_surface) {
-  DCHECK(!available());
   DCHECK(!src_surface);
   DCHECK(!dest_surface);
+  DCHECK_EQ(COPYING, state_);
+  state_ = IN_CLIENT;
 
   dx11_decoding_texture_.Release();
 
@@ -574,25 +579,24 @@ bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
   RETURN_ON_FAILURE(result, "Could not post stream", false);
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
   RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
-  frame_in_consumer_ = true;
 
   return true;
 }
 
 bool EGLStreamCopyPictureBuffer::ReusePictureBuffer() {
+  DCHECK_NE(UNUSED, state_);
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
-  if (frame_in_consumer_) {
+  if (state_ == IN_CLIENT) {
     HRESULT hr = egl_keyed_mutex_->ReleaseSync(++keyed_mutex_value_);
     RETURN_ON_FAILURE(hr == S_OK, "Could not release sync mutex", false);
   }
-  frame_in_consumer_ = false;
+  state_ = UNUSED;
 
   if (stream_) {
     EGLBoolean result = eglStreamConsumerReleaseKHR(egl_display, stream_);
     RETURN_ON_FAILURE(result, "Could not release stream", false);
   }
-  set_available(true);
   return true;
 }
 
