@@ -199,6 +199,11 @@ void ChildProcessHost::DoLaunch(
   }
 
   if (child_process_.IsValid()) {
+    DVLOG(0) << "Launched child process pid=" << child_process_.Pid()
+             << ", instance=" << target_.instance()
+             << ", name=" << target_.name()
+             << ", user_id=" << target_.user_id();
+
     if (mojo_ipc_channel_.get()) {
       mojo_ipc_channel_->ChildProcessLaunched();
       mojo::edk::ChildProcessLaunched(
