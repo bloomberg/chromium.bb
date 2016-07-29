@@ -18,6 +18,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
@@ -149,24 +150,22 @@ class CONTENT_EXPORT PresentationServiceImpl
       PresentationServiceDelegate* delegate);
 
   // PresentationService implementation.
-  void SetDefaultPresentationURL(const mojo::String& url) override;
+  void SetDefaultPresentationURL(const std::string& url) override;
   void SetClient(blink::mojom::PresentationServiceClientPtr client) override;
-  void ListenForScreenAvailability(const mojo::String& url) override;
-  void StopListeningForScreenAvailability(const mojo::String& url) override;
-  void StartSession(
-      const mojo::String& presentation_url,
-      const NewSessionCallback& callback) override;
-  void JoinSession(
-      const mojo::String& presentation_url,
-      const mojo::String& presentation_id,
-      const NewSessionCallback& callback) override;
+  void ListenForScreenAvailability(const std::string& url) override;
+  void StopListeningForScreenAvailability(const std::string& url) override;
+  void StartSession(const std::string& presentation_url,
+                    const NewSessionCallback& callback) override;
+  void JoinSession(const std::string& presentation_url,
+                   const base::Optional<std::string>& presentation_id,
+                   const NewSessionCallback& callback) override;
   void SendSessionMessage(blink::mojom::PresentationSessionInfoPtr session_info,
                           blink::mojom::SessionMessagePtr session_message,
                           const SendSessionMessageCallback& callback) override;
-  void CloseConnection(const mojo::String& presentation_url,
-                       const mojo::String& presentation_id) override;
-  void Terminate(const mojo::String& presentation_url,
-                 const mojo::String& presentation_id) override;
+  void CloseConnection(const std::string& presentation_url,
+                       const std::string& presentation_id) override;
+  void Terminate(const std::string& presentation_url,
+                 const std::string& presentation_id) override;
   void ListenForSessionMessages(
       blink::mojom::PresentationSessionInfoPtr session) override;
 
