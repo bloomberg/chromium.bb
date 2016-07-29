@@ -9,9 +9,18 @@
 
 namespace subresource_filter {
 
-// The name of the directory under the user data directory, where filtering
-// rules are stored.
-extern const base::FilePath::CharType kRulesetBaseDirectoryName[];
+// The name of the top-level directory under the user data directory that
+// contains all files and subdirectories related to the subresource filter.
+extern const base::FilePath::CharType kTopLevelDirectoryName[];
+
+// The name of the subdirectory under the top-level directory that stores
+// versions of indexed rulesets. Files that belong to an IndexedRulesetVersion
+// are stored under /format_version/content_version/.
+extern const base::FilePath::CharType kIndexedRulesetBaseDirectoryName[];
+
+// The name of the subdirectory under the top-level directory that stores
+// versions of unindexed rulesets downloaded through the component updater.
+extern const base::FilePath::CharType kUnindexedRulesetBaseDirectoryName[];
 
 // The name of the file that actually stores the ruleset contents.
 extern const base::FilePath::CharType kRulesetDataFileName[];

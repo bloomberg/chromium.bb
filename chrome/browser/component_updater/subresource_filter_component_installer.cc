@@ -8,9 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,11 +20,14 @@ using component_updater::ComponentUpdateService;
 
 namespace {
 
-void PassDataToSubresourceFilterService(const std::string& rules,
-                                        const base::Version& version) {
-  if (g_browser_process->subresource_filter_ruleset_service()) {
-    g_browser_process->subresource_filter_ruleset_service()
-        ->NotifyRulesetVersionAvailable(rules, version);
+void IndexAndStoreAndPublishRulesetVersionIfNeeded(
+    const base::FilePath& unindexed_ruleset_path,
+    const std::string& content_version) {
+  subresource_filter::RulesetService* ruleset_service =
+      g_browser_process->subresource_filter_ruleset_service();
+  if (ruleset_service) {
+    ruleset_service->IndexAndStoreAndPublishRulesetVersionIfNeeded(
+        unindexed_ruleset_path, content_version);
   }
 }
 
@@ -65,10 +70,15 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&SubresourceFilterComponentInstallerTraits::
-                                LoadSubresourceFilterRulesFromDisk,
-                            base::Unretained(this), install_dir, version));
+  DCHECK(!install_dir.empty());
+  DVLOG(1) << "Subresource Filter Version Ready: " << install_dir.value();
+  base::FilePath unindexed_ruleset_path =
+      install_dir.Append(FILE_PATH_LITERAL("subresource_filter_rules.blob"));
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
+                     content::BrowserThread::UI),
+      base::Bind(&IndexAndStoreAndPublishRulesetVersionIfNeeded,
+                 unindexed_ruleset_path, version.GetString()));
 }
 
 // Called during startup and installation before ComponentReady().
@@ -80,7 +90,8 @@ bool SubresourceFilterComponentInstallerTraits::VerifyInstallation(
 
 base::FilePath
 SubresourceFilterComponentInstallerTraits::GetRelativeInstallDir() const {
-  return base::FilePath(FILE_PATH_LITERAL("SubresourceFilterRules"));
+  return base::FilePath(subresource_filter::kTopLevelDirectoryName)
+      .Append(subresource_filter::kUnindexedRulesetBaseDirectoryName);
 }
 
 void SubresourceFilterComponentInstallerTraits::GetHash(
@@ -95,26 +106,6 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 SubresourceFilterComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
-}
-
-void SubresourceFilterComponentInstallerTraits::
-    LoadSubresourceFilterRulesFromDisk(
-        const base::FilePath& subresource_filter_path,
-        const base::Version& version) {
-  if (subresource_filter_path.empty())
-    return;
-  DVLOG(1) << "Subresource Filter: Successfully read: "
-           << subresource_filter_path.value() << " " << version;
-  std::string rules;
-  base::FilePath full_path = subresource_filter_path.Append(
-      FILE_PATH_LITERAL("subresource_filter_rules.blob"));
-  if (!base::ReadFileToString(full_path, &rules)) {
-    VLOG(1) << "Failed reading from " << full_path.value();
-    return;
-  }
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(PassDataToSubresourceFilterService, rules, version));
 }
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {

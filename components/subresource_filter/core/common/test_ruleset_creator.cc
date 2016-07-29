@@ -15,6 +15,9 @@ namespace subresource_filter {
 
 namespace {
 
+// The methods below assume that char and uint8_t are interchangeable.
+static_assert(CHAR_BIT == 8, "Assumed char was 8 bits.");
+
 proto::UrlRule CreateSuffixRule(base::StringPiece suffix) {
   proto::UrlRule rule;
   rule.set_semantics(proto::RULE_SEMANTICS_BLACKLIST);
@@ -27,45 +30,81 @@ proto::UrlRule CreateSuffixRule(base::StringPiece suffix) {
   return rule;
 }
 
+std::vector<uint8_t> SerializeUnindexedRulesetWithSingleRule(
+    const proto::UrlRule& rule) {
+  std::vector<uint8_t> ruleset_contents;
+  std::string serialized_rule;
+  rule.SerializeToString(&serialized_rule);
+  const uint8_t* data =
+      reinterpret_cast<const uint8_t*>(serialized_rule.data());
+  return std::vector<uint8_t>(data, data + serialized_rule.size());
+}
+
+std::vector<uint8_t> SerializeIndexedRulesetWithSingleRule(
+    const proto::UrlRule& rule) {
+  RulesetIndexer indexer;
+  EXPECT_TRUE(indexer.AddUrlRule(rule));
+  indexer.Finish();
+  return std::vector<uint8_t>(indexer.data(), indexer.data() + indexer.size());
+}
+
 }  // namespace
 
 namespace testing {
+
+// TestRuleset -----------------------------------------------------------------
+
+TestRuleset::TestRuleset() = default;
+TestRuleset::~TestRuleset() = default;
+
+// static
+base::File TestRuleset::Open(const TestRuleset& ruleset) {
+  base::File file;
+  file.Initialize(ruleset.path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                    base::File::FLAG_SHARE_DELETE);
+  return file;
+}
+
+// TestRulesetPair -------------------------------------------------------------
+
+TestRulesetPair::TestRulesetPair() = default;
+TestRulesetPair::~TestRulesetPair() = default;
+
+// TestRulesetCreator ----------------------------------------------------------
 
 TestRulesetCreator::TestRulesetCreator() = default;
 TestRulesetCreator::~TestRulesetCreator() = default;
 
 void TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
     base::StringPiece suffix,
-    std::vector<uint8_t>* buffer) {
-  RulesetIndexer indexer;
-  ASSERT_TRUE(indexer.AddUrlRule(CreateSuffixRule(suffix)));
-  indexer.Finish();
-  buffer->assign(indexer.data(), indexer.data() + indexer.size());
+    TestRulesetPair* test_ruleset_pair) {
+  DCHECK(test_ruleset_pair);
+  proto::UrlRule suffix_rule = CreateSuffixRule(suffix);
+  ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
+      SerializeUnindexedRulesetWithSingleRule(suffix_rule),
+      &test_ruleset_pair->unindexed));
+  ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
+      SerializeIndexedRulesetWithSingleRule(suffix_rule),
+      &test_ruleset_pair->indexed));
 }
 
-void TestRulesetCreator::CreateRulesetFileToDisallowURLsWithPathSuffix(
-    base::StringPiece suffix,
-    base::File* ruleset_file) {
-  DCHECK(ruleset_file);
+void TestRulesetCreator::CreateTestRulesetFromContents(
+    std::vector<uint8_t> ruleset_contents,
+    TestRuleset* ruleset) {
+  DCHECK(ruleset);
   ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
               scoped_temp_dir_.CreateUniqueTempDir());
-  base::FilePath unique_temp_path = scoped_temp_dir_.path().AppendASCII(
-      base::IntToString(next_ruleset_version_++));
+  base::FilePath path = scoped_temp_dir_.path().AppendASCII(
+      base::IntToString(next_unique_file_suffix++));
 
-  std::vector<uint8_t> ruleset;
-  ASSERT_NO_FATAL_FAILURE(
-      CreateRulesetToDisallowURLsWithPathSuffix(suffix, &ruleset));
+  int ruleset_size_as_int = base::checked_cast<int>(ruleset_contents.size());
+  int num_bytes_written = base::WriteFile(
+      path, reinterpret_cast<const char*>(ruleset_contents.data()),
+      ruleset_size_as_int);
+  ASSERT_EQ(ruleset_size_as_int, num_bytes_written);
 
-  int ruleset_size = base::checked_cast<int>(ruleset.size());
-  static_assert(CHAR_BIT == 8, "Assumed char was 8 bits.");
-  ASSERT_EQ(ruleset_size,
-            base::WriteFile(unique_temp_path,
-                            reinterpret_cast<const char*>(ruleset.data()),
-                            ruleset_size));
-
-  ruleset_file->Initialize(unique_temp_path, base::File::FLAG_OPEN |
-                                                 base::File::FLAG_READ |
-                                                 base::File::FLAG_SHARE_DELETE);
+  ruleset->path = path;
+  ruleset->contents = std::move(ruleset_contents);
 }
 
 }  // namespace testing

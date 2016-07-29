@@ -20,6 +20,9 @@ namespace subresource_filter {
 
 // RulesetIndexer --------------------------------------------------------------
 
+// static
+const int RulesetIndexer::kIndexedFormatVersion = 10;
+
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;
 

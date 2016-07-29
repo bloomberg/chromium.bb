@@ -16,6 +16,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/version.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -38,18 +40,19 @@ class TestRulesetService : public subresource_filter::RulesetService {
 
   ~TestRulesetService() override {}
 
-  void NotifyRulesetVersionAvailable(const std::string& rules,
-                                     const base::Version& version) override {
-    rules_ = rules;
-    version_ = version;
+  void IndexAndStoreAndPublishRulesetVersionIfNeeded(
+      const base::FilePath& unindexed_ruleset_path,
+      const std::string& content_version) override {
+    ruleset_path_ = unindexed_ruleset_path;
+    content_version_ = content_version;
   }
 
-  const std::string& rules() { return rules_; }
-  const base::Version& version() { return version_; }
+  const base::FilePath& ruleset_path() const { return ruleset_path_; }
+  const std::string& content_version() const { return content_version_; }
 
  private:
-  std::string rules_;
-  base::Version version_;
+  base::FilePath ruleset_path_;
+  std::string content_version_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRulesetService);
 };
@@ -81,7 +84,8 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
     ASSERT_TRUE(component_install_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(ruleset_service_dir_.CreateUniqueTempDir());
-    subresource_filter::RulesetVersion::RegisterPrefs(pref_service_.registry());
+    subresource_filter::IndexedRulesetVersion::RegisterPrefs(
+        pref_service_.registry());
 
     std::unique_ptr<subresource_filter::RulesetService> service(
         new TestRulesetService(&pref_service_, task_runner_,
@@ -89,7 +93,10 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(std::move(service));
     traits_.reset(new SubresourceFilterComponentInstallerTraits());
+    AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
   }
+
+  void TearDown() override { AfterStartupTaskUtils::UnsafeResetForTesting(); }
 
   TestRulesetService* service() {
     return static_cast<TestRulesetService*>(
@@ -109,24 +116,24 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
     return component_install_dir_.path();
   }
 
-  void LoadSubresourceFilterRules(const std::string& rules) {
-    const base::DictionaryValue manifest;
+  void LoadSubresourceFilterRules(const std::string& ruleset_contents) {
+    std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
     const base::FilePath subresource_filters_dir(component_install_dir());
 
     const base::FilePath first_subresource_filter_file =
         subresource_filters_dir.Append(
             FILE_PATH_LITERAL("subresource_filter_rules.blob"));
-    WriteSubresourceFilterToFile(rules, first_subresource_filter_file);
+    WriteSubresourceFilterToFile(ruleset_contents,
+                                 first_subresource_filter_file);
 
     ASSERT_TRUE(
-        traits_->VerifyInstallation(manifest, component_install_dir_.path()));
+        traits_->VerifyInstallation(*manifest, component_install_dir_.path()));
 
-    const base::Version v("1.0");
-    // TODO(melandory): test ComponentReady.
-    traits_->LoadSubresourceFilterRulesFromDisk(component_install_dir(), v);
-    // Drain the RunLoop created by the TestBrowserThreadBundle
+    const base::Version expected_version("1.2.3.4");
+    traits_->ComponentReady(expected_version, component_install_dir(),
+                            std::move(manifest));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(v, service()->version());
+    EXPECT_EQ(expected_version.GetString(), service()->content_version());
   }
 
  private:
@@ -145,7 +152,7 @@ TEST_F(SubresourceFilterComponentInstallerTest,
   base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-                            subresource_filter::kActivationStateDisabled);
+                            subresource_filter::kActivationStateEnabled);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
@@ -158,7 +165,7 @@ TEST_F(SubresourceFilterComponentInstallerTest,
   base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
       scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                            subresource_filter::kActivationStateEnabled);
+                            subresource_filter::kActivationStateDisabled);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(1);
@@ -167,14 +174,23 @@ TEST_F(SubresourceFilterComponentInstallerTest,
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyFile) {
+  ASSERT_TRUE(service());
   ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRules(std::string()));
+  std::string actual_ruleset_contents;
+  ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
+                                     &actual_ruleset_contents));
+  EXPECT_TRUE(actual_ruleset_contents.empty()) << actual_ruleset_contents;
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
   ASSERT_TRUE(service());
-  const std::string rules("example.com");
-  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRules(rules));
-  EXPECT_EQ(rules, service()->rules());
+  const std::string expected_ruleset_contents("foobar");
+  ASSERT_NO_FATAL_FAILURE(
+      LoadSubresourceFilterRules(expected_ruleset_contents));
+  std::string actual_ruleset_contents;
+  ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
+                                     &actual_ruleset_contents));
+  EXPECT_EQ(expected_ruleset_contents, actual_ruleset_contents);
 }
 
 }  // namespace component_updater

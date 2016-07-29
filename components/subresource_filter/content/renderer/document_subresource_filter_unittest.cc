@@ -4,8 +4,6 @@
 
 #include "components/subresource_filter/content/renderer/document_subresource_filter.h"
 
-#include <utility>
-
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -39,11 +37,12 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
   }
 
   void SetTestRulesetToDisallowURLsWithPathSuffix(base::StringPiece suffix) {
-    base::File ruleset_file;
+    testing::TestRulesetPair test_ruleset_pair;
     ASSERT_NO_FATAL_FAILURE(
-        test_ruleset_creator_.CreateRulesetFileToDisallowURLsWithPathSuffix(
-            suffix, &ruleset_file));
-    ruleset_ = new MemoryMappedRuleset(std::move(ruleset_file));
+        test_ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
+            suffix, &test_ruleset_pair));
+    ruleset_ = new MemoryMappedRuleset(
+        testing::TestRuleset::Open(test_ruleset_pair.indexed));
   }
 
   const MemoryMappedRuleset* ruleset() { return ruleset_.get(); }

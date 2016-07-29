@@ -44,10 +44,6 @@ class SubresourceFilterComponentInstallerTraits
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
 
-  // Reads and parses the on-disk ruleset file.
-  void LoadSubresourceFilterRulesFromDisk(const base::FilePath& file_path,
-                                          const base::Version& version);
-
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterComponentInstallerTraits);
 };
 

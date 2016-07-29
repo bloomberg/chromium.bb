@@ -1155,10 +1155,12 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
 
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath indexed_ruleset_base_dir =
+      user_data_dir.Append(subresource_filter::kTopLevelDirectoryName)
+          .Append(subresource_filter::kIndexedRulesetBaseDirectoryName);
   subresource_filter_ruleset_service_.reset(
       new subresource_filter::RulesetService(
-          local_state(), blocking_task_runner,
-          user_data_dir.Append(subresource_filter::kRulesetBaseDirectoryName)));
+          local_state(), blocking_task_runner, indexed_ruleset_base_dir));
   subresource_filter_ruleset_service_->RegisterDistributor(
       base::WrapUnique(new subresource_filter::ContentRulesetDistributor));
 }

@@ -36,6 +36,9 @@ static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 // FlatBufferBuilder storing the structures.
 class RulesetIndexer {
  public:
+  // The current binary format version of the indexed ruleset.
+  static const int kIndexedFormatVersion;
+
   RulesetIndexer();
   ~RulesetIndexer();
 

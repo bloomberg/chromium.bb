@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <iterator>
-#include <utility>
+#include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -54,10 +52,12 @@ class RulesetDistributionListener : public RulesetDistributor {
 }  // namespace
 
 using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
+using subresource_filter::testing::TestRulesetCreator;
+using subresource_filter::testing::TestRulesetPair;
 
 class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  public:
-  SubresourceFilterBrowserTest() : ruleset_content_version_(0) {}
+  SubresourceFilterBrowserTest() {}
   ~SubresourceFilterBrowserTest() override {}
 
  protected:
@@ -88,23 +88,25 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   }
 
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix) {
-    static_assert(sizeof(char) == sizeof(uint8_t), "Assumed char was byte.");
-    std::vector<uint8_t> buffer;
-    testing::TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
-        suffix, &buffer);
-
+    // For simplicity, use the |suffix| itself as the uniquely identifying
+    // version tag.
+    const std::string& test_ruleset_content_version(suffix);
+    TestRulesetPair test_ruleset_pair;
+    ASSERT_NO_FATAL_FAILURE(
+        ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
+            suffix, &test_ruleset_pair));
     RulesetDistributionListener* listener = new RulesetDistributionListener();
     g_browser_process->subresource_filter_ruleset_service()
         ->RegisterDistributor(base::WrapUnique(listener));
     g_browser_process->subresource_filter_ruleset_service()
-        ->StoreAndPublishUpdatedRuleset(
-            std::move(buffer), base::IntToString(++ruleset_content_version_));
+        ->IndexAndStoreAndPublishRulesetVersionIfNeeded(
+            test_ruleset_pair.unindexed.path, test_ruleset_content_version);
     listener->AwaitDistribution();
   }
 
  private:
   std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
-  int ruleset_content_version_;
+  TestRulesetCreator ruleset_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
 };
@@ -114,11 +116,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
       base::FilePath(FILE_PATH_LITERAL("subresource_filter")),
       base::FilePath(FILE_PATH_LITERAL("frame_with_included_script.html"))));
 
-  SetRulesetToDisallowURLsWithPathSuffix("suffix-that-does-not-match-anything");
+  ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
+      "suffix-that-does-not-match-anything"));
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
 
-  SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
 
@@ -133,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
       base::FilePath().AppendASCII("subresource_filter"),
       base::FilePath().AppendASCII("frame_set.html")));
 
-  SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   const char* kSubframeNames[] = {"one", "two"};
