@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/congestion_control/general_loss_algorithm.h"
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -15,7 +16,6 @@
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_utils_chromium.h"
 
 using std::max;
 using std::min;

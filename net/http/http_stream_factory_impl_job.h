@@ -21,7 +21,7 @@
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
-#include "net/quic/quic_stream_factory.h"
+#include "net/quic/chromium/quic_stream_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/ssl_client_socket.h"

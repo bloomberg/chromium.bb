@@ -5,8 +5,8 @@
 #include "net/quic/quic_crypto_client_stream_factory.h"
 
 #include "base/lazy_instance.h"
-#include "net/quic/crypto/proof_verifier_chromium.h"
-#include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/quic_crypto_client_stream.h"
 
 namespace net {
