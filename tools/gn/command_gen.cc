@@ -67,8 +67,8 @@ void BackgroundDoWrite(TargetWriteInfo* write_info, const Target* target) {
 }
 
 // Called on the main thread.
-void ItemResolvedCallback(TargetWriteInfo* write_info,
-                          const BuilderRecord* record) {
+void ItemResolvedAndGeneratedCallback(TargetWriteInfo* write_info,
+                                      const BuilderRecord* record) {
   const Item* item = record->item();
   const Target* target = item->AsTarget();
   if (target) {
@@ -387,8 +387,8 @@ int RunGen(const std::vector<std::string>& args) {
 
   // Cause the load to also generate the ninja files for each target.
   TargetWriteInfo write_info;
-  setup->builder().set_resolved_callback(
-      base::Bind(&ItemResolvedCallback, &write_info));
+  setup->builder().set_resolved_and_generated_callback(
+      base::Bind(&ItemResolvedAndGeneratedCallback, &write_info));
 
   // Do the actual load. This will also write out the target ninja files.
   if (!setup->Run())

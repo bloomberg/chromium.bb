@@ -404,9 +404,15 @@ bool Builder::AddToolchainDep(BuilderRecord* record,
 
 void Builder::RecursiveSetShouldGenerate(BuilderRecord* record,
                                          bool force) {
-  if (!force && record->should_generate())
-    return;  // Already set.
-  record->set_should_generate(true);
+  if (!record->should_generate()) {
+    record->set_should_generate(true);
+
+    // This may have caused the item to go into "resolved and generated" state.
+    if (record->resolved() && !resolved_and_generated_callback_.is_null())
+      resolved_and_generated_callback_.Run(record);
+  } else if (!force) {
+    return;  // Already set and we're not required to iterate dependencies.
+  }
 
   for (auto* cur : record->all_deps()) {
     if (!cur->should_generate()) {
@@ -451,8 +457,8 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
 
   if (!record->item()->OnResolved(err))
     return false;
-  if (!resolved_callback_.is_null())
-    resolved_callback_.Run(record);
+  if (record->should_generate() && !resolved_and_generated_callback_.is_null())
+    resolved_and_generated_callback_.Run(record);
 
   // Recursively update everybody waiting on this item to be resolved.
   for (BuilderRecord* waiting : record->waiting_on_resolution()) {
