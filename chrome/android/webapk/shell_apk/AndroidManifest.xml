@@ -36,16 +36,16 @@
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES"/>
             </intent-filter>
         </activity>
-        <meta-data android:name="runtimeHost" android:value="{{ runtime_host }}" />
-        <meta-data android:name="startUrl" android:value="{{ start_url }}" />
-        <meta-data android:name="name" android:value="{{ name }}" />
-        <meta-data android:name="scope" android:value="{{ scope_url }}" />
-        <meta-data android:name="displayMode" android:value="{{ display_mode }}" />
-        <meta-data android:name="orientation" android:value="{{ orientation }}" />
-        <meta-data android:name="themeColor" android:value="{{ theme_color }}" />
-        <meta-data android:name="backgroundColor" android:value="{{ background_color }}" />
-        <meta-data android:name="iconUrl" android:value="{{ icon_url }}" />
-        <meta-data android:name="webManifestUrl" android:value="{{ web_manifest_url }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{ runtime_host }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{ start_url }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.name" android:value="{{ name }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.scope" android:value="{{ scope_url }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.displayMode" android:value="{{ display_mode }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{ orientation }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{ theme_color }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{ background_color }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.iconUrl" android:value="{{ icon_url }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.webManifestUrl" android:value="{{ web_manifest_url }}" />
         <service
             android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"
             android:exported="true"

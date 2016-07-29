@@ -50,7 +50,7 @@ public class WebApkUtils {
             ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
                     context.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = ai.metaData;
-            hostPackage = bundle.getString("runtimeHost");
+            hostPackage = bundle.getString("org.chromium.webapk.shell_apk.runtimeHost");
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }

@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
 
     // Key for start URL in Android Manifest.
-    private static final String META_DATA_START_URL = "startUrl";
+    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
 
     /**
      * Key for passing app icon id.

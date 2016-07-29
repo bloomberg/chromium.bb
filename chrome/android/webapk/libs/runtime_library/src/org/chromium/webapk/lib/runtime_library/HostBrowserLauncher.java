@@ -26,16 +26,20 @@ import java.io.ByteArrayOutputStream;
  * Launches Chrome in WebAPK mode.
  */
 public class HostBrowserLauncher {
-    private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
-    private static final String META_DATA_START_URL = "startUrl";
-    private static final String META_DATA_NAME = "name";
-    private static final String META_DATA_SCOPE = "scope";
-    private static final String META_DATA_DISPLAY_MODE = "displayMode";
-    private static final String META_DATA_ORIENTATION = "orientation";
-    private static final String META_DATA_THEME_COLOR = "themeColor";
-    private static final String META_DATA_BACKGROUND_COLOR = "backgroundColor";
-    private static final String META_DATA_ICON_URL = "iconUrl";
-    private static final String META_DATA_WEB_MANIFEST_URL = "webManifestUrl";
+    private static final String META_DATA_RUNTIME_HOST =
+            "org.chromium.webapk.shell_apk.runtimeHost";
+    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
+    private static final String META_DATA_NAME = "org.chromium.webapk.shell_apk.name";
+    private static final String META_DATA_SCOPE = "org.chromium.webapk.shell_apk.scope";
+    private static final String META_DATA_DISPLAY_MODE =
+            "org.chromium.webapk.shell_apk.displayMode";
+    private static final String META_DATA_ORIENTATION = "org.chromium.webapk.shell_apk.orientation";
+    private static final String META_DATA_THEME_COLOR = "org.chromium.webapk.shell_apk.themeColor";
+    private static final String META_DATA_BACKGROUND_COLOR =
+            "org.chromium.webapk.shell_apk.backgroundColor";
+    private static final String META_DATA_ICON_URL = "org.chromium.webapk.shell_apk.iconUrl";
+    private static final String META_DATA_WEB_MANIFEST_URL =
+            "org.chromium.webapk.shell_apk.webManifestUrl";
 
     // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
     private static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
