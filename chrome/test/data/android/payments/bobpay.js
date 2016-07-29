@@ -22,13 +22,13 @@ function buy() {  // eslint-disable-line no-unused-vars
                       JSON.stringify(resp.details, undefined, 2));
               })
               .catch(function(error) {
-                print('complete() rejected<br>' + error.message);
+                print('complete() rejected<br>' + error);
               });
         })
         .catch(function(error) {
-          print('show() rejected<br>' + error.message);
+          print('show() rejected<br>' + error);
         });
   } catch (error) {
-    print('exception thrown<br>' + error.message);
+    print('exception thrown<br>' + error);
   }
 }

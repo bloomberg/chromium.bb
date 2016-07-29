@@ -825,7 +825,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         Log.d(TAG, debugMessage);
-        mClient.onError(reason);
+        if (mClient != null) mClient.onError(reason);
         closeClient();
     }
 
@@ -884,6 +884,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments) {
+        if (mClient == null) return;
         mPendingApps.remove(app);
 
         // Place the instruments into either "autofill" or "non-autofill" list to be displayed when

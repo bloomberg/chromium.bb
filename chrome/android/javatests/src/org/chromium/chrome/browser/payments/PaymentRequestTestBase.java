@@ -604,23 +604,27 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
      * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
      *                           or HAVE_INSTRUMENTS.
      * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
+     *                           IMMEDIATE_RESPONSE, DELAYED_RESPONSE, or NO_RESPONSE.
+     * @return The install payment app.
      */
-    protected void installPaymentApp(final int instrumentPresence, final int responseSpeed) {
+    protected BobPay installPaymentApp(final int instrumentPresence, final int responseSpeed) {
+        final BobPay app = new BobPay(instrumentPresence, responseSpeed);
         PaymentAppFactory.setAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
             public List<PaymentApp> create(WebContents webContents) {
                 List<PaymentApp> additionalApps = new ArrayList<>();
-                additionalApps.add(new BobPay(instrumentPresence, responseSpeed));
+                additionalApps.add(app);
                 return additionalApps;
             }
         });
+        return app;
     }
 
     /** A payment app implementation for test. */
-    private static class BobPay implements PaymentApp {
+    protected static class BobPay implements PaymentApp {
         private final int mInstrumentPresence;
         private final int mResponseSpeed;
+        private InstrumentsCallback mCallback;
 
         BobPay(int instrumentPresence, int responseSpeed) {
             mInstrumentPresence = instrumentPresence;
@@ -628,20 +632,25 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         }
 
         @Override
-        public void getInstruments(JSONObject details, final InstrumentsCallback
-                instrumentsCallback) {
+        public void getInstruments(
+                JSONObject details, final InstrumentsCallback instrumentsCallback) {
+            mCallback = instrumentsCallback;
+            respond();
+        }
+
+        void respond() {
             final List<PaymentInstrument> instruments = new ArrayList<>();
             if (mInstrumentPresence == HAVE_INSTRUMENTS) instruments.add(new BobPayInstrument());
             Runnable instrumentsReady = new Runnable() {
                 @Override
                 public void run() {
                     ThreadUtils.assertOnUiThread();
-                    instrumentsCallback.onInstrumentsReady(BobPay.this, instruments);
+                    mCallback.onInstrumentsReady(BobPay.this, instruments);
                 }
             };
             if (mResponseSpeed == IMMEDIATE_RESPONSE) {
                 instrumentsReady.run();
-            } else {
+            } else if (mResponseSpeed == DELAYED_RESPONSE) {
                 new Handler().postDelayed(instrumentsReady, 100);
             }
         }

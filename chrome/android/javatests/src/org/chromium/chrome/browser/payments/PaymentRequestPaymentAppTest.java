@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 
 import java.util.concurrent.ExecutionException;
@@ -54,6 +55,43 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
         triggerUIAndWait(mShowFailed);
+        expectResultContains(
+                new String[]{"show() rejected", "The payment method is not supported"});
+    }
+
+    /**
+     * If the payment app responds with more instruments after the UI has been dismissed, don't
+     * crash.
+     */
+    @MediumTest
+    public void testPaymentWithInstrumentsAppResponseAfterDismissShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        final BobPay app = installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        triggerUIAndWait(mReadyForInput);
+        clickAndWait(R.id.close_button, mDismissed);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                app.respond();
+            }
+        });
+        expectResultContains(new String[]{"show() rejected", "Request cancelled"});
+    }
+
+    /**
+     * If the payment app responds with no instruments after the UI has been dismissed, don't crash.
+     */
+    @MediumTest
+    public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        final BobPay app = installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        triggerUIAndWait(mShowFailed);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                app.respond();
+            }
+        });
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
     }
