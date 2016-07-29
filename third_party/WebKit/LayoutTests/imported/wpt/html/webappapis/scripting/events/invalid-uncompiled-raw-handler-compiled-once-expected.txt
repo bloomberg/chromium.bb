@@ -1,6 +1,5 @@
 CONSOLE ERROR: line 23: Uncaught SyntaxError: Unexpected token }
-CONSOLE ERROR: line 23: Uncaught SyntaxError: Unexpected token }
 This is a testharness.js-based test.
-FAIL Invalid uncompiled raw handlers should only be compiled once. assert_equals: expected 1 but got 2
+PASS Invalid uncompiled raw handlers should only be compiled once. 
 Harness: the test ran to completion.
 
