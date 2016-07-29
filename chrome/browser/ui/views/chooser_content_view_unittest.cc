@@ -371,7 +371,7 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
             discovery_state_->text());
 }
 
-TEST_F(ChooserContentViewTest, DiscoveringAndIdle) {
+TEST_F(ChooserContentViewTest, DiscoveringAndNoOptionAddedAndIdle) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(2);
 
   mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
@@ -402,6 +402,50 @@ TEST_F(ChooserContentViewTest, DiscoveringAndIdle) {
   // No option selected.
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
+  EXPECT_FALSE(throbber_->visible());
+  // |discovery_state_| is enabled and shows a link.
+  EXPECT_TRUE(discovery_state_->enabled());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
+            discovery_state_->text());
+}
+
+TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
+  EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
+
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  table_view_->Select(1);
+
+  mock_chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::DISCOVERING);
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  EXPECT_TRUE(table_view_->visible());
+  EXPECT_EQ(1, table_view_->RowCount());
+  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(0, 0));
+  // |table_view_| should be enabled since there is an option.
+  EXPECT_TRUE(table_view_->enabled());
+  // No option selected.
+  EXPECT_EQ(0, table_view_->SelectedRowCount());
+  EXPECT_EQ(-1, table_view_->FirstSelectedRow());
+  EXPECT_FALSE(throbber_->visible());
+  // |discovery_state_| is disabled and shows a label instead of a link.
+  EXPECT_FALSE(discovery_state_->enabled());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING),
+            discovery_state_->text());
+  table_view_->Select(0);
+  EXPECT_EQ(1, table_view_->SelectedRowCount());
+  EXPECT_EQ(0, table_view_->FirstSelectedRow());
+
+  mock_chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::IDLE);
+  EXPECT_TRUE(table_view_->visible());
+  EXPECT_EQ(1, table_view_->RowCount());
+  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(0, 0));
+  // |table_view_| should be enabled since there is an option.
+  EXPECT_TRUE(table_view_->enabled());
+  EXPECT_EQ(1, table_view_->SelectedRowCount());
+  EXPECT_EQ(0, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
   // |discovery_state_| is enabled and shows a link.
   EXPECT_TRUE(discovery_state_->enabled());

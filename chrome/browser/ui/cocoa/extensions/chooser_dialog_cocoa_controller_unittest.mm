@@ -421,7 +421,7 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   ASSERT_TRUE(cancel_button_.enabled);
 }
 
-TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndIdle) {
+TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
   CreateChooserDialog();
 
   // Add options
@@ -466,6 +466,50 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndIdle) {
   EXPECT_FALSE(rescan_button_.hidden);
   // OK button is disabled since the chooser refreshed options.
   ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest,
+       DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
+  CreateChooserDialog();
+
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
+           byExtendingSelection:NO];
+
+  chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::DISCOVERING);
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  EXPECT_FALSE(table_view_.hidden);
+  // |table_view_| should be enabled since there is an option.
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(1, table_view_.numberOfRows);
+  // No option selected.
+  EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_FALSE(status_.hidden);
+  EXPECT_TRUE(rescan_button_.hidden);
+  // OK button is disabled since no option is selected.
+  ASSERT_FALSE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+  [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
+           byExtendingSelection:NO];
+  EXPECT_EQ(0, table_view_.selectedRow);
+  ASSERT_TRUE(connect_button_.enabled);
+  ASSERT_TRUE(cancel_button_.enabled);
+
+  chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::IDLE);
+  EXPECT_FALSE(table_view_.hidden);
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(1, table_view_.numberOfRows);
+  EXPECT_EQ(0, table_view_.selectedRow);
+  EXPECT_TRUE(spinner_.hidden);
+  EXPECT_TRUE(status_.hidden);
+  EXPECT_FALSE(rescan_button_.hidden);
+  ASSERT_TRUE(connect_button_.enabled);
   ASSERT_TRUE(cancel_button_.enabled);
 }
 

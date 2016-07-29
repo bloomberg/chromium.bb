@@ -88,6 +88,9 @@ void ChooserContentView::OnOptionsInitialized() {
 void ChooserContentView::OnOptionAdded(size_t index) {
   table_view_->OnItemsAdded(static_cast<int>(index), 1);
   UpdateTableView();
+  table_view_->SetVisible(true);
+  throbber_->SetVisible(false);
+  throbber_->Stop();
 }
 
 void ChooserContentView::OnOptionRemoved(size_t index) {
@@ -111,20 +114,24 @@ void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
 }
 
 void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
-  // No row is selected since the chooser is refreshing or just refreshed.
-  // This will also disable the OK button if it was enabled because
-  // of a previously selected row.
-  table_view_->Select(-1);
-  UpdateTableView();
-  // When refreshing, hide |table_view_|. When complete, show |table_view_|.
-  table_view_->SetVisible(!refreshing);
+  if (refreshing) {
+    // No row is selected since the chooser is refreshing. This will also
+    // disable the OK button if it was enabled because of a previously
+    // selected row.
+    table_view_->Select(-1);
+    UpdateTableView();
+  }
 
-  if (refreshing)
+  // When refreshing and no option available yet, hide |table_view_| and show
+  // |throbber_|. Otherwise show |table_view_| and hide |throbber_|.
+  bool throbber_visible =
+      refreshing && (chooser_controller_->NumOptions() == 0);
+  table_view_->SetVisible(!throbber_visible);
+  throbber_->SetVisible(throbber_visible);
+  if (throbber_visible)
     throbber_->Start();
   else
     throbber_->Stop();
-  // When refreshing, show |throbber_|. When complete, hide |throbber_|.
-  throbber_->SetVisible(refreshing);
 
   discovery_state_->SetText(chooser_controller_->GetStatus());
   // When refreshing, disable |discovery_state_| to show it as a text label.

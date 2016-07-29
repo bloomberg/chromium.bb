@@ -101,6 +101,8 @@ void ChooserContentViewController::OnOptionsInitialized() {
 
 void ChooserContentViewController::OnOptionAdded(size_t index) {
   UpdateTableView();
+  [table_view_ setHidden:NO];
+  [spinner_ setHidden:YES];
 }
 
 void ChooserContentViewController::OnOptionRemoved(size_t index) {
@@ -137,16 +139,20 @@ void ChooserContentViewController::OnAdapterEnabledChanged(bool enabled) {
 }
 
 void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
-  // No row is selected since the chooser is refreshing or just refreshed.
-  // This will also disable the OK button if it was enabled because
-  // of a previously selected row.
-  [table_view_ deselectAll:nil];
-  UpdateTableView();
-  // When refreshing, hide |table_view_|. When complete, show |table_view_|.
-  [table_view_ setHidden:refreshing ? YES : NO];
+  if (refreshing) {
+    // No row is selected since the chooser is refreshing.
+    // This will also disable the OK button if it was enabled because
+    // of a previously selected row.
+    [table_view_ deselectAll:nil];
+    UpdateTableView();
+  }
 
-  // When refreshing, show |spinner_|. When complete, hide |spinner_|.
-  [spinner_ setHidden:refreshing ? NO : YES];
+  // When refreshing and no option available yet, hide |table_view_| and show
+  // |spinner_|. Otherwise show |table_view_| and hide |spinner_|.
+  bool table_view_hidden =
+      refreshing && (chooser_controller_->NumOptions() == 0);
+  [table_view_ setHidden:table_view_hidden ? YES : NO];
+  [spinner_ setHidden:table_view_hidden ? NO : YES];
 
   // When refreshing, show |status_| and hide |rescan_button_|.
   // When complete, show |rescan_button_| and hide |status_|.

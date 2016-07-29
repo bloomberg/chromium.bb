@@ -234,7 +234,7 @@ TEST_F(ChooserDialogViewTest, AdapterOnAndOffAndOn) {
   EXPECT_TRUE(cancel_button_->enabled());
 }
 
-TEST_F(ChooserDialogViewTest, DiscoveringAndIdle) {
+TEST_F(ChooserDialogViewTest, DiscoveringAndNoOptionAddedAndIdle) {
   mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
   mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
   mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
@@ -252,5 +252,27 @@ TEST_F(ChooserDialogViewTest, DiscoveringAndIdle) {
       content::BluetoothChooser::DiscoveryState::IDLE);
   // OK button is disabled since the chooser refreshed options.
   EXPECT_FALSE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+}
+
+TEST_F(ChooserDialogViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  table_view_->Select(1);
+
+  mock_chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::DISCOVERING);
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  // OK button is disabled since no option is selected.
+  EXPECT_FALSE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+  table_view_->Select(0);
+  EXPECT_TRUE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+
+  mock_chooser_controller_->OnDiscoveryStateChanged(
+      content::BluetoothChooser::DiscoveryState::IDLE);
+  EXPECT_TRUE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 }
