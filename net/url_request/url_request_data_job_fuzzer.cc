@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
@@ -63,10 +64,12 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
       simulated_bytes_read += read_length;
     }
 
-    // The data URL is the rest of the fuzzed data. If the URL is invalid just
+    // The data URL is the rest of the fuzzed data with "data:" prepended, to
+    // ensure that if it's a URL, it's a data URL. If the URL is invalid just
     // use a test variant, so the fuzzer has a chance to execute something.
-    base::StringPiece data_bytes(provider.ConsumeRemainingBytes());
-    GURL data_url(data_bytes);
+    std::string data_url_string =
+        std::string("data:") + provider.ConsumeRemainingBytes().as_string();
+    GURL data_url(data_url_string);
     if (!data_url.is_valid())
       data_url = GURL("data:text/html;charset=utf-8,<p>test</p>");
 
@@ -109,8 +112,6 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
 
       int bytes_read = 0;
       sync = request->Read(buf_.get(), read_size, &bytes_read);
-      // No more populated reads implies !bytes_read.
-      DCHECK(using_populated_read || !bytes_read);
     } while (sync);
 
     if (!request->status().is_io_pending())
