@@ -161,25 +161,10 @@ bool TransformTree::ComputeTransform(int source_id,
 bool TransformTree::ComputeTranslation(int source_id,
                                        int dest_id,
                                        gfx::Transform* transform) const {
-  // Since the transform between source and destination is at most translation,
-  // flattenning will not affect the result and we can use the screen space
-  // transforms.
-  transform->MakeIdentity();
-  if (source_id == dest_id)
-    return true;
-
-  const TransformNode* dest = Node(dest_id);
-  if (dest->ancestors_are_invertible) {
-    if (source_id != kInvalidNodeId)
-      transform->ConcatTransform(ToScreen(source_id));
-    if (dest_id != kInvalidNodeId)
-      transform->ConcatTransform(FromScreen(dest_id));
-  } else {
-    return false;
-  }
+  bool success = ComputeTransform(source_id, dest_id, transform);
   DCHECK(
       transform->IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)));
-  return true;
+  return success;
 }
 
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
