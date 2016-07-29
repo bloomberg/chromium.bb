@@ -27,6 +27,7 @@
 #include "platform/text/TextBoundaries.h"
 
 #include "platform/text/TextBreakIterator.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringImpl.h"
 
 using namespace WTF;
@@ -66,8 +67,8 @@ int findNextWordFromIndex(const UChar* chars, int len, int position, bool forwar
         position = it->following(position);
         while (position != TextBreakDone) {
             // We stop searching when the character preceeding the break
-            // is alphanumeric.
-            if (position < len && isAlphanumeric(chars[position - 1]))
+            // is alphanumeric or underscore.
+            if (position < len && (isAlphanumeric(chars[position - 1]) || chars[position - 1] == lowLineCharacter))
                 return position;
 
             position = it->following(position);
@@ -78,8 +79,8 @@ int findNextWordFromIndex(const UChar* chars, int len, int position, bool forwar
         position = it->preceding(position);
         while (position != TextBreakDone) {
             // We stop searching when the character following the break
-            // is alphanumeric.
-            if (position > 0 && isAlphanumeric(chars[position]))
+            // is alphanumeric or underscore.
+            if (position > 0 && (isAlphanumeric(chars[position]) || chars[position] == lowLineCharacter))
                 return position;
 
             position = it->preceding(position);
