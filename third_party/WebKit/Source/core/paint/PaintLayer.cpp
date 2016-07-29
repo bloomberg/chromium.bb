@@ -1432,7 +1432,7 @@ void PaintLayer::didUpdateNeedsCompositedScrolling()
     // If the floating object becomes non-self-painting, so some ancestor should paint it;
     // if it becomes self-painting, it should paint itself and no ancestor should paint it.
     if (wasSelfPaintingLayer != isSelfPaintingLayer() && m_layoutObject->isFloating())
-        LayoutBlockFlow::setAncestorShouldPaintFloatingObject(*layoutBox(), wasSelfPaintingLayer);
+        LayoutBlockFlow::setAncestorShouldPaintFloatingObject(*layoutBox());
 }
 
 void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)

@@ -3346,10 +3346,10 @@ LayoutUnit LayoutBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
     return fixedOffset;
 }
 
-void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox, bool shouldPaint)
+void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox)
 {
     ASSERT(floatBox.isFloating());
-    ASSERT(!floatBox.hasSelfPaintingLayer());
+    bool floatBoxIsSelfPaintingLayer = floatBox.hasLayer() && floatBox.layer()->isSelfPaintingLayer();
     for (LayoutObject* ancestor = floatBox.parent(); ancestor && ancestor->isLayoutBlockFlow(); ancestor = ancestor->parent()) {
         LayoutBlockFlow* ancestorBlock = toLayoutBlockFlow(ancestor);
         FloatingObjects* ancestorFloatingObjects = ancestorBlock->m_floatingObjects.get();
@@ -3360,8 +3360,7 @@ void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floa
             break;
 
         FloatingObject& floatingObject = **it;
-        if (shouldPaint) {
-            ASSERT(!floatingObject.shouldPaint());
+        if (!floatBoxIsSelfPaintingLayer) {
             // This repeats the logic in addOverhangingFloats() about shouldPaint flag:
             // - The nearest enclosing block in which the float doesn't overhang paints the float;
             // - Or even if the float overhangs, if the ancestor block has self-painting layer, it

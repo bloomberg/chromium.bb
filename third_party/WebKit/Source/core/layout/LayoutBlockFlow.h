@@ -537,7 +537,7 @@ public:
 
     const FloatingObjects* floatingObjects() const { return m_floatingObjects.get(); }
 
-    static void setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox, bool shouldPaint);
+    static void setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox);
 
 protected:
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : LayoutBlockFlowRareData::positiveMarginBeforeDefault(this); }
