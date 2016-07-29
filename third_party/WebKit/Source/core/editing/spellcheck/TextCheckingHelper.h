@@ -99,7 +99,6 @@ private:
     Position m_start;
     Position m_end;
 
-    int findFirstGrammarDetail(const Vector<GrammarDetail>& grammarDetails, int badGrammarPhraseLocation, int startOffset, int endOffset, bool markAll) const;
     bool unifiedTextCheckerEnabled() const;
 };
 
