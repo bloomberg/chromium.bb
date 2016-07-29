@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/priority_queue.h"
@@ -161,12 +162,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
 
-  // Synchronizes access to |worker_detachment_allowed_|.
-  SchedulerLock worker_detachment_allowed_lock_;
-
-  // Indicates to the delegates that workers are permitted to detach their
+  // Indicates to the delegates that workers are not permitted to detach their
   // threads.
-  bool worker_detachment_allowed_ = true;
+  AtomicFlag worker_detachment_disallowed_;
 
 #if DCHECK_IS_ON()
   // Signaled when all workers have been created.

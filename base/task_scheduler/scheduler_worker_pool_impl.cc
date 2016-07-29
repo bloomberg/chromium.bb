@@ -278,8 +278,7 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 }
 
 void SchedulerWorkerPoolImpl::DisallowWorkerDetachmentForTesting() {
-  AutoSchedulerLock auto_lock(worker_detachment_allowed_lock_);
-  worker_detachment_allowed_ = false;
+  worker_detachment_disallowed_.Set();
 }
 
 scoped_refptr<TaskRunner> SchedulerWorkerPoolImpl::CreateTaskRunnerWithTraits(
@@ -638,8 +637,7 @@ void SchedulerWorkerPoolImpl::RemoveFromIdleWorkersStack(
 }
 
 bool SchedulerWorkerPoolImpl::CanWorkerDetachForTesting() {
-  AutoSchedulerLock auto_lock(worker_detachment_allowed_lock_);
-  return worker_detachment_allowed_;
+  return !worker_detachment_disallowed_.IsSet();
 }
 
 }  // namespace internal
