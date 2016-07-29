@@ -208,21 +208,6 @@ DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
 #endif
 }
 
-// https://wiki.gnome.org/Projects/GnomeShell/ApplicationBased
-// The WM_CLASS property should be set to the same as the *.desktop file without
-// the .desktop extension.  We cannot simply use argv[0] in this case, because
-// on the stable channel, the executable name is google-chrome-stable, but the
-// desktop file is google-chrome.desktop.
-std::string GetDesktopBaseName(const std::string& desktop_file_name) {
-  static const char kDesktopExtension[] = ".desktop";
-  if (base::EndsWith(desktop_file_name, kDesktopExtension,
-                     base::CompareCase::SENSITIVE)) {
-    return desktop_file_name.substr(
-        0, desktop_file_name.length() - strlen(kDesktopExtension));
-  }
-  return desktop_file_name;
-}
-
 }  // namespace
 
 bool SetAsDefaultBrowser() {
@@ -591,48 +576,13 @@ std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
   return search_paths;
 }
 
-namespace internal {
-
-std::string GetProgramClassName(const base::CommandLine& command_line,
-                                const std::string& desktop_file_name) {
-  std::string class_name =
-      shell_integration::GetDesktopBaseName(desktop_file_name);
-  std::string user_data_dir =
-      command_line.GetSwitchValueNative(switches::kUserDataDir);
-  // If the user launches with e.g. --user-data-dir=/tmp/my-user-data, set the
-  // class name to "Chrome (/tmp/my-user-data)".  The class name will show up in
-  // the alt-tab list in gnome-shell if you're running a binary that doesn't
-  // have a matching .desktop file.
-  return user_data_dir.empty()
-             ? class_name
-             : class_name + " (" + user_data_dir + ")";
-}
-
-std::string GetProgramClassClass(const base::CommandLine& command_line,
-                                 const std::string& desktop_file_name) {
-  if (command_line.HasSwitch(switches::kWmClass))
-    return command_line.GetSwitchValueASCII(switches::kWmClass);
-  std::string class_class =
-      shell_integration::GetDesktopBaseName(desktop_file_name);
-  if (!class_class.empty()) {
-    // Capitalize the first character like gtk does.
-    class_class[0] = base::ToUpperASCII(class_class[0]);
-  }
-  return class_class;
-}
-
-}  // namespace internal
-
 std::string GetProgramClassName() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  return internal::GetProgramClassName(*base::CommandLine::ForCurrentProcess(),
-                                       GetDesktopName(env.get()));
-}
-
-std::string GetProgramClassClass() {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  return internal::GetProgramClassClass(*base::CommandLine::ForCurrentProcess(),
-                                        GetDesktopName(env.get()));
+  std::string desktop_file(GetDesktopName(env.get()));
+  std::size_t last = desktop_file.find(".desktop");
+  if (last != std::string::npos)
+    return desktop_file.substr(0, last);
+  return desktop_file;
 }
 
 std::string GetDesktopName(base::Environment* env) {
