@@ -51,7 +51,6 @@ class AnimationEffect;
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
 class CORE_EXPORT AnimationTimeline final : public GarbageCollectedFinalized<AnimationTimeline>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    USING_PRE_FINALIZER(AnimationTimeline, dispose);
 public:
     class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
     public:
@@ -63,8 +62,6 @@ public:
     };
 
     static AnimationTimeline* create(Document*, PlatformTiming* = nullptr);
-    ~AnimationTimeline();
-    void dispose();
 
     void serviceAnimations(TimingUpdateReason);
     void scheduleNextService();
