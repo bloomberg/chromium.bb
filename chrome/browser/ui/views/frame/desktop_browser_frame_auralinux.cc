@@ -33,28 +33,20 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   // Set up a custom WM_CLASS for some sorts of window types. This allows
   // task switchers in X11 environments to distinguish between main browser
   // windows and e.g app windows.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
   const Browser& browser = *browser_view()->browser();
-  params.wm_class_class = shell_integration_linux::GetProgramClassName();
-  params.wm_class_name = params.wm_class_class;
-  if (browser.is_app() && !browser.is_devtools()) {
-    // This window is a hosted app or v1 packaged app.
-    // NOTE: v2 packaged app windows are created by ChromeNativeAppWindowViews.
-    params.wm_class_name = web_app::GetWMClassFromAppName(browser.app_name());
-  } else if (command_line.HasSwitch(switches::kUserDataDir)) {
-    // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The
-    // class name will show up in the alt-tab list in gnome-shell if
-    // you're running a binary that doesn't have a matching .desktop
-    // file.
-    const std::string user_data_dir =
-        command_line.GetSwitchValueNative(switches::kUserDataDir);
-    params.wm_class_name += " (" + user_data_dir + ")";
-  }
+  params.wm_class_name =
+      browser.is_app() && !browser.is_devtools()
+          ? web_app::GetWMClassFromAppName(browser.app_name())
+          // This window is a hosted app or v1 packaged app.
+          // NOTE: v2 packaged app windows are created by
+          // ChromeNativeAppWindowViews.
+          : shell_integration_linux::GetProgramClassName();
+  params.wm_class_class = shell_integration_linux::GetProgramClassClass();
   const char kX11WindowRoleBrowser[] = "browser";
   const char kX11WindowRolePopup[] = "pop-up";
-  params.wm_role_name = browser_view()->browser()->is_type_tabbed() ?
-      std::string(kX11WindowRoleBrowser) : std::string(kX11WindowRolePopup);
+  params.wm_role_name = browser_view()->browser()->is_type_tabbed()
+                            ? std::string(kX11WindowRoleBrowser)
+                            : std::string(kX11WindowRolePopup);
   params.remove_standard_frame = UseCustomFrame();
 
   return params;

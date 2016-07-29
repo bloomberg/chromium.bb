@@ -63,7 +63,7 @@ void ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
   // X11 environments to distinguish them from main browser windows.
   init_params->wm_class_name = web_app::GetWMClassFromAppName(app_name);
-  init_params->wm_class_class = shell_integration_linux::GetProgramClassName();
+  init_params->wm_class_class = shell_integration_linux::GetProgramClassClass();
   const char kX11WindowRoleApp[] = "app";
   init_params->wm_role_name = std::string(kX11WindowRoleApp);
 #endif

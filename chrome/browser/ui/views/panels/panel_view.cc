@@ -292,7 +292,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   params.wm_class_name = web_app::GetWMClassFromAppName(panel->app_name());
-  params.wm_class_class = shell_integration_linux::GetProgramClassName();
+  params.wm_class_class = shell_integration_linux::GetProgramClassClass();
 #endif
 
   window_->Init(params);
