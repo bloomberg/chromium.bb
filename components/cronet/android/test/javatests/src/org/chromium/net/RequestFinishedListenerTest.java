@@ -1,0 +1,262 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.net;
+
+import static org.chromium.base.CollectionUtil.newHashSet;
+
+import android.test.suitebuilder.annotation.SmallTest;
+
+import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetEngine.UrlRequestInfo;
+import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.Executor;
+
+/**
+ * Test RequestFinishedListener and the metrics information it provides.
+ */
+public class RequestFinishedListenerTest extends CronetTestBase {
+    CronetTestFramework mTestFramework;
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
+
+    static class TestExecutor implements Executor {
+        private final LinkedList<Runnable> mTaskQueue = new LinkedList<Runnable>();
+
+        @Override
+        public void execute(Runnable task) {
+            mTaskQueue.add(task);
+        }
+
+        public void runAllTasks() {
+            try {
+                while (mTaskQueue.size() > 0) {
+                    mTaskQueue.remove().run();
+                }
+            } catch (NoSuchElementException e) {
+                throw new RuntimeException("Task was removed during iteration", e);
+            }
+        }
+    }
+
+    static class DirectExecutor implements Executor {
+        @Override
+        public void execute(Runnable task) {
+            task.run();
+        }
+    }
+
+    static class ThreadExecutor implements Executor {
+        private List<Thread> mThreads = new ArrayList<Thread>();
+
+        @Override
+        public void execute(Runnable task) {
+            Thread newThread = new Thread(task);
+            mThreads.add(newThread);
+            newThread.start();
+        }
+
+        public void joinAll() throws InterruptedException {
+            for (Thread thread : mThreads) {
+                thread.join();
+            }
+        }
+    }
+
+    private static class TestRequestFinishedListener extends RequestFinishedListener {
+        private UrlRequestInfo mRequestInfo;
+
+        public TestRequestFinishedListener(Executor executor) {
+            super(executor);
+        }
+
+        @Override
+        public void onRequestFinished(UrlRequestInfo requestInfo) {
+            assertNull("onRequestFinished called repeatedly", mRequestInfo);
+            assertNotNull(requestInfo);
+            mRequestInfo = requestInfo;
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
+    public void testRequestFinishedListener() throws Exception {
+        mTestFramework = startCronetTestFramework();
+        TestExecutor testExecutor = new TestExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        urlRequestBuilder.addRequestAnnotation("request annotation")
+                .addRequestAnnotation(this)
+                .build()
+                .start();
+        callback.blockForDone();
+        testExecutor.runAllTasks();
+
+        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
+        assertNotNull("RequestFinishedListener must be called", requestInfo);
+        assertEquals(mUrl, requestInfo.getUrl());
+        assertNotNull(requestInfo.getResponseInfo());
+        assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
+                new HashSet<Object>(requestInfo.getAnnotations()));
+        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
+        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
+        assertTrue(metrics.getTotalTimeMs() > 0);
+        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
+        assertTrue(metrics.getReceivedBytesCount() > 0);
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
+    public void testRequestFinishedListenerDirectExecutor() throws Exception {
+        mTestFramework = startCronetTestFramework();
+        Executor testExecutor = new DirectExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        urlRequestBuilder.addRequestAnnotation("request annotation")
+                .addRequestAnnotation(this)
+                .build()
+                .start();
+        callback.blockForDone();
+
+        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
+        assertNotNull("RequestFinishedListener must be called", requestInfo);
+        assertEquals(mUrl, requestInfo.getUrl());
+        assertNotNull(requestInfo.getResponseInfo());
+        assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
+                new HashSet<Object>(requestInfo.getAnnotations()));
+        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
+        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
+        assertTrue(metrics.getTotalTimeMs() > 0);
+        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
+        assertTrue(metrics.getReceivedBytesCount() > 0);
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
+    public void testRequestFinishedListenerDifferentThreads() throws Exception {
+        mTestFramework = startCronetTestFramework();
+        ThreadExecutor testExecutor = new ThreadExecutor();
+        TestRequestFinishedListener firstListener = new TestRequestFinishedListener(testExecutor);
+        TestRequestFinishedListener secondListener = new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(firstListener);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(secondListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        urlRequestBuilder.addRequestAnnotation("request annotation")
+                .addRequestAnnotation(this)
+                .build()
+                .start();
+        callback.blockForDone();
+        testExecutor.joinAll();
+
+        CronetEngine.UrlRequestInfo firstRequestInfo = firstListener.mRequestInfo;
+        CronetEngine.UrlRequestInfo secondRequestInfo = secondListener.mRequestInfo;
+        assertNotNull("First RequestFinishedListener must be called", firstRequestInfo);
+        assertNotNull("Second RequestFinishedListener must be called", secondRequestInfo);
+        assertEquals(mUrl, firstRequestInfo.getUrl());
+        assertEquals(mUrl, secondRequestInfo.getUrl());
+        assertNotNull(firstRequestInfo.getResponseInfo());
+        assertNotNull(secondRequestInfo.getResponseInfo());
+        assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
+                new HashSet<Object>(firstRequestInfo.getAnnotations()));
+        assertEquals(newHashSet("request annotation", this),
+                new HashSet<Object>(secondRequestInfo.getAnnotations()));
+        CronetEngine.UrlRequestMetrics firstMetrics = firstRequestInfo.getMetrics();
+        assertNotNull("UrlRequestInfo.getMetrics() must not be null", firstMetrics);
+        assertTrue(firstMetrics.getTotalTimeMs() > 0);
+        assertTrue(firstMetrics.getTotalTimeMs() >= firstMetrics.getTtfbMs());
+        assertTrue(firstMetrics.getReceivedBytesCount() > 0);
+        CronetEngine.UrlRequestMetrics secondMetrics = secondRequestInfo.getMetrics();
+        assertNotNull("UrlRequestInfo.getMetrics() must not be null", secondMetrics);
+        assertTrue(secondMetrics.getTotalTimeMs() > 0);
+        assertTrue(secondMetrics.getTotalTimeMs() >= secondMetrics.getTtfbMs());
+        assertTrue(secondMetrics.getReceivedBytesCount() > 0);
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
+    public void testRequestFinishedListenerFailedRequest() throws Exception {
+        String connectionRefusedUrl = "http://127.0.0.1:3";
+        mTestFramework = startCronetTestFramework();
+        TestExecutor testExecutor = new TestExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(connectionRefusedUrl,
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        assertTrue(callback.mOnErrorCalled);
+        testExecutor.runAllTasks();
+
+        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
+        assertNotNull("RequestFinishedListener must be called", requestInfo);
+        assertEquals(connectionRefusedUrl, requestInfo.getUrl());
+        assertTrue(requestInfo.getAnnotations().isEmpty());
+        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
+        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
+        assertTrue(metrics.getTotalTimeMs() > 0);
+        assertNull(metrics.getTtfbMs());
+        assertTrue(metrics.getReceivedBytesCount() == null || metrics.getReceivedBytesCount() == 0);
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
+    public void testRequestFinishedListenerRemoved() throws Exception {
+        mTestFramework = startCronetTestFramework();
+        TestExecutor testExecutor = new TestExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        testExecutor.runAllTasks();
+
+        assertNull(
+                "RequestFinishedListener must not be called", requestFinishedListener.mRequestInfo);
+        mTestFramework.mCronetEngine.shutdown();
+    }
+}

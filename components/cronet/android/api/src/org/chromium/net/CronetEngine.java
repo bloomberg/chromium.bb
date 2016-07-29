@@ -838,14 +838,14 @@ public abstract class CronetEngine {
      * @param priority priority of the request which should be one of the
      *         {@link UrlRequest.Builder#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
      *         values.
-     * @param requestAnnotations Objects to pass on to {@link CronetEngine.RequestFinishedListener}.
+     * @param requestAnnotations Objects to pass on to {@link RequestFinishedListener}.
      * @param disableCache disables cache for the request.
      *         If context is not set up to use cache this param has no effect.
      * @param disableConnectionMigration disables connection migration for this
      *         request if it is enabled for the session.
      * @return new request.
      * @deprecated Use {@link UrlRequest.Builder#build}.
-     * @hide as it references hidden CronetEngine.RequestFinishedListener
+     * @hide as it references hidden RequestFinishedListener
      */
     @Deprecated
     protected abstract UrlRequest createRequest(String url, UrlRequest.Callback callback,
@@ -1267,20 +1267,5 @@ public abstract class CronetEngine {
         public Long getReceivedBytesCount() {
             return mReceivedBytesCount;
         }
-    }
-
-    /**
-     * Interface to listen for finished requests that were created via this CronetEngine instance.
-     *
-     * TODO(tbansal):  http://crbug.com/618034 Remove this API, and replace it with a listener
-     * whose executor is bound to the lifetime of the listener.
-     * @hide as it's a prototype.
-     */
-    public interface RequestFinishedListener {
-        /**
-         * Invoked with request info.
-         * @param requestInfo {@link UrlRequestInfo} for finished request.
-         */
-        void onRequestFinished(UrlRequestInfo requestInfo);
     }
 }

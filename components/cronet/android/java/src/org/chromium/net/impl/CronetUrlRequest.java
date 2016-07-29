@@ -492,9 +492,8 @@ public final class CronetUrlRequest implements UrlRequest {
     ////////////////////////////////////////////////
 
     /**
-     * Called before following redirects. The redirect will automatically be
-     * followed, unless the request is paused or canceled during this
-     * callback. If the redirect response has a body, it will be ignored.
+     * Called before following redirects. The redirect will only be followed if
+     * {@link #followRedirect()} is called. If the redirect response has a body, it will be ignored.
      * This will only be called between start and onResponseStarted.
      *
      * @param newLocation Location where request is redirected.

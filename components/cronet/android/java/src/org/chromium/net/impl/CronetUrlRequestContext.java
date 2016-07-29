@@ -22,6 +22,7 @@ import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
+import org.chromium.net.RequestFinishedListener;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
@@ -30,6 +31,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +66,17 @@ public class CronetUrlRequestContext extends CronetEngine {
     private Executor mNetworkQualityExecutor;
     private boolean mNetworkQualityEstimatorEnabled;
 
-    /** Locks operations on network quality listeners, because listener
+    /**
+     * Locks operations on network quality listeners, because listener
      * addition and removal may occur on a different thread from notification.
      */
     private final Object mNetworkQualityLock = new Object();
+
+    /**
+     * Locks operations on the list of RequestFinishedListeners, because operations can happen on
+     * any thread.
+     */
+    private final Object mFinishedListenerLock = new Object();
 
     @GuardedBy("mNetworkQualityLock")
     private final ObserverList<NetworkQualityRttListener> mRttListenerList =
@@ -77,9 +86,9 @@ public class CronetUrlRequestContext extends CronetEngine {
     private final ObserverList<NetworkQualityThroughputListener> mThroughputListenerList =
             new ObserverList<NetworkQualityThroughputListener>();
 
-    @GuardedBy("mNetworkQualityLock")
-    private final ObserverList<RequestFinishedListener> mFinishedListenerList =
-            new ObserverList<RequestFinishedListener>();
+    @GuardedBy("mFinishedListenerLock")
+    private final List<RequestFinishedListener> mFinishedListenerList =
+            new ArrayList<RequestFinishedListener>();
 
     /**
      * Synchronize access to mCertVerifierData.
@@ -153,11 +162,9 @@ public class CronetUrlRequestContext extends CronetEngine {
             boolean disableConnectionMigration) {
         synchronized (mLock) {
             checkHaveAdapter();
-            boolean metricsCollectionEnabled = mNetworkQualityEstimatorEnabled;
-            if (metricsCollectionEnabled) { // Collect metrics only if someone is listening.
-                synchronized (mNetworkQualityLock) {
-                    metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
-                }
+            boolean metricsCollectionEnabled = false;
+            synchronized (mFinishedListenerLock) {
+                metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
             }
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
                     metricsCollectionEnabled, disableCache, disableConnectionMigration);
@@ -379,15 +386,8 @@ public class CronetUrlRequestContext extends CronetEngine {
      */
     @Override
     public void addRequestFinishedListener(RequestFinishedListener listener) {
-        if (!mNetworkQualityEstimatorEnabled) {
-            throw new IllegalStateException("Network quality estimator must be enabled");
-        }
-        // RequestFinishedListener does not provide its own executor.
-        if (mNetworkQualityExecutor == null) {
-            throw new IllegalStateException("Executor must not be null");
-        }
-        synchronized (mNetworkQualityLock) {
-            mFinishedListenerList.addObserver(listener);
+        synchronized (mFinishedListenerLock) {
+            mFinishedListenerList.add(listener);
         }
     }
 
@@ -396,11 +396,8 @@ public class CronetUrlRequestContext extends CronetEngine {
      */
     @Override
     public void removeRequestFinishedListener(RequestFinishedListener listener) {
-        if (!mNetworkQualityEstimatorEnabled) {
-            throw new IllegalStateException("Network quality estimator must be enabled");
-        }
-        synchronized (mNetworkQualityLock) {
-            mFinishedListenerList.removeObserver(listener);
+        synchronized (mFinishedListenerLock) {
+            mFinishedListenerList.remove(listener);
         }
     }
 
@@ -528,30 +525,20 @@ public class CronetUrlRequestContext extends CronetEngine {
     }
 
     void reportFinished(final CronetUrlRequest request) {
-        if (!mNetworkQualityEstimatorEnabled) {
-            return;
+        final UrlRequestInfo requestInfo = request.getRequestInfo();
+        ArrayList<RequestFinishedListener> currentListeners;
+        synchronized (mFinishedListenerLock) {
+            currentListeners = new ArrayList<RequestFinishedListener>(mFinishedListenerList);
         }
-        // If no request finished listener has been added, then mNetworkQualityExecutor may be
-        // null. Exit early to avoid posting to a null executor.
-        synchronized (mNetworkQualityLock) {
-            if (mFinishedListenerList.isEmpty()) {
-                return;
-            }
-        }
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mNetworkQualityLock) {
-                    UrlRequestInfo requestInfo = request.getRequestInfo();
-                    for (RequestFinishedListener listener : mFinishedListenerList) {
-                        listener.onRequestFinished(requestInfo);
-                    }
+        for (final RequestFinishedListener listener : currentListeners) {
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    listener.onRequestFinished(requestInfo);
                 }
-            }
-        };
-        // Use {@link mNetworkQualityExecutor} since
-        // RequestFInishedListeners do not provide an executor.
-        postObservationTaskToExecutor(mNetworkQualityExecutor, task);
+            };
+            postObservationTaskToExecutor(listener.getExecutor(), task);
+        }
     }
 
     private static void postObservationTaskToExecutor(Executor executor, Runnable task) {

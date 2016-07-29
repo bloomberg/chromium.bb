@@ -4,8 +4,6 @@
 
 package org.chromium.net;
 
-import static org.chromium.base.CollectionUtil.newHashSet;
-
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.ConditionVariable;
@@ -18,7 +16,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.net.CronetEngine.UrlRequestInfo;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -28,7 +25,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
@@ -285,8 +281,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testRealTimeNetworkQualityObservationsQuicDisabled() throws Exception {
         CronetEngine.Builder mCronetEngineBuilder = new CronetEngine.Builder(getContext());
-        Executor requestFinishedListenerExecutor =
-                Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
         Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
         ConditionVariable waitForThroughput = new ConditionVariable();
         TestNetworkQualityRttListener rttListener =
@@ -298,10 +292,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework =
                 startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
         mTestFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true);
-        // requestFinishedListenerExecutor should not be used for notifying the RTT and
-        // throughput listeners.
-        mTestFramework.mCronetEngine.setRequestFinishedListenerExecutor(
-                requestFinishedListenerExecutor);
 
         mTestFramework.mCronetEngine.addRttListener(rttListener);
         mTestFramework.mCronetEngine.addThroughputListener(throughputListener);
@@ -339,169 +329,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
     }
 
-    // TODO(tbansal):  http://crbug.com/618034 Remove this.
-    private static class TestRequestFinishedListener
-            implements CronetEngine.RequestFinishedListener {
-        private UrlRequestInfo mRequestInfo = null;
 
-        @Override
-        public void onRequestFinished(UrlRequestInfo requestInfo) {
-            assertNull("onRequestFinished called repeatedly", mRequestInfo);
-            assertNotNull(requestInfo);
-            mRequestInfo = requestInfo;
-        }
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    public void testRequestFinishedListener_LegacyAPI() throws Exception {
-        mTestFramework = startCronetTestFramework();
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
-        mTestFramework.mCronetEngine.enableNetworkQualityEstimator(testExecutor);
-        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        urlRequestBuilder.addRequestAnnotation("request annotation")
-                .addRequestAnnotation(this)
-                .build()
-                .start();
-        callback.blockForDone();
-        testExecutor.runAllTasks();
-
-        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
-        assertNotNull("RequestFinishedListener must be called", requestInfo);
-        assertEquals(mUrl, requestInfo.getUrl());
-        assertNotNull(requestInfo.getResponseInfo());
-        assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
-                new HashSet<Object>(requestInfo.getAnnotations()));
-        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
-        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
-        assertTrue(metrics.getReceivedBytesCount() > 0);
-        mTestFramework.mCronetEngine.shutdown();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    public void testRequestFinishedListenerWithExecutorSetLater_LegacyAPI() throws Exception {
-        CronetEngine.Builder mCronetEngineBuilder = new CronetEngine.Builder(getContext());
-        TestExecutor testExecutor = new TestExecutor();
-        mCronetEngineBuilder.enableHTTP2(true).enableQUIC(false).enableNetworkQualityEstimator(
-                true);
-        mTestFramework =
-                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
-        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
-        mTestFramework.mCronetEngine.setRequestFinishedListenerExecutor(testExecutor);
-        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        urlRequestBuilder.addRequestAnnotation("request annotation")
-                .addRequestAnnotation(this)
-                .build()
-                .start();
-        callback.blockForDone();
-        testExecutor.runAllTasks();
-
-        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
-        assertNotNull("RequestFinishedListener must be called", requestInfo);
-        assertEquals(mUrl, requestInfo.getUrl());
-        assertNotNull(requestInfo.getResponseInfo());
-        assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
-                new HashSet<Object>(requestInfo.getAnnotations()));
-        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
-        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
-        assertTrue(metrics.getReceivedBytesCount() > 0);
-        mTestFramework.mCronetEngine.shutdown();
-    }
-
-    /*
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    */
-    @FlakyTest(message = "https://crbug.com/592444")
-    public void testRequestFinishedListenerFailedRequest_LegacyAPI() throws Exception {
-        String connectionRefusedUrl = "http://127.0.0.1:3";
-        mTestFramework = startCronetTestFramework();
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
-        mTestFramework.mCronetEngine.enableNetworkQualityEstimator(testExecutor);
-        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(connectionRefusedUrl,
-                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        urlRequestBuilder.build().start();
-        callback.blockForDone();
-        assertTrue(callback.mOnErrorCalled);
-        testExecutor.runAllTasks();
-
-        CronetEngine.UrlRequestInfo requestInfo = requestFinishedListener.mRequestInfo;
-        assertNotNull("RequestFinishedListener must be called", requestInfo);
-        assertEquals(connectionRefusedUrl, requestInfo.getUrl());
-        assertTrue(requestInfo.getAnnotations().isEmpty());
-        CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
-        assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
-        assertTrue(metrics.getTotalTimeMs() > 0);
-        assertNull(metrics.getTtfbMs());
-        assertTrue(metrics.getReceivedBytesCount() == null || metrics.getReceivedBytesCount() == 0);
-        mTestFramework.mCronetEngine.shutdown();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    public void testRequestFinishedListenerRemoved_LegacyAPI() throws Exception {
-        mTestFramework = startCronetTestFramework();
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
-        mTestFramework.mCronetEngine.enableNetworkQualityEstimator(testExecutor);
-        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
-        mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        urlRequestBuilder.build().start();
-        callback.blockForDone();
-        testExecutor.runAllTasks();
-
-        assertNull(
-                "RequestFinishedListener must not be called", requestFinishedListener.mRequestInfo);
-        mTestFramework.mCronetEngine.shutdown();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    public void testRequestFinishedListenerDisabled_LegacyAPI() throws Exception {
-        mTestFramework = startCronetTestFramework();
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
-        try {
-            mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
-            fail("addRequestFinishedListener unexpectedly succeeded "
-                    + "without a call to enableNetworkQualityEstimator()");
-        } catch (RuntimeException e) {
-            // Expected.
-        }
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(
-                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        urlRequestBuilder.build().start();
-        callback.blockForDone();
-        testExecutor.runAllTasks();
-
-        assertNull(
-                "RequestFinishedListener must not be called", requestFinishedListener.mRequestInfo);
-        mTestFramework.mCronetEngine.shutdown();
-    }
 
     /**
     @SmallTest

@@ -228,11 +228,11 @@ public interface UrlRequest {
 
         /**
          * Associates the annotation object with this request. May add more than one.
-         * Passed through to a {@link CronetEngine.RequestFinishedListener},
+         * Passed through to a {@link RequestFinishedListener},
          * see {@link CronetEngine.UrlRequestInfo#getAnnotations}.
          *
-         * @param annotation an object to pass on to the
-         * {@link CronetEngine.RequestFinishedListener} with a {@link CronetEngine.UrlRequestInfo}.
+         * @param annotation an object to pass on to the {@link RequestFinishedListener} with a
+         * {@link CronetEngine.UrlRequestInfo}.
          * @return the builder to facilitate chaining.
          *
          * @hide as it's a prototype.
