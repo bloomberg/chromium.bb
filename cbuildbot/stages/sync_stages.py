@@ -1321,6 +1321,29 @@ class PreCQLauncherStage(SyncStage):
       logging.error('%s has malformed config file', change, exc_info=True)
     return bool(result and result.lower() == 'yes')
 
+  def GetConfigBuildbucketIdMap(self, output):
+    """Get a config:buildbucket_id map.
+
+    Config is the config-name of a pre-cq triggered by the pre-cq-launcher.
+    buildbucket_id is the request id of the pre-cq build.
+    """
+    config_buildbucket_id_map = {}
+    for line in output.splitlines():
+      config = None
+      buildbucket_id = None
+      match_config = re.search(r'\[config:(\S*)\]', line)
+      if match_config:
+        config = match_config.group(1)
+
+      match_id = re.search(r'\[buildbucket_id:(\S*)\]', line)
+      if match_id:
+        buildbucket_id = match_id.group(1)
+
+      if config is not None and buildbucket_id is not None:
+        config_buildbucket_id_map[config] = buildbucket_id
+
+    return config_buildbucket_id_map
+
   def LaunchTrybot(self, plan, configs):
     """Launch a Pre-CQ run with the provided list of CLs.
 
@@ -1335,20 +1358,32 @@ class PreCQLauncherStage(SyncStage):
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
 
+    use_buildbucket = False
+    config_buildbucket_id_map = {}
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
       # use buildbucket to launch trybots.
       cmd += ['--use-buildbucket']
+      use_buildbucket = True
 
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root, print_cmd=True)
+      result = cros_build_lib.RunCommand(
+          cmd, cwd=self._build_root, capture_output=True)
+      if result and result.output:
+        logging.info('cbuildbot output: %s' % result.output)
+        if use_buildbucket:
+          config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
+              result.output)
 
+    actions = []
     build_id, db = self._run.GetCIDBHandle()
-    actions = [
-        clactions.CLAction.FromGerritPatchAndAction(
-            patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config)
-        for patch, config in itertools.product(plan, configs)]
+    for patch in plan:
+      for config in configs:
+        actions.append(clactions.CLAction.FromGerritPatchAndAction(
+            patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config,
+            buildbucket_id=config_buildbucket_id_map.get(config)))
+
     db.InsertCLActions(build_id, actions)
 
   def GetDisjointTransactionsToTest(self, pool, progress_map):

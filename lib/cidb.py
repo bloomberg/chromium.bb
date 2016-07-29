@@ -592,10 +592,12 @@ class SchemaVersionedMySQLConnection(object):
 class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
 
+  # The buildbucket_id is the request id inserted by pre-cq-launcher when
+  # it launches by a pre-cq, not the pre-cq-launcher builder buildbucket_id
   _SQL_FETCH_ACTIONS = (
       'SELECT c.id, b.id, action, c.reason, build_config, '
-      'change_number, patch_number, change_source, timestamp FROM '
-      'clActionTable c JOIN buildTable b ON build_id = b.id ')
+      'change_number, patch_number, change_source, timestamp, c.buildbucket_id '
+      'FROM clActionTable c JOIN buildTable b ON build_id = b.id ')
   _SQL_FETCH_MESSAGES = (
       'SELECT build_id, build_config, waterfall, builder_name, build_number, '
       'message_type, message_subtype, message_value, timestamp, board FROM '
@@ -683,13 +685,15 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       change_source = cl_action.change_source
       action = cl_action.action
       reason = cl_action.reason
+      buildbucket_id = cl_action.buildbucket_id
       values.append({
           'build_id': build_id,
           'change_source': change_source,
           'change_number': change_number,
           'patch_number': patch_number,
           'action': action,
-          'reason': reason})
+          'reason': reason,
+          'buildbucket_id': buildbucket_id})
 
     retval = self._InsertMany('clActionTable', values)
 

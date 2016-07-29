@@ -77,6 +77,12 @@ class RemoteTryJob(object):
   MAX_PROPERTY_LENGTH = 1023
   PADDING = 50
 
+  # Buildbucket_put response must contain 'buildbucket_bucket:bucket]',
+  # '[config:config_name] and '[buildbucket_id:id]'.
+  BUILDBUCKET_PUT_RESP_FORMAT = ('Successfully sent PUT request to '
+                                 '[buildbucket_bucket:%s] '
+                                 'with [config:%s] [buildbucket_id:%s].')
+
   def __init__(self, options, bots, local_patches):
     """Construct the object.
 
@@ -240,9 +246,8 @@ class RemoteTryJob(object):
         body, http, buildbucket_put_url, dryrun)
 
     if buildbucket_id is not None:
-      print('Successfully PUT %s in buildbucket_bucket %s '
-            'with buildbucket_id %s .' %
-            (bot, BUILDBUCKET_BUCKET, buildbucket_id))
+      print(self.BUILDBUCKET_PUT_RESP_FORMAT %
+            (BUILDBUCKET_BUCKET, bot, buildbucket_id))
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.

@@ -293,9 +293,9 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema47(self):
-    """Run the CQ test with schema version 47."""
-    self._PrepareFreshDatabase(47)
+  def testCQWithSchema48(self):
+    """Run the CQ test with schema version 48."""
+    self._PrepareFreshDatabase(48)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -436,7 +436,8 @@ class DataSeries0Test(CIDBIntegrationTest):
                                         'change_number': 205535L,
                                         'change_source': 'external',
                                         'patch_number': 1L,
-                                        'reason': ''})
+                                        'reason': '',
+                                        'buildbucket_id': None})
 
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""

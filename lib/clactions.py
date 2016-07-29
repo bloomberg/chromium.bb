@@ -42,7 +42,7 @@ assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
 
 CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
                      'build_config', 'change_number', 'patch_number',
-                     'change_source', 'timestamp']
+                     'change_source', 'timestamp', 'buildbucket_id']
 
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
 
@@ -79,8 +79,13 @@ class CLAction(_CLActionTuple):
   """An action or history log entry for a particular CL."""
 
   @classmethod
+  def GetCLAction(cls, **kwargs):
+    kwargs.setdefault('buildbucket_id', None)
+    return CLAction(**kwargs)
+
+  @classmethod
   def FromGerritPatchAndAction(cls, change, action, reason=None,
-                               timestamp=None):
+                               timestamp=None, buildbucket_id=None):
     """Creates a CLAction instance from a change and action.
 
     Args:
@@ -88,10 +93,12 @@ class CLAction(_CLActionTuple):
       action: An action string.
       reason: Optional reason string.
       timestamp: Optional datetime.datetime timestamp.
+      buildbucket_id: Optional buildbucket_id
     """
     return CLAction(None, None, action, reason, None,
                     int(change.gerrit_number), int(change.patch_number),
-                    BoolToChangeSource(change.internal), timestamp)
+                    BoolToChangeSource(change.internal), timestamp,
+                    buildbucket_id)
 
   @classmethod
   def FromMetadataEntry(cls, entry):
@@ -107,7 +114,8 @@ class CLAction(_CLActionTuple):
                     int(change_dict['gerrit_number']),
                     int(change_dict['patch_number']),
                     BoolToChangeSource(change_dict['internal']),
-                    entry[2])
+                    entry[2],
+                    None)
 
   def AsMetadataEntry(self):
     """Get a tuple representation, suitable for metadata.json."""

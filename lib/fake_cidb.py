@@ -115,6 +115,7 @@ class FakeCIDBConnection(object):
       change_source = cl_action.change_source
       action = cl_action.action
       reason = cl_action.reason
+      buildbucket_id = cl_action.buildbucket_id
       rows.append({
           'build_id' : build_id,
           'change_source' : change_source,
@@ -122,7 +123,8 @@ class FakeCIDBConnection(object):
           'patch_number' : patch_number,
           'action' : action,
           'timestamp': timestamp or datetime.datetime.now(),
-          'reason' : reason})
+          'reason' : reason,
+          'buildbucket_id': buildbucket_id})
 
     self.clActionTable.extend(rows)
     return len(rows)
@@ -207,7 +209,8 @@ class FakeCIDBConnection(object):
           item['change_number'],
           item['patch_number'],
           item['change_source'],
-          item['timestamp'])
+          item['timestamp'],
+          item['buildbucket_id'])
       values.append(row)
 
     return clactions.CLActionHistory(clactions.CLAction(*row) for row in values)

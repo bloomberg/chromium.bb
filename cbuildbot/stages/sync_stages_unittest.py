@@ -23,6 +23,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
@@ -1226,6 +1227,31 @@ pre-cq-configs: link-pre-cq
     requeued_actions = [a for a in actions_for_patch
                         if a.action == constants.CL_ACTION_REQUEUED]
     self.assertEqual(1, len(requeued_actions))
+
+  def testGetConfigBuildbucketIdMap(self):
+    """Test testGetConfigBuildbucketIdMap"""
+    output = (
+        "Verifying patches...\n"
+        "Submitting tryjob...\n"
+        "Successfully sent PUT request to "
+        "[buildbucket_bucket:master.chromiumos.tryserver] with "
+        "[config:binhost-pre-cq] [buildbucket_id:9005858128833098368].\n"
+        "Successfully sent PUT request to "
+        "[buildbucket_bucket:master.chromiumos.tryserver] with "
+        "[config:storm-pre-cq] [buildbucket_id:9005858128487381632].\n"
+        "Tryjob submitted!"
+        "Go to https://uberchromegw.corp.google.com/i/chromiumos.tryserver/"
+        "waterfall?committer=nxia@chromium.org&builder=pre-cq "
+        "to view the status of your job.")
+
+    map_1 = self.sync_stage.GetConfigBuildbucketIdMap(output)
+    self.assertEqual(map_1, {'binhost-pre-cq': '9005858128833098368',
+                             'storm-pre-cq': '9005858128487381632'})
+
+    test_output = remote_try.RemoteTryJob.BUILDBUCKET_PUT_RESP_FORMAT % (
+        'test-bucket', 'test-config', 'test-id')
+    map_2 = self.sync_stage.GetConfigBuildbucketIdMap(test_output)
+    self.assertEqual(map_2, {'test-config': 'test-id'})
 
 
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):

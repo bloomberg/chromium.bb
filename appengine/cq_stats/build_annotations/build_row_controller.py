@@ -254,7 +254,7 @@ class BuildRowController(object):
     for build_entry in build_entries:
       for claction_entry in claction_entries_by_build_id.get(build_entry.id,
                                                              []):
-        claction_list.append(clactions.CLAction(
+        claction_list.append(clactions.CLAction.GetCLAction(
             id=claction_entry.id,
             build_id=build_entry.id,
             action=claction_entry.action,
