@@ -36,12 +36,15 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDevToolsServer;
+import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.R;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MemoryPressureListener;
@@ -379,15 +382,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
-    AwBrowserContext getBrowserContext() {
-        synchronized (mLock) {
-            return getBrowserContextLocked();
-        }
-    }
-
-    private AwBrowserContext getBrowserContextLocked() {
-        assert Thread.holdsLock(mLock);
+    // Only on UI thread.
+    AwBrowserContext getBrowserContextOnUiThread() {
         assert mStarted;
+        if (BuildConfig.DCHECK_IS_ON && !ThreadUtils.runningOnUiThread()) {
+            throw new RuntimeException(
+                    "getBrowserContextOnUiThread called on " + Thread.currentThread());
+        }
+
         if (mBrowserContext == null) {
             mBrowserContext =
                     new AwBrowserContext(mWebViewPrefs, ContextUtils.getApplicationContext());
@@ -481,8 +483,16 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mGeolocationPermissions == null) {
                 ensureChromiumStartedLocked(true);
-                mGeolocationPermissions = new GeolocationPermissionsAdapter(
-                        getBrowserContextLocked().getGeolocationPermissions());
+                AwGeolocationPermissions awGelocationPermissions = ThreadUtils.runningOnUiThread()
+                        ? getBrowserContextOnUiThread().getGeolocationPermissions()
+                        : runOnUiThreadBlocking(new Callable<AwGeolocationPermissions>() {
+                            @Override
+                            public AwGeolocationPermissions call() {
+                                return getBrowserContextOnUiThread().getGeolocationPermissions();
+                            }
+                        });
+                mGeolocationPermissions =
+                        new GeolocationPermissionsAdapter(awGelocationPermissions);
             }
         }
         return mGeolocationPermissions;
@@ -514,20 +524,34 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mWebStorage == null) {
                 ensureChromiumStartedLocked(true);
-                mWebStorage = new WebStorageAdapter(AwQuotaManagerBridge.getInstance());
+                AwQuotaManagerBridge awQuotaManager = ThreadUtils.runningOnUiThread()
+                        ? AwQuotaManagerBridge.getInstance()
+                        : runOnUiThreadBlocking(new Callable<AwQuotaManagerBridge>() {
+                            @Override
+                            public AwQuotaManagerBridge call() {
+                                return AwQuotaManagerBridge.getInstance();
+                            }
+                        });
+                mWebStorage = new WebStorageAdapter(awQuotaManager);
             }
         }
         return mWebStorage;
     }
 
     @Override
-    public WebViewDatabase getWebViewDatabase(Context context) {
+    public WebViewDatabase getWebViewDatabase(final Context context) {
         synchronized (mLock) {
             if (mWebViewDatabase == null) {
                 ensureChromiumStartedLocked(true);
-                AwBrowserContext browserContext = getBrowserContextLocked();
-                mWebViewDatabase = new WebViewDatabaseAdapter(
-                        browserContext.getHttpAuthDatabase(context));
+                HttpAuthDatabase awDatabase = ThreadUtils.runningOnUiThread()
+                        ? getBrowserContextOnUiThread().getHttpAuthDatabase(context)
+                        : runOnUiThreadBlocking(new Callable<HttpAuthDatabase>() {
+                            @Override
+                            public HttpAuthDatabase call() {
+                                return getBrowserContextOnUiThread().getHttpAuthDatabase(context);
+                            }
+                        });
+                mWebViewDatabase = new WebViewDatabaseAdapter(awDatabase);
             }
         }
         return mWebViewDatabase;
