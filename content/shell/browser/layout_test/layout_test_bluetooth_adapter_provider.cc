@@ -130,6 +130,13 @@ void NotifyServicesDiscovered(MockBluetoothAdapter* adapter,
                     GattServicesDiscovered(adapter, device));
 }
 
+// Notifies the adapter's observers that a device has changed.
+void NotifyDeviceChanged(MockBluetoothAdapter* adapter,
+                         MockBluetoothDevice* device) {
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
+                    DeviceChanged(adapter, device));
+}
+
 }  // namespace
 
 namespace content {
@@ -164,6 +171,11 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetTwoHeartRateServicesAdapter();
   if (fake_adapter_name == "DisconnectingHeartRateAdapter")
     return GetDisconnectingHeartRateAdapter();
+  if (fake_adapter_name == "DisconnectingDuringServiceRetrievalAdapter")
+    return GetServicesDiscoveredAfterReconnectionAdapter(true /* disconnect */);
+  if (fake_adapter_name == "ServicesDiscoveredAfterReconnectionAdapter")
+    return GetServicesDiscoveredAfterReconnectionAdapter(
+        false /* disconnect */);
   if (fake_adapter_name == "BlacklistTestAdapter")
     return GetBlacklistTestAdapter();
   if (fake_adapter_name == "FailingConnectionsAdapter")
@@ -535,6 +547,72 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHeartRateAdapter() {
   disconnection_service->AddMockCharacteristic(
       std::move(disconnection_characteristic));
   device->AddMockService(std::move(disconnection_service));
+  adapter->AddMockDevice(std::move(device));
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
+    GetServicesDiscoveredAfterReconnectionAdapter(bool disconnect) {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
+  std::unique_ptr<NiceMockBluetoothDevice> device(
+      GetHeartRateDevice(adapter.get()));
+  NiceMockBluetoothDevice* device_ptr = device.get();
+
+  // When called before IsGattDiscoveryComplete, run success callback with a new
+  // Gatt connection. When called after after IsGattDiscoveryComplete runs
+  // success callback with a new Gatt connection and notifies of services
+  // discovered.
+  ON_CALL(*device, CreateGattConnection(_, _))
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter_ptr, device_ptr]() {
+            std::vector<BluetoothRemoteGattService*> services =
+                device_ptr->GetMockServices();
+
+            if (services.size() != 0) {
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::Bind(&NotifyServicesDiscovered,
+                             base::RetainedRef(adapter_ptr), device_ptr));
+            }
+
+            return base::MakeUnique<NiceMockBluetoothGattConnection>(
+                adapter_ptr, device_ptr->GetAddress());
+          }));
+
+  // The first time this function is called we:
+  // 1. Add a service (This indicates that this function has been called)
+  // 2. If |disconnect| is true, disconnect the device.
+  // 3. Return false.
+  // The second time this function is called we just return true.
+  ON_CALL(*device, IsGattServicesDiscoveryComplete())
+      .WillByDefault(Invoke([adapter_ptr, device_ptr, disconnect] {
+        std::vector<BluetoothRemoteGattService*> services =
+            device_ptr->GetMockServices();
+        if (services.size() == 0) {
+          std::unique_ptr<NiceMockBluetoothGattService> heart_rate(
+              GetBaseGATTService("Heart Rate", device_ptr,
+                                 kHeartRateServiceUUID));
+
+          device_ptr->AddMockService(GetGenericAccessService(device_ptr));
+          device_ptr->AddMockService(
+              GetHeartRateService(adapter_ptr, device_ptr));
+
+          if (disconnect) {
+            device_ptr->SetConnected(false);
+            base::ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE,
+                base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
+                           device_ptr));
+          }
+          DCHECK(services.size() == 0);
+          return false;
+        }
+
+        return true;
+      }));
   adapter->AddMockDevice(std::move(device));
 
   return adapter;

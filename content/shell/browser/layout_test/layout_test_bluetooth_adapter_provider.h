@@ -217,6 +217,29 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDisconnectingHeartRateAdapter();
 
+  // |ServicesDiscoveredAfterReconnectionAdapter|(disconnect)
+  // Inherits from |HeartRateAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Heart Rate UUID (0x180d)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //         - Heart Rate Service - Characteristics as described in
+  //           GetHeartRateService.
+  //      - CreateGattConnection: When called before IsGattDiscoveryComplete,
+  //          runs success callback with a new Gatt connection. When called
+  //          after IsGattDiscoveryComplete runs success callback with a new
+  //          Gatt connection and notifies of services discovered.
+  //      - IsGattDiscoveryComplete: The first time this function is called,
+  //          it adds two services (Generic Access and Heart Rate) and
+  //          if |disconnect| is true disconnects the device and returns false.
+  //          After that it just returns true.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetServicesDiscoveredAfterReconnectionAdapter(bool disconnect);
+
   // |BlacklistTestAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

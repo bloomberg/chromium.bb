@@ -48,6 +48,7 @@ bool BluetoothDevice::disconnectGATTIfConnected()
 {
     if (m_gatt->connected()) {
         m_gatt->setConnected(false);
+        m_gatt->ClearActiveAlgorithms();
         BluetoothSupplement::fromExecutionContext(getExecutionContext())->disconnect(id());
         return true;
     }
@@ -68,6 +69,7 @@ void BluetoothDevice::dispatchGattServerDisconnected()
 {
     if (m_gatt->connected()) {
         m_gatt->setConnected(false);
+        m_gatt->ClearActiveAlgorithms();
         dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
     }
 }

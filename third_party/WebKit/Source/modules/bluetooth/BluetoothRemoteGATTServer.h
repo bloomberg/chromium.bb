@@ -31,6 +31,16 @@ public:
 
     void setConnected(bool connected) { m_connected = connected; }
 
+    // Adds |resolver| to the set of Active Algorithms. CHECK-fails if
+    // |resolver| was already added.
+    void AddToActiveAlgorithms(ScriptPromiseResolver*);
+    // Returns false if |resolver| was not in the set of Active Algorithms.
+    // Otherwise it removes |resolver| from the set of Active Algorithms and
+    // returns true.
+    bool RemoveFromActiveAlgorithms(ScriptPromiseResolver*);
+    // Removes all ScriptPromiseResolvers from the set of Active Algorithms.
+    void ClearActiveAlgorithms() { m_activeAlgorithms.clear(); }
+
     // Interface required by Garbage Collectoin:
     DECLARE_VIRTUAL_TRACE();
 
@@ -45,6 +55,12 @@ public:
 
 private:
     ScriptPromise getPrimaryServicesImpl(ScriptState*, mojom::blink::WebBluetoothGATTQueryQuantity, String serviceUUID = String());
+
+    // Contains a ScriptPromiseResolver corresponding to each algorithm using
+    // this server’s connection. Disconnection i.e. disconnect() method or the
+    // device disconnecting by itself, empties this set so that the algorithm
+    // can tell whether its realm was ever disconnected while it was running.
+    HeapHashSet<Member<ScriptPromiseResolver>> m_activeAlgorithms;
 
     Member<BluetoothDevice> m_device;
     bool m_connected;
