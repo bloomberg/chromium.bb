@@ -930,7 +930,6 @@ private:
 
     ScrollAnchor m_scrollAnchor;
 
-    bool m_needsScrollbarsUpdate;
     bool m_suppressAdjustViewSize;
     bool m_allowsLayoutInvalidationAfterLayoutClean;
 

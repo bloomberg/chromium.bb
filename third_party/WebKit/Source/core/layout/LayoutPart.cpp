@@ -297,22 +297,12 @@ void LayoutPart::updateWidgetGeometry()
     if (!widget || !node()) // Check the node in case destroy() has been called.
         return;
 
-    IntRect newFrame = roundedIntRect(contentBoxRect());
-    bool boundsWillChange = widget->frameRect().size() != newFrame.size();
-
-    FrameView* frameView = widget->isFrameView() ? toFrameView(widget) : nullptr;
-
-    // If frame bounds are changing mark the view for layout. Also check the
-    // frame's page to make sure that the frame isn't in the process of being
-    // destroyed.
-    if (frameView && boundsWillChange && frameView->frame().page())
-        frameView->setNeedsLayout();
-
     updateWidgetGeometryInternal();
 
     // If view needs layout, either because bounds have changed or possibly
     // indicating content size is wrong, we have to do a layout to set the right
     // widget size.
+    FrameView* frameView = widget->isFrameView() ? toFrameView(widget) : nullptr;
     if (frameView && frameView->needsLayout() && frameView->frame().page())
         frameView->layout();
 

@@ -95,40 +95,6 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
     EXPECT_FALSE(selection().isCaretBoundsDirty());
 }
 
-TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
-{
-    Text* text = appendTextNode("Hello, World!");
-    document().view()->updateAllLifecyclePhases();
-
-    document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-    document().body()->focus();
-    EXPECT_TRUE(document().body()->focused());
-
-    VisibleSelection validSelection(Position(text, 0), Position(text, 0));
-    selection().setCaretVisible(true);
-    setSelection(validSelection);
-    EXPECT_TRUE(selection().isCaret());
-    EXPECT_TRUE(shouldPaintCaretForTesting());
-
-    int startCount = layoutCount();
-    {
-        // To force layout in next updateLayout calling, widen view.
-        FrameView& frameView = dummyPageHolder().frameView();
-        IntRect frameRect = frameView.frameRect();
-        frameRect.setWidth(frameRect.width() + 1);
-        frameRect.setHeight(frameRect.height() + 1);
-        dummyPageHolder().frameView().setFrameRect(frameRect);
-    }
-    std::unique_ptr<PaintController> paintController = PaintController::create();
-    {
-        GraphicsContext context(*paintController);
-        DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
-        selection().paintCaret(context, LayoutPoint());
-    }
-    paintController->commitNewDisplayItems();
-    EXPECT_EQ(startCount, layoutCount());
-}
-
 TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
 {
     Text* text = appendTextNode("Hello, World!");
