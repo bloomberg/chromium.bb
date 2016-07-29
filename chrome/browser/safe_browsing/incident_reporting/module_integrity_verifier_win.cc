@@ -139,7 +139,7 @@ int ExamineByteRangeDiff(uint8_t* disk_start,
     if (*disk_start == *mem_start)
       continue;
 
-    auto modification = state->module_state->add_modification();
+    auto* modification = state->module_state->add_modification();
     // Store the address at which the modification starts on disk, relative to
     // the beginning of the image.
     modification->set_file_offset(

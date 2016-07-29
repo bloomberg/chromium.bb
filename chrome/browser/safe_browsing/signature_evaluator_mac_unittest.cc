@@ -63,7 +63,7 @@ class MacSignatureEvaluatorTest : public testing::Test {
 
   bool SetupXattrs(const base::FilePath& path) {
     char sentinel = 'A';
-    for (const auto& xattr : xattrs) {
+    for (auto* xattr : xattrs) {
       std::vector<uint8_t> buf(10);
       memset(&buf[0], sentinel++, buf.size());
       if (setxattr(path.value().c_str(), xattr, &buf[0], buf.size(), 0, 0) != 0)
@@ -322,7 +322,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedBundleTest) {
   EXPECT_EQ(6, mainmenunib->signature().xattr_size());
   // Manually convert the global xattrs array to a vector
   std::vector<std::string> xattrs_known;
-  for (const auto& xattr : xattrs)
+  for (auto* xattr : xattrs)
     xattrs_known.push_back(xattr);
 
   std::vector<std::string> xattrs_seen;
