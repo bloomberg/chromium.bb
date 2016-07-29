@@ -56,6 +56,8 @@ class PlatformDisplay {
 
   static PlatformDisplay* Create(const PlatformDisplayInitParams& init_params);
 
+  virtual int64_t GetId() const = 0;
+
   virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
@@ -85,8 +87,6 @@ class PlatformDisplay {
   virtual void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) = 0;
 
-  virtual int64_t GetDisplayId() const = 0;
-
   virtual gfx::Rect GetBounds() const = 0;
 
   // Overrides factory for testing. Default (NULL) value indicates regular
@@ -111,6 +111,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
 
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;
+  int64_t GetId() const override;
   void SchedulePaint(const ServerWindow* window,
                      const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
@@ -125,7 +126,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   bool IsFramePending() const override;
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override;
-  int64_t GetDisplayId() const override;
   gfx::Rect GetBounds() const override;
 
  private:
@@ -150,7 +150,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   bool IsInHighContrastMode() override;
   const ViewportMetrics& GetViewportMetrics() override;
 
-  int64_t display_id_;
+  int64_t id_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ui::CursorLoader> cursor_loader_;

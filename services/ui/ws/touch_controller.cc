@@ -82,7 +82,7 @@ void TouchController::UpdateTouchTransforms() const {
     const Display* touch_display = *touch_displays.begin();
     const ui::TouchscreenDevice& touch_device = touch_devices[0];
 
-    int64_t touch_display_id = touch_display->GetPlatformDisplayId();
+    int64_t touch_display_id = touch_display->GetId();
     int touch_device_id = touch_device.id;
 
     if (touch_device_id != ui::InputDevice::kInvalidId) {

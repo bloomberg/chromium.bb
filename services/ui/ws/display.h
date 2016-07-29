@@ -66,7 +66,7 @@ class Display : public PlatformDisplayDelegate,
   // Initializes state that depends on the existence of a Display.
   void Init(std::unique_ptr<DisplayBinding> binding);
 
-  uint32_t id() const { return id_; }
+  int64_t GetId() const;
 
   DisplayManager* display_manager();
   const DisplayManager* display_manager() const;
@@ -90,9 +90,6 @@ class Display : public PlatformDisplayDelegate,
 
   ::display::Display::Rotation GetRotation() const;
   gfx::Size GetSize() const;
-
-  // Returns the id for the corresponding id.
-  int64_t GetPlatformDisplayId() const;
 
   WindowServer* window_server() { return window_server_; }
 
@@ -200,7 +197,6 @@ class Display : public PlatformDisplayDelegate,
   void OnWindowManagerWindowTreeFactoryReady(
       WindowManagerWindowTreeFactory* factory) override;
 
-  const uint32_t id_;
   std::unique_ptr<DisplayBinding> binding_;
   // Set once Init() has been called.
   bool init_called_ = false;

@@ -23,8 +23,7 @@ DisplayManager::DisplayManager(DisplayManagerDelegate* delegate,
     // 0 as invalid.
     : delegate_(delegate),
       user_id_tracker_(user_id_tracker),
-      next_root_id_(0),
-      next_display_id_(1) {
+      next_root_id_(0) {
   user_id_tracker_->AddObserver(this);
 }
 
@@ -127,13 +126,6 @@ WindowId DisplayManager::GetAndAdvanceNextRootId() {
   const uint16_t id = next_root_id_++;
   DCHECK_LT(id, next_root_id_);
   return RootWindowId(id);
-}
-
-uint32_t DisplayManager::GetAndAdvanceNextDisplayId() {
-  // TODO(sky): handle wrapping!
-  const uint32_t id = next_display_id_++;
-  DCHECK_LT(id, next_display_id_);
-  return id;
 }
 
 void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {

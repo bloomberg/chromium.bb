@@ -55,10 +55,10 @@ void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
 
   display_manager_observers_.ForAllPtrs(
       [this, &display](mojom::DisplayManagerObserver* observer) {
-        observer->OnDisplayRemoved(display->id());
+        observer->OnDisplayRemoved(display->GetId());
       });
   if (test_observer_)
-    test_observer_->OnDisplayRemoved(display->id());
+    test_observer_->OnDisplayRemoved(display->GetId());
 }
 
 void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {

@@ -245,6 +245,7 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
 
  private:
   int32_t* cursor_id_storage_;
+  int64_t next_display_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
 };

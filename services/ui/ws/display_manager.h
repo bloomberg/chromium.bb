@@ -68,8 +68,6 @@ class DisplayManager : public UserIdTrackerObserver {
   // as well as the root of WindowManagers).
   WindowId GetAndAdvanceNextRootId();
 
-  uint32_t GetAndAdvanceNextDisplayId();
-
   // Called when the AcceleratedWidget is available for |display|.
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
@@ -90,8 +88,6 @@ class DisplayManager : public UserIdTrackerObserver {
 
   // ID to use for next root node.
   ClientSpecificId next_root_id_;
-
-  uint32_t next_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

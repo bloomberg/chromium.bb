@@ -27,8 +27,8 @@ namespace {
 // Empty implementation of PlatformDisplay.
 class TestPlatformDisplay : public PlatformDisplay {
  public:
-  explicit TestPlatformDisplay(int32_t* cursor_id_storage)
-      : cursor_id_storage_(cursor_id_storage) {
+  explicit TestPlatformDisplay(int64_t id, int32_t* cursor_id_storage)
+      : id_(id), cursor_id_storage_(cursor_id_storage) {
     display_metrics_.bounds = gfx::Rect(0, 0, 400, 300);
     display_metrics_.device_scale_factor = 1.f;
   }
@@ -41,6 +41,7 @@ class TestPlatformDisplay : public PlatformDisplay {
     // is created).
     delegate->OnViewportMetricsChanged(ViewportMetrics(), display_metrics_);
   }
+  int64_t GetId() const override { return id_; }
   void SchedulePaint(const ServerWindow* window,
                      const gfx::Rect& bounds) override {}
   void SetViewportSize(const gfx::Size& size) override {}
@@ -59,12 +60,12 @@ class TestPlatformDisplay : public PlatformDisplay {
   bool IsFramePending() const override { return false; }
   void RequestCopyOfOutput(
       std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
-  int64_t GetDisplayId() const override { return 1; }
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
 
  private:
   ViewportMetrics display_metrics_;
 
+  int64_t id_;
   int32_t* cursor_id_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
@@ -110,7 +111,7 @@ TestPlatformDisplayFactory::TestPlatformDisplayFactory(
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 
 PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
-  return new TestPlatformDisplay(cursor_id_storage_);
+  return new TestPlatformDisplay(next_display_id_++, cursor_id_storage_);
 }
 
 // TestFrameGeneratorDelegate -------------------------------------------------

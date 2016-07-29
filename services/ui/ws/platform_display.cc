@@ -54,12 +54,11 @@ PlatformDisplay* PlatformDisplay::Create(
 
 DefaultPlatformDisplay::DefaultPlatformDisplay(
     const PlatformDisplayInitParams& init_params)
-    : display_id_(init_params.display_id),
+    : id_(init_params.display_id),
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
-      frame_generator_(new FrameGenerator(this,
-                                          init_params.surfaces_state)) {
+      frame_generator_(new FrameGenerator(this, init_params.surfaces_state)) {
   metrics_.bounds = init_params.display_bounds;
   // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.
 }
@@ -81,6 +80,10 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
 #endif
   platform_window_->SetBounds(metrics_.bounds);
   platform_window_->Show();
+}
+
+int64_t DefaultPlatformDisplay::GetId() const {
+  return id_;
 }
 
 DefaultPlatformDisplay::~DefaultPlatformDisplay() {
@@ -159,10 +162,6 @@ void DefaultPlatformDisplay::SetImeVisibility(bool visible) {
 
 bool DefaultPlatformDisplay::IsFramePending() const {
   return frame_generator_->is_frame_pending();
-}
-
-int64_t DefaultPlatformDisplay::GetDisplayId() const {
-  return display_id_;
 }
 
 gfx::Rect DefaultPlatformDisplay::GetBounds() const {

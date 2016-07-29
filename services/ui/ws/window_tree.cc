@@ -100,7 +100,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
 
   Display* display = GetDisplay(root);
   int64_t display_id =
-      display ? display->id() : display::Display::kInvalidDisplayID;
+      display ? display->GetId() : display::Display::kInvalidDisplayID;
   const ServerWindow* focused_window =
       display ? display->GetFocusedWindow() : nullptr;
   if (focused_window)
@@ -413,7 +413,7 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   roots_.insert(window);
   Display* display = GetDisplay(window);
   int64_t display_id =
-      display ? display->id() : display::Display::kInvalidDisplayID;
+      display ? display->GetId() : display::Display::kInvalidDisplayID;
   const bool drawn = window->parent() && window->parent()->IsDrawn();
   client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
                               display_id, drawn);

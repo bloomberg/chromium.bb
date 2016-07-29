@@ -33,8 +33,7 @@ namespace ws {
 
 Display::Display(WindowServer* window_server,
                  const PlatformDisplayInitParams& platform_display_init_params)
-    : id_(window_server->display_manager()->GetAndAdvanceNextDisplayId()),
-      window_server_(window_server),
+    : window_server_(window_server),
       platform_display_(PlatformDisplay::Create(platform_display_init_params)),
       last_cursor_(ui::kCursorNone) {
   platform_display_->Init(this);
@@ -73,6 +72,10 @@ void Display::Init(std::unique_ptr<DisplayBinding> binding) {
   InitWindowManagerDisplayRootsIfNecessary();
 }
 
+int64_t Display::GetId() const {
+  return platform_display_->GetId();
+}
+
 DisplayManager* Display::display_manager() {
   return window_server_->display_manager();
 }
@@ -94,7 +97,7 @@ mojom::WsDisplayPtr Display::ToWsDisplay() const {
 }
 
 ::display::Display Display::ToDisplay() const {
-  ::display::Display display(id_);
+  ::display::Display display(GetId());
 
   // TODO(sky): Display should know its origin.
   display.set_bounds(gfx::Rect(0, 0, root_->bounds().size().width(),
@@ -132,10 +135,6 @@ void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
 
 gfx::Size Display::GetSize() const {
   return root_->bounds().size();
-}
-
-int64_t Display::GetPlatformDisplayId() const {
-  return platform_display_->GetDisplayId();
 }
 
 ServerWindow* Display::GetRootWithId(const WindowId& id) {
