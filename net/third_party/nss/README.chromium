@@ -5,7 +5,12 @@ Security Critical: Yes
 License: MPL 2
 License File: LICENSE
 
-This directory includes a file from NSS's libssl from the hg repo at:
+This directory includes a file derived from NSS's libssl, from the hg repo at:
   https://hg.mozilla.org/projects/nss
 
 The snapshot was updated to the hg tag: NSS_3_23_RTM
+
+Local Modifications:
+Files are forked from Mozilla's because of the heavy adaptations necessary.
+Differences are using Chromium libraries instead of Mozilla's, matching the
+Chromium style, and returning the certificate chain built.

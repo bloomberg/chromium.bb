@@ -231,10 +231,10 @@ component("net") {
         "ssl/ssl_platform_key_nss.cc",
       ]
     } else {
-      # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
-      # libssl, but our bundled copy is not built in OpenSSL ports. Pull that
-      # file in directly.
-      sources += [ "third_party/nss/ssl/cmpcert.c" ]
+      sources += [
+        "third_party/nss/ssl/cmpcert.cc",
+        "third_party/nss/ssl/cmpcert.h",
+      ]
     }
 
     if (!use_nss_certs) {
