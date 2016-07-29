@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -485,34 +486,37 @@ std::vector<std::string> ReferenceSnapshotConsistency(std::string* inputs,
   return proof;
 }
 
-// Times out on Win7 test bot.  http://crbug.com/598406
-#if defined(OS_WIN)
-#define MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator \
-  DISABLED_VerifiesValidConsistencyProofsFromReferenceGenerator
-#else
-#define MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator \
-  VerifiesValidConsistencyProofsFromReferenceGenerator
-#endif
-TEST_F(CTLogVerifierTest,
-       MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator) {
-  std::vector<std::string> data;
-  for (int i = 0; i < 256; ++i)
-    data.push_back(std::string(1, i));
+class CTLogVerifierTestUsingReferenceGenerator
+    : public CTLogVerifierTest,
+      public ::testing::WithParamInterface<uint64_t> {};
 
-  std::vector<std::string> proof;
-  std::string root1, root2;
-  // More tests with reference proof generator.
-  for (size_t tree_size = 1; tree_size <= data.size() / 2; ++tree_size) {
-    root2 = ReferenceMerkleTreeHash(data.data(), tree_size);
-    // Repeat for each snapshot in range.
-    for (size_t snapshot = 1; snapshot <= tree_size; ++snapshot) {
-      proof =
-          ReferenceSnapshotConsistency(data.data(), tree_size, snapshot, true);
-      root1 = ReferenceMerkleTreeHash(data.data(), snapshot);
-      VerifierConsistencyCheck(snapshot, tree_size, root1, root2, proof);
-    }
+const uint64_t kReferenceTreeSize = 256;
+
+TEST_P(CTLogVerifierTestUsingReferenceGenerator,
+       VerifiesValidConsistencyProof) {
+  std::vector<std::string> data;
+  for (uint64_t i = 0; i < kReferenceTreeSize; ++i)
+    data.push_back(std::string(1, static_cast<char>(i)));
+
+  const uint64_t tree_size = GetParam();
+  const std::string tree_root = ReferenceMerkleTreeHash(data.data(), tree_size);
+
+  for (uint64_t snapshot = 1; snapshot <= tree_size; ++snapshot) {
+    SCOPED_TRACE(snapshot);
+    const std::string snapshot_root =
+        ReferenceMerkleTreeHash(data.data(), snapshot);
+    const std::vector<std::string> proof =
+        ReferenceSnapshotConsistency(data.data(), tree_size, snapshot, true);
+    VerifierConsistencyCheck(snapshot, tree_size, snapshot_root, tree_root,
+                             proof);
   }
 }
+
+// Test verification of consistency proofs between all tree sizes from 1 to 128.
+INSTANTIATE_TEST_CASE_P(RangeOfTreeSizesAndSnapshots,
+                        CTLogVerifierTestUsingReferenceGenerator,
+                        testing::Range(UINT64_C(1),
+                                       (kReferenceTreeSize / 2) + 1));
 
 }  // namespace
 
