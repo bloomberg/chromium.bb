@@ -335,7 +335,7 @@ void LevelDBWrapperImpl::CommitChanges() {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
     item->key = it.first.Clone();
-    if (item->value.is_null()) {
+    if (it.second.is_null()) {
       item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
