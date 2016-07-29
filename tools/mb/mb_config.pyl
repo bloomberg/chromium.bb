@@ -451,6 +451,47 @@
       'Windows Unit (DrMemory)': 'none',
     },
 
+    'chromium.memory.full': {
+      'Chromium Linux ChromeOS MSan Builder':
+        'swarming_gn_chromeos_msan_release_bot',
+      'Chromium Linux MSan Builder':
+        'swarming_msan_gn_release_bot',
+      'Chromium Linux TSan Builder':
+        'swarming_tsan_disable_nacl_gn_release_bot',
+      'Chromium Windows Builder (DrMemory x64)':
+        'gyp_drmemory_shared_release_x64',
+      'Chromium Windows Builder (DrMemory)': 'gyp_drmemory_shared_release_x86',
+      'Linux ChromeOS MSan Tests': 'none',
+      'Linux MSan Tests': 'none',
+      'Linux TSan Tests': 'none',
+      'Windows Browser (DrMemory full) (1)': 'none',
+      'Windows Browser (DrMemory full) (10)': 'none',
+      'Windows Browser (DrMemory full) (11)': 'none',
+      'Windows Browser (DrMemory full) (12)': 'none',
+      'Windows Browser (DrMemory full) (2)': 'none',
+      'Windows Browser (DrMemory full) (3)': 'none',
+      'Windows Browser (DrMemory full) (4)': 'none',
+      'Windows Browser (DrMemory full) (5)': 'none',
+      'Windows Browser (DrMemory full) (6)': 'none',
+      'Windows Browser (DrMemory full) (7)': 'none',
+      'Windows Browser (DrMemory full) (8)': 'none',
+      'Windows Browser (DrMemory full) (9)': 'none',
+      'Windows Content Browser (DrMemory full) (1)': 'none',
+      'Windows Content Browser (DrMemory full) (2)': 'none',
+      'Windows Content Browser (DrMemory full) (3)': 'none',
+      'Windows Content Browser (DrMemory full) (4)': 'none',
+      'Windows Content Browser (DrMemory full) (5)': 'none',
+      'Windows Content Browser (DrMemory full) (6)': 'none',
+      'Windows Content Browser (DrMemory)': 'none',
+      'Windows Unit (DrMemory full) (1)': 'none',
+      'Windows Unit (DrMemory full) (2)': 'none',
+      'Windows Unit (DrMemory full) (3)': 'none',
+      'Windows Unit (DrMemory full) (4)': 'none',
+      'Windows Unit (DrMemory full) (5)': 'none',
+      'Windows Unit (DrMemory x64)': 'none',
+      'Windows Unit (DrMemory)': 'none',
+    },
+
     'chromium.perf': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
       'Android Galaxy S5 Perf (1)': 'none',
