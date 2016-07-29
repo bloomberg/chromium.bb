@@ -35,6 +35,8 @@ static const int kTimeLimitMillis = 2000;
 static const int kNumWarmupRuns = 20;
 static const int kTimeCheckInterval = 10;
 
+enum class UseSingleSharedQuadState { YES, NO };
+
 class CCSerializationPerfTest : public testing::Test {
  protected:
   static bool ReadMessage(const IPC::Message* msg, CompositorFrame* frame) {
@@ -179,6 +181,33 @@ class CCSerializationPerfTest : public testing::Test {
                            "", test_name, count, "", true);
   }
 
+  static void RunCompositorFrameTest(const std::string& test_name,
+                                     uint32_t num_quads,
+                                     uint32_t num_passes,
+                                     UseSingleSharedQuadState single_sqs) {
+    CompositorFrame frame;
+    frame.delegated_frame_data.reset(new DelegatedFrameData);
+
+    for (uint32_t i = 0; i < num_passes; ++i) {
+      std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+      render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                          gfx::Transform());
+      for (uint32_t j = 0; j < num_quads; ++j) {
+        if (j == 0 || single_sqs == UseSingleSharedQuadState::NO)
+          render_pass->CreateAndAppendSharedQuadState();
+        const gfx::Rect bounds(100, 100, 100, 100);
+        const bool kForceAntiAliasingOff = true;
+        SolidColorDrawQuad* quad =
+            render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+        quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
+                     SK_ColorRED, kForceAntiAliasingOff);
+      }
+      frame.delegated_frame_data->render_pass_list.push_back(
+          std::move(render_pass));
+    }
+    RunTest(test_name, std::move(frame));
+  }
+
   static void RunTest(const std::string& test_name, CompositorFrame frame) {
     RunSerializationTestStructTraits(test_name, frame);
     RunDeserializationTestStructTraits(test_name, frame);
@@ -188,119 +217,38 @@ class CCSerializationPerfTest : public testing::Test {
 };
 
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_4000) {
-  CompositorFrame frame;
-
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
-  render_pass->CreateAndAppendSharedQuadState();
-  for (int i = 0; i < 4000; ++i) {
-    const gfx::Rect bounds(100, 100, 100, 100);
-    const bool kForceAntiAliasingOff = true;
-    SolidColorDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
-                 SK_ColorRED, kForceAntiAliasingOff);
-  }
-
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
-  frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-
-  RunTest("DelegatedFrame_ManyQuads_1_4000", std::move(frame));
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_4000", 4000, 1,
+                         UseSingleSharedQuadState::YES);
 }
 
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_100000) {
-  CompositorFrame frame;
-
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
-  render_pass->CreateAndAppendSharedQuadState();
-  for (int i = 0; i < 100000; ++i) {
-    const gfx::Rect bounds(100, 100, 100, 100);
-    const bool kForceAntiAliasingOff = true;
-    SolidColorDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
-                 SK_ColorRED, kForceAntiAliasingOff);
-  }
-
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
-  frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-
-  RunTest("DelegatedFrame_ManyQuads_1_100000", std::move(frame));
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_1_100000", 100000, 1,
+                         UseSingleSharedQuadState::YES);
 }
 
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
-  CompositorFrame frame;
-
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
-  for (int i = 0; i < 4000; ++i) {
-    const gfx::Rect bounds(100, 100, 100, 100);
-    const bool kForceAntiAliasingOff = true;
-    render_pass->CreateAndAppendSharedQuadState();
-    SolidColorDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
-                 SK_ColorRED, kForceAntiAliasingOff);
-  }
-
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
-  frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-
-  RunTest("DelegatedFrame_ManyQuads_4000_4000", std::move(frame));
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_4000_4000", 4000, 1,
+                         UseSingleSharedQuadState::NO);
 }
 
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
-  CompositorFrame frame;
-
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                      gfx::Transform());
-  for (int i = 0; i < 100000; ++i) {
-    render_pass->CreateAndAppendSharedQuadState();
-    const gfx::Rect bounds(100, 100, 100, 100);
-    const bool kForceAntiAliasingOff = true;
-    SolidColorDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
-                 SK_ColorRED, kForceAntiAliasingOff);
-  }
-
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
-  frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-
-  RunTest("DelegatedFrame_ManyQuads_100000_100000", std::move(frame));
+  RunCompositorFrameTest("DelegatedFrame_ManyQuads_100000_100000", 100000, 1,
+                         UseSingleSharedQuadState::NO);
 }
 
-TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_10000_100) {
-  CompositorFrame frame;
-  frame.delegated_frame_data.reset(new DelegatedFrameData);
+TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_5_100) {
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_5_100", 100, 5,
+                         UseSingleSharedQuadState::NO);
+}
 
-  for (int i = 0; i < 1000; ++i) {
-    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-    render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
-                        gfx::Transform());
-    for (int j = 0; j < 100; ++j) {
-      render_pass->CreateAndAppendSharedQuadState();
-      const gfx::Rect bounds(100, 100, 100, 100);
-      const bool kForceAntiAliasingOff = true;
-      SolidColorDrawQuad* quad =
-          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
-                   SK_ColorRED, kForceAntiAliasingOff);
-    }
-    frame.delegated_frame_data->render_pass_list.push_back(
-        std::move(render_pass));
-  }
+TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_10_500) {
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10_500", 500, 10,
+                         UseSingleSharedQuadState::NO);
+}
 
-  RunTest("DelegatedFrame_ManyRenderPasses_10000_100", std::move(frame));
+TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_1000_100) {
+  RunCompositorFrameTest("DelegatedFrame_ManyRenderPasses_10000_100", 100, 1000,
+                         UseSingleSharedQuadState::NO);
 }
 
 }  // namespace
