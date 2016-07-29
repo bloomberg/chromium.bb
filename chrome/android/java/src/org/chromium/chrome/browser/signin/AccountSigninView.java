@@ -250,7 +250,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         mProfileData.update();
 
         // Determine how the accounts have changed. Each list should only have unique elements.
-        if (oldAccountNames == null) return;
+        if (oldAccountNames == null || oldAccountNames.isEmpty()) return;
 
         if (!mAccountNames.get(accountToSelect).equals(oldAccountNames.get(oldSelectedAccount))) {
             // Any dialogs that may have been showing are now invalid (they were created for the
