@@ -689,7 +689,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
     std::vector<const Extension*>& extensions =
         title_to_extensions_map[sorted_menu_titles[i]];
-    for (const auto& extension : extensions) {
+    for (auto* extension : extensions) {
       MenuItem::ExtensionKey extension_key(extension->id());
       extension_items_.AppendExtensionItems(extension_key,
                                             printable_selection_text, &index,
