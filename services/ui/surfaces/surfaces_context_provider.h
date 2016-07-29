@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/context_provider.h"
+#include "services/ui/gles2/command_buffer_local_client.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 
@@ -36,12 +37,16 @@ namespace ui {
 
 class CommandBufferDriver;
 class CommandBufferImpl;
+class CommandBufferLocal;
+class GpuState;
 class SurfacesContextProviderDelegate;
 
 class SurfacesContextProvider : public cc::ContextProvider,
+                                public CommandBufferLocalClient,
                                 public base::NonThreadSafe {
  public:
-  explicit SurfacesContextProvider(gfx::AcceleratedWidget widget);
+  SurfacesContextProvider(gfx::AcceleratedWidget widget,
+                          const scoped_refptr<GpuState>& state);
 
   void SetDelegate(SurfacesContextProviderDelegate* delegate);
 
@@ -66,6 +71,11 @@ class SurfacesContextProvider : public cc::ContextProvider,
   ~SurfacesContextProvider() override;
 
  private:
+  // CommandBufferLocalClient:
+  void UpdateVSyncParameters(const base::TimeTicks& timebase,
+                             const base::TimeDelta& interval) override;
+  void GpuCompletedSwapBuffers(gfx::SwapResult result) override;
+
   // Callbacks for CommandBufferProxyImpl:
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
@@ -73,6 +83,8 @@ class SurfacesContextProvider : public cc::ContextProvider,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
+
+  bool use_chrome_gpu_command_buffer_;
 
   // From GLES2Context:
   // Initialized in BindToCurrentThread.
@@ -85,6 +97,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
 
   SurfacesContextProviderDelegate* delegate_;
   gfx::AcceleratedWidget widget_;
+  CommandBufferLocal* command_buffer_local_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   gl::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
 

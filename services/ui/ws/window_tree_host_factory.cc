@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/window_tree_host_factory.h"
 
+#include "services/ui/gles2/gpu_state.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"

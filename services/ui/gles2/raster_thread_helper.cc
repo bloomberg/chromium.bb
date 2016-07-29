@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/raster_thread_helper.h"
+#include "services/ui/gles2/raster_thread_helper.h"
 
 #include "base/logging.h"
 #include "base/threading/simple_thread.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 
-namespace ui {
+namespace gles2 {
 
 RasterThreadHelper::RasterThreadHelper()
     : task_graph_runner_(new cc::SingleThreadTaskGraphRunner) {
@@ -24,4 +24,4 @@ cc::TaskGraphRunner* RasterThreadHelper::task_graph_runner() {
   return task_graph_runner_.get();
 }
 
-}  // namespace ui
+}  // namespace gles2

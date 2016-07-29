@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_RASTER_THREAD_HELPER_H_
-#define SERVICES_UI_PUBLIC_CPP_RASTER_THREAD_HELPER_H_
+#ifndef SERVICES_UI_GLES2_RASTER_THREAD_HELPER_H_
+#define SERVICES_UI_GLES2_RASTER_THREAD_HELPER_H_
 
 #include <memory>
 
@@ -14,7 +14,7 @@ class TaskGraphRunner;
 class SingleThreadTaskGraphRunner;
 }
 
-namespace ui {
+namespace gles2 {
 
 class RasterThreadHelper {
  public:
@@ -29,6 +29,6 @@ class RasterThreadHelper {
   DISALLOW_COPY_AND_ASSIGN(RasterThreadHelper);
 };
 
-}  // namespace ui
+}  // namespace gles2
 
-#endif  // SERVICES_UI_PUBLIC_CPP_RASTER_THREAD_HELPER_H_
+#endif  // SERVICES_UI_GLES2_RASTER_THREAD_HELPER_H_

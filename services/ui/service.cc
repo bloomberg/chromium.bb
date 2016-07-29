@@ -20,6 +20,7 @@
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/platform_screen.h"
+#include "services/ui/gles2/gpu_impl.h"
 #include "services/ui/gpu/gpu_service_impl.h"
 #include "services/ui/gpu/gpu_service_mus.h"
 #include "services/ui/ws/accessibility_manager.h"
@@ -52,6 +53,7 @@
 
 using shell::Connection;
 using mojo::InterfaceRequest;
+using ui::mojom::Gpu;
 using ui::mojom::WindowServerTest;
 using ui::mojom::WindowTreeHostFactory;
 
@@ -79,6 +81,13 @@ struct Service::UserState {
 
 Service::Service()
     : test_config_(false),
+// TODO(penghuang): Kludge: Use mojo command buffer when running on
+// Windows since chrome command buffer breaks unit tests
+#if defined(OS_WIN)
+      use_chrome_gpu_command_buffer_(false),
+#else
+      use_chrome_gpu_command_buffer_(true),
+#endif
       platform_screen_(display::PlatformScreen::Create()),
       weak_ptr_factory_(this) {
 }
@@ -88,6 +97,9 @@ Service::~Service() {
   // WindowServer (or more correctly its Displays) may have state that needs to
   // be destroyed before GpuState as well.
   window_server_.reset();
+
+  if (platform_display_init_params_.gpu_state)
+    platform_display_init_params_.gpu_state->StopThreads();
 }
 
 void Service::InitializeResources(shell::Connector* connector) {
@@ -140,6 +152,15 @@ void Service::OnStart(const shell::Identity& identity) {
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseTestConfig);
+// TODO(penghuang): Kludge: use mojo command buffer when running on Windows
+// since Chrome command buffer breaks unit tests
+#if defined(OS_WIN)
+  use_chrome_gpu_command_buffer_ = false;
+#else
+  use_chrome_gpu_command_buffer_ =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMojoGpuCommandBufferInMus);
+#endif
 #if defined(USE_X11)
   XInitThreads();
   if (test_config_)
@@ -181,7 +202,13 @@ void Service::OnStart(const shell::Identity& identity) {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  GpuServiceMus::GetInstance();
+  if (use_chrome_gpu_command_buffer_) {
+    GpuServiceMus::GetInstance();
+  } else {
+    // TODO(rjkroege): It is possible that we might want to generalize the
+    // GpuState object.
+    platform_display_init_params_.gpu_state = new GpuState();
+  }
 
   // Gpu must be running before the PlatformScreen can be initialized.
   platform_screen_->Init();
@@ -199,7 +226,6 @@ bool Service::OnConnect(Connection* connection) {
   connection->AddInterface<mojom::AccessibilityManager>(this);
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
-  connection->AddInterface<mojom::GpuService>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
   connection->AddInterface<mojom::UserActivityMonitor>(this);
   connection->AddInterface<WindowTreeHostFactory>(this);
@@ -207,6 +233,12 @@ bool Service::OnConnect(Connection* connection) {
   connection->AddInterface<mojom::WindowTreeFactory>(this);
   if (test_config_)
     connection->AddInterface<WindowServerTest>(this);
+
+  if (use_chrome_gpu_command_buffer_) {
+    connection->AddInterface<mojom::GpuService>(this);
+  } else {
+    connection->AddInterface<Gpu>(this);
+  }
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
@@ -282,7 +314,17 @@ void Service::Create(const shell::Identity& remote_identity,
 }
 
 void Service::Create(const shell::Identity& remote_identity,
+                     mojom::GpuRequest request) {
+  if (use_chrome_gpu_command_buffer_)
+    return;
+  DCHECK(platform_display_init_params_.gpu_state);
+  new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
+}
+
+void Service::Create(const shell::Identity& remote_identity,
                      mojom::GpuServiceRequest request) {
+  if (!use_chrome_gpu_command_buffer_)
+    return;
   new GpuServiceImpl(std::move(request));
 }
 

@@ -39,6 +39,7 @@ ui::Window* CreateMusWindow(BrowserView* browser_view) {
 BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetMus(browser_frame,
+                             views::WindowManagerConnection::Get()->connector(),
                              CreateMusWindow(browser_view),
                              ui::mojom::SurfaceType::DEFAULT),
       browser_view_(browser_view) {}

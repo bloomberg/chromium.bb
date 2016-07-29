@@ -7,6 +7,10 @@
 namespace ui {
 namespace switches {
 
+// Use mojo GPU command buffer instead of Chrome GPU command buffer.
+const char kUseMojoGpuCommandBufferInMus[] =
+    "use-mojo-gpu-command-buffer-in-mus";
+
 // Initializes X11 in threaded mode, and sets the |override_redirect| flag when
 // creating X11 windows. Also, exposes the WindowServerTest interface to clients
 // when launched with this flag.

@@ -21,6 +21,7 @@ class RenderPass;
 namespace ui {
 
 class DisplayCompositor;
+class GpuState;
 class SurfacesState;
 
 namespace ws {
@@ -37,6 +38,7 @@ class ServerWindow;
 class FrameGenerator {
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate,
+                 scoped_refptr<GpuState> gpu_state,
                  scoped_refptr<SurfacesState> surfaces_state);
   virtual ~FrameGenerator();
 
@@ -74,6 +76,7 @@ class FrameGenerator {
                       float opacity);
 
   FrameGeneratorDelegate* delegate_;
+  scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
 
   std::unique_ptr<DisplayCompositor> display_compositor_;

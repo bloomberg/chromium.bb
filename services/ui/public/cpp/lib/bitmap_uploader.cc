@@ -38,12 +38,13 @@ BitmapUploader::BitmapUploader(Window* window)
 BitmapUploader::~BitmapUploader() {
 }
 
-void BitmapUploader::Init() {
+void BitmapUploader::Init(shell::Connector* connector) {
   surface_ = window_->RequestSurface(mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
   surface_->set_client(this);
 
-  gles2_context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>());
+  gles2_context_ = GLES2Context::CreateOffscreenContext(
+      std::vector<int32_t>(), connector);
   // CreateOffscreenContext() may return null.
 }
 

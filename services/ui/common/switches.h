@@ -12,6 +12,7 @@ namespace switches {
 
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char MUS_COMMON_EXPORT kUseMojoGpuCommandBufferInMus[];
 extern const char MUS_COMMON_EXPORT kUseTestConfig[];
 
 }  // namespace switches

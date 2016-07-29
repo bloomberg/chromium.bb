@@ -34,6 +34,8 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
     return gpu_memory_buffer_manager_.get();
   }
 
+  static bool UseChromeGpuCommandBuffer();
+
   // The GpuService has to be initialized in the main thread before establishing
   // the gpu channel.
   static void Initialize(shell::Connector* connector);

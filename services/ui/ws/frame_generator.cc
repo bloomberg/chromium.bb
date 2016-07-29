@@ -21,8 +21,10 @@ namespace ui {
 namespace ws {
 
 FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
+                               scoped_refptr<GpuState> gpu_state,
                                scoped_refptr<SurfacesState> surfaces_state)
     : delegate_(delegate),
+      gpu_state_(gpu_state),
       surfaces_state_(surfaces_state),
       draw_timer_(false, false),
       weak_factory_(this) {
@@ -44,8 +46,9 @@ void FrameGenerator::RequestRedraw(const gfx::Rect& redraw_region) {
 void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   if (widget != gfx::kNullAcceleratedWidget) {
-    display_compositor_.reset(new DisplayCompositor(
-        base::ThreadTaskRunnerHandle::Get(), widget, surfaces_state_));
+    display_compositor_.reset(
+        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget,
+                              gpu_state_, surfaces_state_));
   }
 }
 

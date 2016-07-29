@@ -20,6 +20,10 @@ namespace ui {
 class Window;
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace views {
 
 // SurfaceBinding is responsible for managing the connections necessary to
@@ -29,7 +33,9 @@ namespace views {
 // connection.
 class VIEWS_MUS_EXPORT SurfaceBinding {
  public:
-  SurfaceBinding(ui::Window* window, ui::mojom::SurfaceType surface_type);
+  SurfaceBinding(shell::Connector* connector,
+                 ui::Window* window,
+                 ui::mojom::SurfaceType surface_type);
   ~SurfaceBinding();
 
   // Creates an OutputSurface that renders to the Window supplied to the

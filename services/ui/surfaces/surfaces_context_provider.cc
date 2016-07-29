@@ -18,38 +18,60 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/common/switches.h"
+#include "services/ui/gles2/command_buffer_driver.h"
+#include "services/ui/gles2/command_buffer_impl.h"
+#include "services/ui/gles2/command_buffer_local.h"
+#include "services/ui/gles2/gpu_state.h"
 #include "services/ui/gpu/gpu_service_mus.h"
 #include "services/ui/surfaces/surfaces_context_provider_delegate.h"
 #include "ui/gl/gpu_preference.h"
 
 namespace ui {
 
-SurfacesContextProvider::SurfacesContextProvider(gfx::AcceleratedWidget widget)
-    : delegate_(nullptr), widget_(widget) {
-  GpuServiceMus* service = GpuServiceMus::GetInstance();
-  gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
-  gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
-  gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  attributes.lose_context_when_out_of_memory = true;
-  GURL active_url;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
-  command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
-      service->gpu_channel_local(), widget, shared_command_buffer, stream_id,
-      stream_priority, attributes, active_url, task_runner);
-  command_buffer_proxy_impl_->SetSwapBuffersCompletionCallback(
-      base::Bind(&SurfacesContextProvider::OnGpuSwapBuffersCompleted,
-                 base::Unretained(this)));
-  command_buffer_proxy_impl_->SetUpdateVSyncParametersCallback(
-      base::Bind(&SurfacesContextProvider::OnUpdateVSyncParameters,
-                 base::Unretained(this)));
+SurfacesContextProvider::SurfacesContextProvider(
+    gfx::AcceleratedWidget widget,
+    const scoped_refptr<GpuState>& state)
+    : use_chrome_gpu_command_buffer_(false),
+      delegate_(nullptr),
+      widget_(widget),
+      command_buffer_local_(nullptr) {
+// TODO(penghuang): Kludge: Use mojo command buffer when running on Windows
+// since Chrome command buffer breaks unit tests
+#if defined(OS_WIN)
+  use_chrome_gpu_command_buffer_ = false;
+#else
+  use_chrome_gpu_command_buffer_ =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMojoGpuCommandBufferInMus);
+#endif
+  if (!use_chrome_gpu_command_buffer_) {
+    command_buffer_local_ = new CommandBufferLocal(this, widget_, state);
+  } else {
+    GpuServiceMus* service = GpuServiceMus::GetInstance();
+    gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
+    gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
+    gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
+    attributes.lose_context_when_out_of_memory = true;
+    GURL active_url;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        base::ThreadTaskRunnerHandle::Get();
+    command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
+        service->gpu_channel_local(), widget, shared_command_buffer, stream_id,
+        stream_priority, attributes, active_url, task_runner);
+    command_buffer_proxy_impl_->SetSwapBuffersCompletionCallback(
+        base::Bind(&SurfacesContextProvider::OnGpuSwapBuffersCompleted,
+                   base::Unretained(this)));
+    command_buffer_proxy_impl_->SetUpdateVSyncParametersCallback(
+        base::Bind(&SurfacesContextProvider::OnUpdateVSyncParameters,
+                   base::Unretained(this)));
+  }
 }
 
 void SurfacesContextProvider::SetDelegate(
@@ -67,10 +89,19 @@ bool SurfacesContextProvider::BindToCurrentThread() {
   // SurfacesContextProvider should always live on the same thread as the
   // Window Manager.
   DCHECK(CalledOnValidThread());
-  if (!command_buffer_proxy_impl_)
-    return false;
-  gpu::GpuControl* gpu_control = command_buffer_proxy_impl_.get();
-  gpu::CommandBuffer* command_buffer = command_buffer_proxy_impl_.get();
+  gpu::GpuControl* gpu_control = nullptr;
+  gpu::CommandBuffer* command_buffer = nullptr;
+  if (!use_chrome_gpu_command_buffer_) {
+    if (!command_buffer_local_->Initialize())
+      return false;
+    gpu_control = command_buffer_local_;
+    command_buffer = command_buffer_local_;
+  } else {
+    if (!command_buffer_proxy_impl_)
+      return false;
+    gpu_control = command_buffer_proxy_impl_.get();
+    command_buffer = command_buffer_proxy_impl_.get();
+  }
 
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer));
   constexpr gpu::SharedMemoryLimits default_limits;
@@ -132,6 +163,23 @@ SurfacesContextProvider::~SurfacesContextProvider() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_proxy_impl_.reset();
+  if (command_buffer_local_) {
+    command_buffer_local_->Destroy();
+    command_buffer_local_ = nullptr;
+  }
+}
+
+void SurfacesContextProvider::UpdateVSyncParameters(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  if (delegate_)
+    delegate_->OnVSyncParametersUpdated(timebase, interval);
+}
+
+void SurfacesContextProvider::GpuCompletedSwapBuffers(gfx::SwapResult result) {
+  if (!swap_buffers_completion_callback_.is_null()) {
+    swap_buffers_completion_callback_.Run(result);
+  }
 }
 
 void SurfacesContextProvider::OnGpuSwapBuffersCompleted(

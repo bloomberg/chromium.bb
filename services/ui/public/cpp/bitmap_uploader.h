@@ -18,6 +18,10 @@
 #include "services/ui/public/cpp/window_surface_client.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 
+namespace shell {
+class Connector;
+}
+
 namespace ui {
 class GLES2Context;
 
@@ -30,7 +34,7 @@ class BitmapUploader : public WindowSurfaceClient {
   explicit BitmapUploader(Window* window);
   ~BitmapUploader() override;
 
-  void Init();
+  void Init(shell::Connector* connector);
 
   // Sets the color which is RGBA.
   void SetColor(uint32_t color);

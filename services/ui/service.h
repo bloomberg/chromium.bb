@@ -68,6 +68,7 @@ class Service
       public shell::InterfaceFactory<mojom::AccessibilityManager>,
       public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
+      public shell::InterfaceFactory<mojom::Gpu>,
       public shell::InterfaceFactory<mojom::GpuService>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
       public shell::InterfaceFactory<mojom::UserActivityMonitor>,
@@ -119,6 +120,10 @@ class Service
   void Create(const shell::Identity& remote_identity,
               mojom::DisplayManagerRequest request) override;
 
+  // shell::InterfaceFactory<mojom::Gpu> implementation.
+  void Create(const shell::Identity& remote_identity,
+              mojom::GpuRequest request) override;
+
   // shell::InterfaceFactory<mojom::GpuService> implementation.
   void Create(const shell::Identity& remote_identity,
               mojom::GpuServiceRequest request) override;
@@ -167,6 +172,7 @@ class Service
   InputDeviceServer input_device_server_;
 
   bool test_config_;
+  bool use_chrome_gpu_command_buffer_;
 #if defined(USE_OZONE)
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif

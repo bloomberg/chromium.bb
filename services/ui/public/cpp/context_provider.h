@@ -24,7 +24,7 @@ class GLES2Context;
 
 class ContextProvider : public cc::ContextProvider {
  public:
-  ContextProvider();
+  explicit ContextProvider(shell::Connector* connector);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -43,6 +43,7 @@ class ContextProvider : public cc::ContextProvider {
   ~ContextProvider() override;
 
  private:
+  std::unique_ptr<shell::Connector> connector_;
   std::unique_ptr<GLES2Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);

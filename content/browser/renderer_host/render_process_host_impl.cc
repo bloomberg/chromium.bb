@@ -235,6 +235,10 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#include "services/ui/common/switches.h"  // nogncheck
+#endif
+
 #if defined(USE_MINIKIN_HYPHENATION)
 #include "content/browser/hyphenation/hyphenation_impl.h"
 #endif
@@ -1581,6 +1585,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     switches::kUseMusInRenderer,
+    ui::switches::kUseMojoGpuCommandBufferInMus,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,

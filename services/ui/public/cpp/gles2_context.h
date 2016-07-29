@@ -22,6 +22,10 @@ class GLES2CmdHelper;
 }
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace ui {
 
 class CommandBufferClientImpl;
@@ -35,11 +39,13 @@ class GLES2Context {
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
   static std::unique_ptr<GLES2Context> CreateOffscreenContext(
-      const std::vector<int32_t>& attribs);
+      const std::vector<int32_t>& attribs,
+      shell::Connector* connector);
 
  private:
   GLES2Context();
-  bool Initialize(const std::vector<int32_t>& attribs);
+  bool Initialize(const std::vector<int32_t>& attribs,
+                  shell::Connector* connector);
 
   std::unique_ptr<CommandBufferClientImpl> command_buffer_client_impl_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
