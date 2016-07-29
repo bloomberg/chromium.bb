@@ -185,16 +185,6 @@ AutomationPredicate.leafOrStaticText = function(node) {
 };
 
 /**
- * Matches against all nodes that have selectable text.
- * @param {!AutomationNode} node
- * @return {boolean}
- */
-AutomationPredicate.text = function(node) {
-  return node.role == RoleType.staticText ||
-      node.role == RoleType.lineBreak;
-};
-
-/**
  * Matches against nodes visited during object navigation. An object as
  * defined below, are all nodes that are focusable or static text. When used in
  * tree walking, it should visit all nodes that tab traversal would as well as

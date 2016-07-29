@@ -412,12 +412,12 @@ TEST_F('CursorsTest', 'InlineElementOffset', function() {
     var cur = new cursors.Cursor(ofSelectionNode, 0);
     assertEquals('of selection', cur.selectionNode_.name);
     assertEquals(RoleType.staticText, cur.selectionNode_.role);
-    assertEquals(13, cur.selectionIndex_);
+    assertEquals(0, cur.selectionIndex_);
 
     var curIntoO = new cursors.Cursor(ofSelectionNode, 1);
     assertEquals('of selection', curIntoO.selectionNode_.name);
     assertEquals(RoleType.staticText, curIntoO.selectionNode_.role);
-    assertEquals(14, curIntoO.selectionIndex_);
+    assertEquals(1, curIntoO.selectionIndex_);
 
     var oRange = new cursors.Range(cur, curIntoO);
     oRange.select();

@@ -165,29 +165,17 @@ cursors.Cursor.prototype = {
         adjustedIndex += sibling.name.length;
         sibling = sibling.previousSibling;
       }
-    }
 
-    if (this.selectionNode_ && AutomationPredicate.text(this.selectionNode_)) {
       // Work around Blink's somewhat unexpected offset calculation which
-      // requires us to consider all previous siblings of the parenting node of
-      // the static text.
-
-      var parent = this.selectionNode_.parent;
-      if (parent) {
-        // Grab all of the text nodes and accumulate their lengths up to
-        // but not including the current static text node.
-        var texts = [];
-        AutomationUtil.findNodePre(parent, Dir.FORWARD, function(node) {
-          if (AutomationPredicate.text(node))
-            texts.push(node);
-          return false;
-        });
-
-        for (var i = 0; i < texts.length; i++) {
-          if (texts[i] == this.selectionNode_)
-            break;
-
-          adjustedIndex += texts[i].name.length;
+      // requires us to consider all previous siblings of the parenting static
+      // text.
+      var parent = this.node.parent;
+      if (parent.role == RoleType.staticText) {
+        sibling = parent.previousSibling;
+        while (sibling) {
+          if (sibling.name)
+            adjustedIndex += sibling.name.length;
+          sibling = sibling.previousSibling;
         }
       }
     } else if (this.index_ == cursors.NODE_INDEX) {
@@ -601,10 +589,19 @@ cursors.Range.prototype = {
     if (!startNode || !endNode)
       return;
 
-    // Only allow selections inside of the same web tree.
-    if (startNode.root &&
-        startNode.root.role == RoleType.rootWebArea &&
-        startNode.root === endNode.root) {
+    // Find the most common root.
+    var uniqueAncestors = AutomationUtil.getUniqueAncestors(startNode, endNode);
+    var mcr = startNode.root;
+    if (uniqueAncestors) {
+      var common = uniqueAncestors.pop().parent;
+      if (common)
+        mcr = common.root;
+    }
+
+    if (!mcr || mcr.role == RoleType.desktop)
+      return;
+
+    if (mcr === startNode.root && mcr === endNode.root) {
       var startIndex = this.start.selectionIndex_;
 
       // We want to adjust to select the entire node for node offsets;

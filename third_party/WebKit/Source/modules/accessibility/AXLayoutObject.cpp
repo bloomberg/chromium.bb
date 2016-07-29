@@ -1975,6 +1975,37 @@ AXLayoutObject* AXLayoutObject::getUnignoredObjectFromNode(Node& node) const
 // Modify or take an action on an object.
 //
 
+// Convert from an accessible object and offset to a VisiblePosition.
+static VisiblePosition toVisiblePosition(AXObject* obj, int offset)
+{
+    // First walk up until we find an accessible object with an associated node.
+    AXObject* runner = obj;
+    Node* node = nullptr;
+    while (runner && !node) {
+        node = runner->getNode();
+        runner = runner->parentObject();
+    }
+
+    if (!node)
+        return VisiblePosition();
+
+    // If it's not a text node, no conversion is necessary, just create a VisiblePosition
+    // with this node and offset.
+    if (!node->isTextNode())
+        return createVisiblePosition(Position(node, offset));
+
+    // If it is a text node, we need to call some utility functions that use a TextIterator
+    // to walk the characters of the node and figure out the position corresponding to the
+    // visible character at position |offset|.
+    ContainerNode* parent = node->parentNode();
+    if (!parent)
+        return VisiblePosition();
+
+    VisiblePosition nodePosition = blink::visiblePositionBeforeNode(*node);
+    int nodeIndex = blink::indexForVisiblePosition(nodePosition, parent);
+    return blink::visiblePositionForIndex(nodeIndex + offset, parent);
+}
+
 void AXLayoutObject::setSelection(const AXRange& selection)
 {
     if (!getLayoutObject() || !selection.isValid())
@@ -2006,21 +2037,6 @@ void AXLayoutObject::setSelection(const AXRange& selection)
         return;
     }
 
-    Node* anchorNode = nullptr;
-    while (anchorObject && !anchorNode) {
-        anchorNode = anchorObject->getNode();
-        anchorObject = anchorObject->parentObject();
-    }
-
-    Node* focusNode = nullptr;
-    while (focusObject && !focusNode) {
-        focusNode = focusObject->getNode();
-        focusObject = focusObject->parentObject();
-    }
-
-    if (!anchorNode || !focusNode)
-        return;
-
     LocalFrame* frame = getLayoutObject()->frame();
     if (!frame)
         return;
@@ -2032,12 +2048,11 @@ void AXLayoutObject::setSelection(const AXRange& selection)
 
     // Set the selection based on visible positions, because the offsets in accessibility nodes
     // are based on visible indexes, which often skips redundant whitespace, for example.
-    VisiblePosition anchorVisiblePosition = anchorNode->isTextNode()
-        ? blink::visiblePositionForIndex(selection.anchorOffset, anchorNode->parentNode())
-        : createVisiblePosition(Position(anchorNode, selection.anchorOffset));
-    VisiblePosition focusVisiblePosition = focusNode->isTextNode()
-        ? blink::visiblePositionForIndex(selection.focusOffset, focusNode->parentNode())
-        : createVisiblePosition(Position(focusNode, selection.focusOffset));
+    VisiblePosition anchorVisiblePosition = toVisiblePosition(anchorObject, selection.anchorOffset);
+    VisiblePosition focusVisiblePosition = toVisiblePosition(focusObject, selection.focusOffset);
+    if (anchorVisiblePosition.isNull() || focusVisiblePosition.isNull())
+        return;
+
     frame->selection().setSelection(VisibleSelection(anchorVisiblePosition, focusVisiblePosition));
 }
 
