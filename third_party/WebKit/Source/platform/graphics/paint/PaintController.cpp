@@ -139,6 +139,15 @@ void PaintController::removeLastDisplayItem()
         if (!indices.isEmpty() && indices.last() == (m_newDisplayItemList.size() - 1))
             indices.removeLast();
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() && isCheckingUnderInvalidation()) {
+        if (m_skippedProbableUnderInvalidationCount) {
+            --m_skippedProbableUnderInvalidationCount;
+        } else {
+            DCHECK(m_underInvalidationCheckingBegin);
+            --m_underInvalidationCheckingBegin;
+        }
+    }
 #endif
     m_newDisplayItemList.removeLast();
 
@@ -314,9 +323,9 @@ size_t PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& i
 
 #ifndef NDEBUG
     showDebugData();
-    LOG(ERROR) << id.client.debugName() << ":" << DisplayItem::typeAsDebugString(id.type) << " not found in current display item list";
+    LOG(ERROR) << id.client.debugName() << ":" << DisplayItem::typeAsDebugString(id.type);
 #endif
-    NOTREACHED();
+    NOTREACHED() << "Can't find cached display item";
     // We did not find the cached display item. This should be impossible, but may occur if there is a bug
     // in the system, such as under-invalidation, incorrect cache checking or duplicate display ids.
     // In this case, the caller should fall back to repaint the display item.
@@ -335,11 +344,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         DCHECK(!isCheckingUnderInvalidation());
         m_underInvalidationCheckingBegin = cachedItemIndex;
-#ifndef NDEBUG
-        m_underInvalidationMessagePrefix = "(In CachedSubsequence of " + cachedItem->clientDebugString() + ")";
-#else
-        m_underInvalidationMessagePrefix = "(In CachedSubsequence)";
-#endif
+        m_underInvalidationMessagePrefix = "(In cached subsequence of " + cachedItem->client().debugName() + ")";
     }
 #endif
 
@@ -401,6 +406,7 @@ void PaintController::resetCurrentListIndices()
 #if DCHECK_IS_ON()
     m_underInvalidationCheckingBegin = 0;
     m_underInvalidationCheckingEnd = 0;
+    m_skippedProbableUnderInvalidationCount = 0;
 #endif
 }
 
@@ -504,24 +510,24 @@ void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& dis
 
 #if DCHECK_IS_ON()
 
-void PaintController::showUnderInvalidationError(const char* reason, const DisplayItem& newItem, const DisplayItem& oldItem) const
+void PaintController::showUnderInvalidationError(const char* reason, const DisplayItem& newItem, const DisplayItem* oldItem) const
 {
     LOG(ERROR) << m_underInvalidationMessagePrefix << " " << reason;
 #ifndef NDEBUG
     LOG(ERROR) << "New display item: " << newItem.asDebugString();
-    LOG(ERROR) << "Old display item: " << oldItem.asDebugString();
+    LOG(ERROR) << "Old display item: " << (oldItem ? oldItem->asDebugString() : "None");
 #else
     LOG(ERROR) << "Run debug build to get more details.";
 #endif
     LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
-    if (newItem.isDrawing()) {
-        RefPtr<const SkPicture> newPicture = static_cast<const DrawingDisplayItem&>(newItem).picture();
-        RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(oldItem).picture();
-        LOG(INFO) << "new picture:\n" << (newPicture ? pictureAsDebugString(newPicture.get()) : "None");
-        LOG(INFO) << "old picture:\n" << (oldPicture ? pictureAsDebugString(oldPicture.get()) : "None");
-    }
+    const SkPicture* newPicture = newItem.isDrawing() ? static_cast<const DrawingDisplayItem&>(newItem).picture() : nullptr;
+    const SkPicture* oldPicture = oldItem && oldItem->isDrawing() ? static_cast<const DrawingDisplayItem*>(oldItem)->picture() : nullptr;
+    LOG(INFO) << "new picture:\n" << (newPicture ? pictureAsDebugString(newPicture) : "None");
+    LOG(INFO) << "old picture:\n" << (oldPicture ? pictureAsDebugString(oldPicture) : "None");
+
+    showDebugData();
 #endif // NDEBUG
 }
 
@@ -533,16 +539,41 @@ void PaintController::checkUnderInvalidation()
         return;
 
     const DisplayItem& newItem = m_newDisplayItemList.last();
-    const DisplayItem& oldItem = m_currentPaintArtifact.getDisplayItemList()[m_underInvalidationCheckingBegin++];
+    size_t oldItemIndex = m_underInvalidationCheckingBegin + m_skippedProbableUnderInvalidationCount;
+    const DisplayItem* oldItem = oldItemIndex < m_currentPaintArtifact.getDisplayItemList().size() ? &m_currentPaintArtifact.getDisplayItemList()[oldItemIndex] : nullptr;
 
     if (newItem.isCacheable() && !clientCacheIsValid(newItem.client())) {
         showUnderInvalidationError("under-invalidation of PaintLayer: invalidated in cached subsequence", newItem, oldItem);
         NOTREACHED();
     }
-    if (!newItem.equals(oldItem)) {
-        showUnderInvalidationError("under-invalidation: display item changed", newItem, oldItem);
+
+    bool oldAndNewEqual = oldItem && newItem.equals(*oldItem);
+    if (!oldAndNewEqual) {
+        if (newItem.isBegin()) {
+            // Temporarily skip mismatching begin display item which may be removed when we remove a no-op pair.
+            ++m_skippedProbableUnderInvalidationCount;
+            return;
+        }
+        if (newItem.isDrawing() && m_skippedProbableUnderInvalidationCount == 1) {
+            DCHECK_GE(m_newDisplayItemList.size(), 2u);
+            if (m_newDisplayItemList[m_newDisplayItemList.size() - 2].getType() == DisplayItem::BeginCompositing) {
+                // This might be a drawing item between a pair of begin/end compositing display items that will be folded
+                // into a single drawing display item.
+                ++m_skippedProbableUnderInvalidationCount;
+                return;
+            }
+        }
+    }
+
+    if (m_skippedProbableUnderInvalidationCount || !oldAndNewEqual) {
+        // If we ever skipped reporting any under-invalidations, report the earliest one.
+        showUnderInvalidationError("under-invalidation: display item changed",
+            m_newDisplayItemList[m_newDisplayItemList.size() - m_skippedProbableUnderInvalidationCount - 1],
+            &m_currentPaintArtifact.getDisplayItemList()[m_underInvalidationCheckingBegin]);
         NOTREACHED();
     }
+
+    ++m_underInvalidationCheckingBegin;
 }
 
 #endif // DCHECK_IS_ON()

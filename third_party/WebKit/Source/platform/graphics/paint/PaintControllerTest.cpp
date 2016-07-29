@@ -18,11 +18,10 @@
 
 namespace blink {
 
-class PaintControllerTest : public ::testing::Test {
+class PaintControllerTestBase : public testing::Test {
 public:
-    PaintControllerTest()
-        : m_paintController(PaintController::create())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
+    PaintControllerTestBase()
+        : m_paintController(PaintController::create()) { }
 
     IntRect visualRect(const PaintArtifact& paintArtifact, size_t index)
     {
@@ -40,14 +39,14 @@ protected:
     int numIndexedItems() const { return m_paintController->m_numIndexedItems; }
 #endif
 
-private:
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
+        m_featuresBackup.restore();
     }
 
+private:
     std::unique_ptr<PaintController> m_paintController;
-    bool m_originalSlimmingPaintV2Enabled;
+    RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
@@ -98,7 +97,26 @@ void drawClippedRect(GraphicsContext& context, const FakeDisplayItemClient& clie
     drawRect(context, client, drawingType, bound);
 }
 
-TEST_F(PaintControllerTest, NestedRecorders)
+#if DCHECK_IS_ON()
+// Tests using this class will be tested with under-invalidation-checking enabled and disabled.
+class PaintControllerTest : public PaintControllerTestBase, public testing::WithParamInterface<bool> {
+protected:
+    void SetUp() override
+    {
+        if (GetParam())
+            RuntimeEnabledFeatures::setSlimmingPaintUnderInvalidationCheckingEnabled(true);
+    }
+};
+
+INSTANTIATE_TEST_CASE_P(All, PaintControllerTest, ::testing::Bool());
+#define TEST_F_OR_P TEST_P
+#else
+// Under-invalidation checking is only available when DCHECK_IS_ON().
+using PaintControllerTest = PaintControllerTestBase;
+#define TEST_F_OR_P TEST_F
+#endif
+
+TEST_F_OR_P(PaintControllerTest, NestedRecorders)
 {
     GraphicsContext context(getPaintController());
 
@@ -113,7 +131,7 @@ TEST_F(PaintControllerTest, NestedRecorders)
         TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
 }
 
-TEST_F(PaintControllerTest, UpdateBasic)
+TEST_F_OR_P(PaintControllerTest, UpdateBasic)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -132,7 +150,6 @@ TEST_F(PaintControllerTest, UpdateBasic)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
 
@@ -150,7 +167,7 @@ TEST_F(PaintControllerTest, UpdateBasic)
         TestDisplayItem(first, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateSwapOrder)
+TEST_F_OR_P(PaintControllerTest, UpdateSwapOrder)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -198,7 +215,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
         TestDisplayItem(unaffected, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateSwapOrderWithInvalidation)
+TEST_F_OR_P(PaintControllerTest, UpdateSwapOrderWithInvalidation)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -247,7 +264,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrderWithInvalidation)
         TestDisplayItem(unaffected, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
+TEST_F_OR_P(PaintControllerTest, UpdateNewItemInMiddle)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -281,7 +298,7 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
         TestDisplayItem(second, backgroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
+TEST_F_OR_P(PaintControllerTest, UpdateInvalidationWithPhases)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -330,7 +347,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
         TestDisplayItem(third, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
+TEST_F_OR_P(PaintControllerTest, UpdateAddFirstOverlap)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -377,7 +394,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateAddLastOverlap)
+TEST_F_OR_P(PaintControllerTest, UpdateAddLastOverlap)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -418,7 +435,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
         TestDisplayItem(first, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, UpdateClip)
+TEST_F_OR_P(PaintControllerTest, UpdateClip)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -469,7 +486,7 @@ TEST_F(PaintControllerTest, UpdateClip)
         TestDisplayItem(second, DisplayItem::clipTypeToEndClipType(clipType)));
 }
 
-TEST_F(PaintControllerTest, CachedDisplayItems)
+TEST_F_OR_P(PaintControllerTest, CachedDisplayItems)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -501,7 +518,8 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     // The first display item should be updated.
     EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture());
     // The second display item should be cached.
-    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
+    if (!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
     EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
     EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
 
@@ -510,7 +528,7 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     EXPECT_FALSE(getPaintController().clientCacheIsValid(second));
 }
 
-TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
+TEST_F_OR_P(PaintControllerTest, ComplexUpdateSwapOrder)
 {
     FakeDisplayItemClient container1("container1");
     FakeDisplayItemClient content1("content1");
@@ -561,7 +579,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container1, foregroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
+TEST_F_OR_P(PaintControllerTest, CachedSubsequenceSwapOrder)
 {
     FakeDisplayItemClient container1("container1");
     FakeDisplayItemClient content1("content1");
@@ -601,8 +619,29 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
         TestDisplayItem(container2, DisplayItem::EndSubsequence));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
-    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
+        // and the client is expected to create the same painting as in the previous paint.
+        EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
+        {
+            SubsequenceRecorder r(context, container2);
+            drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
+            drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
+            drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
+            drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
+        }
+        EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
+        {
+            SubsequenceRecorder r(context, container1);
+            drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+            drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+            drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+            drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
+        }
+    } else {
+        EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
+        EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
+    }
 
     EXPECT_EQ(12, numCachedNewItems());
 #if DCHECK_IS_ON()
@@ -633,7 +672,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 #endif
 }
 
-TEST_F(PaintControllerTest, OutOfOrderNoCrash)
+TEST_F_OR_P(PaintControllerTest, OutOfOrderNoCrash)
 {
     FakeDisplayItemClient client("client");
     GraphicsContext context(getPaintController());
@@ -658,7 +697,7 @@ TEST_F(PaintControllerTest, OutOfOrderNoCrash)
     getPaintController().commitNewDisplayItems();
 }
 
-TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
+TEST_F_OR_P(PaintControllerTest, CachedNestedSubsequenceUpdate)
 {
     FakeDisplayItemClient container1("container1");
     FakeDisplayItemClient content1("content1");
@@ -723,7 +762,16 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
         SubsequenceRecorder r(context, container1);
         // Use cached subsequence of content1.
-        EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+            // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
+            // and the client is expected to create the same painting as in the previous paint.
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
+            SubsequenceRecorder r(context, content1);
+            drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+            drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+        } else {
+            EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
+        }
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
 
@@ -754,7 +802,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 #endif
 }
 
-TEST_F(PaintControllerTest, SkipCache)
+TEST_F_OR_P(PaintControllerTest, SkipCache)
 {
     FakeDisplayItemClient multicol("multicol");
     FakeDisplayItemClient content("content");
@@ -828,7 +876,7 @@ TEST_F(PaintControllerTest, SkipCache)
     getPaintController().commitNewDisplayItems();
 }
 
-TEST_F(PaintControllerTest, PartialSkipCache)
+TEST_F_OR_P(PaintControllerTest, PartialSkipCache)
 {
     FakeDisplayItemClient content("content");
     GraphicsContext context(getPaintController());
@@ -883,7 +931,7 @@ TEST_F(PaintControllerTest, PartialSkipCache)
     EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[2]).picture());
 }
 
-TEST_F(PaintControllerTest, OptimizeNoopPairs)
+TEST_F_OR_P(PaintControllerTest, OptimizeNoopPairs)
 {
     FakeDisplayItemClient first("first");
     FakeDisplayItemClient second("second");
@@ -905,7 +953,6 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
         TestDisplayItem(second, DisplayItem::EndClipPath),
         TestDisplayItem(third, backgroundDrawingType));
 
-    second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, IntRect(1, 1, 2, 2));
@@ -937,7 +984,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
         TestDisplayItem(third, backgroundDrawingType));
 }
 
-TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
+TEST_F_OR_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
 {
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     FakeDisplayItemClient client("test client");
@@ -961,7 +1008,7 @@ TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
         EXPECT_EQ(expected.height(), actualRect.height()); \
     } while (false)
 
-TEST_F(PaintControllerTest, PaintArtifactWithVisualRects)
+TEST_F_OR_P(PaintControllerTest, PaintArtifactWithVisualRects)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
 
@@ -993,7 +1040,7 @@ void drawPath(GraphicsContext& context, DisplayItemClient& client, DisplayItem::
         context.drawPath(path, paint);
 }
 
-TEST_F(PaintControllerTest, IsSuitableForGpuRasterizationSinglePath)
+TEST_F_OR_P(PaintControllerTest, IsSuitableForGpuRasterizationSinglePath)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
     GraphicsContext context(getPaintController());
@@ -1002,7 +1049,7 @@ TEST_F(PaintControllerTest, IsSuitableForGpuRasterizationSinglePath)
     EXPECT_TRUE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPaths)
+TEST_F_OR_P(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPaths)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
     GraphicsContext context(getPaintController());
@@ -1012,7 +1059,7 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationMultiplePicturesSinglePathEach)
+TEST_F_OR_P(PaintControllerTest, IsNotSuitableForGpuRasterizationMultiplePicturesSinglePathEach)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
     GraphicsContext context(getPaintController());
@@ -1026,7 +1073,7 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationMultiplePicturesSing
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsTwoPaints)
+TEST_F_OR_P(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsTwoPaints)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
 
@@ -1047,7 +1094,7 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     }
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCached)
+TEST_F_OR_P(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCached)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
 
@@ -1066,7 +1113,7 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     }
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCachedSubsequence)
+TEST_F(PaintControllerTestBase, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCachedSubsequence)
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
     FakeDisplayItemClient container("container", LayoutRect(0, 0, 200, 100));
@@ -1089,7 +1136,7 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
 }
 
 // Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
-TEST_F(PaintControllerTest, DISABLED_IsNotSuitableForGpuRasterizationConcaveClipPath)
+TEST_F_OR_P(PaintControllerTest, DISABLED_IsNotSuitableForGpuRasterizationConcaveClipPath)
 {
     Path path;
     path.addLineTo(FloatPoint(50, 50));
@@ -1111,5 +1158,248 @@ TEST_F(PaintControllerTest, DISABLED_IsNotSuitableForGpuRasterizationConcaveClip
         EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
     }
 }
+
+// Under-invalidation checking is only available when DCHECK_IS_ON().
+// Death tests don't work properly on Android.
+#if DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
+
+class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
+protected:
+    void SetUp() override
+    {
+        PaintControllerTestBase::SetUp();
+        RuntimeEnabledFeatures::setSlimmingPaintUnderInvalidationCheckingEnabled(true);
+    }
+
+    void testChangeDrawing()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+
+        drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+        drawRect(context, first, backgroundDrawingType, FloatRect(200, 200, 300, 300));
+        drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testMoreDrawing()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+
+        drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+        drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testLessDrawing()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+
+        drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+        drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testNoopPairsInSubsequence()
+    {
+        FakeDisplayItemClient container("container");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder r(context, container);
+            drawRect(context, container, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+        }
+        getPaintController().commitNewDisplayItems();
+
+        EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+        {
+            // Generate some no-op pairs which should not affect under-invalidation checking.
+            ClipRecorder r1(context, container, clipType, IntRect(1, 1, 9, 9));
+            ClipRecorder r2(context, container, clipType, IntRect(1, 1, 2, 2));
+            ClipRecorder r3(context, container, clipType, IntRect(1, 1, 3, 3));
+            ClipPathRecorder r4(context, container, Path());
+        }
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+            SubsequenceRecorder r(context, container);
+            drawRect(context, container, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+        }
+        getPaintController().commitNewDisplayItems();
+
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        DisplayItemClient::endShouldKeepAliveAllClients();
+#endif
+    }
+
+    void testChangeDrawingInSubsequence()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+        {
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+            drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, first));
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(200, 200, 300, 300));
+            drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testMoreDrawingInSubsequence()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, first));
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+            drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testLessDrawingInSubsequence()
+    {
+        FakeDisplayItemClient first("first");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+            drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, first));
+            SubsequenceRecorder r(context, first);
+            drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testChangeNonCacheableInSubsequence()
+    {
+        FakeDisplayItemClient container("container");
+        FakeDisplayItemClient content("content");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder r(context, container);
+            {
+                ClipPathRecorder clipPathRecorder(context, container, Path());
+            }
+            ClipRecorder clip(context, container, clipType, IntRect(1, 1, 9, 9));
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+            SubsequenceRecorder r(context, container);
+            {
+                ClipPathRecorder clipPathRecorder(context, container, Path());
+            }
+            ClipRecorder clip(context, container, clipType, IntRect(1, 1, 30, 30));
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+    }
+
+    void testInvalidationInSubsequence()
+    {
+        FakeDisplayItemClient container("container");
+        FakeDisplayItemClient content("content");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder r(context, container);
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+
+        content.setDisplayItemsUncached();
+        // Leave container not invalidated.
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+            SubsequenceRecorder r(context, content);
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+    }
+
+    // TODO(wangxianzhu): Add under-invalidation checking test in case of compositing item folding.
+};
+
+TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing)
+{
+    EXPECT_DEATH(testChangeDrawing(), "under-invalidation: display item changed");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, MoreDrawing)
+{
+    EXPECT_DEATH(testMoreDrawing(), "Can't find cached display item");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, LessDrawing)
+{
+    // We don't detect under-invalidation in this case, and PaintController can also handle the case gracefully.
+    // However, less-drawing at a time often means more-drawing at another time so eventually we'll detect
+    // such under-invalidations.
+    testLessDrawing();
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, NoopPairsInSubsequence)
+{
+    // This should not die.
+    testNoopPairsInSubsequence();
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawingInSubsequence)
+{
+    EXPECT_DEATH(testChangeDrawingInSubsequence(), "\"\\(In cached subsequence of first\\)\" under-invalidation: display item changed");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, MoreDrawingInSubsequence)
+{
+    EXPECT_DEATH(testMoreDrawingInSubsequence(), "\"\\(In cached subsequence of first\\)\" under-invalidation: display item changed");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence)
+{
+    EXPECT_DEATH(testLessDrawingInSubsequence(), "\"\\(In cached subsequence of first\\)\" under-invalidation: display item changed");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence)
+{
+    EXPECT_DEATH(testChangeNonCacheableInSubsequence(), "\"\\(In cached subsequence of container\\)\" under-invalidation: display item changed");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence)
+{
+    EXPECT_DEATH(testInvalidationInSubsequence(), "\"\\(In cached subsequence of container\\)\" under-invalidation of PaintLayer: invalidated in cached subsequence");
+}
+
+#endif // DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
 
 } // namespace blink

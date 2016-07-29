@@ -70,8 +70,6 @@ private:
     DisplayItemList m_displayItemList;
     Vector<PaintChunk> m_paintChunks;
     bool m_isSuitableForGpuRasterization;
-
-    friend class PaintControllerTest;
 };
 
 } // namespace blink
