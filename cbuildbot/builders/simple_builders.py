@@ -382,6 +382,10 @@ class DistributedBuilder(SimpleBuilder):
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
           completion_stages.CanaryCompletionStage)
+    elif self._run.config.build_type == constants.TOOLCHAIN_TYPE:
+      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
+      self.completion_stage_class = (
+          completion_stages.MasterSlaveSyncCompletionStage)
     else:
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)

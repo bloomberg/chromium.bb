@@ -2176,7 +2176,6 @@ def GetConfig():
       health_threshold=1,
       afdo_use=False,
       usepkg_build_packages=False,
-      branch_util_test=True,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 

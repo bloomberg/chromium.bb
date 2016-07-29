@@ -14125,7 +14125,6 @@
         "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [],
-        "branch_util_test": true,
         "buildslave_type": "gce_wimpy",
         "description": "Toolchain master (all others are slaves).",
         "health_alert_recipients": [
