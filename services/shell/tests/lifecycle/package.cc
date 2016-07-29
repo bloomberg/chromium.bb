@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/cpp/service_runner.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
@@ -145,9 +145,9 @@ class Package
 
 }  // namespace
 
-MojoResult MojoMain(MojoHandle shell_handle) {
+MojoResult ServiceMain(MojoHandle service_request_handle) {
   Package* package = new Package;
   shell::ServiceRunner runner(package);
   package->set_runner(&runner);
-  return runner.Run(shell_handle);
+  return runner.Run(service_request_handle);
 }

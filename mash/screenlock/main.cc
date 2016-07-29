@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "mash/screenlock/screenlock.h"
-#include "mojo/public/c/system/main.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/service_runner.h"
 
-MojoResult MojoMain(MojoHandle shell_handle) {
+MojoResult ServiceMain(MojoHandle service_request_handle) {
   shell::ServiceRunner runner(new mash::screenlock::Screenlock);
-  return runner.Run(shell_handle);
+  return runner.Run(service_request_handle);
 }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "mojo/public/c/system/main.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
 
@@ -26,7 +26,7 @@ class ConnectTestSingletonApp : public Service {
 }  // namespace shell
 
 
-MojoResult MojoMain(MojoHandle shell_handle) {
-  return shell::ServiceRunner(new shell::ConnectTestSingletonApp)
-      .Run(shell_handle);
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  shell::ServiceRunner runner(new shell::ConnectTestSingletonApp);
+  return runner.Run(service_request_handle);
 }

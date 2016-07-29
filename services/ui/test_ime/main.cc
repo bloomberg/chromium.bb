@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/c/system/main.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
@@ -39,7 +39,7 @@ class TestIME : public shell::Service,
 }  // namespace test
 }  // namespace ui
 
-MojoResult MojoMain(MojoHandle shell_handle) {
+MojoResult ServiceMain(MojoHandle service_request_handle) {
   shell::ServiceRunner runner(new ui::test::TestIME);
-  return runner.Run(shell_handle);
+  return runner.Run(service_request_handle);
 }

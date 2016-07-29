@@ -6,8 +6,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
@@ -88,8 +88,7 @@ class ConnectTestClassApp
 }  // namespace shell
 
 
-MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = shell::ServiceRunner(new shell::ConnectTestClassApp)
-                      .Run(shell_handle);
-  return rv;
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  shell::ServiceRunner runner(new shell::ConnectTestClassApp);
+  return runner.Run(service_request_handle);
 }

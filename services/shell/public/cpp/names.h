@@ -23,7 +23,7 @@ extern const char kNameType_Exe[];
 //   Represents a service packaged as a .library, launched from the NativeRunner
 //   launch path. .library files are assumed to live alongside the executable
 //   hosting the service manager at a path matching <path>/<path>.library.
-//   .library files have a MojoMain() entrypoint that receives a handle to a
+//   .library files have a ServiceMain() entrypoint that receives a handle to a
 //   ServiceRequest that must be bound to enable further communication with the
 //   Service Manager.
 //

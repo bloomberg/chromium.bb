@@ -30,7 +30,8 @@ namespace shell {
 //
 // This class should be used in two scenarios:
 // - During early startup to bind the mojom::ServiceRequest obtained from
-//   the Service Manager, typically in response to either MojoMain() or main().
+//   the Service Manager, typically in response to either ServiceMain() or
+//   main().
 // - In an implementation of mojom::ServiceFactory to bind the
 //   mojom::ServiceRequest passed via CreateService. In this scenario there can
 //   be many instances of this class per process.

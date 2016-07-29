@@ -15,17 +15,17 @@ namespace shell {
 class Service;
 class ServiceContext;
 
-// A utility for running a chromium based mojo Service. The typical use
-// case is to use when writing your MojoMain:
+// A utility for running a Service that uses //base. The typical use case is to
+// use from your ServiceMain:
 //
-//  MojoResult MojoMain(MojoHandle shell_handle) {
+//  MojoResult ServiceMain(MojoHandle service_request_handle) {
 //    shell::ServiceRunner runner(new MyService);
-//    return runner.Run(shell_handle);
+//    return runner.Run(service_request_handle);
 //  }
 //
 // ServiceRunner takes care of chromium environment initialization and
-// shutdown, and starting a MessageLoop from which your service can run and
-// ultimately Quit().
+// shutdown, and starting a base::MessageLoop from which your service can run
+// and ultimately Quit().
 class ServiceRunner {
  public:
   // Takes ownership of |service|.

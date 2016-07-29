@@ -4,10 +4,10 @@
 
 #include "base/macros.h"
 #include "components/filesystem/file_system_app.h"
-#include "mojo/public/c/system/main.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/service_runner.h"
 
-MojoResult MojoMain(MojoHandle request) {
+MojoResult ServiceMain(MojoHandle request) {
   shell::ServiceRunner runner(new filesystem::FileSystemApp());
   return runner.Run(request);
 }

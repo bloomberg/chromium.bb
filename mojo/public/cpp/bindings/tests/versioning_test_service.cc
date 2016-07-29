@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/interfaces/bindings/tests/versioning_test_service.mojom.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
@@ -119,8 +119,8 @@ class HumanResourceSystemServer
 }  // namespace test
 }  // namespace mojo
 
-MojoResult MojoMain(MojoHandle request) {
-  mojo::ApplicationRunner runner(
+MojoResult ServiceMain(MojoHandle request) {
+  mojo::ServiceRunner runner(
       new mojo::test::versioning::HumanResourceSystemServer());
 
   return runner.Run(request);

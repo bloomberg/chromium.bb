@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
@@ -66,6 +66,6 @@ class ViewsExamples
   DISALLOW_COPY_AND_ASSIGN(ViewsExamples);
 };
 
-MojoResult MojoMain(MojoHandle shell_handle) {
-  return shell::ServiceRunner(new ViewsExamples).Run(shell_handle);
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  return shell::ServiceRunner(new ViewsExamples).Run(service_request_handle);
 }
