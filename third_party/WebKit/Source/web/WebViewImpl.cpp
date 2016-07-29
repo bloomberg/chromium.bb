@@ -3830,7 +3830,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
             updateLayerTreeViewport();
         } else {
             WebRect damagedRect(0, 0, m_size.width, m_size.height);
-            m_client->didInvalidateRect(damagedRect);
+            m_client->widgetClient()->didInvalidateRect(damagedRect);
         }
     }
     updatePageOverlays();
@@ -4305,7 +4305,7 @@ void WebViewImpl::invalidateRect(const IntRect& rect)
     if (m_layerTreeView)
         updateLayerTreeViewport();
     else if (m_client)
-        m_client->didInvalidateRect(rect);
+        m_client->widgetClient()->didInvalidateRect(rect);
 }
 
 PaintLayerCompositor* WebViewImpl::compositor() const

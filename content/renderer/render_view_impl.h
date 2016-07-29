@@ -302,7 +302,6 @@ class CONTENT_EXPORT RenderViewImpl
   void closeWidgetSoon() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
-  void didInvalidateRect(const blink::WebRect& rect) override;
   void didOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& positionInViewport,

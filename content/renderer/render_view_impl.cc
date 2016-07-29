@@ -2014,10 +2014,6 @@ void RenderViewImpl::didAutoResize(const blink::WebSize& newSize) {
   RenderWidget::DidAutoResize(newSize);
 }
 
-void RenderViewImpl::didInvalidateRect(const blink::WebRect& rect) {
-  RenderWidget::didInvalidateRect(rect);
-}
-
 void RenderViewImpl::didOverscroll(
     const blink::WebFloatSize& overscrollDelta,
     const blink::WebFloatSize& accumulatedOverscroll,
