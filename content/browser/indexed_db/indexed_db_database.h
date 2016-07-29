@@ -272,7 +272,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   friend class base::RefCounted<IndexedDBDatabase>;
   friend class IndexedDBClassFactory;
 
-  class OpenOrDeleteRequest;
+  class ConnectionRequest;
   class OpenRequest;
   class DeleteRequest;
 
@@ -280,12 +280,12 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   // Called internally when an open or delete request comes in. Processes
   // the queue immediately if there are no other requests.
-  void AppendRequest(std::unique_ptr<OpenOrDeleteRequest> request);
+  void AppendRequest(std::unique_ptr<ConnectionRequest> request);
 
   // Called by requests when complete. The request will be freed, so the
   // request must do no other work after calling this. If there are pending
   // requests, the queue will be synchronously processed.
-  void RequestComplete(OpenOrDeleteRequest* request);
+  void RequestComplete(ConnectionRequest* request);
 
   // Pop the first request from the queue and start it.
   void ProcessRequestQueue();
@@ -316,15 +316,15 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   list_set<IndexedDBConnection*> connections_;
 
-  // This holds the first open or delete request that could not be immediately
+  // This holds the first open or delete request that is currently being
   // processed. The request has already broadcast OnVersionChange if
   // necessary.
-  std::unique_ptr<OpenOrDeleteRequest> active_request_;
+  std::unique_ptr<ConnectionRequest> active_request_;
 
   // This holds open or delete requests that are waiting for the active
   // request to be completed. The requests have not yet broadcast
   // OnVersionChange (if necessary).
-  std::queue<std::unique_ptr<OpenOrDeleteRequest>> pending_requests_;
+  std::queue<std::unique_ptr<ConnectionRequest>> pending_requests_;
 
   // The |processing_pending_requests_| flag is set while ProcessRequestQueue()
   // is executing. It prevents rentrant calls if the active request completes

@@ -83,11 +83,11 @@ HistogramIDBKeyPathType HistogramKeyPathType(const IndexedDBKeyPath& key_path) {
 // open or delete call. These may be blocked on other connections. After every
 // callback, the request must call IndexedDBDatabase::RequestComplete() or be
 // expecting a further callback.
-class IndexedDBDatabase::OpenOrDeleteRequest {
+class IndexedDBDatabase::ConnectionRequest {
  public:
-  explicit OpenOrDeleteRequest(scoped_refptr<IndexedDBDatabase> db) : db_(db) {}
+  explicit ConnectionRequest(scoped_refptr<IndexedDBDatabase> db) : db_(db) {}
 
-  virtual ~OpenOrDeleteRequest() {}
+  virtual ~ConnectionRequest() {}
 
   // Called when the request makes it to the front of the queue.
   virtual void Perform() = 0;
@@ -110,15 +110,15 @@ class IndexedDBDatabase::OpenOrDeleteRequest {
   scoped_refptr<IndexedDBDatabase> db_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OpenOrDeleteRequest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionRequest);
 };
 
 class IndexedDBDatabase::OpenRequest
-    : public IndexedDBDatabase::OpenOrDeleteRequest {
+    : public IndexedDBDatabase::ConnectionRequest {
  public:
   OpenRequest(scoped_refptr<IndexedDBDatabase> db,
               std::unique_ptr<IndexedDBPendingConnection> pending_connection)
-      : OpenOrDeleteRequest(db), pending_(std::move(pending_connection)) {}
+      : ConnectionRequest(db), pending_(std::move(pending_connection)) {}
 
   void Perform() override {
     if (db_->metadata_.id == kInvalidId) {
@@ -286,11 +286,11 @@ class IndexedDBDatabase::OpenRequest
 };
 
 class IndexedDBDatabase::DeleteRequest
-    : public IndexedDBDatabase::OpenOrDeleteRequest {
+    : public IndexedDBDatabase::ConnectionRequest {
  public:
   DeleteRequest(scoped_refptr<IndexedDBDatabase> db,
                 scoped_refptr<IndexedDBCallbacks> callbacks)
-      : OpenOrDeleteRequest(db), callbacks_(callbacks) {}
+      : ConnectionRequest(db), callbacks_(callbacks) {}
 
   void Perform() override {
     if (db_->connections_.empty()) {
@@ -1853,14 +1853,14 @@ void IndexedDBDatabase::TransactionCommitFailed(const leveldb::Status& status) {
 }
 
 void IndexedDBDatabase::AppendRequest(
-    std::unique_ptr<OpenOrDeleteRequest> request) {
+    std::unique_ptr<ConnectionRequest> request) {
   pending_requests_.push(std::move(request));
 
   if (!active_request_)
     ProcessRequestQueue();
 }
 
-void IndexedDBDatabase::RequestComplete(OpenOrDeleteRequest* request) {
+void IndexedDBDatabase::RequestComplete(ConnectionRequest* request) {
   DCHECK_EQ(request, active_request_.get());
   active_request_.reset();
 
