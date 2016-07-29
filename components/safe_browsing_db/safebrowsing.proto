@@ -149,8 +149,8 @@ message FetchThreatListUpdatesResponse {
     // response.
     repeated ThreatEntrySet additions = 5;
 
-    // A set of entries to remove from a local threat type's list. Repeated for
-    // the same reason as above.
+    // A set of entries to remove from a local threat type's list. In practice,
+    // this field is empty or contains exactly one ThreatEntrySet.
     repeated ThreatEntrySet removals = 6;
 
     // The new client state, in encrypted format. Opaque to clients.
