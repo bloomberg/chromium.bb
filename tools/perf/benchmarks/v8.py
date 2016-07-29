@@ -255,7 +255,8 @@ class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
     return 'top_10_mobile_memory_ignition'
 
 
-@benchmark.Disabled('reference')
+@benchmark.Disabled('reference',
+                    'mac')        # crbug.com/630854
 class V8MobileCodeSize(_V8MemoryAndCodeSizeBenchmark):
   """Measures V8 heap and code size on mobile web pages.
 
