@@ -216,7 +216,8 @@ function testBlockMixedContent(mode) {
     }, 'Block fetch() as mixed content (' + mode + ')');
 }
 
-function add_referrer_tests(tests) {
+function add_referrer_tests(tests, global) {
+  global = global || self;
   for (let test of tests) {
     let url = test[0];
     let referrer = test[1];
@@ -225,7 +226,7 @@ function add_referrer_tests(tests) {
     promise_test(t => {
         var request = new Request(url,
           {referrer: referrer, referrerPolicy: policy, mode: 'cors'});
-        return fetch(new Request(url, request)).then(res => {
+        return global.fetch(new Request(url, request)).then(res => {
             return res.json();
           }).then(json => {
             assert_equals(json.referrer, expected, 'referrer');
