@@ -358,41 +358,37 @@ public:
         const WebFindOptions&,
         bool reset) = 0;
 
-    // Cancels any outstanding requests for scoping string matches on a frame.
+    // Cancels any outstanding requests for scoping string matches on the frame.
     virtual void cancelPendingScopingEffort() = 0;
 
-    // This function is called on the main frame during the scoping effort
-    // to keep a running tally of the accumulated total match-count for all
-    // frames.  After updating the count it will notify the WebViewClient
-    // about the new count.
+    // This function is called during the scoping effort to keep a running tally
+    // of the accumulated total match-count in the frame.  After updating the
+    // count it will notify the WebViewClient about the new count.
     virtual void increaseMatchCount(int count, int identifier) = 0;
 
-    // This function is called on the main frame to reset the total number
-    // of matches found during the scoping effort.
+    // This function is called to reset the total number of matches found during
+    // the scoping effort.
     virtual void resetMatchCount() = 0;
 
     // Returns a counter that is incremented when the find-in-page markers are
-    // changed on any frame. Switching the active marker doesn't change the
-    // current version. Should be called only on the main frame.
+    // changed on the frame. Switching the active marker doesn't change the
+    // current version.
     virtual int findMatchMarkersVersion() const = 0;
 
     // Returns the bounding box of the active find-in-page match marker or an
     // empty rect if no such marker exists. The rect is returned in find-in-page
-    // coordinates whatever frame the active marker is.
-    // Should be called only on the main frame.
+    // coordinates.
     virtual WebFloatRect activeFindMatchRect() = 0;
 
     // Swaps the contents of the provided vector with the bounding boxes of the
-    // find-in-page match markers from all frames. The bounding boxes are
-    // returned in find-in-page coordinates. This method should be called only
-    // on the main frame.
+    // find-in-page match markers from the frame. The bounding boxes are
+    // returned in find-in-page coordinates.
     virtual void findMatchRects(WebVector<WebFloatRect>&) = 0;
 
     // Selects the find-in-page match closest to the provided point in
     // find-in-page coordinates. Returns the ordinal of such match or -1 if none
     // could be found. If not null, selectionRect is set to the bounding box of
-    // the selected match in window coordinates.  This method should be called
-    // only on the main frame.
+    // the selected match in window coordinates.
     virtual int selectNearestFindMatch(const WebFloatPoint&,
         WebRect* selectionRect)
         = 0;
