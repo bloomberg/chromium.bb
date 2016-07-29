@@ -66,7 +66,7 @@ CSSSelectorWatch* CSSSelectorWatch::fromIfExists(Document& document)
     return static_cast<CSSSelectorWatch*>(Supplement<Document>::from(document, kSupplementName));
 }
 
-void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*)
+void CSSSelectorWatch::callbackSelectorChangeTimerFired(TimerBase*)
 {
     // Should be ensured by updateSelectorMatches():
     DCHECK(!m_addedSelectors.isEmpty() || !m_removedSelectors.isEmpty());

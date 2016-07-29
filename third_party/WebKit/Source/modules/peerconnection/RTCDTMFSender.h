@@ -76,7 +76,7 @@ private:
     void dispose();
 
     void scheduleDispatchEvent(Event*);
-    void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
+    void scheduledEventTimerFired(TimerBase*);
 
     // WebRTCDTMFSenderHandlerClient
     void didPlayTone(const WebString&) override;

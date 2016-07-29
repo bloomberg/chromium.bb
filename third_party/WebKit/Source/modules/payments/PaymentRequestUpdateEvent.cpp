@@ -124,7 +124,7 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* scriptState, ScriptPromi
         UpdatePaymentDetailsErrorFunction::createFunction(scriptState, m_updater));
 }
 
-void PaymentRequestUpdateEvent::onTimerFired(Timer<PaymentRequestUpdateEvent>*)
+void PaymentRequestUpdateEvent::onTimerFired(TimerBase*)
 {
     if (!m_updater)
         return;

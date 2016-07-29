@@ -228,7 +228,7 @@ public:
 
     void restoreScrollbar();
 
-    void postLayoutTimerFired(Timer<FrameView>*);
+    void postLayoutTimerFired(TimerBase*);
 
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
@@ -720,13 +720,13 @@ private:
     void updateScrollableAreaSet();
 
     void scheduleUpdateWidgetsIfNecessary();
-    void updateWidgetsTimerFired(Timer<FrameView>*);
+    void updateWidgetsTimerFired(TimerBase*);
     bool updateWidgets();
 
     bool processUrlFragmentHelper(const String&, UrlFragmentBehavior);
     void setFragmentAnchor(Node*);
     void scrollToFragmentAnchor();
-    void didScrollTimerFired(Timer<FrameView>*);
+    void didScrollTimerFired(TimerBase*);
 
     void updateLayersAndCompositingAfterScrollIfNeeded(const DoubleSize& scrollDelta);
 

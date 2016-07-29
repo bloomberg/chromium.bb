@@ -127,7 +127,7 @@ private:
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, std::unique_ptr<protocol::Value> argument);
-    void onTimer(Timer<InspectorOverlay>*);
+    void onTimer(TimerBase*);
     void rebuildOverlayPage();
     void invalidate();
     void scheduleUpdate();

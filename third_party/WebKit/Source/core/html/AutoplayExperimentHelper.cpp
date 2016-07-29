@@ -216,7 +216,7 @@ void AutoplayExperimentHelper::triggerAutoplayViewportCheckForTesting()
     viewportTimerFired(nullptr);
 }
 
-void AutoplayExperimentHelper::viewportTimerFired(Timer<AutoplayExperimentHelper>*)
+void AutoplayExperimentHelper::viewportTimerFired(TimerBase*)
 {
     double now = monotonicallyIncreasingTime();
     double delta = now - m_lastLocationUpdateTime;

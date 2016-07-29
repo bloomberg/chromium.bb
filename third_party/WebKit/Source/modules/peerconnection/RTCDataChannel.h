@@ -121,7 +121,7 @@ private:
     void dispose();
 
     void scheduleDispatchEvent(Event*);
-    void scheduledEventTimerFired(Timer<RTCDataChannel>*);
+    void scheduledEventTimerFired(TimerBase*);
 
     std::unique_ptr<WebRTCDataChannelHandler> m_handler;
 

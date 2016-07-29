@@ -1161,21 +1161,21 @@ private:
     KURL virtualCompleteURL(const String&) const final; // Same as completeURL() for the same reason as above.
 
     void updateTitle(const String&);
-    void updateFocusAppearanceTimerFired(Timer<Document>*);
+    void updateFocusAppearanceTimerFired(TimerBase*);
     void updateBaseURL();
 
     void executeScriptsWaitingForResources();
 
-    void loadEventDelayTimerFired(Timer<Document>*);
-    void pluginLoadingTimerFired(Timer<Document>*);
+    void loadEventDelayTimerFired(TimerBase*);
+    void pluginLoadingTimerFired(TimerBase*);
 
     void addListenerType(ListenerType listenerType) { m_listenerTypes |= listenerType; }
     void addMutationEventListenerTypeIfEnabled(ListenerType);
 
-    void didAssociateFormControlsTimerFired(Timer<Document>*);
+    void didAssociateFormControlsTimerFired(TimerBase*);
 
     void clearFocusedElementSoon();
-    void clearFocusedElementTimerFired(Timer<Document>*);
+    void clearFocusedElementTimerFired(TimerBase*);
 
     bool haveScriptBlockingStylesheetsLoaded() const;
     bool haveRenderBlockingStylesheetsLoaded() const;
@@ -1378,7 +1378,7 @@ private:
     Member<V0CustomElementRegistrationContext> m_registrationContext;
     Member<V0CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;
 
-    void elementDataCacheClearTimerFired(Timer<Document>*);
+    void elementDataCacheClearTimerFired(TimerBase*);
     Timer<Document> m_elementDataCacheClearTimer;
 
     Member<ElementDataCache> m_elementDataCache;

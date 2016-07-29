@@ -28,6 +28,7 @@
 #ifndef BitmapImage_h
 #define BitmapImage_h
 
+#include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/FrameData.h"
@@ -40,8 +41,6 @@
 #include <memory>
 
 namespace blink {
-
-template <typename T> class Timer;
 
 class PLATFORM_EXPORT BitmapImage final : public Image {
     friend class BitmapImageTest;
@@ -143,13 +142,13 @@ private:
     bool shouldAnimate();
     void startAnimation(CatchUpAnimation = CatchUp) override;
     void stopAnimation();
-    void advanceAnimation(Timer<BitmapImage>*);
+    void advanceAnimation(TimerBase*);
     // Advance the animation and let the next frame get scheduled without
     // catch-up logic. For large images with slow or heavily-loaded systems,
     // throwing away data as we go (see destroyDecodedData()) means we can spend
     // so much time re-decoding data that we are always behind. To prevent this,
     // we force the next animation to skip the catch up logic.
-    void advanceAnimationWithoutCatchUp(Timer<BitmapImage>*);
+    void advanceAnimationWithoutCatchUp(TimerBase*);
 
     // Function that does the real work of advancing the animation.  When
     // skippingFrames is true, we're in the middle of a loop trying to skip over

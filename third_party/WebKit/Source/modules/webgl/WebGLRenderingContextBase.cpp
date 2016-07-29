@@ -6115,7 +6115,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
     return true;
 }
 
-void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*)
+void WebGLRenderingContextBase::dispatchContextLostEvent(TimerBase*)
 {
     WebGLContextEvent* event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
@@ -6126,7 +6126,7 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
     }
 }
 
-void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextBase>*)
+void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*)
 {
     ASSERT(isContextLost());
 

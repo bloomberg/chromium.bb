@@ -102,7 +102,7 @@ void MainThreadTaskRunner::resume()
     m_suspended = false;
 }
 
-void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
+void MainThreadTaskRunner::pendingTasksTimerFired(TimerBase*)
 {
     // If the owner m_context is about to be swept then it
     // is no longer safe to access.

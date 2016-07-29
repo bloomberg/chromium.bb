@@ -114,7 +114,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
         // |this| may be dead after calling this method.
-        void didTimeout(Timer<DocumentThreadableLoader>*);
+        void didTimeout(TimerBase*);
         // Calls the appropriate loading method according to policy and data
         // about origin. Only for handling the initial load (including fallback
         // after consulting ServiceWorker).

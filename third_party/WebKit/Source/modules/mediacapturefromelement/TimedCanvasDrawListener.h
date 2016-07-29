@@ -24,10 +24,10 @@ public:
 private:
     TimedCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>, double frameRate);
     // Implementation of TimerFiredFunction.
-    void requestFrameTimerFired(Timer<TimedCanvasDrawListener>*);
+    void requestFrameTimerFired(TimerBase*);
 
     double m_frameInterval;
-    UnthrottledTimer<TimedCanvasDrawListener> m_requestFrameTimer;
+    UnthrottledThreadTimer<TimedCanvasDrawListener> m_requestFrameTimer;
 };
 
 } // namespace blink

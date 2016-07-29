@@ -51,7 +51,7 @@ public:
 
 private:
     explicit GenericEventQueue(EventTarget*);
-    void timerFired(Timer<GenericEventQueue>*);
+    void timerFired(TimerBase*);
 
     Member<EventTarget> m_owner;
     HeapVector<Member<Event>> m_pendingEvents;

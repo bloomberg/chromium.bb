@@ -162,7 +162,7 @@ void Scrollbar::paint(GraphicsContext& context, const CullRect& cullRect) const
         Widget::paint(context, cullRect);
 }
 
-void Scrollbar::autoscrollTimerFired(Timer<Scrollbar>*)
+void Scrollbar::autoscrollTimerFired(TimerBase*)
 {
     autoscrollPressedPart(theme().autoscrollTimerDelay());
 }

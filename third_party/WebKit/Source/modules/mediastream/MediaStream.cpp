@@ -395,7 +395,7 @@ void MediaStream::scheduleDispatchEvent(Event* event)
         m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void MediaStream::scheduledEventTimerFired(Timer<MediaStream>*)
+void MediaStream::scheduledEventTimerFired(TimerBase*)
 {
     if (m_stopped)
         return;

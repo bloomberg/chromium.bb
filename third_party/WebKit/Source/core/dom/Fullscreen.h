@@ -113,7 +113,7 @@ private:
 
     void enqueueChangeEvent(Document&, RequestType);
     void enqueueErrorEvent(Element&, RequestType);
-    void eventQueueTimerFired(Timer<Fullscreen>*);
+    void eventQueueTimerFired(TimerBase*);
 
     Member<Element> m_fullScreenElement;
     HeapVector<std::pair<Member<Element>, RequestType>> m_fullScreenElementStack;

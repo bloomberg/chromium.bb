@@ -134,7 +134,7 @@ private:
     void crossSiteOrCSPViolationOccurred(AtomicString);
     void enqueueImageLoadingMicroTask(UpdateFromElementBehavior, ReferrerPolicy);
 
-    void timerFired(Timer<ImageLoader>*);
+    void timerFired(TimerBase*);
 
     KURL imageSourceToKURL(AtomicString) const;
 

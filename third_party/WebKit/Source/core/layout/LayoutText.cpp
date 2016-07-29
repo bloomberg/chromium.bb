@@ -45,6 +45,9 @@
 #include "platform/text/Hyphenation.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRunIterator.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -69,7 +72,8 @@ static SecureTextTimerMap* gSecureTextTimers = nullptr;
 class SecureTextTimer final : public TimerBase {
 public:
     SecureTextTimer(LayoutText* layoutText)
-        : m_layoutText(layoutText)
+        : TimerBase(Platform::current()->currentThread()->scheduler()->timerTaskRunner())
+        , m_layoutText(layoutText)
         , m_lastTypedCharacterOffset(-1)
     {
     }

@@ -765,7 +765,7 @@ void Resource::allClientsAndObserversRemoved()
     unlock();
 }
 
-void Resource::cancelTimerFired(Timer<Resource>* timer)
+void Resource::cancelTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
     if (!hasClientsOrObservers() && m_loader)

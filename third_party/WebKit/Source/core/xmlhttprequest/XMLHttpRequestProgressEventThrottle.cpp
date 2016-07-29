@@ -31,6 +31,9 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 
@@ -71,7 +74,8 @@ Event* XMLHttpRequestProgressEventThrottle::DeferredEvent::take()
 }
 
 XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttpRequest* target)
-    : m_target(target)
+    : TimerBase(Platform::current()->currentThread()->scheduler()->timerTaskRunner())
+    , m_target(target)
     , m_hasDispatchedProgressProgressEvent(false)
 {
     ASSERT(target);

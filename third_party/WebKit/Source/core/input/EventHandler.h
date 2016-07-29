@@ -262,11 +262,11 @@ private:
     OptionalCursor selectCursor(const HitTestResult&);
     OptionalCursor selectAutoCursor(const HitTestResult&, Node*, const Cursor& iBeam);
 
-    void hoverTimerFired(Timer<EventHandler>*);
-    void cursorUpdateTimerFired(Timer<EventHandler>*);
-    void activeIntervalTimerFired(Timer<EventHandler>*);
+    void hoverTimerFired(TimerBase*);
+    void cursorUpdateTimerFired(TimerBase*);
+    void activeIntervalTimerFired(TimerBase*);
 
-    void fakeMouseMoveEventTimerFired(Timer<EventHandler>*);
+    void fakeMouseMoveEventTimerFired(TimerBase*);
     void cancelFakeMouseMoveEvent();
     bool isCursorVisible() const;
     void updateCursor();

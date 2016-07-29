@@ -76,7 +76,7 @@ void GeoNotifier::stopTimer()
     m_timer.stop();
 }
 
-void GeoNotifier::timerFired(Timer<GeoNotifier>*)
+void GeoNotifier::timerFired(TimerBase*)
 {
     m_timer.stop();
 

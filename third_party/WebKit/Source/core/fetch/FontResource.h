@@ -76,8 +76,8 @@ private:
     FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
     void checkNotify() override;
-    void fontLoadShortLimitCallback(Timer<FontResource>*);
-    void fontLoadLongLimitCallback(Timer<FontResource>*);
+    void fontLoadShortLimitCallback(TimerBase*);
+    void fontLoadLongLimitCallback(TimerBase*);
 
     bool isSafeToUnlock() const override;
 

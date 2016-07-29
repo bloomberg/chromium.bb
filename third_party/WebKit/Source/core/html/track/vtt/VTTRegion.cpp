@@ -461,7 +461,7 @@ void VTTRegion::stopTimer()
         m_scrollTimer.stop();
 }
 
-void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
+void VTTRegion::scrollTimerFired(TimerBase*)
 {
     DVLOG(VTT_LOG_LEVEL) << "scrollTimerFired";
 

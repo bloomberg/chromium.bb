@@ -97,7 +97,7 @@ private:
     static const unsigned minimumPresentationAttributeCacheSizeForCleaning = 100;
     static const unsigned minimumPresentationAttributeCacheHitCountPerMinute = (100 * presentationAttributeCacheCleanTimeInSeconds) / 60;
 
-    void cleanCache(Timer<PresentationAttributeCacheCleaner>* timer)
+    void cleanCache(TimerBase* timer)
     {
         ASSERT_UNUSED(timer, timer == &m_cleanTimer);
         unsigned hitCount = m_hitCount;

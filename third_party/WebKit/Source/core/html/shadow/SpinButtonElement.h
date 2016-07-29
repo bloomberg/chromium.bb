@@ -86,7 +86,7 @@ private:
     void doStepAction(int);
     void startRepeatingTimer();
     void stopRepeatingTimer();
-    void repeatingTimerFired(Timer<SpinButtonElement>*);
+    void repeatingTimerFired(TimerBase*);
     void setHovered(bool = true) override;
     bool shouldRespondToMouseEvents();
     bool isMouseFocusable() const override { return false; }

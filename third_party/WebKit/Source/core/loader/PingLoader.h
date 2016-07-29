@@ -89,7 +89,7 @@ private:
     void didFinishLoading(WebURLLoader*, double, int64_t) final;
     void didFail(WebURLLoader*, const WebURLError&) final;
 
-    void timeout(Timer<PingLoader>*);
+    void timeout(TimerBase*);
 
     void didFailLoading(LocalFrame*);
 

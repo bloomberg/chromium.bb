@@ -113,7 +113,7 @@ bool VibrationController::vibrate(const VibrationPattern& pattern)
     return true;
 }
 
-void VibrationController::doVibrate(Timer<VibrationController>* timer)
+void VibrationController::doVibrate(TimerBase* timer)
 {
     DCHECK(timer == &m_timerDoVibrate);
 

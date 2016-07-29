@@ -213,7 +213,7 @@ private:
     // SettingsDelegate overrides.
     void settingsChanged(SettingsDelegate::ChangeType) override;
 
-    void compressStrings(Timer<Page>*);
+    void compressStrings(TimerBase*);
 
     Member<PageAnimator> m_animator;
     const Member<AutoscrollController> m_autoscrollController;

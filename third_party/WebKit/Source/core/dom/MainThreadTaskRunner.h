@@ -63,7 +63,7 @@ public:
 private:
     explicit MainThreadTaskRunner(ExecutionContext*);
 
-    void pendingTasksTimerFired(Timer<MainThreadTaskRunner>*);
+    void pendingTasksTimerFired(TimerBase*);
 
     void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask, bool instrumenting);
 

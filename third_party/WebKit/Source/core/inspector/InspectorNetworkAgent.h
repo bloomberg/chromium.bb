@@ -157,7 +157,7 @@ private:
     void enable(int totalBufferSize, int resourceBufferSize);
     void willSendRequestInternal(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void delayedRemoveReplayXHR(XMLHttpRequest*);
-    void removeFinishedReplayXHRFired(Timer<InspectorNetworkAgent>*);
+    void removeFinishedReplayXHRFired(TimerBase*);
     void didFinishXHRInternal(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&, bool);
 
     bool canGetResponseBodyBlob(const String& requestId);

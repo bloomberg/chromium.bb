@@ -54,7 +54,7 @@ private:
     const AtomicString& defaultAutocapitalize() const override;
     void dispatchSearchEvent() override;
 
-    void searchEventTimerFired(Timer<SearchInputType>*);
+    void searchEventTimerFired(TimerBase*);
     bool searchEventsShouldBeDispatched() const;
     void startSearchEventTimer();
     void updateCancelButtonVisibility();

@@ -60,7 +60,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    void timerFired(Timer<CompositorPendingAnimations>*) { update(false); }
+    void timerFired(TimerBase*) { update(false); }
 
     HeapVector<Member<Animation>> m_pending;
     HeapVector<Member<Animation>> m_waitingForCompositorAnimationStart;

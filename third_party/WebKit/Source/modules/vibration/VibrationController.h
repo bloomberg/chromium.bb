@@ -51,7 +51,7 @@ public:
     static VibrationPattern sanitizeVibrationPattern(const UnsignedLongOrUnsignedLongSequence&);
 
     bool vibrate(const VibrationPattern&);
-    void doVibrate(Timer<VibrationController>*);
+    void doVibrate(TimerBase*);
     void didVibrate();
 
     // Cancels the ongoing vibration if there is one.

@@ -564,7 +564,7 @@ void BitmapImage::advanceTime(double deltaTimeInSeconds)
         m_desiredFrameStartTime = monotonicallyIncreasingTime() - deltaTimeInSeconds;
 }
 
-void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
+void BitmapImage::advanceAnimation(TimerBase*)
 {
     internalAdvanceAnimation(false);
     // At this point the image region has been marked dirty, and if it's
@@ -572,7 +572,7 @@ void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
     // startAnimation() again to keep the animation moving.
 }
 
-void BitmapImage::advanceAnimationWithoutCatchUp(Timer<BitmapImage>*)
+void BitmapImage::advanceAnimationWithoutCatchUp(TimerBase*)
 {
     if (internalAdvanceAnimation(false))
         startAnimation(DoNotCatchUp);

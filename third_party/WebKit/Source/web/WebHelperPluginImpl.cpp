@@ -90,7 +90,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl
     return !getPlugin()->isPlaceholder();
 }
 
-void WebHelperPluginImpl::reallyDestroy(Timer<WebHelperPluginImpl>*)
+void WebHelperPluginImpl::reallyDestroy(TimerBase*)
 {
     delete this;
 }

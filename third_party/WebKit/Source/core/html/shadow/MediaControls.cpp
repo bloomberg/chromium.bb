@@ -606,7 +606,7 @@ void MediaControls::defaultEventHandler(Event* event)
     }
 }
 
-void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
+void MediaControls::hideMediaControlsTimerFired(TimerBase*)
 {
     unsigned behaviorFlags = m_hideTimerBehaviorFlags | IgnoreFocus | IgnoreVideoHover;
     m_hideTimerBehaviorFlags = IgnoreNone;
@@ -672,7 +672,7 @@ void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth)
     m_panelWidthChangedTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void MediaControls::panelWidthChangedTimerFired(Timer<MediaControls>*)
+void MediaControls::panelWidthChangedTimerFired(TimerBase*)
 {
     computeWhichControlsFit();
 }

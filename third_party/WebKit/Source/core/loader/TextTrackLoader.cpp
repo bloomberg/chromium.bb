@@ -50,7 +50,7 @@ TextTrackLoader::~TextTrackLoader()
 {
 }
 
-void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
+void TextTrackLoader::cueLoadTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_cueLoadTimer);
 

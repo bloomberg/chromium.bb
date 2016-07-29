@@ -31,7 +31,6 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -112,12 +111,12 @@ void SVGImageChromeClient::scheduleAnimation(Widget*)
     m_animationTimer->startOneShot(fireTime, BLINK_FROM_HERE);
 }
 
-void SVGImageChromeClient::setTimer(Timer<SVGImageChromeClient>* timer)
+void SVGImageChromeClient::setTimer(std::unique_ptr<TimerBase> timer)
 {
-    m_animationTimer = wrapUnique(timer);
+    m_animationTimer = std::move(timer);
 }
 
-void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
+void SVGImageChromeClient::animationTimerFired(TimerBase*)
 {
     if (!m_image)
         return;

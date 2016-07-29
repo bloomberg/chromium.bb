@@ -55,7 +55,7 @@ private:
 
     void startTimer();
     void stopTimer();
-    void transitionTimerFired(Timer<MediaControlPanelElement>*);
+    void transitionTimerFired(TimerBase*);
     void didBecomeVisible();
 
     bool m_isDisplayed;

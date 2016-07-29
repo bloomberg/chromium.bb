@@ -536,7 +536,7 @@ void Page::willBeDestroyed()
     PageVisibilityNotifier::notifyContextDestroyed();
 }
 
-void Page::compressStrings(Timer<Page>* timer)
+void Page::compressStrings(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timerForCompressStrings);
     if (m_visibilityState == PageVisibilityStateHidden)

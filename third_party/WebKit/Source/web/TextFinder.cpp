@@ -99,7 +99,7 @@ private:
         m_timer.startOneShot(0.0, BLINK_FROM_HERE);
     }
 
-    void doTimeout(Timer<DeferredScopeStringMatches>*)
+    void doTimeout(TimerBase*)
     {
         m_textFinder->callScopeStringMatches(this, m_identifier, m_searchText, m_options, m_reset);
     }

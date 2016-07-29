@@ -190,7 +190,7 @@ void WaitUntilObserver::decrementPendingActivity()
     setContext(nullptr);
 }
 
-void WaitUntilObserver::consumeWindowInteraction(Timer<WaitUntilObserver>*)
+void WaitUntilObserver::consumeWindowInteraction(TimerBase*)
 {
     if (!getExecutionContext())
         return;

@@ -52,8 +52,8 @@ private:
     void speakNext();
     void speakNow();
 
-    void speakingErrorOccurred(Timer<PlatformSpeechSynthesizerMock>*);
-    void speakingFinished(Timer<PlatformSpeechSynthesizerMock>*);
+    void speakingErrorOccurred(TimerBase*);
+    void speakingFinished(TimerBase*);
 
     Timer<PlatformSpeechSynthesizerMock> m_speakingErrorOccurredTimer;
     Timer<PlatformSpeechSynthesizerMock> m_speakingFinishedTimer;

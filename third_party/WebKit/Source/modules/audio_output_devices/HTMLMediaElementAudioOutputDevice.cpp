@@ -29,7 +29,7 @@ public:
 
 private:
     SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sinkId);
-    void timerFired(Timer<SetSinkIdResolver>*);
+    void timerFired(TimerBase*);
 
     Member<HTMLMediaElement> m_element;
     String m_sinkId;
@@ -57,7 +57,7 @@ void SetSinkIdResolver::startAsync()
     m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void SetSinkIdResolver::timerFired(Timer<SetSinkIdResolver>* timer)
+void SetSinkIdResolver::timerFired(TimerBase* timer)
 {
     ExecutionContext* context = getExecutionContext();
     ASSERT(context && context->isDocument());

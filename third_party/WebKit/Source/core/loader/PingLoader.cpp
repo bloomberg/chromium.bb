@@ -206,7 +206,7 @@ void PingLoader::didFail(WebURLLoader*, const WebURLError& resourceError)
     dispose();
 }
 
-void PingLoader::timeout(Timer<PingLoader>*)
+void PingLoader::timeout(TimerBase*)
 {
     if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));

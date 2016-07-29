@@ -1178,7 +1178,7 @@ bool InspectorNetworkAgent::fetchResourceContent(Document* document, const KURL&
     return false;
 }
 
-void InspectorNetworkAgent::removeFinishedReplayXHRFired(Timer<InspectorNetworkAgent>*)
+void InspectorNetworkAgent::removeFinishedReplayXHRFired(TimerBase*)
 {
     m_replayXHRsToBeDeleted.clear();
 }

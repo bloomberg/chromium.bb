@@ -669,7 +669,7 @@ void HTMLMediaElement::scheduleEvent(Event* event)
     m_asyncEventQueue->enqueueEvent(event);
 }
 
-void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
+void HTMLMediaElement::loadTimerFired(TimerBase*)
 {
     if (m_pendingActionFlags & LoadTextTrackResource)
         honorUserPreferencesForAutomaticTextTrackSelection();
@@ -1194,7 +1194,7 @@ void HTMLMediaElement::startDeferredLoad()
     m_deferredLoadState = ExecuteOnStopDelayingLoadEventTask;
 }
 
-void HTMLMediaElement::deferredLoadTimerFired(Timer<HTMLMediaElement>*)
+void HTMLMediaElement::deferredLoadTimerFired(TimerBase*)
 {
     setShouldDelayLoadEvent(false);
 
@@ -1666,7 +1666,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     cueTimeline().updateActiveCues(currentTime());
 }
 
-void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
+void HTMLMediaElement::progressEventTimerFired(TimerBase*)
 {
     if (m_networkState != NETWORK_LOADING)
         return;
@@ -2331,7 +2331,7 @@ void HTMLMediaElement::startPlaybackProgressTimer()
     m_playbackProgressTimer.startRepeating(maxTimeupdateEventFrequency, BLINK_FROM_HERE);
 }
 
-void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)
+void HTMLMediaElement::playbackProgressTimerFired(TimerBase*)
 {
     if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime && getDirectionOfPlayback() == Forward) {
         m_fragmentEndTime = std::numeric_limits<double>::quiet_NaN();
@@ -2399,7 +2399,7 @@ void HTMLMediaElement::audioTrackChanged(WebMediaPlayer::TrackId trackId, bool e
         m_audioTracksTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
+void HTMLMediaElement::audioTracksTimerFired(TimerBase*)
 {
     Vector<WebMediaPlayer::TrackId> enabledTrackIds;
     for (unsigned i = 0; i < audioTracks().length(); ++i) {

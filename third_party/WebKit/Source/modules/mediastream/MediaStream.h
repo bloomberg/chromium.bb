@@ -103,7 +103,7 @@ private:
     bool emptyOrOnlyEndedTracks();
 
     void scheduleDispatchEvent(Event*);
-    void scheduledEventTimerFired(Timer<MediaStream>*);
+    void scheduledEventTimerFired(TimerBase*);
 
     bool m_stopped;
 

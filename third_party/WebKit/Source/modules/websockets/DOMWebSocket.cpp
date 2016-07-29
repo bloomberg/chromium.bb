@@ -145,7 +145,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
     }
 }
 
-void DOMWebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
+void DOMWebSocket::EventQueue::resumeTimerFired(TimerBase*)
 {
     ASSERT(m_state == Suspended);
     m_state = Active;
@@ -363,7 +363,7 @@ void DOMWebSocket::updateBufferedAmountAfterClose(uint64_t payloadSize)
     logError("WebSocket is already in CLOSING or CLOSED state.");
 }
 
-void DOMWebSocket::reflectBufferedAmountConsumption(Timer<DOMWebSocket>*)
+void DOMWebSocket::reflectBufferedAmountConsumption(TimerBase*)
 {
     ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
     // Cast to unsigned long long is required since clang doesn't accept

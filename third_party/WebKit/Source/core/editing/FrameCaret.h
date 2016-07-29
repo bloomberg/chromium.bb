@@ -77,7 +77,7 @@ private:
     const PositionWithAffinity caretPosition() const;
 
     bool shouldBlinkCaret() const;
-    void caretBlinkTimerFired(Timer<FrameCaret>*);
+    void caretBlinkTimerFired(TimerBase*);
     bool caretPositionIsValidForDocument(const Document&) const;
 
     const Member<const SelectionEditor> m_selectionEditor;

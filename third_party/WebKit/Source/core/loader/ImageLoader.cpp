@@ -538,7 +538,7 @@ void ImageLoader::updatedHasPendingEvent()
     }
 }
 
-void ImageLoader::timerFired(Timer<ImageLoader>*)
+void ImageLoader::timerFired(TimerBase*)
 {
     m_keepAlive.clear();
 }

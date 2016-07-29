@@ -110,7 +110,7 @@ void ValidationMessageClientImpl::documentDetached(const Document& document)
         hideValidationMessage(*m_currentAnchor);
 }
 
-void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClientImpl>*)
+void ValidationMessageClientImpl::checkAnchorStatus(TimerBase*)
 {
     DCHECK(m_currentAnchor);
     if (monotonicallyIncreasingTime() >= m_finishTime || !currentView()) {

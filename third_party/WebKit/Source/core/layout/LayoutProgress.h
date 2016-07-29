@@ -52,7 +52,7 @@ protected:
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }
 
-    void animationTimerFired(Timer<LayoutProgress>*);
+    void animationTimerFired(TimerBase*);
     void updateAnimationState();
 
     double m_position;

@@ -161,7 +161,7 @@ void RTCDTMFSender::scheduleDispatchEvent(Event* event)
         m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void RTCDTMFSender::scheduledEventTimerFired(Timer<RTCDTMFSender>*)
+void RTCDTMFSender::scheduledEventTimerFired(TimerBase*)
 {
     if (m_stopped)
         return;

@@ -36,7 +36,7 @@ public:
 private:
     explicit HTMLImportTreeRoot(Document*);
 
-    void recalcTimerFired(Timer<HTMLImportTreeRoot>*);
+    void recalcTimerFired(TimerBase*);
 
     Member<Document> m_document;
     Timer<HTMLImportTreeRoot> m_recalcTimer;

@@ -9,6 +9,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -141,17 +142,18 @@ private:
     Task* m_currentTask;
 };
 
-class MockTimer : public Timer<ImageQualityController> {
-    typedef void (ImageQualityController::*TimerFiredFunction)(Timer*);
+class MockTimer : public TaskRunnerTimer<ImageQualityController> {
 public:
+    using TimerFiredFunction = typename TaskRunnerTimer<ImageQualityController>::TimerFiredFunction;
+
     MockTimer(ImageQualityController* o, TimerFiredFunction f)
-    : Timer<ImageQualityController>(o, f, &m_taskRunner)
+        : TaskRunnerTimer(&m_taskRunner, o, f)
     {
     }
 
     void fire()
     {
-        this->Timer<ImageQualityController>::fired();
+        fired();
         stop();
     }
 
@@ -167,7 +169,7 @@ private:
 TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 {
     MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
-    controller()->setTimer(mockTimer);
+    controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
@@ -192,7 +194,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnotherAnimates)
 {
     MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
-    controller()->setTimer(mockTimer);
+    controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img id='myAnimatingImage' src='myimage'></img> <img id='myNonAnimatingImage' src='myimage2'></img>");
     LayoutImage* animatingImage = toLayoutImage(document().getElementById("myAnimatingImage")->layoutObject());
     LayoutImage* nonAnimatingImage = toLayoutImage(document().getElementById("myNonAnimatingImage")->layoutObject());
@@ -222,7 +224,7 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnother
 TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSameSize)
 {
     MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
-    controller()->setTimer(mockTimer);
+    controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 
@@ -248,7 +250,7 @@ TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSam
 TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced)
 {
     MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
-    controller()->setTimer(mockTimer);
+    controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
 

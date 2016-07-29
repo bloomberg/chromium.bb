@@ -35,7 +35,6 @@
 #include "core/frame/Settings.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -98,9 +97,9 @@ ImageQualityController::ImageQualityController()
 {
 }
 
-void ImageQualityController::setTimer(Timer<ImageQualityController>* newTimer)
+void ImageQualityController::setTimer(std::unique_ptr<TimerBase> newTimer)
 {
-    m_timer = wrapUnique(newTimer);
+    m_timer = std::move(newTimer);
 }
 
 void ImageQualityController::removeLayer(const LayoutObject& object, LayerSizeMap* innerMap, const void* layer)
@@ -133,7 +132,7 @@ void ImageQualityController::objectDestroyed(const LayoutObject& object)
     }
 }
 
-void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityController>*)
+void ImageQualityController::highQualityRepaintTimerFired(TimerBase*)
 {
     for (auto& i : m_objectLayerSizeMap) {
         // Only invalidate the object if it is animating.

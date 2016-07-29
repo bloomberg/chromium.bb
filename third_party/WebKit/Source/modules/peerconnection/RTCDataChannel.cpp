@@ -378,7 +378,7 @@ void RTCDataChannel::scheduleDispatchEvent(Event* event)
         m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
+void RTCDataChannel::scheduledEventTimerFired(TimerBase*)
 {
     HeapVector<Member<Event>> events;
     events.swap(m_scheduledEvents);

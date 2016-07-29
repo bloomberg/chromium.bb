@@ -40,8 +40,6 @@
 
 namespace blink {
 
-TimerBase::TimerBase() : TimerBase(Platform::current()->currentThread()->scheduler()->timerTaskRunner()) { }
-
 TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     : m_nextFireTime(0)
     , m_repeatInterval(0)
@@ -86,6 +84,18 @@ double TimerBase::nextFireInterval() const
     if (m_nextFireTime < current)
         return 0;
     return m_nextFireTime - current;
+}
+
+// static
+WebTaskRunner* TimerBase::getTimerTaskRunner()
+{
+    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
+}
+
+// static
+WebTaskRunner* TimerBase::getUnthrottledTaskRunner()
+{
+    return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
 WebTaskRunner* TimerBase::timerTaskRunner() const
@@ -143,11 +153,6 @@ bool TimerBase::Comparator::operator()(const TimerBase* a, const TimerBase* b) c
 }
 
 // static
-WebTaskRunner* TimerBase::UnthrottledWebTaskRunner()
-{
-    return Platform::current()->currentThread()->getWebTaskRunner();
-}
-
 double TimerBase::timerMonotonicallyIncreasingTime() const
 {
     return timerTaskRunner()->monotonicallyIncreasingVirtualTimeSeconds();

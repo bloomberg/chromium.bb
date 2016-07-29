@@ -259,7 +259,7 @@ bool FrameCaret::shouldBlinkCaret() const
     return focusedElement->isShadowIncludingInclusiveAncestorOf(caretPosition().position().anchorNode());
 }
 
-void FrameCaret::caretBlinkTimerFired(Timer<FrameCaret>*)
+void FrameCaret::caretBlinkTimerFired(TimerBase*)
 {
     DCHECK(caretIsVisible());
     if (isCaretBlinkingSuspended() && m_shouldPaintCaret)

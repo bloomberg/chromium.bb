@@ -239,7 +239,7 @@ private:
     MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
 
 #ifdef MEMORY_CACHE_STATS
-    void dumpStats(Timer<MemoryCache>*);
+    void dumpStats(TimerBase*);
     void dumpLRULists(bool includeLive) const;
 #endif
 

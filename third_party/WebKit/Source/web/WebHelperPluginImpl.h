@@ -62,7 +62,7 @@ private:
     ~WebHelperPluginImpl() override;
 
     bool initialize(const String& pluginType, WebLocalFrameImpl*);
-    void reallyDestroy(Timer<WebHelperPluginImpl>*);
+    void reallyDestroy(TimerBase*);
 
     Timer<WebHelperPluginImpl> m_destructionTimer;
     Persistent<HTMLObjectElement> m_objectElement;

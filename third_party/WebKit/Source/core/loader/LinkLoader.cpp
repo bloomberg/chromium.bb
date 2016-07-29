@@ -82,13 +82,13 @@ LinkLoader::~LinkLoader()
 {
 }
 
-void LinkLoader::linkLoadTimerFired(Timer<LinkLoader>* timer)
+void LinkLoader::linkLoadTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_linkLoadTimer);
     m_client->linkLoaded();
 }
 
-void LinkLoader::linkLoadingErrorTimerFired(Timer<LinkLoader>* timer)
+void LinkLoader::linkLoadingErrorTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_linkLoadingErrorTimer);
     m_client->linkLoadingErrored();

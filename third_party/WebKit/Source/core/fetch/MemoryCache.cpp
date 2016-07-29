@@ -746,7 +746,7 @@ bool MemoryCache::isInSameLRUListForTest(const Resource* x, const Resource* y)
 
 #ifdef MEMORY_CACHE_STATS
 
-void MemoryCache::dumpStats(Timer<MemoryCache>*)
+void MemoryCache::dumpStats(TimerBase*)
 {
     Statistics s = getStatistics();
     printf("%-13s %-13s %-13s %-13s %-13s %-13s %-13s\n", "", "Count", "Size", "LiveSize", "DecodedSize", "PurgeableSize", "PurgedSize");

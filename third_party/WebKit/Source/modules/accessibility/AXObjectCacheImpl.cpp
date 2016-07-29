@@ -647,7 +647,7 @@ void AXObjectCacheImpl::childrenChanged(AXObject* obj)
     obj->childrenChanged();
 }
 
-void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
+void AXObjectCacheImpl::notificationPostTimerFired(TimerBase*)
 {
     m_notificationPostTimer.stop();
 

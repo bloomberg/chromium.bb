@@ -80,7 +80,7 @@ private:
     void didCancel() override;
 
     bool showInternal();
-    void dispatchEvent(Timer<ExternalPopupMenu>*);
+    void dispatchEvent(TimerBase*);
     void update();
 
     Member<HTMLSelectElement> m_ownerElement;

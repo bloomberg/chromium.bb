@@ -136,7 +136,7 @@ private:
         void wakeAfter(double duration) override;
         void serviceOnNextFrame() override;
 
-        void timerFired(Timer<AnimationTimelineTiming>*) { m_timeline->wake(); }
+        void timerFired(TimerBase*) { m_timeline->wake(); }
 
         DECLARE_VIRTUAL_TRACE();
 

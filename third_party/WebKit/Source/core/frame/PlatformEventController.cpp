@@ -20,7 +20,7 @@ PlatformEventController::~PlatformEventController()
 {
 }
 
-void PlatformEventController::oneShotCallback(Timer<PlatformEventController>* timer)
+void PlatformEventController::oneShotCallback(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timer);
     ASSERT(hasLastData());

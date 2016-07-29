@@ -86,8 +86,8 @@ public:
 private:
     explicit LinkLoader(LinkLoaderClient*);
 
-    void linkLoadTimerFired(Timer<LinkLoader>*);
-    void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
+    void linkLoadTimerFired(TimerBase*);
+    void linkLoadingErrorTimerFired(TimerBase*);
     void createLinkPreloadResourceClient(Resource*);
 
     Member<LinkLoaderClient> m_client;

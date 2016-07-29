@@ -113,7 +113,7 @@ public:
 private:
     ClientAdapter(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
 
-    void notifyError(Timer<ClientAdapter>*);
+    void notifyError(TimerBase*);
 
     AssociatedURLLoader* m_loader;
     WebURLLoaderClient* m_client;
@@ -258,7 +258,7 @@ void AssociatedURLLoader::ClientAdapter::enableErrorNotifications()
         m_errorTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer)
+void AssociatedURLLoader::ClientAdapter::notifyError(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_errorTimer);
 

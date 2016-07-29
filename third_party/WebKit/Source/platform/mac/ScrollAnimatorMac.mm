@@ -330,7 +330,7 @@ public:
     }
 
 private:
-    void timerFired(Timer<BlinkScrollbarPartAnimationTimer>*)
+    void timerFired(TimerBase*)
     {
         double currentTime = WTF::currentTime();
         double delta = currentTime - m_startTime;

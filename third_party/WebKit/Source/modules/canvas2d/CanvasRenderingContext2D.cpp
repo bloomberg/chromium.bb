@@ -216,7 +216,7 @@ DEFINE_TRACE(CanvasRenderingContext2D)
     SVGResourceClient::trace(visitor);
 }
 
-void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
+void CanvasRenderingContext2D::dispatchContextLostEvent(TimerBase*)
 {
     if (canvas() && contextLostRestoredEventsEnabled()) {
         Event* event = Event::createCancelable(EventTypeNames::contextlost);
@@ -234,7 +234,7 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingCon
     }
 }
 
-void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingContext2D>* timer)
+void CanvasRenderingContext2D::tryRestoreContextEvent(TimerBase* timer)
 {
     if (m_contextLostMode == NotLostContext) {
         // Canvas was already restored (possibly thanks to a resize), so stop trying.
@@ -257,7 +257,7 @@ void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingConte
     }
 }
 
-void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*)
+void CanvasRenderingContext2D::dispatchContextRestoredEvent(TimerBase*)
 {
     if (m_contextLostMode == NotLostContext)
         return;

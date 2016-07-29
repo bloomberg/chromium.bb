@@ -77,14 +77,14 @@ private:
     void objectDestroyed(const LayoutObject&);
     bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
 
-    void highQualityRepaintTimerFired(Timer<ImageQualityController>*);
+    void highQualityRepaintTimerFired(TimerBase*);
     void restartTimer(double lastFrameTimeMonotonic);
 
     // Only for use in testing.
-    void setTimer(Timer<ImageQualityController>*);
+    void setTimer(std::unique_ptr<TimerBase>);
 
     ObjectLayerSizeMap m_objectLayerSizeMap;
-    std::unique_ptr<Timer<ImageQualityController>> m_timer;
+    std::unique_ptr<TimerBase> m_timer;
     double m_frameTimeWhenTimerStarted;
 
     // For calling set().

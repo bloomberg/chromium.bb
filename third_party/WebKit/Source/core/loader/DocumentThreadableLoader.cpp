@@ -810,7 +810,7 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
     // |this| may be dead here in async mode.
 }
 
-void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer)
+void DocumentThreadableLoader::didTimeout(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timeoutTimer);
 

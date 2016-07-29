@@ -1009,9 +1009,9 @@ protected:
     // Return false if caller should return without further processing.
     bool checkObjectToBeBound(const char* functionName, WebGLObject*, bool& deleted);
 
-    void dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*);
+    void dispatchContextLostEvent(TimerBase*);
     // Helper for restoration after context lost.
-    void maybeRestoreContext(Timer<WebGLRenderingContextBase>*);
+    void maybeRestoreContext(TimerBase*);
 
     enum ConsoleDisplayPreference {
         DisplayInConsole,

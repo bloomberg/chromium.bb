@@ -36,6 +36,8 @@
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,7 +110,7 @@ public:
     }
     String debugName() const override { return "AddingClient"; }
 
-    void removeClient(Timer<AddingClient>* timer)
+    void removeClient(TimerBase* timer)
     {
         m_resource->removeClient(m_dummyClient);
     }

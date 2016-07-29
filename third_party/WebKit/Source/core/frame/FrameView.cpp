@@ -1640,7 +1640,7 @@ void FrameView::setLayoutSize(const IntSize& size)
     setLayoutSizeInternal(size);
 }
 
-void FrameView::didScrollTimerFired(Timer<FrameView>*)
+void FrameView::didScrollTimerFired(TimerBase*)
 {
     if (m_frame->document() && !m_frame->document()->layoutViewItem().isNull())
         m_frame->document()->fetcher()->updateAllImageResourcePriorities();
@@ -2063,7 +2063,7 @@ bool FrameView::updateWidgets()
     return m_partUpdateSet.isEmpty();
 }
 
-void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
+void FrameView::updateWidgetsTimerFired(TimerBase*)
 {
     ASSERT(!isInPerformLayout());
     m_updateWidgetsTimer.stop();
@@ -2162,7 +2162,7 @@ void FrameView::sendResizeEventIfNeeded()
         InspectorInstrumentation::didResizeMainFrame(m_frame.get());
 }
 
-void FrameView::postLayoutTimerFired(Timer<FrameView>*)
+void FrameView::postLayoutTimerFired(TimerBase*)
 {
     performPostLayoutTasks();
 }

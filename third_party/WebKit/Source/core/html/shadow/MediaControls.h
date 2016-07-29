@@ -110,12 +110,12 @@ private:
     };
 
     bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
-    void hideMediaControlsTimerFired(Timer<MediaControls>*);
+    void hideMediaControlsTimerFired(TimerBase*);
     void startHideMediaControlsTimer();
     void stopHideMediaControlsTimer();
     void resetHideMediaControlsTimer();
 
-    void panelWidthChangedTimerFired(Timer<MediaControls>*);
+    void panelWidthChangedTimerFired(TimerBase*);
 
     // Hide elements that don't fit, and show those things that we want which
     // do fit.  This requires that m_panelWidth is current.

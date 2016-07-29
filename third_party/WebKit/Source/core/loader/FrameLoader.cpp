@@ -169,7 +169,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_progressTracker(ProgressTracker::create(frame))
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
-    , m_checkTimer(this, &FrameLoader::checkTimerFired, TaskRunnerHelper::getLoadingTaskRunner(frame))
+    , m_checkTimer(TaskRunnerHelper::getLoadingTaskRunner(frame), this, &FrameLoader::checkTimerFired)
     , m_didAccessInitialDocument(false)
     , m_forcedSandboxFlags(SandboxNone)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)
@@ -666,7 +666,7 @@ void FrameLoader::checkCompleted()
         toLocalFrame(parent)->loader().checkCompleted();
 }
 
-void FrameLoader::checkTimerFired(Timer<FrameLoader>*)
+void FrameLoader::checkTimerFired(TimerBase*)
 {
     if (Page* page = m_frame->page()) {
         if (page->defersLoading())

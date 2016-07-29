@@ -170,7 +170,7 @@ void MediaControlPanelElement::stopTimer()
         m_transitionTimer.stop();
 }
 
-void MediaControlPanelElement::transitionTimerFired(Timer<MediaControlPanelElement>*)
+void MediaControlPanelElement::transitionTimerFired(TimerBase*)
 {
     if (!m_opaque)
         setIsWanted(false);

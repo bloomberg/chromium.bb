@@ -171,7 +171,7 @@ void ScreenOrientationController::unlock()
     m_client->unlockOrientation();
 }
 
-void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientationController>*)
+void ScreenOrientationController::dispatchEventTimerFired(TimerBase*)
 {
     if (!m_orientation)
         return;

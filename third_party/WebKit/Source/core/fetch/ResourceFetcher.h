@@ -170,7 +170,7 @@ private:
     bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
     bool shouldDeferImageLoad(const KURL&) const;
 
-    void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
+    void resourceTimingReportTimerFired(TimerBase*);
 
     void reloadImagesIfNotDeferred();
 

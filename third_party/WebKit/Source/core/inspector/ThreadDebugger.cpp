@@ -373,7 +373,7 @@ void ThreadDebugger::cancelTimer(void* data)
     }
 }
 
-void ThreadDebugger::onTimer(Timer<ThreadDebugger>* timer)
+void ThreadDebugger::onTimer(TimerBase* timer)
 {
     for (size_t index = 0; index < m_timers.size(); ++index) {
         if (m_timers[index].get() == timer) {

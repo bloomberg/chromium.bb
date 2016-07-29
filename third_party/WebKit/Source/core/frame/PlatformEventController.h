@@ -40,7 +40,7 @@ private:
     // Inherited from PageVisibilityObserver.
     void pageVisibilityChanged() override;
 
-    void oneShotCallback(Timer<PlatformEventController>*);
+    void oneShotCallback(TimerBase*);
 
     bool m_isActive;
     Timer<PlatformEventController> m_timer;

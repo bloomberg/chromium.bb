@@ -47,7 +47,7 @@ public:
 
 private:
     ValidationMessageClientImpl(WebViewImpl&);
-    void checkAnchorStatus(Timer<ValidationMessageClientImpl>*);
+    void checkAnchorStatus(TimerBase*);
     FrameView* currentView();
 
     void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) override;

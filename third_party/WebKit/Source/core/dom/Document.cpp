@@ -1931,7 +1931,7 @@ void Document::clearFocusedElementSoon()
         m_clearFocusedElementTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void Document::clearFocusedElementTimerFired(Timer<Document>*)
+void Document::clearFocusedElementTimerFired(TimerBase*)
 {
     updateStyleAndLayoutTree();
     m_clearFocusedElementTimer.stop();
@@ -4826,7 +4826,7 @@ void Document::finishedParsing()
     m_fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
 }
 
-void Document::elementDataCacheClearTimerFired(Timer<Document>*)
+void Document::elementDataCacheClearTimerFired(TimerBase*)
 {
     m_elementDataCache.clear();
 }
@@ -5136,7 +5136,7 @@ void Document::cancelFocusAppearanceUpdate()
     m_updateFocusAppearanceTimer.stop();
 }
 
-void Document::updateFocusAppearanceTimerFired(Timer<Document>*)
+void Document::updateFocusAppearanceTimerFired(TimerBase*)
 {
     Element* element = focusedElement();
     if (!element)
@@ -5383,7 +5383,7 @@ bool Document::isDelayingLoadEvent()
     return m_loadEventDelayCount;
 }
 
-void Document::loadEventDelayTimerFired(Timer<Document>*)
+void Document::loadEventDelayTimerFired(TimerBase*)
 {
     if (frame())
         frame()->loader().checkCompleted();
@@ -5396,7 +5396,7 @@ void Document::loadPluginsSoon()
         m_pluginLoadingTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void Document::pluginLoadingTimerFired(Timer<Document>*)
+void Document::pluginLoadingTimerFired(TimerBase*)
 {
     updateStyleAndLayout();
 }
@@ -5751,7 +5751,7 @@ void Document::removeFormAssociation(Element* element)
 {
 }
 
-void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
+void Document::didAssociateFormControlsTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_didAssociateFormControlsTimer);
     if (!frame() || !frame()->page())

@@ -625,7 +625,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
     return promise;
 }
 
-void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
+void MediaKeySession::actionTimerFired(TimerBase*)
 {
     DCHECK(m_pendingActions.size());
 

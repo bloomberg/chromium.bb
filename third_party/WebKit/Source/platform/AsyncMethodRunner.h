@@ -133,7 +133,7 @@ private:
     {
     }
 
-    void fired(Timer<AsyncMethodRunner<TargetClass>>*)
+    void fired(TimerBase*)
     {
         (m_object->*m_method)();
     }

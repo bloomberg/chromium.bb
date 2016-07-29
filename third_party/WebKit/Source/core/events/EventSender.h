@@ -63,7 +63,7 @@ public:
 private:
     explicit EventSender(const AtomicString& eventType);
 
-    void timerFired(Timer<EventSender<T>>*) { dispatchPendingEvents(); }
+    void timerFired(TimerBase*) { dispatchPendingEvents(); }
 
     AtomicString m_eventType;
     Timer<EventSender<T>> m_timer;

@@ -187,7 +187,7 @@ public:
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow* = 0, ScrollbarTheme* = 0);
 
-    void autoscrollTimerFired(Timer<Scrollbar>*);
+    void autoscrollTimerFired(TimerBase*);
     void startTimerIfNeeded(double delay);
     void stopTimerIfNeeded();
     void autoscrollPressedPart(double delay);

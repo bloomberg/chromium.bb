@@ -62,8 +62,8 @@ public:
     void collectGarbageAndReport() override;
 
 private:
-    void delayedGCAndReport(Timer<WebLeakDetectorImpl>*);
-    void delayedReport(Timer<WebLeakDetectorImpl>*);
+    void delayedGCAndReport(TimerBase*);
+    void delayedReport(TimerBase*);
 
     WebLeakDetectorClient* m_client;
     Timer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
@@ -115,7 +115,7 @@ void WebLeakDetectorImpl::collectGarbageAndReport()
     m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
+void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*)
 {
     // We do a second and third GC here to address flakiness
     // The second GC is necessary as Resource GC may have postponed clean-up tasks to next event loop.
@@ -140,7 +140,7 @@ void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
     }
 }
 
-void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
+void WebLeakDetectorImpl::delayedReport(TimerBase*)
 {
     DCHECK(m_client);
 

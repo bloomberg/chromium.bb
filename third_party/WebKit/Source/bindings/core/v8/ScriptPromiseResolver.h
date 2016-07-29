@@ -138,7 +138,7 @@ private:
     }
 
     void resolveOrRejectImmediately();
-    void onTimerFired(Timer<ScriptPromiseResolver>*);
+    void onTimerFired(TimerBase*);
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;

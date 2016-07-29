@@ -59,7 +59,7 @@ public:
 
 private:
     explicit CSSSelectorWatch(Document&);
-    void callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*);
+    void callbackSelectorChangeTimerFired(TimerBase*);
     Document& document() const { return *m_document; }
 
     Member<Document> m_document;

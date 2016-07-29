@@ -176,7 +176,7 @@ private:
         // Dispatches queued events if this queue is active.
         // Does nothing otherwise.
         void dispatchQueuedEvents();
-        void resumeTimerFired(Timer<EventQueue>*);
+        void resumeTimerFired(TimerBase*);
 
         State m_state;
         Member<EventTarget> m_target;
@@ -217,7 +217,7 @@ private:
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
     void updateBufferedAmountAfterClose(uint64_t);
-    void reflectBufferedAmountConsumption(Timer<DOMWebSocket>*);
+    void reflectBufferedAmountConsumption(TimerBase*);
 
     void releaseChannel();
     void recordSendTypeHistogram(WebSocketSendType);

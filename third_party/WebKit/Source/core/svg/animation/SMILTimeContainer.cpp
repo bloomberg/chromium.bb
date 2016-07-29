@@ -291,7 +291,7 @@ void SMILTimeContainer::scheduleWakeUp(double delayTime, FrameSchedulingState fr
     m_frameSchedulingState = frameSchedulingState;
 }
 
-void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
+void SMILTimeContainer::wakeupTimerFired(TimerBase*)
 {
     ASSERT(m_frameSchedulingState == SynchronizeAnimations || m_frameSchedulingState == FutureAnimationFrame);
     if (m_frameSchedulingState == FutureAnimationFrame) {
@@ -315,7 +315,7 @@ void SMILTimeContainer::cancelAnimationPolicyTimer()
         m_animationPolicyOnceTimer.stop();
 }
 
-void SMILTimeContainer::animationPolicyTimerFired(Timer<SMILTimeContainer>*)
+void SMILTimeContainer::animationPolicyTimerFired(TimerBase*)
 {
     pause();
 }

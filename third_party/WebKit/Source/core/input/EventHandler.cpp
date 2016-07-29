@@ -557,7 +557,7 @@ bool EventHandler::useHandCursor(Node* node, bool isOverLink)
     return ((isOverLink || isSubmitImage(node)) && !hasEditableStyle(*node));
 }
 
-void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
+void EventHandler::cursorUpdateTimerFired(TimerBase*)
 {
     ASSERT(m_frame);
     ASSERT(m_frame->document());
@@ -2154,7 +2154,7 @@ void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)
     dispatchFakeMouseMoveEventSoon();
 }
 
-void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
+void EventHandler::fakeMouseMoveEventTimerFired(TimerBase* timer)
 {
     TRACE_EVENT0("input", "EventHandler::fakeMouseMoveEventTimerFired");
     ASSERT_UNUSED(timer, timer == &m_fakeMouseMoveEventTimer);
@@ -2199,7 +2199,7 @@ void EventHandler::resizeScrollableAreaDestroyed()
     m_scrollManager.clearResizeScrollableArea(true);
 }
 
-void EventHandler::hoverTimerFired(Timer<EventHandler>*)
+void EventHandler::hoverTimerFired(TimerBase*)
 {
     TRACE_EVENT0("input", "EventHandler::hoverTimerFired");
     m_hoverTimer.stop();
@@ -2217,7 +2217,7 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
     }
 }
 
-void EventHandler::activeIntervalTimerFired(Timer<EventHandler>*)
+void EventHandler::activeIntervalTimerFired(TimerBase*)
 {
     TRACE_EVENT0("input", "EventHandler::activeIntervalTimerFired");
     m_activeIntervalTimer.stop();

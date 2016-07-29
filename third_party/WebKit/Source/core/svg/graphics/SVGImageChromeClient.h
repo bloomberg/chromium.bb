@@ -58,11 +58,11 @@ private:
     void invalidateRect(const IntRect&) override;
     void scheduleAnimation(Widget*) override;
 
-    void setTimer(Timer<SVGImageChromeClient>*);
-    void animationTimerFired(Timer<SVGImageChromeClient>*);
+    void setTimer(std::unique_ptr<TimerBase>);
+    void animationTimerFired(TimerBase*);
 
     SVGImage* m_image;
-    std::unique_ptr<Timer<SVGImageChromeClient>> m_animationTimer;
+    std::unique_ptr<TimerBase> m_animationTimer;
     enum {
         Running,
         Suspended,

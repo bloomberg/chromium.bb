@@ -64,7 +64,7 @@ public:
 
 protected:
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
-    void onTimer(Timer<ThreadDebugger>*);
+    void onTimer(TimerBase*);
 
     v8::Isolate* m_isolate;
     std::unique_ptr<V8Debugger> m_debugger;

@@ -60,7 +60,7 @@ private:
 
     void reportError(const ScriptValue&);
 
-    void consumeWindowInteraction(Timer<WaitUntilObserver>*);
+    void consumeWindowInteraction(TimerBase*);
 
     EventType m_type;
     int m_eventID;

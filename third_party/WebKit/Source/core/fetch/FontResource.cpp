@@ -145,7 +145,7 @@ bool FontResource::isSafeToUnlock() const
     return m_data->hasOneRef();
 }
 
-void FontResource::fontLoadShortLimitCallback(Timer<FontResource>*)
+void FontResource::fontLoadShortLimitCallback(TimerBase*)
 {
     if (!isLoading())
         return;
@@ -156,7 +156,7 @@ void FontResource::fontLoadShortLimitCallback(Timer<FontResource>*)
         client->fontLoadShortLimitExceeded(this);
 }
 
-void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
+void FontResource::fontLoadLongLimitCallback(TimerBase*)
 {
     if (!isLoading())
         return;

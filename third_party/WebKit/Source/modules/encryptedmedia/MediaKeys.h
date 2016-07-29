@@ -96,7 +96,7 @@ private:
     class PendingAction;
 
     bool sessionTypeSupported(WebEncryptedMediaSessionType);
-    void timerFired(Timer<MediaKeys>*);
+    void timerFired(TimerBase*);
 
     const WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
     std::unique_ptr<WebContentDecryptionModule> m_cdm;

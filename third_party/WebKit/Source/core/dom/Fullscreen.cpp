@@ -631,7 +631,7 @@ void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType)
     m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
+void Fullscreen::eventQueueTimerFired(TimerBase*)
 {
     HeapDeque<Member<Event>> eventQueue;
     m_eventQueue.swap(eventQueue);

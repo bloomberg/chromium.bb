@@ -44,7 +44,6 @@ namespace blink {
 class PLATFORM_EXPORT TimerBase {
     WTF_MAKE_NONCOPYABLE(TimerBase);
 public:
-    TimerBase();
     explicit TimerBase(WebTaskRunner*);
     virtual ~TimerBase();
 
@@ -77,7 +76,8 @@ public:
     };
 
 protected:
-    static WebTaskRunner* UnthrottledWebTaskRunner();
+    static WebTaskRunner* getTimerTaskRunner();
+    static WebTaskRunner* getUnthrottledTaskRunner();
 
 private:
     virtual void fired() = 0;
@@ -155,23 +155,16 @@ public:
 };
 
 template <typename TimerFiredClass>
-class Timer : public TimerBase {
+class TaskRunnerTimer : public TimerBase {
 public:
-    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
+    using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
 
-    // TODO(dcheng): Consider removing this overload once all timers are using the
-    // appropriate task runner. https://crbug.com/624694
-    Timer(TimerFiredClass* o, TimerFiredFunction f)
-        : m_object(o), m_function(f)
-    {
-    }
-
-    Timer(TimerFiredClass* o, TimerFiredFunction f, WebTaskRunner* webTaskRunner)
+    TaskRunnerTimer(WebTaskRunner* webTaskRunner, TimerFiredClass* o, TimerFiredFunction f)
         : TimerBase(webTaskRunner), m_object(o), m_function(f)
     {
     }
 
-    ~Timer() override { }
+    ~TaskRunnerTimer() override { }
 
 protected:
     void fired() override
@@ -197,17 +190,33 @@ private:
     TimerFiredFunction m_function;
 };
 
+// TODO(dcheng): Consider removing this overload once all timers are using the
+// appropriate task runner. https://crbug.com/624694
+template <typename TimerFiredClass>
+class Timer : public TaskRunnerTimer<TimerFiredClass> {
+public:
+    using TimerFiredFunction = typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
+
+    ~Timer() override { }
+
+    Timer(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
+        : TaskRunnerTimer<TimerFiredClass>(TimerBase::getTimerTaskRunner(), timerFiredClass, timerFiredFunction)
+    {
+    }
+};
+
+
 // This subclass of Timer posts its tasks on the current thread's default task runner.
 // Tasks posted on there are not throttled when the tab is in the background.
 template <typename TimerFiredClass>
-class UnthrottledTimer : public Timer<TimerFiredClass> {
+class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
 public:
-    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
+    using TimerFiredFunction = typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
 
-    ~UnthrottledTimer() override { }
+    ~UnthrottledThreadTimer() override { }
 
-    UnthrottledTimer(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
-        : Timer<TimerFiredClass>(timerFiredClass, timerFiredFunction, TimerBase::UnthrottledWebTaskRunner())
+    UnthrottledThreadTimer(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
+        : TaskRunnerTimer<TimerFiredClass>(TimerBase::getUnthrottledTaskRunner(), timerFiredClass, timerFiredFunction)
     {
     }
 };

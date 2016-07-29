@@ -31,7 +31,7 @@ void TimedCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image
     CanvasDrawListener::sendNewFrame(image);
 }
 
-void TimedCanvasDrawListener::requestFrameTimerFired(Timer<TimedCanvasDrawListener>*)
+void TimedCanvasDrawListener::requestFrameTimerFired(TimerBase*)
 {
     // TODO(emircan): Measure the jitter and log, see crbug.com/589974.
     m_frameCaptureRequested = true;

@@ -110,7 +110,7 @@ private:
     explicit SpellCheckRequester(LocalFrame&);
 
     TextCheckerClient& client() const;
-    void timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*);
+    void timerFiredToProcessQueuedRequest(TimerBase*);
     void invokeRequest(SpellCheckRequest*);
     void enqueueRequest(SpellCheckRequest*);
     void didCheckSucceed(int sequence, const Vector<TextCheckingResult>&);

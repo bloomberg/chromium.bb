@@ -179,9 +179,9 @@ private:
 
     void dispose();
 
-    void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
-    void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
-    void tryRestoreContextEvent(Timer<CanvasRenderingContext2D>*);
+    void dispatchContextLostEvent(TimerBase*);
+    void dispatchContextRestoredEvent(TimerBase*);
+    void tryRestoreContextEvent(TimerBase*);
 
     void unwindStateStack();
 

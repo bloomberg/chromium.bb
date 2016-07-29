@@ -98,10 +98,10 @@ private:
     bool isTimelineRunning() const;
     void scheduleAnimationFrame(SMILTime fireTime);
     void cancelAnimationFrame();
-    void wakeupTimerFired(Timer<SMILTimeContainer>*);
+    void wakeupTimerFired(TimerBase*);
     void scheduleAnimationPolicyTimer();
     void cancelAnimationPolicyTimer();
-    void animationPolicyTimerFired(Timer<SMILTimeContainer>*);
+    void animationPolicyTimerFired(TimerBase*);
     ImageAnimationPolicy animationPolicy() const;
     bool handleAnimationPolicy(AnimationPolicyOnceAction);
     void updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime = false);

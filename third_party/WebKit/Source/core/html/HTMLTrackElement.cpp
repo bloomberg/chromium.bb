@@ -168,7 +168,7 @@ void HTMLTrackElement::scheduleLoad()
     // FIXME: We use a timer to approximate a "stable state" - i.e. this is not 100% per spec.
 }
 
-void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
+void HTMLTrackElement::loadTimerFired(TimerBase*)
 {
     DVLOG(TRACK_LOG_LEVEL) << "loadTimerFired";
 

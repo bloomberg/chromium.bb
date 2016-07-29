@@ -125,7 +125,7 @@ void SearchInputType::dispatchSearchEvent()
     element().dispatchEvent(Event::createBubble(EventTypeNames::search));
 }
 
-void SearchInputType::searchEventTimerFired(Timer<SearchInputType>*)
+void SearchInputType::searchEventTimerFired(TimerBase*)
 {
     element().onSearch();
 }

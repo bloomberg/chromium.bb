@@ -143,7 +143,7 @@ public:
     explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
     void scheduleStyleAttrRevalidationFor(Element*);
     void reset() { m_timer.stop(); }
-    void onTimer(Timer<InspectorRevalidateDOMTask>*);
+    void onTimer(TimerBase*);
     DECLARE_TRACE();
 
 private:
@@ -165,7 +165,7 @@ void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(Element* eleme
         m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
+void InspectorRevalidateDOMTask::onTimer(TimerBase*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
     HeapVector<Member<Element>> elements;

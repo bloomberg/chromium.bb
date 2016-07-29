@@ -302,12 +302,12 @@ public:
         m_startTime = gCurrentTimeSecs;
     }
 
-    void countingTask(Timer<TimerTest>*)
+    void countingTask(TimerBase*)
     {
         m_runTimes.append(gCurrentTimeSecs);
     }
 
-    void recordNextFireTimeTask(Timer<TimerTest>* timer)
+    void recordNextFireTimeTask(TimerBase* timer)
     {
         m_nextFireTimes.append(gCurrentTimeSecs + timer->nextFireInterval());
     }
@@ -765,14 +765,14 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
 }
 
 template <typename TimerFiredClass>
-class TimerForTest : public Timer<TimerFiredClass> {
+class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 public:
-    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
+    using TimerFiredFunction = typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
 
     ~TimerForTest() override { }
 
-    TimerForTest(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction, WebTaskRunner* webTaskRunner)
-        : Timer<TimerFiredClass>(timerFiredClass, timerFiredFunction, webTaskRunner)
+    TimerForTest(WebTaskRunner* webTaskRunner, TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
+        : TaskRunnerTimer<TimerFiredClass>(webTaskRunner, timerFiredClass, timerFiredFunction)
     {
     }
 };
@@ -781,7 +781,7 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner)
 {
     std::priority_queue<DelayedTask> timerTasks;
     MockWebTaskRunner taskRunner(&timerTasks);
-    TimerForTest<TimerTest> timer(this, &TimerTest::countingTask, &taskRunner);
+    TimerForTest<TimerTest> timer(&taskRunner, this, &TimerTest::countingTask);
     timer.startOneShot(0, BLINK_FROM_HERE);
 
     // Make sure the task was posted on taskRunner.

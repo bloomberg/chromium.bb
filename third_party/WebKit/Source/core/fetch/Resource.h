@@ -301,7 +301,7 @@ private:
     class CachedMetadataHandlerImpl;
     class ServiceWorkerResponseCachedMetadataHandler;
 
-    void cancelTimerFired(Timer<Resource>*);
+    void cancelTimerFired(TimerBase*);
 
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();

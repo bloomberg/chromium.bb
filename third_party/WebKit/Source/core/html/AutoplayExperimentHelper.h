@@ -266,7 +266,7 @@ private:
     void recordMetricsBeforePause();
 
     // Process a timer for checking visibility.
-    void viewportTimerFired(Timer<AutoplayExperimentHelper>*);
+    void viewportTimerFired(TimerBase*);
 
     Client& client() const { return *m_client; }
 

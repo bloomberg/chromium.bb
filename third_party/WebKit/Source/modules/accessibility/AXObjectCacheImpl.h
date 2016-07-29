@@ -232,7 +232,7 @@ private:
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
     HeapVector<std::pair<Member<AXObject>, AXNotification>> m_notificationsToPost;
-    void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
+    void notificationPostTimerFired(TimerBase*);
 
     AXObject* focusedImageMapUIElement(HTMLAreaElement*);
 

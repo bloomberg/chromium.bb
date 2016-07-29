@@ -576,7 +576,7 @@ String InspectorOverlay::evaluateInOverlayForTest(const String& script)
     return toCoreStringWithUndefinedOrNullCheck(string);
 }
 
-void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
+void InspectorOverlay::onTimer(TimerBase*)
 {
     m_resizeTimerActive = false;
     scheduleUpdate();

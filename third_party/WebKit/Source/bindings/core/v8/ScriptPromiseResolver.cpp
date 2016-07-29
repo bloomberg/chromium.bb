@@ -61,7 +61,7 @@ void ScriptPromiseResolver::keepAliveWhilePending()
     m_keepAlive = this;
 }
 
-void ScriptPromiseResolver::onTimerFired(Timer<ScriptPromiseResolver>*)
+void ScriptPromiseResolver::onTimerFired(TimerBase*)
 {
     ASSERT(m_state == Resolving || m_state == Rejecting);
     if (!getScriptState()->contextIsValid()) {

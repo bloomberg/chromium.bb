@@ -407,7 +407,7 @@ void PerformanceBase::resumeSuspendedObservers()
     }
 }
 
-void PerformanceBase::deliverObservationsTimerFired(Timer<PerformanceBase>*)
+void PerformanceBase::deliverObservationsTimerFired(TimerBase*)
 {
     ASSERT(isMainThread());
     PerformanceObservers observers;

@@ -524,7 +524,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     return resource;
 }
 
-void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* timer)
+void ResourceFetcher::resourceTimingReportTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
     Vector<std::unique_ptr<ResourceTimingInfo>> timingReports;

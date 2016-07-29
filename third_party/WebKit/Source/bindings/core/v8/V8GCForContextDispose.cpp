@@ -67,7 +67,7 @@ V8GCForContextDispose& V8GCForContextDispose::instance()
     return staticInstance;
 }
 
-void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
+void V8GCForContextDispose::pseudoIdleTimerFired(TimerBase*)
 {
     V8PerIsolateData::mainThreadIsolate()->IdleNotificationDeadline(monotonicallyIncreasingTime());
     reset();

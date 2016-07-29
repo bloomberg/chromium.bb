@@ -36,7 +36,7 @@ public:
 
 private:
     SetMediaKeysHandler(ScriptState*, HTMLMediaElement&, MediaKeys*);
-    void timerFired(Timer<SetMediaKeysHandler>*);
+    void timerFired(TimerBase*);
 
     void clearExistingMediaKeys();
     void setNewMediaKeys();
@@ -128,7 +128,7 @@ SetMediaKeysHandler::~SetMediaKeysHandler()
 {
 }
 
-void SetMediaKeysHandler::timerFired(Timer<SetMediaKeysHandler>*)
+void SetMediaKeysHandler::timerFired(TimerBase*)
 {
     clearExistingMediaKeys();
 }

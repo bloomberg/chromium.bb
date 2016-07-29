@@ -109,7 +109,7 @@ private:
     void connect();
     void networkRequestEnded();
     void scheduleReconnect();
-    void connectTimerFired(Timer<EventSource>*);
+    void connectTimerFired(TimerBase*);
     void abortConnectionAttempt();
 
     // The original URL specified when constructing EventSource instance. Used

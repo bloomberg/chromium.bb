@@ -84,7 +84,7 @@ bool LayoutProgress::isAnimating() const
     return m_animating;
 }
 
-void LayoutProgress::animationTimerFired(Timer<LayoutProgress>*)
+void LayoutProgress::animationTimerFired(TimerBase*)
 {
     setShouldDoFullPaintInvalidation();
     if (!m_animationTimer.isActive() && m_animating)

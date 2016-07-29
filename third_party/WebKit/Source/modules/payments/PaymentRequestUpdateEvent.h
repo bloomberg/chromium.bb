@@ -32,7 +32,7 @@ public:
 
     void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    void onTimerFired(Timer<PaymentRequestUpdateEvent>*);
+    void onTimerFired(TimerBase*);
 
     DECLARE_VIRTUAL_TRACE();
 

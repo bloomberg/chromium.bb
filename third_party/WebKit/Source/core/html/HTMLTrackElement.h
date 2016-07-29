@@ -78,7 +78,7 @@ private:
 
     const AtomicString& mediaElementCrossOriginAttribute() const;
     bool canLoadUrl(const KURL&);
-    void loadTimerFired(Timer<HTMLTrackElement>*);
+    void loadTimerFired(TimerBase*);
 
     enum LoadStatus {
         Failure,

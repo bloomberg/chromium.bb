@@ -359,9 +359,9 @@ private:
     void cancelledRemotePlaybackRequest() final;
     void requestReload(const WebURL&) final;
 
-    void loadTimerFired(Timer<HTMLMediaElement>*);
-    void progressEventTimerFired(Timer<HTMLMediaElement>*);
-    void playbackProgressTimerFired(Timer<HTMLMediaElement>*);
+    void loadTimerFired(TimerBase*);
+    void progressEventTimerFired(TimerBase*);
+    void playbackProgressTimerFired(TimerBase*);
     void startPlaybackProgressTimer();
     void startProgressEventTimer();
     void stopPeriodicTimers();
@@ -405,7 +405,7 @@ private:
     void cancelDeferredLoad();
     void startDeferredLoad();
     void executeDeferredLoad();
-    void deferredLoadTimerFired(Timer<HTMLMediaElement>*);
+    void deferredLoadTimerFired(TimerBase*);
 
     void markCaptionAndSubtitleTracksAsUnconfigured();
 
@@ -485,7 +485,7 @@ private:
 
     void setNetworkState(NetworkState);
 
-    void audioTracksTimerFired(Timer<HTMLMediaElement>*);
+    void audioTracksTimerFired(TimerBase*);
 
     // TODO(liberato): remove once autoplay gesture override experiment concludes.
     void triggerAutoplayViewportCheckForTesting();
@@ -507,10 +507,10 @@ private:
     void onVisibilityChanged(bool isVisible) override;
     ExecutionContext* getElementVisibilityExecutionContext() const override { return getExecutionContext(); }
 
-    UnthrottledTimer<HTMLMediaElement> m_loadTimer;
-    UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
-    UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;
-    UnthrottledTimer<HTMLMediaElement> m_audioTracksTimer;
+    UnthrottledThreadTimer<HTMLMediaElement> m_loadTimer;
+    UnthrottledThreadTimer<HTMLMediaElement> m_progressEventTimer;
+    UnthrottledThreadTimer<HTMLMediaElement> m_playbackProgressTimer;
+    UnthrottledThreadTimer<HTMLMediaElement> m_audioTracksTimer;
     Member<TimeRanges> m_playedTimeRanges;
     Member<GenericEventQueue> m_asyncEventQueue;
 

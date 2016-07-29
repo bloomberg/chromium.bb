@@ -61,7 +61,7 @@ private:
 
     void updateOrientation();
 
-    void dispatchEventTimerFired(Timer<ScreenOrientationController>*);
+    void dispatchEventTimerFired(TimerBase*);
 
     bool isActiveAndVisible() const;
 

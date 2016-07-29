@@ -242,7 +242,7 @@ bool MediaKeys::sessionTypeSupported(WebEncryptedMediaSessionType sessionType)
     return false;
 }
 
-void MediaKeys::timerFired(Timer<MediaKeys>*)
+void MediaKeys::timerFired(TimerBase*)
 {
     DCHECK(m_pendingActions.size());
 

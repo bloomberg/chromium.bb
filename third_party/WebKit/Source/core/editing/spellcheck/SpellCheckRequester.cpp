@@ -164,7 +164,7 @@ TextCheckerClient& SpellCheckRequester::client() const
     return frame().spellChecker().textChecker();
 }
 
-void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*)
+void SpellCheckRequester::timerFiredToProcessQueuedRequest(TimerBase*)
 {
     DCHECK(!m_requestQueue.isEmpty());
     if (m_requestQueue.isEmpty())

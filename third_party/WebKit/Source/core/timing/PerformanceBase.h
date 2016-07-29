@@ -123,7 +123,7 @@ protected:
     void notifyObserversOfEntry(PerformanceEntry&);
     bool hasObserverFor(PerformanceEntry::EntryType);
 
-    void deliverObservationsTimerFired(Timer<PerformanceBase>*);
+    void deliverObservationsTimerFired(TimerBase*);
 
     PerformanceEntryVector m_frameTimingBuffer;
     unsigned m_frameTimingBufferSize;

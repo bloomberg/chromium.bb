@@ -48,7 +48,7 @@ PlatformSpeechSynthesizerMock::~PlatformSpeechSynthesizerMock()
 {
 }
 
-void PlatformSpeechSynthesizerMock::speakingErrorOccurred(Timer<PlatformSpeechSynthesizerMock>*)
+void PlatformSpeechSynthesizerMock::speakingErrorOccurred(TimerBase*)
 {
     ASSERT(m_currentUtterance);
 
@@ -56,7 +56,7 @@ void PlatformSpeechSynthesizerMock::speakingErrorOccurred(Timer<PlatformSpeechSy
     speakNext();
 }
 
-void PlatformSpeechSynthesizerMock::speakingFinished(Timer<PlatformSpeechSynthesizerMock>*)
+void PlatformSpeechSynthesizerMock::speakingFinished(TimerBase*)
 {
     ASSERT(m_currentUtterance);
     client()->didFinishSpeaking(m_currentUtterance);

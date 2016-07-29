@@ -192,8 +192,8 @@ public:
     static void setReferrerForFrameRequest(FrameLoadRequest&);
 
 private:
-    void checkTimerFired(Timer<FrameLoader>*);
-    void didAccessInitialDocumentTimerFired(Timer<FrameLoader>*);
+    void checkTimerFired(TimerBase*);
+    void didAccessInitialDocumentTimerFired(TimerBase*);
 
     bool prepareRequestForThisFrame(FrameLoadRequest&);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
@@ -274,7 +274,7 @@ private:
 
     bool m_inStopAllLoaders;
 
-    Timer<FrameLoader> m_checkTimer;
+    TaskRunnerTimer<FrameLoader> m_checkTimer;
 
     bool m_didAccessInitialDocument;
 

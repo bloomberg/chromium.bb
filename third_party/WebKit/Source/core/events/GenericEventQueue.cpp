@@ -90,7 +90,7 @@ bool GenericEventQueue::cancelEvent(Event* event)
     return found;
 }
 
-void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
+void GenericEventQueue::timerFired(TimerBase*)
 {
     ASSERT(!m_timer.isActive());
     ASSERT(!m_pendingEvents.isEmpty());
