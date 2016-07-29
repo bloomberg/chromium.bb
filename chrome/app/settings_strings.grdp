@@ -1402,7 +1402,7 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
       Google Profile photo (loading)
     </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo from camera or file.">
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo, which was either taken by the webcam or read from a file.">
       Existing photo from camera or file
     </message>
   </if>
@@ -1414,7 +1414,7 @@
     <message name="IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION" desc="The text to display in the 'Sign out of Chrome' dialog to stop syncing for managed profiles.">
       Because this account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device. However, your data will remain stored in your Google Account.
     </message>
-    <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage">
+    <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage. This is a subpage to edit the name and icon of a Chrome Profile.">
       Edit person
     </message>
   </if>
