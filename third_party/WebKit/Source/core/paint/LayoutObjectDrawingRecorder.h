@@ -56,10 +56,6 @@ public:
 
     void setKnownToBeOpaque() { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); m_drawingRecorder->setKnownToBeOpaque(); }
 
-#if ENABLE(ASSERT)
-    void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_drawingRecorder->setUnderInvalidationCheckingMode(mode); }
-#endif
-
 private:
     Optional<DisplayItemCacheSkipper> m_cacheSkipper;
     Optional<DrawingRecorder> m_drawingRecorder;

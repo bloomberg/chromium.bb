@@ -17,9 +17,8 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
     , m_knownToBeOpaque(false)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_displayItemPosition(m_context.getPaintController().newDisplayItemList().size())
-    , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
 #endif
 {
     if (context.getPaintController().displayItemConstructionIsDisabled())
@@ -29,9 +28,9 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()
         || !useCachedDrawingIfPossible(m_context, m_displayItemClient, m_displayItemType));
 
-    ASSERT(DisplayItem::isDrawingType(displayItemType));
+    DCHECK(DisplayItem::isDrawingType(displayItemType));
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     context.setInDrawingRecorder(true);
 #endif
 
@@ -40,7 +39,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     IntRect cullRect = enclosingIntRect(floatCullRect);
     context.beginRecording(cullRect);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled()) {
         // Skia depends on the cull rect containing all of the display item commands. When strict
         // cull rect clipping is enabled, make this explicit. This allows us to identify potential
@@ -61,22 +60,15 @@ DrawingRecorder::~DrawingRecorder()
     if (m_context.getPaintController().displayItemConstructionIsDisabled())
         return;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled())
         m_context.restore();
 
     m_context.setInDrawingRecorder(false);
-    ASSERT(m_displayItemPosition == m_context.getPaintController().newDisplayItemList().size());
+    DCHECK(m_displayItemPosition == m_context.getPaintController().newDisplayItemList().size());
 #endif
 
-    m_context.getPaintController().createAndAppend<DrawingDisplayItem>(m_displayItemClient
-        , m_displayItemType
-        , m_context.endRecording()
-        , m_knownToBeOpaque
-#if ENABLE(ASSERT)
-        , m_underInvalidationCheckingMode
-#endif
-        );
+    m_context.getPaintController().createAndAppend<DrawingDisplayItem>(m_displayItemClient, m_displayItemType, m_context.endRecording(), m_knownToBeOpaque);
 }
 
 } // namespace blink

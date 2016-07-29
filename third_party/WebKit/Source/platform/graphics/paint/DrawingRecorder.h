@@ -34,11 +34,7 @@ public:
     DrawingRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const FloatRect& cullRect);
     ~DrawingRecorder();
 
-    void setKnownToBeOpaque() { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); m_knownToBeOpaque = true; }
-
-#if ENABLE(ASSERT)
-    void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }
-#endif
+    void setKnownToBeOpaque() { DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); m_knownToBeOpaque = true; }
 
 private:
     GraphicsContext& m_context;
@@ -48,9 +44,8 @@ private:
     // True if there are no transparent areas. Only used for SlimmingPaintV2.
     bool m_knownToBeOpaque;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     size_t m_displayItemPosition;
-    DrawingDisplayItem::UnderInvalidationCheckingMode m_underInvalidationCheckingMode;
 #endif
 };
 

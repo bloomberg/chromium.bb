@@ -52,20 +52,59 @@ void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringB
 #endif
 
 #if ENABLE(ASSERT)
-static bool bitmapIsAllZero(const SkBitmap& bitmap)
+static bool picturesEqual(const SkPicture* picture1, const SkPicture* picture2)
 {
-    bitmap.lockPixels();
-    bool result = true;
-    for (int x = 0; result && x < bitmap.width(); ++x) {
-        for (int y = 0; result && y < bitmap.height(); ++y) {
-            if (SkColorSetA(bitmap.getColor(x, y), 0) != SK_ColorTRANSPARENT) {
-                result = false;
-                break;
+    if (picture1->approximateOpCount() != picture2->approximateOpCount())
+        return false;
+
+    SkDynamicMemoryWStream picture1Serialized;
+    picture1->serialize(&picture1Serialized);
+    SkDynamicMemoryWStream picture2Serialized;
+    picture2->serialize(&picture2Serialized);
+    if (picture1Serialized.bytesWritten() != picture2Serialized.bytesWritten())
+        return false;
+
+    RefPtr<SkData> data1 = adoptRef(picture1Serialized.copyToData());
+    RefPtr<SkData> data2 = adoptRef(picture2Serialized.copyToData());
+    return data1->equals(data2.get());
+}
+
+static SkBitmap pictureToBitmap(const SkPicture* picture)
+{
+    SkBitmap bitmap;
+    SkRect rect = picture->cullRect();
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
+    SkCanvas canvas(bitmap);
+    canvas.translate(-rect.x(), -rect.y());
+    canvas.drawPicture(picture);
+    return bitmap;
+}
+
+static bool bitmapsEqual(const SkPicture* picture1, const SkPicture* picture2)
+{
+    SkRect rect = picture1->cullRect();
+    if (rect != picture2->cullRect())
+        return false;
+
+    SkBitmap bitmap1 = pictureToBitmap(picture1);
+    SkBitmap bitmap2 = pictureToBitmap(picture2);
+    bitmap1.lockPixels();
+    bitmap2.lockPixels();
+    int mismatchCount = 0;
+    const int maxMismatches = 10;
+    for (int y = 0; y < rect.height() && mismatchCount < maxMismatches; ++y) {
+        for (int x = 0; x < rect.width() && mismatchCount < maxMismatches; ++x) {
+            SkColor pixel1 = bitmap1.getColor(x, y);
+            SkColor pixel2 = bitmap2.getColor(x, y);
+            if (pixel1 != pixel2) {
+                LOG(ERROR) << "x=" << x << " y=" << y << " " << std::hex << pixel1 << " vs " << std::hex << pixel2;
+                ++mismatchCount;
             }
         }
     }
-    bitmap.unlockPixels();
-    return result;
+    bitmap1.unlockPixels();
+    bitmap2.unlockPixels();
+    return !mismatchCount;
 }
 
 bool DrawingDisplayItem::equals(const DisplayItem& other) const
@@ -73,49 +112,20 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const
     if (!DisplayItem::equals(other))
         return false;
 
-    RefPtr<const SkPicture> picture = this->picture();
-    RefPtr<const SkPicture> otherPicture = static_cast<const DrawingDisplayItem&>(other).picture();
+    const SkPicture* picture = this->picture();
+    const SkPicture* otherPicture = static_cast<const DrawingDisplayItem&>(other).picture();
 
     if (!picture && !otherPicture)
         return true;
     if (!picture || !otherPicture)
         return false;
 
-    switch (getUnderInvalidationCheckingMode()) {
-    case DrawingDisplayItem::CheckPicture: {
-        if (picture->approximateOpCount() != otherPicture->approximateOpCount())
-            return false;
+    if (picturesEqual(picture, otherPicture))
+        return true;
 
-        SkDynamicMemoryWStream pictureSerialized;
-        picture->serialize(&pictureSerialized);
-        SkDynamicMemoryWStream otherPictureSerialized;
-        otherPicture->serialize(&otherPictureSerialized);
-        if (pictureSerialized.bytesWritten() != otherPictureSerialized.bytesWritten())
-            return false;
-
-        RefPtr<SkData> oldData = adoptRef(otherPictureSerialized.copyToData());
-        RefPtr<SkData> newData = adoptRef(pictureSerialized.copyToData());
-        return oldData->equals(newData.get());
-    }
-    case DrawingDisplayItem::CheckBitmap: {
-        SkRect rect = picture->cullRect();
-        if (rect != otherPicture->cullRect())
-            return false;
-
-        SkBitmap bitmap;
-        bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
-        SkCanvas canvas(bitmap);
-        canvas.translate(-rect.x(), -rect.y());
-        canvas.drawPicture(otherPicture.get());
-        SkPaint diffPaint;
-        diffPaint.setXfermodeMode(SkXfermode::kDifference_Mode);
-        canvas.drawPicture(picture.get(), nullptr, &diffPaint);
-        return bitmapIsAllZero(bitmap);
-    }
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    return false;
+    // Sometimes the client may produce different pictures for the same visual result
+    // which should be treated as equal.
+    return bitmapsEqual(picture, otherPicture);
 }
 #endif // ENABLE(ASSERT)
 
