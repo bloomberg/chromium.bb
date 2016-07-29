@@ -53,9 +53,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Fills the username and password fields of this form with the given values.
   // Returns true if the fields were filled, false otherwise.
-  bool FillSuggestion(const blink::WebFormControlElement& node,
-                      const blink::WebString& username,
-                      const blink::WebString& password);
+  bool FillSuggestion(const blink::WebFormControlElement& control_element,
+                      const base::string16& username,
+                      const base::string16& password);
 
   // Previews the username and password fields of this form with the given
   // values. Returns true if the fields were previewed, false otherwise.

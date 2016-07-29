@@ -727,8 +727,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
 bool PasswordAutofillAgent::FillSuggestion(
     const blink::WebFormControlElement& control_element,
-    const blink::WebString& username,
-    const blink::WebString& password) {
+    const base::string16& username,
+    const base::string16& password) {
   // The element in context of the suggestion popup.
   const blink::WebInputElement* element = toWebInputElement(&control_element);
   if (!element)
@@ -751,18 +751,16 @@ bool PasswordAutofillAgent::FillSuggestion(
     password_info->password_field_suggestion_was_accepted = true;
     password_info->password_field = password_element;
   } else if (!username_element.isNull()) {
-    username_element.setValue(username, true);
+    username_element.setValue(blink::WebString(username), true);
     username_element.setAutofilled(true);
-    const base::string16 username_value = username;
-    UpdateFieldValueAndPropertiesMaskMap(username_element, &username_value,
+    UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          &field_value_and_properties_map_);
   }
 
-  password_element.setValue(password, true);
+  password_element.setValue(blink::WebString(password), true);
   password_element.setAutofilled(true);
-  const base::string16 password_value = password;
-  UpdateFieldValueAndPropertiesMaskMap(password_element, &password_value,
+  UpdateFieldValueAndPropertiesMaskMap(password_element, &password,
                                        FieldPropertiesFlags::AUTOFILLED,
                                        &field_value_and_properties_map_);
 

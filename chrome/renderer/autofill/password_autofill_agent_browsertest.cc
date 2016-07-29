@@ -999,13 +999,15 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestion) {
   // If the password field is not autocompletable, it should not be affected.
   SetElementReadOnly(password_element_, true);
   EXPECT_FALSE(password_autofill_agent_->FillSuggestion(
-      username_element_, kAliceUsername, kAlicePassword));
+      username_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
   SetElementReadOnly(password_element_, false);
 
   // After filling with the suggestion, both fields should be autocompleted.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
-      username_element_, kAliceUsername, kAlicePassword));
+      username_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
   int username_length = strlen(kAliceUsername);
   CheckUsernameSelection(username_length, username_length);
@@ -1013,7 +1015,8 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestion) {
   // Try Filling with a suggestion with password different from the one that was
   // initially sent to the renderer.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
-      username_element_, kBobUsername, kCarolPassword));
+      username_element_, ASCIIToUTF16(kBobUsername),
+      ASCIIToUTF16(kCarolPassword)));
   CheckTextFieldsDOMState(kBobUsername, true, kCarolPassword, true);
   username_length = strlen(kBobUsername);
   CheckUsernameSelection(username_length, username_length);
@@ -1996,7 +1999,8 @@ TEST_F(PasswordAutofillAgentTest, FillSuggestionPasswordChangeForms) {
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
-      username_element_, kAliceUsername, kAlicePassword));
+      username_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
@@ -2017,7 +2021,8 @@ TEST_F(PasswordAutofillAgentTest,
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
-      password_element_, kAliceUsername, kAlicePassword));
+      password_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
   CheckTextFieldsDOMState("", false, kAlicePassword, true);
 }
 
@@ -2430,7 +2435,8 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
 
   // The user chooses to autofill the current password field.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
-      password_element_, kAliceUsername, kAlicePassword));
+      password_element_, ASCIIToUTF16(kAliceUsername),
+      ASCIIToUTF16(kAlicePassword)));
 
   // Simulate a user clicking on not autofilled password fields. This should
   // produce
