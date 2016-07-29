@@ -183,15 +183,18 @@ cr.define('settings_privacy_page', function() {
 
               MockInteractions.tap(noticeActionButton);
 
-              // Tapping the action button will close the notice. Move to the
-              // end of the message loop to allow the closing event to propagate
-              // to the parent dialog. The parent dialog should subsequently
-              // close as well.
-              setTimeout(function() {
-                var notice = element.$$('#notice');
-                assertFalse(!!notice);
-                assertFalse(element.$.dialog.open);
-              }, 0);
+              return new Promise(function(resolve, reject) {
+                // Tapping the action button will close the notice. Move to the
+                // end of the message loop to allow the closing event to
+                // propagate to the parent dialog. The parent dialog should
+                // subsequently close as well.
+                setTimeout(function() {
+                  var notice = element.$$('#notice');
+                  assertFalse(!!notice);
+                  assertFalse(element.$.dialog.open);
+                  resolve();
+                }, 0);
+              });
             });
       });
 

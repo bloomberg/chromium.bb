@@ -84,11 +84,8 @@ Polymer({
     var node = this.treeNodes_.fetchNodeById(event.model.item.id, false);
     dialog.open(node);
 
-    dialog.addEventListener('iron-overlay-closed', function(event) {
-      // The drop-down box in the dialog also generates iron-overlay-closed.
-      // Ignore anything but that event coming from a dialog object.
-      if (event.path[0].id == 'dialog')
-        dialog.remove();
+    dialog.addEventListener('close', function(event) {
+      dialog.remove();
     });
   },
 });
