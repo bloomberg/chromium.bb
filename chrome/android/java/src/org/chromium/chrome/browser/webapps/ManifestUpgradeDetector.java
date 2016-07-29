@@ -28,7 +28,7 @@ public class ManifestUpgradeDetector extends EmptyTabObserver {
      * {@link WebappInfo}. The names must stay in sync with
      * {@linkorg.chromium.webapk.lib.runtime_library.HostBrowserLauncher}.
      */
-    private static final String META_DATA_START_URL = "startUrl";
+    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
 
     /** Pointer to the native side ManifestUpgradeDetector. */
     private long mNativePointer;
