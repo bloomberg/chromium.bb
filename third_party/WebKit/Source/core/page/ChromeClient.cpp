@@ -83,10 +83,9 @@ static bool openJavaScriptDialog(LocalFrame* frame, const String& message, Chrom
     // otherwise cause the load to continue while we're in the middle of
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
-
-    InspectorInstrumentation::JavaScriptDialog instrumentation(frame, message, dialogType);
+    InspectorInstrumentation::willRunJavaScriptDialog(frame, message, dialogType);
     bool result = delegate();
-    instrumentation.setResult(result);
+    InspectorInstrumentation::didRunJavaScriptDialog(frame, result);
     return result;
 }
 

@@ -69,29 +69,6 @@ private:
     bool m_sync;
 };
 
-class CORE_EXPORT StyleRecalc {
-    STACK_ALLOCATED();
-public:
-    StyleRecalc(Document*);
-    ~StyleRecalc();
-private:
-    Member<InstrumentingAgents> m_instrumentingAgents;
-};
-
-class CORE_EXPORT JavaScriptDialog {
-    STACK_ALLOCATED();
-public:
-    JavaScriptDialog(LocalFrame*, const String& message, ChromeClient::DialogType);
-    void setResult(bool);
-    ~JavaScriptDialog();
-private:
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    bool m_result;
-};
-
-CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
-CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
-
 // Called from generated instrumentation code.
 CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);

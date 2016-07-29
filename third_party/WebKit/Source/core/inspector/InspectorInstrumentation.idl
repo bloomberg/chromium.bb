@@ -294,6 +294,18 @@ class XMLHttpRequest;
 
     [Log]
     void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
+
+    [Network]
+    void willRecalculateStyle([Keep] Document*);
+
+    [Page, Network]
+    void didRecalculateStyle(Document*);
+
+    [Page]
+    void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);
+
+    [Page]
+    void didRunJavaScriptDialog(LocalFrame* frame, bool result);
 }
 
 interface InspectorOverrides {

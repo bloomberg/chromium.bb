@@ -813,6 +813,7 @@ void InspectorNetworkAgent::applyUserAgentOverride(String* userAgent)
 
 void InspectorNetworkAgent::willRecalculateStyle(Document*)
 {
+    DCHECK(!m_isRecalculatingStyle);
     m_isRecalculatingStyle = true;
 }
 

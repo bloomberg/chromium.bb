@@ -124,52 +124,6 @@ NativeBreakpoint::~NativeBreakpoint()
         domDebuggerAgent->cancelNativeBreakpoint();
 }
 
-StyleRecalc::StyleRecalc(Document* document)
-    : m_instrumentingAgents(instrumentingAgentsFor(document))
-{
-    if (!m_instrumentingAgents || m_instrumentingAgents->hasInspectorNetworkAgents())
-        return;
-    for (InspectorNetworkAgent* networkAgent : m_instrumentingAgents->inspectorNetworkAgents())
-        networkAgent->willRecalculateStyle(document);
-}
-
-StyleRecalc::~StyleRecalc()
-{
-    if (!m_instrumentingAgents)
-        return;
-    if (m_instrumentingAgents->hasInspectorNetworkAgents()) {
-        for (InspectorNetworkAgent* networkAgent : m_instrumentingAgents->inspectorNetworkAgents())
-            networkAgent->didRecalculateStyle();
-    }
-    if (m_instrumentingAgents->hasInspectorPageAgents()) {
-        for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
-            pageAgent->didRecalculateStyle();
-    }
-}
-
-JavaScriptDialog::JavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType)
-    : m_instrumentingAgents(instrumentingAgentsFor(frame))
-    , m_result(false)
-{
-    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorPageAgents())
-        return;
-    for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
-        pageAgent->willRunJavaScriptDialog(message, dialogType);
-}
-
-void JavaScriptDialog::setResult(bool result)
-{
-    m_result = result;
-}
-
-JavaScriptDialog::~JavaScriptDialog()
-{
-    if (!m_instrumentingAgents || !m_instrumentingAgents->hasInspectorPageAgents())
-        return;
-    for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())
-        pageAgent->didRunJavaScriptDialog(m_result);
-}
-
 bool isDebuggerPaused(LocalFrame*)
 {
     return MainThreadDebugger::instance()->isPaused();
