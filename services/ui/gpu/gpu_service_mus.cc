@@ -146,7 +146,7 @@ void GpuServiceMus::StoreShaderToDisk(int client_id,
 void GpuServiceMus::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
-  NOTIMPLEMENTED();
+  ::SetParent(child_window, parent_window);
 }
 #endif
 
