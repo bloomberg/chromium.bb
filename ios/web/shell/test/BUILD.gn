@@ -12,6 +12,7 @@ ios_eg_test("ios_web_shell_test") {
     "page_state_egtest.mm",
     "pdf_egtest.mm",
     "plugin_placeholder_egtest.mm",
+    "redirect_egtest.mm",
   ]
 
   deps = [
@@ -22,6 +23,7 @@ ios_eg_test("ios_web_shell_test") {
     "//ios/web:test_support",
     "//ios/web/shell",
     "//ios/web/shell/test:earl_grey_test_support",
+    "//net:net",
     "//url:url",
 
     # All shared libraries must have the sanitizer deps to properly link in
