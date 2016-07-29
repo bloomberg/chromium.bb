@@ -58,7 +58,6 @@ struct DataForRecursion {
   uint32_t main_thread_scrolling_reasons;
   bool scroll_tree_parent_created_by_uninheritable_criteria;
   const gfx::Transform* device_transform;
-  gfx::Vector2dF scroll_snap;
   gfx::Transform compound_transform_since_render_target;
   bool axis_align_since_render_target;
   SkColor safe_opaque_background_color;
@@ -540,7 +539,6 @@ bool AddTransformNodeIfNeeded(
                           ->offset_to_transform_parent();
       source_index =
           data_from_ancestor.transform_tree_parent->transform_tree_index();
-      source_offset -= data_from_ancestor.scroll_snap;
     }
   }
 
@@ -558,9 +556,6 @@ bool AddTransformNodeIfNeeded(
     }
   }
   data_for_children->transform_tree_parent = layer;
-
-  if (IsContainerForFixedPositionLayers(layer) || is_fixed)
-    data_for_children->scroll_snap = gfx::Vector2dF();
 
   if (!requires_node) {
     data_for_children->should_flatten |= ShouldFlattenTransform(layer);
@@ -693,8 +688,6 @@ bool AddTransformNodeIfNeeded(
 
   // Flattening (if needed) will be handled by |node|.
   layer->set_should_flatten_transform_from_property_tree(false);
-
-  data_for_children->scroll_snap += node->scroll_snap;
 
   node->owner_id = layer->id();
 

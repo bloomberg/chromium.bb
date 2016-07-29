@@ -6839,6 +6839,119 @@ TEST_F(LayerTreeHostCommonTest,
                       scroller->DrawTransform().To2dTranslation());
 }
 
+TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithScrollChild) {
+  // This test verifies that a scrolling child of a scrolling layer doesn't get
+  // snapped to integer coordinates.
+  //
+  // + root
+  //   + container
+  //    + scroller
+  //   + scroll_child
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> container = Layer::Create();
+  scoped_refptr<Layer> scroller = Layer::Create();
+  scoped_refptr<Layer> scroll_child = Layer::Create();
+  root->AddChild(container);
+  root->AddChild(scroll_child);
+  container->AddChild(scroller);
+  host()->SetRootLayer(root);
+
+  scroller->SetScrollClipLayerId(container->id());
+  scroll_child->SetScrollParent(scroller.get());
+
+  gfx::Transform rotate;
+  rotate.RotateAboutYAxis(30);
+  root->SetBounds(gfx::Size(50, 50));
+  container->SetBounds(gfx::Size(50, 50));
+  scroller->SetBounds(gfx::Size(100, 100));
+  scroller->SetPosition(gfx::PointF(10.3f, 10.3f));
+  scroll_child->SetBounds(gfx::Size(10, 10));
+  scroll_child->SetTransform(rotate);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  host()->host_impl()->CreatePendingTree();
+  host()->CommitAndCreatePendingTree();
+  host()->host_impl()->ActivateSyncTree();
+  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+
+  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
+  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
+  LayerImpl* scroll_child_impl = layer_tree_impl->LayerById(scroll_child->id());
+  gfx::Vector2dF scroll_delta(5.f, 9.f);
+  SetScrollOffsetDelta(scroller_impl, scroll_delta);
+
+  ExecuteCalculateDrawProperties(root_impl);
+
+  gfx::Vector2dF expected_scroller_screen_space_transform_translation(5.f, 1.f);
+  EXPECT_VECTOR2DF_EQ(expected_scroller_screen_space_transform_translation,
+                      scroller_impl->ScreenSpaceTransform().To2dTranslation());
+
+  gfx::Transform expected_scroll_child_screen_space_transform;
+  expected_scroll_child_screen_space_transform.Translate(-5.3f, -9.3f);
+  expected_scroll_child_screen_space_transform.RotateAboutYAxis(30);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scroll_child_screen_space_transform,
+                                  scroll_child_impl->ScreenSpaceTransform());
+}
+
+TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithFixedPosChild) {
+  // This test verifies that a fixed pos child of a scrolling layer doesn't get
+  // snapped to integer coordinates.
+  //
+  // + root
+  //   + container
+  //    + scroller
+  //     + fixed_pos
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> container = Layer::Create();
+  scoped_refptr<Layer> scroller = Layer::Create();
+  scoped_refptr<Layer> fixed_pos = Layer::Create();
+
+  scroller->SetIsContainerForFixedPositionLayers(true);
+
+  root->AddChild(container);
+  container->AddChild(scroller);
+  scroller->AddChild(fixed_pos);
+  host()->SetRootLayer(root);
+
+  LayerPositionConstraint fixed_position;
+  fixed_position.set_is_fixed_position(true);
+  scroller->SetScrollClipLayerId(container->id());
+  fixed_pos->SetPositionConstraint(fixed_position);
+
+  root->SetBounds(gfx::Size(50, 50));
+  container->SetBounds(gfx::Size(50, 50));
+  scroller->SetBounds(gfx::Size(100, 100));
+  scroller->SetPosition(gfx::PointF(10.3f, 10.3f));
+  fixed_pos->SetBounds(gfx::Size(10, 10));
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  host()->host_impl()->CreatePendingTree();
+  host()->CommitAndCreatePendingTree();
+  host()->host_impl()->ActivateSyncTree();
+  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+
+  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
+  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
+  LayerImpl* fixed_pos_impl = layer_tree_impl->LayerById(fixed_pos->id());
+  gfx::Vector2dF scroll_delta(5.f, 9.f);
+  SetScrollOffsetDelta(scroller_impl, scroll_delta);
+
+  ExecuteCalculateDrawProperties(root_impl);
+
+  gfx::Vector2dF expected_scroller_screen_space_transform_translation(5.f, 1.f);
+  EXPECT_VECTOR2DF_EQ(expected_scroller_screen_space_transform_translation,
+                      scroller_impl->ScreenSpaceTransform().To2dTranslation());
+
+  gfx::Vector2dF expected_fixed_pos_screen_space_transform_translation(10.3f,
+                                                                       10.3f);
+  EXPECT_VECTOR2DF_EQ(expected_fixed_pos_screen_space_transform_translation,
+                      fixed_pos_impl->ScreenSpaceTransform().To2dTranslation());
+}
+
 class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {
  public:
   static std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> Create(

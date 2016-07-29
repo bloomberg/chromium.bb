@@ -1071,11 +1071,13 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.SetTargetId(parent, parent);
+    tree.Node(parent)->source_node_id = 0;
     tree.Node(parent)->local.Translate(1.5f, 1.5f);
 
     int child = tree.Insert(TransformNode(), parent);
     tree.SetTargetId(child, parent);
     tree.Node(child)->local.Translate(1, 1);
+    tree.Node(child)->source_node_id = parent;
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
@@ -1086,6 +1088,8 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
 
     tree.Node(parent)->local.Translate(0.5f, 0.5f);
     tree.Node(child)->local.Translate(0.5f, 0.5f);
+    tree.Node(parent)->needs_local_transform_update = true;
+    tree.Node(child)->needs_local_transform_update = true;
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
@@ -1095,6 +1099,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
         tree.Node(child)->node_and_ancestors_have_only_integer_translation);
 
     tree.Node(child)->local.Translate(0.5f, 0.5f);
+    tree.Node(child)->needs_local_transform_update = true;
     tree.SetTargetId(child, child);
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
@@ -1124,6 +1129,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     effect_tree.Node(effect_parent)->has_render_surface = true;
     tree.SetTargetId(parent, parent);
     tree.Node(parent)->scrolls = true;
+    tree.Node(parent)->source_node_id = 0;
 
     int child = tree.Insert(TransformNode(), parent);
     TransformNode* child_node = tree.Node(child);
@@ -1131,6 +1137,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     child_node->scrolls = true;
     child_node->local.Scale3d(6.0f, 6.0f, 0.0f);
     child_node->local.Translate(1.3f, 1.3f);
+    child_node->source_node_id = parent;
     tree.set_needs_update(true);
 
     SetupTransformTreeForTest(&tree);

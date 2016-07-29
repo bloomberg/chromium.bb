@@ -337,6 +337,28 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
   if (NeedsSourceToParentUpdate(node)) {
     gfx::Transform to_parent;
     ComputeTranslation(node->source_node_id, node->parent_id, &to_parent);
+    gfx::Vector2dF unsnapping;
+    TransformNode* current;
+    TransformNode* parent_node;
+    for (current = Node(node->source_node_id); current->id > node->parent_id;
+         current = parent(current)) {
+      unsnapping.Subtract(current->scroll_snap);
+    }
+    for (parent_node = Node(node->parent_id);
+         parent_node->id > node->source_node_id;
+         parent_node = parent(parent_node)) {
+      unsnapping.Add(parent_node->scroll_snap);
+    }
+    // If a node NeedsSourceToParentUpdate, the node is either a fixed position
+    // node or a scroll child.
+    // If the node has a fixed position, the parent of the node is an ancestor
+    // of source node, current->id should be equal to node->parent_id.
+    // Otherwise, the node's source node is always an ancestor of the node owned
+    // by the scroll parent, so parent_node->id should be equal to
+    // node->source_node_id.
+    DCHECK(current->id == node->parent_id ||
+           parent_node->id == node->source_node_id);
+    to_parent.Translate(unsnapping.x(), unsnapping.y());
     node->source_to_parent = to_parent.To2dTranslation();
   }
 
