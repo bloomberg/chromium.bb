@@ -93,6 +93,7 @@ void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>>
 BackgroundHTMLParser::Configuration::Configuration()
     : outstandingTokenLimit(defaultOutstandingTokenLimit)
     , pendingTokenLimit(defaultPendingTokenLimit)
+    , shouldCoalesceChunks(false)
 {
 }
 
@@ -113,6 +114,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_tokenizedChunkQueue(config->tokenizedChunkQueue.release())
     , m_startingScript(false)
     , m_lastBytesReceivedTime(0.0)
+    , m_shouldCoalesceChunks(config->shouldCoalesceChunks)
 {
     ASSERT(m_outstandingTokenLimit > 0);
     ASSERT(m_pendingTokenLimit > 0);
@@ -225,13 +227,14 @@ void BackgroundHTMLParser::pumpTokenizer()
     if (m_input.totalCheckpointTokenCount() > m_outstandingTokenLimit)
         return;
 
+    bool shouldNotifyMainThread = false;
     while (true) {
         if (m_xssAuditor->isEnabled())
             m_sourceTracker.start(m_input.current(), m_tokenizer.get(), *m_token);
 
         if (!m_tokenizer->nextToken(m_input.current(), *m_token)) {
             // We've reached the end of our current input.
-            sendTokensToMainThread();
+            shouldNotifyMainThread |= queueChunkForMainThread();
             break;
         }
 
@@ -256,7 +259,7 @@ void BackgroundHTMLParser::pumpTokenizer()
             // Break chunks before a script tag is inserted and flag the chunk as starting a script
             // so the main parser can decide if it should yield before processing the chunk.
             if (simulatedToken == HTMLTreeBuilderSimulator::ScriptStart) {
-                sendTokensToMainThread();
+                shouldNotifyMainThread |= queueChunkForMainThread();
                 m_startingScript = true;
             }
 
@@ -269,18 +272,30 @@ void BackgroundHTMLParser::pumpTokenizer()
         m_token->clear();
 
         if (simulatedToken == HTMLTreeBuilderSimulator::ScriptEnd || m_pendingTokens->size() >= m_pendingTokenLimit) {
-            sendTokensToMainThread();
+            shouldNotifyMainThread |= queueChunkForMainThread();
             // If we're far ahead of the main thread, yield for a bit to avoid consuming too much memory.
             if (m_input.totalCheckpointTokenCount() > m_outstandingTokenLimit)
                 break;
         }
+
+        if (!m_shouldCoalesceChunks && shouldNotifyMainThread) {
+            runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks, m_parser);
+            shouldNotifyMainThread = false;
+        }
+    }
+    // Wait to notify the main thread about the chunks until we're at the
+    // limit. This lets the background parser generate lots of valuable
+    // preloads before anything expensive (extensions, scripts) take up time
+    // on the main thread. A busy main thread can cause preload delays.
+    if (shouldNotifyMainThread) {
+        runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks, m_parser);
     }
 }
 
-void BackgroundHTMLParser::sendTokensToMainThread()
+bool BackgroundHTMLParser::queueChunkForMainThread()
 {
     if (m_pendingTokens->isEmpty())
-        return;
+        return false;
 
 #if ENABLE(ASSERT)
     checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens.get());
@@ -316,11 +331,9 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     DEFINE_STATIC_LOCAL(CustomCountHistogram, chunkEnqueueTime, ("Parser.ChunkEnqueueTime", 1, 10000, 50));
     chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
-    if (isEmpty) {
-        runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks, m_parser);
-    }
 
     m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);
+    return isEmpty;
 }
 
 // If the background parser is already running on the main thread, then it is

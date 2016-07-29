@@ -62,6 +62,7 @@ public:
         // pendingTokenLimit
         size_t outstandingTokenLimit;
         size_t pendingTokenLimit;
+        bool shouldCoalesceChunks;
     };
 
     static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, std::unique_ptr<Configuration>, const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&, std::unique_ptr<WebTaskRunner>);
@@ -95,7 +96,11 @@ private:
     void appendDecodedBytes(const String&);
     void markEndOfFile();
     void pumpTokenizer();
-    void sendTokensToMainThread();
+
+    // Returns whether or not the HTMLDocumentParser should be notified of
+    // pending chunks.
+    bool queueChunkForMainThread();
+    void notifyMainThreadOfNewChunks();
     void updateDocument(const String& decodedData);
 
     template <typename FunctionType, typename... Ps>
@@ -128,6 +133,7 @@ private:
 
     bool m_startingScript;
     double m_lastBytesReceivedTime;
+    bool m_shouldCoalesceChunks;
 };
 
 } // namespace blink

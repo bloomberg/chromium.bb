@@ -741,6 +741,7 @@ void HTMLDocumentParser::startBackgroundParser()
             config->outstandingTokenLimit = document()->settings()->backgroundHtmlParserOutstandingTokenLimit();
         if (document()->settings()->backgroundHtmlParserPendingTokenLimit())
             config->pendingTokenLimit = document()->settings()->backgroundHtmlParserPendingTokenLimit();
+        config->shouldCoalesceChunks = document()->settings()->parseHTMLOnMainThreadCoalesceChunks();
     }
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());

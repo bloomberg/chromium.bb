@@ -1379,6 +1379,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     "DisallowFetchForDocWrittenScriptsInMainFrame",
 
     // Keys: parseHTMLOnMainThreadSyncTokenize
+    //       parseHTMLOnMainThreadCoalesceChunks
     "ParseHTMLOnMainThread",
   };
 
