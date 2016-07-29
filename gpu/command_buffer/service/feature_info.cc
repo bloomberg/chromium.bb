@@ -562,8 +562,7 @@ void FeatureInfo::InitializeFeatures() {
          extensions.Contains("GL_OES_rgb8_rgba8")) &&
         extensions.Contains("GL_EXT_sRGB")) ||
        feature_flags_.desktop_srgb_support) &&
-      (context_type_ == CONTEXT_TYPE_WEBGL1 ||
-       context_type_ == CONTEXT_TYPE_OPENGLES2)) {
+       IsWebGL1OrES2Context()) {
     AddExtensionString("GL_EXT_sRGB");
     validators_.texture_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
@@ -1414,6 +1413,21 @@ bool FeatureInfo::IsWebGLContext() const {
     case CONTEXT_TYPE_WEBGL2:
       return true;
     case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_OPENGLES3:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool FeatureInfo::IsWebGL1OrES2Context() const {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type_) {
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_OPENGLES2:
+      return true;
+    case CONTEXT_TYPE_WEBGL2:
     case CONTEXT_TYPE_OPENGLES3:
       return false;
   }

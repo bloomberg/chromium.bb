@@ -3072,8 +3072,7 @@ bool GLES2DecoderImpl::Initialize(
   transform_feedback_manager_.reset(new TransformFeedbackManager(
       group_->max_transform_feedback_separate_attribs(), needs_emulation));
 
-  if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL2 ||
-      feature_info_->context_type() == CONTEXT_TYPE_OPENGLES3) {
+  if (feature_info_->IsWebGL2OrES3Context()) {
     if (!feature_info_->IsES3Capable()) {
       LOG(ERROR) << "Underlying driver does not support ES3.";
       Destroy(true);
@@ -3673,9 +3672,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxCallStackDepth = 256;
   resources.MaxDualSourceDrawBuffers = group_->max_dual_source_draw_buffers();
 
-  ContextType context_type = feature_info_->context_type();
-  if (context_type != CONTEXT_TYPE_WEBGL1 &&
-      context_type != CONTEXT_TYPE_OPENGLES2) {
+  if(!feature_info_->IsWebGL1OrES2Context()) {
     resources.MaxVertexOutputVectors =
         group_->max_vertex_output_components() / 4;
     resources.MaxFragmentInputVectors =
@@ -3692,7 +3689,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
   ShShaderSpec shader_spec;
-  switch (context_type) {
+  switch (feature_info_->context_type()) {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
       resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
@@ -6027,9 +6024,7 @@ bool GLES2DecoderImpl::GetHelper(
                 GetBoundReadFrameBufferTextureType());
           }
         }
-        if (*params == GL_HALF_FLOAT &&
-            (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1 ||
-             feature_info_->context_type() == CONTEXT_TYPE_OPENGLES2)) {
+        if (*params == GL_HALF_FLOAT && feature_info_->IsWebGL1OrES2Context()) {
           *params = GL_HALF_FLOAT_OES;
         }
         if (*params == GL_SRGB_ALPHA_EXT) {
@@ -8148,13 +8143,8 @@ bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {
 }
 
 bool GLES2DecoderImpl::SupportsDrawBuffers() const {
-  switch (feature_info_->context_type()) {
-    case CONTEXT_TYPE_OPENGLES2:
-    case CONTEXT_TYPE_WEBGL1:
-      return feature_info_->feature_flags().ext_draw_buffers;
-    default:
-      return true;
-  }
+  return feature_info_->IsWebGL1OrES2Context() ?
+      feature_info_->feature_flags().ext_draw_buffers : true;
 }
 
 bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
@@ -8179,13 +8169,9 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
 }
 
 bool GLES2DecoderImpl::ValidateUniformBlockBackings(const char* func_name) {
-  switch (feature_info_->context_type()) {
-    case CONTEXT_TYPE_OPENGLES2:
-    case CONTEXT_TYPE_WEBGL1:
-      // Uniform blocks do not exist in ES2 contexts.
-      return true;
-    default:
-      break;
+  if (feature_info_->IsWebGL1OrES2Context()) {
+    // Uniform blocks do not exist in ES2 contexts.
+    return true;
   }
   DCHECK(state_.current_program.get());
   for (auto info : state_.current_program->uniform_block_size_info()) {

@@ -395,13 +395,9 @@ void Program::UpdateVertexInputBaseTypes() {
 }
 
 void Program::UpdateUniformBlockSizeInfo() {
-  switch (feature_info().context_type()) {
-    case CONTEXT_TYPE_OPENGLES2:
-    case CONTEXT_TYPE_WEBGL1:
-      // Uniform blocks do not exist in ES2.
-      return;
-    default:
-      break;
+  if (feature_info().IsWebGL1OrES2Context()) {
+    // Uniform blocks do not exist in ES2.
+    return;
   }
 
   uniform_block_size_info_.clear();
