@@ -25,7 +25,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -116,15 +115,14 @@ void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
 
   std::vector<FormDataPredictions> type_predictions =
       FormStructure::GetFieldTypePredictions(forms);
-  GetAutofillAgent()->FieldTypePredictionsAvailable(
-      std::move(type_predictions));
+  GetAutofillAgent()->FieldTypePredictionsAvailable(type_predictions);
 }
 
 void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  GetAutofillAgent()->AcceptDataListSuggestion(mojo::String::From(value));
+  GetAutofillAgent()->AcceptDataListSuggestion(value);
 }
 
 void ContentAutofillDriver::RendererShouldClearFilledForm() {
@@ -143,14 +141,14 @@ void ContentAutofillDriver::RendererShouldFillFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  GetAutofillAgent()->FillFieldWithValue(mojo::String::From(value));
+  GetAutofillAgent()->FillFieldWithValue(value);
 }
 
 void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  GetAutofillAgent()->PreviewFieldWithValue(mojo::String::From(value));
+  GetAutofillAgent()->PreviewFieldWithValue(value);
 }
 
 void ContentAutofillDriver::PopupHidden() {
@@ -178,9 +176,9 @@ void ContentAutofillDriver::FirstUserGestureObserved() {
   client_->OnFirstUserGestureObserved();
 }
 
-void ContentAutofillDriver::FormsSeen(mojo::Array<FormData> forms,
+void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
                                       base::TimeTicks timestamp) {
-  autofill_manager_->OnFormsSeen(forms.storage(), timestamp);
+  autofill_manager_->OnFormsSeen(forms, timestamp);
 }
 
 void ContentAutofillDriver::WillSubmitForm(const FormData& form,
@@ -231,10 +229,10 @@ void ContentAutofillDriver::DidEndTextFieldEditing() {
   autofill_manager_->OnDidEndTextFieldEditing();
 }
 
-void ContentAutofillDriver::SetDataList(mojo::Array<mojo::String> values,
-                                        mojo::Array<mojo::String> labels) {
-  autofill_manager_->OnSetDataList(values.To<std::vector<base::string16>>(),
-                                   labels.To<std::vector<base::string16>>());
+void ContentAutofillDriver::SetDataList(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  autofill_manager_->OnSetDataList(values, labels);
 }
 
 void ContentAutofillDriver::DidNavigateFrame(

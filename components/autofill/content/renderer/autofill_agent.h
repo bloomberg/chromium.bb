@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
 #include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
@@ -66,16 +67,16 @@ class AutofillAgent : public content::RenderFrameObserver,
   void FillForm(int32_t id, const FormData& form) override;
   void PreviewForm(int32_t id, const FormData& form) override;
   void FieldTypePredictionsAvailable(
-      mojo::Array<FormDataPredictions> forms) override;
+      const std::vector<FormDataPredictions>& forms) override;
   void ClearForm() override;
   void ClearPreviewedForm() override;
-  void FillFieldWithValue(const mojo::String& value) override;
-  void PreviewFieldWithValue(const mojo::String& value) override;
-  void AcceptDataListSuggestion(const mojo::String& value) override;
-  void FillPasswordSuggestion(const mojo::String& username,
-                              const mojo::String& password) override;
-  void PreviewPasswordSuggestion(const mojo::String& username,
-                                 const mojo::String& password) override;
+  void FillFieldWithValue(const base::string16& value) override;
+  void PreviewFieldWithValue(const base::string16& value) override;
+  void AcceptDataListSuggestion(const base::string16& value) override;
+  void FillPasswordSuggestion(const base::string16& username,
+                              const base::string16& password) override;
+  void PreviewPasswordSuggestion(const base::string16& username,
+                                 const base::string16& password) override;
   void ShowInitialPasswordAccountSuggestions(
       int32_t key,
       const PasswordFormFillData& form_data) override;

@@ -25,3 +25,8 @@ interface TestValue {
   BounceListValue(mojo.common.mojom.ListValue in)
       => (mojo.common.mojom.ListValue out);
 };
+
+interface TestString16 {
+  BounceString16(mojo.common.mojom.String16 in)
+      => (mojo.common.mojom.String16 out);
+};

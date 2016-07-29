@@ -51,7 +51,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   // mojom::AutofillDriver:
   void FirstUserGestureObserved() override {}
 
-  void FormsSeen(mojo::Array<FormData> forms,
+  void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override {}
 
   void WillSubmitForm(const FormData& form,
@@ -85,8 +85,8 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void DidEndTextFieldEditing() override {}
 
-  void SetDataList(mojo::Array<mojo::String> values,
-                   mojo::Array<mojo::String> labels) override {}
+  void SetDataList(const std::vector<base::string16>& values,
+                   const std::vector<base::string16>& labels) override {}
 
   // Records whether FocusNoLongerOnForm() get called.
   bool did_unfocus_form_;

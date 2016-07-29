@@ -22,7 +22,6 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/renderer/render_frame.h"
-#include "mojo/common/common_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -385,8 +384,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     static_cast<autofill::PageClickListener*>(autofill_agent_)
         ->FormControlElementClicked(input, false);
 
-    autofill_agent_->FillPasswordSuggestion(mojo::String::From(username),
-                                            mojo::String::From(password));
+    autofill_agent_->FillPasswordSuggestion(username, password);
   }
 
   void SimulateUsernameChange(const std::string& username) {

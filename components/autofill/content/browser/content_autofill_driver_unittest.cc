@@ -28,7 +28,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -162,8 +161,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   }
 
   void FieldTypePredictionsAvailable(
-      mojo::Array<FormDataPredictions> forms) override {
-    predictions_ = forms.PassStorage();
+      const std::vector<FormDataPredictions>& forms) override {
+    predictions_ = forms;
     CallDone();
   }
 
@@ -177,26 +176,26 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void FillFieldWithValue(const mojo::String& value) override {
-    value_fill_field_ = value.To<base::string16>();
+  void FillFieldWithValue(const base::string16& value) override {
+    value_fill_field_ = value;
     CallDone();
   }
 
-  void PreviewFieldWithValue(const mojo::String& value) override {
-    value_preview_field_ = value.To<base::string16>();
+  void PreviewFieldWithValue(const base::string16& value) override {
+    value_preview_field_ = value;
     CallDone();
   }
 
-  void AcceptDataListSuggestion(const mojo::String& value) override {
-    value_accept_data_ = value.To<base::string16>();
+  void AcceptDataListSuggestion(const base::string16& value) override {
+    value_accept_data_ = value;
     CallDone();
   }
 
-  void FillPasswordSuggestion(const mojo::String& username,
-                              const mojo::String& password) override {}
+  void FillPasswordSuggestion(const base::string16& username,
+                              const base::string16& password) override {}
 
-  void PreviewPasswordSuggestion(const mojo::String& username,
-                                 const mojo::String& password) override {}
+  void PreviewPasswordSuggestion(const base::string16& username,
+                                 const base::string16& password) override {}
 
   void ShowInitialPasswordAccountSuggestions(
       int32_t key,

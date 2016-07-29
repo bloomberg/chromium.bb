@@ -65,13 +65,13 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   // mojom::AutofillDriver:
   void FirstUserGestureObserved() override {}
 
-  void FormsSeen(mojo::Array<FormData> forms,
+  void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override {
     // FormsSeen() could be called multiple times and sometimes even with empty
     // forms array for main frame, but we're interested in only the first time
     // call.
     if (!forms_)
-      forms_.reset(new std::vector<FormData>(forms.PassStorage()));
+      forms_.reset(new std::vector<FormData>(forms));
   }
 
   void WillSubmitForm(const FormData& form,
@@ -103,8 +103,8 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void DidEndTextFieldEditing() override {}
 
-  void SetDataList(mojo::Array<mojo::String> values,
-                   mojo::Array<mojo::String> labels) override {}
+  void SetDataList(const std::vector<base::string16>& values,
+                   const std::vector<base::string16>& labels) override {}
 
   // Records whether TextFieldDidChange() get called.
   bool called_field_change_;

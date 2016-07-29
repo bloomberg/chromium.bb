@@ -21,3 +21,6 @@ struct TimeDelta;
 
 [Native]
 struct TimeTicks;
+
+[Native]
+struct String16;

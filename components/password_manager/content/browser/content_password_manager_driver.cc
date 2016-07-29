@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/common/common_type_converters.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace password_manager {
@@ -94,15 +93,13 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
 void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {
-  GetAutofillAgent()->FillPasswordSuggestion(mojo::String::From(username),
-                                             mojo::String::From(password));
+  GetAutofillAgent()->FillPasswordSuggestion(username, password);
 }
 
 void ContentPasswordManagerDriver::PreviewSuggestion(
     const base::string16& username,
     const base::string16& password) {
-  GetAutofillAgent()->PreviewPasswordSuggestion(mojo::String::From(username),
-                                                mojo::String::From(password));
+  GetAutofillAgent()->PreviewPasswordSuggestion(username, password);
 }
 
 void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(

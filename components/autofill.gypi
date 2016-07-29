@@ -336,7 +336,6 @@
               '<(DEPTH)/url/mojo/gurl.typemap',
               '<(DEPTH)/url/mojo/origin.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
           'dependencies': [
@@ -372,7 +371,6 @@
               '<(DEPTH)/url/mojo/gurl.typemap',
               '<(DEPTH)/url/mojo/origin.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'sources': [
             'autofill/content/public/interfaces/test_autofill_types.mojom',
@@ -405,7 +403,6 @@
               '<(DEPTH)/ui/gfx/geometry/mojo/geometry.typemap',
               '<(DEPTH)/url/mojo/gurl.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'include_dirs': [
             '..',

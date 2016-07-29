@@ -42,7 +42,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/common/common_type_converters.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -492,7 +491,7 @@ void AutofillAgent::OnPing() {
 }
 
 void AutofillAgent::FieldTypePredictionsAvailable(
-    mojo::Array<FormDataPredictions> forms) {
+    const std::vector<FormDataPredictions>& forms) {
   for (const auto& form : forms) {
     form_cache_.ShowPredictions(form);
   }
@@ -519,35 +518,35 @@ void AutofillAgent::ClearPreviewedForm() {
   }
 }
 
-void AutofillAgent::FillFieldWithValue(const mojo::String& value) {
+void AutofillAgent::FillFieldWithValue(const base::string16& value) {
   WebInputElement* input_element = toWebInputElement(&element_);
   if (input_element) {
-    DoFillFieldWithValue(value.To<base::string16>(), input_element);
+    DoFillFieldWithValue(value, input_element);
     input_element->setAutofilled(true);
   }
 }
 
-void AutofillAgent::PreviewFieldWithValue(const mojo::String& value) {
+void AutofillAgent::PreviewFieldWithValue(const base::string16& value) {
   WebInputElement* input_element = toWebInputElement(&element_);
   if (input_element)
-    DoPreviewFieldWithValue(value.To<base::string16>(), input_element);
+    DoPreviewFieldWithValue(value, input_element);
 }
 
-void AutofillAgent::AcceptDataListSuggestion(const mojo::String& value) {
-  DoAcceptDataListSuggestion(value.To<base::string16>());
+void AutofillAgent::AcceptDataListSuggestion(const base::string16& value) {
+  DoAcceptDataListSuggestion(value);
 }
 
-void AutofillAgent::FillPasswordSuggestion(const mojo::String& username,
-                                           const mojo::String& password) {
-  bool handled = password_autofill_agent_->FillSuggestion(
-      element_, username.To<base::string16>(), password.To<base::string16>());
+void AutofillAgent::FillPasswordSuggestion(const base::string16& username,
+                                           const base::string16& password) {
+  bool handled =
+      password_autofill_agent_->FillSuggestion(element_, username, password);
   DCHECK(handled);
 }
 
-void AutofillAgent::PreviewPasswordSuggestion(const mojo::String& username,
-                                              const mojo::String& password) {
-  bool handled = password_autofill_agent_->PreviewSuggestion(
-      element_, username.To<base::string16>(), password.To<base::string16>());
+void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
+                                              const base::string16& password) {
+  bool handled =
+      password_autofill_agent_->PreviewSuggestion(element_, username, password);
   DCHECK(handled);
 }
 
@@ -713,9 +712,7 @@ void AutofillAgent::QueryAutofillSuggestions(
 
   is_popup_possibly_visible_ = true;
 
-  GetAutofillDriver()->SetDataList(
-      mojo::Array<mojo::String>::From(data_list_values),
-      mojo::Array<mojo::String>::From(data_list_labels));
+  GetAutofillDriver()->SetDataList(data_list_values, data_list_labels);
   GetAutofillDriver()->QueryFormFieldAutofill(
       autofill_query_id_, form, field,
       render_frame()->GetRenderView()->ElementBoundsInWindow(element_));
@@ -745,7 +742,7 @@ void AutofillAgent::ProcessForms() {
 
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() || !frame->parent()) {
-    GetAutofillDriver()->FormsSeen(std::move(forms), forms_seen_timestamp);
+    GetAutofillDriver()->FormsSeen(forms, forms_seen_timestamp);
   }
 }
 

@@ -71,7 +71,7 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // mojom::AutofillDriver:
   void FirstUserGestureObserved() override;
-  void FormsSeen(mojo::Array<FormData> forms,
+  void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override;
   void WillSubmitForm(const FormData& form, base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form) override;
@@ -89,8 +89,8 @@ class ContentAutofillDriver : public AutofillDriver,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
-  void SetDataList(mojo::Array<mojo::String> values,
-                   mojo::Array<mojo::String> labels) override;
+  void SetDataList(const std::vector<base::string16>& values,
+                   const std::vector<base::string16>& labels) override;
 
   // Called when the frame has navigated.
   void DidNavigateFrame(const content::LoadCommittedDetails& details,

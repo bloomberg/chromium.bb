@@ -55,5 +55,6 @@ interface AutofillDriver {
   DidEndTextFieldEditing();
 
   // Informs browser of data list values for the current field.
-  SetDataList(array<string> values, array<string> labels);
+  SetDataList(array<mojo.common.mojom.String16> values,
+              array<mojo.common.mojom.String16> labels);
 };
