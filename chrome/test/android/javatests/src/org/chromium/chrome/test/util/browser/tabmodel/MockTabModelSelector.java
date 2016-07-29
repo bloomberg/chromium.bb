@@ -17,28 +17,35 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 public class MockTabModelSelector extends TabModelSelectorBase {
     // Offsetting the id compared to the index helps greatly when debugging.
-    public static final int ID_OFFSET = 1000;
-    public static final int INCOGNITO_ID_OFFSET = 2000;
+    public static final int ID_OFFSET = 100000;
+    public static final int INCOGNITO_ID_OFFSET = 200000;
+    private static int sCurTabOffset = 0;
 
     public MockTabModelSelector(
             int tabCount, int incognitoTabCount, MockTabModel.MockTabModelDelegate delegate) {
         super();
-        MockTabModel tabModel = new MockTabModel(false, delegate);
-        if (tabCount > 0) {
-            for (int i = 0; i < tabCount; i++) {
-                tabModel.addTab(ID_OFFSET + i);
-            }
-            TabModelUtils.setIndex(tabModel, 0);
+        initialize(false, new MockTabModel(false, delegate), new MockTabModel(true, delegate));
+        for (int i = 0; i < tabCount; i++) {
+            addMockTab();
         }
+        if (tabCount > 0) TabModelUtils.setIndex(getModelAt(0), 0);
 
-        MockTabModel incognitoTabModel = new MockTabModel(true, delegate);
-        if (incognitoTabCount > 0) {
-            for (int i = 0; i < incognitoTabCount; i++) {
-                incognitoTabModel.addTab(INCOGNITO_ID_OFFSET + tabCount + i);
-            }
-            TabModelUtils.setIndex(incognitoTabModel, 0);
+        for (int i = 0; i < incognitoTabCount; i++) {
+            addMockIncognitoTab();
         }
-        initialize(false, tabModel, incognitoTabModel);
+        if (incognitoTabCount > 0) TabModelUtils.setIndex(getModelAt(1), 0);
+    }
+
+    private static int nextIdOffset() {
+        return sCurTabOffset++;
+    }
+
+    public Tab addMockTab() {
+        return ((MockTabModel) getModelAt(0)).addTab(ID_OFFSET + nextIdOffset());
+    }
+
+    public Tab addMockIncognitoTab() {
+        return ((MockTabModel) getModelAt(1)).addTab(INCOGNITO_ID_OFFSET + nextIdOffset());
     }
 
     @Override

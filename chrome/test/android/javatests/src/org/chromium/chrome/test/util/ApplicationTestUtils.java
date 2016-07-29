@@ -5,6 +5,7 @@
 package org.chromium.chrome.test.util;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -14,10 +15,13 @@ import android.os.PowerManager;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.OmahaClient;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -115,6 +119,40 @@ public class ApplicationTestUtils {
                         return ApplicationStatus.getStateForApplication();
                     }
                 }));
+    }
+
+    /** Finishes the given activity and waits for its onDestroy() to be called. */
+    public static void finishActivity(final Activity activity) throws Exception {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        final ApplicationStatus.ActivityStateListener activityStateListener =
+                new ApplicationStatus.ActivityStateListener() {
+                    @Override
+                    public void onActivityStateChange(Activity activity, int newState) {
+                        if (newState == ActivityState.DESTROYED) {
+                            callbackHelper.notifyCalled();
+                        }
+                    }
+                };
+        try {
+            boolean alreadyDestroyed = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    if (ApplicationStatus.getStateForActivity(activity)
+                            == ActivityState.DESTROYED) {
+                        return true;
+                    }
+                    ApplicationStatus.registerStateListenerForActivity(
+                            activityStateListener, activity);
+                    activity.finish();
+                    return false;
+                }
+            });
+            if (!alreadyDestroyed) {
+                callbackHelper.waitForCallback(0);
+            }
+        } finally {
+            ApplicationStatus.unregisterActivityStateListener(activityStateListener);
+        }
     }
 
     /** Finishes all tasks Chrome has listed in Android's Overview. */

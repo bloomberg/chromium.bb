@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.ui.base.WindowAndroid;
@@ -39,11 +40,10 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
         return activity;
     }
 
-    private TabModelSelector requestSelector(ChromeActivity activity, int requestedIndex) {
+    private MockTabModelSelector requestSelector(ChromeActivity activity, int requestedIndex) {
         final TabWindowManager manager = TabWindowManager.getInstance();
         manager.setTabModelSelectorFactory(mMockTabModelSelectorFactory);
-        TabModelSelector selector = manager.requestSelector(activity, null, requestedIndex);
-        return selector;
+        return (MockTabModelSelector) manager.requestSelector(activity, null, requestedIndex);
     }
 
     /**
@@ -230,5 +230,38 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
         assertNotNull("Was not able to build the TabModelSelector", selector2);
         assertEquals("Unexpected model index", 0, manager.getIndexForWindow(activity0));
         assertEquals("Unexpected model index", 1, manager.getIndexForWindow(activity2));
+    }
+
+    /**
+     * Tests that tabExistsInAnySelector() functions properly.
+     */
+    @SmallTest
+    @Feature({"Multiwindow"})
+    @UiThreadTest
+    public void testTabExistsInAnySelector() {
+        final TabWindowManager manager = TabWindowManager.getInstance();
+
+        ChromeActivity activity0 = buildActivity();
+        ChromeActivity activity1 = buildActivity();
+        MockTabModelSelector selector0 = requestSelector(activity0, 0);
+        MockTabModelSelector selector1 = requestSelector(activity1, 1);
+        Tab tab1 = selector0.addMockTab();
+        Tab tab2 = selector1.addMockIncognitoTab();
+
+        assertFalse(manager.tabExistsInAnySelector(tab1.getId() - 1));
+        assertTrue(manager.tabExistsInAnySelector(tab1.getId()));
+        assertTrue(manager.tabExistsInAnySelector(tab2.getId()));
+        assertFalse(manager.tabExistsInAnySelector(tab2.getId() + 1));
+
+        AsyncTabParamsManager.getAsyncTabParams().clear();
+        final int asyncTabId = 123;
+        final TabReparentingParams dummyParams = new TabReparentingParams(null, null, null, false);
+        assertFalse(manager.tabExistsInAnySelector(asyncTabId));
+        AsyncTabParamsManager.add(asyncTabId, dummyParams);
+        try {
+            assertTrue(manager.tabExistsInAnySelector(asyncTabId));
+        } finally {
+            AsyncTabParamsManager.getAsyncTabParams().clear();
+        }
     }
 }

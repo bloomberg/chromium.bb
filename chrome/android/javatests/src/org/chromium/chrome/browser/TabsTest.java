@@ -51,8 +51,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -69,6 +71,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.io.File;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -1650,6 +1653,33 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         });
 
         assertTrue("WebContentsObserver was never destroyed", webContentsDestroyCalled.get());
+    }
+
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    public void testIncognitoTabsNotRestoredAfterSwipe() throws Exception {
+        newIncognitoTabFromMenu();
+
+        File tabStateDir = TabPersistentStore.getOrCreateStateDirectory();
+        TabModel normalModel = getActivity().getTabModelSelector().getModel(false);
+        TabModel incognitoModel = getActivity().getTabModelSelector().getModel(true);
+        File normalTabFile = new File(tabStateDir,
+                TabState.getTabStateFilename(
+                        normalModel.getTabAt(normalModel.getCount() - 1).getId(), false));
+        File incognitoTabFile = new File(tabStateDir,
+                TabState.getTabStateFilename(incognitoModel.getTabAt(0).getId(), true));
+
+        assertTrue(normalTabFile.getAbsolutePath(), normalTabFile.exists());
+        assertTrue(incognitoTabFile.getAbsolutePath(), incognitoTabFile.exists());
+
+        // Although we're destroying the activity, the Application will still live on since its in
+        // the same process as this test.
+        ApplicationTestUtils.finishActivity(getActivity());
+
+        // Activity will be started without a savedInstanceState.
+        startMainActivityOnBlankPage();
+        assertTrue(normalTabFile.exists());
+        assertFalse(incognitoTabFile.exists());
     }
 
     @Override

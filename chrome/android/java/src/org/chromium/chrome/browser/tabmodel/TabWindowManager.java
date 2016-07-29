@@ -153,6 +153,26 @@ public class TabWindowManager implements ActivityStateListener {
         return count;
     }
 
+    /**
+     * @param tabId The ID of the tab in question.
+     * @return Whether the given tab exists in any currently loaded selector.
+     */
+    public boolean tabExistsInAnySelector(int tabId) {
+        for (int i = 0; i < mSelectors.size(); i++) {
+            TabModelSelector selector = mSelectors.get(i);
+            if (selector != null) {
+                if (TabModelUtils.getTabById(selector.getModel(false), tabId) != null
+                        || TabModelUtils.getTabById(selector.getModel(true), tabId) != null) {
+                    return true;
+                }
+            }
+        }
+
+        // Account for tabs that were recently reparented and haven't been attached to new
+        // activities yet.
+        return AsyncTabParamsManager.hasParamsForTabId(tabId);
+    }
+
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         if (newState == ActivityState.DESTROYED && mAssignments.containsKey(activity)) {

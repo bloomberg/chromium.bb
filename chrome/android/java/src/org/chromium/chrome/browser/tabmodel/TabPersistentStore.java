@@ -19,6 +19,7 @@ import android.util.SparseIntArray;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -179,7 +180,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private static AsyncTask<Void, Void, Void> sMigrationTask = null;
-    private static AsyncTask<Void, Void, CleanUpTabStateDataInfo> sCleanupTask = null;
+    private static AsyncTask<Void, Void, Void> sCleanupTask = null;
     private static File sStateDirectory;
 
     private final TabModelSelector mTabModelSelector;
@@ -1130,11 +1131,7 @@ public class TabPersistentStore extends TabPersister {
                 if (mObserver != null) mObserver.onStateMerged();
             }
 
-            // Only clean up persistent data on application cold start.
-            if (mSelectorIndex == 0
-                    && TabWindowManager.getInstance().getNumberOfAssignedTabModelSelectors() == 1) {
-                cleanUpPersistentData(false);
-            }
+            cleanUpPersistentData(false /* deleteAllFiles */);
             onStateLoaded();
             mLoadTabTask = null;
             Log.d(TAG, "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()
@@ -1160,10 +1157,6 @@ public class TabPersistentStore extends TabPersister {
             if (sCleanupTask != null) sCleanupTask.cancel(true);
             sCleanupTask = new CleanUpTabStateDataTask(deleteAllFiles);
             sCleanupTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-
-        if (mTabContentManager != null) {
-            mTabContentManager.cleanUpPersistentData(mTabModelSelector);
         }
     }
 
@@ -1194,19 +1187,11 @@ public class TabPersistentStore extends TabPersister {
         // executor.
     }
 
-    private static class CleanUpTabStateDataInfo {
-        private final String[] mTabFileNames;
-        private final SparseArray<Boolean> mOtherTabIds;
-
-        public CleanUpTabStateDataInfo(String[] tabFileNames, SparseArray<Boolean> otherTabIds) {
-            mTabFileNames = tabFileNames;
-            mOtherTabIds = otherTabIds;
-        }
-    }
-
-    private class CleanUpTabStateDataTask extends AsyncTask<Void, Void, CleanUpTabStateDataInfo> {
+    private class CleanUpTabStateDataTask extends AsyncTask<Void, Void, Void> {
         private final boolean mDeleteAllFiles;
-
+        private String[] mTabFileNames;
+        private String[] mThumbnailFileNames;
+        private SparseArray<Boolean> mOtherTabIds;
         /**
          * Creates a new AsyncTask to delete tab files. If deleteAllFiles is true, all tab files
          * will be deleted regardless of whether they currently belong to a tab model. If it is
@@ -1218,32 +1203,54 @@ public class TabPersistentStore extends TabPersister {
         }
 
         @Override
-        protected CleanUpTabStateDataInfo doInBackground(Void... voids) {
+        protected Void doInBackground(Void... voids) {
             if (mDestroyed) {
                 return null;
             }
-            SparseArray<Boolean> otherTabIds = new SparseArray<Boolean>();
-            if (!mDeleteAllFiles) getTabsFromOtherStateFiles(otherTabIds);
+            mTabFileNames = getStateDirectory().list();
+            String thumbnailDirectory = PathUtils.getThumbnailCacheDirectory(mContext);
+            mThumbnailFileNames = new File(thumbnailDirectory).list();
 
-            return new CleanUpTabStateDataInfo(getStateDirectory().list(), otherTabIds);
+            mOtherTabIds = new SparseArray<Boolean>();
+            if (!mDeleteAllFiles) getTabsFromOtherStateFiles(mOtherTabIds);
+            return null;
         }
 
         @Override
-        protected void onPostExecute(CleanUpTabStateDataInfo tabStateInfo) {
-            if (mDestroyed || tabStateInfo.mTabFileNames == null) return;
+        protected void onPostExecute(Void unused) {
+            if (mDestroyed) return;
+            TabWindowManager tabWindowManager = TabWindowManager.getInstance();
 
-            for (String fileName : tabStateInfo.mTabFileNames) {
-                Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(fileName);
-                if (data != null) {
-                    TabModel model = mTabModelSelector.getModel(data.second);
-                    if (mDeleteAllFiles || (TabModelUtils.getTabById(model, data.first) == null
-                            && tabStateInfo.mOtherTabIds.get(data.first) == null)) {
-                        // It might be more efficient to use a single task for all files, but
-                        // the number of files is expected to be very small.
-                        deleteFileAsync(fileName);
+            if (mTabFileNames != null) {
+                for (String fileName : mTabFileNames) {
+                    Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(fileName);
+                    if (data != null) {
+                        int tabId = data.first;
+                        if (shouldDeleteTabFile(tabId, tabWindowManager)) {
+                            // It might be more efficient to use a single task for all files, but
+                            // the number of files is expected to be very small.
+                            deleteFileAsync(fileName);
+                        }
                     }
                 }
             }
+            if (mTabContentManager != null && mThumbnailFileNames != null) {
+                for (String fileName : mThumbnailFileNames) {
+                    try {
+                        int tabId = Integer.parseInt(fileName);
+                        if (shouldDeleteTabFile(tabId, tabWindowManager)) {
+                            mTabContentManager.removeTabThumbnail(tabId);
+                        }
+                    } catch (NumberFormatException expected) {
+                        // This is an unknown file name, we'll leave it there.
+                    }
+                }
+            }
+        }
+
+        private boolean shouldDeleteTabFile(int tabId, TabWindowManager tabWindowManager) {
+            return mDeleteAllFiles || (!tabWindowManager.tabExistsInAnySelector(tabId)
+                                              && mOtherTabIds.get(tabId) == null);
         }
     }
 
@@ -1254,6 +1261,9 @@ public class TabPersistentStore extends TabPersister {
      */
     private void getTabsFromOtherStateFiles(SparseArray<Boolean> tabIds) {
         for (int i = 0; i < TabWindowManager.MAX_SIMULTANEOUS_SELECTORS; i++) {
+            // Although we check all selectors before deleting, we can only be sure that our own
+            // selector will not go away between now and then. So, we read from disk all other state
+            // files, even if they are already loaded by another selector.
             if (i == mSelectorIndex) continue;
 
             File metadataFile = new File(getStateDirectory(), getStateFileName(i));

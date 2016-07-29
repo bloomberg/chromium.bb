@@ -10,12 +10,14 @@ import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
@@ -32,6 +34,7 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -239,6 +242,26 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
     }
 
+    private final ChromeActivity mFakeChromeActivity = new ChromeActivity() {
+        @Override
+        protected boolean handleBackPressed() {
+            return false;
+        }
+    };
+
+    private final TabWindowManager.TabModelSelectorFactory mMockTabModelSelectorFactory =
+            new TabWindowManager.TabModelSelectorFactory() {
+                @Override
+                public TabModelSelector buildSelector(
+                        ChromeActivity activity, WindowAndroid windowAndroid, int selectorIndex) {
+                    try {
+                        return new TestTabModelSelector(windowAndroid.getApplicationContext());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+
     /** Class for mocking out the directory containing all of the TabState files. */
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
@@ -260,6 +283,13 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
     @Override
     public void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TabWindowManager.getInstance().onActivityStateChange(
+                        mFakeChromeActivity, ActivityState.DESTROYED);
+            }
+        });
         mMockDirectory.tearDown();
         super.tearDown();
     }
@@ -589,7 +619,20 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
     private TestTabModelSelector createAndRestoreRealTabModelImpls(TabModelMetaDataInfo info)
             throws Exception {
-        TestTabModelSelector selector = new TestTabModelSelector(mAppContext);
+        TestTabModelSelector selector =
+                ThreadUtils.runOnUiThreadBlocking(new Callable<TestTabModelSelector>() {
+                    @Override
+                    public TestTabModelSelector call() {
+                        TabWindowManager tabWindowManager = TabWindowManager.getInstance();
+                        tabWindowManager.setTabModelSelectorFactory(mMockTabModelSelectorFactory);
+                        // Clear any existing TestTabModelSelector (required when
+                        // createAndRestoreRealTabModelImpls is called multiple times in one test).
+                        tabWindowManager.onActivityStateChange(
+                                mFakeChromeActivity, ActivityState.DESTROYED);
+                        return (TestTabModelSelector) tabWindowManager.requestSelector(
+                                mFakeChromeActivity, new WindowAndroid(mAppContext), 0);
+                    }
+                });
 
         TabPersistentStore store = selector.mTabPersistentStore;
         MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;
