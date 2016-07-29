@@ -13,12 +13,12 @@
 
       function onMIDISuccess(access) {
         window.access = access;
-        shouldBeFalse('access.sysexEnabled');
-        testPassed('requestMIDIAccess without option succeeded.');
+        shouldBeTrue('access.sysexEnabled');
+        testPassed('requestMIDIAccess with option sysex:true succeeded.');
         finishJSTest();
       }
 
-      navigator.requestMIDIAccess().then(
+      navigator.requestMIDIAccess({sysex:true}).then(
           onMIDISuccess, onMIDIError);
     </script>
   </body>

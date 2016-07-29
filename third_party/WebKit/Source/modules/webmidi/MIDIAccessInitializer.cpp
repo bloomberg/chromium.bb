@@ -9,52 +9,33 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccess.h"
-#include "modules/webmidi/MIDIController.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
+#include "platform/UserGestureIndicator.h"
+#include "platform/mojo/MojoHelper.h"
+#include "public/platform/ServiceRegistry.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
 
 namespace blink {
 
 using PortState = WebMIDIAccessorClient::MIDIPortState;
 
+using mojom::blink::PermissionName;
+using mojom::blink::PermissionStatus;
+
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState)
     , m_options(options)
-    , m_hasBeenDisposed(false)
-    , m_permissionResolved(false)
 {
-}
-
-MIDIAccessInitializer::~MIDIAccessInitializer()
-{
-    dispose();
 }
 
 void MIDIAccessInitializer::contextDestroyed()
 {
-    dispose();
+    m_permissionService.reset();
     LifecycleObserver::contextDestroyed();
-}
-
-void MIDIAccessInitializer::dispose()
-{
-    if (m_hasBeenDisposed)
-        return;
-
-    if (!getExecutionContext())
-        return;
-
-    if (!m_permissionResolved) {
-        Document* document = toDocument(getExecutionContext());
-        DCHECK(document);
-        if (MIDIController* controller = MIDIController::from(document->frame()))
-            controller->cancelPermissionRequest(this);
-        m_permissionResolved = true;
-    }
-
-    m_hasBeenDisposed = true;
 }
 
 ScriptPromise MIDIAccessInitializer::start()
@@ -64,10 +45,22 @@ ScriptPromise MIDIAccessInitializer::start()
 
     Document* document = toDocument(getExecutionContext());
     DCHECK(document);
-    if (MIDIController* controller = MIDIController::from(document->frame()))
-        controller->requestPermission(this, m_options);
-    else
-        reject(DOMException::create(SecurityError));
+
+    document->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_permissionService));
+
+    bool requestSysEx = m_options.hasSysex() && m_options.sysex();
+    Vector<PermissionName> permissions;
+    permissions.resize(requestSysEx ? 2 : 1);
+
+    permissions[0] = PermissionName::MIDI;
+    if (requestSysEx)
+        permissions[1] = PermissionName::MIDI_SYSEX;
+
+    m_permissionService->RequestPermissions(
+        mojo::WTFArray<PermissionName>(std::move(permissions)),
+        getExecutionContext()->getSecurityOrigin()->toString(),
+        UserGestureIndicator::processingUserGesture(),
+        convertToBaseCallback(WTF::bind(&MIDIAccessInitializer::onPermissionsUpdated, wrapPersistent(this))));
 
     return promise;
 }
@@ -125,23 +118,35 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
     }
 }
 
-void MIDIAccessInitializer::resolvePermission(bool allowed)
+ExecutionContext* MIDIAccessInitializer::getExecutionContext() const
 {
-    m_permissionResolved = true;
+    return getScriptState()->getExecutionContext();
+}
+
+void MIDIAccessInitializer::onPermissionsUpdated(mojo::WTFArray<PermissionStatus> statusArray)
+{
+    bool allowed = true;
+    for (const auto status : statusArray.storage()) {
+        if (status != PermissionStatus::GRANTED) {
+            allowed = false;
+            break;
+        }
+    }
+    m_permissionService.reset();
     if (allowed)
         m_accessor->startSession();
     else
         reject(DOMException::create(SecurityError));
+
 }
 
-SecurityOrigin* MIDIAccessInitializer::getSecurityOrigin() const
+void MIDIAccessInitializer::onPermissionUpdated(PermissionStatus status)
 {
-    return getExecutionContext()->getSecurityOrigin();
-}
-
-ExecutionContext* MIDIAccessInitializer::getExecutionContext() const
-{
-    return getScriptState()->getExecutionContext();
+    m_permissionService.reset();
+    if (status == PermissionStatus::GRANTED)
+        m_accessor->startSession();
+    else
+        reject(DOMException::create(SecurityError));
 }
 
 } // namespace blink

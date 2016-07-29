@@ -604,7 +604,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* userMediaClient() override;
   blink::WebEncryptedMediaClient* encryptedMediaClient() override;
-  blink::WebMIDIClient* webMIDIClient() override;
   blink::WebString userAgentOverride() override;
   blink::WebString doNotTrackValue() override;
   bool allowWebGL(bool default_value) override;
@@ -1157,9 +1156,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // The media interface provider attached to this frame, lazily initialized.
   std::unique_ptr<MediaInterfaceProvider> media_interface_provider_;
 #endif
-
-  // MidiClient attached to this frame; lazily initialized.
-  MidiDispatcher* midi_dispatcher_;
 
 #if defined(OS_ANDROID)
   // Manages all media players and sessions in this render frame for

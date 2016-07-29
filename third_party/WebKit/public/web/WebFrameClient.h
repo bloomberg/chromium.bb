@@ -89,7 +89,6 @@ class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
 class WebMediaSession;
 class WebMediaStream;
-class WebMIDIClient;
 class WebNotificationPermissionCallback;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
@@ -588,10 +587,6 @@ public:
 
     virtual WebEncryptedMediaClient* encryptedMediaClient() { return 0; }
 
-
-    // Web MIDI -------------------------------------------------------------
-
-    virtual WebMIDIClient* webMIDIClient() { return 0; }
 
     // User agent ------------------------------------------------------
 
