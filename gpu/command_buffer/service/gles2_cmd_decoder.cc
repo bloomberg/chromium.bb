@@ -7202,7 +7202,17 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
       glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, framebuffer->service_id());
     }
     state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
-    glClear(clear_bits);
+    if (workarounds().gl_clear_broken) {
+      ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
+                                         GetErrorState());
+      clear_framebuffer_blit_->ClearFramebuffer(
+          this, GetBoundReadFrameBufferSize(), clear_bits,
+          state_.color_clear_red, state_.color_clear_green,
+          state_.color_clear_blue, state_.color_clear_alpha, state_.depth_clear,
+          state_.stencil_clear);
+    } else {
+      glClear(clear_bits);
+    }
   }
 
   if (cleared_int_renderbuffers || clear_bits) {
