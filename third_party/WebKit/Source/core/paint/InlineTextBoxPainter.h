@@ -55,6 +55,7 @@ private:
     unsigned underlinePaintEnd(const CompositionUnderline&);
     bool shouldPaintTextBox(const PaintInfo&);
     void expandToIncludeNewlineForSelection(LayoutRect&);
+    LayoutObject& inlineLayoutObject() const;
 
     const InlineTextBox& m_inlineTextBox;
 };

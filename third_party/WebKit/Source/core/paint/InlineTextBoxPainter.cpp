@@ -39,6 +39,11 @@ static TextBlobPtr* addToTextBlobCache(const InlineTextBox& inlineTextBox)
     return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
 }
 
+LayoutObject& InlineTextBoxPainter::inlineLayoutObject() const
+{
+    return *LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem());
+}
+
 bool InlineTextBoxPainter::paintsMarkerHighlights(const LayoutObject& layoutObject)
 {
     return layoutObject.node() && layoutObject.document().markers().hasMarkers(layoutObject.node());
@@ -88,7 +93,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             return;
         LayoutRect paintRect(logicalVisualOverflow);
         m_inlineTextBox.logicalRectToPhysicalRect(paintRect);
-        if (paintInfo.phase != PaintPhaseSelection && (haveSelection || paintsMarkerHighlights(*LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem()))))
+        if (paintInfo.phase != PaintPhaseSelection && (haveSelection || paintsMarkerHighlights(inlineLayoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);
         drawingRecorder.emplace(paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), FloatRect(paintRect));
@@ -105,7 +110,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutTextCombine* combinedText = nullptr;
     if (!m_inlineTextBox.isHorizontal()) {
         if (styleToUse.hasTextCombine() && m_inlineTextBox.getLineLayoutItem().isCombineText()) {
-            combinedText = &toLayoutTextCombine(*LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem()));
+            combinedText = &toLayoutTextCombine(inlineLayoutObject());
             if (!combinedText->isCombined())
                 combinedText = nullptr;
         }
@@ -134,7 +139,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
         paintDocumentMarkers(paintInfo, boxOrigin, styleToUse, font, DocumentMarkerPaintPhase::Background);
 
-        const LayoutObject& textBoxLayoutObject = *LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem());
+        const LayoutObject& textBoxLayoutObject = inlineLayoutObject();
         if (haveSelection && !paintsCompositionMarkers(textBoxLayoutObject)) {
             if (combinedText)
                 paintSelection<InlineTextBoxPainter::PaintOptions::CombinedText>(context, boxRect, styleToUse, font, selectionStyle.fillColor, combinedText);
@@ -719,7 +724,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
     // Get the text decoration colors.
     LayoutObject::AppliedTextDecoration underline, overline, linethrough;
-    LayoutObject& textBoxLayoutObject = *LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem());
+    LayoutObject& textBoxLayoutObject = inlineLayoutObject();
     textBoxLayoutObject.getTextDecorations(deco, underline, overline, linethrough, true);
     if (m_inlineTextBox.isFirstLineStyle())
         textBoxLayoutObject.getTextDecorations(deco, underline, overline, linethrough, true, true);
@@ -804,7 +809,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
 
 void InlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
 {
-    if (!LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem())->frame()->editor().markedTextMatchesAreHighlighted())
+    if (!inlineLayoutObject().frame()->editor().markedTextMatchesAreHighlighted())
         return;
 
     // TODO(ramya.v): Extract this into a helper function and share many copies of this code.
