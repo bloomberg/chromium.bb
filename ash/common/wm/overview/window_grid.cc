@@ -76,7 +76,9 @@ const int kMinCardsMajor = 3;
 
 // Hiding window headers can be resource intensive. Only hide the headers when
 // the number of windows in this grid is less or equal than this number.
-const int kMaxWindowsCountToHideHeader = 10;
+// The default is 0, meaning that mask layers are never used and the bottom
+// corners are not rounded in overview.
+const int kMaxWindowsCountToHideHeaderWithMasks = 0;
 
 const int kOverviewSelectorTransitionMilliseconds = 250;
 
@@ -462,13 +464,13 @@ void WindowGrid::PositionWindowsMD(bool animate) {
   const size_t windows_count = window_list_.size();
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  int windows_to_use_masks = kMaxWindowsCountToHideHeader;
+  int windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
   if (command_line->HasSwitch(switches::kAshMaxWindowsToUseMaskInOverview) &&
       (!base::StringToInt(command_line->GetSwitchValueASCII(
                               switches::kAshMaxWindowsToUseMaskInOverview),
                           &windows_to_use_masks) ||
        windows_to_use_masks <= kUnlimited)) {
-    windows_to_use_masks = kMaxWindowsCountToHideHeader;
+    windows_to_use_masks = kMaxWindowsCountToHideHeaderWithMasks;
   }
   int windows_to_use_shapes = kUnlimited;
   if (command_line->HasSwitch(switches::kAshMaxWindowsToUseShapeInOverview) &&
