@@ -89,29 +89,3 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
     EXPECT_TRUE(model()->IsVisibleAt(i));
   }
 }
-
-#if defined(GOOGLE_CHROME_BUILD)
-// Tests whether the cloud services item is correctly toggled. This menu item
-// is only availble on official Chrome builds.
-TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
-  // The Media Router Action has a getter for the model, but not the delegate.
-  // Create the MediaRouterContextualMenu ui::SimpleMenuModel::Delegate here.
-  MediaRouterContextualMenu menu(browser());
-
-  // Set up an authenticated account such that the cloud services menu item is
-  // surfaced. Whether or not it is surfaced is tested in the "Basic" test.
-  signin_manager()->SetAuthenticatedAccountInfo("foo@bar.com", "password");
-
-  // By default, the command is not checked.
-  EXPECT_FALSE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-
-  menu.ExecuteCommand(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE, 0);
-  EXPECT_TRUE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-
-  menu.ExecuteCommand(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE, 0);
-  EXPECT_FALSE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-}
-#endif  // GOOGLE_CHROME_BUILD
