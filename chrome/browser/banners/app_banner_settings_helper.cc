@@ -54,6 +54,12 @@ const unsigned int kDefaultIndirectNavigationEngagement = 1;
 // Default number of navigations required to trigger the banner.
 const unsigned int kDefaultTotalEngagementToTrigger = 2;
 
+// The number of days in the past that a site should be launched from homescreen
+// to be considered recent.
+// TODO(dominickn): work out how to unify this with
+// WebappDataStorage.wasLaunchedRecently.
+const unsigned int kRecentLastLaunchInDays = 10;
+
 // Dictionary keys to use for the events.
 const char* kBannerEventKeys[] = {
     "couldShowBannerEvents",
@@ -211,8 +217,7 @@ void AppBannerSettingsHelper::RecordBannerInstallEvent(
   banners::TrackInstallEvent(banners::INSTALL_EVENT_WEB_APP_INSTALLED);
 
   AppBannerSettingsHelper::RecordBannerEvent(
-      web_contents, web_contents->GetURL(),
-      package_name_or_start_url,
+      web_contents, web_contents->GetURL(), package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       banners::AppBannerDataFetcher::GetCurrentTime());
 
@@ -230,8 +235,7 @@ void AppBannerSettingsHelper::RecordBannerDismissEvent(
   banners::TrackDismissEvent(banners::DISMISS_EVENT_CLOSE_BUTTON);
 
   AppBannerSettingsHelper::RecordBannerEvent(
-      web_contents, web_contents->GetURL(),
-      package_name_or_start_url,
+      web_contents, web_contents->GetURL(), package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
       banners::AppBannerDataFetcher::GetCurrentTime());
 
@@ -534,6 +538,47 @@ void AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
     minutes = (time - could_show_events[0].time).InMinutes();
 
   banners::TrackMinutesFromFirstVisitToBannerShown(minutes);
+}
+
+bool AppBannerSettingsHelper::WasLaunchedRecently(
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    base::Time now) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> origin_dict =
+      GetOriginDict(settings, origin_url);
+
+  if (!origin_dict)
+    return false;
+
+  // Iterate over everything in the content setting, which should be a set of
+  // dictionaries per app path. If we find one that has been added to
+  // homescreen recently, return true.
+  for (base::DictionaryValue::Iterator it(*origin_dict); !it.IsAtEnd();
+       it.Advance()) {
+    if (it.value().IsType(base::Value::TYPE_DICTIONARY)) {
+      const base::DictionaryValue* value;
+      it.value().GetAsDictionary(&value);
+
+      std::string event_key(
+          kBannerEventKeys[APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN]);
+      double internal_time;
+      if (!value->GetDouble(event_key, &internal_time))
+        continue;
+
+      base::Time added_time = base::Time::FromInternalValue(internal_time);
+
+      if ((now - added_time) <=
+          base::TimeDelta::FromDays(kRecentLastLaunchInDays)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 void AppBannerSettingsHelper::SetEngagementWeights(double direct_engagement,

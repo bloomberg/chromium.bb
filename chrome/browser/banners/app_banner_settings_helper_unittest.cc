@@ -17,6 +17,7 @@ namespace {
 
 const char kTestURL[] = "https://www.google.com";
 const char kSameOriginTestURL[] = "https://www.google.com/foo.html";
+const char kDifferentOriginTestURL[] = "https://www.example.com";
 const char kTestPackageName[] = "test.package";
 
 base::Time GetReferenceTime() {
@@ -47,12 +48,10 @@ bool IsWithinHour(base::Time time1, base::Time time2) {
 }
 
 class AppBannerSettingsHelperTest : public ChromeRenderViewHostTestHarness {
-
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     AppBannerSettingsHelper::SetDefaultParameters();
   }
-
 };
 
 }  // namespace
@@ -451,8 +450,8 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEventReplacedWithHigherWeight) {
 
   // Record a direct engagement type. This should override the previous value.
   AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName,
-      later_same_day, ui::PAGE_TRANSITION_TYPED);
+      web_contents(), url, kTestPackageName, later_same_day,
+      ui::PAGE_TRANSITION_TYPED);
 
   events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
       web_contents(), url, kTestPackageName);
@@ -463,8 +462,8 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEventReplacedWithHigherWeight) {
 
   // Record an indirect engagement type. This should be ignored.
   AppBannerSettingsHelper::RecordBannerCouldShowEvent(
-      web_contents(), url, kTestPackageName,
-      later_again_same_day, ui::PAGE_TRANSITION_RELOAD);
+      web_contents(), url, kTestPackageName, later_again_same_day,
+      ui::PAGE_TRANSITION_RELOAD);
 
   events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
       web_contents(), url, kTestPackageName);
@@ -778,4 +777,74 @@ TEST_F(AppBannerSettingsHelperTest, ShouldShowWithHigherTotal) {
       ui::PAGE_TRANSITION_TYPED);
   EXPECT_TRUE(AppBannerSettingsHelper::ShouldShowBanner(
       web_contents(), url, kTestPackageName, fifth_day));
+}
+
+TEST_F(AppBannerSettingsHelperTest, WasLaunchedRecently) {
+  GURL url(kTestURL);
+  GURL url_same_origin(kSameOriginTestURL);
+  GURL url2(kDifferentOriginTestURL);
+  NavigateAndCommit(url);
+
+  base::Time reference_time = GetReferenceTime();
+  base::Time first_day = reference_time + base::TimeDelta::FromDays(1);
+  base::Time ninth_day = reference_time + base::TimeDelta::FromDays(9);
+  base::Time tenth_day = reference_time + base::TimeDelta::FromDays(10);
+  base::Time eleventh_day = reference_time + base::TimeDelta::FromDays(11);
+
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+               reference_time));
+
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, kTestPackageName,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      reference_time);
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           reference_time));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           first_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           ninth_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           tenth_day));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                            eleventh_day));
+
+  // Make sure a different path under the same origin also returns true.
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url_same_origin, reference_time));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url_same_origin, first_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url_same_origin, ninth_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url_same_origin, tenth_day));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url_same_origin, eleventh_day));
+
+  // Check a different event type.
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url2, kTestPackageName,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, reference_time);
+
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url2, reference_time));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url2, first_day));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasLaunchedRecently(
+      web_contents(), url2, ninth_day));
+
+  // Make sure that the most recent time the event is recorded is used.
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, kTestPackageName,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      first_day);
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           first_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           ninth_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                           tenth_day));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(web_contents(), url,
+                                                            eleventh_day));
+
 }

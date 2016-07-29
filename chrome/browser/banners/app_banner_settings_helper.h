@@ -130,6 +130,14 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       base::Time time);
 
+  // Returns true if any site under |origin| was launched from homescreen in the
+  // last ten days. This allows services outside app banners to utilise the
+  // content setting that ensures app banners are not shown for sites which ave
+  // already been added to homescreen.
+  static bool WasLaunchedRecently(content::WebContents* web_contents,
+                                  const GURL& origin_url,
+                                  base::Time now);
+
   // Set the engagement weights assigned to direct and indirect navigations.
   static void SetEngagementWeights(double direct_engagement,
                                    double indirect_engagement);
