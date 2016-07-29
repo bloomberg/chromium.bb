@@ -133,9 +133,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     kInitialized,    // Initialize() returned true; ready to start decoding.
     kDecoding,       // DecodeBufferInitial() successful; decoding frames.
     kResetting,      // Presently resetting.
-    kChangingResolution,  // Performing resolution change, all remaining
-                          // pre-change frames decoded and processed.
-    kError,               // Error in kDecoding state.
+    // Performing resolution change, all remaining pre-change frames decoded
+    // and processed.
+    kChangingResolution,
+    // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
+    // AssignPictureBuffers().
+    kAwaitingPictureBuffers,
+    kError,  // Error in kDecoding state.
   };
 
   enum OutputRecordState {
@@ -214,6 +218,22 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Flush data for one decoded frame.
   bool FlushInputFrame();
 
+  // Allocate V4L2 buffers and assign them to |buffers| provided by the client
+  // via AssignPictureBuffers() on decoder thread.
+  void AssignPictureBuffersTask(const std::vector<PictureBuffer>& buffers);
+
+  // Create EGLImages bound to textures in |buffers| for given
+  // |output_format_fourcc| and |output_planes_count|.
+  void CreateEGLImages(const std::vector<media::PictureBuffer>& buffers,
+                       uint32_t output_format_fourcc,
+                       size_t output_planes_count);
+
+  // Assign |egl_images| to previously-allocated V4L2 buffers in
+  // output_buffer_map_ and picture ids from |buffers| and finish the resolution
+  // change sequence.
+  void AssignEGLImages(const std::vector<media::PictureBuffer>& buffers,
+                       const std::vector<EGLImageKHR>& egl_images);
+
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
   // DevicePollTask().  If |event_pending| is true, one or more events
   // on file descriptor are pending.
@@ -244,10 +264,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // function definition.
   void NotifyFlushDoneIfNeeded();
 
-  // Reset() task.  This task will schedule a ResetDoneTask() that will send
-  // the NotifyResetDone callback, then set the decoder state to kResetting so
-  // that all intervening tasks will drain.
+  // Reset() task.  Drop all input buffers. If V4L2VDA is not doing resolution
+  // change or waiting picture buffers, call FinishReset.
   void ResetTask();
+  // This will schedule a ResetDoneTask() that will send the NotifyResetDone
+  // callback, then set the decoder state to kResetting so that all intervening
+  // tasks will drain.
+  void FinishReset();
   void ResetDoneTask();
 
   // Device destruction task.
@@ -392,8 +415,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   int decoder_frames_at_client_;
   // Are we flushing?
   bool decoder_flushing_;
-  // Got a reset request while we were performing resolution change.
-  bool resolution_change_reset_pending_;
+  // Got a reset request while we were performing resolution change or waiting
+  // picture buffers.
+  bool reset_pending_;
   // Input queue for decoder_thread_: BitstreamBuffers in.
   std::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
@@ -444,10 +468,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
 
-  // Used by the decoder thread to wait for AssignPictureBuffers to arrive
-  // to avoid races with potential Reset requests.
-  base::WaitableEvent pictures_assigned_;
-
   // Output picture coded size.
   gfx::Size coded_size_;
 
@@ -480,7 +500,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   // Image processor device, if one is in use.
   scoped_refptr<V4L2Device> image_processor_device_;
-  // Image processor. Created and destroyed on child thread.
+  // Image processor. Accessed on |decoder_thread_|.
   std::unique_ptr<V4L2ImageProcessor> image_processor_;
 
   // The V4L2Device EGLImage is created from.
