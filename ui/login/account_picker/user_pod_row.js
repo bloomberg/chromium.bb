@@ -1527,12 +1527,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
-      if (this.user.legacySupervisedUser || this.user.isDesktopUser) {
-        this.showRemoveWarning_();
-        return;
-      }
-      if (this.isActionBoxMenuActive)
-        chrome.send('removeUser', [this.user.username]);
+      this.showRemoveWarning_();
     },
 
     /**
@@ -1555,8 +1550,8 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows remove user warning. Used for legacy supervised users on CrOS, and
-     * for all users on desktop.
+     * Shows remove user warning. Used for legacy supervised users
+     * and non-device-owner on CrOS, and for all users on desktop.
      */
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
@@ -1564,9 +1559,11 @@ cr.define('login', function() {
 
       // Show extra statistics information for desktop users
       var message;
-      if (this.user.isLegacySupervisedUser) {
+      if (!this.user.isDesktopUser) {
         this.moveActionMenuUpIfNeeded_();
       } else {
+        this.querySelector(
+          '.action-box-remove-non-owner-user-warning-text').hidden = true;
         this.RemoveWarningDialogSetMessage_(true, false);
         // set a global handler for the callback
         window.updateRemoveWarningDialog =
@@ -1743,14 +1740,8 @@ cr.define('login', function() {
         return;
       switch (e.key) {
         case 'Enter':
-          if (this.user.legacySupervisedUser || this.user.isDesktopUser) {
-            // Prevent default so that we don't trigger a 'click' event on the
-            // remove button that will be focused.
-            e.preventDefault();
-            this.showRemoveWarning_();
-          } else {
-            this.removeUser(this.user);
-          }
+          e.preventDefault();
+          this.showRemoveWarning_();
           e.stopPropagation();
           break;
         case 'ArrowUp':

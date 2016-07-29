@@ -670,6 +670,7 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
    in use are included here. */
 .pod.legacy-supervised .non-sync,
 .pod.legacy-supervised .action-box-remove-user-warning-text,
+.pod.legacy-supervised .action-box-remove-non-owner-user-warning-text,
 .pod:not(.legacy-supervised)
     .action-box-remove-legacy-supervised-user-warning-text,
 .pod.synced .non-sync,

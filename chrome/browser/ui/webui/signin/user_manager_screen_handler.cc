@@ -805,6 +805,9 @@ void UserManagerScreenHandler::GetLocalizedValues(
           IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
           base::UTF8ToUTF16(
               chrome::kLegacySupervisedUserManagementDisplayURL)));
+  localized_strings->SetString(
+      "removeNonOwnerUserWarningText",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING));
 
   // Strings needed for the User Manager tutorial slides.
   localized_strings->SetString("tutorialNext",
