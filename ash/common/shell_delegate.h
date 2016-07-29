@@ -96,7 +96,7 @@ class ASH_EXPORT ShellDelegate {
   virtual keyboard::KeyboardUI* CreateKeyboardUI() = 0;
 
   // Opens the |url| in a new browser tab.
-  virtual void OpenUrl(const GURL& url) = 0;
+  virtual void OpenUrlFromArc(const GURL& url) = 0;
 
   // Get the AppListPresenter. Ownership stays with Chrome.
   virtual app_list::AppListPresenter* GetAppListPresenter() = 0;

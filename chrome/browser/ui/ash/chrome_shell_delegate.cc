@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <limits>
+
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/aura/wm_window_aura.h"
@@ -398,14 +400,16 @@ void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
 }
 
-void ChromeShellDelegate::OpenUrl(const GURL& url) {
+void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
   if (!url.is_valid())
     return;
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
-  chrome::AddSelectedTabWithURL(displayer.browser(), url,
-                                ui::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(
+      displayer.browser(), url,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_API));
 
   // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
   // browser will be shown on the active desktop, we ensure the visibility.

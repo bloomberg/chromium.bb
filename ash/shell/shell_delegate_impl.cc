@@ -204,7 +204,7 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
   return new TestKeyboardUI;
 }
 
-void ShellDelegateImpl::OpenUrl(const GURL& url) {}
+void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
 app_list::AppListPresenter* ShellDelegateImpl::GetAppListPresenter() {
   if (!app_list_presenter_) {

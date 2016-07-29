@@ -48,7 +48,7 @@ void OpenPdf(base::Optional<base::FilePath> file_path) {
     return;
 
   GURL gurl = net::FilePathToFileURL(file_path.value());
-  ash::WmShell::Get()->delegate()->OpenUrl(gurl);
+  ash::WmShell::Get()->delegate()->OpenUrlFromArc(gurl);
   // TODO(poromov) Delete file after printing. (http://crbug.com/629843)
 }
 

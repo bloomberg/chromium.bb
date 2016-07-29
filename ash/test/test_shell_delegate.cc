@@ -148,7 +148,7 @@ keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
   return new TestKeyboardUI;
 }
 
-void TestShellDelegate::OpenUrl(const GURL& url) {}
+void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
 
 app_list::AppListPresenter* TestShellDelegate::GetAppListPresenter() {
   if (!app_list_presenter_) {

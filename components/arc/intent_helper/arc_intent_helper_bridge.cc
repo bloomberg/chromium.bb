@@ -77,7 +77,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
 void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GURL gurl(url.get());
-  ash::WmShell::Get()->delegate()->OpenUrl(gurl);
+  ash::WmShell::Get()->delegate()->OpenUrlFromArc(gurl);
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
