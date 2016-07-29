@@ -30,7 +30,6 @@ namespace blink {
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_debugger(V8Debugger::create(isolate, this))
-    , m_asyncInstrumentationEnabled(false)
 {
 }
 
@@ -73,32 +72,27 @@ void ThreadDebugger::idleFinished(v8::Isolate* isolate)
 
 void ThreadDebugger::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
 {
-    if (m_asyncInstrumentationEnabled)
-        m_debugger->asyncTaskScheduled(operationName, task, recurring);
+    m_debugger->asyncTaskScheduled(operationName, task, recurring);
 }
 
 void ThreadDebugger::asyncTaskCanceled(void* task)
 {
-    if (m_asyncInstrumentationEnabled)
-        m_debugger->asyncTaskCanceled(task);
+    m_debugger->asyncTaskCanceled(task);
 }
 
 void ThreadDebugger::allAsyncTasksCanceled()
 {
-    if (m_asyncInstrumentationEnabled)
-        m_debugger->allAsyncTasksCanceled();
+    m_debugger->allAsyncTasksCanceled();
 }
 
 void ThreadDebugger::asyncTaskStarted(void* task)
 {
-    if (m_asyncInstrumentationEnabled)
-        m_debugger->asyncTaskStarted(task);
+    m_debugger->asyncTaskStarted(task);
 }
 
 void ThreadDebugger::asyncTaskFinished(void* task)
 {
-    if (m_asyncInstrumentationEnabled)
-        m_debugger->asyncTaskFinished(task);
+    m_debugger->asyncTaskFinished(task);
 }
 
 unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
@@ -166,18 +160,6 @@ bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object)
     if (!wrapper.IsEmpty() && wrapper->IsUndefined())
         return false;
     return true;
-}
-
-void ThreadDebugger::enableAsyncInstrumentation()
-{
-    DCHECK(!m_asyncInstrumentationEnabled);
-    m_asyncInstrumentationEnabled = true;
-}
-
-void ThreadDebugger::disableAsyncInstrumentation()
-{
-    DCHECK(m_asyncInstrumentationEnabled);
-    m_asyncInstrumentationEnabled = false;
 }
 
 static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

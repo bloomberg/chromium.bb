@@ -965,12 +965,6 @@ void V8DebuggerImpl::setAsyncCallStackDepth(V8DebuggerAgentImpl* agent, int dept
 
     if (m_maxAsyncCallStackDepth == maxAsyncCallStackDepth)
         return;
-
-    if (maxAsyncCallStackDepth && !m_maxAsyncCallStackDepth)
-        m_client->enableAsyncInstrumentation();
-    else if (!maxAsyncCallStackDepth && m_maxAsyncCallStackDepth)
-        m_client->disableAsyncInstrumentation();
-
     m_maxAsyncCallStackDepth = maxAsyncCallStackDepth;
     if (!maxAsyncCallStackDepth)
         allAsyncTasksCanceled();
@@ -1000,10 +994,8 @@ void V8DebuggerImpl::asyncTaskCanceled(void* task)
 
 void V8DebuggerImpl::asyncTaskStarted(void* task)
 {
-    // Not enabled, return.
     if (!m_maxAsyncCallStackDepth)
         return;
-
     m_currentTasks.push_back(task);
     AsyncTaskToStackTrace::iterator stackIt = m_asyncTaskStacks.find(task);
     // Needs to support following order of events:

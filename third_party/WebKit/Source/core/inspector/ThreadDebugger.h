@@ -48,8 +48,6 @@ public:
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
     bool isInspectableHeapObject(v8::Local<v8::Object>) override;
-    void enableAsyncInstrumentation() override;
-    void disableAsyncInstrumentation() override;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
@@ -76,7 +74,6 @@ private:
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-    bool m_asyncInstrumentationEnabled;
     Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
