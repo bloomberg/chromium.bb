@@ -27,9 +27,8 @@ LayoutTestBluetoothFakeAdapterSetterImpl::
     ~LayoutTestBluetoothFakeAdapterSetterImpl() {}
 
 void LayoutTestBluetoothFakeAdapterSetterImpl::Set(
-    const mojo::String& adapter_name,
+    const std::string& adapter_name,
     const SetCallback& callback) {
-
   SetTestBluetoothScanDuration();
 
   device::BluetoothAdapterFactoryWrapper::Get().SetBluetoothAdapterForTesting(

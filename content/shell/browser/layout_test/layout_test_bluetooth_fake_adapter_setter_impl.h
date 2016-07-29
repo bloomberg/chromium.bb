@@ -23,7 +23,7 @@ class LayoutTestBluetoothFakeAdapterSetterImpl
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
   ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
 
-  void Set(const mojo::String& adapter_name,
+  void Set(const std::string& adapter_name,
            const SetCallback& callback) override;
 
   mojo::StrongBinding<LayoutTestBluetoothFakeAdapterSetter> binding_;

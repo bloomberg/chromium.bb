@@ -1359,9 +1359,6 @@
       'sources': [
         'test/data/web_ui_test_mojo_bindings.mojom',
       ],
-      'variables': {
-        'use_new_wrapper_types': 'false',
-      },
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
