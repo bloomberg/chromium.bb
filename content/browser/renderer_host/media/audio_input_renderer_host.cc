@@ -459,7 +459,9 @@ void AudioInputRendererHost::DoCreateStream(
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
-        device_id == media::AudioDeviceDescription::kLoopbackInputDeviceId) {
+        (device_id == media::AudioDeviceDescription::kLoopbackInputDeviceId ||
+         device_id ==
+             media::AudioDeviceDescription::kLoopbackWithMuteDeviceId)) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }
   }

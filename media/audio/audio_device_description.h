@@ -31,6 +31,10 @@ class MEDIA_EXPORT AudioDeviceDescription {
   // stream, otherwise stream initialization may fail.
   static const char kLoopbackInputDeviceId[];
 
+  // Similar to |kLoopbackInputDeviceId|, with only difference that this ID
+  // will mute system audio during capturing.
+  static const char kLoopbackWithMuteDeviceId[];
+
   // Returns true if |device_id| represents the default device.
   static bool IsDefaultDevice(const std::string& device_id);
 

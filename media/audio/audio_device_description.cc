@@ -10,6 +10,8 @@ namespace media {
 const char AudioDeviceDescription::kDefaultDeviceId[] = "default";
 const char AudioDeviceDescription::kCommunicationsDeviceId[] = "communications";
 const char AudioDeviceDescription::kLoopbackInputDeviceId[] = "loopback";
+const char AudioDeviceDescription::kLoopbackWithMuteDeviceId[] =
+    "loopbackWithMute";
 
 // static
 bool AudioDeviceDescription::IsDefaultDevice(const std::string& device_id) {

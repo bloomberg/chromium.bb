@@ -747,7 +747,8 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   if (device_id == AudioDeviceDescription::kDefaultDeviceId) {
     device = CoreAudioUtil::CreateDefaultDevice(
         is_output_device ? eRender : eCapture, eConsole);
-  } else if (device_id == AudioDeviceDescription::kLoopbackInputDeviceId) {
+  } else if (device_id == AudioDeviceDescription::kLoopbackInputDeviceId ||
+      device_id == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
     DCHECK(!is_output_device);
     device = CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
   } else if (device_id == AudioDeviceDescription::kCommunicationsDeviceId) {

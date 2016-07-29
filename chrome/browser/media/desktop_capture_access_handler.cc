@@ -140,6 +140,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::MediaStreamDevices* devices,
     content::DesktopMediaID media_id,
     bool capture_audio,
+    bool mute_system_audio,
     bool display_notification,
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
@@ -154,6 +155,12 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       devices->push_back(
           content::MediaStreamDevice(content::MEDIA_DESKTOP_AUDIO_CAPTURE,
                                      media_id.ToString(), "Tab audio"));
+    } else if (mute_system_audio) {
+      // Use the special loopback device ID for system audio capture.
+      devices->push_back(content::MediaStreamDevice(
+          content::MEDIA_DESKTOP_AUDIO_CAPTURE,
+          media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
+          "System Audio"));
     } else {
       // Use the special loopback device ID for system audio capture.
       devices->push_back(content::MediaStreamDevice(
@@ -309,7 +316,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       // display the notification for stream capture.
       bool display_notification = !component_extension;
 
-      ui = GetDevicesForDesktopCapture(&devices, screen_id, capture_audio,
+      ui = GetDevicesForDesktopCapture(&devices, screen_id, capture_audio, true,
                                        display_notification, application_title,
                                        application_title);
       DCHECK(!devices.empty());
@@ -418,7 +425,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
       (check_audio_permission ? audio_permitted : true) && audio_requested &&
       audio_supported;
 
-  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, true,
+  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, false,
+                                   true,
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
   UpdateExtensionTrusted(request, extension);
