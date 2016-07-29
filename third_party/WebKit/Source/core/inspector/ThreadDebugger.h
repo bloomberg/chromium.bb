@@ -6,6 +6,7 @@
 #define ThreadDebugger_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -63,6 +64,7 @@ public:
 protected:
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
     void onTimer(TimerBase*);
+    static MessageLevel consoleAPITypeToMessageLevel(V8ConsoleAPIType);
 
     v8::Isolate* m_isolate;
     std::unique_ptr<V8Debugger> m_debugger;

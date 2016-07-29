@@ -145,11 +145,13 @@ void WorkerThreadDebugger::endEnsureAllContextsInGroup(int contextGroupId)
     DCHECK(contextGroupId == workerContextGroupId);
 }
 
-void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     DCHECK(contextGroupId == workerContextGroupId);
+    if (type == V8ConsoleAPIType::kClear)
+        m_workerThread->consoleMessageStorage()->clear();
     // TODO(dgozman): maybe not wrap with ConsoleMessage.
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
     m_workerThread->workerReportingProxy().reportConsoleMessage(consoleMessage);
 }
 

@@ -6,7 +6,6 @@
 #define V8DebuggerClient_h
 
 #include "platform/inspector_protocol/Platform.h"
-#include "platform/v8_inspector/public/V8ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 
 #include <v8.h>
@@ -14,6 +13,8 @@
 namespace blink {
 
 class V8StackTrace;
+
+enum class V8ConsoleAPIType { kClear, kDebug, kLog, kInfo, kWarning, kError };
 
 class PLATFORM_EXPORT V8DebuggerClient {
 public:
@@ -38,7 +39,7 @@ public:
     virtual void consoleTime(const String16& title) = 0;
     virtual void consoleTimeEnd(const String16& title) = 0;
     virtual void consoleTimeStamp(const String16& title) = 0;
-    virtual void consoleAPIMessage(int contextGroupId, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) = 0;
+    virtual void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) = 0;
 
     virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) = 0;
 

@@ -239,13 +239,15 @@ void MainThreadDebugger::endEnsureAllContextsInGroup(int contextGroupId)
     frame->settings()->setForceMainWorldInitialization(false);
 }
 
-void MainThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void MainThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (!frame)
         return;
+    if (type == V8ConsoleAPIType::kClear && frame->host())
+        frame->host()->consoleMessageStorage().clear();
     // TODO(dgozman): maybe not wrap with ConsoleMessage.
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
     frame->console().reportMessageToClient(consoleMessage);
 }
 

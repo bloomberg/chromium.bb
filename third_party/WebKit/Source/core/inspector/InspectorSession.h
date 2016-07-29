@@ -37,7 +37,6 @@ public:
         virtual void resumeStartup() { }
         virtual void profilingStarted() { }
         virtual void profilingStopped() { }
-        virtual void consoleCleared() { }
         virtual ~Client() {}
     };
 
@@ -65,7 +64,6 @@ private:
     bool canExecuteScripts() override;
     void profilingStarted() override;
     void profilingStopped() override;
-    void consoleCleared() override;
 
     Client* m_client;
     std::unique_ptr<V8InspectorSession> m_v8Session;

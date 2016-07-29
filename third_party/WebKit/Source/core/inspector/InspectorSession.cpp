@@ -144,11 +144,6 @@ void InspectorSession::profilingStopped()
     m_client->profilingStopped();
 }
 
-void InspectorSession::consoleCleared()
-{
-    m_client->consoleCleared();
-}
-
 DEFINE_TRACE(InspectorSession)
 {
     visitor->trace(m_instrumentingAgents);

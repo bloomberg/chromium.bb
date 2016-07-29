@@ -334,16 +334,18 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
     if (arguments.size())
         message->m_message = V8ValueStringBuilder::toString(arguments[0], context->isolate());
 
-    MessageLevel level = LogMessageLevel;
+    V8ConsoleAPIType clientType = V8ConsoleAPIType::kLog;
     if (type == ConsoleAPIType::kDebug || type == ConsoleAPIType::kCount || type == ConsoleAPIType::kTimeEnd)
-        level = DebugMessageLevel;
-    if (type == ConsoleAPIType::kError || type == ConsoleAPIType::kAssert)
-        level = ErrorMessageLevel;
-    if (type == ConsoleAPIType::kWarning)
-        level = WarningMessageLevel;
-    if (type == ConsoleAPIType::kInfo)
-        level = InfoMessageLevel;
-    context->debugger()->client()->consoleAPIMessage(context->contextGroupId(), level, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
+        clientType = V8ConsoleAPIType::kDebug;
+    else if (type == ConsoleAPIType::kError || type == ConsoleAPIType::kAssert)
+        clientType = V8ConsoleAPIType::kError;
+    else if (type == ConsoleAPIType::kWarning)
+        clientType = V8ConsoleAPIType::kWarning;
+    else if (type == ConsoleAPIType::kInfo)
+        clientType = V8ConsoleAPIType::kInfo;
+    else if (type == ConsoleAPIType::kClear)
+        clientType = V8ConsoleAPIType::kClear;
+    context->debugger()->client()->consoleAPIMessage(context->contextGroupId(), clientType, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
 
     return message;
 }
@@ -392,15 +394,12 @@ V8ConsoleMessageStorage::V8ConsoleMessageStorage(V8DebuggerImpl* debugger, int c
 V8ConsoleMessageStorage::~V8ConsoleMessageStorage()
 {
     clear();
-    notifyClear();
 }
 
 void V8ConsoleMessageStorage::addMessage(std::unique_ptr<V8ConsoleMessage> message)
 {
-    if (message->type() == ConsoleAPIType::kClear) {
+    if (message->type() == ConsoleAPIType::kClear)
         clear();
-        notifyClear();
-    }
 
     V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId);
     if (session) {
@@ -429,12 +428,6 @@ void V8ConsoleMessageStorage::contextDestroyed(int contextId)
 {
     for (size_t i = 0; i < m_messages.size(); ++i)
         m_messages[i]->contextDestroyed(contextId);
-}
-
-void V8ConsoleMessageStorage::notifyClear()
-{
-    if (V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId))
-        session->client()->consoleCleared();
 }
 
 } // namespace blink

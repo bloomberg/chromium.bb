@@ -52,7 +52,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerThread* thread, Worke
     : m_debugger(debugger)
     , m_thread(thread)
     , m_instrumentingAgents(new InstrumentingAgents())
-    , m_logAgent(nullptr)
 {
 }
 
@@ -68,8 +67,7 @@ void WorkerInspectorController::connectFrontend()
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
     m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
-    m_logAgent = new InspectorLogAgent(m_thread->consoleMessageStorage());
-    m_session->append(m_logAgent.get());
+    m_session->append(new InspectorLogAgent(m_thread->consoleMessageStorage()));
 }
 
 void WorkerInspectorController::disconnectFrontend()
@@ -107,17 +105,10 @@ void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, c
     m_thread->workerReportingProxy().postMessageToPageInspector(response);
 }
 
-void WorkerInspectorController::consoleCleared()
-{
-    if (m_logAgent)
-        m_logAgent->clear(nullptr);
-}
-
 DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_session);
-    visitor->trace(m_logAgent);
 }
 
 } // namespace blink

@@ -5,8 +5,6 @@
 #ifndef ConsoleTypes_h
 #define ConsoleTypes_h
 
-#include "platform/v8_inspector/public/V8ConsoleTypes.h"
-
 namespace blink {
 
 enum MessageSource {
@@ -21,6 +19,14 @@ enum MessageSource {
     OtherMessageSource,
     DeprecationMessageSource,
     WorkerMessageSource
+};
+
+enum MessageLevel {
+    DebugMessageLevel = 4,
+    LogMessageLevel = 1,
+    InfoMessageLevel = 5,
+    WarningMessageLevel = 2,
+    ErrorMessageLevel = 3
 };
 
 }

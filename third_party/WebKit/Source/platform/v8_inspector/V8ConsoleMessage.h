@@ -9,7 +9,6 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/protocol/Console.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
-#include "platform/v8_inspector/public/V8ConsoleTypes.h"
 #include <deque>
 #include <v8.h>
 
@@ -96,8 +95,6 @@ public:
     void clear();
 
 private:
-    void notifyClear();
-
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     int m_expiredCount;

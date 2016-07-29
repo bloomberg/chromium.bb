@@ -46,6 +46,19 @@ ThreadDebugger* ThreadDebugger::from(v8::Isolate* isolate)
     return data ? data->threadDebugger() : nullptr;
 }
 
+// static
+MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(V8ConsoleAPIType type)
+{
+    switch (type) {
+    case V8ConsoleAPIType::kDebug: return DebugMessageLevel;
+    case V8ConsoleAPIType::kLog: return LogMessageLevel;
+    case V8ConsoleAPIType::kInfo: return InfoMessageLevel;
+    case V8ConsoleAPIType::kWarning: return WarningMessageLevel;
+    case V8ConsoleAPIType::kError: return ErrorMessageLevel;
+    default: return LogMessageLevel;
+    }
+}
+
 void ThreadDebugger::willExecuteScript(v8::Isolate* isolate, int scriptId)
 {
     if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))

@@ -46,7 +46,6 @@
 namespace blink {
 
 class GraphicsLayer;
-class InspectorLogAgent;
 class InspectedFrames;
 class InspectorOverlay;
 class InspectorResourceContainer;
@@ -127,7 +126,6 @@ private:
     void resumeStartup() override;
     void profilingStarted() override;
     void profilingStopped() override;
-    void consoleCleared() override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;
@@ -156,7 +154,6 @@ private:
     Member<InspectorNetworkAgent> m_networkAgent;
     Member<InspectorLayerTreeAgent> m_layerTreeAgent;
     Member<InspectorTracingAgent> m_tracingAgent;
-    Member<InspectorLogAgent> m_logAgent;
 
     Member<InspectorSession> m_session;
     bool m_includeViewAgents;
