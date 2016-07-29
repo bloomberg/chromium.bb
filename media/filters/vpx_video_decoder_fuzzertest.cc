@@ -23,7 +23,7 @@ struct Env {
   }
 
   base::AtExitManager at_exit_manager;
-  base::MessageLoop loop;
+  base::MessageLoop message_loop;
 };
 Env* env = new Env();
 
@@ -56,14 +56,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                             EmptyExtraData(), Unencrypted());
 
   VpxVideoDecoder decoder;
+  base::RunLoop run_loop;
 
   decoder.Initialize(config, true /* low_delay */, nullptr /* cdm_context */,
                      base::Bind(&OnInitDone), base::Bind(&OnOutputComplete));
-  env->loop.RunUntilIdle();
+  run_loop.RunUntilIdle();
 
   auto buffer = DecoderBuffer::CopyFrom(data, size);
   decoder.Decode(buffer, base::Bind(&OnDecodeComplete));
-  env->loop.RunUntilIdle();
+  run_loop.RunUntilIdle();
 
   return 0;
 }
