@@ -10,9 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/core/session/assignment_source.h"
+#include "blimp/client/core/session/network_event_observer.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -39,15 +41,6 @@ class ImeFeature;
 class RenderWidgetFeature;
 class SettingsFeature;
 class TabControlFeature;
-
-class NetworkEventObserver {
- public:
-  NetworkEventObserver() {}
-  virtual ~NetworkEventObserver() {}
-
-  virtual void OnConnected() = 0;
-  virtual void OnDisconnected(int result) = 0;
-};
 
 // BlimpClientSession represents a single active session of Blimp on the client
 // regardless of whether or not the client application is in the background or
