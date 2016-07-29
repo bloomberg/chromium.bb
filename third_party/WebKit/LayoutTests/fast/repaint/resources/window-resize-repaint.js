@@ -33,6 +33,8 @@ function doTest() {
 if (window.testRunner) {
     testRunner.useUnfortunateSynchronousResizeMode();
     testRunner.waitUntilDone();
-    window.resizeTo(testSizes[0].width, testSizes[0].height);
-    testRunner.layoutAndPaintAsyncThen(doTest);
+    onload = function() {
+        window.resizeTo(testSizes[0].width, testSizes[0].height);
+        testRunner.layoutAndPaintAsyncThen(doTest);
+    };
 }
