@@ -1193,8 +1193,11 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendMediaRouterItem();
 
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
-    std::string locale = g_browser_process->GetApplicationLocale();
-    locale = translate::TranslateDownloadManager::GetLanguageCode(locale);
+    std::unique_ptr<translate::TranslatePrefs> prefs(
+        ChromeTranslateClient::CreateTranslatePrefs(
+            GetPrefs(browser_context_)));
+    std::string locale =
+        translate::TranslateManager::GetTargetLanguage(prefs.get());
     base::string16 language =
         l10n_util::GetDisplayNameForLocale(locale, locale, true);
     menu_model_.AddItem(
@@ -1979,9 +1982,11 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
   }
   std::string original_lang =
       chrome_translate_client->GetLanguageState().original_language();
-  std::string target_lang = g_browser_process->GetApplicationLocale();
-  target_lang =
-      translate::TranslateDownloadManager::GetLanguageCode(target_lang);
+  std::unique_ptr<translate::TranslatePrefs> prefs(
+      ChromeTranslateClient::CreateTranslatePrefs(
+          GetPrefs(browser_context_)));
+  std::string target_lang =
+      translate::TranslateManager::GetTargetLanguage(prefs.get());
   // Note that we intentionally enable the menu even if the original and
   // target languages are identical.  This is to give a way to user to
   // translate a page that might contains text fragments in a different
@@ -1991,9 +1996,9 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
          !chrome_translate_client->GetLanguageState().IsPageTranslated() &&
          !embedder_web_contents_->GetInterstitialPage() &&
          // There are some application locales which can't be used as a
-         // target language for translation.
-         translate::TranslateDownloadManager::IsSupportedLanguage(
-             target_lang) &&
+         // target language for translation. In that case GetTargetLanguage()
+         // may return empty.
+         !target_lang.empty() &&
          // Disable on the Instant Extended NTP.
          !search::IsInstantNTP(embedder_web_contents_);
 }
@@ -2394,15 +2399,14 @@ void RenderViewContextMenu::ExecTranslate() {
 
   std::string original_lang =
       chrome_translate_client->GetLanguageState().original_language();
-  std::string target_lang =
-      translate::TranslateDownloadManager::GetLanguageCode(
-          g_browser_process->GetApplicationLocale());
 
   // Since the user decided to translate for that language and site, clears
   // any preferences for not translating them.
   std::unique_ptr<translate::TranslatePrefs> prefs(
       ChromeTranslateClient::CreateTranslatePrefs(
           GetPrefs(browser_context_)));
+  std::string target_lang =
+      translate::TranslateManager::GetTargetLanguage(prefs.get());
   prefs->UnblockLanguage(original_lang);
   prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
 
