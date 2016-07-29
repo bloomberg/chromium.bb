@@ -25,6 +25,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
+      background_parser_count_(0),
       page_visible_(true),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true) {
@@ -119,26 +120,23 @@ bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
 
 void WebViewSchedulerImpl::DidStartLoading(unsigned long identifier) {
   pending_loads_.insert(identifier);
-
-  if (virtual_time_policy_ !=
-      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING) {
-    return;
-  }
-
-  if (pending_loads_.size() == 1u)
-    setAllowVirtualTimeToAdvance(false);
+  ApplyVirtualTimePolicy();
 }
 
 void WebViewSchedulerImpl::DidStopLoading(unsigned long identifier) {
   pending_loads_.erase(identifier);
+  ApplyVirtualTimePolicy();
+}
 
-  if (virtual_time_policy_ !=
-      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING) {
-      return;
-  }
+void WebViewSchedulerImpl::IncrementBackgroundParserCount() {
+  background_parser_count_++;
+  ApplyVirtualTimePolicy();
+}
 
-  if (pending_loads_.size() == 0)
-      setAllowVirtualTimeToAdvance(true);
+void WebViewSchedulerImpl::DecrementBackgroundParserCount() {
+  background_parser_count_--;
+  DCHECK_GE(background_parser_count_, 0);
+  ApplyVirtualTimePolicy();
 }
 
 void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
@@ -153,10 +151,19 @@ void WebViewSchedulerImpl::setVirtualTimePolicy(VirtualTimePolicy policy) {
       setAllowVirtualTimeToAdvance(false);
       break;
 
-    case VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING:
-      setAllowVirtualTimeToAdvance(pending_loads_.size() == 0);
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      ApplyVirtualTimePolicy();
       break;
   }
+}
+
+void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
+  if (virtual_time_policy_ != VirtualTimePolicy::DETERMINISTIC_LOADING) {
+    return;
+  }
+
+  setAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
+                               background_parser_count_ == 0);
 }
 
 }  // namespace scheduler

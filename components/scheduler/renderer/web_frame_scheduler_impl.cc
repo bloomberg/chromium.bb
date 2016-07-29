@@ -118,6 +118,14 @@ void WebFrameSchedulerImpl::didStopLoading(unsigned long identifier) {
     parent_web_view_scheduler_->DidStopLoading(identifier);
 }
 
+void WebFrameSchedulerImpl::setDocumentParsingInBackground(
+    bool background_parser_active) {
+  if (background_parser_active)
+    parent_web_view_scheduler_->IncrementBackgroundParserCount();
+  else
+    parent_web_view_scheduler_->DecrementBackgroundParserCount();
+}
+
 void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   DCHECK(parent_web_view_scheduler_);
   if (page_visible_ == page_visible)

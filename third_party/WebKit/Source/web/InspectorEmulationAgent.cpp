@@ -103,7 +103,7 @@ void InspectorEmulationAgent::setVirtualTimePolicy(ErrorString*, const String& i
         m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE);
     } else if (protocol::Emulation::VirtualTimePolicyEnum::PauseIfNetworkFetchesPending == in_policy) {
         m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
-        m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+        m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
     }
 }
 

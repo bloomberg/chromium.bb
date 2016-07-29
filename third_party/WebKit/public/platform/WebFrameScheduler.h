@@ -52,6 +52,11 @@ public:
     // Tells the scheduler a resource load has stopped. The scheduler may make
     // policy decisions based on this.
     virtual void didStopLoading(unsigned long identifier) { }
+
+    // Tells the scheduler if we are parsing a document on another thread. This
+    // tells the scheduler not to advance virtual time if it's using the
+    // DETERMINISTIC_LOADING policy.
+    virtual void setDocumentParsingInBackground(bool) {}
 };
 
 } // namespace blink

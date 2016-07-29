@@ -109,7 +109,7 @@ TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
 TEST_F(VirtualTimeTest, VirtualTimeNotAllowedToAdvanceWhileResourcesLoading)
 {
     webView().scheduler()->enableVirtualTime();
-    webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+    webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
 
     EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
 

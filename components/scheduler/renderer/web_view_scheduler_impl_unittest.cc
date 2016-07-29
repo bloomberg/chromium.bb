@@ -502,10 +502,9 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
   EXPECT_EQ(10, run_count);
 }
 
-TEST_F(WebViewSchedulerImplTest,
-       VirtualTimePolicy_PAUSE_IF_NETWORK_FETCHES_PENDING) {
+TEST_F(WebViewSchedulerImplTest, VirtualTimePolicy_DETERMINISTIC_LOADING) {
   web_view_scheduler_->setVirtualTimePolicy(
-      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+      VirtualTimePolicy::DETERMINISTIC_LOADING);
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DidStartLoading(1u);
@@ -529,7 +528,7 @@ TEST_F(WebViewSchedulerImplTest,
 
 TEST_F(WebViewSchedulerImplTest, RedundantDidStopLoadingCallsAreHarmless) {
   web_view_scheduler_->setVirtualTimePolicy(
-      VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING);
+      VirtualTimePolicy::DETERMINISTIC_LOADING);
 
   web_view_scheduler_->DidStartLoading(1u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
@@ -547,6 +546,24 @@ TEST_F(WebViewSchedulerImplTest, RedundantDidStopLoadingCallsAreHarmless) {
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DidStopLoading(2u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+}
+
+TEST_F(WebViewSchedulerImplTest, BackgroundParser_DETERMINISTIC_LOADING) {
+  web_view_scheduler_->setVirtualTimePolicy(
+      VirtualTimePolicy::DETERMINISTIC_LOADING);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->IncrementBackgroundParserCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->IncrementBackgroundParserCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DecrementBackgroundParserCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DecrementBackgroundParserCount();
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 }
 

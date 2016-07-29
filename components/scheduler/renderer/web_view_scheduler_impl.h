@@ -55,6 +55,8 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
 
   void DidStartLoading(unsigned long identifier);
   void DidStopLoading(unsigned long identifier);
+  void IncrementBackgroundParserCount();
+  void DecrementBackgroundParserCount();
 
  private:
   friend class WebFrameSchedulerImpl;
@@ -66,6 +68,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   }
 
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
+  void ApplyVirtualTimePolicy();
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;
@@ -74,6 +77,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
   VirtualTimePolicy virtual_time_policy_;
+  int background_parser_count_;
   bool page_visible_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;
