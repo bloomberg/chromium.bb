@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -18,6 +17,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
 
 /**
@@ -187,6 +187,8 @@ public class NewTabPageRecyclerView extends RecyclerView {
         if (firstCard == null) return;
 
         if (firstCard.itemView.isShown()) {
+            if (findAboveTheFoldView() == null) return;
+            firstCard.setCanPeek(findAboveTheFoldView().hasSpaceForPeekingCard());
             firstCard.updatePeek();
         }
     }
@@ -199,6 +201,8 @@ public class NewTabPageRecyclerView extends RecyclerView {
         SnippetHeaderViewHolder header = findHeader();
         if (header == null) return;
 
+        if (findAboveTheFoldView() == null) return;
+        header.setCanTransition(findAboveTheFoldView().hasSpaceForPeekingCard());
         // Start doing the calculations if the snippet header is currently shown on screen.
         header.updateDisplay();
 
@@ -252,6 +256,21 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     private ViewHolder findBottomSpacer() {
         return findViewHolderForAdapterPosition(getNewTabPageAdapter().getBottomSpacerPosition());
+    }
+
+    /**
+     * Finds the above the fold view.
+     * @return The View for above the fold or null, if it is not present.
+     */
+    private NewTabPageLayout findAboveTheFoldView() {
+        ViewHolder viewHolder =
+                findViewHolderForAdapterPosition(getNewTabPageAdapter().getAboveTheFoldPosition());
+        if (viewHolder == null) return null;
+
+        View view = viewHolder.itemView;
+        if (!(view instanceof NewTabPageLayout)) return null;
+
+        return (NewTabPageLayout) view;
     }
 
     /** Called when an item is in the process of being removed from the view. */
@@ -310,7 +329,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         if (findFirstCard() != null && isFirstItemVisible()) {
             CardViewHolder peekingCardViewHolder = findFirstCard();
 
-            if (!peekingCardViewHolder.canPeek()) return;
+            if (!peekingCardViewHolder.getCanPeek()) return;
 
             View peekingCardView = findFirstCard().itemView;
             View headerView = findHeader().itemView;

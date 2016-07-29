@@ -27,6 +27,9 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
 
     private SnippetHeaderListItem mHeader;
 
+    /** Can the header transition. */
+    private boolean mCanTransition = false;
+
     public SnippetHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
                         .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
@@ -47,14 +50,10 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
     }
 
     /**
-     * Is the header in a state where the height can vary from show to hidden.
-     * @return Whether the header can transition.
-     */
-    private boolean canTransition() {
-        // Only allow the header to transition if the user has not scrolled on the page beyond the
-        // |mMaxPeekPadding + mMaxSnippetHeaderHeight|.
-        return mRecyclerView.computeVerticalScrollOffset()
-                <= mMaxSnippetHeaderHeight + mMaxPeekPadding;
+    * Set whether the header is in a state where the height can vary from show to hidden.
+    */
+    public void setCanTransition(boolean canTransition) {
+        mCanTransition = canTransition;
     }
 
     /**
@@ -65,7 +64,7 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
 
         // If the header cannot transition but is visible - set the height to the maximum so
         // it always displays
-        if (!canTransition()) return mMaxSnippetHeaderHeight;
+        if (!mCanTransition) return mMaxSnippetHeaderHeight;
 
         // Check if snippet header top is within range to start showing. Set the header height,
         // this is a percentage of how much is scrolled. The balance of the scroll will be used

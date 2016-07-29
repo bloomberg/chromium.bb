@@ -221,6 +221,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         return mItems.size();
     }
 
+    public int getAboveTheFoldPosition() {
+        return mItems.indexOf(mAboveTheFold);
+    }
+
     public int getHeaderPosition() {
         return mItems.indexOf(mHeader);
     }

@@ -36,6 +36,7 @@ public class NewTabPageLayout extends LinearLayout {
 
     private int mParentViewportHeight;
     private int mSearchboxViewShadowWidth;
+    private boolean mHasSpaceForPeekingCard;
 
     private boolean mCardsUiEnabled;
     private View mTopSpacer;  // Spacer above search logo.
@@ -98,6 +99,13 @@ public class NewTabPageLayout extends LinearLayout {
         mCardsUiEnabled = useCardsUi;
     }
 
+    /**
+     * @return Whether the cards UI has space for a peeking card to display.
+     */
+    public boolean hasSpaceForPeekingCard() {
+        return mHasSpaceForPeekingCard;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Remove the scroll spacer from the layout so the weighted children can be measured
@@ -106,6 +114,7 @@ public class NewTabPageLayout extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (getMeasuredHeight() > mParentViewportHeight) {
+            mHasSpaceForPeekingCard = false;
             // No scroll spacing needed when using the cards ui.
             if (!mCardsUiEnabled) {
                 // This layout is bigger than its parent's viewport, so the user will need to scroll
@@ -131,6 +140,7 @@ public class NewTabPageLayout extends LinearLayout {
                 }
             }
         } else {
+            mHasSpaceForPeekingCard = true;
             // This layout is smaller than or equal to its parent viewport. Redistribute any
             // weighted space.
             if (mCardsUiEnabled) {

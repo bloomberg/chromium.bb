@@ -62,6 +62,8 @@ public class CardViewHolder extends NewTabPageViewHolder {
      */
     private float mPeekingPercentage;
 
+    private boolean mCanPeek = false;
+
     /**
      * @param layoutId resource id of the layout to inflate and to use as card.
      * @param recyclerView ViewGroup that will contain the newly created view.
@@ -132,7 +134,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
      */
     public void updatePeek() {
         float peekingPercentage;
-        if (canPeek()) {
+        if (getCanPeek()) {
             // How much of the (top of the) card is visible?
             int visible = mRecyclerView.getHeight() - itemView.getTop();
 
@@ -154,13 +156,17 @@ public class CardViewHolder extends NewTabPageViewHolder {
     }
 
     /**
+     * Set whether the card can peek.
+     */
+    public void setCanPeek(boolean canPeek) {
+        mCanPeek = canPeek;
+    }
+
+    /**
      * @return Whether the card can peek.
      */
-    public boolean canPeek() {
-        // Only allow the card to peek if the user has not scrolled on the page beyond the
-        // |mMaxPeekPadding| height. There will only ever be one peeking card on the page and only
-        // when there is enough space to show the peeking card on the first screen at the bottom.
-        return mRecyclerView.computeVerticalScrollOffset() <= itemView.getHeight();
+    public boolean getCanPeek() {
+        return mCanPeek;
     }
 
     @Override
