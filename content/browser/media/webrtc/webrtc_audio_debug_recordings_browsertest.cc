@@ -7,7 +7,6 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -97,6 +96,7 @@ class WebRtcAudioDebugRecordingsBrowserTest : public WebRtcContentBrowserTest {
 // never a webrtc-internals page opened at all since that's not needed.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordings) {
+  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -144,6 +144,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   EXPECT_GT(file_size, 0);
 
   base::DeleteFile(input_audio_file, false);
+  base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
 // TODO(grunell): Add test for multiple dumps when re-use of
@@ -163,6 +164,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // be created, but should be empty.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled) {
+  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -174,11 +176,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   NavigateToURL(shell(), GURL(""));
 
   base::FilePath base_file;
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_creating_test_path;
-    ASSERT_TRUE(CreateTemporaryFile(&base_file));
-    base::DeleteFile(base_file, false);
-  }
+  ASSERT_TRUE(CreateTemporaryFile(&base_file));
+  base::DeleteFile(base_file, false);
 
   // This fakes the behavior of another open tab with webrtc-internals, and
   // enabling AEC dump in that tab, then disabling it.
@@ -194,26 +193,22 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   EXPECT_TRUE(GetRenderProcessHostId(&render_process_id));
   base::FilePath aec_dump_file = GetExpectedAecDumpFileName(base_file,
                                                             render_process_id);
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
-    EXPECT_FALSE(base::PathExists(aec_dump_file));
-    base::DeleteFile(aec_dump_file, false);
-  }
+  EXPECT_FALSE(base::PathExists(aec_dump_file));
+  base::DeleteFile(aec_dump_file, false);
 
   // Verify that the expected input audio file doesn't exist.
   base::FilePath input_audio_file =
       GetExpectedInputAudioFileName(base_file, render_process_id);
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
-    EXPECT_FALSE(base::PathExists(input_audio_file));
-    base::DeleteFile(input_audio_file, false);
-  }
+  EXPECT_FALSE(base::PathExists(input_audio_file));
+  base::DeleteFile(input_audio_file, false);
+  base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        DISABLED_TwoCallsWithAudioDebugRecordings) {
+  bool prev = base::ThreadRestrictions::SetIOAllowed(true);
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -278,6 +273,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
     base::DeleteFile(input_audio_file, false);
   }
+  base::ThreadRestrictions::SetIOAllowed(prev);
 }
 
 }  // namespace content
