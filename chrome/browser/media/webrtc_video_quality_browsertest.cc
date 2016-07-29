@@ -53,15 +53,10 @@ static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
     FILE_PATH_LITERAL("frame_analyzer");
 #endif
 
-static const base::FilePath::CharType kArgbToI420ConverterExecutable[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("rgba_to_i420_converter.exe");
-#else
-    FILE_PATH_LITERAL("rgba_to_i420_converter");
-#endif
-
 static const base::FilePath::CharType kCapturedYuvFileName[] =
     FILE_PATH_LITERAL("captured_video.yuv");
+static const base::FilePath::CharType kCapturedWebmFileName[] =
+    FILE_PATH_LITERAL("captured_video.webm");
 static const base::FilePath::CharType kStatsFileName[] =
     FILE_PATH_LITERAL("stats.txt");
 static const char kMainWebrtcTestHtmlPage[] =
@@ -132,65 +127,39 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
-  // Writes all frames we've captured so far by grabbing them from the
-  // javascript and writing them to the temporary work directory.
-  void WriteCapturedFramesToWorkingDir(content::WebContents* capturing_tab) {
-    int num_frames = 0;
-    std::string response =
-        ExecuteJavascript("getTotalNumberCapturedFrames()", capturing_tab);
-    ASSERT_TRUE(base::StringToInt(response, &num_frames)) <<
-        "Failed to retrieve frame count: got " << response;
-    ASSERT_NE(0, num_frames) << "Failed to capture any frames.";
-
-    for (int i = 0; i < num_frames; i++) {
-      std::string base64_encoded_frame =
-          ExecuteJavascript(base::StringPrintf("getOneCapturedFrame(%d)", i),
-                            capturing_tab);
-      std::string decoded_frame;
-      ASSERT_TRUE(base::Base64Decode(base64_encoded_frame, &decoded_frame))
-          << "Failed to decode frame data '" << base64_encoded_frame << "'.";
-
-      std::string file_name = base::StringPrintf("frame_%04d", i);
-      base::File frame_file(GetWorkingDir().AppendASCII(file_name),
-                            base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-      size_t written = frame_file.Write(0, decoded_frame.c_str(),
-                                        decoded_frame.length());
-      ASSERT_EQ(decoded_frame.length(), written);
-    }
+  // Writes the captured video to a webm file.
+  void WriteCapturedWebmVideo(content::WebContents* capturing_tab,
+                          const base::FilePath& webm_video_filename) {
+    std::string base64_encoded_video =
+        ExecuteJavascript("getRecordedVideoAsBase64()", capturing_tab);
+    std::string recorded_video;
+    ASSERT_TRUE(base::Base64Decode(base64_encoded_video, &recorded_video));
+    base::File video_file(webm_video_filename,
+                          base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    size_t written = video_file.Write(0, recorded_video.c_str(),
+                                      recorded_video.length());
+    ASSERT_EQ(recorded_video.length(), written);
   }
 
-  // Runs the RGBA to I420 converter on the video in |capture_video_filename|,
-  // which should contain frames of size |width| x |height|.
-  //
-  // The rgba_to_i420_converter is part of the webrtc_test_tools target which
-  // should be build prior to running this test. The resulting binary should
-  // live next to Chrome.
-  bool RunARGBtoI420Converter(int width,
-                              int height,
-                              const base::FilePath& captured_video_filename) {
-    base::FilePath path_to_converter =
-        GetBrowserDir().Append(kArgbToI420ConverterExecutable);
-
-    if (!base::PathExists(path_to_converter)) {
-      LOG(ERROR) << "Missing ARGB->I420 converter: should be in "
-          << path_to_converter.value()
-          << ". Try building the chromium_builder_webrtc target.";
+  // Runs ffmpeg on the captured webm video and writes it to a yuv video file.
+  bool RunWebmToI420Converter(const base::FilePath& webm_video_filename,
+                              const base::FilePath& yuv_video_filename) {
+    base::FilePath path_to_ffmpeg = test::GetToolForPlatform("ffmpeg");
+    if (!base::PathExists(path_to_ffmpeg)) {
+      LOG(ERROR) << "Missing ffmpeg: should be in " << path_to_ffmpeg.value();
       return false;
     }
 
-    base::CommandLine converter_command(path_to_converter);
-    converter_command.AppendSwitchPath("--frames_dir", GetWorkingDir());
-    converter_command.AppendSwitchPath("--output_file",
-                                       captured_video_filename);
-    converter_command.AppendSwitchASCII("--width", base::IntToString(width));
-    converter_command.AppendSwitchASCII("--height", base::IntToString(height));
-    converter_command.AppendSwitchASCII("--delete_frames", "true");
+    base::CommandLine ffmpeg_command(path_to_ffmpeg);
+    ffmpeg_command.AppendArg("-i");
+    ffmpeg_command.AppendArgPath(webm_video_filename);
+    ffmpeg_command.AppendArgPath(yuv_video_filename);
 
     // We produce an output file that will later be used as an input to the
     // barcode decoder and frame analyzer tools.
-    DVLOG(0) << "Running " << converter_command.GetCommandLineString();
+    DVLOG(0) << "Running " << ffmpeg_command.GetCommandLineString();
     std::string result;
-    bool ok = base::GetAppOutput(converter_command, &result);
+    bool ok = base::GetAppOutput(ffmpeg_command, &result);
     DVLOG(0) << "Output was:\n\n" << result;
     return ok;
   }
@@ -309,7 +278,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
 
     HangUp(left_tab);
 
-    WriteCapturedFramesToWorkingDir(right_tab);
+    WriteCapturedWebmVideo(
+        right_tab, GetWorkingDir().Append(kCapturedWebmFileName));
 
     // Shut everything down to avoid having the javascript race with the
     // analysis tools. For instance, dont have console log printouts interleave
@@ -317,9 +287,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     chrome::CloseWebContents(browser(), left_tab, false);
     chrome::CloseWebContents(browser(), right_tab, false);
 
-    ASSERT_TRUE(
-        RunARGBtoI420Converter(test_config_.width, test_config_.height,
-                               GetWorkingDir().Append(kCapturedYuvFileName)));
+    RunWebmToI420Converter(GetWorkingDir().Append(kCapturedWebmFileName),
+                           GetWorkingDir().Append(kCapturedYuvFileName));
 
     ASSERT_TRUE(CompareVideosAndPrintResult(
         MakeLabel(test_config_.test_name, video_codec), test_config_.width,
