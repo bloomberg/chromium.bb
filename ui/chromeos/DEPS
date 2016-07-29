@@ -4,6 +4,7 @@ include_rules = [
   "+grit/ui_chromeos_resources.h",
   "+grit/ui_chromeos_strings.h",
   "+third_party/cros_system_api",
+  "+third_party/skia",
   "+ui/accessibility",
   "+ui/aura",
   "+ui/base",

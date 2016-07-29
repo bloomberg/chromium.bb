@@ -14,6 +14,8 @@
 #include "grit/ui_chromeos_resources.h"
 #include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -179,6 +181,8 @@ const double kConnectingImageAlpha = 0.5;
 const int kNumBarsImages = 5;
 
 // Images for strength arcs for wireless networks.
+// TODO(estade): consolidate kNumBarsImages and kNumArcsImages; simplify
+// StrengthIndex(), etc.
 const int kNumArcsImages = 5;
 
 // Number of discrete images to use for alpha fade animation
@@ -192,6 +196,18 @@ SkColor GetBaseColorForIconType(IconType icon_type) {
 gfx::Size GetSizeForIconType(IconType icon_type) {
   // TODO(estade): use kTrayIconSize and kMenuIconSize.
   return icon_type == ICON_TYPE_TRAY ? gfx::Size(16, 16) : gfx::Size(20, 20);
+}
+
+bool IconTypeIsDark(IconType icon_type) {
+  return (icon_type != ICON_TYPE_TRAY);
+}
+
+bool IconTypeHasVPNBadge(IconType icon_type) {
+  return (icon_type != ICON_TYPE_LIST);
+}
+
+int NumImagesForType(ImageType type) {
+  return (type == BARS) ? kNumBarsImages : kNumArcsImages;
 }
 
 //------------------------------------------------------------------------------
@@ -272,23 +288,42 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSource);
 };
 
-// Depicts a given signal strength using arcs (for WiFi connections).
-class ArcsImageSource : public gfx::CanvasImageSource {
+// Depicts a given signal strength using arcs (e.g. for WiFi connections) or
+// bars (e.g. for cell connections).
+class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
  public:
-  ArcsImageSource(IconType icon_type, float signal_strength)
+  NetworkIconImageSourceMd(ImageType image_type,
+                           IconType icon_type,
+                           int signal_strength)
       : CanvasImageSource(GetSizeForIconType(icon_type), false),
+        image_type_(image_type),
         icon_type_(icon_type),
         signal_strength_(signal_strength) {
+    if (image_type_ == NONE)
+      image_type_ = ARCS;
+
     DCHECK_GE(signal_strength, 0);
-    DCHECK_LT(signal_strength, kNumArcsImages);
+    DCHECK_LT(signal_strength, NumImagesForType(image_type_));
   }
-  ~ArcsImageSource() override {}
+  ~NetworkIconImageSourceMd() override {}
 
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {
+    if (image_type_ == ARCS)
+      DrawArcs(canvas);
+    else
+      DrawBars(canvas);
+  }
+  bool HasRepresentationAtAllScales() const override {
+    // This image source can handle any scale factor. TODO(estade): investigate
+    // why this doesn't seem to be respected. (Perhaps because we compose
+    // multiple images that don't have representations at all scales?)
+    return true;
+  }
+
+ private:
+  void DrawArcs(gfx::Canvas* canvas) {
     gfx::RectF oval_bounds((gfx::Rect(size())));
-    // Padding between top of arc and top of canvas.
-    const int kIconInset = 2;
     oval_bounds.Inset(gfx::Insets(kIconInset));
     // Double the width and height. The new midpoint should be the former
     // bottom center.
@@ -305,9 +340,7 @@ class ArcsImageSource : public gfx::CanvasImageSource {
     const SkColor base_color = GetBaseColorForIconType(icon_type_);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumArcsImages - 1) {
-      // TODO(estade): share this alpha with other things in ash (battery,
-      // etc.).
-      paint.setColor(SkColorSetA(base_color, 0x4D));
+      paint.setColor(SkColorSetA(base_color, kBgAlpha));
       canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
                                    kSweepAngle, true, paint);
     }
@@ -326,28 +359,69 @@ class ArcsImageSource : public gfx::CanvasImageSource {
     }
   }
 
- private:
+  void DrawBars(gfx::Canvas* canvas) {
+    // Undo the canvas's device scaling and round values to the nearest whole
+    // number so we can draw on exact pixel boundaries.
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    auto scale = [dsf](SkScalar dimension) {
+      return std::round(dimension * dsf);
+    };
+
+    // Length of short side of an isosceles right triangle, in dip.
+    const SkScalar kFullTriangleSide =
+        SkIntToScalar(size().width()) - kIconInset * 2;
+
+    auto make_triangle = [scale, kFullTriangleSide](SkScalar side) {
+      SkPath triangle;
+      triangle.moveTo(scale(kIconInset), scale(kIconInset + kFullTriangleSide));
+      triangle.rLineTo(scale(side), 0);
+      triangle.rLineTo(0, -scale(side));
+      triangle.close();
+      return triangle;
+    };
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kFill_Style);
+    const SkColor base_color = GetBaseColorForIconType(icon_type_);
+    // Background. Skip drawing for full signal.
+    if (signal_strength_ != kNumBarsImages - 1) {
+      paint.setColor(SkColorSetA(base_color, kBgAlpha));
+      canvas->DrawPath(make_triangle(kFullTriangleSide), paint);
+    }
+    // Foreground (signal strength).
+    if (signal_strength_ != 0) {
+      paint.setColor(base_color);
+      // As a percentage of the bg triangle, the length of one of the short
+      // sides of the fg triangle, indexed by signal strength.
+      static const float kTriangleSidePercents[] = {0.f, 0.5f, 0.625f, 0.75f,
+                                                    1.f};
+      canvas->DrawPath(make_triangle(kTriangleSidePercents[signal_strength_] *
+                                     kFullTriangleSide),
+                       paint);
+    }
+  }
+
+  ImageType image_type_;
   IconType icon_type_;
-  // On a scale of 0 to kNumArcsImages - 1, how connected we are.
+
+  // On a scale of 0 to kNum{Arcs,Bars}Images - 1, how connected we are.
   int signal_strength_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcsImageSource);
+  // Padding between outside of icon and edge of the canvas, in dp. This value
+  // stays the same regardless of the canvas size (which depends on
+  // |icon_type_|).
+  static constexpr int kIconInset = 2;
+
+  // TODO(estade): share this alpha with other things in ash (battery, etc.).
+  // See crbug.com/623987 and crbug.com/632827
+  static constexpr int kBgAlpha = 0x4D;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSourceMd);
 };
 
 //------------------------------------------------------------------------------
 // Utilities for extracting icon images.
-
-bool IconTypeIsDark(IconType icon_type) {
-  return (icon_type != ICON_TYPE_TRAY);
-}
-
-bool IconTypeHasVPNBadge(IconType icon_type) {
-  return (icon_type != ICON_TYPE_LIST);
-}
-
-int NumImagesForType(ImageType type) {
-  return (type == BARS) ? kNumBarsImages : kNumArcsImages;
-}
 
 gfx::ImageSkia* BaseImageForType(ImageType image_type, IconType icon_type) {
   gfx::ImageSkia* image;
@@ -374,9 +448,9 @@ ImageType ImageTypeForNetworkType(const std::string& type) {
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
                                 IconType icon_type,
                                 int index) {
-  if (md_icon_controller::UseMaterialDesignNetworkIcons() &&
-      image_type == ARCS) {
-    ArcsImageSource* source = new ArcsImageSource(icon_type, index);
+  if (md_icon_controller::UseMaterialDesignNetworkIcons()) {
+    gfx::CanvasImageSource* source =
+        new NetworkIconImageSourceMd(image_type, icon_type, index);
     return gfx::ImageSkia(source, source->size());
   }
 
