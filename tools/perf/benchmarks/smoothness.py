@@ -89,7 +89,6 @@ class SmoothnessToughPathRenderingCases(_Smoothness):
 
 
 @benchmark.Disabled('android')  # crbug.com/526901
-@benchmark.Disabled('win', 'mac')  # crbug.com/623105
 class SmoothnessToughCanvasCases(_Smoothness):
   """Measures frame rate and a variety of other statistics.
 
