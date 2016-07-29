@@ -77,9 +77,9 @@ std::string GetIntelUarch(const CPUIdentity& cpuid) {
   std::string family_model =
       base::StringPrintf("%02X_%02X", cpuid.family, cpuid.model);
   const internal::IntelUarchTableEntry search_elem = {family_model.c_str(), ""};
-  const auto bound = std::lower_bound(
-      internal::kIntelUarchTable, internal::kIntelUarchTableEnd,
-      search_elem, internal::IntelUarchTableCmp);
+  auto* bound = std::lower_bound(internal::kIntelUarchTable,
+                                 internal::kIntelUarchTableEnd, search_elem,
+                                 internal::IntelUarchTableCmp);
   if (bound->family_model != family_model)
     return std::string();  // Unknown uarch
   return bound->uarch;

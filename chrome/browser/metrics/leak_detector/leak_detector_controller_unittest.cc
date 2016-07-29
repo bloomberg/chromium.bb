@@ -83,7 +83,7 @@ TEST(LeakDetectorControllerTest, SingleReport) {
 TEST(LeakDetectorControllerTest, SingleReportHistory) {
   MemoryLeakReportProto report;
 
-  auto entry = report.add_alloc_breakdown_history();
+  auto* entry = report.add_alloc_breakdown_history();
   InitializeRepeatedField({100, 200, 300}, entry->mutable_counts_by_size());
   entry->set_count_for_call_stack(15);
 
