@@ -9,6 +9,7 @@
 #include <queue>
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -52,6 +53,11 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
   page_state.top = state;
   std::string data;
   EncodePageState(page_state, &data);
+  if (data.empty()) {
+    // Temporarily generate a minidump to diagnose https://crbug.com/568703.
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED() << "Shouldn't generate an empty PageState.";
+  }
   node->frame_entry->set_page_state(PageState::CreateFromEncodedData(data));
 
   for (const ExplodedFrameState& child_state : state.children) {
@@ -743,6 +749,14 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     // The renderer should not send a commit for a subframe before its parent.
     // TODO(creis): Kill the renderer if we get here.
     return;
+  }
+
+  // We should only have an empty PageState if the navigation is new, and thus
+  // page ID is -1.
+  if (!page_state.IsValid() && GetPageID() != -1) {
+    // Temporarily generate a minidump to diagnose https://crbug.com/568703.
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED() << "Shouldn't set an empty PageState.";
   }
 
   // Now check whether we have a TreeNode for the node itself.
