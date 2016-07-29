@@ -137,8 +137,6 @@ message UrlRule {
   // corresponding ActivationType values.
   optional int32 activation_types = 4;
 
-  // The list of domains to be included/excluded from the filter's affected set.
-
   // The rule applies only to subresources of documents loaded from included
   // domains (or subdomains thereof). If the list is empty, the rule is applied
   // on documents from all domains.
