@@ -178,7 +178,6 @@ ResponseBodyWithV8ExtraStream status=stable
 ResizeObserver status=experimental
 RTCPeerConnectionNewGetStats status=test
 SandboxBlocksModals status=stable
-ScreenOrientation status=stable
 ScriptedSpeech status=stable
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 ScrollAnchoring settable_from_internals=True

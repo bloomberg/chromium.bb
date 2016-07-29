@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-    RuntimeEnabled=ScreenOrientation
-] partial interface Screen {
+partial interface Screen {
     [CallWith=ScriptState] readonly attribute ScreenOrientation orientation;
 };

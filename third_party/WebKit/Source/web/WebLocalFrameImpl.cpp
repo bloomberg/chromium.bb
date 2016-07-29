@@ -1480,8 +1480,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     if (enableWebBluetooth)
         BluetoothSupplement::provideTo(*m_frame, m_client ? m_client->bluetooth() : nullptr);
 
-    if (RuntimeEnabledFeatures::screenOrientationEnabled())
-        ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
+    ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
     if (RuntimeEnabledFeatures::presentationEnabled())
         PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
     if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
