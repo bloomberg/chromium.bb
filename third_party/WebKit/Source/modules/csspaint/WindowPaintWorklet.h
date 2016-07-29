@@ -22,7 +22,7 @@ class MODULES_EXPORT WindowPaintWorklet final : public GarbageCollected<WindowPa
 public:
     static WindowPaintWorklet& from(LocalDOMWindow&);
     static Worklet* paintWorklet(ExecutionContext*, DOMWindow&);
-    PaintWorklet* paintWorklet(ExecutionContext*) const;
+    PaintWorklet* paintWorklet(ExecutionContext*);
 
     DECLARE_TRACE();
 
@@ -30,7 +30,7 @@ private:
     explicit WindowPaintWorklet(LocalDOMWindow&);
     static const char* supplementName();
 
-    mutable Member<PaintWorklet> m_paintWorklet;
+    Member<PaintWorklet> m_paintWorklet;
 };
 
 } // namespace blink

@@ -37,7 +37,7 @@ Worklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContext, DO
     return from(toLocalDOMWindow(window)).paintWorklet(executionContext);
 }
 
-PaintWorklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContext) const
+PaintWorklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContext)
 {
     if (!m_paintWorklet && frame())
         m_paintWorklet = PaintWorklet::create(frame(), executionContext);
