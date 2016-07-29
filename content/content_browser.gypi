@@ -1630,6 +1630,8 @@
       'browser/android/popup_touch_handle_drawable.h',
       'browser/android/synchronous_compositor_host.cc',
       'browser/android/synchronous_compositor_host.h',
+      'browser/android/synchronous_compositor_observer.cc',
+      'browser/android/synchronous_compositor_observer.h',
       'browser/android/tracing_controller_android.cc',
       'browser/android/tracing_controller_android.h',
       'browser/android/web_contents_observer_proxy.cc',

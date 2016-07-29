@@ -12,6 +12,7 @@
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/android/synchronous_compositor_proxy.h"
+#include "ipc/ipc_message_macros.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 
 namespace content {
@@ -82,6 +83,15 @@ void SynchronousCompositorFilter::OnMessageReceivedOnCompositorThread(
     return;
   }
 
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorFilter, message)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SynchronizeRendererState,
+                        OnSynchronizeRendererState)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  if (handled)
+    return;
+
   if (!message.is_sync())
     return;
   IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
@@ -139,6 +149,18 @@ void SynchronousCompositorFilter::RegisterOutputSurface(
   } else {
     DCHECK(output_surface_map_.find(routing_id) == output_surface_map_.end());
     output_surface_map_[routing_id] = output_surface;
+  }
+}
+
+void SynchronousCompositorFilter::OnSynchronizeRendererState(
+    const std::vector<int>& routing_ids,
+    std::vector<SyncCompositorCommonRendererParams>* out) {
+  for (int routing_id : routing_ids) {
+    SynchronousCompositorProxy* proxy = FindProxy(routing_id);
+    SyncCompositorCommonRendererParams param;
+    if (proxy)
+      proxy->PopulateCommonParams(&param);
+    out->push_back(param);
   }
 }
 

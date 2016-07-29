@@ -1417,7 +1417,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
       cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
                                  vsync_period, cc::BeginFrameArgs::NORMAL)));
   if (sync_compositor_)
-    sync_compositor_->DidSendBeginFrame();
+    sync_compositor_->DidSendBeginFrame(content_view_core_->GetWindowAndroid());
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {

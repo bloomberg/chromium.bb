@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "content/browser/android/synchronous_compositor_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -68,6 +69,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       ui_task_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
       process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
+      rph_observer_(SynchronousCompositorObserver::GetOrCreateFor(process_id_)),
       sender_(rwhva_->GetRenderWidgetHost()),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       bytes_limit_(0u),
@@ -337,13 +339,9 @@ void SynchronousCompositorHost::DidOverscroll(
                          over_scroll_params.current_fling_velocity);
 }
 
-void SynchronousCompositorHost::DidSendBeginFrame() {
-  SyncCompositorCommonRendererParams common_renderer_params;
-  if (!sender_->Send(new SyncCompositorMsg_SynchronizeRendererState(
-          routing_id_, &common_renderer_params))) {
-    return;
-  }
-  ProcessCommonParams(common_renderer_params);
+void SynchronousCompositorHost::DidSendBeginFrame(
+    ui::WindowAndroid* window_android) {
+  rph_observer_->SyncStateAfterVSync(window_android, this);
 }
 
 void SynchronousCompositorHost::OutputSurfaceCreated() {

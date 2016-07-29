@@ -66,12 +66,12 @@ class SynchronousCompositorProxy
   void SetOutputSurface(SynchronousCompositorOutputSurface* output_surface);
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
+  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
 
  private:
   struct SharedMemoryWithSize;
 
   // IPC handlers.
-  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
   void OnComputeScroll(base::TimeTicks animation_time);
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
                     IPC::Message* reply_message);

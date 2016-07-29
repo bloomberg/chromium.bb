@@ -132,8 +132,6 @@ void SynchronousCompositorProxy::OnMessageReceived(
     return;
 
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
-    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SynchronizeRendererState,
-                        PopulateCommonParams)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawHw,
                                     DemandDrawHw)

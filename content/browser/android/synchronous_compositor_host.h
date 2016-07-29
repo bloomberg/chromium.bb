@@ -32,10 +32,15 @@ namespace cc {
 struct BeginFrameArgs;
 }
 
+namespace ui {
+class WindowAndroid;
+}
+
 namespace content {
 
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
+class SynchronousCompositorObserver;
 class WebContents;
 struct DidOverscrollParams;
 struct SyncCompositorCommonRendererParams;
@@ -66,8 +71,12 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
   void DidOverscroll(const DidOverscrollParams& over_scroll_params);
-  void DidSendBeginFrame();
+  void DidSendBeginFrame(ui::WindowAndroid* window_android);
   bool OnMessageReceived(const IPC::Message& message);
+
+  // Called by SynchronousCompositorObserver.
+  int routing_id() const { return routing_id_; }
+  void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
 
  private:
   class ScopedSendZeroMemory;
@@ -78,7 +87,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
-  void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
   void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
   void OutputSurfaceCreated();
   bool DemandDrawSwInProc(SkCanvas* canvas);
@@ -90,6 +98,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int process_id_;
   const int routing_id_;
+  SynchronousCompositorObserver* const rph_observer_;
   IPC::Sender* const sender_;
   const bool use_in_process_zero_copy_software_draw_;
 

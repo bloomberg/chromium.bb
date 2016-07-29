@@ -31,15 +31,15 @@ SyncCompositorDemandDrawSwParams::SyncCompositorDemandDrawSwParams() {}
 
 SyncCompositorDemandDrawSwParams::~SyncCompositorDemandDrawSwParams() {}
 
-SyncCompositorCommonRendererParams::SyncCompositorCommonRendererParams()
-    : version(0u),
-      page_scale_factor(0.f),
-      min_page_scale_factor(0.f),
-      max_page_scale_factor(0.f),
-      need_animate_scroll(false),
-      need_invalidate_count(0u),
-      did_activate_pending_tree_count(0u) {}
+SyncCompositorCommonRendererParams::SyncCompositorCommonRendererParams() =
+    default;
+
+SyncCompositorCommonRendererParams::SyncCompositorCommonRendererParams(
+    const SyncCompositorCommonRendererParams& other) = default;
 
 SyncCompositorCommonRendererParams::~SyncCompositorCommonRendererParams() {}
+
+SyncCompositorCommonRendererParams& SyncCompositorCommonRendererParams::
+operator=(const SyncCompositorCommonRendererParams& other) = default;
 
 }  // namespace content

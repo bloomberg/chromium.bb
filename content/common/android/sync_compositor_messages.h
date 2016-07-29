@@ -60,16 +60,22 @@ struct SyncCompositorCommonRendererParams {
   SyncCompositorCommonRendererParams();
   ~SyncCompositorCommonRendererParams();
 
-  unsigned int version;
+  // Allow copy.
+  SyncCompositorCommonRendererParams(
+      const SyncCompositorCommonRendererParams& other);
+  SyncCompositorCommonRendererParams& operator=(
+      const SyncCompositorCommonRendererParams& other);
+
+  unsigned int version = 0u;
   gfx::ScrollOffset total_scroll_offset;
   gfx::ScrollOffset max_scroll_offset;
   gfx::SizeF scrollable_size;
-  float page_scale_factor;
-  float min_page_scale_factor;
-  float max_page_scale_factor;
-  bool need_animate_scroll;
-  uint32_t need_invalidate_count;
-  uint32_t did_activate_pending_tree_count;
+  float page_scale_factor = 0.f;
+  float min_page_scale_factor = 0.f;
+  float max_page_scale_factor = 0.f;
+  bool need_animate_scroll = false;
+  uint32_t need_invalidate_count = 0u;
+  uint32_t did_activate_pending_tree_count = 0u;
 };
 
 }  // namespace content
@@ -119,8 +125,10 @@ IPC_STRUCT_TRAITS_END()
 // Synchronous IPCs are allowed here to the renderer compositor thread. See
 // design doc https://goo.gl/Tn81FW and crbug.com/526842 for details.
 
-IPC_SYNC_MESSAGE_ROUTED0_1(SyncCompositorMsg_SynchronizeRendererState,
-                           content::SyncCompositorCommonRendererParams)
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    SyncCompositorMsg_SynchronizeRendererState,
+    std::vector<int> /* routing ids*/,
+    std::vector<content::SyncCompositorCommonRendererParams>)
 
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_ComputeScroll,
                     base::TimeTicks);

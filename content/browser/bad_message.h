@@ -154,6 +154,7 @@ enum BadMessageReason {
   SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH = 129,
   MSDH_INVALID_FRAME_ID = 130,
   SDH_INVALID_PORT_RANGE = 131,
+  SCO_INVALID_ARGUMENT = 132,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
