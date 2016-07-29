@@ -89,6 +89,18 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // Returns the original target bounds of all transformed windows.
   gfx::Rect GetTargetBoundsInScreen() const;
 
+  // Calculates the bounds of a |window_| after being transformed to the
+  // selector's space. With Material Design those bounds are a union of all
+  // regular (normal and panel) windows in the |window_|'s transient hierarchy.
+  // The returned Rect is in virtual screen coordinates. When |hide_header| is
+  // true the returned bounds are adjusted to allow the original |window_|'s
+  // header to be hidden.
+  gfx::Rect GetTransformedBounds(bool hide_header) const;
+
+  // Returns TOP_VIEW_INSET property of |window_| unless there are transient
+  // ancestors in which case returns 0.
+  int GetTopInset() const;
+
   // Restores and animates the managed window to it's non overview mode state.
   void RestoreWindow();
 

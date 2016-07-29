@@ -104,28 +104,6 @@ static const int kSelectorFadeInMilliseconds = 350;
 // this fraction of size.
 static const float kPreCloseScale = 0.02f;
 
-// Calculates the |window| bounds after being transformed to the selector's
-// space. The returned Rect is in virtual screen coordinates.
-gfx::Rect GetTransformedBounds(WmWindow* window, bool hide_header) {
-  gfx::RectF bounds(
-      window->GetRootWindow()->ConvertRectToScreen(window->GetTargetBounds()));
-  gfx::Transform new_transform = TransformAboutPivot(
-      gfx::Point(bounds.x(), bounds.y()), window->GetTargetTransform());
-  new_transform.TransformRect(&bounds);
-
-  // With Material Design the preview title is shown above the preview window.
-  // Hide the window header for apps or browser windows with no tabs (web apps)
-  // to avoid showing both the window header and the preview title.
-  if (ash::MaterialDesignController::IsOverviewMaterial() && hide_header) {
-    gfx::RectF header_bounds(bounds);
-    header_bounds.set_height(
-        window->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET));
-    new_transform.TransformRect(&header_bounds);
-    bounds.Inset(0, gfx::ToCeiledInt(header_bounds.height()), 0, 0);
-  }
-  return ToEnclosingRect(bounds);
-}
-
 // Convenience method to fade in a Window with predefined animation settings.
 // Note: The fade in animation will occur after a delay where the delay is how
 // long the lay out animations take.
@@ -460,13 +438,14 @@ void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
   gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMarginMD);
-  const int header_inset =
-      hide_header()
-          ? GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET)
-          : 0;
   return ScopedTransformOverviewWindow::GetItemScale(
-      GetWindow()->GetTargetBounds().size(), inset_size, header_inset,
+      transform_window_.GetTargetBoundsInScreen().size(), inset_size,
+      hide_header() ? transform_window_.GetTopInset() : 0,
       close_button_->GetPreferredSize().height());
+}
+
+gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
+  return transform_window_.GetTargetBoundsInScreen();
 }
 
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
@@ -482,10 +461,8 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   int top_view_inset = 0;
   int title_height = 0;
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    if (hide_header()) {
-      top_view_inset =
-          GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
-    }
+    if (hide_header())
+      top_view_inset = transform_window_.GetTopInset();
     title_height = close_button_->GetPreferredSize().height();
   }
   gfx::Rect selector_item_bounds =
@@ -598,7 +575,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 void WindowSelectorItem::UpdateHeaderLayout(
     OverviewAnimationType animation_type) {
   gfx::Rect transformed_window_bounds = root_window_->ConvertRectFromScreen(
-      GetTransformedBounds(GetWindow(), hide_header()));
+      transform_window_.GetTransformedBounds(hide_header()));
 
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::Rect label_rect(close_button_->GetPreferredSize());

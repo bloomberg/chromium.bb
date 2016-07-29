@@ -18,7 +18,6 @@
 #include "ash/common/wm/overview/cleanup_animation_observer.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
-#include "ash/common/wm/overview/scoped_transform_overview_window.h"
 #include "ash/common/wm/overview/window_selector.h"
 #include "ash/common/wm/overview/window_selector_delegate.h"
 #include "ash/common/wm/overview/window_selector_item.h"
@@ -1014,7 +1013,7 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   const gfx::Size item_size(0, height);
   size_t i = 0;
   for (auto* window : window_list_) {
-    const gfx::Rect target_bounds = window->GetWindow()->GetTargetBounds();
+    const gfx::Rect target_bounds = window->GetTargetBoundsInScreen();
     const int width =
         std::max(1, gfx::ToFlooredInt(target_bounds.width() *
                                       window->GetItemScale(item_size)) +

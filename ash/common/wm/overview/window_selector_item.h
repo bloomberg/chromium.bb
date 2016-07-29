@@ -84,6 +84,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // returns the scale that allows the item to fully fit within |size|.
   float GetItemScale(const gfx::Size& size);
 
+  // Returns the union of the original target bounds of all transformed windows
+  // managed by |this| item, i.e. all regular (normal or panel transient
+  // descendants of the window returned by GetWindow()).
+  gfx::Rect GetTargetBoundsInScreen() const;
+
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window_| root window. The bounds change will be animated as specified
   // by |animation_type|.

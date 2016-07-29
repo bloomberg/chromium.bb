@@ -343,6 +343,52 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   return bounds;
 }
 
+gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds(
+    bool hide_header) const {
+  const bool material = ash::MaterialDesignController::IsOverviewMaterial();
+  const int top_inset = hide_header ? GetTopInset() : 0;
+  gfx::Rect bounds;
+  for (auto* window : GetTransientTreeIterator(window_)) {
+    // Ignore other window types when computing bounding box of window
+    // selector target item.
+    if (window != window_ &&
+        (!material || (window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
+                       window->GetType() != ui::wm::WINDOW_TYPE_PANEL))) {
+      continue;
+    }
+    gfx::RectF window_bounds(window->GetTargetBounds());
+    gfx::Transform new_transform =
+        TransformAboutPivot(gfx::Point(window_bounds.x(), window_bounds.y()),
+                            window->GetTargetTransform());
+    new_transform.TransformRect(&window_bounds);
+
+    // With Material Design the preview title is shown above the preview window.
+    // Hide the window header for apps or browser windows with no tabs (web
+    // apps) to avoid showing both the window header and the preview title.
+    if (material && top_inset > 0) {
+      gfx::RectF header_bounds(window_bounds);
+      header_bounds.set_height(top_inset);
+      new_transform.TransformRect(&header_bounds);
+      window_bounds.Inset(0, gfx::ToCeiledInt(header_bounds.height()), 0, 0);
+    }
+    bounds.Union(window->GetParent()->ConvertRectToScreen(
+        ToEnclosingRect(window_bounds)));
+  }
+  return bounds;
+}
+
+int ScopedTransformOverviewWindow::GetTopInset() const {
+  for (auto* window : GetTransientTreeIterator(window_)) {
+    // If there are regular windows in the transient ancestor tree, all those
+    // windows are shown in the same overview item and the header is not masked.
+    if (window != window_ && (window->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
+                              window->GetType() == ui::wm::WINDOW_TYPE_PANEL)) {
+      return 0;
+    }
+  }
+  return window_->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+}
+
 void ScopedTransformOverviewWindow::ShowWindowIfMinimized() {
   if ((original_visibility_ == ORIGINALLY_MINIMIZED &&
        window_->GetShowState() == ui::SHOW_STATE_MINIMIZED) ||
@@ -439,10 +485,7 @@ void ScopedTransformOverviewWindow::SetTransform(
         original_window_shape_.reset(new SkRegion(*window_shape));
     }
     gfx::Rect bounds(GetTargetBoundsInScreen().size());
-    const int inset =
-        (use_mask || use_shape)
-            ? window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET)
-            : 0;
+    const int inset = (use_mask || use_shape) ? GetTopInset() : 0;
     if (mask_) {
       // Mask layer is used both to hide the window header and to use rounded
       // corners. Its layout needs to be update when setting a transform.
