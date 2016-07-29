@@ -1305,7 +1305,7 @@ var MainView = (function() {
      * checkbox input DOM nodes rather than the snapshot ID.
      */
     getSelectedSnapshotBoxes_: function() {
-      // Figure out which snaphots to use for our data.
+      // Figure out which snapshots to use for our data.
       var boxes = [];
       for (var i = 0; i < this.snapshots_.length; ++i) {
         var box = this.getSnapshotCheckbox_(i);
@@ -1762,7 +1762,7 @@ var MainView = (function() {
 
     takeSnapshot_: function() {
       // Start a new empty snapshot. Make note of the current time, so we know
-      // when the snaphot was taken.
+      // when the snapshot was taken.
       this.snapshots_.push({flatData: [], origData: [], time: getTimeMillis()});
 
       // Update the UI to reflect the new snapshot.

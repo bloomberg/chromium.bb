@@ -38895,7 +38895,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Tracks the pair of initial values and pair of final values for the legacy
     preference for controlling the Chrome Password Manager and the new
     preference for controlling Smart Lock on Android. A single sample is
-    recorded after sync has merged last snaphot and finished initialization for
+    recorded after sync has merged last snapshot and finished initialization for
     sync users, and on profile initialization for non-sync users.
   </summary>
 </histogram>

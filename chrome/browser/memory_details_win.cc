@@ -57,7 +57,7 @@ void MemoryDetails::CollectProcessData(
       ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
   PROCESSENTRY32 process_entry = {sizeof(PROCESSENTRY32)};
   if (!snapshot.Get()) {
-    LOG(ERROR) << "CreateToolhelp32Snaphot failed: " << GetLastError();
+    LOG(ERROR) << "CreateToolhelp32Snapshot failed: " << GetLastError();
     return;
   }
   if (!::Process32First(snapshot.Get(), &process_entry)) {

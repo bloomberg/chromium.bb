@@ -69,9 +69,9 @@ public:
     }
 
     // For deserialization.
-    static File* createFromSerialization(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
+    static File* createFromSerialization(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnapshotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return new File(path, name, relativePath, userVisibility, hasSnaphotData, size, lastModified, blobDataHandle);
+        return new File(path, name, relativePath, userVisibility, hasSnapshotData, size, lastModified, blobDataHandle);
     }
     static File* createFromIndexedSerialization(const String& path, const String& name, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
@@ -149,7 +149,7 @@ public:
 private:
     File(const String& path, ContentTypeLookupPolicy, UserVisibility);
     File(const String& path, const String& name, ContentTypeLookupPolicy, UserVisibility);
-    File(const String& path, const String& name, const String& relativePath, UserVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
+    File(const String& path, const String& name, const String& relativePath, UserVisibility, bool hasSnapshotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&, UserVisibility);
     File(const KURL& fileSystemURL, const FileMetadata&, UserVisibility);
