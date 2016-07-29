@@ -69,13 +69,6 @@ void InitializeDWriteFontProxy() {
 
   CreateDirectWriteFactory(&factory);
 
-  if (!g_font_collection) {
-    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
-        &g_font_collection, factory.Get(), g_sender_override);
-  }
-
-  mswr::ComPtr<IDWriteFontFallback> font_fallback;
-  mswr::ComPtr<IDWriteFactory2> factory2;
   IPC::Sender* sender = g_sender_override;
 
   // Hack for crbug.com/631254: set the sender if we can get one, so that when
@@ -83,6 +76,14 @@ void InitializeDWriteFontProxy() {
   // sender available.
   if (!sender && ChildThreadImpl::current())
     sender = ChildThreadImpl::current()->thread_safe_sender();
+
+  if (!g_font_collection) {
+    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
+        &g_font_collection, factory.Get(), sender);
+  }
+
+  mswr::ComPtr<IDWriteFontFallback> font_fallback;
+  mswr::ComPtr<IDWriteFactory2> factory2;
 
   if (SUCCEEDED(factory.As(&factory2)) && factory2.Get()) {
     mswr::MakeAndInitialize<FontFallback>(
