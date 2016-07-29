@@ -1,76 +1,27 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV id='container'",
           "position": [8, 108],
           "bounds": [200, 200],
           "shouldFlattenTransform": false,
           "drawsContent": true,
-          "paintInvalidations": [
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            },
-            {
-              "object": "InlineTextBox 'CONTENT'",
-              "reason": "style change"
-            }
-          ],
           "children": [
             {
+              "name": "Scrolling Layer",
               "bounds": [185, 185],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [185, 260],
                   "drawsContent": true,
                   "paintInvalidations": [
@@ -138,75 +89,27 @@
                       "object": "LayoutText #text",
                       "rect": [0, 0, 74, 19],
                       "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
-                    },
-                    {
-                      "object": "InlineTextBox 'CONTENT'",
-                      "reason": "style change"
                     }
                   ]
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [200, 200],
               "children": [
                 {
+                  "name": "Horizontal Scrollbar Layer",
                   "position": [0, 185],
                   "bounds": [185, 15]
                 },
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [185, 0],
                   "bounds": [15, 185]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [185, 185],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -216,6 +119,112 @@
           ]
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'CONTENT'",
+      "reason": "style change"
     }
   ]
 }
