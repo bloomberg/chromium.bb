@@ -1284,8 +1284,7 @@ void Dispatcher::OnSetActivityLoggingEnabled(bool enabled) {
   user_script_set_manager_->set_activity_logging_enabled(enabled);
 }
 
-void Dispatcher::OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
-                                      const std::vector<UserScript*>& scripts) {
+void Dispatcher::OnUserScriptsUpdated(const std::set<HostID>& changed_hosts) {
   UpdateActiveExtensions();
 }
 

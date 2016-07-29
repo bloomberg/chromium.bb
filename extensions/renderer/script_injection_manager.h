@@ -63,8 +63,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   void OnInjectionFinished(ScriptInjection* injection);
 
   // UserScriptSetManager::Observer implementation.
-  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
-                            const std::vector<UserScript*>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts) override;
 
   // Notifies that an RFOHelper should be removed.
   void RemoveObserver(RFOHelper* helper);

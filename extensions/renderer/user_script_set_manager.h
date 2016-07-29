@@ -46,8 +46,7 @@ class UserScriptSetManager : public content::RenderThreadObserver {
   class Observer {
    public:
     virtual void OnUserScriptsUpdated(
-        const std::set<HostID>& changed_hosts,
-        const std::vector<UserScript*>& scripts) = 0;
+        const std::set<HostID>& changed_hosts) = 0;
   };
 
   UserScriptSetManager();

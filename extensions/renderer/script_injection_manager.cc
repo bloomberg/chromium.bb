@@ -299,8 +299,7 @@ void ScriptInjectionManager::OnInjectionFinished(
 }
 
 void ScriptInjectionManager::OnUserScriptsUpdated(
-    const std::set<HostID>& changed_hosts,
-    const std::vector<UserScript*>& scripts) {
+    const std::set<HostID>& changed_hosts) {
   for (auto iter = pending_injections_.begin();
        iter != pending_injections_.end();) {
     if (changed_hosts.count((*iter)->host_id()) > 0)

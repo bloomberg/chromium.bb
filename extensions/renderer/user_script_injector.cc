@@ -101,7 +101,7 @@ UserScriptInjector::~UserScriptInjector() {
 
 void UserScriptInjector::OnUserScriptsUpdated(
     const std::set<HostID>& changed_hosts,
-    const std::vector<UserScript*>& scripts) {
+    const std::vector<std::unique_ptr<UserScript>>& scripts) {
   // If the host causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
   if (changed_hosts.count(host_id_) > 0) {
@@ -109,13 +109,11 @@ void UserScriptInjector::OnUserScriptsUpdated(
     return;
   }
 
-  for (std::vector<UserScript*>::const_iterator iter = scripts.begin();
-       iter != scripts.end();
-       ++iter) {
+  for (const std::unique_ptr<UserScript>& script : scripts) {
     // We need to compare to |script_id_| (and not to script_->id()) because the
     // old |script_| may be deleted by now.
-    if ((*iter)->id() == script_id_) {
-      script_ = *iter;
+    if (script->id() == script_id_) {
+      script_ = script.get();
       break;
     }
   }

@@ -149,10 +149,8 @@ void UserScriptSetManager::OnUpdateUserScripts(
   if (scripts->UpdateUserScripts(shared_memory,
                                  *effective_hosts,
                                  whitelisted_only)) {
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnUserScriptsUpdated(*effective_hosts, scripts->scripts()));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnUserScriptsUpdated(*effective_hosts));
   }
 }
 

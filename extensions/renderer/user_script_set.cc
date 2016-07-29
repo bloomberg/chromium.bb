@@ -58,7 +58,7 @@ void UserScriptSet::RemoveObserver(Observer* observer) {
 
 void UserScriptSet::GetActiveExtensionIds(
     std::set<std::string>* ids) const {
-  for (const UserScript* script : scripts_) {
+  for (const std::unique_ptr<UserScript>& script : scripts_) {
     if (script->host_id().type() != HostID::EXTENSIONS)
       continue;
     DCHECK(!script->extension_id().empty());
@@ -73,9 +73,9 @@ void UserScriptSet::GetInjections(
     UserScript::RunLocation run_location,
     bool log_activity) {
   GURL document_url = GetDocumentUrlForFrame(render_frame->GetWebFrame());
-  for (const UserScript* script : scripts_) {
+  for (const std::unique_ptr<UserScript>& script : scripts_) {
     std::unique_ptr<ScriptInjection> injection = GetInjectionForScript(
-        script, render_frame, tab_id, run_location, document_url,
+        script.get(), render_frame, tab_id, run_location, document_url,
         false /* is_declarative */, log_activity);
     if (injection.get())
       injections->push_back(std::move(injection));
@@ -150,9 +150,8 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     scripts_.push_back(std::move(script));
   }
 
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnUserScriptsUpdated(changed_hosts, scripts_.get()));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnUserScriptsUpdated(changed_hosts, scripts_));
   return true;
 }
 
@@ -163,11 +162,11 @@ std::unique_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     UserScript::RunLocation run_location,
     const GURL& document_url,
     bool log_activity) {
-  for (const UserScript* script : scripts_) {
+  for (const std::unique_ptr<UserScript>& script : scripts_) {
     if (script->id() == script_id) {
-      return GetInjectionForScript(script, render_frame, tab_id, run_location,
-                                   document_url, true /* is_declarative */,
-                                   log_activity);
+      return GetInjectionForScript(script.get(), render_frame, tab_id,
+                                   run_location, document_url,
+                                   true /* is_declarative */, log_activity);
     }
   }
   return std::unique_ptr<ScriptInjection>();

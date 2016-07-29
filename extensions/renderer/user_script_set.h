@@ -34,7 +34,7 @@ class UserScriptSet {
    public:
     virtual void OnUserScriptsUpdated(
         const std::set<HostID>& changed_hosts,
-        const std::vector<UserScript*>& scripts) = 0;
+        const std::vector<std::unique_ptr<UserScript>>& scripts) = 0;
   };
 
   UserScriptSet();
@@ -71,7 +71,9 @@ class UserScriptSet {
                          const std::set<HostID>& changed_hosts,
                          bool whitelisted_only);
 
-  const std::vector<UserScript*>& scripts() const { return scripts_.get(); }
+  const std::vector<std::unique_ptr<UserScript>>& scripts() const {
+    return scripts_;
+  }
 
  private:
   // Returns a new ScriptInjection for the given |script| to execute in the
@@ -89,7 +91,7 @@ class UserScriptSet {
   std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // The UserScripts this injector manages.
-  ScopedVector<UserScript> scripts_;
+  std::vector<std::unique_ptr<UserScript>> scripts_;
 
   // The associated observers.
   base::ObserverList<Observer> observers_;

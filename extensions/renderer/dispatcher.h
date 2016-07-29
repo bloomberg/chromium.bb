@@ -204,8 +204,7 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnSetActivityLoggingEnabled(bool enabled);
 
   // UserScriptSetManager::Observer implementation.
-  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
-                            const std::vector<UserScript*>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts) override;
 
   void UpdateActiveExtensions();
 
