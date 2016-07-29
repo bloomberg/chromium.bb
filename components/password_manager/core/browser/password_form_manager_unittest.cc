@@ -43,6 +43,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using autofill::FieldPropertiesFlags;
+using autofill::FieldPropertiesMask;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::_;
@@ -195,6 +197,25 @@ MATCHER_P2(CheckUploadedFormClassifierVote,
       EXPECT_EQ(
           field->form_classifier_outcome(),
           autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+    }
+  }
+  return true;
+}
+
+MATCHER_P(CheckFieldPropertiesMasksUpload,
+          expected_field_properties,
+          "Wrong field properties flags") {
+  for (const autofill::AutofillField* field : arg) {
+    autofill::FieldPropertiesMask expected_mask =
+        expected_field_properties.find(field->name) !=
+                expected_field_properties.end()
+            ? FieldPropertiesFlags::USER_TYPED
+            : 0;
+    if (field->properties_mask != expected_mask) {
+      ADD_FAILURE() << "Wrong field properties flags for field " << field->name
+                    << ": expected mask " << expected_mask << ", but found "
+                    << field->properties_mask;
+      return false;
     }
   }
   return true;
@@ -2856,6 +2877,44 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
         submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
     form_manager.Save();
   }
+}
+
+TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
+  PasswordForm form(*observed_form());
+  form.form_data = saved_match()->form_data;
+
+  // Create submitted form.
+  PasswordForm submitted_form(form);
+  submitted_form.preferred = true;
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), form,
+      base::WrapUnique(new NiceMock<MockFormSaver>()));
+  ScopedVector<PasswordForm> result;
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(std::move(result));
+
+  DCHECK_EQ(3U, form.form_data.fields.size());
+  submitted_form.form_data.fields[1].properties_mask =
+      FieldPropertiesFlags::USER_TYPED;
+  submitted_form.form_data.fields[2].properties_mask =
+      FieldPropertiesFlags::USER_TYPED;
+
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties;
+  for (const autofill::FormFieldData& field : submitted_form.form_data.fields)
+    if (field.properties_mask)
+      expected_field_properties[field.name] = field.properties_mask;
+
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(
+                  CheckFieldPropertiesMasksUpload(expected_field_properties),
+                  false, _, _, true));
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
 }
 
 TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {

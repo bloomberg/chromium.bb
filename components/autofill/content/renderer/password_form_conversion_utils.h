@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include <components/autofill/core/common/password_form.h>
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
@@ -35,8 +36,10 @@ bool IsGaiaReauthenticationForm(
     const GURL& origin,
     const std::vector<blink::WebFormControlElement>& control_elements);
 
-typedef std::map<const blink::WebInputElement,
-                 blink::WebString> ModifiedValues;
+typedef std::map<
+    const blink::WebFormControlElement,
+    std::pair<std::unique_ptr<base::string16>, FieldPropertiesMask>>
+    FieldValueAndPropertiesMaskMap;
 
 // Create a PasswordForm from DOM form. Webkit doesn't allow storing
 // custom metadata to DOM nodes, so we have to do this every time an event
@@ -49,14 +52,14 @@ typedef std::map<const blink::WebInputElement,
 // overwriting default username element selection.
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const blink::WebFormElement& form,
-    const ModifiedValues* nonscript_modified_values,
+    const FieldValueAndPropertiesMaskMap* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions);
 
 // Same as CreatePasswordFormFromWebForm() but for input elements that are not
 // enclosed in <form> element.
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const blink::WebFrame& frame,
-    const ModifiedValues* nonscript_modified_values,
+    const FieldValueAndPropertiesMaskMap* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions);
 
 // Checks in a case-insensitive way if the autocomplete attribute for the given

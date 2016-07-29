@@ -159,6 +159,20 @@ void SanitizePossibleUsernames(PasswordForm* form) {
   usernames.erase(new_end, usernames.end());
 }
 
+// Copies field properties masks from the form |from| to the form |to|.
+void CopyFieldPropertiesMasks(const PasswordForm& from, PasswordForm* to) {
+  // Skip copying if the number of fields is different.
+  if (from.form_data.fields.size() != to->form_data.fields.size())
+    return;
+
+  for (size_t i = 0; i < from.form_data.fields.size(); ++i) {
+    to->form_data.fields[i].properties_mask =
+        to->form_data.fields[i].name == from.form_data.fields[i].name
+            ? from.form_data.fields[i].properties_mask
+            : autofill::FieldPropertiesFlags::ERROR_OCCURRED;
+  }
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -1063,6 +1077,7 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   pending_credentials_.password_value = password_to_save;
   pending_credentials_.preferred = provisionally_saved_form_->preferred;
+  CopyFieldPropertiesMasks(*provisionally_saved_form_, &pending_credentials_);
 
   // If we're dealing with an API-driven provisionally saved form, then take
   // the server provided values. We don't do this for non-API forms, as

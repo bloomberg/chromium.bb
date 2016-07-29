@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include <components/autofill/content/renderer/password_form_conversion_utils.h>
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -143,9 +144,12 @@ std::vector<blink::WebFormControlElement> ExtractAutofillableElementsInForm(
     const blink::WebFormElement& form_element);
 
 // Fills out a FormField object from a given WebFormControlElement.
-// |extract_mask|: See the enum ExtractMask above for details.
+// |extract_mask|: See the enum ExtractMask above for details. Field properties
+// will be copied from |field_value_and_properties_map|, if the argument is not
+// null and has entry for |element| (see properties in FieldPropertiesFlags).
 void WebFormControlElementToFormField(
     const blink::WebFormControlElement& element,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     ExtractMask extract_mask,
     FormFieldData* field);
 
@@ -153,10 +157,13 @@ void WebFormControlElementToFormField(
 // If |field| is non-NULL, also fills |field| with the FormField object
 // corresponding to the |form_control_element|. |extract_mask| controls what
 // data is extracted. Returns true if |form| is filled out.  Also returns false
-// if there are no fields or too many fields in the |form|.
+// if there are no fields or too many fields in the |form|. Field properties
+// will be copied from |field_value_and_properties_map|, if the argument is not
+// null and has entry for |element| (see properties in FieldPropertiesFlags).
 bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);
@@ -192,12 +199,15 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     FormFieldData* field);
 
 // Same as above, but without the requirement that the elements only be
-// related to checkout.
+// related to checkout. Field properties of |control_elements| will be copied
+// from |field_value_and_properties_map|, if the argument is not null and has
+// corresponding entries (see properties in FieldPropertiesFlags).
 bool UnownedPasswordFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebElement>& fieldsets,
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);

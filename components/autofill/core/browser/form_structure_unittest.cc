@@ -2217,6 +2217,13 @@ TEST_F(FormStructureTest,
       form_structure->field(i)->set_form_classifier_outcome(
           AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
     }
+    if (form_structure->field(i)->name == ASCIIToUTF16("firstname")) {
+      form_structure->field(i)->properties_mask =
+          FieldPropertiesFlags::HAD_FOCUS;
+    } else {
+      form_structure->field(i)->properties_mask =
+          FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
+    }
   }
 
   ServerFieldTypeSet available_field_types;
@@ -2241,24 +2248,31 @@ TEST_F(FormStructureTest,
                         "given-name", 3U, nullptr);
   upload_firstname_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+  upload_firstname_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS);
 
   AutofillUploadContents::Field* upload_lastname_field = upload.add_field();
   test::FillUploadField(upload_lastname_field, 2786066110U, "lastname", "",
                         "family-name", 5U, nullptr);
   upload_lastname_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+  upload_lastname_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
+                                             FieldPropertiesFlags::USER_TYPED);
 
   AutofillUploadContents::Field* upload_email_field = upload.add_field();
   test::FillUploadField(upload_email_field, 1029417091U, "email", "email",
                         "email", 9U, nullptr);
   upload_email_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+  upload_email_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
+                                          FieldPropertiesFlags::USER_TYPED);
 
   AutofillUploadContents::Field* upload_username_field = upload.add_field();
   test::FillUploadField(upload_username_field, 239111655U, "username", "text",
                         "email", 86U, nullptr);
   upload_username_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+  upload_username_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
+                                             FieldPropertiesFlags::USER_TYPED);
 
   AutofillUploadContents::Field* upload_password_field = upload.add_field();
   test::FillUploadField(upload_password_field, 2051817934U, "password",
@@ -2268,6 +2282,8 @@ TEST_F(FormStructureTest,
   upload_password_field->set_generation_type(
       AutofillUploadContents::Field::
           MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
+  upload_password_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
+                                             FieldPropertiesFlags::USER_TYPED);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));

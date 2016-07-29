@@ -14,6 +14,7 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -101,6 +102,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
       const PasswordFormFillData& form_data,
       RendererSavePasswordProgressLogger* logger,
       std::vector<blink::WebInputElement>* elements);
+
+  // Called when the focused node has changed.
+  void FocusedNodeHasChanged(const blink::WebNode& node);
 
   bool logging_state_active() const { return logging_state_active_; }
 
@@ -239,10 +243,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).
   std::unique_ptr<PasswordForm> provisionally_saved_form_;
 
-  // Contains the most recent text that user typed or PasswordManager autofilled
-  // in input elements. Used for storing username/password before JavaScript
+  // Map WebFormControlElement to the pair of:
+  // 1) The most recent text that user typed or PasswordManager autofilled in
+  // input elements. Used for storing username/password before JavaScript
   // changes them.
-  ModifiedValues nonscript_modified_values_;
+  // 2) Field properties mask, i.e. whether the field was autofilled, modified
+  // by user, etc. (see FieldPropertiesMask).
+  FieldValueAndPropertiesMaskMap field_value_and_properties_map_;
 
   PasswordValueGatekeeper gatekeeper_;
 

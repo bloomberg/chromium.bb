@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include <components/autofill/core/common/password_form.h>
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/renderer/render_frame.h"
@@ -482,6 +483,30 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(ASCIIToUTF16(password_value), std::get<0>(args).password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value),
               std::get<0>(args).new_password_value);
+  }
+
+  void ExpectFieldPropertiesMasks(
+      uint32_t expected_message_id,
+      const std::map<base::string16, FieldPropertiesMask>&
+          expected_properties_masks) {
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(expected_message_id);
+    ASSERT_TRUE(message);
+    std::tuple<autofill::PasswordForm> args;
+    AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
+    const autofill::PasswordForm& form = std::get<0>(args);
+
+    size_t unchecked_masks = expected_properties_masks.size();
+    for (const FormFieldData& field : form.form_data.fields) {
+      const auto& it = expected_properties_masks.find(field.name);
+      if (it == expected_properties_masks.end())
+        continue;
+      EXPECT_EQ(field.properties_mask, it->second)
+          << "Wrong mask for the field " << field.name;
+      unchecked_masks--;
+    }
+    EXPECT_TRUE(unchecked_masks == 0)
+        << "Some expected masks are missed in FormData";
   }
 
   void ExpectInPageNavigationWithUsernameAndPasswords(
@@ -1492,6 +1517,53 @@ TEST_F(PasswordAutofillAgentTest,
   ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
 }
 
+TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnSubmit) {
+  SimulateUsernameChange("temp");
+  SimulatePasswordChange("random");
+
+  // Simulate that the username and the password value was changed by the
+  // site's JavaScript before submit.
+  username_element_.setValue(WebString("new username"));
+  password_element_.setValue(WebString("new password"));
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
+  expected_properties_masks[ASCIIToUTF16("random_field")] =
+      FieldPropertiesFlags::NO_FLAGS;
+  expected_properties_masks[ASCIIToUTF16("username")] =
+      FieldPropertiesFlags::USER_TYPED;
+  expected_properties_masks[ASCIIToUTF16("password")] =
+      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+
+  ExpectFieldPropertiesMasks(AutofillHostMsg_PasswordFormSubmitted::ID,
+                             expected_properties_masks);
+}
+
+TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  username_element_.setAttribute("style", "display:none;");
+  password_element_.setAttribute("style", "display:none;");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  std::map<base::string16, FieldPropertiesMask> expected_properties_masks;
+  expected_properties_masks[ASCIIToUTF16("username")] =
+      FieldPropertiesFlags::USER_TYPED;
+  expected_properties_masks[ASCIIToUTF16("password")] =
+      FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
+
+  ExpectFieldPropertiesMasks(AutofillHostMsg_InPageNavigation::ID,
+                             expected_properties_masks);
+}
+
 // The username/password is autofilled by password manager then just before
 // sending the form off, a script changes them. This test checks that
 // PasswordAutofillAgent can still get the username and the password autofilled.
@@ -1777,9 +1849,9 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   // Find FormData for visible password form.
   blink::WebFormElement form_element = username_element_.form();
   FormData form_data;
-  ASSERT_TRUE(
-      WebFormElementToFormData(form_element, blink::WebFormControlElement(),
-                               form_util::EXTRACT_NONE, &form_data, nullptr));
+  ASSERT_TRUE(WebFormElementToFormData(
+      form_element, blink::WebFormControlElement(), nullptr,
+      form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the first field is username, the third
   // one is password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
@@ -2006,9 +2078,9 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
   // Find FormData for visible form.
   blink::WebFormElement form_element = credit_card_number_element.form();
   FormData form_data;
-  ASSERT_TRUE(
-      WebFormElementToFormData(form_element, blink::WebFormControlElement(),
-                               form_util::EXTRACT_NONE, &form_data, nullptr));
+  ASSERT_TRUE(WebFormElementToFormData(
+      form_element, blink::WebFormControlElement(), nullptr,
+      form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the third field is not a password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
   predictions[form_data][form_data.fields[2]] = PREDICTION_NOT_PASSWORD;

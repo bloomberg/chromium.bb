@@ -1170,6 +1170,9 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
 
         if (!field->css_classes.empty())
           added_field->set_css_classes(base::UTF16ToUTF8(field->css_classes));
+
+        if (field->properties_mask)
+          added_field->set_properties_mask(field->properties_mask);
       }
     }
   }

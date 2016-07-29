@@ -123,7 +123,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  extract_mask, &form, nullptr)) {
+                                  nullptr, extract_mask, &form, nullptr)) {
       continue;
     }
 

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -179,13 +180,16 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
 
     WebVector<WebFormControlElement> control_elements;
     form.getFormControlElements(control_elements);
-    ModifiedValues user_input;
+    FieldValueAndPropertiesMaskMap user_input;
     for (size_t i = 0; i < control_elements.size(); ++i) {
       WebInputElement* input_element = toWebInputElement(&control_elements[i]);
       if (input_element->hasAttribute("set-activated-submit"))
         input_element->setActivatedSubmit(true);
-      if (with_user_input)
-        user_input[*input_element] = input_element->value();
+      if (with_user_input) {
+        const base::string16 element_value = input_element->value();
+        user_input[control_elements[i]] = std::make_pair(
+            base::WrapUnique(new base::string16(element_value)), 0U);
+      }
     }
 
     return CreatePasswordFormFromWebForm(
@@ -203,8 +207,8 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
 
     FormData form_data;
     ASSERT_TRUE(form_util::WebFormElementToFormData(
-        form, WebFormControlElement(), form_util::EXTRACT_NONE, &form_data,
-        nullptr));
+        form, WebFormControlElement(), nullptr, form_util::EXTRACT_NONE,
+        &form_data, nullptr));
 
     FormStructure form_structure(form_data);
 

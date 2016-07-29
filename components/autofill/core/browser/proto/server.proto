@@ -33,7 +33,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 20
+// Next available id: 21
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -89,6 +89,10 @@ message AutofillUploadContents {
 
     // The value of the class attribute on the field, if present.
     optional string css_classes = 19;
+
+    // The properties mask (i.e. whether the field was autofilled, user
+    // modified, etc.) See FieldPropertiesFlags.
+    optional uint32 properties_mask = 20;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;

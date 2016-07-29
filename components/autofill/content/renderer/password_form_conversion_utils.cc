@@ -312,6 +312,15 @@ base::string16 FieldName(const WebInputElement& input_field,
   return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
 }
 
+bool FieldHasNonscriptModifiedValue(
+    const FieldValueAndPropertiesMaskMap* field_map,
+    const blink::WebFormControlElement& element) {
+  if (!field_map)
+    return false;
+  FieldValueAndPropertiesMaskMap::const_iterator it = field_map->find(element);
+  return it != field_map->end() && it->second.first.get();
+}
+
 // Helper function that checks the presence of visible password and username
 // fields in |form.control_elements|.
 // Iff a visible password found, then |*found_visible_password| is set to true.
@@ -350,10 +359,11 @@ void FoundVisiblePasswordAndVisibleUsernameBeforePassword(
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
 // the PasswordForm.
-bool GetPasswordForm(const SyntheticForm& form,
-                     PasswordForm* password_form,
-                     const ModifiedValues* nonscript_modified_values,
-                     const FormsPredictionsMap* form_predictions) {
+bool GetPasswordForm(
+    const SyntheticForm& form,
+    PasswordForm* password_form,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FormsPredictionsMap* form_predictions) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
   password_form->username_marked_by_site = false;
@@ -404,9 +414,8 @@ bool GetPasswordForm(const SyntheticForm& form,
           continue;
         layout_sequence.push_back('P');
       } else {
-        if (nonscript_modified_values &&
-            nonscript_modified_values->find(*input_element) !=
-                nonscript_modified_values->end())
+        if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
+                                           *input_element))
           ++number_of_non_empty_text_non_password_fields;
         if (element_is_invisible && ignore_invisible_usernames)
           continue;
@@ -427,11 +436,9 @@ bool GetPasswordForm(const SyntheticForm& form,
     // checking whether password element was updated not from JavaScript.
     if (input_element->isPasswordField() &&
         (!input_element->isReadOnly() ||
-         (nonscript_modified_values &&
-          nonscript_modified_values->find(*input_element) !=
-              nonscript_modified_values->end()) ||
+         FieldHasNonscriptModifiedValue(field_value_and_properties_map,
+                                        *input_element) ||
          password_marked_by_autocomplete_attribute)) {
-
       // We add the field to the list of password fields if it was not flagged
       // as a special NOT_PASSWORD prediction by Autofill. The NOT_PASSWORD
       // mechanism exists because some webpages use the type "password" for
@@ -534,20 +541,17 @@ bool GetPasswordForm(const SyntheticForm& form,
     password_form->username_element =
         FieldName(username_element, "anonymous_username");
     base::string16 username_value = username_element.value();
-    if (nonscript_modified_values != nullptr) {
-      auto username_iterator =
-        nonscript_modified_values->find(username_element);
-      if (username_iterator != nonscript_modified_values->end()) {
-        base::string16 typed_username_value = username_iterator->second;
-        if (!base::StartsWith(
-                base::i18n::ToLower(username_value),
-                base::i18n::ToLower(typed_username_value),
-                base::CompareCase::SENSITIVE)) {
-          // We check that |username_value| was not obtained by autofilling
-          // |typed_username_value|. In case when it was, |typed_username_value|
-          // is incomplete, so we should leave autofilled value.
-          username_value = typed_username_value;
-        }
+    if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
+                                       username_element)) {
+      base::string16 typed_username_value =
+          *field_value_and_properties_map->at(username_element).first;
+      if (!base::StartsWith(base::i18n::ToLower(username_value),
+                            base::i18n::ToLower(typed_username_value),
+                            base::CompareCase::SENSITIVE)) {
+        // We check that |username_value| was not obtained by autofilling
+        // |typed_username_value|. In case when it was, |typed_username_value|
+        // is incomplete, so we should leave autofilled value.
+        username_value = typed_username_value;
       }
     }
     password_form->username_value = username_value;
@@ -564,11 +568,9 @@ bool GetPasswordForm(const SyntheticForm& form,
   if (!password.isNull()) {
     password_form->password_element = FieldName(password, "anonymous_password");
     blink::WebString password_value = password.value();
-    if (nonscript_modified_values != nullptr) {
-      auto password_iterator = nonscript_modified_values->find(password);
-      if (password_iterator != nonscript_modified_values->end())
-        password_value = password_iterator->second;
-    }
+    if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
+                                       password))
+      password_value = *field_value_and_properties_map->at(password).first;
     password_form->password_value = password_value;
   }
   if (!new_password.isNull()) {
@@ -646,7 +648,7 @@ bool IsGaiaReauthenticationForm(
 
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const WebFormElement& web_form,
-    const ModifiedValues* nonscript_modified_values,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions) {
   if (web_form.isNull())
     return std::unique_ptr<PasswordForm>();
@@ -660,11 +662,12 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   PopulateSyntheticFormFromWebForm(web_form, &synthetic_form);
 
   WebFormElementToFormData(web_form, blink::WebFormControlElement(),
+                           field_value_and_properties_map,
                            form_util::EXTRACT_NONE, &password_form->form_data,
                            NULL /* FormFieldData */);
 
   if (!GetPasswordForm(synthetic_form, password_form.get(),
-                       nonscript_modified_values, form_predictions))
+                       field_value_and_properties_map, form_predictions))
     return std::unique_ptr<PasswordForm>();
 
   return password_form;
@@ -672,7 +675,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const WebFrame& frame,
-    const ModifiedValues* nonscript_modified_values,
+    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions) {
   SyntheticForm synthetic_form;
   synthetic_form.control_elements = form_util::GetUnownedFormFieldElements(
@@ -685,10 +688,10 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   std::unique_ptr<PasswordForm> password_form(new PasswordForm());
   UnownedPasswordFormElementsAndFieldSetsToFormData(
       synthetic_form.fieldsets, synthetic_form.control_elements, nullptr,
-      frame.document(), form_util::EXTRACT_NONE, &password_form->form_data,
-      nullptr /* FormFieldData */);
+      frame.document(), field_value_and_properties_map, form_util::EXTRACT_NONE,
+      &password_form->form_data, nullptr /* FormFieldData */);
   if (!GetPasswordForm(synthetic_form, password_form.get(),
-                       nonscript_modified_values, form_predictions))
+                       field_value_and_properties_map, form_predictions))
     return std::unique_ptr<PasswordForm>();
 
   // No actual action on the form, so use the the origin as the action.
