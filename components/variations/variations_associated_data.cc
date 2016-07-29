@@ -11,6 +11,8 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_split.h"
+#include "components/variations/variations_http_header_provider.h"
 
 namespace variations {
 

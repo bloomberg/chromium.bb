@@ -436,11 +436,12 @@ void FlagsState::Reset() {
   appended_switches_.clear();
 }
 
-void FlagsState::RegisterAllFeatureVariationParameters(
+std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
     FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, &enabled_entries);
+  std::vector<std::string> variation_ids;
 
   for (size_t i = 0; i < num_feature_entries_; ++i) {
     const FeatureEntry& e = feature_entries_[i];
@@ -460,10 +461,14 @@ void FlagsState::RegisterAllFeatureVariationParameters(
               e.feature->name,
               base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE,
               field_trial);
+
+          if (variation && variation->variation_id)
+            variation_ids.push_back(variation->variation_id);
         }
       }
     }
   }
+  return variation_ids;
 }
 
 void FlagsState::GetFlagFeatureEntries(

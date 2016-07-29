@@ -9,6 +9,8 @@
 #define IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
 
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 #include "components/flags_ui/flags_state.h"
 
@@ -26,6 +28,16 @@ class FlagsStorage;
 // to the flags from experimental settings.
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line);
+
+// Registers variations parameter values selected for features in about:flags.
+// The selected flags are retrieved from |flags_storage|, the registered
+// variation parameters are connected to their corresponding features in
+// |feature_list|. Returns the (possibly empty) list of additional variation ids
+// to register in the MetricsService that come from variations selected using
+// chrome://flags.
+std::vector<std::string> RegisterAllFeatureVariationParameters(
+    flags_ui::FlagsStorage* flags_storage,
+    base::FeatureList* feature_list);
 
 // Gets the list of feature entries. Entries that are available for the current
 // platform are appended to |supported_entries|; all other entries are appended

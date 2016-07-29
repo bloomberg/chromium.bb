@@ -73,7 +73,7 @@ const FeatureEntry::FeatureParam kTestVariationOther[] = {
     {kTestParam, kTestParamValue}};
 
 const FeatureEntry::FeatureVariation kTestVariations[] = {
-    {"dummy description", kTestVariationOther, 1}};
+    {"dummy description", kTestVariationOther, 1, nullptr}};
 
 // Those have to be valid ids for the translation system but the value are
 // never used, so pick one at random from the current component.

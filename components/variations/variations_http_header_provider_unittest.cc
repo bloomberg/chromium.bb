@@ -65,7 +65,7 @@ TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   VariationsHttpHeaderProvider provider;
 
   // Valid experiment ids.
-  EXPECT_TRUE(provider.SetDefaultVariationIds("12,456,t789"));
+  EXPECT_TRUE(provider.SetDefaultVariationIds({"12", "456", "t789"}));
   provider.InitVariationIDsCacheIfNeeded();
   std::string variations = provider.GetClientDataHeader();
   EXPECT_FALSE(variations.empty());
@@ -83,12 +83,14 @@ TEST_F(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
   VariationsHttpHeaderProvider provider;
 
   // Invalid experiment ids.
-  EXPECT_FALSE(provider.SetDefaultVariationIds("abcd12,456"));
+  EXPECT_FALSE(provider.SetDefaultVariationIds(
+      std::vector<std::string>{"abcd12", "456"}));
   provider.InitVariationIDsCacheIfNeeded();
   EXPECT_TRUE(provider.GetClientDataHeader().empty());
 
   // Invalid trigger experiment id
-  EXPECT_FALSE(provider.SetDefaultVariationIds("12,tabc456"));
+  EXPECT_FALSE(provider.SetDefaultVariationIds(
+      std::vector<std::string>{"12", "tabc456"}));
   provider.InitVariationIDsCacheIfNeeded();
   EXPECT_TRUE(provider.GetClientDataHeader().empty());
 }
@@ -131,7 +133,10 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
 
   VariationsHttpHeaderProvider provider;
-  provider.SetDefaultVariationIds("100,200");
+  std::vector<std::string> ids;
+  ids.push_back("100");
+  ids.push_back("200");
+  provider.SetDefaultVariationIds(ids);
   EXPECT_EQ(" 100 123 124 200 ", provider.GetVariationsString());
 }
 

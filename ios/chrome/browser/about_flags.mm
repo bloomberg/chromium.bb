@@ -260,6 +260,13 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
   AppendSwitchesFromExperimentalSettings(command_line);
 }
 
+std::vector<std::string> RegisterAllFeatureVariationParameters(
+    flags_ui::FlagsStorage* flags_storage,
+    base::FeatureList* feature_list) {
+  return FlagsStateSingleton::GetFlagsState()
+      ->RegisterAllFeatureVariationParameters(flags_storage, feature_list);
+}
+
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
                            base::ListValue* supported_entries,

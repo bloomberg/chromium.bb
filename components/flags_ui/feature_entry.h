@@ -99,6 +99,10 @@ struct FeatureEntry {
     const char* description_text;
     const FeatureParam* params;
     int num_params;
+    // A variation id number in the format of
+    // VariationsHttpHeaderProvider::SetDefaultVariationIds or nullptr
+    // if you do not need to set any variation_id for this feature variation.
+    const char* variation_id;
   };
 
   // The internal name of the feature entry. This is never shown to the user.

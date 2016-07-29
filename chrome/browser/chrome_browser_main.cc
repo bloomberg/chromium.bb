@@ -734,25 +734,25 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
                   << " list specified.";
   }
 
-  if (command_line->HasSwitch(switches::kForceVariationIds)) {
-    // Create default variation ids which will always be included in the
-    // X-Client-Data request header.
-    variations::VariationsHttpHeaderProvider* provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
-    bool result = provider->SetDefaultVariationIds(
-        command_line->GetSwitchValueASCII(switches::kForceVariationIds));
-    CHECK(result) << "Invalid --" << switches::kForceVariationIds
-                  << " list specified.";
-    metrics->AddSyntheticTrialObserver(provider);
-  }
-
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
   // Associate parameters chosen in about:flags and create trial/group for them.
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
-  about_flags::RegisterAllFeatureVariationParameters(&flags_storage,
-    feature_list.get());
+  std::vector<std::string> variation_ids =
+      about_flags::RegisterAllFeatureVariationParameters(
+          &flags_storage, feature_list.get());
+
+  variations::VariationsHttpHeaderProvider* http_header_provider =
+      variations::VariationsHttpHeaderProvider::GetInstance();
+  // Force the variation ids selected in chrome://flags and/or specified using
+  // the command-line flag.
+  bool result = http_header_provider->ForceVariationIds(
+      command_line->GetSwitchValueASCII(switches::kForceVariationIds),
+      &variation_ids);
+  CHECK(result) << "Invalid list of variation ids specified (either in --"
+                << switches::kForceVariationIds << " or in chrome://flags)";
+  metrics->AddSyntheticTrialObserver(http_header_provider);
 
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),

@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_base.h"
@@ -38,8 +39,10 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 // Registers variations parameter values selected for features in about:flags.
 // The selected flags are retrieved from |flags_storage|, the registered
 // variation parameters are connected to their corresponding features in
-// |feature_list|.
-void RegisterAllFeatureVariationParameters(
+// |feature_list|. Returns the (possibly empty) list of additional variation ids
+// to register in the MetricsService that come from variations selected using
+// chrome://flags.
+std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list);
 

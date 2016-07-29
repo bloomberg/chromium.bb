@@ -41,12 +41,19 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // a leading and trailing space, e.g. " 123 234 345 ".
   std::string GetVariationsString();
 
+  // Forces the list of |variation_ids| (which will be modified by adding the
+  // comma-separated |command_line_variation_ids|). This is a wrapper function
+  // around SetDefaultVariationIds.
+  bool ForceVariationIds(
+      const std::string& command_line_variation_ids,
+      std::vector<std::string>* variation_ids);
+
   // Sets *additional* variation ids and trigger variation ids to be encoded in
-  // the X-Client-Data request header.  This is intended for development use to
-  // force a server side experiment id.  |variation_ids| should be a
-  // comma-separated string of numeric experiment ids.  If an id is prefixed
-  // with "t" it will be treated as a trigger experiment id.
-  bool SetDefaultVariationIds(const std::string& variation_ids);
+  // the X-Client-Data request header. This is intended for development use to
+  // force a server side experiment id. |variation_ids| should be a list of
+  // strings of numeric experiment ids. If an id is prefixed with "t" it will
+  // be treated as a trigger experiment id.
+  bool SetDefaultVariationIds(const std::vector<std::string>& variation_ids);
 
   // Resets any cached state for tests.
   void ResetForTesting();

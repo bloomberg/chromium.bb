@@ -557,16 +557,41 @@ const FeatureEntry::FeatureParam
         {"fetching_host_restrict", "on"},
 };
 
+const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
+    {"content_suggestions_backend",
+     "https://dev-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
+     "snippets/list"}};
+
+const FeatureEntry::FeatureParam
+    kNTPSnippetsFeatureVariationServerNonPersonalized[] = {
+        {"content_suggestions_backend",
+         "https://dev-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
+         "snippets/list"},
+        {"fetching_personalization", "non_personal"}};
+
 const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
-    {"only personalized", kNTPSnippetsFeatureVariationOnlyPersonal,
-     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal)},
-    {"only from most visited sites",
+    {"via ChromeReader (only personalized)",
+     kNTPSnippetsFeatureVariationOnlyPersonal,
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal), nullptr},
+    {"via ChromeReader (only from most visited sites)",
      kNTPSnippetsFeatureVariationOnlyNonPersonalHostRestricted,
-     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal)},
-    {"only personalized from most visited sites",
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonal), nullptr},
+    {"via ChromeReader (only personalized from most visited sites)",
      kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted,
-     arraysize(kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted)},
-};
+     arraysize(kNTPSnippetsFeatureVariationOnlyPersonalHostRestricted),
+     nullptr},
+    {"via content suggestion server (backed by ChromeReader)",
+     kNTPSnippetsFeatureVariationServer,
+     arraysize(kNTPSnippetsFeatureVariationServer), nullptr},
+    {"via content suggestion server (backed by ChromeReader, non-personalized)",
+     kNTPSnippetsFeatureVariationServerNonPersonalized,
+     arraysize(kNTPSnippetsFeatureVariationServerNonPersonalized), nullptr},
+    {"via content suggestion server (backed by Google Now)",
+     kNTPSnippetsFeatureVariationServer,
+     arraysize(kNTPSnippetsFeatureVariationServer), "3313279"},
+    {"via content suggestion server (backed by Google Now, non-personalized)",
+     kNTPSnippetsFeatureVariationServerNonPersonalized,
+     arraysize(kNTPSnippetsFeatureVariationServerNonPersonalized), "3313279"}};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -2106,11 +2131,11 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
       switches::kDisableFeatures);
 }
 
-void RegisterAllFeatureVariationParameters(
+std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
-  FlagsStateSingleton::GetFlagsState()->RegisterAllFeatureVariationParameters(
-      flags_storage, feature_list);
+  return FlagsStateSingleton::GetFlagsState()
+      ->RegisterAllFeatureVariationParameters(flags_storage, feature_list);
 }
 
 bool AreSwitchesIdenticalToCurrentCommandLine(

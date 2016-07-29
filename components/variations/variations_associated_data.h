@@ -6,7 +6,9 @@
 #define COMPONENTS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/metrics/field_trial.h"
 #include "components/variations/active_field_trials.h"
@@ -48,6 +50,7 @@ struct Feature;
 namespace variations {
 
 typedef int VariationID;
+class VariationsHttpHeaderProvider;
 
 const VariationID EMPTY_ID = 0;
 

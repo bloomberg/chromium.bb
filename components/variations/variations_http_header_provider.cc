@@ -56,12 +56,32 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
   return ids_string;
 }
 
+bool VariationsHttpHeaderProvider::ForceVariationIds(
+    const std::string& command_line_variation_ids,
+    std::vector<std::string>* variation_ids) {
+  if (!command_line_variation_ids.empty()) {
+    // Combine |variation_ids| with |command_line_variation_ids|.
+    std::vector<std::string> variation_ids_flags =
+        base::SplitString(command_line_variation_ids, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    variation_ids->insert(variation_ids->end(), variation_ids_flags.begin(),
+                          variation_ids_flags.end());
+  }
+
+  if (!variation_ids->empty()) {
+    // Create default variation ids which will always be included in the
+    // X-Client-Data request header.
+    return SetDefaultVariationIds(*variation_ids);
+  }
+  return true;
+}
+
+
 bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
-    const std::string& variation_ids) {
+    const std::vector<std::string>& variation_ids) {
   default_variation_ids_set_.clear();
   default_trigger_id_set_.clear();
-  for (const base::StringPiece& entry : base::SplitStringPiece(
-           variation_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const std::string& entry : variation_ids) {
     if (entry.empty()) {
       default_variation_ids_set_.clear();
       default_trigger_id_set_.clear();
@@ -70,7 +90,7 @@ bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
     bool trigger_id =
         base::StartsWith(entry, "t", base::CompareCase::SENSITIVE);
     // Remove the "t" prefix if it's there.
-    base::StringPiece trimmed_entry = trigger_id ? entry.substr(1) : entry;
+    std::string trimmed_entry = trigger_id ? entry.substr(1) : entry;
 
     int variation_id = 0;
     if (!base::StringToInt(trimmed_entry, &variation_id)) {
