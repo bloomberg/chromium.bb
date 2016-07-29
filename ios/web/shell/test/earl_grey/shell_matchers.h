@@ -8,50 +8,25 @@
 
 namespace web {
 
-// Shorthand for GREYMatchers::matcherForWebViewContainingText.
-id<GREYMatcher> webViewContainingText(const std::string& text);
+// Matcher for WKWebView containing |text|.
+id<GREYMatcher> webViewContainingText(std::string text);
 
-// Shorthand for GREYMatchers::matcherForWebWithCSSSelector.
-id<GREYMatcher> webViewCssSelector(const std::string& selector);
+// Matcher for WKWebView containing an html element which matches |selector|.
+id<GREYMatcher> webViewCssSelector(std::string selector);
 
-// Shorthand for GREYMatchers::matcherForWebViewScrollView.
+// Matcher for WKWebView's scroll view.
 id<GREYMatcher> webViewScrollView();
 
-// Shorthand for GREYMatchers::matcherForAddressFieldEqualToText.
-id<GREYMatcher> addressFieldText(const std::string& text);
+// Matcher for web shell address field text property equal to |text|.
+id<GREYMatcher> addressFieldText(std::string text);
 
-// Shorthand for GREYMatchers::matcherForBackButton.
+// Matcher for back button in web shell.
 id<GREYMatcher> backButton();
 
-// Shorthand for GREYMatchers::matcherForForwardButton.
+// Matcher for forward button in web shell.
 id<GREYMatcher> forwardButton();
 
-// Shorthand for GREYMatchers::matcherForAddressField.
+// Matcher for address field in web shell.
 id<GREYMatcher> addressField();
 
 }  // namespace web
-
-@interface GREYMatchers (WebShellAdditions)
-
-// Matcher for WKWebView containing |text|.
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text;
-
-// Matcher for WKWebView containing an html element which matches |selector|.
-+ (id<GREYMatcher>)matcherForWebWithCSSSelector:(const std::string&)selector;
-
-// Matcher for WKWebView's scroll view.
-+ (id<GREYMatcher>)matcherForWebViewScrollView;
-
-// Matcher for web shell address field text property equal to |text|.
-+ (id<GREYMatcher>)matcherForAddressFieldEqualToText:(const std::string&)text;
-
-// Matcher for back button in web shell.
-+ (id<GREYMatcher>)matcherForWebShellBackButton;
-
-// Matcher for forward button in web shell.
-+ (id<GREYMatcher>)matcherForWebShellForwardButton;
-
-// Matcher for address field in web shell.
-+ (id<GREYMatcher>)matcherForWebShellAddressField;
-
-@end

@@ -56,34 +56,10 @@ std::unique_ptr<base::Value> ExecuteScript(web::WebState* web_state,
 
 namespace web {
 
-id<GREYMatcher> webViewInWebState(web::WebState* webState) {
-  return [GREYMatchers matcherForWebViewInWebState:webState];
-}
-
-id<GREYMatcher> webViewContainingText(const std::string& text,
-                                      web::WebState* webState) {
-  return
-      [GREYMatchers matcherForWebViewContainingText:text inWebState:webState];
-}
-
-id<GREYMatcher> webViewCssSelector(const std::string& selector,
-                                   web::WebState* webState) {
-  return
-      [GREYMatchers matcherForWebWithCSSSelector:selector inWebState:webState];
-}
-
-id<GREYMatcher> webViewScrollView(web::WebState* webState) {
-  return [GREYMatchers matcherForWebViewScrollViewInWebState:webState];
-}
-
-}  // namespace web
-
-@implementation GREYMatchers (WebViewAdditions)
-
-+ (id<GREYMatcher>)matcherForWebViewInWebState:(web::WebState*)webState {
+id<GREYMatcher> webViewInWebState(WebState* web_state) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     return [view isKindOfClass:[WKWebView class]] &&
-           [view isDescendantOfView:webState->GetView()];
+           [view isDescendantOfView:web_state->GetView()];
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
@@ -95,77 +71,72 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
       autorelease];
 }
 
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text
-                                        inWebState:(web::WebState*)webState {
-  std::string textCopyForBlock = text;
+id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
-    __block BOOL didSucceed = NO;
+    __block BOOL did_succeed = NO;
     NSDate* deadline =
         [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
     while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
-           !didSucceed) {
+           !did_succeed) {
       std::unique_ptr<base::Value> value =
-          ExecuteScript(webState, kGetDocumentBodyJavaScript);
+          ExecuteScript(web_state, kGetDocumentBodyJavaScript);
       std::string body;
       if (value && value->GetAsString(&body)) {
-        didSucceed = body.find(textCopyForBlock) != std::string::npos;
+        did_succeed = body.find(text) != std::string::npos;
       }
       base::test::ios::SpinRunLoopWithMaxDelay(
           base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
     }
-    return didSucceed;
+    return did_succeed;
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"web view containing "];
-    [description appendText:base::SysUTF8ToNSString(textCopyForBlock)];
+    [description appendText:base::SysUTF8ToNSString(text)];
   };
 
-  return grey_allOf(webViewInWebState(webState),
+  return grey_allOf(webViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
                     nil);
 }
 
-+ (id<GREYMatcher>)matcherForWebWithCSSSelector:(const std::string&)selector
-                                     inWebState:(web::WebState*)webState {
-  std::string selectorCopy = selector;
+id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
     std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,
-                                            selectorCopy.c_str());
-    __block bool didSucceed = false;
+                                            selector.c_str());
+    __block bool did_succeed = false;
     NSDate* deadline =
         [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
     while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
-           !didSucceed) {
-      std::unique_ptr<base::Value> value = ExecuteScript(webState, script);
+           !did_succeed) {
+      std::unique_ptr<base::Value> value = ExecuteScript(web_state, script);
       if (value)
-        value->GetAsBoolean(&didSucceed);
+        value->GetAsBoolean(&did_succeed);
       base::test::ios::SpinRunLoopWithMaxDelay(
           base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
     }
-    return didSucceed;
+    return did_succeed;
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"web view selector "];
-    [description appendText:base::SysUTF8ToNSString(selectorCopy)];
+    [description appendText:base::SysUTF8ToNSString(selector)];
   };
 
-  return grey_allOf(webViewInWebState(webState),
+  return grey_allOf(webViewInWebState(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
                     nil);
 }
 
-+ (id<GREYMatcher>)matcherForWebViewScrollViewInWebState:
-    (web::WebState*)webState {
+id<GREYMatcher> webViewScrollView(WebState* web_state) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     return [view isKindOfClass:[UIScrollView class]] &&
            [view.superview isKindOfClass:[WKWebView class]] &&
-           [view isDescendantOfView:webState->GetView()];
+           [view isDescendantOfView:web_state->GetView()];
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
@@ -177,4 +148,4 @@ id<GREYMatcher> webViewScrollView(web::WebState* webState) {
       autorelease];
 }
 
-@end
+}  // namespace web

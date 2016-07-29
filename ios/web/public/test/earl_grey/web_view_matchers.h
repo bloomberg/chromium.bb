@@ -10,37 +10,16 @@
 
 namespace web {
 
-// Shorthand for GREYMatchers::matcherForWebViewInWebState.
-id<GREYMatcher> webViewInWebState(web::WebState* webState);
-
-// Shorthand for GREYMatchers::matcherForWebViewContainingText:inWebState.
-id<GREYMatcher> webViewContainingText(const std::string& text,
-                                      web::WebState* webState);
-
-// Shorthand for GREYMatchers::matcherForWebWithCSSSelector:inWebState.
-id<GREYMatcher> webViewCssSelector(const std::string& selector,
-                                   web::WebState* webState);
-
-// Shorthand for GREYMatchers::matcherForWebViewScrollViewInWebState.
-id<GREYMatcher> webViewScrollView(web::WebState* webState);
-
-}  // namespace web
-
-@interface GREYMatchers (WebViewAdditions)
-
 // Matcher for WKWebView which belogs to the given |webState|.
-+ (id<GREYMatcher>)matcherForWebViewInWebState:(web::WebState*)webState;
+id<GREYMatcher> webViewInWebState(WebState* web_state);
 
 // Matcher for WKWebView containing |text|.
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text
-                                        inWebState:(web::WebState*)webState;
+id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state);
 
 // Matcher for WKWebView containing an html element which matches |selector|.
-+ (id<GREYMatcher>)matcherForWebWithCSSSelector:(const std::string&)selector
-                                     inWebState:(web::WebState*)webState;
+id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state);
 
 // Matcher for WKWebView's scroll view.
-+ (id<GREYMatcher>)matcherForWebViewScrollViewInWebState:
-    (web::WebState*)webState;
+id<GREYMatcher> webViewScrollView(WebState* web_state);
 
-@end
+}  // namespace web
