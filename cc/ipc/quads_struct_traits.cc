@@ -7,6 +7,52 @@
 
 namespace mojo {
 
+cc::DrawQuad* AllocateAndConstruct(cc::mojom::Material material,
+                                   cc::QuadList* list) {
+  cc::DrawQuad* quad = nullptr;
+  switch (material) {
+    case cc::mojom::Material::INVALID:
+      return nullptr;
+    case cc::mojom::Material::DEBUG_BORDER:
+      quad = list->AllocateAndConstruct<cc::DebugBorderDrawQuad>();
+      quad->material = cc::DrawQuad::DEBUG_BORDER;
+      return quad;
+    case cc::mojom::Material::PICTURE_CONTENT:
+      quad = list->AllocateAndConstruct<cc::PictureDrawQuad>();
+      quad->material = cc::DrawQuad::PICTURE_CONTENT;
+      return quad;
+    case cc::mojom::Material::RENDER_PASS:
+      quad = list->AllocateAndConstruct<cc::RenderPassDrawQuad>();
+      quad->material = cc::DrawQuad::RENDER_PASS;
+      return quad;
+    case cc::mojom::Material::SOLID_COLOR:
+      quad = list->AllocateAndConstruct<cc::SolidColorDrawQuad>();
+      quad->material = cc::DrawQuad::SOLID_COLOR;
+      return quad;
+    case cc::mojom::Material::STREAM_VIDEO_CONTENT:
+      quad = list->AllocateAndConstruct<cc::StreamVideoDrawQuad>();
+      quad->material = cc::DrawQuad::STREAM_VIDEO_CONTENT;
+      return quad;
+    case cc::mojom::Material::SURFACE_CONTENT:
+      quad = list->AllocateAndConstruct<cc::SurfaceDrawQuad>();
+      quad->material = cc::DrawQuad::SURFACE_CONTENT;
+      return quad;
+    case cc::mojom::Material::TEXTURE_CONTENT:
+      quad = list->AllocateAndConstruct<cc::TextureDrawQuad>();
+      quad->material = cc::DrawQuad::TEXTURE_CONTENT;
+      return quad;
+    case cc::mojom::Material::TILED_CONTENT:
+      quad = list->AllocateAndConstruct<cc::TileDrawQuad>();
+      quad->material = cc::DrawQuad::TILED_CONTENT;
+      return quad;
+    case cc::mojom::Material::YUV_VIDEO_CONTENT:
+      quad = list->AllocateAndConstruct<cc::YUVVideoDrawQuad>();
+      quad->material = cc::DrawQuad::YUV_VIDEO_CONTENT;
+      return quad;
+  }
+  NOTREACHED();
+  return nullptr;
+}
 namespace {
 
 bool ReadDrawQuad(cc::mojom::DrawQuadDataView data, cc::DrawQuad* quad) {
@@ -20,44 +66,6 @@ bool ReadDrawQuad(cc::mojom::DrawQuadDataView data, cc::DrawQuad* quad) {
   }
   quad->needs_blending = data.needs_blending();
   return true;
-}
-
-bool AllocateAndConstruct(cc::DrawQuad::Material material, cc::QuadList* list) {
-  cc::DrawQuad* quad = nullptr;
-  switch (material) {
-    case cc::DrawQuad::INVALID:
-      break;
-    case cc::DrawQuad::DEBUG_BORDER:
-      quad = list->AllocateAndConstruct<cc::DebugBorderDrawQuad>();
-      break;
-    case cc::DrawQuad::PICTURE_CONTENT:
-      quad = list->AllocateAndConstruct<cc::PictureDrawQuad>();
-      break;
-    case cc::DrawQuad::RENDER_PASS:
-      quad = list->AllocateAndConstruct<cc::RenderPassDrawQuad>();
-      break;
-    case cc::DrawQuad::SOLID_COLOR:
-      quad = list->AllocateAndConstruct<cc::SolidColorDrawQuad>();
-      break;
-    case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-      quad = list->AllocateAndConstruct<cc::StreamVideoDrawQuad>();
-      break;
-    case cc::DrawQuad::SURFACE_CONTENT:
-      quad = list->AllocateAndConstruct<cc::SurfaceDrawQuad>();
-      break;
-    case cc::DrawQuad::TEXTURE_CONTENT:
-      quad = list->AllocateAndConstruct<cc::TextureDrawQuad>();
-      break;
-    case cc::DrawQuad::TILED_CONTENT:
-      quad = list->AllocateAndConstruct<cc::TileDrawQuad>();
-      break;
-    case cc::DrawQuad::YUV_VIDEO_CONTENT:
-      quad = list->AllocateAndConstruct<cc::YUVVideoDrawQuad>();
-      break;
-  }
-  if (quad)
-    quad->material = material;
-  return quad != nullptr;
 }
 
 }  // namespace
@@ -325,52 +333,6 @@ bool StructTraits<cc::mojom::DrawQuad, cc::DrawQuad>::Read(
   }
   NOTREACHED();
   return false;
-}
-
-// static
-void* StructTraits<cc::mojom::QuadList, cc::QuadList>::SetUpContext(
-    const cc::QuadList& quad_list) {
-  mojo::Array<cc::DrawQuad::Material>* materials =
-      new mojo::Array<cc::DrawQuad::Material>(quad_list.size());
-  for (auto it = quad_list.begin(); it != quad_list.end(); ++it)
-    (*materials)[it.index()] = it->material;
-  return materials;
-}
-
-// static
-void StructTraits<cc::mojom::QuadList, cc::QuadList>::TearDownContext(
-    const cc::QuadList& quad_list,
-    void* context) {
-  // static_cast to ensure the destructor is called.
-  delete static_cast<mojo::Array<cc::DrawQuad::Material>*>(context);
-}
-
-// static
-const mojo::Array<cc::DrawQuad::Material>&
-StructTraits<cc::mojom::QuadList, cc::QuadList>::quad_types(
-    const cc::QuadList& quad_list,
-    void* context) {
-  return *static_cast<mojo::Array<cc::DrawQuad::Material>*>(context);
-}
-
-// static
-bool StructTraits<cc::mojom::QuadList, cc::QuadList>::Read(
-    cc::mojom::QuadListDataView data,
-    cc::QuadList* out) {
-  // TODO(fsamuel): Once we have ArrayTraits DataViews we can delete
-  // this field. This field exists so we can pre-allocate DrawQuads
-  // in the QuadList according to their material.
-  mojo::Array<cc::DrawQuad::Material> materials;
-  if (!data.ReadQuadTypes(&materials))
-    return false;
-  for (size_t i = 0; i < materials.size(); ++i) {
-    if (!AllocateAndConstruct(materials[i], out))
-      return false;
-  }
-  // The materials array and the quads array are expected to be the same size.
-  // If they are not, then deserialization will fail.
-  QuadListArray quad_list_array = {materials.size(), out};
-  return data.ReadQuads(&quad_list_array);
 }
 
 }  // namespace mojo

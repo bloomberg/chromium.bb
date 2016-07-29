@@ -10,34 +10,6 @@
 namespace mojo {
 
 // static
-void* StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::
-    SetUpContext(const std::unique_ptr<cc::RenderPass>& input) {
-  std::unique_ptr<mojo::Array<uint32_t>> sqs_references(
-      new mojo::Array<uint32_t>(input->quad_list.size()));
-  cc::SharedQuadStateList::ConstIterator sqs_iter =
-      input->shared_quad_state_list.begin();
-  for (auto it = input->quad_list.begin(); it != input->quad_list.end(); ++it) {
-    if ((*it)->shared_quad_state != *sqs_iter)
-      ++sqs_iter;
-    (*sqs_references)[it.index()] =
-        base::checked_cast<uint32_t>(sqs_iter.index());
-    DCHECK_NE(nullptr, (*it)->shared_quad_state);
-    DCHECK_EQ(*sqs_iter, (*it)->shared_quad_state);
-  }
-  DCHECK(input->shared_quad_state_list.empty() ||
-         input->shared_quad_state_list.size() - 1 == sqs_iter.index());
-  return sqs_references.release();
-}
-
-// static
-void StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::
-    TearDownContext(const std::unique_ptr<cc::RenderPass>& input,
-                    void* context) {
-  // static_cast to ensure the destructor is called.
-  delete static_cast<mojo::Array<uint32_t>*>(context);
-}
-
-// static
 bool StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::Read(
     cc::mojom::RenderPassDataView data,
     std::unique_ptr<cc::RenderPass>* out) {
@@ -48,31 +20,35 @@ bool StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::Read(
     return false;
   }
   (*out)->has_transparent_background = data.has_transparent_background();
-  if (!data.ReadQuadList(&(*out)->quad_list) ||
-      !data.ReadSharedQuadStateList(&(*out)->shared_quad_state_list))
-    return false;
 
-  mojo::Array<uint32_t> shared_quad_state_references;
-  if (!data.ReadSharedQuadStateReferences(&shared_quad_state_references))
-    return false;
-
-  if ((*out)->quad_list.size() != shared_quad_state_references.size())
-    return false;
-
-  cc::SharedQuadStateList::ConstIterator sqs_iter =
-      (*out)->shared_quad_state_list.begin();
-  for (auto it = (*out)->quad_list.begin(); it != (*out)->quad_list.end();
-       ++it) {
-    if (sqs_iter.index() != shared_quad_state_references[it.index()])
-      ++sqs_iter;
-    if (shared_quad_state_references[it.index()] != sqs_iter.index())
+  mojo::ArrayDataView<cc::mojom::DrawQuadDataView> quads;
+  data.GetQuadListDataView(&quads);
+  cc::SharedQuadState* last_sqs = nullptr;
+  for (size_t i = 0; i < quads.size(); ++i) {
+    cc::mojom::DrawQuadDataView quad_data_view;
+    quads.GetDataView(i, &quad_data_view);
+    cc::DrawQuad* quad =
+        AllocateAndConstruct(quad_data_view.material(), &(*out)->quad_list);
+    if (!quad)
       return false;
-    (*it)->shared_quad_state = *sqs_iter;
-    if (!(*it)->shared_quad_state)
+    if (!quads.Read(i, quad))
+      return false;
+
+    // Read the SharedQuadState.
+    cc::mojom::SharedQuadStateDataView sqs_data_view;
+    quad_data_view.GetSqsDataView(&sqs_data_view);
+    // If there is no seralized SharedQuadState then used the last deseriaized
+    // one.
+    if (!sqs_data_view.is_null()) {
+      last_sqs = (*out)->CreateAndAppendSharedQuadState();
+      if (!quad_data_view.ReadSqs(last_sqs))
+        return false;
+    }
+    quad->shared_quad_state = last_sqs;
+    if (!quad->shared_quad_state)
       return false;
   }
-  return (*out)->shared_quad_state_list.empty() ||
-         sqs_iter.index() == (*out)->shared_quad_state_list.size() - 1;
+  return true;
 }
 
 }  // namespace mojo

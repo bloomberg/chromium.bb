@@ -6,6 +6,7 @@ module cc.mojom;
 
 import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/render_pass_id.mojom";
+import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -127,13 +128,9 @@ struct DrawQuad {
   // should be clipped to |rect|. This rect lives in content space.
   bool needs_blending;
 
-  // Index into the containing pass' shared quad state array which has state
-  // (transforms etc) shared by multiple quads.
-  // TODO(fsamuel): This is not currently used because we store the
-  // indicies to SharedQuadStates in a separate array. This is more expensive
-  // than storing them inline here, but we need support for context propagation
-  // in Mojo StructTraits in order to store the sqs index here.
-  //uint32 shared_quad_state_index;
+  // Optionally holds a SharedQuadState (transforms etc) shared by multiple
+  // quads.
+  SharedQuadState? sqs;
 
   // Only one of the following will be set, depending on the material.
   DebugBorderQuadState? debug_border_quad_state;
@@ -145,9 +142,3 @@ struct DrawQuad {
   StreamVideoQuadState? stream_video_quad_state;
   YUVVideoQuadState? yuv_video_quad_state;
 };
-
-struct QuadList {
-  array<Material> quad_types;
-  array<DrawQuad> quads;
-};
-

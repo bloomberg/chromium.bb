@@ -46,12 +46,15 @@ class MapKeyReader : public MapReaderBase<MaybeConstUserType> {
  public:
   using Base = MapReaderBase<MaybeConstUserType>;
   using Traits = typename Base::Traits;
+  using MaybeConstIterator = typename Base::MaybeConstIterator;
 
   explicit MapKeyReader(MaybeConstUserType& input) : Base(input) {}
   ~MapKeyReader() {}
 
-  const typename Traits::Key& GetNext() {
-    const typename Traits::Key& key = Traits::GetKey(this->iter_);
+  using GetNextResult =
+      decltype(Traits::GetKey(std::declval<MaybeConstIterator&>()));
+  GetNextResult GetNext() {
+    GetNextResult key = Traits::GetKey(this->iter_);
     Traits::AdvanceIterator(this->iter_);
     return key;
   }

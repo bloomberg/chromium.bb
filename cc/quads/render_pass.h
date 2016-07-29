@@ -68,6 +68,9 @@ class CC_EXPORT RenderPass {
   // requests.
   std::unique_ptr<RenderPass> Copy(RenderPassId new_id) const;
 
+  // A deep copy of the render pass that includes quads.
+  std::unique_ptr<RenderPass> DeepCopy() const;
+
   // A deep copy of the render passes in the list including the quads.
   static void CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
                       std::vector<std::unique_ptr<RenderPass>>* out);

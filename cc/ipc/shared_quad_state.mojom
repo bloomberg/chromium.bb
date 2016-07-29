@@ -28,7 +28,3 @@ struct SharedQuadState {
   uint32 blend_mode;
   int32 sorting_context_id;
 };
-
-struct SharedQuadStateList {
-  array<SharedQuadState> shared_quad_states;
-};

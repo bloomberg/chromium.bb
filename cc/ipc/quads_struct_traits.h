@@ -9,6 +9,7 @@
 #include "cc/ipc/filter_operations_struct_traits.h"
 #include "cc/ipc/quads.mojom.h"
 #include "cc/ipc/render_pass_id_struct_traits.h"
+#include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -23,6 +24,8 @@
 
 namespace mojo {
 
+cc::DrawQuad* AllocateAndConstruct(cc::mojom::Material material,
+                                   cc::QuadList* list);
 template <>
 struct EnumTraits<cc::mojom::Material, cc::DrawQuad::Material> {
   static cc::mojom::Material ToMojom(cc::DrawQuad::Material material);
@@ -390,100 +393,120 @@ struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
                    cc::DrawQuad* out);
 };
 
+struct DrawQuadWithSharedQuadState {
+  const cc::DrawQuad* quad;
+  bool include_sqs;
+};
+
+template <>
+struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
+  static cc::DrawQuad::Material material(
+      const DrawQuadWithSharedQuadState& input) {
+    return input.quad->material;
+  }
+
+  static const gfx::Rect& rect(const DrawQuadWithSharedQuadState& input) {
+    return input.quad->rect;
+  }
+
+  static const gfx::Rect& opaque_rect(
+      const DrawQuadWithSharedQuadState& input) {
+    return input.quad->opaque_rect;
+  }
+
+  static const gfx::Rect& visible_rect(
+      const DrawQuadWithSharedQuadState& input) {
+    return input.quad->visible_rect;
+  }
+
+  static bool needs_blending(const DrawQuadWithSharedQuadState& input) {
+    return input.quad->needs_blending;
+  }
+
+  static const cc::DrawQuad& debug_border_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& render_pass_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& solid_color_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& surface_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& texture_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& tile_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& stream_video_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static const cc::DrawQuad& yuv_video_quad_state(
+      const DrawQuadWithSharedQuadState& input) {
+    return *input.quad;
+  }
+
+  static OptSharedQuadState sqs(const DrawQuadWithSharedQuadState& input) {
+    OptSharedQuadState sqs;
+    sqs.sqs = input.include_sqs ? input.quad->shared_quad_state : nullptr;
+    return sqs;
+  }
+};
+
+// This StructTraits is only used for deserialization within RenderPasses.
 template <>
 struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
-  static cc::DrawQuad::Material material(const cc::DrawQuad& quad) {
-    return quad.material;
-  }
-
-  static const gfx::Rect& rect(const cc::DrawQuad& quad) { return quad.rect; }
-
-  static const gfx::Rect& opaque_rect(const cc::DrawQuad& quad) {
-    return quad.opaque_rect;
-  }
-
-  static const gfx::Rect& visible_rect(const cc::DrawQuad& quad) {
-    return quad.visible_rect;
-  }
-
-  static bool needs_blending(const cc::DrawQuad& quad) {
-    return quad.needs_blending;
-  }
-
-  static const cc::DrawQuad& debug_border_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& render_pass_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& solid_color_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& surface_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& texture_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& tile_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& stream_video_quad_state(const cc::DrawQuad& quad) {
-    return quad;
-  }
-
-  static const cc::DrawQuad& yuv_video_quad_state(const cc::DrawQuad& data) {
-    return data;
-  }
-
   static bool Read(cc::mojom::DrawQuadDataView data, cc::DrawQuad* out);
 };
 
-struct QuadListArray {
-  // This is the expected size of the array.
-  size_t size;
-  cc::QuadList* list;
-};
-
 template <>
-struct ArrayTraits<QuadListArray> {
-  using Element = cc::DrawQuad;
-  using Iterator = cc::QuadList::Iterator;
-  using ConstIterator = cc::QuadList::ConstIterator;
+struct ArrayTraits<cc::QuadList> {
+  using Element = DrawQuadWithSharedQuadState;
+  struct ConstIterator {
+    ConstIterator(const cc::QuadList::ConstIterator& it,
+                  const cc::DrawQuad* last_quad)
+        : it(it), last_quad(last_quad) {}
 
-  static ConstIterator GetBegin(const QuadListArray& input) {
-    return input.list->begin();
-  }
-  static Iterator GetBegin(QuadListArray& input) { return input.list->begin(); }
-  static void AdvanceIterator(ConstIterator& iterator) { ++iterator; }
-  static void AdvanceIterator(Iterator& iterator) { ++iterator; }
-  static const Element& GetValue(ConstIterator& iterator) { return **iterator; }
-  static Element& GetValue(Iterator& iterator) { return **iterator; }
-  static size_t GetSize(const QuadListArray& input) {
-    return input.list->size();
-  }
-  static bool Resize(QuadListArray& input, size_t size) {
-    return input.size == size;
-  }
-};
+    cc::QuadList::ConstIterator it;
+    const cc::DrawQuad* last_quad;
+  };
 
-template <>
-struct StructTraits<cc::mojom::QuadList, cc::QuadList> {
-  static void* SetUpContext(const cc::QuadList& quad_list);
-  static void TearDownContext(const cc::QuadList& quad_list, void* context);
-  static const mojo::Array<cc::DrawQuad::Material>& quad_types(
-      const cc::QuadList& quad_list,
-      void* context);
-  static QuadListArray quads(const cc::QuadList& quad_list) {
-    return {quad_list.size(), const_cast<cc::QuadList*>(&quad_list)};
+  static ConstIterator GetBegin(const cc::QuadList& input) {
+    return ConstIterator(input.begin(), nullptr);
   }
-  static bool Read(cc::mojom::QuadListDataView data, cc::QuadList* out);
+
+  static void AdvanceIterator(ConstIterator& iterator) {
+    iterator.last_quad = *iterator.it;
+    ++iterator.it;
+  }
+
+  static Element GetValue(ConstIterator& iterator) {
+    DrawQuadWithSharedQuadState dq;
+    dq.quad = *iterator.it;
+    dq.include_sqs = !iterator.last_quad ||
+                     iterator.last_quad->shared_quad_state !=
+                         (*iterator.it)->shared_quad_state;
+    return dq;
+  }
+
+  static size_t GetSize(const cc::QuadList& input) { return input.size(); }
 };
 
 }  // namespace mojo

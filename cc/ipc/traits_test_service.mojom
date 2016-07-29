@@ -39,9 +39,6 @@ interface TraitsTestService {
   EchoFilterOperations(FilterOperations f) => (FilterOperations pass);
 
   [Sync]
-  EchoQuadList(QuadList q) => (QuadList pass);
-
-  [Sync]
   EchoRenderPass(RenderPass r) => (RenderPass pass);
 
   [Sync]

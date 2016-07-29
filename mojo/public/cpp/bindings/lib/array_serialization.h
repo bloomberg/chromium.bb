@@ -46,7 +46,7 @@ class ArrayIterator<Traits, MaybeConstUserType, true> {
   using GetNextResult =
       decltype(Traits::GetValue(std::declval<IteratorType&>()));
   GetNextResult GetNext() {
-    auto& value = Traits::GetValue(iter_);
+    GetNextResult value = Traits::GetValue(iter_);
     Traits::AdvanceIterator(iter_);
     return value;
   }
@@ -306,7 +306,8 @@ struct ArraySerializer<
 
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
-      Serialize<Element>(input->GetNext(), &output->at(i), context);
+      typename UserTypeIterator::GetNextResult next = input->GetNext();
+      Serialize<Element>(next, &output->at(i), context);
 
       static const ValidationError kError =
           BelongsTo<Element,
@@ -361,8 +362,10 @@ struct ArraySerializer<MojomType,
                                   SerializationContext* context) {
     size_t element_count = input->GetSize();
     size_t size = sizeof(Data) + element_count * sizeof(typename Data::Element);
-    for (size_t i = 0; i < element_count; ++i)
-      size += PrepareToSerialize<Element>(input->GetNext(), context);
+    for (size_t i = 0; i < element_count; ++i) {
+      typename UserTypeIterator::GetNextResult next = input->GetNext();
+      size += PrepareToSerialize<Element>(next, context);
+    }
     return size;
   }
 
@@ -374,7 +377,8 @@ struct ArraySerializer<MojomType,
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
       DataElementPtr data_ptr;
-      SerializeCaller<Element>::Run(input->GetNext(), buf, &data_ptr,
+      typename UserTypeIterator::GetNextResult next = input->GetNext();
+      SerializeCaller<Element>::Run(next, buf, &data_ptr,
                                     validate_params->element_validate_params,
                                     context);
       output->at(i).Set(data_ptr);
@@ -455,7 +459,8 @@ struct ArraySerializer<
     for (size_t i = 0; i < element_count; ++i) {
       // Call with |inlined| set to false, so that it will account for both the
       // data in the union and the space in the array used to hold the union.
-      size += PrepareToSerialize<Element>(input->GetNext(), false, context);
+      typename UserTypeIterator::GetNextResult next = input->GetNext();
+      size += PrepareToSerialize<Element>(next, false, context);
     }
     return size;
   }
@@ -468,7 +473,8 @@ struct ArraySerializer<
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
       typename Data::Element* result = output->storage() + i;
-      Serialize<Element>(input->GetNext(), buf, &result, true, context);
+      typename UserTypeIterator::GetNextResult next = input->GetNext();
+      Serialize<Element>(next, buf, &result, true, context);
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && output->at(i).is_null(),
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,

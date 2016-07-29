@@ -6,7 +6,6 @@ module cc.mojom;
 
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/quads.mojom";
-import "cc/ipc/shared_quad_state.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
@@ -17,7 +16,5 @@ struct RenderPass {
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;
   bool has_transparent_background;
-  QuadList quad_list;
-  array<uint32> shared_quad_state_references;
-  SharedQuadStateList shared_quad_state_list;
+  array<DrawQuad> quad_list;
 };

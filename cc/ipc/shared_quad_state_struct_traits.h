@@ -10,6 +10,51 @@
 
 namespace mojo {
 
+struct OptSharedQuadState {
+  const cc::SharedQuadState* sqs;
+};
+
+template <>
+struct StructTraits<cc::mojom::SharedQuadState, OptSharedQuadState> {
+  static bool IsNull(const OptSharedQuadState& input) { return !input.sqs; }
+
+  static void SetToNull(OptSharedQuadState* output) { output->sqs = nullptr; }
+
+  static const gfx::Transform& quad_to_target_transform(
+      const OptSharedQuadState& input) {
+    return input.sqs->quad_to_target_transform;
+  }
+
+  static const gfx::Size& quad_layer_bounds(const OptSharedQuadState& input) {
+    return input.sqs->quad_layer_bounds;
+  }
+
+  static const gfx::Rect& visible_quad_layer_rect(
+      const OptSharedQuadState& input) {
+    return input.sqs->visible_quad_layer_rect;
+  }
+
+  static const gfx::Rect& clip_rect(const OptSharedQuadState& input) {
+    return input.sqs->clip_rect;
+  }
+
+  static bool is_clipped(const OptSharedQuadState& input) {
+    return input.sqs->is_clipped;
+  }
+
+  static float opacity(const OptSharedQuadState& input) {
+    return input.sqs->opacity;
+  }
+
+  static uint32_t blend_mode(const OptSharedQuadState& input) {
+    return input.sqs->blend_mode;
+  }
+
+  static int32_t sorting_context_id(const OptSharedQuadState& input) {
+    return input.sqs->sorting_context_id;
+  }
+};
+
 template <>
 struct StructTraits<cc::mojom::SharedQuadState, cc::SharedQuadState> {
   static const gfx::Transform& quad_to_target_transform(
@@ -60,53 +105,6 @@ struct StructTraits<cc::mojom::SharedQuadState, cc::SharedQuadState> {
     out->blend_mode = static_cast<SkXfermode::Mode>(data.blend_mode());
     out->sorting_context_id = data.sorting_context_id();
     return true;
-  }
-};
-
-struct SharedQuadStateListArray {
-  cc::SharedQuadStateList* list;
-};
-
-template <>
-struct ArrayTraits<SharedQuadStateListArray> {
-  using Element = cc::SharedQuadState;
-  using Iterator = cc::SharedQuadStateList::Iterator;
-  using ConstIterator = cc::SharedQuadStateList::ConstIterator;
-
-  static ConstIterator GetBegin(const SharedQuadStateListArray& input) {
-    return input.list->begin();
-  }
-  static Iterator GetBegin(SharedQuadStateListArray& input) {
-    return input.list->begin();
-  }
-  static void AdvanceIterator(ConstIterator& iterator) { ++iterator; }
-  static void AdvanceIterator(Iterator& iterator) { ++iterator; }
-  static const Element& GetValue(ConstIterator& iterator) { return **iterator; }
-  static Element& GetValue(Iterator& iterator) { return **iterator; }
-  static size_t GetSize(const SharedQuadStateListArray& input) {
-    return input.list->size();
-  }
-  static bool Resize(SharedQuadStateListArray& input, size_t size) {
-    if (input.list->size() == size)
-      return true;
-    input.list->clear();
-    for (size_t i = 0; i < size; ++i)
-      input.list->AllocateAndConstruct<cc::SharedQuadState>();
-    return true;
-  }
-};
-
-template <>
-struct StructTraits<cc::mojom::SharedQuadStateList, cc::SharedQuadStateList> {
-  static SharedQuadStateListArray shared_quad_states(
-      const cc::SharedQuadStateList& list) {
-    return {const_cast<cc::SharedQuadStateList*>(&list)};
-  }
-
-  static bool Read(cc::mojom::SharedQuadStateListDataView data,
-                   cc::SharedQuadStateList* out) {
-    SharedQuadStateListArray sqs_array = {out};
-    return data.ReadSharedQuadStates(&sqs_array);
   }
 };
 
