@@ -33,11 +33,15 @@ var QuickUnlockUnlockType = {
 Polymer({
   is: 'settings-quick-unlock-choose-method',
 
-  behaviors: [
-    PrefsBehavior, QuickUnlockPasswordDetectBehavior
-  ],
+  behaviors: [PrefsBehavior, QuickUnlockPasswordDetectBehavior],
 
   properties: {
+    /** @type {!settings.Route} */
+    currentRoute: {
+      type: Object,
+      observer: 'onRouteChanged_',
+    },
+
     /** Preferences state. */
     prefs: {
       type: Object,
@@ -57,10 +61,7 @@ Polymer({
     }
   },
 
-  observers: [
-    'onRouteChanged_(currentRoute)',
-    'onSetModesChanged_(setModes)'
-  ],
+  observers: ['onSetModesChanged_(setModes)'],
 
   /** @override */
   attached: function() {
@@ -79,7 +80,7 @@ Polymer({
     chrome.quickUnlockPrivate.onActiveModesChanged.addListener(
         this.boundOnActiveModesChanged_);
 
-    if (this.isScreenActive(QuickUnlockScreen.CHOOSE_METHOD))
+  if (this.currentRoute == settings.Route.QUICK_UNLOCK_CHOOSE_METHOD)
       this.askForPasswordIfUnset();
   },
 
@@ -93,13 +94,13 @@ Polymer({
 
   /** @private */
   onRouteChanged_: function() {
-    if (this.isScreenActive(QuickUnlockScreen.CHOOSE_METHOD))
+    if (this.currentRoute == settings.Route.QUICK_UNLOCK_CHOOSE_METHOD)
       this.askForPasswordIfUnset();
   },
 
   /** @private */
   onSetModesChanged_: function() {
-    if (this.isScreenActive(QuickUnlockScreen.CHOOSE_METHOD))
+    if (this.currentRoute == settings.Route.QUICK_UNLOCK_CHOOSE_METHOD)
       this.askForPasswordIfUnset();
   },
 

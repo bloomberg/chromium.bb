@@ -131,25 +131,14 @@ Polymer({
     this.addWebUIListener('sync-prefs-changed',
                           this.handleSyncPrefsChanged_.bind(this));
 
-    if (this.isCurrentRouteOnSyncPage_())
+    if (this.currentRoute == settings.Route.SYNC)
       this.onNavigateToPage_();
   },
 
   /** @override */
   detached: function() {
-    if (this.isCurrentRouteOnSyncPage_())
+    if (this.currentRoute == settings.Route.SYNC)
       this.onNavigateAwayFromPage_();
-  },
-
-  /**
-   * @private
-   * @return {boolean} Whether the current route shows the sync page.
-   */
-  isCurrentRouteOnSyncPage_: function() {
-    return this.currentRoute &&
-        this.currentRoute.section == 'people' &&
-        this.currentRoute.subpage.length == 1 &&
-        this.currentRoute.subpage[0] == 'sync';
   },
 
   /** @private */
@@ -157,7 +146,7 @@ Polymer({
     if (!this.isAttached)
       return;
 
-    if (this.isCurrentRouteOnSyncPage_())
+    if (this.currentRoute == settings.Route.SYNC)
       this.onNavigateToPage_();
     else
       this.onNavigateAwayFromPage_();
@@ -167,7 +156,7 @@ Polymer({
   onNavigateToPage_: function() {
     // The element is not ready for C++ interaction until it is attached.
     assert(this.isAttached);
-    assert(this.isCurrentRouteOnSyncPage_());
+    assert(this.currentRoute == settings.Route.SYNC);
 
     if (this.unloadCallback_)
       return;
@@ -312,10 +301,8 @@ Polymer({
         this.selectedPage_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (this.isCurrentRouteOnSyncPage_()) {
-          // Event is caught by settings-animated-pages.
-          this.fire('subpage-back');
-        }
+        if (this.currentRoute == settings.Route.SYNC)
+          settings.navigateTo(settings.Route.PEOPLE);
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
         if (this.selectedPage_ == this.pages.CONFIGURE &&

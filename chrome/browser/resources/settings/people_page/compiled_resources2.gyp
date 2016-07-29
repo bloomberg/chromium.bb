@@ -91,7 +91,6 @@
       'target_name': 'quick_unlock_authenticate',
       'dependencies': [
         '../compiled_resources2.gyp:route',
-        'quick_unlock_routing_behavior',
         '<(EXTERNS_GYP):quick_unlock_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -108,17 +107,9 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'quick_unlock_routing_behavior',
-      'dependencies': [
-        '../settings_page/compiled_resources2.gyp:settings_router',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'quick_unlock_password_detect_behavior',
       'dependencies': [
         '../compiled_resources2.gyp:route',
-        'quick_unlock_routing_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -126,8 +117,8 @@
       'target_name': 'quick_unlock_setup_pin',
       'dependencies': [
         '../compiled_resources2.gyp:route',
-        'quick_unlock_password_detect_behavior',
         '../settings_page/compiled_resources2.gyp:settings_router',
+        'quick_unlock_password_detect_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):quick_unlock_private',
       ],
@@ -136,12 +127,13 @@
     {
       'target_name': 'sync_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        'sync_browser_proxy',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
-        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
-        'sync_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

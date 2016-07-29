@@ -227,7 +227,7 @@ cr.define('device_page_tests', function() {
 
       test('subpage responds to pointer attach/detach', function() {
         assertEquals('pointers', devicePage.currentRoute.subpage[0]);
-        assertTrue(devicePage.isCurrentRouteOnPointersPage_());
+        assertTrue(devicePage.currentRoute == settings.Route.POINTERS);
         assertLT(0, pointersPage.$.mouse.offsetHeight);
         assertLT(0, pointersPage.$.touchpad.offsetHeight);
         assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);

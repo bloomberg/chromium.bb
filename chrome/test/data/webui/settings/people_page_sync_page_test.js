@@ -104,12 +104,14 @@ cr.define('settings_people_page_sync_page', function() {
         browserProxy = new TestSyncBrowserProxy();
         settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 
+        // TODO(tommycli): Remove once settings.navigateTo is no longer a stub.
+        settings.navigateTo = function(route) {
+          syncPage.currentRoute = route;
+        };
+
         PolymerTest.clearBody();
         syncPage = document.createElement('settings-sync-page');
-        syncPage.currentRoute = {
-          section: 'people',
-          subpage: ['sync'],
-        };
+        settings.navigateTo(settings.Route.SYNC);
 
         document.body.appendChild(syncPage);
 
@@ -133,19 +135,13 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('NotifiesHandlerOfNavigation', function() {
         function testNavigateAway() {
-          syncPage.currentRoute = {
-            section: 'people',
-            subpage: [],
-          };
+          settings.navigateTo(settings.Route.PEOPLE);
           return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
         }
 
         function testNavigateBack() {
           browserProxy.resetResolver('didNavigateToSyncPage');
-          syncPage.currentRoute = {
-            section: 'people',
-            subpage: ['sync'],
-          };
+          settings.navigateTo(settings.Route.SYNC);
           return browserProxy.whenCalled('didNavigateToSyncPage');
         }
 
@@ -158,10 +154,7 @@ cr.define('settings_people_page_sync_page', function() {
         function testRecreate() {
           browserProxy.resetResolver('didNavigateToSyncPage');
           syncPage = document.createElement('settings-sync-page');
-          syncPage.currentRoute = {
-            section: 'people',
-            subpage: ['sync'],
-          };
+          settings.navigateTo(settings.Route.SYNC);
 
           document.body.appendChild(syncPage);
           return browserProxy.whenCalled('didNavigateToSyncPage');

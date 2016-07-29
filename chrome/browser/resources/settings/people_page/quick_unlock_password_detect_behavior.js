@@ -8,7 +8,7 @@
  */
 
 /** @polymerBehavior */
-var QuickUnlockPasswordDetectBehavior = [QuickUnlockRoutingBehavior, {
+var QuickUnlockPasswordDetectBehavior = {
   properties: {
     setModes: Object
   },
@@ -22,4 +22,4 @@ var QuickUnlockPasswordDetectBehavior = [QuickUnlockRoutingBehavior, {
     if (!this.setModes)
       settings.navigateTo(settings.Route.QUICK_UNLOCK_AUTHENTICATE);
   }
-}];
+};

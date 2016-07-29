@@ -46,11 +46,13 @@ function checkAccountPassword_(password, onCheck) {
 Polymer({
   is: 'settings-quick-unlock-authenticate',
 
-  behaviors: [
-    QuickUnlockRoutingBehavior,
-  ],
-
   properties: {
+    /** @type {!settings.Route} */
+    currentRoute: {
+      type: Object,
+      observer: 'onRouteChanged_',
+    },
+
     /**
      * A wrapper around chrome.quickUnlockPrivate.setModes with the account
      * password already supplied. If this is null, the authentication screen
@@ -83,15 +85,11 @@ Polymer({
     passwordInvalid_: Boolean
   },
 
-  observers: [
-    'onRouteChanged_(currentRoute)'
-  ],
-
   /** @private */
   onRouteChanged_: function(currentRoute) {
     // Clear local state if this screen is not active so if this screen shows
     // up again the user will get a fresh UI.
-    if (!this.isScreenActive(QuickUnlockScreen.AUTHENTICATE)) {
+    if (this.currentRoute != settings.Route.QUICK_UNLOCK_AUTHENTICATE) {
       this.password_ = '';
       this.passwordInvalid_ = false;
     }
