@@ -136,7 +136,8 @@ class RenderbufferAttachment
   }
 
   bool FormsFeedbackLoop(TextureRef* /* texture */,
-                         GLint /*level */) const override {
+                         GLint /* level */,
+                         GLint /* layer */) const override {
     return false;
   }
 
@@ -306,8 +307,10 @@ class TextureAttachment
         texture_ref_.get(), target_, level_, signature);
   }
 
-  bool FormsFeedbackLoop(TextureRef* texture, GLint level) const override {
-    return texture == texture_ref_.get() && level == level_;
+  bool FormsFeedbackLoop(TextureRef* texture,
+                         GLint level, GLint layer) const override {
+    return texture == texture_ref_.get() &&
+        level == level_ && layer == layer_;
   }
 
   bool EmulatingRGB() const override {

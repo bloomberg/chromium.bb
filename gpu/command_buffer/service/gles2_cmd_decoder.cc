@@ -1353,8 +1353,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   static GLint GetColorEncodingFromInternalFormat(GLenum internalformat);
 
   // Check that the currently bound read framebuffer's color image
-  // isn't the target texture of the glCopyTex{Sub}Image2D.
-  bool FormsTextureCopyingFeedbackLoop(TextureRef* texture, GLint level);
+  // isn't the target texture of the glCopyTex{Sub}Image{2D|3D}.
+  bool FormsTextureCopyingFeedbackLoop(
+      TextureRef* texture,
+      GLint level,
+      GLint layer);
 
   // Check if a framebuffer meets our requirements.
   // Generates |gl_error| if the framebuffer is incomplete.
@@ -4284,17 +4287,17 @@ GLint GLES2DecoderImpl::GetColorEncodingFromInternalFormat(
 }
 
 bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
-    TextureRef* texture, GLint level) {
+    TextureRef* texture, GLint level, GLint layer) {
   Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
       framebuffer_state_.bound_read_framebuffer.get() :
       framebuffer_state_.bound_draw_framebuffer.get();
   if (!framebuffer)
     return false;
-  const Framebuffer::Attachment* attachment = framebuffer->GetAttachment(
-      GL_COLOR_ATTACHMENT0);
+  const Framebuffer::Attachment* attachment =
+      framebuffer->GetReadBufferAttachment();
   if (!attachment)
     return false;
-  return attachment->FormsFeedbackLoop(texture, level);
+  return attachment->FormsFeedbackLoop(texture, level, layer);
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
@@ -13008,7 +13011,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
-  if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
+  if (FormsTextureCopyingFeedbackLoop(texture_ref, level, 0)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         func_name, "source and destination textures are the same");
@@ -13182,7 +13185,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
+  if (FormsTextureCopyingFeedbackLoop(texture_ref, level, 0)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         func_name, "source and destination textures are the same");
@@ -13289,9 +13292,17 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
     return;
   }
 
-  // TODO(yunchao): Follow-up CLs are necessary. For instance, feedback loop
-  // detection, emulation of unsized formats in core profile, clear the 3d
-  // textures if it is uncleared, out-of-bounds reading, etc.
+  if (FormsTextureCopyingFeedbackLoop(texture_ref, level, zoffset)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        func_name, "source and destination textures are the same");
+    return;
+  }
+
+  // TODO(yunchao): Follow-up CLs are necessary. For instance:
+  // 1. emulation of unsized formats in core profile
+  // 2. clear the 3d textures if it is uncleared.
+  // 3. out-of-bounds reading, etc.
 
   glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
                       height);
