@@ -45,7 +45,7 @@ public:
 
     // For creating capture events (i.e got/lostpointercapture)
     PointerEvent* createPointerCaptureEvent(
-        const int pointerId,
+        PointerEvent*,
         const AtomicString&);
 
     // For creating boundary events (i.e pointerout/leave/over/enter)
@@ -82,9 +82,8 @@ private:
         IncomingId(WebPointerProperties::PointerType pointerType,
             int rawId)
             : std::pair<int, int>(static_cast<int>(pointerType), rawId) {}
-        WebPointerProperties::PointerType pointerType() const { return static_cast<WebPointerProperties::PointerType>(first); }
-        int pointerTypeInt() const { return first; }
-        int rawId() const { return second; }
+        int pointerType() const {return first;}
+        int rawId() const {return second;}
     } IncomingId;
     typedef struct PointerAttributes {
         IncomingId incomingId;
