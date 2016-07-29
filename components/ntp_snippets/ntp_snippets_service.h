@@ -160,7 +160,7 @@ class NTPSnippetsService : public KeyedService,
 
  private:
   friend class NTPSnippetsServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, HistorySyncStateChanges);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
 
   // TODO(pke): As soon as the DisabledReason is replaced with the new status,
   // also remove the old State enum and replace it with

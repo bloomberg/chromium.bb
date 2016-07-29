@@ -10,7 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -28,7 +27,6 @@
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
 #include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
@@ -78,7 +76,6 @@ IOSChromeNTPSnippetsServiceFactory::IOSChromeNTPSnippetsServiceFactory()
           "NTPSnippetsService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
-  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
 }
@@ -97,9 +94,6 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();
-  ProfileSyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          chrome_browser_state);
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForBrowserState(chrome_browser_state);
 
@@ -128,6 +122,6 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       base::MakeUnique<IOSImageDecoderImpl>(),
       base::WrapUnique(
           new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)),
-      base::WrapUnique(new ntp_snippets::NTPSnippetsStatusService(
-          signin_manager, sync_service, prefs))));
+      base::WrapUnique(
+          new ntp_snippets::NTPSnippetsStatusService(signin_manager, prefs))));
 }

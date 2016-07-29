@@ -14,7 +14,6 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/sync_driver/fake_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,8 +30,8 @@ class NTPSnippetsStatusServiceTest : public test::NTPSnippetsTestBase {
   void SetUp() override {
     test::NTPSnippetsTestBase::SetUp();
 
-    service_.reset(new NTPSnippetsStatusService(
-        fake_signin_manager(), mock_sync_service(), pref_service()));
+    service_.reset(
+        new NTPSnippetsStatusService(fake_signin_manager(), pref_service()));
   }
 
  protected:
@@ -42,34 +41,13 @@ class NTPSnippetsStatusServiceTest : public test::NTPSnippetsTestBase {
   std::unique_ptr<NTPSnippetsStatusService> service_;
 };
 
-TEST_F(NTPSnippetsStatusServiceTest, SyncStateCompatibility) {
+TEST_F(NTPSnippetsStatusServiceTest, SigninStateCompatibility) {
   // The default test setup is signed out.
   EXPECT_EQ(DisabledReason::SIGNED_OUT, service()->GetDisabledReasonFromDeps());
 
-  // Once signed in, we should be in a compatible sync state.
+  // Once signed in, we should be in a compatible state.
   fake_signin_manager()->SignIn("foo@bar.com");
   EXPECT_EQ(DisabledReason::NONE, service()->GetDisabledReasonFromDeps());
-
-  // History sync disabled.
-  mock_sync_service()->active_data_types_ = syncer::ModelTypeSet();
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  // Encryption enabled.
-  mock_sync_service()->is_encrypt_everything_enabled_ = true;
-  EXPECT_EQ(DisabledReason::PASSPHRASE_ENCRYPTION_ENABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  // Not done loading.
-  mock_sync_service()->configuration_done_ = false;
-  mock_sync_service()->active_data_types_ = syncer::ModelTypeSet();
-  EXPECT_EQ(DisabledReason::HISTORY_SYNC_STATE_UNKNOWN,
-            service()->GetDisabledReasonFromDeps());
-
-  // Sync disabled.
-  mock_sync_service()->can_sync_start_ = false;
-  EXPECT_EQ(DisabledReason::SYNC_DISABLED,
-            service()->GetDisabledReasonFromDeps());
 }
 
 TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
@@ -83,22 +61,6 @@ TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
 
   // The other dependencies shouldn't matter anymore.
   fake_signin_manager()->SignIn("foo@bar.com");
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  mock_sync_service()->active_data_types_ = syncer::ModelTypeSet();
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  mock_sync_service()->is_encrypt_everything_enabled_ = true;
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  mock_sync_service()->configuration_done_ = false;
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
-
-  mock_sync_service()->can_sync_start_ = false;
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
             service()->GetDisabledReasonFromDeps());
 }

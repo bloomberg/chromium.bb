@@ -120,7 +120,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mProviderStatus = ContentSuggestionsCategoryStatus.INITIALIZING;
         mSnippetsBridge = snippetsBridge;
         mUiConfig = uiConfig;
-        mStatusCard = StatusListItem.create(snippetsBridge.getCategoryStatus(), this, manager);
+        mStatusCard = StatusListItem.create(snippetsBridge.getCategoryStatus(), this);
 
         loadSnippets(new ArrayList<SnippetArticleListItem>());
         mSnippetsBridge.setObserver(this);
@@ -157,7 +157,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 != ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
         mProviderStatus = categoryStatus;
-        mStatusCard = StatusListItem.create(mProviderStatus, this, mNewTabPageManager);
+        mStatusCard = StatusListItem.create(mProviderStatus, this);
 
         // We had suggestions but we just got notified about the provider being enabled. Nothing to
         // do then.

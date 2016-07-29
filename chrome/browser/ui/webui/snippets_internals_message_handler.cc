@@ -102,12 +102,6 @@ std::string MapCategoryStatus(ContentSuggestionsCategoryStatus status) {
       return "CATEGORY_EXPLICITLY_DISABLED";
     case ContentSuggestionsCategoryStatus::SIGNED_OUT:
       return "SIGNED_OUT";
-    case ContentSuggestionsCategoryStatus::SYNC_DISABLED:
-      return "SYNC_DISABLED";
-    case ContentSuggestionsCategoryStatus::PASSPHRASE_ENCRYPTION_ENABLED:
-      return "PASSPHRASE_ENCRYPTION_ENABLED";
-    case ContentSuggestionsCategoryStatus::HISTORY_SYNC_DISABLED:
-      return "HISTORY_SYNC_DISABLED";
     case ContentSuggestionsCategoryStatus::LOADING_ERROR:
       return "LOADING_ERROR";
   }

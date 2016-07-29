@@ -7,20 +7,16 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/sync_service.h"
 
 namespace ntp_snippets {
 
 NTPSnippetsStatusService::NTPSnippetsStatusService(
     SigninManagerBase* signin_manager,
-    sync_driver::SyncService* sync_service,
     PrefService* pref_service)
     : disabled_reason_(DisabledReason::EXPLICITLY_DISABLED),
       signin_manager_(signin_manager),
-      sync_service_(sync_service),
       pref_service_(pref_service),
-      sync_service_observer_(this) {}
+      signin_observer_(this) {}
 
 NTPSnippetsStatusService::~NTPSnippetsStatusService() {}
 
@@ -41,7 +37,7 @@ void NTPSnippetsStatusService::Init(
   disabled_reason_ = GetDisabledReasonFromDeps();
   disabled_reason_change_callback_.Run(disabled_reason_);
 
-  sync_service_observer_.Add(sync_service_);
+  signin_observer_.Add(signin_manager_);
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -60,6 +56,18 @@ void NTPSnippetsStatusService::OnStateChanged() {
   disabled_reason_change_callback_.Run(disabled_reason_);
 }
 
+void NTPSnippetsStatusService::GoogleSigninSucceeded(
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& password) {
+  OnStateChanged();
+}
+
+void NTPSnippetsStatusService::GoogleSignedOut(const std::string& account_id,
+                                               const std::string& username) {
+  OnStateChanged();
+}
+
 DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
   if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
     DVLOG(1) << "[GetNewDisabledReason] Disabled via pref";
@@ -69,31 +77,6 @@ DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
   if (!signin_manager_ || !signin_manager_->IsAuthenticated()) {
     DVLOG(1) << "[GetNewDisabledReason] Signed out";
     return DisabledReason::SIGNED_OUT;
-  }
-
-  if (!sync_service_ || !sync_service_->CanSyncStart()) {
-    DVLOG(1) << "[GetNewDisabledReason] Sync disabled";
-    return DisabledReason::SYNC_DISABLED;
-  }
-
-  // !IsSyncActive in cases where CanSyncStart is true hints at the backend not
-  // being initialized.
-  // ConfigurationDone() verifies that the sync service has properly loaded its
-  // configuration and is aware of the different data types to sync.
-  if (!sync_service_->IsSyncActive() || !sync_service_->ConfigurationDone()) {
-    DVLOG(1) << "[GetNewDisabledReason] Sync initialization is not complete.";
-    return DisabledReason::HISTORY_SYNC_STATE_UNKNOWN;
-  }
-
-  if (sync_service_->IsEncryptEverythingEnabled()) {
-    DVLOG(1) << "[GetNewDisabledReason] Encryption is enabled";
-    return DisabledReason::PASSPHRASE_ENCRYPTION_ENABLED;
-  }
-
-  if (!sync_service_->GetActiveDataTypes().Has(
-          syncer::HISTORY_DELETE_DIRECTIVES)) {
-    DVLOG(1) << "[GetNewDisabledReason] History sync disabled";
-    return DisabledReason::HISTORY_SYNC_DISABLED;
   }
 
   DVLOG(1) << "[GetNewDisabledReason] Enabled";

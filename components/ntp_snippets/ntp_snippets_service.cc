@@ -718,15 +718,6 @@ void NTPSnippetsService::OnDisabledReasonChanged(
       EnterState(State::READY, ContentSuggestionsCategoryStatus::AVAILABLE);
       break;
 
-    case DisabledReason::HISTORY_SYNC_STATE_UNKNOWN:
-      // HistorySync is not initialized yet, so we don't know what the actual
-      // state is and we just return the current one. If things change,
-      // |OnStateChanged| will call this function again to update the state.
-      DVLOG(1) << "Sync configuration incomplete, continuing based on the "
-                  "current state.";
-      EnterState(state_, ContentSuggestionsCategoryStatus::INITIALIZING);
-      break;
-
     case DisabledReason::EXPLICITLY_DISABLED:
       EnterState(
           State::DISABLED,
@@ -735,22 +726,6 @@ void NTPSnippetsService::OnDisabledReasonChanged(
 
     case DisabledReason::SIGNED_OUT:
       EnterState(State::DISABLED, ContentSuggestionsCategoryStatus::SIGNED_OUT);
-      break;
-
-    case DisabledReason::SYNC_DISABLED:
-      EnterState(State::DISABLED,
-                 ContentSuggestionsCategoryStatus::SYNC_DISABLED);
-      break;
-
-    case DisabledReason::PASSPHRASE_ENCRYPTION_ENABLED:
-      EnterState(
-          State::DISABLED,
-          ContentSuggestionsCategoryStatus::PASSPHRASE_ENCRYPTION_ENABLED);
-      break;
-
-    case DisabledReason::HISTORY_SYNC_DISABLED:
-      EnterState(State::DISABLED,
-                 ContentSuggestionsCategoryStatus::HISTORY_SYNC_DISABLED);
       break;
   }
 }

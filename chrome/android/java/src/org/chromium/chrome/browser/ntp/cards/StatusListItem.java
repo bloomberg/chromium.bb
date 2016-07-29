@@ -12,13 +12,10 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
-import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 
 /**
  * Card that is shown when the user needs to be made aware of some information about their
@@ -112,54 +109,6 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private static class SyncDisabled extends StatusListItem {
-        public SyncDisabled() {
-            super(R.string.snippets_disabled_generic_prompt,
-                    R.string.snippets_disabled_sync_instructions,
-                    R.string.snippets_disabled_sync_action);
-            Log.d(TAG, "Registering card for status: Sync Disabled");
-        }
-
-        @Override
-        protected void performAction(Context context) {
-            PreferencesLauncher.launchSettingsPage(
-                    context, SyncCustomizationFragment.class.getName());
-        }
-    }
-
-    private static class HistorySyncDisabled extends StatusListItem {
-        public HistorySyncDisabled() {
-            super(R.string.snippets_disabled_generic_prompt,
-                    R.string.snippets_disabled_history_sync_instructions,
-                    R.string.snippets_disabled_history_sync_action);
-            Log.d(TAG, "Registering card for status: History Sync Disabled");
-        }
-
-        @Override
-        protected void performAction(Context context) {
-            PreferencesLauncher.launchSettingsPage(
-                    context, SyncCustomizationFragment.class.getName());
-        }
-    }
-
-    private static class PassphraseEncryptionEnabled extends StatusListItem {
-        private static final String HELP_URL = "https://support.google.com/chrome/answer/1181035";
-        private final NewTabPageManager mNewTabPageManager;
-
-        public PassphraseEncryptionEnabled(NewTabPageManager manager) {
-            super(R.string.snippets_disabled_generic_prompt,
-                    R.string.snippets_disabled_passphrase_instructions,
-                    R.string.learn_more);
-            mNewTabPageManager = manager;
-            Log.d(TAG, "Registering card for status: Passphrase Encryption Enabled");
-        }
-
-        @Override
-        protected void performAction(Context context) {
-            mNewTabPageManager.openUrl(HELP_URL);
-        }
-    }
-
     private static class CategoryExplicitlyDisabled extends ErrorListItem {
         public CategoryExplicitlyDisabled() {
             // TODO(pke): Those are technically the wrong strings, but they roughly fit in this
@@ -186,30 +135,16 @@ public abstract class StatusListItem implements NewTabPageListItem {
     private final int mDescriptionStringId;
     private final int mActionStringId;
 
-    public static StatusListItem create(
-            int categoryStatus, NewTabPageAdapter adapter, NewTabPageManager manager) {
+    public static StatusListItem create(int categoryStatus, NewTabPageAdapter adapter) {
         switch (categoryStatus) {
+            // TODO(dgn): AVAILABLE_LOADING and INITIALIZING should show a progress indicator.
             case ContentSuggestionsCategoryStatus.AVAILABLE:
             case ContentSuggestionsCategoryStatus.AVAILABLE_LOADING:
+            case ContentSuggestionsCategoryStatus.INITIALIZING:
                 return new NoSnippets(adapter);
 
             case ContentSuggestionsCategoryStatus.SIGNED_OUT:
                 return new SignedOut();
-
-            case ContentSuggestionsCategoryStatus.SYNC_DISABLED:
-                return new SyncDisabled();
-
-            case ContentSuggestionsCategoryStatus.PASSPHRASE_ENCRYPTION_ENABLED:
-                return new PassphraseEncryptionEnabled(manager);
-
-            // INITIALIZING should only be a transient state: during app launch, or when the sync
-            // settings are being modified, and the user should never see a card showing this.
-            // So let's just use HistorySyncDisabled as fallback.
-            // TODO(dgn): If we add a spinner at some point (e.g. to show that we are fetching
-            // snippets) we could use it here too.
-            case ContentSuggestionsCategoryStatus.INITIALIZING:
-            case ContentSuggestionsCategoryStatus.HISTORY_SYNC_DISABLED:
-                return new HistorySyncDisabled();
 
             case ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
                 Log.wtf(TAG, "FATAL: Attempted to create a status card while the feature should be "

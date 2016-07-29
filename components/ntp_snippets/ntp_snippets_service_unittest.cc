@@ -329,8 +329,8 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
         std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
         /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
                                        database_dir_.path(), task_runner),
-        base::MakeUnique<NTPSnippetsStatusService>(
-            fake_signin_manager(), mock_sync_service(), pref_service())));
+        base::MakeUnique<NTPSnippetsStatusService>(fake_signin_manager(),
+                                                   pref_service())));
 
     if (enabled)
       WaitForDBLoad(service_.get());
@@ -867,7 +867,7 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
   ASSERT_THAT(service()->snippets(), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
+TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   MockServiceObserver mock_observer;
   service()->AddObserver(&mock_observer);
 

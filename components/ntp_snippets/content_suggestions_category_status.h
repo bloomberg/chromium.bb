@@ -33,13 +33,6 @@ enum class ContentSuggestionsCategoryStatus {
 
   // Content suggestions are not available because the user is not signed in.
   SIGNED_OUT,
-  // Content suggestions are not available because sync is disabled.
-  SYNC_DISABLED,
-  // Content suggestions are not available because passphrase encryption is
-  // enabled (and it should be disabled).
-  PASSPHRASE_ENCRYPTION_ENABLED,
-  // Content suggestions are not available because history sync is disabled.
-  HISTORY_SYNC_DISABLED,
 
   // Content suggestions are not available because an error occured when loading
   // or updating them.
