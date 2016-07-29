@@ -793,8 +793,7 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache, num_retries):
     return sorted(attached_devices)
 
 
-# TODO(rnephew): Add perf when ready to switch to platform mode as default.
-_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation']
+_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'perf']
 
 
 def RunTestsCommand(args): # pylint: disable=too-many-return-statements
