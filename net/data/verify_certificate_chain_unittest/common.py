@@ -127,8 +127,10 @@ class Certificate(object):
     # Initialize any files that will be needed if this certificate is used to
     # sign other certificates. Starts off serial numbers at 1, and will
     # increment them for each signed certificate.
-    write_string_to_file('01\n', self.get_serial_path())
-    write_string_to_file('', self.get_database_path())
+    if not os.path.exists(self.get_serial_path()):
+      write_string_to_file('01\n', self.get_serial_path())
+    if not os.path.exists(self.get_database_path()):
+      write_string_to_file('', self.get_database_path())
 
 
   def generate_rsa_key(self, size_bits):
@@ -169,6 +171,13 @@ class Certificate(object):
     return os.path.join(g_out_dir, '%s%s' % (self.path_id, suffix))
 
 
+  def get_name_path(self, suffix):
+    """Forms a path to an output file for this CA, containing the indicated
+    suffix. If multiple certificates have the same name, they will use the same
+    path."""
+    return os.path.join(g_out_dir, '%s%s' % (self.name, suffix))
+
+
   def set_key_path(self, path):
     """Uses the key from the given path instead of generating a new one."""
     self.key_path = path
@@ -187,7 +196,7 @@ class Certificate(object):
 
 
   def get_serial_path(self):
-    return self.get_path('.serial')
+    return self.get_name_path('.serial')
 
 
   def get_csr_path(self):
@@ -195,7 +204,7 @@ class Certificate(object):
 
 
   def get_database_path(self):
-    return self.get_path('.db')
+    return self.get_name_path('.db')
 
 
   def get_config_path(self):
