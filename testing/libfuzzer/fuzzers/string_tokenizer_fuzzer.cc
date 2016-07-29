@@ -26,7 +26,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // won't be called.
   size_t pattern_size = data[0];
 
-  if (pattern_size > size) {
+  if (pattern_size > size - 1) {
     return 0;
   }
 
