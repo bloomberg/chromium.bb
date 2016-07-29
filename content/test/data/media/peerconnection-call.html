@@ -494,7 +494,7 @@
 
   function iceCandidateIsLoopback(candidate) {
     return candidate.candidate.indexOf("127.0.0.1") > -1 ||
-           candidate.candidate.indexOf("::1") > -1;
+           candidate.candidate.indexOf(" ::1 ") > -1;
   }
 
   // Helper function to invoke |callback| when gathering is completed.
@@ -550,7 +550,7 @@
         hasCandidate = true;
         assertEquals(iceCandidateIsLoopback(candidates[i]), false);
       }
-      assertTrue(hasCandidate, 'expect to see at least one non-loopback candidate');
+      assertTrue(hasCandidate, 'expect to see at least one candidate');
       reportTestSuccess();
     });
   }
