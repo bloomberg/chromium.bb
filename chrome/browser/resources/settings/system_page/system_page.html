@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="/controls/controlled_button.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/lifetime_browser_proxy.html">
 <link rel="import" href="/prefs/prefs.html">
@@ -37,9 +38,10 @@
       </div>
     </div>
     <div class="settings-box">
-      <paper-button class="primary-button" on-tap="onChangeProxySettingsTap_">
+      <controlled-button class="primary-button" pref="[[prefs.proxy]]"
+          on-tap="onChangeProxySettingsTap_">
         $i18n{changeProxySettings}
-      </paper-button>
+      </controlled-button>
     </div>
   </template>
   <script src="/system_page/system_page.js"></script>

@@ -298,6 +298,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["hardware_acceleration_mode.enabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["proxy"] = settings_private::PrefType::PREF_TYPE_DICTIONARY;
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
