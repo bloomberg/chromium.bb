@@ -31,8 +31,7 @@ OverflowButton::OverflowButton(InkDropButtonListener* listener,
     : CustomButton(nullptr),
       bottom_image_(nullptr),
       listener_(listener),
-      wm_shelf_(wm_shelf),
-      background_alpha_(0) {
+      wm_shelf_(wm_shelf) {
   if (MaterialDesignController::IsShelfMaterial()) {
     bottom_image_md_ =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
@@ -52,11 +51,6 @@ void OverflowButton::OnShelfAlignmentChanged() {
   SchedulePaint();
 }
 
-void OverflowButton::SetBackgroundAlpha(int alpha) {
-  background_alpha_ = alpha;
-  SchedulePaint();
-}
-
 void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = CalculateButtonBounds();
   PaintBackground(canvas, bounds);
@@ -72,9 +66,18 @@ void OverflowButton::NotifyClick(const ui::Event& event) {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   if (MaterialDesignController::IsShelfMaterial()) {
+    SkColor background_color = SK_ColorTRANSPARENT;
+    if (wm_shelf_->GetBackgroundType() ==
+        ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+      background_color = SkColorSetA(kShelfBaseColor,
+                                     GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+    }
+
+    // TODO(bruthig|tdanderson): The background should be changed using a
+    // fade in/out animation.
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
-    background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+    background_paint.setColor(background_color);
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
                           background_paint);
 

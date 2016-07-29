@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
@@ -27,8 +26,7 @@ class PaletteTray;
 class VirtualKeyboardTray;
 #endif
 
-class ASH_EXPORT StatusAreaWidget : public views::Widget,
-                                    public ShelfBackgroundAnimatorObserver {
+class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
   StatusAreaWidget(WmWindow* status_container, WmShelf* wm_shelf);
   ~StatusAreaWidget() override;
@@ -81,9 +79,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   void OnNativeWidgetActivationChanged(bool active) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfItemBackground(int alpha) override;
 
  private:
   void AddSystemTray();

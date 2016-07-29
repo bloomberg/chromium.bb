@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/common/shelf/ink_drop_button_listener.h"
-#include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model_observer.h"
@@ -45,7 +44,6 @@ class OverflowBubble;
 class OverflowButton;
 class ScopedTargetRootWindow;
 class Shelf;
-class ShelfBackgroundAnimator;
 class ShelfButton;
 class ShelfDelegate;
 class ShelfIconObserver;
@@ -63,7 +61,6 @@ extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT;
 extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT;
 
 class ASH_EXPORT ShelfView : public views::View,
-                             public ShelfBackgroundAnimatorObserver,
                              public ShelfModelObserver,
                              public InkDropButtonListener,
                              public views::ContextMenuController,
@@ -74,8 +71,7 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfView(ShelfModel* model,
             ShelfDelegate* delegate,
             WmShelf* wm_shelf,
-            Shelf* shelf,
-            ShelfBackgroundAnimator* background_animator);
+            Shelf* shelf);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -287,9 +283,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfItemBackground(int alpha) override;
-
   // Overridden from ShelfModelObserver:
   void ShelfItemAdded(int model_index) override;
   void ShelfItemRemoved(int model_index, ShelfID id) override;
@@ -474,9 +467,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
-
-  // The background animator to observe. Can be null.
-  ShelfBackgroundAnimator* background_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

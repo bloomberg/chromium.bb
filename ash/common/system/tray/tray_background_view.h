@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/tray/actionable_view.h"
+#include "ash/common/wm/background_animator.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -27,8 +27,8 @@ class WmShelf;
 // his shown/hidden. It also inherits from ActionableView so that the tray
 // items can override PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
-                                      public ui::ImplicitAnimationObserver,
-                                      public ShelfBackgroundAnimatorObserver {
+                                      public BackgroundAnimatorDelegate,
+                                      public ui::ImplicitAnimationObserver {
  public:
   static const char kViewClassName[];
 
@@ -83,6 +83,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   gfx::Rect GetFocusBounds() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // BackgroundAnimatorDelegate:
+  void UpdateBackground(int alpha) override;
+
   // Called whenever the shelf alignment changes.
   virtual void SetShelfAlignment(ShelfAlignment alignment);
 
@@ -131,9 +134,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Updates the arrow visibility based on the launcher visibility.
   void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
-
-  // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfItemBackground(int alpha) override;
 
  private:
   class TrayWidgetObserver;

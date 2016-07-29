@@ -21,9 +21,6 @@ class OverflowButton : public views::CustomButton {
 
   void OnShelfAlignmentChanged();
 
-  // Sets alpha value of the background and schedules a paint.
-  void SetBackgroundAlpha(int alpha);
-
  private:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -60,9 +57,6 @@ class OverflowButton : public views::CustomButton {
 
   InkDropButtonListener* listener_;
   WmShelf* wm_shelf_;
-
-  // Alpha value used to paint the background.
-  int background_alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };

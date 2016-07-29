@@ -566,22 +566,6 @@ bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return ::ash::IsHorizontalAlignment(GetAlignment());
 }
 
-ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
-  if (state_.visibility_state != SHELF_AUTO_HIDE &&
-      state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
-    return SHELF_BACKGROUND_MAXIMIZED;
-  }
-
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
-      (!state_.is_screen_locked && !state_.is_adding_user_screen &&
-       window_overlaps_shelf_) ||
-      (state_.visibility_state == SHELF_AUTO_HIDE)) {
-    return SHELF_BACKGROUND_OVERLAP;
-  }
-
-  return SHELF_BACKGROUND_DEFAULT;
-}
-
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
   chromevox_panel_height_ = height;
   LayoutShelf();
@@ -969,8 +953,25 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 void ShelfLayoutManager::UpdateShelfBackground(
     BackgroundAnimatorChangeType type) {
   const ShelfBackgroundType background_type(GetShelfBackgroundType());
+  shelf_widget_->SetPaintsBackground(background_type, type);
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnBackgroundUpdated(background_type, type));
+}
+
+ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+  if (state_.visibility_state != SHELF_AUTO_HIDE &&
+      state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
+    return SHELF_BACKGROUND_MAXIMIZED;
+  }
+
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
+      (!state_.is_screen_locked && !state_.is_adding_user_screen &&
+       window_overlaps_shelf_) ||
+      (state_.visibility_state == SHELF_AUTO_HIDE)) {
+    return SHELF_BACKGROUND_OVERLAP;
+  }
+
+  return SHELF_BACKGROUND_DEFAULT;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

@@ -35,7 +35,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
                              WmShelf* wm_shelf)
     : views::ImageButton(nullptr),
       draw_background_as_active_(false),
-      background_alpha_(0),
       listener_(listener),
       shelf_view_(shelf_view),
       wm_shelf_(wm_shelf) {
@@ -72,11 +71,6 @@ void AppListButton::OnAppListDismissed() {
     AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   else
     SchedulePaint();
-}
-
-void AppListButton::SetBackgroundAlpha(int alpha) {
-  background_alpha_ = alpha;
-  SchedulePaint();
 }
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -163,15 +157,21 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
+  SkPaint background_paint;
+  background_paint.setColor(SK_ColorTRANSPARENT);
+  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  background_paint.setStyle(SkPaint::kFill_Style);
+
+  if (wm_shelf_->GetBackgroundType() ==
+      ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+    background_paint.setColor(
+        SkColorSetA(kShelfBaseColor, GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
+  }
+
   // Paint the circular background of AppList button.
   gfx::Point circle_center = GetContentsBounds().CenterPoint();
   if (!IsHorizontalAlignment(wm_shelf_->GetAlignment()))
     circle_center = gfx::Point(circle_center.y(), circle_center.x());
-
-  SkPaint background_paint;
-  background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
-  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  background_paint.setStyle(SkPaint::kFill_Style);
 
   canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
 }

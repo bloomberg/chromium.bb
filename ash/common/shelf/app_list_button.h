@@ -27,9 +27,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
 
   bool draw_background_as_active() { return draw_background_as_active_; }
 
-  // Sets alpha value of the background and schedules a paint.
-  void SetBackgroundAlpha(int alpha);
-
  protected:
   // views::ImageButton overrides:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -63,9 +60,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   // True if the background should render as active, regardless of the state of
   // the application list.
   bool draw_background_as_active_;
-
-  // Alpha value used to paint the background.
-  int background_alpha_;
 
   InkDropButtonListener* listener_;
   ShelfView* shelf_view_;

@@ -37,7 +37,6 @@ class View;
 namespace ash {
 class AppListButton;
 class FocusCycler;
-class ShelfBackgroundAnimator;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
@@ -56,9 +55,8 @@ class ASH_EXPORT Shelf {
 
   Shelf(ShelfModel* model,
         WmShelf* wm_shelf,
-        ShelfWidget* widget,
-        ShelfBackgroundAnimator* background_animator);
-  ~Shelf();
+        ShelfWidget* widget);
+  virtual ~Shelf();
 
   // Return the shelf for the primary display. NULL if no user is logged in yet.
   // Useful for tests. For production code use ForWindow() because the user may

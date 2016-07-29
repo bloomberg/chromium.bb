@@ -89,19 +89,26 @@ class TrayBackground : public views::Background {
   const static int kNumOrientations = 2;
 
   explicit TrayBackground(TrayBackgroundView* tray_background_view)
-      : tray_background_view_(tray_background_view), alpha_(0) {}
+      : tray_background_view_(tray_background_view) {}
 
   ~TrayBackground() override {}
-
-  void set_alpha(int alpha) { alpha_ = alpha; }
 
  private:
   WmShelf* GetShelf() const { return tray_background_view_->shelf(); }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
+    SkColor background_color = SK_ColorTRANSPARENT;
+    if (GetShelf()->GetBackgroundType() ==
+        ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+      background_color = SkColorSetA(kShelfBaseColor,
+                                     GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+    }
+
+    // TODO(bruthig|tdanderson): The background should be changed using a
+    // fade in/out animation.
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
-    background_paint.setColor(SkColorSetA(kShelfBaseColor, alpha_));
+    background_paint.setColor(background_color);
     canvas->DrawRoundRect(view->GetLocalBounds(), kTrayRoundedBorderRadius,
                           background_paint);
 
@@ -157,8 +164,6 @@ class TrayBackground : public views::Background {
 
   // Reference to the TrayBackgroundView for which this is a background.
   TrayBackgroundView* tray_background_view_;
-
-  int alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
@@ -354,6 +359,13 @@ void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
   ActionableView::OnGestureEvent(event);
 }
 
+void TrayBackgroundView::UpdateBackground(int alpha) {
+  // The animator should never fire when the alternate shelf layout is used.
+  if (!background_ || draw_background_as_active_)
+    return;
+  SchedulePaint();
+}
+
 void TrayBackgroundView::SetContents(views::View* contents) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
@@ -496,13 +508,6 @@ void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
 void TrayBackgroundView::UpdateBubbleViewArrow(
     views::TrayBubbleView* bubble_view) {
   // Nothing to do here.
-}
-
-void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
-  if (background_) {
-    background_->set_alpha(alpha);
-    SchedulePaint();
-  }
 }
 
 }  // namespace ash

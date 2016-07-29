@@ -154,18 +154,6 @@ void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
   wm_shelf_->UpdateAutoHideForGestureEvent(event);
 }
 
-void StatusAreaWidget::UpdateShelfItemBackground(int alpha) {
-  web_notification_tray_->UpdateShelfItemBackground(alpha);
-  system_tray_->UpdateShelfItemBackground(alpha);
-#if defined(OS_CHROMEOS)
-  virtual_keyboard_tray_->UpdateShelfItemBackground(alpha);
-  logout_button_tray_->UpdateShelfItemBackground(alpha);
-  ime_menu_tray_->UpdateShelfItemBackground(alpha);
-  palette_tray_->UpdateShelfItemBackground(alpha);
-#endif
-  overview_button_tray_->UpdateShelfItemBackground(alpha);
-}
-
 void StatusAreaWidget::AddSystemTray() {
   system_tray_ = new SystemTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(system_tray_);

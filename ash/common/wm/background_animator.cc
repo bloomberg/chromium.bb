@@ -29,10 +29,6 @@ void BackgroundAnimator::SetDuration(int time_in_ms) {
   animation_.SetSlideDuration(time_in_ms);
 }
 
-void BackgroundAnimator::Stop() {
-  animation_.Stop();
-}
-
 void BackgroundAnimator::SetPaintsBackground(
     bool value,
     BackgroundAnimatorChangeType type) {
@@ -42,7 +38,6 @@ void BackgroundAnimator::SetPaintsBackground(
   if (type == BACKGROUND_CHANGE_IMMEDIATE && !animation_.is_animating()) {
     animation_.Reset(value ? 1.0f : 0.0f);
     AnimationProgressed(&animation_);
-    AnimationEnded(&animation_);
     return;
   }
   if (paints_background_)
@@ -56,11 +51,7 @@ void BackgroundAnimator::AnimationProgressed(const gfx::Animation* animation) {
   if (alpha_ == alpha)
     return;
   alpha_ = alpha;
-  delegate_->UpdateBackground(this, alpha_);
-}
-
-void BackgroundAnimator::AnimationEnded(const gfx::Animation* animation) {
-  delegate_->BackgroundAnimationEnded(this);
+  delegate_->UpdateBackground(alpha_);
 }
 
 }  // namespace ash

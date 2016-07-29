@@ -183,9 +183,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Is the shelf's alignment horizontal?
   bool IsHorizontalAlignment() const;
 
-  // Returns how the shelf background is painted.
-  ShelfBackgroundType GetShelfBackgroundType() const;
-
   // Set the height of the ChromeVox panel, which takes away space from the
   // available work area from the top of the screen.
   void SetChromeVoxPanelHeight(int height);
@@ -259,6 +256,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Updates the background of the shelf.
   void UpdateShelfBackground(BackgroundAnimatorChangeType type);
+
+  // Returns how the shelf background is painted.
+  ShelfBackgroundType GetShelfBackgroundType() const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

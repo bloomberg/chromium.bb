@@ -178,10 +178,8 @@ void WmShelfAura::WillDeleteShelfLayoutManager() {
 void WmShelfAura::OnBackgroundUpdated(
     ShelfBackgroundType background_type,
     BackgroundAnimatorChangeType change_type) {
-  if (background_type == GetBackgroundType())
-    return;
   FOR_EACH_OBSERVER(WmShelfObserver, observers_,
-                    OnBackgroundTypeChanged(background_type, change_type));
+                    OnBackgroundUpdated(background_type, change_type));
 }
 
 void WmShelfAura::WillChangeVisibilityState(ShelfVisibilityState new_state) {
