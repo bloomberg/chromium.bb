@@ -190,12 +190,6 @@
                 "type": "string",
                 "optional": true,
                 "description": "If specified, the script will be injected into every frame of the inspected page immediately upon load, before any of the frame's scripts. The script will not be injected after subsequent reloads&mdash;for example, if the user presses Ctrl+R."
-              },
-              "preprocessorScript": {
-                "type": "string",
-                "deprecated": "Please avoid using this parameter, it will be removed soon.",
-                "optional": true,
-                "description": "If specified, this script evaluates into a function that accepts three string arguments: the source to preprocess, the URL of the source, and a function name if the source is an DOM event handler. The preprocessorerScript function should return a string to be compiled by Chrome in place of the input source. In the case that the source is a DOM event handler, the returned source must compile to a single JS function."
               }
             }
           }

@@ -1,7 +1,6 @@
 <p>
-Use <code>chrome.experimental.devtools.console</code> to retrieve messages from
-the inspected page console and post messages there. <code>getMessages()</code>
-returns the list of messages on the console, <code>onMessageAdded</code>
-event provides notifications on new messages, and <code>addMessage()</code>
-allows an extension to add new messages.
+The <code>chrome.experimental.devtools.console</code> experimental API
+is no longer available. Consider using
+<code>chrome.detvools.inspectedWindow.eval()</code> in conjunction with
+<code>console.log()</code> to add messages to console.
 </p>
