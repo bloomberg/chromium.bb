@@ -294,7 +294,8 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   EXPECT_TRUE(bridge_service()->ready());
 
   // Report failure.
-  auth_service()->OnSignInFailed(mojom::ArcSignInFailureReason::NETWORK_ERROR);
+  auth_service()->OnSignInFailed(
+      mojom::ArcSignInFailureReason::GMS_NETWORK_ERROR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   EXPECT_FALSE(bridge_service()->ready());

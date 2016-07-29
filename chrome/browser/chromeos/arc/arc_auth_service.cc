@@ -89,6 +89,37 @@ ash::ShelfDelegate* GetShelfDelegate() {
   return nullptr;
 }
 
+ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
+    arc::mojom::ArcSignInFailureReason reason) {
+  using ArcSignInFailureReason = arc::mojom::ArcSignInFailureReason;
+
+#define MAP_PROVISIONING_RESULT(name) \
+  case ArcSignInFailureReason::name:  \
+    return ProvisioningResult::name
+
+  switch (reason) {
+    MAP_PROVISIONING_RESULT(UNKNOWN_ERROR);
+    MAP_PROVISIONING_RESULT(MOJO_VERSION_MISMATCH);
+    MAP_PROVISIONING_RESULT(MOJO_CALL_TIMEOUT);
+    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_FAILED);
+    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_TIMEOUT);
+    MAP_PROVISIONING_RESULT(DEVICE_CHECK_IN_INTERNAL_ERROR);
+    MAP_PROVISIONING_RESULT(GMS_NETWORK_ERROR);
+    MAP_PROVISIONING_RESULT(GMS_SERVICE_UNAVAILABLE);
+    MAP_PROVISIONING_RESULT(GMS_BAD_AUTHENTICATION);
+    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_FAILED);
+    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_TIMEOUT);
+    MAP_PROVISIONING_RESULT(GMS_SIGN_IN_INTERNAL_ERROR);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_FAILED);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_TIMEOUT);
+    MAP_PROVISIONING_RESULT(CLOUD_PROVISION_FLOW_INTERNAL_ERROR);
+  }
+#undef MAP_PROVISIONING_RESULT
+
+  NOTREACHED() << "unknown reason: " << static_cast<int>(reason);
+  return ProvisioningResult::UNKNOWN_ERROR;
+}
+
 }  // namespace
 
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
@@ -201,7 +232,7 @@ void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
     // Using SERVICE_UNAVAILABLE instead of UNKNOWN_ERROR, since the latter
     // causes this code to not try to stop ARC, so it would retry without the
     // user noticing.
-    OnSignInFailed(mojom::ArcSignInFailureReason::SERVICE_UNAVAILABLE);
+    OnSignInFailedInternal(ProvisioningResult::ARC_STOPPED);
   }
   if (!clear_required_)
     return;
@@ -264,6 +295,11 @@ void ArcAuthService::OnSignInComplete() {
 }
 
 void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
+  OnSignInFailedInternal(
+      ConvertArcSignInFailureReasonToProvisioningResult(reason));
+}
+
+void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::ACTIVE);
   DCHECK(!sign_in_time_.is_null());
@@ -272,42 +308,42 @@ void ArcAuthService::OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) {
 
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
                            IsAccountManaged(profile_));
+  UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
+  UpdateProvisioningResultUMA(result);
+
   int error_message_id;
-  switch (reason) {
-    case mojom::ArcSignInFailureReason::NETWORK_ERROR:
+  switch (result) {
+    case ProvisioningResult::GMS_NETWORK_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
-      UpdateProvisioningResultUMA(ProvisioningResult::NETWORK_ERROR);
       break;
-    case mojom::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
+    case ProvisioningResult::GMS_SERVICE_UNAVAILABLE:
+    case ProvisioningResult::GMS_SIGN_IN_FAILED:
+    case ProvisioningResult::GMS_SIGN_IN_TIMEOUT:
+    case ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::SERVICE_UNAVAILABLE);
-      UpdateProvisioningResultUMA(ProvisioningResult::SERVICE_UNAVAILABLE);
       break;
-    case mojom::ArcSignInFailureReason::BAD_AUTHENTICATION:
+    case ProvisioningResult::GMS_BAD_AUTHENTICATION:
       error_message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::BAD_AUTHENTICATION);
-      UpdateProvisioningResultUMA(ProvisioningResult::BAD_AUTHENTICATION);
       break;
-    case mojom::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
+    case ProvisioningResult::DEVICE_CHECK_IN_FAILED:
+    case ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT:
+    case ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::GMS_CORE_NOT_AVAILABLE);
-      UpdateProvisioningResultUMA(ProvisioningResult::GMS_CORE_NOT_AVAILABLE);
       break;
-    case mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
+    case ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED:
+    case ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT:
+    case ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
-      UpdateProvisioningResultUMA(
-          ProvisioningResult::CLOUD_PROVISION_FLOW_FAIL);
       break;
     default:
       error_message_id = IDS_ARC_SIGN_IN_UNKNOWN_ERROR;
-      UpdateOptInCancelUMA(OptInCancelReason::UNKNOWN_ERROR);
-      UpdateProvisioningResultUMA(ProvisioningResult::UNKNOWN_ERROR);
+      break;
   }
 
-  if (reason == mojom::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL ||
-      reason == mojom::ArcSignInFailureReason::UNKNOWN_ERROR) {
+  if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED ||
+      result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
+      result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
+      result == ProvisioningResult::UNKNOWN_ERROR) {
     clear_required_ = true;
     // We'll delay shutting down the bridge in this case to allow people to send
     // feedback.
