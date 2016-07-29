@@ -17,13 +17,18 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/material_design_icon_controller.h"
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/skia_util.h"
 
 using chromeos::DeviceState;
 using chromeos::NetworkConnectionHandler;
@@ -173,11 +178,21 @@ const double kConnectingImageAlpha = 0.5;
 // Images for strength bars for wired networks.
 const int kNumBarsImages = 5;
 
-// Imagaes for strength arcs for wireless networks.
+// Images for strength arcs for wireless networks.
 const int kNumArcsImages = 5;
 
 // Number of discrete images to use for alpha fade animation
 const int kNumFadeImages = 10;
+
+SkColor GetBaseColorForIconType(IconType icon_type) {
+  // TODO(estade): use kTrayIconColor and kMenuIconColor.
+  return icon_type == ICON_TYPE_TRAY ? SK_ColorWHITE : gfx::kChromeIconGrey;
+}
+
+gfx::Size GetSizeForIconType(IconType icon_type) {
+  // TODO(estade): use kTrayIconSize and kMenuIconSize.
+  return icon_type == ICON_TYPE_TRAY ? gfx::Size(16, 16) : gfx::Size(20, 20);
+}
 
 //------------------------------------------------------------------------------
 // Classes for generating scaled images.
@@ -257,6 +272,68 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(NetworkIconImageSource);
 };
 
+// Depicts a given signal strength using arcs (for WiFi connections).
+class ArcsImageSource : public gfx::CanvasImageSource {
+ public:
+  ArcsImageSource(IconType icon_type, float signal_strength)
+      : CanvasImageSource(GetSizeForIconType(icon_type), false),
+        icon_type_(icon_type),
+        signal_strength_(signal_strength) {
+    DCHECK_GE(signal_strength, 0);
+    DCHECK_LT(signal_strength, kNumArcsImages);
+  }
+  ~ArcsImageSource() override {}
+
+  // gfx::CanvasImageSource:
+  void Draw(gfx::Canvas* canvas) override {
+    gfx::RectF oval_bounds((gfx::Rect(size())));
+    // Padding between top of arc and top of canvas.
+    const int kIconInset = 2;
+    oval_bounds.Inset(gfx::Insets(kIconInset));
+    // Double the width and height. The new midpoint should be the former
+    // bottom center.
+    oval_bounds.Inset(-oval_bounds.width() / 2, 0, -oval_bounds.width() / 2,
+                      -oval_bounds.height());
+
+    const SkScalar kAngleAboveHorizontal = 51.f;
+    const SkScalar kStartAngle = 180.f + kAngleAboveHorizontal;
+    const SkScalar kSweepAngle = 180.f - 2 * kAngleAboveHorizontal;
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kFill_Style);
+    const SkColor base_color = GetBaseColorForIconType(icon_type_);
+    // Background. Skip drawing for full signal.
+    if (signal_strength_ != kNumArcsImages - 1) {
+      // TODO(estade): share this alpha with other things in ash (battery,
+      // etc.).
+      paint.setColor(SkColorSetA(base_color, 0x4D));
+      canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
+                                   kSweepAngle, true, paint);
+    }
+    // Foreground (signal strength).
+    if (signal_strength_ != 0) {
+      paint.setColor(base_color);
+      // Percent of the height of the background wedge that we draw the
+      // foreground wedge, indexed by signal strength.
+      static const float kWedgeHeightPercentages[] = {0.f, 0.375f, 0.5833f,
+                                                      0.75f, 1.f};
+      const float wedge_percent = kWedgeHeightPercentages[signal_strength_];
+      oval_bounds.Inset(
+          gfx::InsetsF((oval_bounds.height() / 2) * (1.f - wedge_percent)));
+      canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
+                                   kSweepAngle, true, paint);
+    }
+  }
+
+ private:
+  IconType icon_type_;
+  // On a scale of 0 to kNumArcsImages - 1, how connected we are.
+  int signal_strength_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcsImageSource);
+};
+
 //------------------------------------------------------------------------------
 // Utilities for extracting icon images.
 
@@ -275,15 +352,13 @@ int NumImagesForType(ImageType type) {
 gfx::ImageSkia* BaseImageForType(ImageType image_type, IconType icon_type) {
   gfx::ImageSkia* image;
   if (image_type == BARS) {
-    image =  ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT);
+    image = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK
+                                  : IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT);
   } else {
-    image =  ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT);
+    image = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IconTypeIsDark(icon_type) ? IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK
+                                  : IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT);
   }
   return image;
 }
@@ -299,6 +374,12 @@ ImageType ImageTypeForNetworkType(const std::string& type) {
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
                                 IconType icon_type,
                                 int index) {
+  if (md_icon_controller::UseMaterialDesignNetworkIcons() &&
+      image_type == ARCS) {
+    ArcsImageSource* source = new ArcsImageSource(icon_type, index);
+    return gfx::ImageSkia(source, source->size());
+  }
+
   int num_images = NumImagesForType(image_type);
   if (index < 0 || index >= num_images)
     return gfx::ImageSkia();
@@ -309,8 +390,8 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
       gfx::Rect(0, index * height, width, height));
 }
 
-const gfx::ImageSkia GetConnectedImage(IconType icon_type,
-                                       const std::string& network_type) {
+gfx::ImageSkia GetConnectedImage(IconType icon_type,
+                                 const std::string& network_type) {
   if (network_type == shill::kTypeVPN) {
     return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NETWORK_VPN);
@@ -476,8 +557,8 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
     return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
   } else if (network->Matches(NetworkTypePattern::Wireless())) {
     DCHECK(strength_index > 0);
-    return GetImageForIndex(
-        ImageTypeForNetworkType(network->type()), icon_type, strength_index);
+    return GetImageForIndex(ImageTypeForNetworkType(network->type()), icon_type,
+                            strength_index);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
     return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
   } else {
