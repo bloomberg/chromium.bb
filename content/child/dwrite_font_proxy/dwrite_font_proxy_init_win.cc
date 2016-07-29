@@ -11,9 +11,11 @@
 #include "base/debug/alias.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/child/dwrite_font_proxy/font_fallback_win.h"
 #include "content/child/font_warmup_win.h"
+#include "content/child/thread_safe_sender.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -74,9 +76,17 @@ void InitializeDWriteFontProxy() {
 
   mswr::ComPtr<IDWriteFontFallback> font_fallback;
   mswr::ComPtr<IDWriteFactory2> factory2;
+  IPC::Sender* sender = g_sender_override;
+
+  // Hack for crbug.com/631254: set the sender if we can get one, so that when
+  // Flash calls into the font proxy from a different thread we will have a
+  // sender available.
+  if (!sender && ChildThreadImpl::current())
+    sender = ChildThreadImpl::current()->thread_safe_sender();
+
   if (SUCCEEDED(factory.As(&factory2)) && factory2.Get()) {
     mswr::MakeAndInitialize<FontFallback>(
-        &font_fallback, g_font_collection.Get(), g_sender_override);
+        &font_fallback, g_font_collection.Get(), sender);
   }
 
   sk_sp<SkFontMgr> skia_font_manager(SkFontMgr_New_DirectWrite(
