@@ -98,10 +98,6 @@ void DocumentMarkerController::clear()
 
 void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type, const String& description, uint32_t hash)
 {
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    start.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
         addMarker(markedText.currentContainer(), DocumentMarker(type, markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), description, hash));

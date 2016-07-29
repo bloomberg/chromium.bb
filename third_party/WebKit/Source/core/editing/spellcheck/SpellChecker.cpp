@@ -158,6 +158,8 @@ void SpellChecker::ignoreSpelling()
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
 {
+    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+
     // The basic approach is to search in two phases - from the selection end to the end of the doc, and
     // then we wrap and search from the doc start to (approximately) where we started.
 
@@ -304,7 +306,6 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(grammarSearchStart, grammarSearchEnd), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
         frame().selection().setSelection(VisibleSelection(badGrammarRange));
         frame().selection().revealSelection();
-
         frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, grammarDetail.userDescription);
     } else if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
@@ -313,7 +314,6 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(spellingSearchStart, spellingSearchEnd), misspellingOffset, misspelledWord.length());
         frame().selection().setSelection(VisibleSelection(misspellingRange));
         frame().selection().revealSelection();
-
         spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
         frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling);
     }
@@ -647,7 +647,6 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
                 frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
             }
         }
-
     }
 
     if (selectionChanged) {

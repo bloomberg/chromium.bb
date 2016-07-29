@@ -1797,11 +1797,19 @@ bool Editor::executeCommand(const String& commandName)
     if (commandName == "DeleteForward")
         return createCommand(AtomicString("ForwardDelete")).execute();
     if (commandName == "AdvanceToNextMisspelling") {
-        // Wee need to pass false here or else the currently selected word will never be skipped.
+        // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+        // see http://crbug.com/590369 for more details.
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+        // We need to pass false here or else the currently selected word will never be skipped.
         spellChecker().advanceToNextMisspelling(false);
         return true;
     }
     if (commandName == "ToggleSpellPanel") {
+        // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+        // see http://crbug.com/590369 for more details.
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         spellChecker().showSpellingGuessPanel();
         return true;
     }
@@ -1818,6 +1826,10 @@ bool Editor::executeCommand(const String& commandName, const String& value)
         return frame().eventHandler().bubblingScroll(ScrollDownIgnoringWritingMode, ScrollByDocument);
 
     if (commandName == "showGuessPanel") {
+        // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+        // see http://crbug.com/590369 for more details.
+        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         spellChecker().showSpellingGuessPanel();
         return true;
     }

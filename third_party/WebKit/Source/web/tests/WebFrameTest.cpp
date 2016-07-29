@@ -5384,6 +5384,9 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     element->focus();
     NonThrowableExceptionState exceptionState;
     document->execCommand("InsertText", false, "welcome ", exceptionState);
+
+    document->updateStyleAndLayout();
+
     EXPECT_FALSE(exceptionState.hadException());
     auto range = EphemeralRange::rangeOfContents(*element);
     document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);

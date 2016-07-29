@@ -582,10 +582,17 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(Text* node, unsign
     Vector<DocumentMarker::MarkerType> types;
     Vector<String> descriptions;
     copyMarkerTypesAndDescriptions(markerController.markersInRange(EphemeralRange(Position(node, offset), Position(node, offset + count)), DocumentMarker::AllMarkers()), types, descriptions);
+
     replaceTextInNode(node, offset, count, replacementText);
+
+    // Re-adding markers requires a clean tree.
+    document().updateStyleAndLayout();
+
+    DocumentLifecycle::DisallowTransitionScope(document().lifecycle());
     Position startPosition(node, offset);
     Position endPosition(node, offset + replacementText.length());
     DCHECK_EQ(types.size(), descriptions.size());
+
     for (size_t i = 0; i < types.size(); ++i)
         markerController.addMarker(startPosition, endPosition, types[i], descriptions[i]);
 }
