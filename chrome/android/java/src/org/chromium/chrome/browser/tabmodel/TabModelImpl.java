@@ -455,7 +455,9 @@ public class TabModelImpl extends TabModelJniBridge {
 
     // TODO(aurimas): Move this method to TabModelSelector when notifications move there.
     private int getLastId(TabSelectionType type) {
-        if (type == TabSelectionType.FROM_CLOSE) return Tab.INVALID_TAB_ID;
+        if (type == TabSelectionType.FROM_CLOSE || type == TabSelectionType.FROM_EXIT) {
+            return Tab.INVALID_TAB_ID;
+        }
 
         // Get the current tab in the current tab model.
         Tab currentTab = TabModelUtils.getCurrentTab(mModelDelegate.getCurrentModel());
