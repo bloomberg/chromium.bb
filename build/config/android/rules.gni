@@ -2620,37 +2620,12 @@ if (enable_java_templates) {
       }
     }
 
-    _sub_target_names = []
-
-    # Create android_java_prebuilt targets for jar files.
-    _counter = 0
-    foreach(jar, _scanned_files.jars) {
-      _counter += 1
-      _current_target = "${target_name}__jar_$_counter"
-      _sub_target_names += [ ":$_current_target" ]
-      java_prebuilt(_current_target) {
-        forward_variables_from(invoker,
-                               [
-                                 "deps",
-                                 "requires_android",
-                                 "jar_excluded_patterns",
-                               ])
-        if (!defined(deps)) {
-          deps = []
-        }
-        deps += [ ":$_unpack_target_name" ]
-        if (!defined(requires_android)) {
-          requires_android = true
-        }
-        supports_android = true
-        jar_path = "${_output_path}/$jar"
-      }
-    }
+    _resource_targets = []
 
     # Create the android_resources target for resources.
     if (_scanned_files.resources != []) {
       _res_target_name = "${target_name}__res"
-      _sub_target_names += [ ":$_res_target_name" ]
+      _resource_targets += [ ":$_res_target_name" ]
       android_resources(_res_target_name) {
         forward_variables_from(invoker, [ "deps" ])
         if (!defined(deps)) {
@@ -2667,8 +2642,34 @@ if (enable_java_templates) {
       }
     }
 
+    # Create android_java_prebuilt targets for jar files.
+    _jar_targets = []
+    _counter = 0
+    foreach(jar, _scanned_files.jars) {
+      _counter += 1
+      _current_target = "${target_name}__jar_$_counter"
+      _jar_targets += [ ":$_current_target" ]
+      java_prebuilt(_current_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "requires_android",
+                                 "jar_excluded_patterns",
+                               ])
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += _resource_targets + [ ":$_unpack_target_name" ]
+        if (!defined(requires_android)) {
+          requires_android = true
+        }
+        supports_android = true
+        jar_path = "${_output_path}/$jar"
+      }
+    }
+
     java_group(target_name) {
-      deps = _sub_target_names
+      deps = _resource_targets + _jar_targets
     }
   }
 }
