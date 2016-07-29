@@ -108,6 +108,7 @@ public:
     // True if the last display item is a begin that doesn't draw content.
     bool lastDisplayItemIsNoopBegin() const;
     void removeLastDisplayItem();
+    const DisplayItem* lastDisplayItem(unsigned offset);
 
     void beginSkippingCache() { ++m_skippingCacheCount; }
     void endSkippingCache() { DCHECK(m_skippingCacheCount > 0); --m_skippingCacheCount; }

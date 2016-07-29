@@ -155,6 +155,13 @@ void PaintController::removeLastDisplayItem()
         m_newPaintChunks.decrementDisplayItemIndex();
 }
 
+const DisplayItem* PaintController::lastDisplayItem(unsigned offset)
+{
+    if (offset < m_newDisplayItemList.size())
+        return &m_newDisplayItemList[m_newDisplayItemList.size() - offset - 1];
+    return nullptr;
+}
+
 void PaintController::processNewItem(DisplayItem& displayItem)
 {
     DCHECK(!m_constructionDisabled);

@@ -69,16 +69,18 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag)
     setBodyInnerHTML(
         "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
         "  <div style='width: 100px; height: 100px; background-color: blue'></div>"
+        "  <div style='width: 100px; height: 100px; background-color: blue'></div>"
         "</div>");
     PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
     LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
     LayoutObject& subDiv = *div.firstChild();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 6,
+    LayoutObject& subDiv2 = *subDiv.nextSibling();
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 7,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(div, DisplayItem::BeginCompositing),
         TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(subDiv2, backgroundType),
         TestDisplayItem(div, DisplayItem::EndCompositing),
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
@@ -95,5 +97,24 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag)
     EXPECT_FALSE(rootPaintController().clientCacheIsValid(div));
     EXPECT_TRUE(rootPaintController().clientCacheIsValid(subDiv));
 }
+
+TEST_F(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold)
+{
+    setBodyInnerHTML(
+        "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
+        "  <div style='width: 100px; height: 100px; background-color: blue'></div>"
+        "</div>");
+    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
+    LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
+    LayoutObject& subDiv = *div.firstChild();
+
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 4,
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+        // The begin and end compositing display items have been folded into this one.
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+}
+
 
 } // namespace blink
