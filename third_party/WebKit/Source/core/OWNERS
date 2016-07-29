@@ -28,6 +28,7 @@ hayato@chromium.org
 inferno@chromium.org
 japhet@chromium.org
 jbroman@chromium.org
+jfernandez@igalia.com
 jianli@chromium.org
 jochen@chromium.org
 junov@chromium.org
@@ -44,6 +45,7 @@ ojan@chromium.org
 pdr@chromium.org
 pfeldman@chromium.org
 pkasting@chromium.org
+rego@igalia.com
 # rbyers reviews input related changes (eg. event handling, mouse cursors, touch hit testing, scrolling coordinator)
 rbyers@chromium.org
 rob.buis@samsung.com
