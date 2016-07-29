@@ -178,6 +178,7 @@
         'arc/common/obb_mounter.mojom',
         'arc/common/policy.mojom',
         'arc/common/power.mojom',
+        'arc/common/print.mojom',
         'arc/common/process.mojom',
         'arc/common/scale_factor.mojom',
         'arc/common/screen_rect.mojom',

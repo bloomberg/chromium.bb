@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/arc/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/arc_enterprise_reporting_service.h"
 #include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
+#include "chrome/browser/chromeos/arc/arc_print_service.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/arc_wallpaper_handler.h"
@@ -44,6 +45,8 @@ void ArcServiceLauncher::Initialize() {
       base::MakeUnique<ArcWallpaperHandler>(),
       arc_service_manager_->activity_resolver()));
   arc_service_manager_->AddService(base::MakeUnique<ArcPolicyBridge>(
+      arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(base::MakeUnique<ArcPrintService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcProcessService>(
       arc_service_manager_->arc_bridge_service()));

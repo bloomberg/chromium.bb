@@ -163,6 +163,11 @@ void ArcBridgeHostImpl::OnPowerInstanceReady(
   OnInstanceReady(ArcBridgeService::Get()->power(), std::move(power_ptr));
 }
 
+void ArcBridgeHostImpl::OnPrintInstanceReady(
+    mojom::PrintInstancePtr print_ptr) {
+  OnInstanceReady(ArcBridgeService::Get()->print(), std::move(print_ptr));
+}
+
 void ArcBridgeHostImpl::OnProcessInstanceReady(
     mojom::ProcessInstancePtr process_ptr) {
   OnInstanceReady(ArcBridgeService::Get()->process(), std::move(process_ptr));

@@ -148,6 +148,7 @@ mojom("arc_bindings") {
     "common/obb_mounter.mojom",
     "common/policy.mojom",
     "common/power.mojom",
+    "common/print.mojom",
     "common/process.mojom",
     "common/scale_factor.mojom",
     "common/screen_rect.mojom",
