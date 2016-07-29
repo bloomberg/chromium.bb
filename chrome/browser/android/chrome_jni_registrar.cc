@@ -61,7 +61,7 @@
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/metrics/variations_session.h"
-#include "chrome/browser/android/mojo/chrome_service_registrar_android.h"
+#include "chrome/browser/android/mojo/chrome_interface_registrar_android.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #include "chrome/browser/android/ntp/most_visited_sites_bridge.h"
 #include "chrome/browser/android/ntp/new_tab_page_prefs.h"
@@ -254,12 +254,12 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeFeatureList", RegisterChromeFeatureListJni},
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
+    {"ChromeInterfaceRegistrar", ChromeInterfaceRegistrarAndroid::Register},
 #if defined(ENABLE_MEDIA_ROUTER)
     {"ChromeMediaRouter", media_router::MediaRouterAndroid::Register},
     {"ChromeMediaRouterDialogController",
      media_router::MediaRouterDialogControllerAndroid::Register},
 #endif
-    {"ChromeServiceRegistrar", ChromeServiceRegistrarAndroid::Register},
     {"CompositorView", RegisterCompositorView},
     {"ConfirmInfoBar", RegisterConfirmInfoBar},
     {"ConnectionInfoPopupAndroid",

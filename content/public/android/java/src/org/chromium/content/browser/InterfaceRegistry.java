@@ -8,16 +8,15 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.bindings.Interface;
 import org.chromium.mojo.bindings.Interface.Proxy;
-import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.impl.CoreImpl;
 
 /**
- * Java wrapper over Mojo ServiceRegistry held by the browser.
+ * Java wrapper around the shell service's InterfaceRegistry type.
  */
 @JNINamespace("content")
-public class ServiceRegistry {
+public class InterfaceRegistry {
 
     /**
      * The interface that a factory should implement.
@@ -27,44 +26,39 @@ public class ServiceRegistry {
     }
 
     /**
-     * Adds a service factory.
+     * Adds an interface factory.
      *
      * @param manager The interface manager.
-     * @param factory The service factory.
+     * @param factory The interface factory.
      */
-    public <I extends Interface, P extends Proxy> void addService(
+    public <I extends Interface, P extends Proxy> void addInterface(
             Interface.Manager<I, P> manager, ImplementationFactory<I> factory) {
-        nativeAddService(mNativeServiceRegistryAndroid, manager, factory, manager.getName());
+        nativeAddInterface(
+                mNativeInterfaceRegistryAndroid, manager, factory, manager.getName());
     }
 
-    <I extends Interface, P extends Proxy> void removeService(
+    <I extends Interface, P extends Proxy> void removeInterface(
             Interface.Manager<I, P> manager) {
-        nativeRemoveService(mNativeServiceRegistryAndroid, manager.getName());
+        nativeRemoveInterface(mNativeInterfaceRegistryAndroid, manager.getName());
     }
 
-    <I extends Interface, P extends Proxy> void connectToRemoteService(
-            Interface.Manager<I, P> manager, InterfaceRequest<I> request) {
-        int nativeHandle = request.passHandle().releaseNativeHandle();
-        nativeConnectToRemoteService(
-                mNativeServiceRegistryAndroid, manager.getName(), nativeHandle);
-    }
-
-    private long mNativeServiceRegistryAndroid;
+    private long mNativeInterfaceRegistryAndroid;
     private final Core mCore;
 
-    private ServiceRegistry(long nativeServiceRegistryAndroid, Core core) {
-        mNativeServiceRegistryAndroid = nativeServiceRegistryAndroid;
+    private InterfaceRegistry(long nativeInterfaceRegistryAndroid, Core core) {
+        mNativeInterfaceRegistryAndroid = nativeInterfaceRegistryAndroid;
         mCore = core;
     }
 
     @CalledByNative
-    private static ServiceRegistry create(long nativeServiceRegistryAndroid) {
-        return new ServiceRegistry(nativeServiceRegistryAndroid, CoreImpl.getInstance());
+    private static InterfaceRegistry create(long nativeInterfaceRegistryAndroid) {
+        return new InterfaceRegistry(nativeInterfaceRegistryAndroid,
+                                     CoreImpl.getInstance());
     }
 
     @CalledByNative
     private void destroy() {
-        mNativeServiceRegistryAndroid = 0;
+        mNativeInterfaceRegistryAndroid = 0;
     }
 
     // Declaring parametrized argument type for manager and factory breaks the JNI generator.
@@ -77,9 +71,7 @@ public class ServiceRegistry {
         manager.bind(factory.createImpl(), handle);
     }
 
-    private native void nativeAddService(long nativeServiceRegistryAndroid,
+    private native void nativeAddInterface(long nativeInterfaceRegistryAndroid,
             Interface.Manager manager, ImplementationFactory factory, String name);
-    private native void nativeRemoveService(long nativeServiceRegistryAndroid, String name);
-    private native void nativeConnectToRemoteService(long nativeServiceRegistryAndroid, String name,
-            int handle);
+    private native void nativeRemoveInterface(long nativeInterfaceRegistryAndroid, String name);
 }

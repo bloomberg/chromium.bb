@@ -188,7 +188,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
-#include "content/browser/mojo/service_registrar_android.h"
+#include "content/browser/mojo/interface_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/audio/android/audio_manager_android.h"
@@ -1113,8 +1113,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 
 #if defined(OS_ANDROID)
-  ServiceRegistrarAndroid::RegisterProcessHostServices(
-      mojo_child_connection_->service_registry_android());
+  InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
+      mojo_child_connection_->interface_registry_android());
 #endif
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(

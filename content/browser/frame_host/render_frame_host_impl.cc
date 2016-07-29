@@ -94,7 +94,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/browser/mojo/service_registrar_android.h"
+#include "content/browser/mojo/interface_registrar_android.h"
 #if defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
 #endif
@@ -2479,19 +2479,18 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
 
 #if defined(OS_ANDROID)
-  service_registry_android_ =
-      ServiceRegistryAndroid::Create(interface_registry_.get(),
-                                     remote_interfaces_.get());
-  ServiceRegistrarAndroid::RegisterFrameHostServices(
-      service_registry_android_.get());
+  interface_registry_android_ =
+      InterfaceRegistryAndroid::Create(interface_registry_.get());
+  InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
+      interface_registry_android_.get());
 #endif
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
 #if defined(OS_ANDROID)
-  // The Android-specific service registry has a reference to
-  // |service_registry_| and thus must be torn down first.
-  service_registry_android_.reset();
+  // The Android-specific interface registry has a reference to
+  // |interface_registry_| and thus must be torn down first.
+  interface_registry_android_.reset();
 #endif
 
   interface_registry_.reset();

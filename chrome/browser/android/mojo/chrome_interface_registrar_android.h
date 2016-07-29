@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_MOJO_CHROME_SERVICE_REGISTRAR_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_MOJO_CHROME_SERVICE_REGISTRAR_ANDROID_H_
+#ifndef CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_
 
 #include <jni.h>
 
@@ -15,16 +15,16 @@ namespace shell {
 class InterfaceRegistry;
 }
 
-class ChromeServiceRegistrarAndroid {
+class ChromeInterfaceRegistrarAndroid {
  public:
   static bool Register(JNIEnv* env);
-  static void RegisterRenderFrameMojoInterfaces(
+  static void ExposeInterfacesToFrame(
       shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host);
 
  private:
-  ChromeServiceRegistrarAndroid() {}
-  ~ChromeServiceRegistrarAndroid() {}
+  ChromeInterfaceRegistrarAndroid() {}
+  ~ChromeInterfaceRegistrarAndroid() {}
 };
 
-#endif  // CHROME_BROWSER_ANDROID_MOJO_CHROME_SERVICE_REGISTRAR_ANDROID_H_
+#endif  // CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_

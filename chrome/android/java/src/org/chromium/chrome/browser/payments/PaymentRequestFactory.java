@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
+import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojom.payments.PaymentRequest;
 

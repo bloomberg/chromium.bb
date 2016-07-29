@@ -156,8 +156,8 @@ MojoChildConnection::MojoChildConnection(
                             context_), io_task_runner));
 
 #if defined(OS_ANDROID)
-  service_registry_android_ =
-      ServiceRegistryAndroid::Create(&interface_registry_, &remote_interfaces_);
+  interface_registry_android_ =
+      InterfaceRegistryAndroid::Create(&interface_registry_);
 #endif
 }
 

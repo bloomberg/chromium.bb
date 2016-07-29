@@ -18,7 +18,7 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "content/public/browser/android/service_registry_android.h"
+#include "content/public/browser/android/interface_registry_android.h"
 #endif
 
 namespace shell {
@@ -63,8 +63,8 @@ class MojoChildConnection {
   void SetProcessHandle(base::ProcessHandle handle);
 
 #if defined(OS_ANDROID)
-  ServiceRegistryAndroid* service_registry_android() {
-    return service_registry_android_.get();
+  InterfaceRegistryAndroid* interface_registry_android() {
+    return interface_registry_android_.get();
   }
 #endif
 
@@ -82,7 +82,7 @@ class MojoChildConnection {
   shell::InterfaceProvider remote_interfaces_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<ServiceRegistryAndroid> service_registry_android_;
+  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
 #endif
 
   base::WeakPtrFactory<MojoChildConnection> weak_factory_;

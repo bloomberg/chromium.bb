@@ -8,17 +8,17 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
+import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojom.device.BatteryMonitor;
 import org.chromium.mojom.device.VibrationManager;
 
 /**
- * Registers mojo services exposed by the browser in the given registry.
+ * Registers interfaces exposed by the browser in the given registry.
  */
 @JNINamespace("content")
-class ServiceRegistrar {
+class InterfaceRegistrar {
     // BatteryMonitorFactory can't implement ImplementationFactory itself, as we don't depend on
     // /content in /device. Hence we use BatteryMonitorImplementationFactory as a wrapper.
     private static class BatteryMonitorImplementationFactory
@@ -50,16 +50,16 @@ class ServiceRegistrar {
     }
 
     @CalledByNative
-    static void registerProcessHostServices(ServiceRegistry registry, Context applicationContext) {
+    static void exposeInterfacesToRenderer(InterfaceRegistry registry, Context applicationContext) {
         assert applicationContext != null;
-        registry.addService(BatteryMonitor.MANAGER,
+        registry.addInterface(BatteryMonitor.MANAGER,
                 new BatteryMonitorImplementationFactory(applicationContext));
     }
 
     @CalledByNative
-    static void registerFrameHostServices(ServiceRegistry registry, Context applicationContext) {
+    static void exposeInterfacesToFrame(InterfaceRegistry registry, Context applicationContext) {
         assert applicationContext != null;
-        registry.addService(VibrationManager.MANAGER,
+        registry.addInterface(VibrationManager.MANAGER,
                 new VibrationManagerImplementationFactory(applicationContext));
         // TODO(avayvod): Register the PresentationService implementation here.
     }

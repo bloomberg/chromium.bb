@@ -8,7 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
+import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_shell.ShellMojoTestUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Instrumentation tests for ServiceRegistry.
+ * Instrumentation tests for InterfaceRegistry.
  */
-public class ServiceRegistryTest extends ContentShellTestBase {
+public class InterfaceRegistryTest extends ContentShellTestBase {
 
     private static final long RUN_LOOP_TIMEOUT_MS = 25;
 
@@ -114,23 +114,23 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     }
 
     /**
-     * Verifies that remote service can be requested and works.
+     * Verifies that remote interface can be requested and works.
      */
     @SmallTest
-    public void testConnectToService() {
-        Pair<ServiceRegistry, ServiceRegistry> registryPair =
-                ShellMojoTestUtils.createServiceRegistryPair(mNativeTestEnvironment);
-        ServiceRegistry serviceRegistryA = registryPair.first;
-        ServiceRegistry serviceRegistryB = registryPair.second;
+    public void testGetInterface() {
+        Pair<InterfaceRegistry, InterfaceProvider> registryAndProvider =
+                ShellMojoTestUtils.createInterfaceRegistryAndProvider(mNativeTestEnvironment);
+        InterfaceRegistry registry = registryAndProvider.first;
+        InterfaceProvider provider = registryAndProvider.second;
 
-        // Add the Calculator service.
-        serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
+        // Add the Calculator interface.
+        registry.addInterface(Calculator.MANAGER, new CalculatorFactory());
 
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
                 Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
 
         mCloseablesToClose.add(requestPair.first);
-        serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
+        provider.getInterface(Calculator.MANAGER, requestPair.second);
 
         // Perform a few operations on the Calculator.
         Calculator.Proxy calculator = requestPair.first;
@@ -148,52 +148,53 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     }
 
     /**
-     * Verifies that a service can be requested only after it is added and not after it is removed.
+     * Verifies that a interface can be requested only after it is added and not after it is
+     * removed.
      */
     @SmallTest
-    public void testAddRemoveService() {
-        Pair<ServiceRegistry, ServiceRegistry> registryPair =
-                ShellMojoTestUtils.createServiceRegistryPair(mNativeTestEnvironment);
-        ServiceRegistry serviceRegistryA = registryPair.first;
-        ServiceRegistry serviceRegistryB = registryPair.second;
+    public void testAddRemoveInterface() {
+        Pair<InterfaceRegistry, InterfaceProvider> registryAndProvider =
+                ShellMojoTestUtils.createInterfaceRegistryAndProvider(mNativeTestEnvironment);
+        InterfaceRegistry registry = registryAndProvider.first;
+        InterfaceProvider provider = registryAndProvider.second;
 
-        // Request the Calculator service before it is added.
+        // Request the Calculator interface before it is added.
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
                 Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         Calculator.Proxy calculator = requestPair.first;
         CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
         calculator.getProxyHandler().setErrorHandler(errorHandler);
         mCloseablesToClose.add(calculator);
-        serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
+        provider.getInterface(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that an error occured.
         assertNull(errorHandler.mLastMojoException);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
         assertNotNull(errorHandler.mLastMojoException);
 
-        // Add the Calculator service and request it again.
+        // Add the Calculator interface and request it again.
         errorHandler.mLastMojoException = null;
-        serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
+        registry.addInterface(Calculator.MANAGER, new CalculatorFactory());
         requestPair = Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         calculator = requestPair.first;
         errorHandler = new CalcConnectionErrorHandler();
         mCloseablesToClose.add(calculator);
-        serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
+        provider.getInterface(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that no error occured.
         assertNull(errorHandler.mLastMojoException);
         ShellMojoTestUtils.runLoop(RUN_LOOP_TIMEOUT_MS);
         assertNull(errorHandler.mLastMojoException);
 
-        // Remove the Calculator service and request it again.
+        // Remove the Calculator interface and request it again.
         errorHandler.mLastMojoException = null;
-        serviceRegistryA.removeService(Calculator.MANAGER);
+        registry.removeInterface(Calculator.MANAGER);
         requestPair = Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         calculator = requestPair.first;
         errorHandler = new CalcConnectionErrorHandler();
         calculator.getProxyHandler().setErrorHandler(errorHandler);
         mCloseablesToClose.add(calculator);
-        serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
+        provider.getInterface(Calculator.MANAGER, requestPair.second);
 
         // Spin the message loop and verify that an error occured.
         assertNull(errorHandler.mLastMojoException);

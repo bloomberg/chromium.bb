@@ -45,7 +45,7 @@
 #include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
-#include "content/public/browser/android/service_registry_android.h"
+#include "content/public/browser/android/interface_registry_android.h"
 #endif
 
 class GURL;
@@ -962,7 +962,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<ServiceRegistryAndroid> service_registry_android_;
+  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
 #endif
 
   std::unique_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;

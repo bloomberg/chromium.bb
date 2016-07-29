@@ -12,7 +12,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/android/service_registry_android.h"
+#include "content/public/browser/android/interface_provider_android.h"
+#include "content/public/browser/android/interface_registry_android.h"
 #include "jni/ShellMojoTestUtils_jni.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -23,7 +24,10 @@ struct TestEnvironment {
   base::MessageLoop message_loop;
   std::vector<std::unique_ptr<shell::InterfaceRegistry>> registries;
   std::vector<std::unique_ptr<shell::InterfaceProvider>> providers;
-  ScopedVector<content::ServiceRegistryAndroid> wrappers;
+  std::vector<std::unique_ptr<content::InterfaceRegistryAndroid>>
+      registry_wrappers;
+  std::vector<std::unique_ptr<content::InterfaceProviderAndroid>>
+      provider_wrappers;
 };
 
 }  // namespace
@@ -41,50 +45,38 @@ static void TearDownTestEnvironment(JNIEnv* env,
   delete reinterpret_cast<TestEnvironment*>(test_environment);
 }
 
-static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
+static ScopedJavaLocalRef<jobject> CreateInterfaceRegistryAndProvider(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     jlong native_test_environment) {
   TestEnvironment* test_environment =
       reinterpret_cast<TestEnvironment*>(native_test_environment);
 
-  std::unique_ptr<shell::InterfaceRegistry> registry_a(
+  std::unique_ptr<shell::InterfaceRegistry> registry(
       new shell::InterfaceRegistry(nullptr));
-  std::unique_ptr<shell::InterfaceRegistry> registry_b(
-      new shell::InterfaceRegistry(nullptr));
-  std::unique_ptr<shell::InterfaceProvider> provider_a(
-      new shell::InterfaceProvider);
-  std::unique_ptr<shell::InterfaceProvider> provider_b(
+  std::unique_ptr<shell::InterfaceProvider> provider(
       new shell::InterfaceProvider);
 
-  shell::mojom::InterfaceProviderPtr a_to_b;
-  shell::mojom::InterfaceProviderRequest a_to_b_request =
-      mojo::GetProxy(&a_to_b);
-  provider_a->Bind(std::move(a_to_b));
-  registry_b->Bind(std::move(a_to_b_request));
+  shell::mojom::InterfaceProviderPtr provider_proxy;
+  shell::mojom::InterfaceProviderRequest provider_request =
+      mojo::GetProxy(&provider_proxy);
+  provider->Bind(std::move(provider_proxy));
+  registry->Bind(std::move(provider_request));
 
-  shell::mojom::InterfaceProviderPtr b_to_a;
-  shell::mojom::InterfaceProviderRequest b_to_a_request =
-      mojo::GetProxy(&b_to_a);
-  provider_b->Bind(std::move(b_to_a));
-  registry_a->Bind(std::move(b_to_a_request));
+  std::unique_ptr<content::InterfaceRegistryAndroid> registry_android(
+      InterfaceRegistryAndroid::Create(registry.get()));
+  std::unique_ptr<content::InterfaceProviderAndroid> provider_android(
+      InterfaceProviderAndroid::Create(provider.get()));
 
-  content::ServiceRegistryAndroid* wrapper_a =
-      ServiceRegistryAndroid::Create(registry_a.get(),
-                                     provider_a.get()).release();
-  test_environment->wrappers.push_back(wrapper_a);
-  content::ServiceRegistryAndroid* wrapper_b =
-      ServiceRegistryAndroid::Create(registry_b.get(),
-                                     provider_b.get()).release();
-  test_environment->wrappers.push_back(wrapper_b);
+  ScopedJavaLocalRef<jobject> obj = Java_ShellMojoTestUtils_makePair(
+      env, registry_android->GetObj().obj(), provider_android->GetObj().obj());
 
-  test_environment->registries.push_back(std::move(registry_a));
-  test_environment->providers.push_back(std::move(provider_a));
-  test_environment->registries.push_back(std::move(registry_b));
-  test_environment->providers.push_back(std::move(provider_b));
+  test_environment->registry_wrappers.push_back(std::move(registry_android));
+  test_environment->provider_wrappers.push_back(std::move(provider_android));
+  test_environment->registries.push_back(std::move(registry));
+  test_environment->providers.push_back(std::move(provider));
 
-  return Java_ShellMojoTestUtils_makePair(env, wrapper_a->GetObj().obj(),
-                                          wrapper_b->GetObj().obj());
+  return obj;
 }
 
 static void RunLoop(JNIEnv* env,

@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/mojo/service_registrar_android.h"
+#include "content/browser/mojo/interface_registrar_android.h"
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
-#include "content/public/browser/android/service_registry_android.h"
-#include "jni/ServiceRegistrar_jni.h"
+#include "content/public/browser/android/interface_registry_android.h"
+#include "jni/InterfaceRegistrar_jni.h"
 
 namespace content {
 
 // static
-bool ServiceRegistrarAndroid::Register(JNIEnv* env) {
+bool InterfaceRegistrarAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
 // static
-void ServiceRegistrarAndroid::RegisterProcessHostServices(
-    ServiceRegistryAndroid* registry) {
+void InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
+    InterfaceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ServiceRegistrar_registerProcessHostServices(
+  Java_InterfaceRegistrar_exposeInterfacesToRenderer(
       env, registry->GetObj().obj(), base::android::GetApplicationContext());
 }
 
 // static
-void ServiceRegistrarAndroid::RegisterFrameHostServices(
-    ServiceRegistryAndroid* registry) {
+void InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
+  InterfaceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ServiceRegistrar_registerFrameHostServices(
+  Java_InterfaceRegistrar_exposeInterfacesToFrame(
       env, registry->GetObj().obj(), base::android::GetApplicationContext());
 }
 }  // namespace content
