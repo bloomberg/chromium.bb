@@ -101,7 +101,6 @@ std::unique_ptr<net::test_server::HttpResponse> RedirectForPathHandler(
   return std::move(response);
 }
 
-const char kBlinkPreconnectFeature[] = "LinkPreconnect";
 const char kChromiumUrl[] = "http://chromium.org";
 const char kInvalidLongUrl[] =
     "http://"
@@ -512,8 +511,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, kBlinkPreconnectFeature);
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     "PreconnectMore");
   }
