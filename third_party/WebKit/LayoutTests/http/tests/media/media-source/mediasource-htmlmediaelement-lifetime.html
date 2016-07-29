@@ -1,50 +1,28 @@
 <!DOCTYPE html>
-<html>
-    <head>
-      <script src="/js-test-resources/js-test.js"></script>
-      <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-           (Please avoid writing new tests using video-test.js) -->
-      <script src="/media-resources/video-test.js"></script>
-      <script src="/w3c/resources/testharness.js"></script>
-      <script src="/w3c/resources/testharnessreport.js"></script>
-      <script src="mediasource-util.js"></script>
-    </head>
-    <body>
-      <div id="log"></div>
-      <script>
-          window.jsTestIsAsync = true;
+<title>Tests that the MediaSource keeps the HTMLMediaElement alive.</title>
+<script src="/w3c/resources/testharness.js"></script>
+<script src="/w3c/resources/testharnessreport.js"></script>
+<script>
+async_test(function(test) {
+    var video = document.createElement("video");
+    var mediaSource = new MediaSource();
 
-          async_test(function(test)
-          {
-              var video = document.createElement("video");
-              var ms = new MediaSource();
+    mediaSource.onsourceopen = test.step_func(function() {
+        // sourceOpened called.
+        var buffer = mediaSource.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
 
-              function sourceOpened()
-              {
-                  consoleWrite("sourceOpened called.");
-                  var buffer = ms.addSourceBuffer('video/webm; codecs="vorbis,vp8"');
+        // Running the garbage collector.
+        video = null;
+        gc();
 
-                  consoleWrite("Running the garbage collector.");
-                  video = null;
-                  asyncGC(test.step_func(function()
-                  {
-                      assert_equals(ms.readyState, "open", "MediaSource object is open.");
+        setTimeout(test.step_func(function() {
+            assert_equals(mediaSource.readyState, "open", "MediaSource object is open.");
+            // Setting MediaSource duration.
+            mediaSource.duration = 100;
+        }), 0);
+    });
 
-                      consoleWrite("Setting MediaSource duration.");
-                      ms.duration = 100;
-                  }));
-              }
-
-              function durationChanged()
-              {
-                  consoleWrite("durationChanged called.");
-                  test.done();
-              }
-
-              ms.addEventListener("sourceopen", test.step_func(sourceOpened));
-              video.addEventListener("durationchange", test.step_func(durationChanged));
-              video.src = window.URL.createObjectURL(ms);
-          }, "Tests that the MediaSource keeps the HTMLMediaElement alive.");
-      </script>
-    </body>
-</html>
+    video.ondurationchange = test.step_func_done();
+    video.src = URL.createObjectURL(mediaSource);
+});
+</script>

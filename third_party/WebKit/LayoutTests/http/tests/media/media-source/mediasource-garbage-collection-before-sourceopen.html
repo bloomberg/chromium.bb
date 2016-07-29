@@ -1,50 +1,25 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="/media-resources/video-test.js"></script>
-    </head>
-    <body>
-        <video autoplay controls="controls" id='vid'></video>
-        <p>Tests that sourceopen event fires even if garbage collection happens between setting video.src &amp; the sourceopen event.</p>
-        <script type="text/javascript">
-            var sourceOpened = false;
+<title>Tests that "sourceopen" event fires even if garbage collection happens between setting "video.src" and the "sourceopen" event.</title>
+<script src="/w3c/resources/testharness.js"></script>
+<script src="/w3c/resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+    video.onstalled = t.unreached_func();
 
-            function createMediaSourceURL()
-            {
-                var mediaSource = new MediaSource();
-                var onSourceOpen = function (e)
-                {
-                    sourceOpened = true;
-                    consoleWrite("onSourceOpen called.");
-                    endTest();
-                };
-                consoleWrite("Setting sourceopen event listener.");
-                mediaSource.addEventListener('sourceopen', onSourceOpen);
-                return window.URL.createObjectURL(mediaSource);
-            }
+    var url = createMediaSourceURL();
+    // Running garbage collector.
+    gc();
 
-            function start()
-            {
-                var video = document.getElementById('vid');
-                var onStalled = function (e)
-                {
-                    if (sourceOpened)
-                        return;
+    // Setting video.src to object URL.
+    video.src = url;
 
-                    failTest('stalled event fired before sourceopen');
-                };
-                video.addEventListener('stalled', onStalled);
-
-                var url = createMediaSourceURL();
-                consoleWrite("Running garbage collector.");
-                gc();
-
-                consoleWrite("Setting video.src to object URL.");
-                video.src = url;
-            }
-            start();
-        </script>
-    </body>
-</html>
+    function createMediaSourceURL() {
+        var mediaSource = new MediaSource();
+        // Setting sourceopen event listener.
+        mediaSource.onsourceopen = t.step_func_done();
+        return URL.createObjectURL(mediaSource);
+    }
+});
+</script>

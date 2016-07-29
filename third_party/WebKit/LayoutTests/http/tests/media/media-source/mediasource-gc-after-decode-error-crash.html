@@ -1,62 +1,42 @@
-<!doctype html>
-<html>
-    <head>
-      <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-           (Please avoid writing new tests using video-test.js) -->
-      <script src="../../media-resources/video-test.js"></script>
-    </head>
-    <body>
-        <p>Verifies that a MediaSource decode error followed by a gc() and page reload does not trigger a crash.</p>
-        <video></video>
-        <script>
-          function onSourceOpen(e)
-          {
-              consoleWrite("onSourceOpen");
-              var ms = e.target;
-              ms.removeEventListener("sourceopen", onSourceOpen);
+<!DOCTYPE html>
+<title>Verifies that a MediaSource decode error followed by a gc() and page reload does not trigger a crash.</title>
+<script src="/w3c/resources/testharness.js"></script>
+<script src="/w3c/resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+    var mediaSource = new MediaSource();
 
-              var v = document.querySelector("video");
-              URL.revokeObjectURL(v.src);
+    mediaSource.onsourceopen = t.step_func(function() {
+        mediaSource.onsourceopen = null;
+        URL.revokeObjectURL(video.src);
 
-              // Create a SourceBuffer and append garbage so a decode error will occur
-              // and the MediaSource will get closed.
-              ms.addEventListener("sourceclose", onSourceClose);
-              var sb = ms.addSourceBuffer("video/webm;codecs=\"vp8\"");
-              var buf = new Uint8Array(10);
-              sb.appendBuffer(buf);
-          }
-
-          function onSourceClose(e)
-          {
-            consoleWrite("onSourceClose");
-            e.target.removeEventListener("sourceclose", onSourceClose);
+        // Create a SourceBuffer and append garbage so a decode error will occur
+        // and the MediaSource will get closed.
+        mediaSource.onsourceclose = t.step_func(function() {
+            mediaSource.onsourceclose = null;
 
             // Schedule a GC and page reload. We need a timeout here so that
             // the MediaSource reference used by this event is cleared before
             // we try to GC & reload.
-            setTimeout(gcAndReloadPage, 0);
-          }
+            setTimeout(t.step_func(function() {
+                gc();
 
-          function gcAndReloadPage()
-          {
-              consoleWrite("Running gc().");
-              gc();
-
-              var suffix = "?2";
-              if (document.location.href.indexOf(suffix) != -1) {
-                  endTest();
+                var suffix = "?2";
+                if (document.location.href.indexOf(suffix) != -1) {
+                  t.done();
                   return;
-              }
+                }
 
-              document.location.href += suffix;
-          }
+                document.location.href += suffix;
+            }), 0);
+        });
+        var sourceBuffer = mediaSource.addSourceBuffer("video/webm;codecs=\"vp8\"");
+        var buffer = new Uint8Array(10);
+        sourceBuffer.appendBuffer(buffer);
+    });
 
-          (function()
-          {
-              var ms = new MediaSource();
-              ms.addEventListener("sourceopen", onSourceOpen);
-              document.querySelector("video").src = URL.createObjectURL(ms);
-          })();
-        </script>
-    </body>
-</html>
+    video.src = URL.createObjectURL(mediaSource);
+});
+</script>
