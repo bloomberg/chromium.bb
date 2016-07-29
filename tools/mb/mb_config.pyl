@@ -379,7 +379,7 @@
       'Win ASan Release Media':
         'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'gyp_asan_fuzzer_v8_heap_release_bot_x86',
-      'Win SyzyASAN LKGR': 'gn_syzyasan_no_pch_x86',
+      'Win SyzyASAN LKGR': 'gn_syzyasan_no_pch_release_x86',
     },
 
     'chromium.mac': {
@@ -554,7 +554,7 @@
       'Chromium ASAN - debug': 'gn_asan_lsan_edge_debug_bot',
       'Chromium ASAN (symbolized)':
         'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
-      'Chromium Win SyzyASAN': 'gn_syzyasan_no_pch_x86',
+      'Chromium Win SyzyASAN': 'gn_syzyasan_no_pch_release_x86',
       'Linux ASAN Builder': 'swarming_asan_lsan_gn_release_bot',
       'Linux Debug Builder': 'gn_debug_bot',
       'Linux Snapshot Builder': 'gn_release_bot',
@@ -924,7 +924,7 @@
         'swarming_gpu_tests_gn_release_trybot_x86',
       'win_chromium_dbg_ng': 'swarming_gn_debug_trybot_x86',
       'win_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot_x86',
-      'win_chromium_syzyasan_rel': 'swarming_gn_syzyasan_release_trybot_x86',
+      'win_chromium_syzyasan_rel': 'gn_syzyasan_no_pch_release_x86',
       'win_chromium_variable': 'findit',
       'win_chromium_variable_archive': 'findit',
       'win_chromium_variable_chrome': 'findit',
@@ -1427,8 +1427,8 @@
       'gn', 'shared_release_bot', 'minimal_symbols', 'x86',
     ],
 
-    'gn_syzyasan_no_pch_x86': [
-      'gn', 'syzyasan', 'no_pch', 'x86',
+    'gn_syzyasan_no_pch_release_x86': [
+      'gn', 'syzyasan', 'no_pch', 'release', 'x86',
     ],
 
     'gn_tsan_disable_nacl_line_tables_debug_bot': [
@@ -1889,10 +1889,6 @@
 
     'swarming_gn_release_trybot_arm': [
       'swarming', 'gn', 'release_trybot', 'arm', 'crosscompile',
-    ],
-
-    'swarming_gn_syzyasan_release_trybot_x86': [
-      'swarming', 'gn', 'syzyasan', 'release_trybot', 'x86',
     ],
 
     'swarming_tsan_disable_nacl_gn_release_bot': [
