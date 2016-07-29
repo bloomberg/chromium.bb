@@ -105,20 +105,23 @@ WebEditingCommandType WebEditingCommandTypeFromCommandName(const String& command
     return WebEditingCommandType::Invalid;
 }
 
-InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType)
+// |frame| is only used for |InsertNewline| due to how |executeInsertNewline()| works.
+InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType, LocalFrame& frame)
 {
     // We only handle InputType on spec for 'beforeinput'.
     // http://w3c.github.io/editing/input-events.html
     using CommandType = WebEditingCommandType;
     using InputType = InputEvent::InputType;
 
+    // |executeInsertNewline()| could do two things but we have no other ways to predict.
+    if (commandType == CommandType::InsertNewline)
+        return frame.editor().canEditRichly() ? InputType::InsertParagraph : InputType::InsertLineBreak;
+
     switch (commandType) {
     // Insertion.
     case CommandType::InsertBacktab:
     case CommandType::InsertText:
         return InputType::InsertText;
-    // TODO(chongz): Map |InsertNewline| based on |frame->editor().canEditRichly()|.
-    case CommandType::InsertNewline:
     case CommandType::InsertLineBreak:
         return InputType::InsertLineBreak;
     case CommandType::InsertParagraph:
@@ -132,19 +135,25 @@ InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType
         return InputType::InsertUnorderedList;
 
     // Deletion.
-    // TODO(chongz): Map correct deletion InputType.
     case CommandType::Delete:
     case CommandType::DeleteBackward:
     case CommandType::DeleteBackwardByDecomposingPreviousCharacter:
+        return InputType::DeleteContentBackward;
     case CommandType::DeleteForward:
+        return InputType::DeleteContentForward;
     case CommandType::DeleteToBeginningOfLine:
-    case CommandType::DeleteToBeginningOfParagraph:
+        return InputType::DeleteLineBackward;
     case CommandType::DeleteToEndOfLine:
+        return InputType::DeleteLineForward;
+    case CommandType::DeleteWordBackward:
+        return InputType::DeleteWordBackward;
+    case CommandType::DeleteWordForward:
+        return InputType::DeleteWordForward;
+    // TODO(chongz): Find appreciate InputType for following commands.
+    case CommandType::DeleteToBeginningOfParagraph:
     case CommandType::DeleteToEndOfParagraph:
     case CommandType::DeleteToMark:
-    case CommandType::DeleteWordBackward:
-    case CommandType::DeleteWordForward:
-        return InputType::DeleteContentBackward;
+        return InputType::None;
 
     // Command.
     case CommandType::Undo:
@@ -493,32 +502,32 @@ static bool executeDelete(LocalFrame& frame, Event*, EditorCommandSource source,
 
 static bool executeDeleteBackward(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionBackward, CharacterGranularity, false, true);
+    frame.editor().deleteWithDirection(DeleteDirection::Backward, CharacterGranularity, false, true);
     return true;
 }
 
 static bool executeDeleteBackwardByDecomposingPreviousCharacter(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     DLOG(ERROR) << "DeleteBackwardByDecomposingPreviousCharacter is not implemented, doing DeleteBackward instead";
-    frame.editor().deleteWithDirection(DirectionBackward, CharacterGranularity, false, true);
+    frame.editor().deleteWithDirection(DeleteDirection::Backward, CharacterGranularity, false, true);
     return true;
 }
 
 static bool executeDeleteForward(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionForward, CharacterGranularity, false, true);
+    frame.editor().deleteWithDirection(DeleteDirection::Forward, CharacterGranularity, false, true);
     return true;
 }
 
 static bool executeDeleteToBeginningOfLine(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionBackward, LineBoundary, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Backward, LineBoundary, true, false);
     return true;
 }
 
 static bool executeDeleteToBeginningOfParagraph(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionBackward, ParagraphBoundary, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Backward, ParagraphBoundary, true, false);
     return true;
 }
 
@@ -526,7 +535,7 @@ static bool executeDeleteToEndOfLine(LocalFrame& frame, Event*, EditorCommandSou
 {
     // Despite its name, this command should delete the newline at the end of
     // a paragraph if you are at the end of a paragraph (like DeleteToEndOfParagraph).
-    frame.editor().deleteWithDirection(DirectionForward, LineBoundary, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Forward, LineBoundary, true, false);
     return true;
 }
 
@@ -534,7 +543,7 @@ static bool executeDeleteToEndOfParagraph(LocalFrame& frame, Event*, EditorComma
 {
     // Despite its name, this command should delete the newline at the end of
     // a paragraph if you are at the end of a paragraph.
-    frame.editor().deleteWithDirection(DirectionForward, ParagraphBoundary, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Forward, ParagraphBoundary, true, false);
     return true;
 }
 
@@ -554,13 +563,13 @@ static bool executeDeleteToMark(LocalFrame& frame, Event*, EditorCommandSource, 
 
 static bool executeDeleteWordBackward(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionBackward, WordGranularity, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Backward, WordGranularity, true, false);
     return true;
 }
 
 static bool executeDeleteWordForward(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    frame.editor().deleteWithDirection(DirectionForward, WordGranularity, true, false);
+    frame.editor().deleteWithDirection(DeleteDirection::Forward, WordGranularity, true, false);
     return true;
 }
 
@@ -618,7 +627,7 @@ static bool executeForwardDelete(LocalFrame& frame, Event*, EditorCommandSource 
     EditingState editingState;
     switch (source) {
     case CommandFromMenuOrKeyBinding:
-        frame.editor().deleteWithDirection(DirectionForward, CharacterGranularity, false, true);
+        frame.editor().deleteWithDirection(DeleteDirection::Forward, CharacterGranularity, false, true);
         return true;
     case CommandFromDOM:
         // Doesn't scroll to make the selection visible, or modify the kill ring.
@@ -1779,8 +1788,8 @@ bool Editor::executeCommand(const String& commandName)
     // Specially handling commands that Editor::execCommand does not directly
     // support.
     if (commandName == "DeleteToEndOfParagraph") {
-        if (!deleteWithDirection(DirectionForward, ParagraphBoundary, true, false))
-            deleteWithDirection(DirectionForward, CharacterGranularity, true, false);
+        if (!deleteWithDirection(DeleteDirection::Forward, ParagraphBoundary, true, false))
+            deleteWithDirection(DeleteDirection::Forward, CharacterGranularity, true, false);
         return true;
     }
     if (commandName == "DeleteBackward")
@@ -1846,7 +1855,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
     }
 
     if (m_source == CommandFromMenuOrKeyBinding) {
-        InputEvent::InputType inputType = InputTypeFromCommandType(m_command->commandType);
+        InputEvent::InputType inputType = InputTypeFromCommandType(m_command->commandType, *m_frame);
         if (inputType != InputEvent::InputType::None) {
             if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType, emptyString(), getRanges()) != DispatchEventResult::NotCanceled)
                 return true;

@@ -48,7 +48,7 @@ public:
 
     typedef unsigned CommandOptions;
 
-    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, InputEvent::InputType inputType = InputEvent::InputType::Paste)
+    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, InputEvent::InputType inputType = InputEvent::InputType::None)
     {
         return new ReplaceSelectionCommand(document, fragment, options, inputType);
     }

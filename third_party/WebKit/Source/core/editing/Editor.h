@@ -57,6 +57,8 @@ class StylePropertySet;
 class TextEvent;
 class UndoStack;
 
+enum class DeleteDirection;
+
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
@@ -106,8 +108,8 @@ public:
 
     void clearLastEditCommand();
 
-    bool deleteWithDirection(SelectionDirection, TextGranularity, bool killRing, bool isTypingAction);
-    void deleteSelectionWithSmartDelete(bool smartDelete);
+    bool deleteWithDirection(DeleteDirection, TextGranularity, bool killRing, bool isTypingAction);
+    void deleteSelectionWithSmartDelete(bool smartDelete, InputEvent::InputType);
 
     void applyStyle(StylePropertySet*, InputEvent::InputType);
     void applyParagraphStyle(StylePropertySet*, InputEvent::InputType);

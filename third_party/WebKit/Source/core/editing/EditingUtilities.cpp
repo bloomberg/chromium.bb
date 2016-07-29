@@ -1928,4 +1928,25 @@ DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputE
     return target->dispatchEvent(beforeInputEvent);
 }
 
+InputEvent::InputType deletionInputTypeFromTextGranularity(DeleteDirection direction, TextGranularity granularity)
+{
+    using InputType = InputEvent::InputType;
+    switch (direction) {
+    case DeleteDirection::Forward:
+        if (granularity == WordGranularity)
+            return InputType::DeleteWordForward;
+        if (granularity == LineBoundary)
+            return InputType::DeleteLineForward;
+        return InputType::DeleteContentForward;
+    case DeleteDirection::Backward:
+        if (granularity == WordGranularity)
+            return InputType::DeleteWordBackward;
+        if (granularity == LineBoundary)
+            return InputType::DeleteLineBackward;
+        return InputType::DeleteContentBackward;
+    default:
+        return InputType::None;
+    }
+}
+
 } // namespace blink

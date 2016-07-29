@@ -35,20 +35,20 @@ class HTMLTableRowElement;
 
 class DeleteSelectionCommand final : public CompositeEditCommand {
 public:
-    static DeleteSelectionCommand* create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static DeleteSelectionCommand* create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true, InputEvent::InputType inputType = InputEvent::InputType::None)
     {
-        return new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup);
+        return new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup, inputType);
     }
-    static DeleteSelectionCommand* create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
+    static DeleteSelectionCommand* create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true, InputEvent::InputType inputType = InputEvent::InputType::None)
     {
-        return new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup);
+        return new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup, inputType);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    DeleteSelectionCommand(Document&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool santizeMarkup);
-    DeleteSelectionCommand(const VisibleSelection&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup);
+    DeleteSelectionCommand(Document&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool santizeMarkup, InputEvent::InputType);
+    DeleteSelectionCommand(const VisibleSelection&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup, InputEvent::InputType);
 
     void doApply(EditingState*) override;
     InputEvent::InputType inputType() const override;
@@ -79,6 +79,7 @@ private:
     bool m_pruneStartBlockIfNecessary;
     bool m_startsAtEmptyLine;
     bool m_sanitizeMarkup;
+    InputEvent::InputType m_inputType;
 
     // This data is transient and should be cleared at the end of the doApply function.
     VisibleSelection m_selectionToDelete;

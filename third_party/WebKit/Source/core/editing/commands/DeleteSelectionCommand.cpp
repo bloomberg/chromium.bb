@@ -63,7 +63,7 @@ static bool isTableRowEmpty(Node* row)
     return true;
 }
 
-DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
+DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup, InputEvent::InputType inputType)
     : CompositeEditCommand(document)
     , m_hasSelectionToDelete(false)
     , m_smartDelete(smartDelete)
@@ -73,6 +73,7 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDel
     , m_pruneStartBlockIfNecessary(false)
     , m_startsAtEmptyLine(false)
     , m_sanitizeMarkup(sanitizeMarkup)
+    , m_inputType(inputType)
     , m_startBlock(nullptr)
     , m_endBlock(nullptr)
     , m_typingStyle(nullptr)
@@ -80,7 +81,7 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDel
 {
 }
 
-DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
+DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup, InputEvent::InputType inputType)
     : CompositeEditCommand(*selection.start().document())
     , m_hasSelectionToDelete(true)
     , m_smartDelete(smartDelete)
@@ -90,6 +91,7 @@ DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection
     , m_pruneStartBlockIfNecessary(false)
     , m_startsAtEmptyLine(false)
     , m_sanitizeMarkup(sanitizeMarkup)
+    , m_inputType(inputType)
     , m_selectionToDelete(selection)
     , m_startBlock(nullptr)
     , m_endBlock(nullptr)
@@ -931,10 +933,10 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
 
 InputEvent::InputType DeleteSelectionCommand::inputType() const
 {
-    // Note that DeleteSelectionCommand is also used when the user presses the Delete key,
-    // but in that case there's a TypingCommand that supplies the inputType(), so
-    // the Undo menu correctly shows "Undo Typing"
-    return InputEvent::InputType::Cut;
+    // |DeleteSelectionCommand| could be used with Cut, Menu Bar deletion and |TypingCommand|.
+    // 1. Cut and Menu Bar deletion should rely on correct |m_inputType|.
+    // 2. |TypingCommand| will supply the |inputType()|, so |m_inputType| could default to |InputType::None|.
+    return m_inputType;
 }
 
 // Normally deletion doesn't preserve the typing style that was present before it.  For example,

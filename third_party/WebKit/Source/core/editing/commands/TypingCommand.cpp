@@ -300,21 +300,29 @@ void TypingCommand::doApply(EditingState* editingState)
 
 InputEvent::InputType TypingCommand::inputType() const
 {
-    // TODO(chongz): Map commands based on |m_granularity| and direction.
-    switch (commandTypeOfOpenCommand()) {
+    using InputType = InputEvent::InputType;
+
+    switch (m_commandType) {
+    // TODO(chongz): |DeleteSelection| is used by IME but we don't have direction info.
     case DeleteSelection:
+        return InputType::DeleteContentBackward;
     case DeleteKey:
+        if (m_compositionType != TextCompositionNone)
+            return InputType::DeleteComposedCharacterBackward;
+        return deletionInputTypeFromTextGranularity(DeleteDirection::Backward, m_granularity);
     case ForwardDeleteKey:
-        return InputEvent::InputType::DeleteContentBackward;
+        if (m_compositionType != TextCompositionNone)
+            return InputType::DeleteComposedCharacterForward;
+        return deletionInputTypeFromTextGranularity(DeleteDirection::Forward, m_granularity);
     case InsertText:
-        return InputEvent::InputType::InsertText;
+        return InputType::InsertText;
     case InsertLineBreak:
-        return InputEvent::InputType::InsertLineBreak;
+        return InputType::InsertLineBreak;
     case InsertParagraphSeparator:
     case InsertParagraphSeparatorInQuotedContent:
-        return InputEvent::InputType::InsertParagraph;
+        return InputType::InsertParagraph;
     default:
-        return InputEvent::InputType::None;
+        return InputType::None;
     }
 }
 

@@ -312,7 +312,7 @@ bool Editor::isSelectTrailingWhitespaceEnabled() const
     return false;
 }
 
-bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity granularity, bool killRing, bool isTypingAction)
+bool Editor::deleteWithDirection(DeleteDirection direction, TextGranularity granularity, bool killRing, bool isTypingAction)
 {
     if (!canEdit())
         return false;
@@ -326,7 +326,7 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         } else {
             if (killRing)
                 addToKillRing(selectedRange());
-            deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
+            deleteSelectionWithSmartDelete(canSmartCopyOrDelete(), deletionInputTypeFromTextGranularity(direction, granularity));
             // Implicitly calls revealSelectionAfterEditingOperation().
         }
     } else {
@@ -336,15 +336,13 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
         if (killRing)
             options |= TypingCommand::KillRing;
         switch (direction) {
-        case DirectionForward:
-        case DirectionRight:
+        case DeleteDirection::Forward:
             DCHECK(frame().document());
             TypingCommand::forwardDeleteKeyPressed(*frame().document(), &editingState, options, granularity);
             if (editingState.isAborted())
                 return false;
             break;
-        case DirectionBackward:
-        case DirectionLeft:
+        case DeleteDirection::Backward:
             DCHECK(frame().document());
             TypingCommand::deleteKeyPressed(*frame().document(), options, granularity);
             break;
@@ -361,13 +359,16 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
     return true;
 }
 
-void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
+void Editor::deleteSelectionWithSmartDelete(bool smartDelete, InputEvent::InputType inputType)
 {
     if (frame().selection().isNone())
         return;
 
+    const bool kMergeBlocksAfterDelete = true;
+    const bool kExpandForSpecialElements = false;
+    const bool kSanitizeMarkup = true;
     DCHECK(frame().document());
-    DeleteSelectionCommand::create(*frame().document(), smartDelete)->apply();
+    DeleteSelectionCommand::create(*frame().document(), smartDelete, kMergeBlocksAfterDelete, kExpandForSpecialElements, kSanitizeMarkup, inputType)->apply();
 }
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
@@ -901,7 +902,7 @@ void Editor::cut()
         } else {
             writeSelectionToPasteboard();
         }
-        deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
+        deleteSelectionWithSmartDelete(canSmartCopyOrDelete(), InputEvent::InputType::Cut);
     }
 }
 
@@ -954,7 +955,9 @@ void Editor::performDelete()
     if (!canDelete())
         return;
     addToKillRing(selectedRange());
-    deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
+    // TODO(chongz): |Editor::performDelete()| has no direction.
+    // https://github.com/w3c/editing/issues/130
+    deleteSelectionWithSmartDelete(canSmartCopyOrDelete(), InputEvent::InputType::DeleteContentBackward);
 
     // clear the "start new kill ring sequence" setting, because it was set to true
     // when the selection was updated by deleting the range

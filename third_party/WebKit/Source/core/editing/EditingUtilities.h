@@ -53,6 +53,11 @@ enum class PositionMoveType {
     GraphemeCluster,
 };
 
+enum class DeleteDirection {
+    Forward,
+    Backward,
+};
+
 class Document;
 class Element;
 class HTMLBRElement;
@@ -362,6 +367,8 @@ const String& nonBreakingSpaceString();
 DispatchEventResult dispatchBeforeInputInsertText(EventTarget*, const String& data);
 DispatchEventResult dispatchBeforeInputFromComposition(EventTarget*, InputEvent::InputType, const String& data, InputEvent::EventCancelable);
 DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget*, InputEvent::InputType, const String& data, const RangeVector*);
+
+InputEvent::InputType deletionInputTypeFromTextGranularity(DeleteDirection, TextGranularity);
 
 } // namespace blink
 

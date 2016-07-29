@@ -1638,6 +1638,9 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
 
 InputEvent::InputType ReplaceSelectionCommand::inputType() const
 {
+    // |ReplaceSelectionCommand| could be used with Paste, Drag&Drop, InsertFragment and |TypingCommand|.
+    // 1. Paste, Drag&Drop, InsertFragment should rely on correct |m_inputType|.
+    // 2. |TypingCommand| will supply the |inputType()|, so |m_inputType| could default to |InputType::None|.
     return m_inputType;
 }
 
