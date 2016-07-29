@@ -114,12 +114,10 @@ public:
     };
     void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength, DidFinishLoadingReason);
     void didFailLoading(Resource*, const ResourceError&);
-    void didReceiveResponse(Resource*, const ResourceResponse&);
+    void didReceiveResponse(Resource*, const ResourceResponse&, WebDataConsumerHandle*);
     void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength);
     void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
     bool defersLoading() const;
-
-    bool canAccessResource(Resource*, SecurityOrigin*, const KURL&) const;
     bool isControlledByServiceWorker() const;
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
@@ -166,6 +164,7 @@ private:
 
     void initializeResourceRequest(ResourceRequest&, Resource::Type, FetchRequest::DeferOption);
     void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse&, const ResourceLoaderOptions&);
+    bool canAccessResponse(Resource*, const ResourceResponse&) const;
 
     bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
     bool shouldDeferImageLoad(const KURL&) const;

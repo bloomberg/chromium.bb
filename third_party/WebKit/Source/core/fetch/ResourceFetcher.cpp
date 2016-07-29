@@ -239,25 +239,28 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
     return resource.get();
 }
 
-bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
+bool ResourceFetcher::canAccessResponse(Resource* resource, const ResourceResponse& response) const
 {
     // Redirects can change the response URL different from one of request.
     bool forPreload = resource->isUnusedPreload();
-    if (!context().canRequest(resource->getType(), resource->resourceRequest(), url, resource->options(), forPreload, FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!context().canRequest(resource->getType(), resource->resourceRequest(), response.url(), resource->options(), forPreload, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
+    SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
     if (!sourceOrigin)
         sourceOrigin = context().getSecurityOrigin();
 
-    if (sourceOrigin->canRequestNoSuborigin(url))
+    if (sourceOrigin->canRequestNoSuborigin(response.url()))
         return true;
 
+    // Use the original response instead of the 304 response for a successful revaldiation.
+    const ResourceResponse& responseForAccessControl = (resource->isCacheValidator() && response.httpStatusCode() == 304) ? resource->response() : response;
     String errorDescription;
-    if (!resource->passesAccessControlCheck(sourceOrigin, errorDescription)) {
+    if (!passesAccessControlCheck(responseForAccessControl, resource->options().allowCredentials, sourceOrigin, errorDescription, resource->lastResourceRequest().requestContext())) {
         resource->setCORSFailed();
         if (!forPreload) {
             String resourceType = Resource::resourceTypeToString(resource->getType(), resource->options().initiatorInfo);
-            context().addConsoleMessage(resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
+            context().addConsoleMessage(resourceType + " from origin '" + SecurityOrigin::create(response.url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
         }
         return false;
     }
@@ -945,21 +948,44 @@ void ResourceFetcher::didFailLoading(Resource* resource, const ResourceError& er
     context().didLoadResource(resource);
 }
 
-void ResourceFetcher::didReceiveResponse(Resource* resource, const ResourceResponse& response)
+void ResourceFetcher::didReceiveResponse(Resource* resource, const ResourceResponse& response, WebDataConsumerHandle* rawHandle)
 {
-    // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
-    // We check the URL not to load the resources which are forbidden by the page CSP.
-    // https://w3c.github.io/webappsec-csp/#should-block-response
+    // |rawHandle|'s ownership is transferred to the callee.
+    std::unique_ptr<WebDataConsumerHandle> handle = wrapUnique(rawHandle);
+
     if (response.wasFetchedViaServiceWorker()) {
-        const KURL& originalURL = response.originalURLViaServiceWorker();
-        if (!originalURL.isEmpty() && !context().allowResponse(resource->getType(), resource->resourceRequest(), originalURL, resource->options())) {
-            resource->loader()->cancel();
-            bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-            context().dispatchDidFail(resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.getString(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
+        if (resource->options().corsEnabled == IsCORSEnabled && response.wasFallbackRequiredByServiceWorker()) {
+            ResourceRequest request = resource->lastResourceRequest();
+            DCHECK_EQ(request.skipServiceWorker(), WebURLRequest::SkipServiceWorker::None);
+            // This code handles the case when a regular controlling service worker
+            // doesn't handle a cross origin request. When this happens we still
+            // want to give foreign fetch a chance to handle the request, so
+            // only skip the controlling service worker for the fallback request.
+            // This is currently safe because of http://crbug.com/604084 the
+            // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
+            // handled a request.
+            request.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::Controlling);
+            resource->loader()->restartForServiceWorkerFallback(request);
             return;
         }
+
+        // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
+        // We check the URL not to load the resources which are forbidden by the page CSP.
+        // https://w3c.github.io/webappsec-csp/#should-block-response
+        const KURL& originalURL = response.originalURLViaServiceWorker();
+        if (!originalURL.isEmpty() && !context().allowResponse(resource->getType(), resource->resourceRequest(), originalURL, resource->options())) {
+            resource->loader()->didFail(nullptr, ResourceError::cancelledDueToAccessCheckError(originalURL));
+            return;
+        }
+    } else if (resource->options().corsEnabled == IsCORSEnabled && !canAccessResponse(resource, response)) {
+        resource->loader()->didFail(nullptr, ResourceError::cancelledDueToAccessCheckError(response.url()));
+        return;
     }
+
     context().dispatchDidReceiveResponse(resource->identifier(), response, resource->resourceRequest().frameType(), resource->resourceRequest().requestContext(), resource);
+    resource->responseReceived(response, std::move(handle));
+    if (resource->loader() && response.httpStatusCode() >= 400 && !resource->shouldIgnoreHTTPStatusCodeErrors())
+        resource->loader()->didFail(nullptr, ResourceError::cancelledError(response.url()));
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)

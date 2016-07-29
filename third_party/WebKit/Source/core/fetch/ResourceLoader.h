@@ -50,6 +50,7 @@ public:
     DECLARE_TRACE();
 
     void start(const ResourceRequest&, WebTaskRunner* loadingTaskRunner, bool defersLoading);
+    void restartForServiceWorkerFallback(const ResourceRequest&);
     void cancel();
 
     void setDefersLoading(bool);
@@ -85,8 +86,6 @@ private:
     ResourceLoader(ResourceFetcher*, Resource*);
 
     void requestSynchronously(const ResourceRequest&);
-
-    bool responseNeedsAccessControlCheck() const;
 
     std::unique_ptr<WebURLLoader> m_loader;
     Member<ResourceFetcher> m_fetcher;
