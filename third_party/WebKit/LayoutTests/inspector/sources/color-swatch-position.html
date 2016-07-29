@@ -58,6 +58,14 @@ function test()
                 sourceFrame.textEditor.editRange(endParenthesis, "]");
                 dumpSwatchPositions();
                 next();
+            },
+
+            function testBookmarksAtLineStart(next)
+            {
+                var lineStart = new WebInspector.TextRange(5, 0, 5, 0);
+                sourceFrame.textEditor.editRange(lineStart, "background color:\n#ff0;\n");
+                dumpSwatchPositions();
+                next();
             }
         ]);
 

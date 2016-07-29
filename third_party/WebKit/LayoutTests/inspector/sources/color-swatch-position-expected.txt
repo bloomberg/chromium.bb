@@ -25,3 +25,7 @@ Line 4, Column 11: rgb(0, 0, 0)
 Running: testInvalidateColor
 Line 4, Column 11: rgb(0, 0, 0)
 
+Running: testBookmarksAtLineStart
+Line 4, Column 11: rgb(0, 0, 0)
+Line 6, Column 0: #ff0
+
