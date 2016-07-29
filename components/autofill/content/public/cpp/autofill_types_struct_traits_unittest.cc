@@ -336,6 +336,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.should_autocomplete = true;
   input.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
+  input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

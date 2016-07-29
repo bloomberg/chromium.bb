@@ -350,6 +350,8 @@ bool StructTraits<mojom::FormFieldData, FormFieldData>::Read(
   if (!data.ReadCssClasses(&out->css_classes))
     return false;
 
+  out->properties_mask = data.properties_mask();
+
   out->max_length = data.max_length();
   out->is_autofilled = data.is_autofilled();
 

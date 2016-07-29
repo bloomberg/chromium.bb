@@ -124,6 +124,10 @@ struct StructTraits<autofill::mojom::FormFieldData, autofill::FormFieldData> {
     return r.css_classes;
   }
 
+  static uint32_t properties_mask(const autofill::FormFieldData& r) {
+    return r.properties_mask;
+  }
+
   static uint64_t max_length(const autofill::FormFieldData& r) {
     return r.max_length;
   }
