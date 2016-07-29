@@ -68,6 +68,7 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/metrics/android_metrics_provider.h"
+#include "chrome/browser/metrics/page_load_metrics_provider.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -460,6 +461,8 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new AndroidMetricsProvider(g_browser_process->local_state())));
+  metrics_service_->RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider>(new PageLoadMetricsProvider()));
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if defined(OS_WIN)

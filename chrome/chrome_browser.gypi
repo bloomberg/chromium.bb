@@ -1040,6 +1040,8 @@
       'browser/media/protected_media_identifier_infobar_delegate_android.h',
       'browser/metrics/android_metrics_provider.cc',
       'browser/metrics/android_metrics_provider.h',
+      'browser/metrics/page_load_metrics_provider.cc',
+      'browser/metrics/page_load_metrics_provider.h',
       'browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.cc',
       'browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.h',
       'browser/net/spdyproxy/data_reduction_proxy_settings_android.cc',

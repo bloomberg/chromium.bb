@@ -53,6 +53,8 @@ const char kClientRedirectWithoutPaint[] =
     "PageLoad.Internal.ClientRedirect.NavigationWithoutPaint";
 const char kCommitToCompleteNoTimingIPCs[] =
     "PageLoad.Internal.CommitToComplete.NoTimingIPCs";
+const char kPageLoadCompletedAfterAppBackground[] =
+    "PageLoad.Internal.PageLoadCompleted.AfterAppBackground";
 
 }  // namespace internal
 
@@ -187,6 +189,11 @@ void RecordInternalError(InternalErrorLoadEvent event) {
   UMA_HISTOGRAM_ENUMERATION(internal::kErrorEvents, event, ERR_LAST_ENTRY);
 }
 
+void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
+  UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadCompletedAfterAppBackground,
+                        completed_after_background);
+}
+
 UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
     return ABORT_RELOAD;
@@ -247,6 +254,7 @@ PageLoadTracker::PageLoadTracker(
     int aborted_chain_size,
     int aborted_chain_size_same_url)
     : did_stop_tracking_(false),
+      app_entered_background_(false),
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
@@ -263,6 +271,10 @@ PageLoadTracker::PageLoadTracker(
 }
 
 PageLoadTracker::~PageLoadTracker() {
+  if (app_entered_background_) {
+    RecordAppBackgroundPageLoadCompleted(true);
+  }
+
   if (did_stop_tracking_)
     return;
 
@@ -395,6 +407,13 @@ void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
 void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
   for (const auto& observer : observers_) {
     observer->OnUserInput(event);
+  }
+}
+
+void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
+  if (!app_entered_background_) {
+    RecordAppBackgroundPageLoadCompleted(false);
+    app_entered_background_ = true;
   }
 }
 
@@ -803,6 +822,17 @@ void MetricsWebContentsObserver::OnInputEvent(
 
   if (committed_load_)
     committed_load_->OnInputEvent(event);
+}
+
+void MetricsWebContentsObserver::FlushMetricsOnAppEnterBackground() {
+  if (committed_load_)
+    committed_load_->FlushMetricsOnAppEnterBackground();
+  for (const auto& kv : provisional_loads_) {
+    kv.second->FlushMetricsOnAppEnterBackground();
+  }
+  for (const auto& tracker : aborted_provisional_loads_) {
+    tracker->FlushMetricsOnAppEnterBackground();
+  }
 }
 
 void MetricsWebContentsObserver::DidRedirectNavigation(

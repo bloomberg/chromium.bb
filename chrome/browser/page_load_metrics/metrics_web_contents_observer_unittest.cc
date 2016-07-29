@@ -472,4 +472,31 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChainsNoCommit) {
   histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNoCommit, 3, 1);
 }
 
+TEST_F(MetricsWebContentsObserverTest, FlushMetricsOnAppEnterBackground) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kPageLoadCompletedAfterAppBackground, 0);
+
+  observer_->FlushMetricsOnAppEnterBackground();
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kPageLoadCompletedAfterAppBackground, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kPageLoadCompletedAfterAppBackground, false, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kPageLoadCompletedAfterAppBackground, true, 0);
+
+  observer_.reset();
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kPageLoadCompletedAfterAppBackground, 2);
+  histogram_tester_.ExpectBucketCount(
+      internal::kPageLoadCompletedAfterAppBackground, false, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kPageLoadCompletedAfterAppBackground, true, 1);
+}
+
 }  // namespace page_load_metrics

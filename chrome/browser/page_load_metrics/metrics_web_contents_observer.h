@@ -41,6 +41,7 @@ extern const char kAbortChainSizeForwardBack[];
 extern const char kAbortChainSizeNewNavigation[];
 extern const char kAbortChainSizeNoCommit[];
 extern const char kAbortChainSizeSameURL[];
+extern const char kPageLoadCompletedAfterAppBackground[];
 
 }  // namespace internal
 
@@ -143,6 +144,12 @@ class PageLoadTracker {
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
+  // Flush any buffered metrics, as part of the metrics subsystem persisting
+  // metrics as the application goes into the background. The application may be
+  // killed at any time after this method is invoked without further
+  // notification.
+  void FlushMetricsOnAppEnterBackground();
+
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
   // Returns true if the timing was successfully updated.
@@ -219,6 +226,10 @@ class PageLoadTracker {
   // stop tracking a navigation if it doesn't meet the criteria for tracking
   // metrics in DidFinishNavigation.
   bool did_stop_tracking_;
+
+  // Whether the application went into the background when this PageLoadTracker
+  // was active. This is a temporary boolean for UMA tracking.
+  bool app_entered_background_;
 
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
@@ -301,6 +312,12 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+
+  // Flush any buffered metrics, as part of the metrics subsystem persisting
+  // metrics as the application goes into the background. The application may be
+  // killed at any time after this method is invoked without further
+  // notification.
+  void FlushMetricsOnAppEnterBackground();
 
   // This getter function is required for testing.
   const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
