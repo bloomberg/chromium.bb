@@ -414,7 +414,6 @@ def main(argv):
           str(deps_not_support_android))
 
   if options.type in ('java_binary', 'java_library', 'android_apk'):
-    deps_info['resources_deps'] = [c['path'] for c in all_resources_deps]
     deps_info['jar_path'] = options.jar_path
     if options.type == 'android_apk' or options.supports_android:
       deps_info['dex_path'] = options.dex_path
