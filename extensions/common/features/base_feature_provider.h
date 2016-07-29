@@ -41,6 +41,10 @@ class BaseFeatureProvider : public FeatureProvider {
 
   void AddFeature(base::StringPiece name, std::unique_ptr<Feature> feature);
 
+  // Takes ownership. Used in preference to unique_ptr variant to reduce size
+  // of generated code.
+  void AddFeature(base::StringPiece name, Feature* feature);
+
  private:
   std::map<std::string, std::unique_ptr<Feature>> features_;
 
