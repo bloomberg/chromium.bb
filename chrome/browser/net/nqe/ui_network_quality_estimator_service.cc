@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/nqe/network_quality_estimator.h"
 
 // A class that sets itself as an observer of the EffectiveconnectionType for
 // the browser IO thread. It reports any change in EffectiveConnectionType back
@@ -48,7 +49,7 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
   // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
   // implementation:
   void OnEffectiveConnectionTypeChanged(
-      net::NetworkQualityEstimator::EffectiveConnectionType type) override {
+      net::EffectiveConnectionType type) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -65,7 +66,7 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
 };
 
 UINetworkQualityEstimatorService::UINetworkQualityEstimatorService()
-    : type_(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+    : type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       io_observer_(nullptr),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -91,18 +92,18 @@ void UINetworkQualityEstimatorService::Shutdown() {
 }
 
 void UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged(
-    net::NetworkQualityEstimator::EffectiveConnectionType type) {
+    net::EffectiveConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   type_ = type;
 }
 
 void UINetworkQualityEstimatorService::SetEffectiveConnectionTypeForTesting(
-    net::NetworkQualityEstimator::EffectiveConnectionType type) {
+    net::EffectiveConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   type_ = type;
 }
 
-net::NetworkQualityEstimator::EffectiveConnectionType
+net::EffectiveConnectionType
 UINetworkQualityEstimatorService::GetEffectiveConnectionType() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return type_;

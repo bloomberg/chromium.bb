@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;
@@ -29,12 +29,12 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
 
   nqe_test_util::OverrideEffectiveConnectionTypeAndWait(
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
-  EXPECT_EQ(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
             nqe_service->GetEffectiveConnectionType());
 
   nqe_test_util::OverrideEffectiveConnectionTypeAndWait(
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  EXPECT_EQ(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
             nqe_service->GetEffectiveConnectionType());
 }

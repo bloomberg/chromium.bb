@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 
 // UI service to determine the current EffectiveConnectionType.
 class UINetworkQualityEstimatorService : public KeyedService {
@@ -17,13 +17,11 @@ class UINetworkQualityEstimatorService : public KeyedService {
   ~UINetworkQualityEstimatorService() override;
 
   // The current EffectiveConnectionType.
-  net::NetworkQualityEstimator::EffectiveConnectionType
-  GetEffectiveConnectionType() const;
+  net::EffectiveConnectionType GetEffectiveConnectionType() const;
 
   // Tests can manually set EffectiveConnectionType, but browser tests should
   // expect that the EffectiveConnectionType could change.
-  void SetEffectiveConnectionTypeForTesting(
-      net::NetworkQualityEstimator::EffectiveConnectionType type);
+  void SetEffectiveConnectionTypeForTesting(net::EffectiveConnectionType type);
 
  private:
   class IONetworkQualityObserver;
@@ -35,11 +33,10 @@ class UINetworkQualityEstimatorService : public KeyedService {
   // NetworkQualityEstimator::EffectiveConnectionType is an estimate of the
   // quality of the network that may differ from the actual network type
   // reported by NetworkchangeNotifier::GetConnectionType.
-  void EffectiveConnectionTypeChanged(
-      net::NetworkQualityEstimator::EffectiveConnectionType type);
+  void EffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
 
   // The current EffectiveConnectionType.
-  net::NetworkQualityEstimator::EffectiveConnectionType type_;
+  net::EffectiveConnectionType type_;
 
   // IO thread based observer that is owned by this service. Created on the UI
   // thread, but used and deleted on the IO thread.

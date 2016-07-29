@@ -24,7 +24,7 @@
 #include "net/base/request_priority.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/http/http_response_info.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/url_request/redirect_info.h"
 
@@ -132,9 +132,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
 IPC_ENUM_TRAITS_MAX_VALUE(content::SkipServiceWorker,
                           content::SkipServiceWorker::LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(
-    net::NetworkQualityEstimator::EffectiveConnectionType,
-    net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(net::EffectiveConnectionType,
+                          net::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)

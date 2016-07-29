@@ -54,12 +54,10 @@ bool ShouldUseOfflineForSlowNetwork(content::BrowserContext* context) {
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
   if (!nqe_service)
     return false;
-  net::NetworkQualityEstimator::EffectiveConnectionType
-      effective_connection_type = nqe_service->GetEffectiveConnectionType();
-  return effective_connection_type >=
-          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
-      effective_connection_type <=
-          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  net::EffectiveConnectionType effective_connection_type =
+      nqe_service->GetEffectiveConnectionType();
+  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
+         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
 }
 
 class DefaultDelegate : public OfflinePageTabHelper::Delegate {

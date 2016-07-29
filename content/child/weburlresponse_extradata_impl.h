@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace content {
@@ -91,13 +91,11 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   bool is_using_lofi() const { return is_using_lofi_; }
   void set_is_using_lofi(bool is_using_lofi) { is_using_lofi_ = is_using_lofi; }
 
-  net::NetworkQualityEstimator::EffectiveConnectionType
-  effective_connection_type() const {
+  net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
   void set_effective_connection_type(
-      net::NetworkQualityEstimator::EffectiveConnectionType
-          effective_connection_type) {
+      net::EffectiveConnectionType effective_connection_type) {
     effective_connection_type_ = effective_connection_type;
   }
 
@@ -111,8 +109,7 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_alternate_protocol_available_;
   bool is_using_lofi_;
-  net::NetworkQualityEstimator::EffectiveConnectionType
-      effective_connection_type_;
+  net::EffectiveConnectionType effective_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);
 };

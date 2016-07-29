@@ -280,7 +280,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       configurator_(configurator),
       event_creator_(event_creator),
       lofi_effective_connection_type_threshold_(
-          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       auto_lofi_hysteresis_(base::TimeDelta::Max()),
       network_prohibitively_slow_(false),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
@@ -456,13 +456,11 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     network_type_changed = true;
   }
 
-  const net::NetworkQualityEstimator::EffectiveConnectionType
-      effective_connection_type =
-          network_quality_estimator->GetEffectiveConnectionType();
+  const net::EffectiveConnectionType effective_connection_type =
+      network_quality_estimator->GetEffectiveConnectionType();
 
   const bool is_network_quality_available =
-      effective_connection_type !=
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+      effective_connection_type != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // True only if the network is currently estimated to be slower than the
   // defined thresholds.
@@ -512,9 +510,9 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   std::string field_trial = params::GetLoFiFieldTrialName();
 
     // Default parameters to use.
-  const net::NetworkQualityEstimator::EffectiveConnectionType
+  const net::EffectiveConnectionType
       default_effective_connection_type_threshold =
-          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
   const base::TimeDelta default_hysterisis = base::TimeDelta::FromSeconds(60);
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
@@ -794,12 +792,10 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
   if (now - last_query_ > 2 * measuring_duration)
     return;
 
-  const net::NetworkQualityEstimator::EffectiveConnectionType
-      recent_effective_connection_type =
-          network_quality_estimator->GetRecentEffectiveConnectionType(
-              last_query_);
+  const net::EffectiveConnectionType recent_effective_connection_type =
+      network_quality_estimator->GetRecentEffectiveConnectionType(last_query_);
   if (recent_effective_connection_type ==
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return;
   }
 
@@ -849,10 +845,8 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
 }
 
 bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
-    net::NetworkQualityEstimator::EffectiveConnectionType
-        effective_connection_type) const {
-  return effective_connection_type >=
-             net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
+    net::EffectiveConnectionType effective_connection_type) const {
+  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
          effective_connection_type <= lofi_effective_connection_type_threshold_;
 }
 

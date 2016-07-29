@@ -375,7 +375,7 @@ TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
   UINetworkQualityEstimatorService* nqe_service =
       UINetworkQualityEstimatorServiceFactory::GetForProfile(test_profile);
   nqe_service->SetEffectiveConnectionTypeForTesting(
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   clock()->SetNow(base::Time::Now());
 

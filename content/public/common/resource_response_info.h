@@ -18,7 +18,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "url/gurl.h"
@@ -154,8 +154,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
 
   // Effective connection type when the resource was fetched. This is populated
   // only for responses that correspond to main frame requests.
-  net::NetworkQualityEstimator::EffectiveConnectionType
-      effective_connection_type;
+  net::EffectiveConnectionType effective_connection_type;
 
   // List of Signed Certificate Timestamps (SCTs) and their corresponding
   // validation status. Only present if the renderer process set

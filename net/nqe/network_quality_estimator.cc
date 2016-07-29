@@ -313,8 +313,7 @@ void RecordEffectiveConnectionTypeAccuracy(
     const char* prefix,
     int32_t metric,
     base::TimeDelta measuring_duration,
-    net::NetworkQualityEstimator::EffectiveConnectionType
-        observed_effective_connection_type) {
+    net::EffectiveConnectionType observed_effective_connection_type) {
   const std::string histogram_name = base::StringPrintf(
       "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
       metric >= 0 ? "Positive" : "Negative",
@@ -323,10 +322,8 @@ void RecordEffectiveConnectionTypeAccuracy(
           observed_effective_connection_type));
 
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
-      histogram_name, 0,
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST,
-      net::NetworkQualityEstimator::
-          EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
+      histogram_name, 0, net::EFFECTIVE_CONNECTION_TYPE_LAST,
+      net::EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(std::abs(metric));
 }
@@ -1150,13 +1147,13 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   effective_connection_type_histogram->Add(effective_connection_type);
 }
 
-NetworkQualityEstimator::EffectiveConnectionType
-NetworkQualityEstimator::GetEffectiveConnectionType() const {
+EffectiveConnectionType NetworkQualityEstimator::GetEffectiveConnectionType()
+    const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetRecentEffectiveConnectionType(base::TimeTicks());
 }
 
-NetworkQualityEstimator::EffectiveConnectionType
+EffectiveConnectionType
 NetworkQualityEstimator::GetRecentEffectiveConnectionType(
     const base::TimeTicks& start_time) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1204,7 +1201,7 @@ bool NetworkQualityEstimator::UseTransportRTT() const {
   return false;
 }
 
-NetworkQualityEstimator::EffectiveConnectionType
+EffectiveConnectionType
 NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     const base::TimeTicks& start_time,
     NetworkQualityEstimator::MetricUsage http_rtt_metric,
@@ -1544,7 +1541,7 @@ const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
 }
 
 // static
-NetworkQualityEstimator::EffectiveConnectionType
+EffectiveConnectionType
 NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
     const std::string& connection_type_name) {
   if (connection_type_name == "Unknown")

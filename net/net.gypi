@@ -746,6 +746,7 @@
       'http/url_security_manager_win.cc',
       'nqe/cached_network_quality.cc',
       'nqe/cached_network_quality.h',
+      'nqe/effective_connection_type.h',
       'nqe/external_estimate_provider.h',
       'nqe/network_id.h',
       'nqe/network_quality.cc',

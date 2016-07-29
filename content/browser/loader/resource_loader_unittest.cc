@@ -42,6 +42,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/x509_certificate.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -284,7 +285,7 @@ class ResourceHandlerStub : public ResourceHandler {
         received_request_redirected_(false),
         total_bytes_downloaded_(0),
         observed_effective_connection_type_(
-            net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
   // If true, defers the resource load in OnWillStart.
   void set_defer_request_on_will_start(bool defer_request_on_will_start) {
@@ -317,8 +318,7 @@ class ResourceHandlerStub : public ResourceHandler {
   const net::URLRequestStatus& status() const { return status_; }
   int total_bytes_downloaded() const { return total_bytes_downloaded_; }
 
-  net::NetworkQualityEstimator::EffectiveConnectionType
-  observed_effective_connection_type() const {
+  net::EffectiveConnectionType observed_effective_connection_type() const {
     return observed_effective_connection_type_;
   }
 
@@ -435,8 +435,7 @@ class ResourceHandlerStub : public ResourceHandler {
   base::RunLoop deferred_run_loop_;
   base::RunLoop response_completed_run_loop_;
   std::unique_ptr<base::RunLoop> wait_for_progress_run_loop_;
-  net::NetworkQualityEstimator::EffectiveConnectionType
-      observed_effective_connection_type_;
+  net::EffectiveConnectionType observed_effective_connection_type_;
 };
 
 // Test browser client that captures calls to SelectClientCertificates and
@@ -535,22 +534,19 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   TestNetworkQualityEstimator()
       : net::NetworkQualityEstimator(nullptr,
                                      std::map<std::string, std::string>()),
-        type_(net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-  }
+        type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
   ~TestNetworkQualityEstimator() override {}
 
-  net::NetworkQualityEstimator::EffectiveConnectionType
-  GetEffectiveConnectionType() const override {
+  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
     return type_;
   }
 
-  void set_effective_connection_type(
-      net::NetworkQualityEstimator::EffectiveConnectionType type) {
+  void set_effective_connection_type(net::EffectiveConnectionType type) {
     type_ = type;
   }
 
  private:
-  net::NetworkQualityEstimator::EffectiveConnectionType type_;
+  net::EffectiveConnectionType type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
 };
@@ -1191,8 +1187,8 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
  public:
   void VerifyEffectiveConnectionType(
       bool is_main_frame,
-      net::NetworkQualityEstimator::EffectiveConnectionType set_type,
-      net::NetworkQualityEstimator::EffectiveConnectionType expected_type) {
+      net::EffectiveConnectionType set_type,
+      net::EffectiveConnectionType expected_type) {
     network_quality_estimator()->set_effective_connection_type(set_type);
 
     // Start the request and wait for it to finish.
@@ -1214,24 +1210,21 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, Slow2G) {
-  VerifyEffectiveConnectionType(
-      true, net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  VerifyEffectiveConnectionType(true, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+                                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
-  VerifyEffectiveConnectionType(
-      true, net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G,
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G);
+  VerifyEffectiveConnectionType(true, net::EFFECTIVE_CONNECTION_TYPE_3G,
+                                net::EFFECTIVE_CONNECTION_TYPE_3G);
 }
 
 // Tests that the effective connection type is not set on non-main frame
 // requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, NotAMainFrame) {
-  VerifyEffectiveConnectionType(
-      false, net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G,
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  VerifyEffectiveConnectionType(false, net::EFFECTIVE_CONNECTION_TYPE_3G,
+                                net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
 
 }  // namespace content

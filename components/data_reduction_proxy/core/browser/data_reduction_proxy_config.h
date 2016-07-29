@@ -22,6 +22,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/log/net_log.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
@@ -310,8 +311,7 @@ class DataReductionProxyConfig
   // Returns true if |effective_connection_type| is at least as poor as
   // |lofi_effective_connection_type_threshold_|.
   bool IsEffectiveConnectionTypeSlowerThanThreshold(
-      net::NetworkQualityEstimator::EffectiveConnectionType
-          effective_connection_type) const;
+      net::EffectiveConnectionType effective_connection_type) const;
 
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
@@ -346,8 +346,7 @@ class DataReductionProxyConfig
   // Thresholds from the field trial at which auto Lo-Fi is turned on.
   // If the effective connection type is at least as slow as
   // |lofi_effective_connection_type_threshold_|, Lo-Fi would be turned on.
-  net::NetworkQualityEstimator::EffectiveConnectionType
-      lofi_effective_connection_type_threshold_;
+  net::EffectiveConnectionType lofi_effective_connection_type_threshold_;
 
   // State of auto Lo-Fi is not changed more than once in any period of
   // duration shorter than |auto_lofi_hysteresis_|.

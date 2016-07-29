@@ -36,6 +36,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_platform_key.h"
@@ -88,7 +89,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     response->head.is_using_lofi = request_info->IsUsingLoFi();
 
   response->head.effective_connection_type =
-      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   if (info->IsMainFrame()) {
     net::NetworkQualityEstimator* estimator =
         request->context()->network_quality_estimator();

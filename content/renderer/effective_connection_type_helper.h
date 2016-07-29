@@ -5,14 +5,14 @@
 #ifndef CONTENT_RENDERER_EFFECTIVE_CONNECTION_TYPE_HELPER_H_
 #define CONTENT_RENDERER_EFFECTIVE_CONNECTION_TYPE_HELPER_H_
 
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/effective_connection_type.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 
 namespace content {
 
 blink::WebEffectiveConnectionType
 EffectiveConnectionTypeToWebEffectiveConnectionType(
-    net::NetworkQualityEstimator::EffectiveConnectionType net_type);
+    net::EffectiveConnectionType net_type);
 
 }  // namespace content
 

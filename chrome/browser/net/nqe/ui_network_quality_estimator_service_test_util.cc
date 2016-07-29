@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/nqe/network_quality_estimator.h"
 
 namespace nqe_test_util {
 
@@ -16,9 +17,8 @@ namespace {
 
 // Reports |type| to all of NetworkQualityEstimator's
 // EffectiveConnectionTypeObservers.
-void OverrideEffectiveConnectionTypeOnIO(
-    net::NetworkQualityEstimator::EffectiveConnectionType type,
-    IOThread* io_thread) {
+void OverrideEffectiveConnectionTypeOnIO(net::EffectiveConnectionType type,
+                                         IOThread* io_thread) {
   if (!io_thread->globals()->network_quality_estimator)
     return;
   net::NetworkQualityEstimator* network_quality_estimator =
@@ -30,8 +30,7 @@ void OverrideEffectiveConnectionTypeOnIO(
 
 }  // namespace
 
-void OverrideEffectiveConnectionTypeAndWait(
-    net::NetworkQualityEstimator::EffectiveConnectionType type) {
+void OverrideEffectiveConnectionTypeAndWait(net::EffectiveConnectionType type) {
   // Block |run_loop| until OverrideEffectiveConnectionTypeOnIO has completed.
   // Any UI tasks posted by calling OverrideEffectiveConnectionTypeOnIO will
   // complete before the reply unblocks |run_loop|.

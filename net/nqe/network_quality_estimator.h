@@ -22,6 +22,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/cached_network_quality.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_id.h"
 #include "net/nqe/network_quality.h"
@@ -57,26 +58,6 @@ class NET_EXPORT NetworkQualityEstimator
     : public NetworkChangeNotifier::ConnectionTypeObserver,
       public ExternalEstimateProvider::UpdatedEstimateDelegate {
  public:
-  // EffectiveConnectionType is the connection type whose typical performance is
-  // most similar to the measured performance of the network in use. In many
-  // cases, the "effective" connection type and the actual type of connection in
-  // use are the same, but often a network connection performs significantly
-  // different, usually worse, from its expected capabilities.
-  // EffectiveConnectionType of a network is independent of if the current
-  // connection is metered or not. For example, an unmetered slow connection may
-  // have EFFECTIVE_CONNECTION_TYPE_SLOW_2G as its effective connection type.
-  enum EffectiveConnectionType {
-    // The connection types should be in increasing order of quality.
-    EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0,
-    EFFECTIVE_CONNECTION_TYPE_OFFLINE,
-    EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-    EFFECTIVE_CONNECTION_TYPE_2G,
-    EFFECTIVE_CONNECTION_TYPE_3G,
-    EFFECTIVE_CONNECTION_TYPE_4G,
-    EFFECTIVE_CONNECTION_TYPE_BROADBAND,
-    EFFECTIVE_CONNECTION_TYPE_LAST,
-  };
-
   // Observes changes in effective connection type.
   class NET_EXPORT EffectiveConnectionTypeObserver {
    public:
@@ -569,14 +550,14 @@ class NET_EXPORT NetworkQualityEstimator
   // values are used if the thresholds are unavailable from the variation
   // params.
   nqe::internal::NetworkQuality default_effective_connection_type_thresholds_
-      [EFFECTIVE_CONNECTION_TYPE_LAST];
+      [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
 
   // Thresholds for different effective connection types obtained from field
   // trial variation params. These thresholds encode how different connection
   // types behave in general. In future, complex encodings (e.g., curve
   // fitting) may be used.
-  nqe::internal::NetworkQuality
-      connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_LAST];
+  nqe::internal::NetworkQuality connection_thresholds_
+      [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
 
   // Latest time when the headers for a main frame request were received.
   base::TimeTicks last_main_frame_request_;
