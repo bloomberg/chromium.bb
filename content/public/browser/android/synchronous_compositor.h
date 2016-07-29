@@ -59,13 +59,12 @@ class CONTENT_EXPORT SynchronousCompositor {
     DISALLOW_COPY_AND_ASSIGN(Frame);
   };
 
-  // "On demand" hardware draw. The content is first clipped to |damage_area|,
-  // then transformed through |transform|, and finally clipped to |view_size|.
+  // "On demand" hardware draw. Parameters are used by compositor for this draw.
+  // |viewport_size| is the current size to improve results during resize.
+  // |viewport_rect_for_tile_priority| and |transform_for_tile_priority| are
+  // used to customize the tiling decisions of compositor.
   virtual Frame DemandDrawHw(
-      const gfx::Size& surface_size,
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
+      const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) = 0;
 

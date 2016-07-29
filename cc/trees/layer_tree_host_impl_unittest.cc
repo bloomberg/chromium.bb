@@ -589,7 +589,7 @@ TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   gfx::Transform identity;
   gfx::Rect viewport(100, 100);
   const bool resourceless_software_draw = true;
-  host_impl_->OnDraw(identity, viewport, viewport, resourceless_software_draw);
+  host_impl_->OnDraw(identity, viewport, resourceless_software_draw);
   ASSERT_EQ(fake_output_surface->num_sent_frames(), 1u);
   EXPECT_EQ(gfx::SizeF(100.f, 100.f),
             fake_output_surface->last_sent_frame()->metadata.root_layer_size);
@@ -3794,7 +3794,6 @@ TEST_F(LayerTreeHostImplTest,
 
   const gfx::Transform external_transform;
   const gfx::Rect external_viewport;
-  const gfx::Rect external_clip;
   const bool resourceless_software_draw = true;
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
@@ -3823,7 +3822,7 @@ TEST_F(LayerTreeHostImplTest,
   root->test_properties()->force_render_surface = true;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
 
   for (size_t i = 0; i < cases.size(); ++i) {
@@ -3846,7 +3845,7 @@ TEST_F(LayerTreeHostImplTest,
     if (testcase.high_res_required)
       host_impl_->SetRequiresHighResToDraw();
 
-    host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+    host_impl_->OnDraw(external_transform, external_viewport,
                        resourceless_software_draw);
   }
 }
@@ -6802,8 +6801,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Transform identity;
     gfx::Rect viewport(viewport_size_);
     bool resourceless_software_draw = true;
-    host_impl_->OnDraw(identity, viewport, viewport,
-                       resourceless_software_draw);
+    host_impl_->OnDraw(identity, viewport, resourceless_software_draw);
     VerifyEmptyLayerRenderPasses(last_on_draw_render_passes_);
   }
 
@@ -6840,8 +6838,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Transform identity;
     gfx::Rect viewport(viewport_size_);
     bool resourceless_software_draw = true;
-    host_impl_->OnDraw(identity, viewport, viewport,
-                       resourceless_software_draw);
+    host_impl_->OnDraw(identity, viewport, resourceless_software_draw);
     VerifyLayerInMiddleOfViewport(last_on_draw_render_passes_);
   }
 
@@ -6877,8 +6874,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     gfx::Transform identity;
     gfx::Rect viewport(viewport_size_);
     bool resourceless_software_draw = true;
-    host_impl_->OnDraw(identity, viewport, viewport,
-                       resourceless_software_draw);
+    host_impl_->OnDraw(identity, viewport, resourceless_software_draw);
     VerifyLayerIsLargerThanViewport(last_on_draw_render_passes_);
   }
 
@@ -7609,7 +7605,6 @@ TEST_F(LayerTreeHostImplTest,
 
   const gfx::Transform external_transform;
   const gfx::Rect external_viewport;
-  const gfx::Rect external_clip;
   const bool resourceless_software_draw = true;
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
@@ -7628,7 +7623,7 @@ TEST_F(LayerTreeHostImplTest,
   SetupRootLayerImpl(std::move(root_layer));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
 
   EXPECT_EQ(1u, last_on_draw_frame_->will_draw_layers.size());
@@ -9328,14 +9323,13 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
   const gfx::Size layer_size(100, 100);
   gfx::Transform external_transform;
   const gfx::Rect external_viewport(layer_size);
-  const gfx::Rect external_clip(layer_size);
   const bool resourceless_software_draw = false;
   LayerImpl* layer = SetupScrollAndContentsLayers(layer_size);
   layer->SetDrawsContent(true);
 
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       external_transform, layer->draw_properties().target_space_transform);
@@ -9343,7 +9337,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
   external_transform.Translate(20, 20);
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       external_transform, layer->draw_properties().target_space_transform);
@@ -9361,14 +9355,12 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
   const gfx::Rect viewport_for_tile_priority1(viewport_size);
   const gfx::Rect viewport_for_tile_priority2(50, 50);
   const gfx::Rect draw_viewport(viewport_size);
-  const gfx::Rect clip(viewport_size);
   bool resourceless_software_draw = false;
 
   // Clear any damage.
   host_impl_->SetExternalTilePriorityConstraints(viewport_for_tile_priority1,
                                                  transform_for_tile_priority);
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   last_on_draw_frame_.reset();
 
   // Setting new constraints needs redraw.
@@ -9376,8 +9368,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
   host_impl_->SetExternalTilePriorityConstraints(viewport_for_tile_priority2,
                                                  transform_for_tile_priority);
   EXPECT_TRUE(did_request_redraw_);
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
@@ -9391,17 +9382,16 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport1(viewport_size);
   const gfx::Rect draw_viewport2(50, 50);
-  const gfx::Rect clip(viewport_size);
   bool resourceless_software_draw = false;
 
   // Clear any damage.
-  host_impl_->OnDraw(draw_transform, draw_viewport1, clip,
+  host_impl_->OnDraw(draw_transform, draw_viewport1,
                      resourceless_software_draw);
   last_on_draw_frame_.reset();
 
   // Same draw params does not swap.
   did_request_redraw_ = false;
-  host_impl_->OnDraw(draw_transform, draw_viewport1, clip,
+  host_impl_->OnDraw(draw_transform, draw_viewport1,
                      resourceless_software_draw);
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_TRUE(last_on_draw_frame_->has_no_damage);
@@ -9409,7 +9399,7 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
 
   // Different draw params does swap.
   did_request_redraw_ = false;
-  host_impl_->OnDraw(draw_transform, draw_viewport2, clip,
+  host_impl_->OnDraw(draw_transform, draw_viewport2,
                      resourceless_software_draw);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
@@ -9432,25 +9422,21 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
 
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport(viewport_size);
-  const gfx::Rect clip(viewport_size);
   bool resourceless_software_draw = false;
 
   // Clear any damage.
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   last_on_draw_frame_.reset();
 
   // Always swap even if same draw params.
   resourceless_software_draw = true;
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
   last_on_draw_frame_.reset();
 
   // Next hardware draw has damage.
   resourceless_software_draw = false;
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
@@ -9474,13 +9460,11 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
 
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport(viewport_size);
-  const gfx::Rect clip(viewport_size);
   bool resourceless_software_draw = false;
 
   // Regular draw causes UpdateTiles.
   did_request_prepare_tiles_ = false;
-  host_impl_->OnDraw(draw_transform, draw_viewport, clip,
-                     resourceless_software_draw);
+  host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw);
   EXPECT_TRUE(did_request_prepare_tiles_);
   host_impl_->PrepareTiles();
 
@@ -9488,7 +9472,7 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   const gfx::Rect new_draw_viewport(50, 50);
   resourceless_software_draw = true;
   did_request_prepare_tiles_ = false;
-  host_impl_->OnDraw(draw_transform, new_draw_viewport, clip,
+  host_impl_->OnDraw(draw_transform, new_draw_viewport,
                      resourceless_software_draw);
   EXPECT_FALSE(did_request_prepare_tiles_);
 }
@@ -9543,11 +9527,10 @@ TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
 
   gfx::Transform external_transform;
   gfx::Rect external_viewport(10, 20);
-  gfx::Rect external_clip(layer_size);
   bool resourceless_software_draw = false;
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_EQ(gfx::Rect(10, 20), content_layer->visible_layer_rect());
 
@@ -9556,7 +9539,7 @@ TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
 
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_EQ(gfx::Rect(90, 90), content_layer->visible_layer_rect());
 }
@@ -9579,14 +9562,13 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsVisibleRects) {
   external_transform.Translate(10, 10);
   external_transform.Scale(2, 2);
   gfx::Rect external_viewport;
-  gfx::Rect external_clip(layer_size);
   bool resourceless_software_draw = false;
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
 
   // Visible rects should now be shifted and scaled because of the external
   // transform.
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_EQ(gfx::Rect(20, 20), content_layer->visible_layer_rect());
 
@@ -9595,7 +9577,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsVisibleRects) {
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
 
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   EXPECT_EQ(gfx::Rect(50, 50), content_layer->visible_layer_rect());
 }
@@ -9631,13 +9613,12 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   external_transform.Translate(10, 10);
   external_transform.Scale(2, 2);
   gfx::Rect external_viewport;
-  gfx::Rect external_clip(layer_size);
   bool resourceless_software_draw = false;
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
 
   // Transform node's sublayer scale should include the device transform scale.
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());
@@ -9648,7 +9629,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   host_impl_->SetExternalTilePriorityConstraints(external_viewport,
                                                  external_transform);
 
-  host_impl_->OnDraw(external_transform, external_viewport, external_clip,
+  host_impl_->OnDraw(external_transform, external_viewport,
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());

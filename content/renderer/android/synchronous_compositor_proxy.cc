@@ -159,8 +159,7 @@ void SynchronousCompositorProxy::DemandDrawHw(
   if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
         &hardware_draw_reply_, reply_message);
-    output_surface_->DemandDrawHw(params.surface_size, params.transform,
-                                  params.viewport, params.clip,
+    output_surface_->DemandDrawHw(params.viewport_size,
                                   params.viewport_rect_for_tile_priority,
                                   params.transform_for_tile_priority);
   }

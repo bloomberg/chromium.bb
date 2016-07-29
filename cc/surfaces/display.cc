@@ -373,7 +373,6 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 
 void Display::OnDraw(const gfx::Transform& transform,
                      const gfx::Rect& viewport,
-                     const gfx::Rect& clip,
                      bool resourceless_software_draw) {
   NOTREACHED();
 }

@@ -9,16 +9,10 @@ namespace content {
 SyncCompositorDemandDrawHwParams::SyncCompositorDemandDrawHwParams() {}
 
 SyncCompositorDemandDrawHwParams::SyncCompositorDemandDrawHwParams(
-    const gfx::Size& surface_size,
-    const gfx::Transform& transform,
-    const gfx::Rect& viewport,
-    const gfx::Rect& clip,
+    const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority)
-    : surface_size(surface_size),
-      transform(transform),
-      viewport(viewport),
-      clip(clip),
+    : viewport_size(viewport_size),
       viewport_rect_for_tile_priority(viewport_rect_for_tile_priority),
       transform_for_tile_priority(transform_for_tile_priority) {}
 

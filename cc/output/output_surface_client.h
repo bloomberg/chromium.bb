@@ -56,7 +56,6 @@ class CC_EXPORT OutputSurfaceClient {
   // This allows the output surface to ask its client for a draw.
   virtual void OnDraw(const gfx::Transform& transform,
                       const gfx::Rect& viewport,
-                      const gfx::Rect& clip,
                       bool resourceless_software_draw) = 0;
 
  protected:

@@ -96,14 +96,11 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
-    const gfx::Size& surface_size,
-    const gfx::Transform& transform,
-    const gfx::Rect& viewport,
-    const gfx::Rect& clip,
+    const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  SyncCompositorDemandDrawHwParams params(surface_size, transform, viewport,
-                                          clip, viewport_rect_for_tile_priority,
+  SyncCompositorDemandDrawHwParams params(viewport_size,
+                                          viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
   SynchronousCompositor::Frame frame;
   frame.frame.reset(new cc::CompositorFrame);

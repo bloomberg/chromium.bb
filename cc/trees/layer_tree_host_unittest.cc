@@ -2683,8 +2683,7 @@ class OnDrawOutputSurface : public OutputSurface {
     gfx::Transform identity;
     gfx::Rect empty_rect;
     // SwapBuffers happens inside of OnDraw.
-    client_->OnDraw(identity, empty_rect, empty_rect,
-                    resourceless_software_draw);
+    client_->OnDraw(identity, empty_rect, resourceless_software_draw);
     if (did_swap_) {
       did_swap_ = false;
       client_->DidSwapBuffersComplete();

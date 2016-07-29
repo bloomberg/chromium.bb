@@ -25,10 +25,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
 
   // SynchronousCompositor overrides.
   SynchronousCompositor::Frame DemandDrawHw(
-      const gfx::Size& surface_size,
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
+      const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   void ReturnResources(uint32_t output_surface_id,

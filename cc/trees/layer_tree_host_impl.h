@@ -379,7 +379,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreeActivationCallback(const base::Closure& callback) override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
-              const gfx::Rect& clip,
               bool resourceless_software_draw) override;
 
   // LayerTreeMutatorClient.
@@ -570,7 +569,6 @@ class CC_EXPORT LayerTreeHostImpl
   // should only be used by Renderer subclasses to populate glViewport/glClip
   // and their software-mode equivalents.
   gfx::Rect DeviceViewport() const;
-  gfx::Rect DeviceClip() const;
 
   // When a SwapPromiseMonitor is created on the impl thread, it calls
   // InsertSwapPromiseMonitor() to register itself with LayerTreeHostImpl.
@@ -811,12 +809,10 @@ class CC_EXPORT LayerTreeHostImpl
   // - external_transform_ applies a transform above the root layer
   // - external_viewport_ is used DrawProperties, tile management and
   // glViewport/window projection matrix.
-  // - external_clip_ specifies a top-level clip rect
   // - viewport_rect_for_tile_priority_ is the rect in view space used for
   // tiling priority.
   gfx::Transform external_transform_;
   gfx::Rect external_viewport_;
-  gfx::Rect external_clip_;
   gfx::Rect viewport_rect_for_tile_priority_;
   bool resourceless_software_draw_;
 

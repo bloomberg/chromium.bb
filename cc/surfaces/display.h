@@ -101,7 +101,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetTreeActivationCallback(const base::Closure& callback) override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
-              const gfx::Rect& clip,
               bool resourceless_software_draw) override;
 
   // RendererClient implementation.

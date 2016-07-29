@@ -302,10 +302,7 @@ uint32_t SynchronousCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void SynchronousCompositorOutputSurface::DemandDrawHw(
-    const gfx::Size& surface_size,
-    const gfx::Transform& transform,
-    const gfx::Rect& viewport,
-    const gfx::Rect& clip,
+    const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
@@ -315,7 +312,7 @@ void SynchronousCompositorOutputSurface::DemandDrawHw(
 
   client_->SetExternalTilePriorityConstraints(viewport_rect_for_tile_priority,
                                               transform_for_tile_priority);
-  InvokeComposite(transform, viewport, clip);
+  InvokeComposite(gfx::Transform(), gfx::Rect(viewport_size));
 }
 
 void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
@@ -328,27 +325,26 @@ void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   SkIRect canvas_clip;
   canvas->getClipDeviceBounds(&canvas_clip);
-  gfx::Rect clip = gfx::SkIRectToRect(canvas_clip);
+  gfx::Rect viewport = gfx::SkIRectToRect(canvas_clip);
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
 
   base::AutoReset<bool> set_in_software_draw(&in_software_draw_, true);
-  display_->SetExternalViewport(clip);
-  display_->SetExternalClip(clip);
+  display_->SetExternalViewport(viewport);
+  display_->SetExternalClip(viewport);
   software_output_surface_->SetSurfaceSize(
       gfx::SkISizeToSize(canvas->getBaseLayerSize()));
-  InvokeComposite(transform, clip, clip);
+  InvokeComposite(transform, viewport);
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Transform& transform,
-    const gfx::Rect& viewport,
-    const gfx::Rect& clip) {
+    const gfx::Rect& viewport) {
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
   did_swap_ = false;
-  client_->OnDraw(adjusted_transform, viewport, clip, in_software_draw_);
+  client_->OnDraw(adjusted_transform, viewport, in_software_draw_);
 
   if (did_swap_) {
     // This must happen after unwinding the stack and leaving the compositor.

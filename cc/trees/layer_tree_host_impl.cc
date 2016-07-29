@@ -1520,16 +1520,13 @@ void LayerTreeHostImpl::ReclaimResources(
 
 void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
                                const gfx::Rect& viewport,
-                               const gfx::Rect& clip,
                                bool resourceless_software_draw) {
   DCHECK(!resourceless_software_draw_);
   const bool transform_changed = external_transform_ != transform;
   const bool viewport_changed = external_viewport_ != viewport;
-  const bool clip_changed = external_clip_ != clip;
 
   external_transform_ = transform;
   external_viewport_ = viewport;
-  external_clip_ = clip;
 
   {
     base::AutoReset<bool> resourceless_software_draw_reset(
@@ -1538,15 +1535,9 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
     // For resourceless software draw, always set full damage to ensure they
     // always swap. Otherwise, need to set redraw for any changes to draw
     // parameters.
-    const bool draw_params_changed =
-        transform_changed || viewport_changed || clip_changed;
-    if (resourceless_software_draw_ || draw_params_changed) {
+    if (transform_changed || viewport_changed || resourceless_software_draw_) {
       SetFullRootLayerDamage();
       SetNeedsRedraw();
-    }
-
-    // UpdateDrawProperties does not depend on clip.
-    if (transform_changed || viewport_changed || resourceless_software_draw_) {
       active_tree_->set_needs_update_draw_properties();
     }
 
@@ -1677,7 +1668,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   renderer_->DrawFrame(&frame->render_passes,
                        active_tree_->device_scale_factor(), gfx::ColorSpace(),
-                       DeviceViewport(), DeviceClip());
+                       DeviceViewport(), DeviceViewport());
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
 
@@ -2406,13 +2397,6 @@ gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
     return gfx::Rect(device_viewport_size_);
 
   return external_viewport_;
-}
-
-gfx::Rect LayerTreeHostImpl::DeviceClip() const {
-  if (external_clip_.IsEmpty())
-    return DeviceViewport();
-
-  return external_clip_;
 }
 
 const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {

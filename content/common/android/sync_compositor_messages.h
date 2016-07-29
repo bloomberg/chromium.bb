@@ -24,17 +24,12 @@ namespace content {
 struct SyncCompositorDemandDrawHwParams {
   SyncCompositorDemandDrawHwParams();
   SyncCompositorDemandDrawHwParams(
-      const gfx::Size& surface_size,
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
+      const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority);
   ~SyncCompositorDemandDrawHwParams();
 
-  gfx::Size surface_size;
-  gfx::Transform transform;
-  gfx::Rect viewport;
+  gfx::Size viewport_size;
   gfx::Rect clip;
   gfx::Rect viewport_rect_for_tile_priority;
   gfx::Transform transform_for_tile_priority;
@@ -89,10 +84,7 @@ struct SyncCompositorCommonRendererParams {
 #define IPC_MESSAGE_START SyncCompositorMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorDemandDrawHwParams)
-  IPC_STRUCT_TRAITS_MEMBER(surface_size)
-  IPC_STRUCT_TRAITS_MEMBER(transform)
-  IPC_STRUCT_TRAITS_MEMBER(viewport)
-  IPC_STRUCT_TRAITS_MEMBER(clip)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(viewport_rect_for_tile_priority)
   IPC_STRUCT_TRAITS_MEMBER(transform_for_tile_priority)
 IPC_STRUCT_TRAITS_END()

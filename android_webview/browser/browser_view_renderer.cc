@@ -223,9 +223,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
   ReturnResourceFromParent(current_compositor_frame_consumer_);
   UpdateMemoryPolicy();
 
-  gfx::Size surface_size(size_);
-  gfx::Rect viewport(surface_size);
-  gfx::Rect clip = viewport;
   gfx::Transform transform_for_tile_priority =
       external_draw_constraints_.transform;
 
@@ -239,13 +236,8 @@ bool BrowserViewRenderer::OnDrawHardware() {
     viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
   }
 
-  content::SynchronousCompositor::Frame frame =
-      compositor_->DemandDrawHw(surface_size,
-                                gfx::Transform(),
-                                viewport,
-                                clip,
-                                viewport_rect_for_tile_priority,
-                                transform_for_tile_priority);
+  content::SynchronousCompositor::Frame frame = compositor_->DemandDrawHw(
+      size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
   if (!frame.frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);

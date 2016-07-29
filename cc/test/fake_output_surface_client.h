@@ -35,7 +35,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   void SetTreeActivationCallback(const base::Closure&) override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
-              const gfx::Rect& clip,
               bool resourceless_software_draw) override {}
 
   int swap_count() { return swap_count_; }
