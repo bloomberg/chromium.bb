@@ -14,11 +14,18 @@
     "target_subarch=arm32",
     "werror="
   ],
+  "gn_args": [
+    "component=static_library",
+    "ios_enable_code_signing=false",
+    "target_cpu=\"arm\"",
+    "target_os=\"ios\""
+  ],
   "env": {
     "LLVM_FORCE_HEAD_REVISION": "YES"
   },
-  "mb_type": "gyp",
+  "mb_type": "gn",
   "compiler": "ninja",
+  "additional_compile_targets": ["gn_all"],
   "configuration": "Release",
   "sdk": "iphoneos9.0",
   "tests": [

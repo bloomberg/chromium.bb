@@ -20,8 +20,21 @@
     "use_goma=1",
     "use_platform_icu_alternatives=true"
   ],
-  "mb_type": "gyp",
+  "gn_args": [
+    "additional_target_cpus=[\"x86\"]",
+    "component=static_library",
+    "disable_brotli_filter=true",
+    "disable_file_support=true",
+    "disable_ftp_support=true",
+    "enable_websockets=false",
+    "goma_dir=\"$(goma_dir)\"",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_platform_icu_alternatives=true"
+  ],
+  "mb_type": "gn",
   "compiler": "ninja",
+  "additional_compiler_targets": [ "gn_all" ],
   "configuration": "Debug",
   "sdk": "iphonesimulator9.3",
   "tests": [

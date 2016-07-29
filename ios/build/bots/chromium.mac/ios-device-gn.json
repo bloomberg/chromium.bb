@@ -17,13 +17,11 @@
     "target_subarch=arm32"
   ],
   "gn_args": [
-    "is_debug=true",
-    "target_os=\"ios\"",
     "ios_enable_code_signing=false",
     "is_component_build=false",
-    "use_goma=true",
-    "goma_dir=\"$(goma_dir)\"",
-    "target_cpu=\"arm\""
+    "is_debug=true",
+    "target_cpu=\"arm\"",
+    "target_os=\"ios\""
   ],
   "mb_type": "gn",
   "compiler": "ninja",

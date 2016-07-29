@@ -5,7 +5,7 @@
   ],
   "comments": [
     "Builder for 32-bit devices.",
-    "Build is performed with gyp+ninja."
+    "Build is performed with gn+ninja."
   ],
   "xcode version": "7.0",
   "GYP_DEFINES": [
@@ -17,6 +17,7 @@
     "target_subarch=arm32"
   ],
   "gn_args": [
+    "additional_target_cpus=[ \"arm64\" ]",
     "is_debug=true",
     "target_os=\"ios\"",
     "ios_enable_code_signing=false",
@@ -25,8 +26,9 @@
     "goma_dir=\"$(goma_dir)\"",
     "target_cpu=\"arm\""
   ],
-  "mb_type": "gyp",
+  "mb_type": "gn",
   "compiler": "ninja",
+  "additional_compile_targets": [ "gn_all" ],
   "configuration": "Release",
   "sdk": "iphoneos9.0",
   "tests": [
