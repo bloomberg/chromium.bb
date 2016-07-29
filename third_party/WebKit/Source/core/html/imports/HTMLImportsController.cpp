@@ -138,11 +138,6 @@ HTMLImportLoader* HTMLImportsController::loaderFor(const Document& document) con
     return nullptr;
 }
 
-Document* HTMLImportsController::loaderDocumentAt(size_t i) const
-{
-    return loaderAt(i)->document();
-}
-
 DEFINE_TRACE(HTMLImportsController)
 {
     visitor->trace(m_root);

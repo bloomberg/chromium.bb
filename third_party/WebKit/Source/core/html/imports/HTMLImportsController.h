@@ -64,7 +64,6 @@ public:
 
     size_t loaderCount() const { return m_loaders.size(); }
     HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i]; }
-    Document* loaderDocumentAt(size_t) const;
     HTMLImportLoader* loaderFor(const Document&) const;
 
     DECLARE_TRACE();
