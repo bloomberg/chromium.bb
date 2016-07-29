@@ -10,7 +10,6 @@
 #include <secder.h>
 #include <secitem.h>
 
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 
 namespace net {
