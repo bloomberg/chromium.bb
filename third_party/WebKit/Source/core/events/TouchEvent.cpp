@@ -187,30 +187,6 @@ TouchEvent::~TouchEvent()
 {
 }
 
-void TouchEvent::initTouchEvent(ScriptState* scriptState, TouchList* touches, TouchList* targetTouches,
-    TouchList* changedTouches, const AtomicString& type,
-    AbstractView* view,
-    int, int, int, int,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-{
-    if (isBeingDispatched())
-        return;
-
-    if (scriptState->world().isIsolatedWorld())
-        UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey, shiftKey, metaKey);
-
-    bool cancelable = true;
-    if (type == EventTypeNames::touchcancel)
-        cancelable = false;
-
-    initUIEvent(type, true, cancelable, view, 0);
-
-    m_touches = touches;
-    m_targetTouches = targetTouches;
-    m_changedTouches = changedTouches;
-    initModifiers(ctrlKey, altKey, shiftKey, metaKey);
-}
-
 const AtomicString& TouchEvent::interfaceName() const
 {
     return EventNames::TouchEvent;

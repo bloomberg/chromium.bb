@@ -4646,7 +4646,6 @@ interface TouchEvent : UIEvent
     getter targetTouches
     getter touches
     method constructor
-    method initTouchEvent
 interface TouchList
     getter length
     method constructor

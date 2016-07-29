@@ -60,12 +60,6 @@ public:
         return new TouchEvent(type, initializer);
     }
 
-    void initTouchEvent(ScriptState*, TouchList* touches, TouchList* targetTouches,
-        TouchList* changedTouches, const AtomicString& type,
-        AbstractView*,
-        int, int, int, int, // unused useless members of web exposed API
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
-
     TouchList* touches() const { return m_touches.get(); }
     TouchList* targetTouches() const { return m_targetTouches.get(); }
     TouchList* changedTouches() const { return m_changedTouches.get(); }

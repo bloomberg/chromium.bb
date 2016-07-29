@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 20: 'TouchEvent.initTouchEvent' is deprecated and will be removed in M54, around October 2016. Please use the TouchEvent constructor instead. See https://www.chromestatus.com/features/5730982598541312 for more details.
 This tests support for the document.createTouchList API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

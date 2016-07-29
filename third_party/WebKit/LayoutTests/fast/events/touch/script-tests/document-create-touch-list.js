@@ -16,8 +16,13 @@ try {
     var t2 = document.createTouch(window, document.body, 12342, 50, 55, 115, 120);
     var tl = document.createTouchList(t, t2);
 
-    var evt = document.createEvent("TouchEvent");
-    evt.initTouchEvent(tl, tl, tl, "touchstart", window, 0, 0, 0, 0, true, false, false, false);
+    var evt = new TouchEvent("touchstart", {
+        view: window,
+        touches: tl,
+        targetTouches: tl,
+        changedTouches: tl,
+        ctrlKey: true,
+    });
 
     document.body.addEventListener("touchstart", function handleTouchStart(ev) {
         ts = ev;
