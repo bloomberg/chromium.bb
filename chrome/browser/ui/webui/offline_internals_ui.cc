@@ -264,7 +264,7 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
   CHECK(args->GetString(0, &callback_id));
 
   if (offline_page_model_) {
-    offline_page_model_->GetAllPages(
+    offline_page_model_->GetAllPagesWithExpired(
         base::Bind(&OfflineInternalsUIMessageHandler::HandleStoredPagesCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {

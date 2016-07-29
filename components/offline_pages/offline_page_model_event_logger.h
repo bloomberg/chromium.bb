@@ -20,6 +20,9 @@ class OfflinePageModelEventLogger : public OfflineEventLogger {
   // Records that a page with |offline_id| has been deleted.
   void RecordPageDeleted(const std::string& offline_id);
 
+  // Records that a page with |offline_id| has been expired.
+  void RecordPageExpired(const std::string& offline_id);
+
   // Records that the offline store has been cleared.
   void RecordStoreCleared();
 

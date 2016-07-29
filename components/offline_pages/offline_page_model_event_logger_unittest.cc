@@ -17,6 +17,7 @@ const int kTimeLength = 21;
 const char kPageSaved[] =
     "http://www.wikipedia.org is saved at last_n with id foobar";
 const char kPageDeleted[] = "Page with ID foobar has been deleted";
+const char kPageExpired[] = "Page with ID foobar has been expired";
 const char kRecordStoreClearError[] = "Offline store clear failed";
 const char kRecordStoreCleared[] = "Offline store cleared";
 const char kRecordStoreReloadError[] =
@@ -32,14 +33,16 @@ TEST(OfflinePageModelEventLoggerTest, RecordsWhenLoggingIsOn) {
   logger.RecordStoreCleared();
   logger.RecordPageSaved(kNamespace, kUrl, kOfflineId);
   logger.RecordPageDeleted(kOfflineId);
+  logger.RecordPageExpired(kOfflineId);
   logger.RecordStoreClearError();
   logger.RecordStoreReloadError();
   logger.GetLogs(&log);
 
-  EXPECT_EQ(5u, log.size());
-  EXPECT_EQ(std::string(kRecordStoreCleared), log[4].substr(kTimeLength));
-  EXPECT_EQ(std::string(kPageSaved), log[3].substr(kTimeLength));
-  EXPECT_EQ(std::string(kPageDeleted), log[2].substr(kTimeLength));
+  EXPECT_EQ(6u, log.size());
+  EXPECT_EQ(std::string(kRecordStoreCleared), log[5].substr(kTimeLength));
+  EXPECT_EQ(std::string(kPageSaved), log[4].substr(kTimeLength));
+  EXPECT_EQ(std::string(kPageDeleted), log[3].substr(kTimeLength));
+  EXPECT_EQ(std::string(kPageExpired), log[2].substr(kTimeLength));
   EXPECT_EQ(std::string(kRecordStoreClearError), log[1].substr(kTimeLength));
   EXPECT_EQ(std::string(kRecordStoreReloadError), log[0].substr(kTimeLength));
 }
@@ -52,6 +55,7 @@ TEST(OfflinePageModelEventLoggerTest, DoesNotRecordWhenLoggingIsOff) {
   logger.RecordStoreCleared();
   logger.RecordPageSaved(kNamespace, kUrl, kOfflineId);
   logger.RecordPageDeleted(kOfflineId);
+  logger.RecordPageExpired(kOfflineId);
   logger.RecordStoreClearError();
   logger.RecordStoreReloadError();
   logger.GetLogs(&log);

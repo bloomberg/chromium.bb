@@ -16,6 +16,10 @@ void OfflinePageModelEventLogger::RecordPageDeleted(const std::string& id) {
   RecordActivity("Page with ID " + id + " has been deleted");
 }
 
+void OfflinePageModelEventLogger::RecordPageExpired(const std::string& id) {
+  RecordActivity("Page with ID " + id + " has been expired");
+}
+
 void OfflinePageModelEventLogger::RecordStoreClearError() {
   RecordActivity("Offline store clear failed");
 }

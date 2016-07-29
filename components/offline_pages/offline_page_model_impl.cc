@@ -664,6 +664,7 @@ void OfflinePageModelImpl::OnExpirePageDone(int64_t offline_id,
   if (iter != offline_pages_.end()) {
     iter->second.expiration_time = expiration_time;
     ClientId client_id = iter->second.client_id;
+    offline_event_logger_.RecordPageExpired(std::to_string(offline_id));
     base::HistogramBase* histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime"),
         1, base::TimeDelta::FromDays(30).InMinutes(), 50,
