@@ -6,7 +6,7 @@
 #define NET_QUIC_TEST_TOOLS_QUIC_MULTIPATH_SENT_PACKET_MANAGER_PEER_H_
 
 #include "base/macros.h"
-#include "net/quic/quic_multipath_sent_packet_manager.h"
+#include "net/quic/core/quic_multipath_sent_packet_manager.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 
 namespace net {

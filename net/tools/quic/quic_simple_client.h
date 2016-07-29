@@ -21,8 +21,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
-#include "net/quic/quic_config.h"
-#include "net/quic/quic_spdy_stream.h"
+#include "net/quic/core/quic_config.h"
+#include "net/quic/core/quic_spdy_stream.h"
 #include "net/tools/quic/quic_client_base.h"
 
 namespace net {

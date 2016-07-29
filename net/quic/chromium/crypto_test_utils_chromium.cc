@@ -28,7 +28,7 @@
 #include "net/log/net_log.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
-#include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/core/crypto/crypto_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/cert_test_util.h"

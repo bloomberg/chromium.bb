@@ -13,10 +13,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
-#include "net/quic/quic_http_utils.h"
-#include "net/quic/quic_spdy_session.h"
-#include "net/quic/quic_write_blocked_list.h"
-#include "net/quic/spdy_utils.h"
+#include "net/quic/core/quic_http_utils.h"
+#include "net/quic/core/quic_spdy_session.h"
+#include "net/quic/core/quic_write_blocked_list.h"
+#include "net/quic/core/spdy_utils.h"
 
 namespace net {
 

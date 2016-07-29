@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/quic/quic_protocol.h"
+#include "net/quic/core/quic_protocol.h"
 
 namespace net {
 

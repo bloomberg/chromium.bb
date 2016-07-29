@@ -10,8 +10,8 @@
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/quic_stream_factory.h"
-#include "net/quic/crypto/quic_crypto_client_config.h"
-#include "net/quic/quic_clock.h"
+#include "net/quic/core/crypto/quic_crypto_client_config.h"
+#include "net/quic/core/quic_clock.h"
 
 using std::string;
 using std::vector;

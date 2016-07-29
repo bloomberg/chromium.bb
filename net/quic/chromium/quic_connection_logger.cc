@@ -20,12 +20,12 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/cert/x509_certificate.h"
-#include "net/quic/crypto/crypto_handshake_message.h"
-#include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/quic_address_mismatch.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_socket_address_coder.h"
-#include "net/quic/quic_time.h"
+#include "net/quic/core/crypto/crypto_handshake_message.h"
+#include "net/quic/core/crypto/crypto_protocol.h"
+#include "net/quic/core/quic_address_mismatch.h"
+#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_socket_address_coder.h"
+#include "net/quic/core/quic_time.h"
 
 using base::StringPiece;
 using std::string;

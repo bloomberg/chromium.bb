@@ -427,8 +427,8 @@ proto_library("net_quic_proto") {
   visibility = [ ":net" ]
 
   sources = [
-    "quic/proto/cached_network_parameters.proto",
-    "quic/proto/source_address_token.proto",
+    "quic/core/proto/cached_network_parameters.proto",
+    "quic/core/proto/source_address_token.proto",
   ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
   cc_include = "net/base/net_export.h"
@@ -1964,7 +1964,7 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
 
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   sources = [
-    "quic/quic_crypto_framer_parse_message_fuzzer.cc",
+    "quic/core/quic_crypto_framer_parse_message_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",

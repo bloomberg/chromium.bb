@@ -43,7 +43,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
-#include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/core/crypto/quic_server_info.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>

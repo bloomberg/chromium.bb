@@ -17,8 +17,8 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/quic/quic_bandwidth.h"
-#include "net/quic/quic_server_id.h"
+#include "net/quic/core/quic_bandwidth.h"
+#include "net/quic/core/quic_server_id.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
 #include "net/spdy/spdy_protocol.h"

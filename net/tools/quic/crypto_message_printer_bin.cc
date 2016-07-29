@@ -10,8 +10,8 @@
 #include <iostream>
 
 #include "base/command_line.h"
-#include "net/quic/crypto/crypto_framer.h"
-#include "net/quic/quic_utils.h"
+#include "net/quic/core/crypto/crypto_framer.h"
+#include "net/quic/core/quic_utils.h"
 
 using std::cerr;
 using std::cout;

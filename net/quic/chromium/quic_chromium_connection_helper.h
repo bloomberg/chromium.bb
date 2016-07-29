@@ -10,10 +10,10 @@
 
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_connection.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_simple_buffer_allocator.h"
-#include "net/quic/quic_time.h"
+#include "net/quic/core/quic_connection.h"
+#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_simple_buffer_allocator.h"
+#include "net/quic/core/quic_time.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {

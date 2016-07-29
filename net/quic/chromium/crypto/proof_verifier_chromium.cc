@@ -24,7 +24,7 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
-#include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/ssl/ssl_config_service.h"
 
 using base::StringPiece;

@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_connection.h"
-#include "net/quic/quic_connection_stats.h"
-#include "net/quic/quic_protocol.h"
+#include "net/quic/core/quic_connection.h"
+#include "net/quic/core/quic_connection_stats.h"
+#include "net/quic/core/quic_protocol.h"
 
 namespace net {
 

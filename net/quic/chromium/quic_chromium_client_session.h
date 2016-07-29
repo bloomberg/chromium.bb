@@ -29,11 +29,11 @@
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/quic/chromium/quic_connection_logger.h"
-#include "net/quic/quic_client_session_base.h"
-#include "net/quic/quic_crypto_client_stream.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_server_id.h"
-#include "net/quic/quic_time.h"
+#include "net/quic/core/quic_client_session_base.h"
+#include "net/quic/core/quic_crypto_client_stream.h"
+#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_server_id.h"
+#include "net/quic/core/quic_time.h"
 #include "net/socket/socket_performance_watcher.h"
 
 namespace net {

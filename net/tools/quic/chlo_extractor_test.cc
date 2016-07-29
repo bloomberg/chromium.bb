@@ -4,7 +4,7 @@
 
 #include "net/tools/quic/chlo_extractor.h"
 
-#include "net/quic/quic_framer.h"
+#include "net/quic/core/quic_framer.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 

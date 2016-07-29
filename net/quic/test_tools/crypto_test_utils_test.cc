@@ -4,8 +4,8 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
-#include "net/quic/crypto/crypto_server_config_protobuf.h"
-#include "net/quic/quic_utils.h"
+#include "net/quic/core/crypto/crypto_server_config_protobuf.h"
+#include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

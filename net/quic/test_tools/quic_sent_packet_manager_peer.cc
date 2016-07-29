@@ -5,11 +5,11 @@
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 
 #include "base/stl_util.h"
-#include "net/quic/congestion_control/loss_detection_interface.h"
-#include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/quic_flags.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_sent_packet_manager.h"
+#include "net/quic/core/congestion_control/loss_detection_interface.h"
+#include "net/quic/core/congestion_control/send_algorithm_interface.h"
+#include "net/quic/core/quic_flags.h"
+#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_sent_packet_manager.h"
 
 namespace net {
 namespace test {

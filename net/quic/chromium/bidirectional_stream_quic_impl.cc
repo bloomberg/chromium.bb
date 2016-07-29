@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "net/http/bidirectional_stream_request_info.h"
-#include "net/quic/quic_connection.h"
+#include "net/quic/core/quic_connection.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"

@@ -18,7 +18,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "net/quic/quic_flags.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_bug_tracker.h"

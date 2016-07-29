@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/quic_connection.h"
-#include "net/quic/quic_packet_writer.h"
-#include "net/quic/quic_protocol.h"
+#include "net/quic/core/quic_connection.h"
+#include "net/quic/core/quic_packet_writer.h"
+#include "net/quic/core/quic_protocol.h"
 
 namespace net {
 

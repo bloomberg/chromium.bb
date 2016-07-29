@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/quic/crypto/channel_id.h"
+#include "net/quic/core/crypto/channel_id.h"
 
 namespace crypto {
 class ECPrivateKey;

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
-#include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/quic_server_id.h"
+#include "net/quic/core/crypto/crypto_protocol.h"
+#include "net/quic/core/quic_server_id.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
 using std::string;

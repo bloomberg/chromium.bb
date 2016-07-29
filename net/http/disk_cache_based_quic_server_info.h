@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/core/crypto/quic_server_info.h"
 
 namespace net {
 

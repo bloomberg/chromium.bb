@@ -15,7 +15,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
-#include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/core/crypto/proof_verifier.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
 #include "net/test/test_data_directory.h"

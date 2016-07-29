@@ -7,9 +7,9 @@
 #include <memory>
 #include <vector>
 
-#include "net/quic/crypto/crypto_handshake_message.h"
-#include "net/quic/crypto/proof_source.h"
-#include "net/quic/quic_utils.h"
+#include "net/quic/core/crypto/crypto_handshake_message.h"
+#include "net/quic/core/crypto/proof_source.h"
+#include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"

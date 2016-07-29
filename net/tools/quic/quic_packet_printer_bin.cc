@@ -40,8 +40,8 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/quic/quic_framer.h"
-#include "net/quic/quic_utils.h"
+#include "net/quic/core/quic_framer.h"
+#include "net/quic/core/quic_utils.h"
 
 using std::cerr;
 using std::string;

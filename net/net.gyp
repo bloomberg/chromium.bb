@@ -85,13 +85,13 @@
       'target_name': 'net_quic_proto',
       'type': 'static_library',
       'sources': [
-        'quic/proto/cached_network_parameters.proto',
-        'quic/proto/source_address_token.proto',
+        'quic/core/proto/cached_network_parameters.proto',
+        'quic/core/proto/source_address_token.proto',
       ],
       'variables': {
         'enable_wexit_time_destructors': 1,
-        'proto_in_dir': 'quic/proto',
-        'proto_out_dir': 'net/quic/proto',
+        'proto_in_dir': 'quic/core/proto',
+        'proto_out_dir': 'net/quic/core/proto',
         'cc_generator_options': 'dllexport_decl=NET_EXPORT_PRIVATE:',
         'cc_include': 'net/base/net_export.h',
       },

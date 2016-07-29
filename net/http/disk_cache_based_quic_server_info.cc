@@ -14,7 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/quic/quic_server_id.h"
+#include "net/quic/core/quic_server_id.h"
 
 namespace net {
 
