@@ -54,7 +54,7 @@ class UI : public views::WidgetDelegateView,
     ui::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget, connector, window, ui::mojom::SurfaceType::DEFAULT);
+        widget, window, ui::mojom::SurfaceType::DEFAULT);
     widget->Init(params);
     widget->Show();
   }

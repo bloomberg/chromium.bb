@@ -37,8 +37,7 @@ namespace views {
 // remain the PerClientState is deleted and the underlying map cleaned up.
 class SurfaceBinding::PerClientState : public base::RefCounted<PerClientState> {
  public:
-  static PerClientState* Get(shell::Connector* connector,
-                             ui::WindowTreeClient* client);
+  static PerClientState* Get(ui::WindowTreeClient* client);
 
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
       ui::Window* window,
@@ -49,13 +48,12 @@ class SurfaceBinding::PerClientState : public base::RefCounted<PerClientState> {
 
   friend class base::RefCounted<PerClientState>;
 
-  PerClientState(shell::Connector* connector, ui::WindowTreeClient* client);
+  explicit PerClientState(ui::WindowTreeClient* client);
   ~PerClientState();
 
   static base::LazyInstance<
       base::ThreadLocalPointer<ClientToStateMap>>::Leaky window_states;
 
-  shell::Connector* connector_;
   ui::WindowTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(PerClientState);
@@ -68,18 +66,14 @@ base::LazyInstance<base::ThreadLocalPointer<
 
 // static
 SurfaceBinding::PerClientState* SurfaceBinding::PerClientState::Get(
-    shell::Connector* connector,
     ui::WindowTreeClient* client) {
-  // |connector| can be null in some unit-tests.
-  if (!connector)
-    return nullptr;
   ClientToStateMap* window_map = window_states.Pointer()->Get();
   if (!window_map) {
     window_map = new ClientToStateMap;
     window_states.Pointer()->Set(window_map);
   }
   if (!(*window_map)[client])
-    (*window_map)[client] = new PerClientState(connector, client);
+    (*window_map)[client] = new PerClientState(client);
   return (*window_map)[client];
 }
 
@@ -87,15 +81,13 @@ std::unique_ptr<cc::OutputSurface>
 SurfaceBinding::PerClientState::CreateOutputSurface(
     ui::Window* window,
     ui::mojom::SurfaceType surface_type) {
-  scoped_refptr<cc::ContextProvider> context_provider(
-      new ui::ContextProvider(connector_));
+  scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider);
   return base::WrapUnique(new ui::OutputSurface(
       context_provider, window->RequestSurface(surface_type)));
 }
 
-SurfaceBinding::PerClientState::PerClientState(shell::Connector* connector,
-                                               ui::WindowTreeClient* client)
-    : connector_(connector), client_(client) {}
+SurfaceBinding::PerClientState::PerClientState(ui::WindowTreeClient* client)
+    : client_(client) {}
 
 SurfaceBinding::PerClientState::~PerClientState() {
   ClientToStateMap* window_map = window_states.Pointer()->Get();
@@ -110,12 +102,11 @@ SurfaceBinding::PerClientState::~PerClientState() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(shell::Connector* connector,
-                               ui::Window* window,
+SurfaceBinding::SurfaceBinding(ui::Window* window,
                                ui::mojom::SurfaceType surface_type)
     : window_(window),
       surface_type_(surface_type),
-      state_(PerClientState::Get(connector, window->window_tree())) {}
+      state_(PerClientState::Get(window->window_tree())) {}
 
 SurfaceBinding::~SurfaceBinding() {}
 

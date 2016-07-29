@@ -26,7 +26,6 @@ struct PlatformDisplayInitParams {
   PlatformDisplayInitParams(const PlatformDisplayInitParams& other);
   ~PlatformDisplayInitParams();
 
-  scoped_refptr<GpuState> gpu_state;
   scoped_refptr<SurfacesState> surfaces_state;
 
   gfx::Rect display_bounds;

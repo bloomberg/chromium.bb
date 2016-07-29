@@ -64,7 +64,6 @@ component("mus") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/ui/common:mus_common",
-    "//services/ui/gles2:lib",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",

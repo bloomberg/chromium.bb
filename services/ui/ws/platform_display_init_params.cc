@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/platform_display_init_params.h"
 
-#include "services/ui/gles2/gpu_state.h"
 #include "services/ui/surfaces/surfaces_state.h"
 
 namespace ui {
