@@ -27,6 +27,7 @@ InvalidationServiceAndroid::InvalidationServiceAndroid(jobject context)
           context,
           reinterpret_cast<intptr_t>(this));
   java_ref_.Reset(env, local_java_ref.obj());
+  logger_.OnStateChange(invalidator_state_);
 }
 
 InvalidationServiceAndroid::~InvalidationServiceAndroid() { }
