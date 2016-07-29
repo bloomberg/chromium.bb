@@ -1095,6 +1095,10 @@ crbug.com/619103 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/619103 fast/layers/remove-layer-with-nested-stacking.html [ Pass Crash Timeout ]
 crbug.com/619103 compositing/iframes/become-composited-nested-iframes.html [ Pass Crash Timeout ]
 
+crbug.com/632548 [ Win ] fast/repaint/overflow-scroll-body-appear.html [ Pass Failure ]
+crbug.com/632548 [ Win ] fast/repaint/invalidation-after-opacity-change-subtree.html [ Pass Failure ]
+crbug.com/632548 [ Win ] compositing/overflow/text-match-highlight.html [ Pass Failure ]
+
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
 crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
