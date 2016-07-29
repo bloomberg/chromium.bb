@@ -571,54 +571,57 @@ if (is_android && enable_java_templates) {
 
 # TODO(GYP): Gyp has considerations here for QNX and for the host toolchain
 #  that have not been ported over.
-data_bundle = "common/icudtl.dat"
 if (is_android) {
-  data_bundle = "android/icudtl.dat"
-} else if (current_cpu == "mips" || current_cpu == "mips64") {
-  data_bundle = "common/icudtb.dat"
+  data_dir = "android"
 } else {
-  data_bundle = "common/icudtl.dat"
+  data_dir = "common"
 }
+if (current_cpu == "mips" || current_cpu == "mips64") {
+  data_bundle_prefix = "icudtb"
+} else {
+  data_bundle_prefix = "icudtl"
+}
+data_bundle = "${data_bundle_prefix}.dat"
 
 # TODO(GYP) support use_system_icu.
 if (icu_use_data_file) {
   if (is_ios) {
     bundle_data("icudata") {
-      sources = [ "$data_bundle" ]
+      sources = [ "$data_dir/$data_bundle" ]
       outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   } else {
     copy("icudata") {
-      sources = [ "$data_bundle" ]
-      outputs = [ "$root_out_dir/{{source_file_part}}" ]
+      sources = [ "$data_dir/$data_bundle" ]
+      outputs = [ "$root_out_dir/$data_bundle" ]
+      data = [ "$root_out_dir/$data_bundle" ]
     }
   }
 } else {
   if (is_win) {
     # On Windows the target DLL is pre-built so just use a copy rule.
+    # data_bundle and data_dir have to be used to avoid 'unused variable'
+    # error.
+    data_bundle = "icudt.dll"
+    data_dir = "windows"
     copy("icudata") {
-      sources = [
-        "windows/icudt.dll",
-      ]
-      outputs = [
-        "$root_out_dir/icudt.dll",
-      ]
+      sources = [ "$data_dir/$data_bundle" ]
+      outputs = [ "$root_out_dir/$data_bundle" ]
+      data = outputs
     }
   } else {
-    if (current_cpu == "mips" || current_cpu == "mips64") {
-      data_assembly = "$target_gen_dir/icudtb_dat.S"
-    } else {
-      data_assembly = "$target_gen_dir/icudtl_dat.S"
-    }
+    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
     action("make_data_assembly") {
       script = "scripts/make_data_assembly.py"
-      inputs = [ "$data_bundle" ]
+      inputs = [ "$data_dir/$data_bundle" ]
       outputs = [ "$data_assembly" ]
       args = [
-        rebase_path(data_bundle, root_build_dir),
+        rebase_path(inputs[0], root_build_dir),
         rebase_path(data_assembly, root_build_dir),
       ]
-      if (is_mac) {
+      # TODO(GYP): Gyp has considerations here for QNX and for the host
+      # toolchain that have not been ported over.
+      if (is_mac || is_ios) {
         args += [ "--mac" ]
       }
     }
