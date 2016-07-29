@@ -63,7 +63,7 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         if options.issue:
             return options.issue
         issue_number = self._git().get_issue_number()
-        _log.debug('Issue number for current branch: %s' % issue_number)
+        _log.debug('Issue number for current branch: %s', issue_number)
         if not issue_number.isdigit():
             _log.error('No issue number given and no issue for current branch.')
             return None
@@ -88,10 +88,10 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
 
     def _builds_to_tests(self, issue_number):
         """Fetches a list of try bots, and for each, fetches tests with new baselines."""
-        _log.debug('Getting results for Rietveld issue %d.' % issue_number)
+        _log.debug('Getting results for Rietveld issue %d.', issue_number)
         try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
         if not try_jobs:
-            _log.debug('No try job results for builders in: %r.' % (self._try_bots(),))
+            _log.debug('No try job results for builders in: %r.', self._try_bots())
         builds_to_tests = {}
         for job in try_jobs:
             test_results = self._unexpected_mismatch_results(job)

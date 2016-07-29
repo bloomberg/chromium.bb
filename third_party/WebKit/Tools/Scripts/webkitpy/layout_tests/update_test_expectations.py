@@ -41,7 +41,7 @@ def main(host, bot_test_expectations_factory, argv):
 
     expectations_file = port.path_to_generic_test_expectations_file()
     if not host.filesystem.isfile(expectations_file):
-        _log.warn("Didn't find generic expectations file at: " + expectations_file)
+        _log.warning("Didn't find generic expectations file at: " + expectations_file)
         return 1
 
     remove_flakes_o_matic = RemoveFlakesOMatic(host,
@@ -104,7 +104,7 @@ class RemoveFlakesOMatic(object):
                 return False
 
             if builder_name not in self._builder_results_by_path.keys():
-                _log.error('Failed to find results for builder "%s"' % builder_name)
+                _log.error('Failed to find results for builder "%s"', builder_name)
                 return False
 
             results_by_path = self._builder_results_by_path[builder_name]
@@ -196,7 +196,7 @@ class RemoveFlakesOMatic(object):
                 # This is not fatal since we may not need to check these
                 # results. If we do need these results we'll log an error later
                 # when trying to check against them.
-                _log.warn('Downloaded results are missing results for builder "%s"' % builder_name)
+                _log.warning('Downloaded results are missing results for builder "%s"', builder_name)
                 continue
 
             builder_results_by_path[builder_name] = (

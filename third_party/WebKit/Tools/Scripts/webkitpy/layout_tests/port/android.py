@@ -302,14 +302,14 @@ class AndroidCommands(object):
     # Local private methods.
 
     def _log_error(self, message):
-        _log.error('[%s] %s' % (self._device_serial, message))
+        _log.error('[%s] %s', self._device_serial, message)
 
     def _log_info(self, message):
-        _log.info('[%s] %s' % (self._device_serial, message))
+        _log.info('[%s] %s', self._device_serial, message)
 
     def _log_debug(self, message):
         if self._debug_logging:
-            _log.debug('[%s] %s' % (self._device_serial, message))
+            _log.debug('[%s] %s', self._device_serial, message)
 
     @staticmethod
     def _determine_adb_version(adb_command_path, executive, debug_logging):
@@ -367,12 +367,12 @@ class AndroidDevices(object):
         for device_serial in sorted(devices):
             commands = AndroidCommands(executive, device_serial, self._debug_logging)
             if self._battery_level_for_device(commands) < AndroidDevices.MINIMUM_BATTERY_PERCENTAGE:
-                _log.warning('Device with serial "%s" skipped because it has less than %d percent battery.'
-                             % (commands.get_serial(), AndroidDevices.MINIMUM_BATTERY_PERCENTAGE))
+                _log.warning('Device with serial "%s" skipped because it has less than %d percent battery.',
+                             commands.get_serial(), AndroidDevices.MINIMUM_BATTERY_PERCENTAGE)
                 continue
 
             if not self._is_device_screen_on(commands):
-                _log.warning('Device with serial "%s" skipped because the screen must be on.' % commands.get_serial())
+                _log.warning('Device with serial "%s" skipped because the screen must be on.', commands.get_serial())
                 continue
 
             self._usable_devices.append(commands)
@@ -396,7 +396,7 @@ class AndroidDevices(object):
     def _battery_level_for_device(self, commands):
         battery_status = commands.run(['shell', 'dumpsys', 'battery'])
         if 'Error' in battery_status or "Can't find service: battery" in battery_status:
-            _log.warning('Unable to read the battery level from device with serial "%s".' % commands.get_serial())
+            _log.warning('Unable to read the battery level from device with serial "%s".', commands.get_serial())
             return 0
 
         return int(re.findall('level: (\d+)', battery_status)[0])
@@ -559,7 +559,7 @@ class AndroidPort(base.Port):
                 log_safely("device prepared", throttled=False)
             except (ScriptError, driver.DeviceFailure) as e:
                 lock.acquire()
-                _log.warning("[%s] failed to prepare_device: %s" % (serial, str(e)))
+                _log.warning("[%s] failed to prepare_device: %s", serial, str(e))
                 lock.release()
             except KeyboardInterrupt:
                 if pool:
@@ -608,8 +608,8 @@ class AndroidPort(base.Port):
                     exists = True
                     break
             if not exists:
-                _log.error('You are missing %s under %s. Try installing %s. See build instructions.' %
-                           (font_file, font_dirs, package))
+                _log.error('You are missing %s under %s. Try installing %s. See build instructions.',
+                           font_file, font_dirs, package)
                 return test_run_results.SYS_DEPS_EXIT_STATUS
         return test_run_results.OK_EXIT_STATUS
 
@@ -698,12 +698,12 @@ class AndroidPerf(SingleFileOutputProfiler):
     def check_configuration(self):
         # Check that perf is installed
         if not self._android_commands.file_exists('/system/bin/perf'):
-            _log.error("Cannot find /system/bin/perf on device %s" % self._android_commands.get_serial())
+            _log.error("Cannot find /system/bin/perf on device %s", self._android_commands.get_serial())
             return False
 
         # Check that the device is a userdebug build (or at least has the necessary libraries).
         if self._android_commands.run(['shell', 'getprop', 'ro.build.type']).strip() != 'userdebug':
-            _log.error("Device %s is not flashed with a userdebug build of Android" % self._android_commands.get_serial())
+            _log.error("Device %s is not flashed with a userdebug build of Android", self._android_commands.get_serial())
             return False
 
         # FIXME: Check that the binary actually is perf-able (has stackframe pointers)?
@@ -766,7 +766,7 @@ http://goto.google.com/cr-android-perf-howto
     def profile_after_exit(self):
         perf_exitcode = self._perf_process.wait()
         if perf_exitcode != 0:
-            _log.debug("Perf failed (exit code: %i), can't process results." % perf_exitcode)
+            _log.debug("Perf failed (exit code: %i), can't process results.", perf_exitcode)
             return
 
         self._android_commands.pull('/data/perf.data', self._output_path)
@@ -855,7 +855,7 @@ class ChromiumAndroidDriver(driver.Driver):
         saved_kptr_restrict = self._android_commands.run(['shell', 'cat', KPTR_RESTRICT_PATH]).strip()
         self._android_commands.run(['shell', 'echo', '0', '>', KPTR_RESTRICT_PATH])
 
-        _log.debug("Updating kallsyms file (%s) from device" % kallsyms_cache_path)
+        _log.debug("Updating kallsyms file (%s) from device", kallsyms_cache_path)
         self._android_commands.pull("/proc/kallsyms", kallsyms_cache_path)
 
         self._android_commands.run(['shell', 'echo', saved_kptr_restrict, '>', KPTR_RESTRICT_PATH])
@@ -870,7 +870,7 @@ class ChromiumAndroidDriver(driver.Driver):
             symfs_path = env['ANDROID_SYMFS']
         else:
             symfs_path = fs.join(self._port.results_directory(), 'symfs')
-            _log.debug("ANDROID_SYMFS not set, using %s" % symfs_path)
+            _log.debug("ANDROID_SYMFS not set, using %s", symfs_path)
 
         # find the installed path, and the path of the symboled built library
         # FIXME: We should get the install path from the device!
@@ -881,7 +881,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # FIXME: Ideally we'd check the sha1's first and make a soft-link instead
         # of copying (since we probably never care about windows).
-        _log.debug("Updating symfs library (%s) from built copy (%s)" % (symfs_library_path, built_library_path))
+        _log.debug("Updating symfs library (%s) from built copy (%s)", symfs_library_path, built_library_path)
         fs.maybe_make_directory(fs.dirname(symfs_library_path))
         fs.copyfile(built_library_path, symfs_library_path)
 
@@ -926,14 +926,14 @@ class ChromiumAndroidDriver(driver.Driver):
         self._android_devices.set_device_prepared(self._android_commands.get_serial())
 
     def _log_error(self, message):
-        _log.error('[%s] %s' % (self._android_commands.get_serial(), message))
+        _log.error('[%s] %s', self._android_commands.get_serial(), message)
 
     def _log_warning(self, message):
-        _log.warning('[%s] %s' % (self._android_commands.get_serial(), message))
+        _log.warning('[%s] %s', self._android_commands.get_serial(), message)
 
     def _log_debug(self, message):
         if self._debug_logging:
-            _log.debug('[%s] %s' % (self._android_commands.get_serial(), message))
+            _log.debug('[%s] %s', self._android_commands.get_serial(), message)
 
     def _abort(self, message):
         self._device_failed = True

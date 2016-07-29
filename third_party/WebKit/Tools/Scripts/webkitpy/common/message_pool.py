@@ -245,7 +245,7 @@ class _Worker(multiprocessing.Process):
             self._set_up_logging()
 
         worker = self._worker
-        _log.debug("%s starting" % self.name)
+        _log.debug("%s starting", self.name)
         self._running = True
 
         try:
@@ -260,7 +260,7 @@ class _Worker(multiprocessing.Process):
                     assert message.name == 'stop', 'bad message %s' % repr(message)
                     break
 
-            _log.debug("%s exiting" % self.name)
+            _log.debug("%s exiting", self.name)
         except Queue.Empty:
             assert False, '%s: ran out of messages in worker queue.' % self.name
         except KeyboardInterrupt:
@@ -297,10 +297,10 @@ class _Worker(multiprocessing.Process):
             raise exception_type, exception_value, exception_traceback
 
         if exception_type == KeyboardInterrupt:
-            _log.debug("%s: interrupted, exiting" % self.name)
+            _log.debug("%s: interrupted, exiting", self.name)
             stack_utils.log_traceback(_log.debug, exception_traceback)
         else:
-            _log.error("%s: %s('%s') raised:" % (self.name, exception_value.__class__.__name__, str(exception_value)))
+            _log.error("%s: %s('%s') raised:", self.name, exception_value.__class__.__name__, str(exception_value))
             stack_utils.log_traceback(_log.error, exception_traceback)
         # Since tracebacks aren't picklable, send the extracted stack instead.
         stack = traceback.extract_tb(exception_traceback)

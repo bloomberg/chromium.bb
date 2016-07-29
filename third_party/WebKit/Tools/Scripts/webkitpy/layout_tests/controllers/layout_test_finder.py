@@ -141,7 +141,7 @@ class LayoutTestFinder(object):
             except IOError as e:
                 if e.errno == errno.ENOENT:
                     _log.critical('')
-                    _log.critical('--test-list file "%s" not found' % file)
+                    _log.critical('--test-list file "%s" not found', file)
                 raise
         return tests
 
@@ -190,7 +190,7 @@ class LayoutTestFinder(object):
             test_size = int(chunk_len)
             assert test_size > 0
         except AssertionError:
-            _log.critical("invalid chunk '%s'" % chunk_value)
+            _log.critical("invalid chunk '%s'", chunk_value)
             return (None, None)
 
         # Get the number of tests
@@ -223,13 +223,13 @@ class LayoutTestFinder(object):
 
         tests_to_run = test_names[slice_start:slice_end]
 
-        _log.debug('chunk slice [%d:%d] of %d is %d tests' % (slice_start, slice_end, num_tests, (slice_end - slice_start)))
+        _log.debug('chunk slice [%d:%d] of %d is %d tests', slice_start, slice_end, num_tests, (slice_end - slice_start))
 
         # If we reached the end and we don't have enough tests, we run some
         # from the beginning.
         if slice_end - slice_start < chunk_len:
             extra = chunk_len - (slice_end - slice_start)
-            _log.debug('   last chunk is partial, appending [0:%d]' % extra)
+            _log.debug('   last chunk is partial, appending [0:%d]', extra)
             tests_to_run.extend(test_names[0:extra])
 
         return (tests_to_run, set(test_names) - set(tests_to_run))

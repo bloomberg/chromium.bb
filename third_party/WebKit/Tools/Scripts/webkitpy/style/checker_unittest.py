@@ -118,7 +118,7 @@ class ConfigureLoggingTest(ConfigureLoggingTestBase):
     is_verbose = False
 
     def test_warning_message(self):
-        self._log.warn("test message")
+        self._log.warning("test message")
         self.assert_log_messages(["WARNING: test message\n"])
 
     def test_below_warning_message(self):

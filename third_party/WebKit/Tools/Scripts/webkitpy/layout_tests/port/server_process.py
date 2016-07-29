@@ -381,12 +381,12 @@ class ServerProcess(object):
             while self._proc.poll() is None and time.time() < deadline:
                 time.sleep(0.01)
             if self._proc.poll() is None:
-                _log.warning('stopping %s(pid %d) timed out, killing it' % (self._name, self._proc.pid))
+                _log.warning('stopping %s(pid %d) timed out, killing it', self._name, self._proc.pid)
 
         if self._proc.poll() is None:
             self._kill()
             killed = True
-            _log.debug('killed pid %d' % self._proc.pid)
+            _log.debug('killed pid %d', self._proc.pid)
 
         # read any remaining data on the pipes and return it.
         if not killed:

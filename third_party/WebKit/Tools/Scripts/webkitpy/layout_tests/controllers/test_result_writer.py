@@ -77,18 +77,18 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
                 if diff_image:
                     writer.write_image_diff_files(diff_image)
                 else:
-                    _log.warn('ref test mismatch did not produce an image diff.')
+                    _log.warning('ref test mismatch did not produce an image diff.')
             writer.write_image_files(driver_output.image, expected_image=None)
             if filesystem.exists(failure.reference_filename):
                 writer.write_reftest(failure.reference_filename)
             else:
-                _log.warn("reference %s was not found" % failure.reference_filename)
+                _log.warning("reference %s was not found", failure.reference_filename)
         elif isinstance(failure, test_failures.FailureReftestMismatchDidNotOccur):
             writer.write_image_files(driver_output.image, expected_image=None)
             if filesystem.exists(failure.reference_filename):
                 writer.write_reftest(failure.reference_filename)
             else:
-                _log.warn("reference %s was not found" % failure.reference_filename)
+                _log.warning("reference %s was not found", failure.reference_filename)
         else:
             assert isinstance(failure, (test_failures.FailureTimeout, test_failures.FailureReftestNoImagesGenerated))
 

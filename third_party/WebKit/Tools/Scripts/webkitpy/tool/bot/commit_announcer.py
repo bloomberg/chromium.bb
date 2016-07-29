@@ -72,11 +72,11 @@ class CommitAnnouncer(SingleServerIRCBot):
                 continue
             commit_detail = self._commit_detail(commit)
             if commit_detail:
-                _log.info('%s Posting commit %s' % (self._time(), commit))
-                _log.info('%s Posted message: %s' % (self._time(), repr(commit_detail)))
+                _log.info('%s Posting commit %s', self._time(), commit)
+                _log.info('%s Posted message: %s', self._time(), repr(commit_detail))
                 self._post(commit_detail)
             else:
-                _log.error('Malformed commit log for %s' % commit)
+                _log.error('Malformed commit log for %s', commit)
 
     # Bot commands.
 
@@ -113,7 +113,7 @@ class CommitAnnouncer(SingleServerIRCBot):
             try:
                 self.git.ensure_cleanly_tracking_remote_master()
             except ScriptError as e:
-                _log.error('Failed to clean repository: %s' % e)
+                _log.error('Failed to clean repository: %s', e)
                 return False
 
         attempts = 1
@@ -124,20 +124,20 @@ class CommitAnnouncer(SingleServerIRCBot):
                     return False
                 wait = int(update_wait_seconds) << (attempts - 1)
                 if wait < 120:
-                    _log.info('Waiting %s seconds' % wait)
+                    _log.info('Waiting %s seconds', wait)
                 else:
-                    _log.info('Waiting %s minutes' % (wait / 60))
+                    _log.info('Waiting %s minutes', wait / 60)
                 time.sleep(wait)
-                _log.info('Pull attempt %s out of %s' % (attempts, retry_attempts))
+                _log.info('Pull attempt %s out of %s', attempts, retry_attempts)
             try:
                 self.git.pull()
                 return True
             except ScriptError as e:
-                _log.error('Error pulling from server: %s' % e)
-                _log.error('Output: %s' % e.output)
+                _log.error('Error pulling from server: %s', e)
+                _log.error('Output: %s', e.output)
             attempts += 1
         _log.error('Exceeded pull attempts')
-        _log.error('Aborting at time: %s' % self._time())
+        _log.error('Aborting at time: %s', self._time())
         return False
 
     def _time(self):

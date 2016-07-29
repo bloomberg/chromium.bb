@@ -149,9 +149,9 @@ class Manager(object):
                         break
 
                     _log.info('')
-                    _log.info('Retrying %s, attempt %d of %d...' %
-                              (grammar.pluralize('unexpected failure', len(tests_to_retry)),
-                               retry_attempt, self._options.num_retries))
+                    _log.info('Retrying %s, attempt %d of %d...',
+                              grammar.pluralize('unexpected failure', len(tests_to_retry)),
+                              retry_attempt, self._options.num_retries)
 
                     retry_results = self._run_tests(tests_to_retry,
                                                     tests_to_skip=set(),
@@ -186,8 +186,8 @@ class Manager(object):
 
         exit_code = summarized_failing_results['num_regressions']
         if exit_code > test_run_results.MAX_FAILURES_EXIT_STATUS:
-            _log.warning('num regressions (%d) exceeds max exit status (%d)' %
-                         (exit_code, test_run_results.MAX_FAILURES_EXIT_STATUS))
+            _log.warning('num regressions (%d) exceeds max exit status (%d)',
+                         exit_code, test_run_results.MAX_FAILURES_EXIT_STATUS)
             exit_code = test_run_results.MAX_FAILURES_EXIT_STATUS
 
         if not self._options.dry_run:
@@ -477,7 +477,7 @@ class Manager(object):
         ) if result.type != test_expectations.PASS]
 
     def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results, running_all_tests):
-        _log.debug("Writing JSON files in %s." % self._results_directory)
+        _log.debug("Writing JSON files in %s.", self._results_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
         times_trie = json_results_generator.test_timings_trie(initial_results.results_by_name.values())
@@ -533,11 +533,11 @@ class Manager(object):
                 if response.code == 200:
                     _log.debug("JSON uploaded.")
                 else:
-                    _log.debug("JSON upload failed, %d: '%s'" % (response.code, response.read()))
+                    _log.debug("JSON upload failed, %d: '%s'", response.code, response.read())
             else:
                 _log.error("JSON upload failed; no response returned")
         except Exception as err:
-            _log.error("Upload failed: %s" % err)
+            _log.error("Upload failed: %s", err)
 
     def _copy_results_html_file(self, destination_path):
         base_dir = self._port.path_from_webkit_base('LayoutTests', 'fast', 'harness')

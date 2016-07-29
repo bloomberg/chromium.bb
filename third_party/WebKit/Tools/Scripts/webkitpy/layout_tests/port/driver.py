@@ -334,7 +334,7 @@ class Driver(object):
             line = server_process.read_stdout_line(deadline)
 
         if server_process.timed_out or server_process.has_crashed():
-            _log.error('Failed to start the %s process: \n%s' % (server_process.name(), output))
+            _log.error('Failed to start the %s process: \n%s', server_process.name(), output)
             return False
 
         return True
@@ -389,7 +389,7 @@ class Driver(object):
             pid = int(match.group(1)) if match else None
             self._crashed_pid = pid
             # FIXME: delete this after we're sure this code is working :)
-            _log.debug('%s crash, pid = %s, error_line = %s' % (self._crashed_process_name, str(pid), error_line))
+            _log.debug('%s crash, pid = %s, error_line = %s', self._crashed_process_name, str(pid), error_line)
             if error_line.startswith("#PROCESS UNRESPONSIVE - "):
                 self._subprocess_was_unresponsive = True
                 self._port.sample_process(self._crashed_process_name, self._crashed_pid)

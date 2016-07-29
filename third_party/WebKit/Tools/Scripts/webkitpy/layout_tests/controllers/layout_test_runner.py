@@ -134,7 +134,7 @@ class LayoutTestRunner(object):
             self._printer.writeln('Interrupted, exiting ...')
             run_results.keyboard_interrupted = True
         except Exception as e:
-            _log.debug('%s("%s") raised, exiting' % (e.__class__.__name__, str(e)))
+            _log.debug('%s("%s") raised, exiting', e.__class__.__name__, str(e))
             raise
         finally:
             run_results.run_time = time.time() - start_time
@@ -209,7 +209,7 @@ class LayoutTestRunner(object):
         self._update_summary_with_result(self._current_run_results, result)
 
     def _handle_device_failed(self, worker_name, list_name, remaining_tests):
-        _log.warning("%s has failed" % worker_name)
+        _log.warning("%s has failed", worker_name)
         if remaining_tests:
             self._shards_to_redo.append(TestShard(list_name, remaining_tests))
 
@@ -285,7 +285,7 @@ class Worker(object):
         self._update_test_input(test_input)
         start = time.time()
 
-        _log.debug("%s %s started" % (self._name, test_input.test_name))
+        _log.debug("%s %s started", self._name, test_input.test_name)
         self._caller.post('started_test', test_input)
         result = single_test_runner.run_single_test(
             self._port, self._options, self._results_directory, self._name,
@@ -302,7 +302,7 @@ class Worker(object):
         return result.device_failed
 
     def stop(self):
-        _log.debug("%s cleaning up" % self._name)
+        _log.debug("%s cleaning up", self._name)
         self._kill_driver(self._primary_driver, "primary")
         self._kill_driver(self._secondary_driver, "secondary")
 
@@ -310,7 +310,7 @@ class Worker(object):
         # Be careful about how and when we kill the driver; if driver.stop()
         # raises an exception, this routine may get re-entered via __del__.
         if driver:
-            _log.debug("%s killing %s driver" % (self._name, label))
+            _log.debug("%s killing %s driver", self._name, label)
             driver.stop()
 
     def _clean_up_after_test(self, test_input, result):
@@ -329,13 +329,13 @@ class Worker(object):
                 self._batch_count = 0
 
             # Print the error message(s).
-            _log.debug("%s %s failed:" % (self._name, test_name))
+            _log.debug("%s %s failed:", self._name, test_name)
             for f in result.failures:
-                _log.debug("%s  %s" % (self._name, f.message()))
+                _log.debug("%s  %s", self._name, f.message())
         elif result.type == test_expectations.SKIP:
-            _log.debug("%s %s skipped" % (self._name, test_name))
+            _log.debug("%s %s skipped", self._name, test_name)
         else:
-            _log.debug("%s %s passed" % (self._name, test_name))
+            _log.debug("%s %s passed", self._name, test_name)
 
 
 class TestShard(object):

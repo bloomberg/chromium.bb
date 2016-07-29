@@ -333,10 +333,10 @@ class Port(object):
         """
         if not self._filesystem.exists(path_to_file):
             if more_logging:
-                _log.error('Unable to find %s' % file_description)
-                _log.error('    at %s' % path_to_file)
+                _log.error('Unable to find %s', file_description)
+                _log.error('    at %s', path_to_file)
                 if override_step:
-                    _log.error('    %s' % override_step)
+                    _log.error('    %s', override_step)
                     _log.error('')
             return False
         return True
@@ -376,7 +376,7 @@ class Port(object):
     def _check_driver(self):
         driver_path = self._path_to_driver()
         if not self._filesystem.exists(driver_path):
-            _log.error("%s was not found at %s" % (self.driver_name(), driver_path))
+            _log.error("%s was not found at %s", self.driver_name(), driver_path)
             return False
         return True
 
@@ -418,7 +418,7 @@ class Port(object):
         """Checks whether image_diff binary exists."""
         image_diff_path = self._path_to_image_diff()
         if not self._filesystem.exists(image_diff_path):
-            _log.error("image_diff was not found at %s" % image_diff_path)
+            _log.error("image_diff was not found at %s", image_diff_path)
             return False
         return True
 
@@ -435,7 +435,7 @@ class Port(object):
 
         if not self._filesystem.exists(self._pretty_patch_path):
             if more_logging:
-                _log.warning("Unable to find %s; can't generate pretty patches." % self._pretty_patch_path)
+                _log.warning("Unable to find %s; can't generate pretty patches.", self._pretty_patch_path)
                 _log.warning('')
             return False
 
@@ -725,7 +725,7 @@ class Port(object):
             split_line = line.split()
             if len(split_line) == 4:
                 # FIXME: Probably one of mozilla's extensions in the reftest.list format. Do we need to support this?
-                _log.warning("unsupported reftest.list line '%s' in %s" % (line, reftest_list_path))
+                _log.warning("unsupported reftest.list line '%s' in %s", line, reftest_list_path)
                 continue
             if len(split_line) < 3:
                 continue
@@ -941,9 +941,9 @@ class Port(object):
         for search_path in skipped_file_paths:
             filename = self._filesystem.join(self._webkit_baseline_path(search_path), "Skipped")
             if not self._filesystem.exists(filename):
-                _log.debug("Skipped does not exist: %s" % filename)
+                _log.debug("Skipped does not exist: %s", filename)
                 continue
-            _log.debug("Using Skipped file: %s" % filename)
+            _log.debug("Using Skipped file: %s", filename)
             skipped_file_contents = self._filesystem.read_text_file(filename)
             tests_to_skip.extend(self._tests_from_skipped_file_contents(skipped_file_contents))
         return tests_to_skip
@@ -1124,7 +1124,7 @@ class Port(object):
         method."""
         helper_path = self._path_to_helper()
         if helper_path:
-            _log.debug("Starting layout helper %s" % helper_path)
+            _log.debug("Starting layout helper %s", helper_path)
             # Note: Not thread safe: http://bugs.python.org/issue2320
             self._helper = self._executive.popen([helper_path],
                                                  stdin=self._executive.PIPE, stdout=self._executive.PIPE, stderr=None)
@@ -1291,10 +1291,10 @@ class Port(object):
         for path in self.get_option('additional_expectations', []):
             expanded_path = self._filesystem.expanduser(path)
             if self._filesystem.exists(expanded_path):
-                _log.debug("reading additional_expectations from path '%s'" % path)
+                _log.debug("reading additional_expectations from path '%s'", path)
                 expectations[path] = self._filesystem.read_text_file(expanded_path)
             else:
-                _log.warning("additional_expectations path '%s' does not exist" % path)
+                _log.warning("additional_expectations path '%s' does not exist", path)
         return expectations
 
     def bot_expectations(self):
@@ -1316,7 +1316,7 @@ class Port(object):
             return expectations.flakes_by_path(ignore_mode == 'very-flaky')
         if ignore_mode == 'unexpected':
             return expectations.unexpected_results_by_path()
-        _log.warning("Unexpected ignore mode: '%s'." % ignore_mode)
+        _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
         return {}
 
     def expectations_files(self):
@@ -1393,7 +1393,7 @@ class Port(object):
                 return ""
             raise
         except ScriptError as e:
-            _log.error("Failed to run wdiff: %s" % e)
+            _log.error("Failed to run wdiff: %s", e)
             self._wdiff_available = False
             return self._wdiff_error_html
 
@@ -1414,13 +1414,13 @@ class Port(object):
         except OSError as e:
             # If the system is missing ruby log the error and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s): %s" % (command, e))
+            _log.error("Failed to run PrettyPatch (%s): %s", command, e)
             return self._pretty_patch_error_html
         except ScriptError as e:
             # If ruby failed to run for some reason, log the command
             # output and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s):\n%s" % (command, e.message_with_output()))
+            _log.error("Failed to run PrettyPatch (%s):\n%s", command, e.message_with_output())
             return self._pretty_patch_error_html
 
     def default_configuration(self):
@@ -1676,7 +1676,7 @@ class Port(object):
             try:
                 symbols += self._executive.run_command(['nm', path_to_module], error_handler=self._executive.ignore_error)
             except OSError as e:
-                _log.warn("Failed to run nm: %s.  Can't determine supported features correctly." % e)
+                _log.warning("Failed to run nm: %s.  Can't determine supported features correctly.", e)
         return symbols
 
     # Ports which use compile-time feature detection should define this method and return

@@ -65,12 +65,12 @@ def _get_json(url, web):
     try:
         contents = web.get_binary(url)
     except urllib2.URLError:
-        _log.error('Request failed to URL: %s' % url)
+        _log.error('Request failed to URL: %s', url)
         raise
     try:
         return json.loads(contents)
     except ValueError:
-        _log.error('Invalid JSON: %s' % contents)
+        _log.error('Invalid JSON: %s', contents)
         raise
 
 

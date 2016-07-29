@@ -511,7 +511,7 @@ def _set_up_derived_options(port, options, args):
             # to Port.
             filesystem = port.host.filesystem
             if not filesystem.isdir(filesystem.join(port.layout_tests_dir(), directory)):
-                _log.warning("'%s' was passed to --pixel-test-directories, which doesn't seem to be a directory" % str(directory))
+                _log.warning("'%s' was passed to --pixel-test-directories, which doesn't seem to be a directory", str(directory))
             else:
                 verified_dirs.add(directory)
 
@@ -568,13 +568,13 @@ def run(port, options, args, logging_stream, stdout):
             _log.debug("Dashboard generated.")
 
         _log.debug("")
-        _log.debug("Testing completed, Exit status: %d" % run_details.exit_code)
+        _log.debug("Testing completed, Exit status: %d", run_details.exit_code)
 
         # Temporary process dump for debugging windows timeout issues, see crbug.com/522396.
         _log.debug("")
         _log.debug("Process dump:")
         for process in port.host.executive.process_dump():
-            _log.debug("\t%s" % process)
+            _log.debug("\t%s", process)
 
         return run_details
 

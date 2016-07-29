@@ -696,8 +696,7 @@ class StyleProcessor(ProcessorBase):
         if self._dispatcher.should_skip_without_warning(file_path):
             return False
         if self._dispatcher.should_skip_with_warning(file_path):
-            _log.warn('File exempt from style guide. Skipping: "%s"'
-                      % file_path)
+            _log.warning('File exempt from style guide. Skipping: "%s"', file_path)
             return False
         return True
 

@@ -83,7 +83,7 @@ Flakiness dashboard: %s
             # TODO(ojan): We should also skip bots that haven't uploaded recently,
             # e.g. if they're >24h stale.
             if not expectations:
-                _log.error("Can't load flakiness data for builder: %s" % builder_name)
+                _log.error("Can't load flakiness data for builder: %s", builder_name)
                 continue
 
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):

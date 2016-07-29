@@ -89,7 +89,7 @@ class ServerBase(object):
         if self._filesystem.exists(self._pid_file):
             try:
                 self._pid = int(self._filesystem.read_text_file(self._pid_file))
-                _log.debug('stale %s pid file, pid %d' % (self._name, self._pid))
+                _log.debug('stale %s pid file, pid %d', self._name, self._pid)
                 self._stop_running_server()
             except (ValueError, UnicodeDecodeError):
                 # These could be raised if the pid file is corrupt.
@@ -103,7 +103,7 @@ class ServerBase(object):
         self._pid = self._spawn_process()
 
         if self._wait_for_action(self._is_server_running_on_all_ports):
-            _log.debug("%s successfully started (pid = %d)" % (self._name, self._pid))
+            _log.debug("%s successfully started (pid = %d)", self._name, self._pid)
         else:
             self._log_errors_from_subprocess()
             self._stop_running_server()
@@ -126,19 +126,19 @@ class ServerBase(object):
                 return
 
             if not actual_pid:
-                _log.warning('Failed to stop %s: pid file is missing' % self._name)
+                _log.warning('Failed to stop %s: pid file is missing', self._name)
                 return
             if self._pid != actual_pid:
-                _log.warning('Failed to stop %s: pid file contains %d, not %d' %
-                             (self._name, actual_pid, self._pid))
+                _log.warning('Failed to stop %s: pid file contains %d, not %d',
+                             self._name, actual_pid, self._pid)
                 # Try to kill the existing pid, anyway, in case it got orphaned.
                 self._executive.kill_process(self._pid)
                 self._pid = None
                 return
 
-            _log.debug("Attempting to shut down %s server at pid %d" % (self._name, self._pid))
+            _log.debug("Attempting to shut down %s server at pid %d", self._name, self._pid)
             self._stop_running_server()
-            _log.debug("%s server at pid %d stopped" % (self._name, self._pid))
+            _log.debug("%s server at pid %d stopped", self._name, self._pid)
             self._pid = None
         finally:
             # Make sure we delete the pid file no matter what happens.
@@ -158,10 +158,10 @@ class ServerBase(object):
             try:
                 self._remove_log_files(self._output_dir, log_prefix)
             except OSError:
-                _log.warning('Failed to remove old %s %s files' % (self._name, log_prefix))
+                _log.warning('Failed to remove old %s %s files', self._name, log_prefix)
 
     def _spawn_process(self):
-        _log.debug('Starting %s server, cmd="%s"' % (self._name, self._start_cmd))
+        _log.debug('Starting %s server, cmd="%s"', self._name, self._start_cmd)
         self._process = self._executive.popen(self._start_cmd,
                                               env=self._env,
                                               cwd=self._cwd,
@@ -178,11 +178,11 @@ class ServerBase(object):
 
     def _check_and_kill(self):
         if self._executive.check_running_pid(self._pid):
-            _log.debug('pid %d is running, killing it' % self._pid)
+            _log.debug('pid %d is running, killing it', self._pid)
             self._executive.kill_process(self._pid)
             return False
         else:
-            _log.debug('pid %d is not running' % self._pid)
+            _log.debug('pid %d is not running', self._pid)
 
         return True
 
@@ -198,32 +198,32 @@ class ServerBase(object):
                 self._filesystem.remove(full_path)
 
     def _log_errors_from_subprocess(self):
-        _log.error('logging %s errors, if any' % self._name)
+        _log.error('logging %s errors, if any', self._name)
         if self._process:
-            _log.error('%s returncode %s' % (self._name, str(self._process.returncode)))
+            _log.error('%s returncode %s', self._name, str(self._process.returncode))
             if self._process.stderr:
                 stderr_text = self._process.stderr.read()
                 if stderr_text:
-                    _log.error('%s stderr:' % self._name)
+                    _log.error('%s stderr:', self._name)
                     for line in stderr_text.splitlines():
-                        _log.error('  %s' % line)
+                        _log.error('  %s', line)
                 else:
-                    _log.error('%s no stderr' % self._name)
+                    _log.error('%s no stderr', self._name)
             else:
-                _log.error('%s no stderr handle' % self._name)
+                _log.error('%s no stderr handle', self._name)
         else:
-            _log.error('%s no process' % self._name)
+            _log.error('%s no process', self._name)
         if self._error_log_path and self._filesystem.exists(self._error_log_path):
             error_log_text = self._filesystem.read_text_file(self._error_log_path)
             if error_log_text:
-                _log.error('%s error log (%s) contents:' % (self._name, self._error_log_path))
+                _log.error('%s error log (%s) contents:', self._name, self._error_log_path)
                 for line in error_log_text.splitlines():
-                    _log.error('  %s' % line)
+                    _log.error('  %s', line)
             else:
-                _log.error('%s error log empty' % self._name)
+                _log.error('%s error log empty', self._name)
             _log.error('')
         else:
-            _log.error('%s no error log' % self._name)
+            _log.error('%s no error log', self._name)
 
     def _wait_for_action(self, action, wait_secs=20.0, sleep_secs=1.0):
         """Repeat the action for wait_sec or until it succeeds, sleeping for sleep_secs
@@ -232,7 +232,7 @@ class ServerBase(object):
         while time.time() - start_time < wait_secs:
             if action():
                 return True
-            _log.debug("Waiting for action: %s" % action)
+            _log.debug("Waiting for action: %s", action)
             time.sleep(sleep_secs)
 
         return False
@@ -251,11 +251,11 @@ class ServerBase(object):
             port = mapping['port']
             try:
                 s.connect(('localhost', port))
-                _log.debug("Server running on %d" % port)
+                _log.debug("Server running on %d", port)
             except IOError as e:
                 if e.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug("Server NOT running on %d: %s" % (port, e))
+                _log.debug("Server NOT running on %d: %s", port, e)
                 return False
             finally:
                 s.close()

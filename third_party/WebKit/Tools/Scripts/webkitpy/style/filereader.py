@@ -112,19 +112,19 @@ class TextFileReader(object):
         self.file_count += 1
 
         if not self.filesystem.exists(file_path) and file_path != "-":
-            _log.error("File does not exist: '%s'" % file_path)
+            _log.error("File does not exist: '%s'", file_path)
             sys.exit(1)  # FIXME: This should throw or return instead of exiting directly.
 
         if not self._processor.should_process(file_path):
-            _log.debug("Skipping file: '%s'" % file_path)
+            _log.debug("Skipping file: '%s'", file_path)
             return
-        _log.debug("Processing file: '%s'" % file_path)
+        _log.debug("Processing file: '%s'", file_path)
 
         try:
             lines = self._read_lines(file_path)
         except IOError as err:
             message = ("Could not read file. Skipping: '%s'\n  %s" % (file_path, err))
-            _log.warn(message)
+            _log.warning(message)
             return
 
         self._processor.process(lines, file_path, **kwargs)

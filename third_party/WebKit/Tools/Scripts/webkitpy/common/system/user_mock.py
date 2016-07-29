@@ -62,4 +62,4 @@ class MockUser(object):
         if url.startswith("file://"):
             _log.info("MOCK: user.open_url: file://...")
             return
-        _log.info("MOCK: user.open_url: %s" % url)
+        _log.info("MOCK: user.open_url: %s", url)

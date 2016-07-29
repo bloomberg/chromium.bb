@@ -57,7 +57,7 @@ class SCMDetector(object):
             script_directory = self._filesystem.dirname(self._filesystem.path_to_module(self.__module__))
             scm_system = self.detect_scm_system(script_directory, patch_directories)
             if scm_system:
-                _log.info("The current directory (%s) is not a WebKit checkout, using %s" % (cwd, scm_system.checkout_root))
+                _log.info("The current directory (%s) is not a WebKit checkout, using %s", cwd, scm_system.checkout_root)
             else:
                 raise Exception("FATAL: Failed to determine the SCM system for either %s or %s" % (cwd, script_directory))
         return scm_system

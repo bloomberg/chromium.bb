@@ -193,10 +193,10 @@ class TestImporter(object):
                     if path_base in dirs:
                         dirs.remove(path_base)
                         if not self.options.dry_run and self.import_in_place:
-                            _log.info("  pruning %s" % path_base)
+                            _log.info("  pruning %s", path_base)
                             self.filesystem.rmtree(path_full)
                         else:
-                            _log.info("  skipping %s" % path_base)
+                            _log.info("  skipping %s", path_base)
 
             copy_list = []
 
@@ -206,7 +206,7 @@ class TestImporter(object):
                 path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if not self.options.dry_run and self.import_in_place:
-                        _log.info("  pruning %s" % path_base)
+                        _log.info("  pruning %s", path_base)
                         self.filesystem.remove(path_full)
                         continue
                     else:
@@ -296,7 +296,7 @@ class TestImporter(object):
         for line in expectation_lines:
             if 'SKIP' in line.expectations:
                 if line.specifiers:
-                    _log.warning("W3CImportExpectations:%s should not have any specifiers" % line.line_numbers)
+                    _log.warning("W3CImportExpectations:%s should not have any specifiers", line.line_numbers)
                     continue
                 paths_to_skip.add(line.name)
         return paths_to_skip
@@ -334,7 +334,7 @@ class TestImporter(object):
 
                 if self.filesystem.isdir(orig_filepath):
                     # FIXME: Figure out what is triggering this and what to do about it.
-                    _log.error('%s refers to a directory' % orig_filepath)
+                    _log.error('%s refers to a directory', orig_filepath)
                     continue
 
                 if not self.filesystem.exists(orig_filepath):
@@ -353,12 +353,12 @@ class TestImporter(object):
 
                 relpath = self.filesystem.relpath(new_filepath, self.layout_tests_dir)
                 if not self.options.overwrite and self.filesystem.exists(new_filepath):
-                    _log.info('  skipping %s' % relpath)
+                    _log.info('  skipping %s', relpath)
                 else:
                     # FIXME: Maybe doing a file diff is in order here for existing files?
                     # In other words, there's no sense in overwriting identical files, but
                     # there's no harm in copying the identical thing.
-                    _log.info('  %s' % relpath)
+                    _log.info('  %s', relpath)
 
                 # Only HTML, XML, or CSS should be converted.
                 # FIXME: Eventually, so should JS when support is added for this type of conversion.

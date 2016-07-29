@@ -63,7 +63,7 @@ class Bisector(object):
             self.print_result()
             return 0
         if not self.test_fails(self.tests):
-            _log.error('%s does not fail' % self.expected_failure)
+            _log.error('%s does not fail', self.expected_failure)
             return 1
         # Split the list of test into buckets. Each bucket has at least one test required to cause
         # the expected failure at the end. Split buckets in half until there are only buckets left

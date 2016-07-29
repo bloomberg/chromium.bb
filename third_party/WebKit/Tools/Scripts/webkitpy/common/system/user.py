@@ -149,5 +149,5 @@ class User(object):
 
     def open_url(self, url):
         if not self.can_open_url():
-            _log.warn("Failed to open %s" % url)
+            _log.warning("Failed to open %s", url)
         webbrowser.open(url)

@@ -230,7 +230,7 @@ class SingleTestRunner(object):
         fs.maybe_make_directory(output_dir)
         output_basename = fs.basename(fs.splitext(self._test_name)[0] + "-expected" + extension)
         output_path = fs.join(output_dir, output_basename)
-        _log.info('Writing new expected result "%s"' % port.relative_test_filename(output_path))
+        _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
         port.update_baseline(output_path, data)
 
     def _handle_error(self, driver_output, reference_filename=None):
@@ -257,17 +257,17 @@ class SingleTestRunner(object):
                                                        driver_output.crashed_pid,
                                                        self._port.output_contains_sanitizer_messages(driver_output.crash_log)))
             if driver_output.error:
-                _log.debug("%s %s crashed, (stderr lines):" % (self._worker_name, testname))
+                _log.debug("%s %s crashed, (stderr lines):", self._worker_name, testname)
             else:
-                _log.debug("%s %s crashed, (no stderr)" % (self._worker_name, testname))
+                _log.debug("%s %s crashed, (no stderr)", self._worker_name, testname)
         elif driver_output.leak:
             failures.append(test_failures.FailureLeak(bool(reference_filename),
                                                       driver_output.leak_log))
-            _log.debug("%s %s leaked" % (self._worker_name, testname))
+            _log.debug("%s %s leaked", self._worker_name, testname)
         elif driver_output.error:
-            _log.debug("%s %s output stderr lines:" % (self._worker_name, testname))
+            _log.debug("%s %s output stderr lines:", self._worker_name, testname)
         for line in driver_output.error.splitlines():
-            _log.debug("  %s" % line)
+            _log.debug("  %s", line)
         return failures
 
     def _compare_output(self, expected_driver_output, driver_output):
@@ -353,7 +353,7 @@ class SingleTestRunner(object):
         elif driver_output.image_hash != expected_driver_output.image_hash:
             diff, err_str = self._port.diff_image(expected_driver_output.image, driver_output.image)
             if err_str:
-                _log.warning('  %s : %s' % (self._test_name, err_str))
+                _log.warning('  %s : %s', self._test_name, err_str)
                 failures.append(test_failures.FailureImageHashMismatch())
                 driver_output.error = (driver_output.error or '') + err_str
             else:
@@ -362,7 +362,7 @@ class SingleTestRunner(object):
                     failures.append(test_failures.FailureImageHashMismatch())
                 else:
                     # See https://bugs.webkit.org/show_bug.cgi?id=69444 for why this isn't a full failure.
-                    _log.warning('  %s -> pixel hash failed (but diff passed)' % self._test_name)
+                    _log.warning('  %s -> pixel hash failed (but diff passed)', self._test_name)
         return failures
 
     def _run_reftest(self):
@@ -452,6 +452,6 @@ class SingleTestRunner(object):
             elif err_str:
                 _log.error(err_str)
             else:
-                _log.warning("  %s -> ref test hashes didn't match but diff passed" % self._test_name)
+                _log.warning("  %s -> ref test hashes didn't match but diff passed", self._test_name)
 
         return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid)

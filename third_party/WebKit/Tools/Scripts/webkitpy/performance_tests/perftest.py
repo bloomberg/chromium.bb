@@ -120,7 +120,7 @@ class PerfTest(object):
 
         should_log = not self._port.get_option('profile')
         if should_log and self._description:
-            _log.info('DESCRIPTION: %s' % self._description)
+            _log.info('DESCRIPTION: %s', self._description)
 
         results = {}
         for metric_name in self._ordered_metrics_name:
@@ -151,9 +151,9 @@ class PerfTest(object):
         median = sorted_values[middle] if len(sorted_values) % 2 else (sorted_values[middle - 1] + sorted_values[middle]) / 2
         stdev = math.sqrt(square_sum / (len(sorted_values) - 1)) if len(sorted_values) > 1 else 0
 
-        _log.info('RESULT %s= %s %s' % (test_name, mean, unit))
-        _log.info('median= %s %s, stdev= %s %s, min= %s %s, max= %s %s' %
-                  (median, unit, stdev, unit, sorted_values[0], unit, sorted_values[-1], unit))
+        _log.info('RESULT %s= %s %s', test_name, mean, unit)
+        _log.info('median= %s %s, stdev= %s %s, min= %s %s, max= %s %s',
+                  median, unit, stdev, unit, sorted_values[0], unit, sorted_values[-1], unit)
 
     _description_regex = re.compile(r'^Description: (?P<description>.*)$', re.IGNORECASE)
     _metrics_regex = re.compile(r'^(?P<metric>Time|Malloc|JS Heap):')
@@ -205,14 +205,14 @@ class PerfTest(object):
 
     def run_failed(self, output):
         if output.error:
-            _log.error('error: %s\n%s' % (self.test_name(), output.error))
+            _log.error('error: %s\n%s', self.test_name(), output.error)
 
         if output.text is None:
             pass
         elif output.timeout:
-            _log.error('timeout: %s' % self.test_name())
+            _log.error('timeout: %s', self.test_name())
         elif output.crash:
-            _log.error('crash: %s' % self.test_name())
+            _log.error('crash: %s', self.test_name())
         else:
             return False
 

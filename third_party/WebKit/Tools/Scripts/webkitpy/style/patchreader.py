@@ -62,7 +62,7 @@ class PatchReader(object):
 
         for path, diff_file in patch_files.iteritems():
             line_numbers = diff_file.added_or_modified_line_numbers()
-            _log.debug('Found %s new or modified lines in: %s' % (len(line_numbers), path))
+            _log.debug('Found %s new or modified lines in: %s', len(line_numbers), path)
 
             if not line_numbers:
                 match = re.search("\s*png$", path)

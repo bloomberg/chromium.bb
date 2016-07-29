@@ -124,7 +124,7 @@ class TestResult(object):
         try:
             test_name = test.split('.')[1]
         except IndexError:
-            _log.warn("Invalid test name: %s.", test)
+            _log.warning("Invalid test name: %s.", test)
 
         if test_name.startswith('FAILS_'):
             self.modifier = self.FAILS

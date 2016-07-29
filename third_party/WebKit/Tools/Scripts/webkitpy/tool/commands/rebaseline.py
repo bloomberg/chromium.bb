@@ -146,17 +146,17 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
         for port in ports:
             old_baseline = port.expected_filename(test_name, "." + suffix)
             if not self._tool.filesystem.exists(old_baseline):
-                _log.debug("No existing baseline for %s." % test_name)
+                _log.debug("No existing baseline for %s.", test_name)
                 continue
 
             new_baseline = self._tool.filesystem.join(port.baseline_path(), self._file_name_for_expected_result(test_name, suffix))
             if self._tool.filesystem.exists(new_baseline):
-                _log.debug("Existing baseline at %s, not copying over it." % new_baseline)
+                _log.debug("Existing baseline at %s, not copying over it.", new_baseline)
                 continue
 
             expectations = TestExpectations(port, [test_name])
             if SKIP in expectations.get_expectations(test_name):
-                _log.debug("%s is skipped on %s." % (test_name, port.name()))
+                _log.debug("%s is skipped on %s.", test_name, port.name())
                 continue
 
             old_baselines.append(old_baseline)
@@ -166,7 +166,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             old_baseline = old_baselines[i]
             new_baseline = new_baselines[i]
 
-            _log.debug("Copying baseline from %s to %s." % (old_baseline, new_baseline))
+            _log.debug("Copying baseline from %s to %s.", old_baseline, new_baseline)
             self._tool.filesystem.maybe_make_directory(self._tool.filesystem.dirname(new_baseline))
             self._tool.filesystem.copyfile(old_baseline, new_baseline)
             if not self._tool.scm().exists(new_baseline):
@@ -199,7 +199,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         source_baseline = "%s/%s" % (results_url, self._file_name_for_actual_result(test_name, suffix))
         target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
 
-        _log.debug("Retrieving source %s for target %s." % (source_baseline, target_baseline))
+        _log.debug("Retrieving source %s for target %s.", source_baseline, target_baseline)
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True),
                             target_baseline)
 
@@ -373,10 +373,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                                 lines_to_remove[test].append(builder)
                         file_added = True
                 except ValueError:
-                    _log.debug('"%s" is not a JSON object, ignoring' % line)
+                    _log.debug('"%s" is not a JSON object, ignoring', line)
 
             if not file_added:
-                _log.debug('Could not add file based off output "%s"' % output)
+                _log.debug('Could not add file based off output "%s"', output)
 
         return list(files_to_add), list(files_to_delete), lines_to_remove
 
@@ -489,9 +489,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 suffixes with mismatches in actual results.
         """
         for test, builds_to_check in sorted(test_prefix_list.items()):
-            _log.info("Rebaselining %s" % test)
+            _log.info("Rebaselining %s", test)
             for build, suffixes in sorted(builds_to_check.items()):
-                _log.debug("  %s: %s" % (build, ",".join(suffixes)))
+                _log.debug("  %s: %s", build, ",".join(suffixes))
 
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
             test_prefix_list, options, skip_checking_actual_results)
@@ -575,10 +575,10 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
         tests = self._tests_to_rebaseline(self._tool.port_factory.get(port_name)).items()
 
         if tests:
-            _log.info("Retrieving results for %s from %s." % (port_name, builder_name))
+            _log.info("Retrieving results for %s from %s.", port_name, builder_name)
 
         for test_name, suffixes in tests:
-            _log.info("    %s (%s)" % (test_name, ','.join(suffixes)))
+            _log.info("    %s (%s)", test_name, ','.join(suffixes))
             if test_name not in self._test_prefix_list:
                 self._test_prefix_list[test_name] = {}
             self._test_prefix_list[test_name][Build(builder_name)] = suffixes
@@ -685,7 +685,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         revisions = []
         for result in self.build_data().values():
             if result.run_was_interrupted():
-                _log.error("Can't rebaseline because the latest run on %s exited early." % result.builder_name())
+                _log.error("Can't rebaseline because the latest run on %s exited early.", result.builder_name())
                 return []
             revisions.append({
                 "builder": result.builder_name(),
@@ -722,7 +722,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 # Deal gracefully with inability to parse blame info for a line in TestExpectations.
                 # Parsing could fail if for example during local debugging the developer modifies
                 # TestExpectations and does not commit.
-                _log.info("Couldn't find blame info for expectations line, skipping [line=%s]." % line)
+                _log.info("Couldn't find blame info for expectations line, skipping [line=%s].", line)
                 continue
 
             commit_hash = parsed_line.group(1)
@@ -730,7 +730,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
             test = parsed_line.group(3)
             if print_revisions:
-                _log.info("%s is waiting for r%s" % (test, commit_position))
+                _log.info("%s is waiting for r%s", test, commit_position)
 
             if not commit_position or commit_position > min_revision:
                 continue
@@ -747,7 +747,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             tests.add(test)
 
             if len(tests) >= self.MAX_LINES_TO_REBASELINE:
-                _log.info("Too many tests to rebaseline in one patch. Doing the first %d." % self.MAX_LINES_TO_REBASELINE)
+                _log.info("Too many tests to rebaseline in one patch. Doing the first %d.", self.MAX_LINES_TO_REBASELINE)
                 break
 
         return tests, revision, commit, author, bugs, has_any_needs_rebaseline_lines
@@ -810,7 +810,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 _log.info(out)
 
         if process.poll() is None:
-            _log.error('Command hung: %s' % subprocess_command)
+            _log.error('Command hung: %s', subprocess_command)
             return False
         return True
 
@@ -842,9 +842,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             tool, min_revision, print_revisions=options.verbose)
 
         if options.verbose:
-            _log.info("Min revision across all bots is %s." % min_revision)
+            _log.info("Min revision across all bots is %s.", min_revision)
             for item in revision_data:
-                _log.info("%s: r%s" % (item["builder"], item["revision"]))
+                _log.info("%s: r%s", item["builder"], item["revision"])
 
         if not tests:
             _log.debug('No tests to rebaseline.')
@@ -854,7 +854,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.info('Cannot proceed. Tree is closed.')
             return
 
-        _log.info('Rebaselining %s for r%s by %s.' % (list(tests), revision, author))
+        _log.info('Rebaselining %s for r%s by %s.', list(tests), revision, author)
 
         test_prefix_list, _ = self.get_test_prefix_list(tests)
 

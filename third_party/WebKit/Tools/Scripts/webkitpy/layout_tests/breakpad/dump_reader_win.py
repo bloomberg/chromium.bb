@@ -63,7 +63,7 @@ class DumpReaderWin(DumpReader):
         try:
             stack = self._host.executive.run_command(cmd)
         except:
-            _log.warning('Failed to execute "%s"' % ' '.join(cmd))
+            _log.warning('Failed to execute "%s"', ' '.join(cmd))
         else:
             return stack
         return None

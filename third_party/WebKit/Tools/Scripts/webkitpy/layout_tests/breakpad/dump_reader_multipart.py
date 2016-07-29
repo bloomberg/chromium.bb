@@ -74,7 +74,7 @@ class DumpReaderMultipart(DumpReader):
         try:
             stack = self._host.executive.run_command(cmd, return_stderr=False)
         except:
-            _log.warning('Failed to execute "%s"' % ' '.join(cmd))
+            _log.warning('Failed to execute "%s"', ' '.join(cmd))
             stack = None
         finally:
             self._host.filesystem.remove(temp_name)
@@ -104,8 +104,8 @@ class DumpReaderMultipart(DumpReader):
             full_path = self._host.filesystem.join(self._build_dir, binary)
             if not self._host.filesystem.exists(full_path):
                 result = False
-                _log.error('Unable to find %s' % binary)
-                _log.error('    at %s' % full_path)
+                _log.error('Unable to find %s', binary)
+                _log.error('    at %s', full_path)
 
         if not result:
             _log.error("    Could not find breakpad tools, unexpected crashes won't be symbolized")
@@ -136,7 +136,7 @@ class DumpReaderMultipart(DumpReader):
         thread.start()
         try:
             for binary in self._binaries_to_symbolize():
-                _log.debug('  Symbolizing %s' % binary)
+                _log.debug('  Symbolizing %s', binary)
                 full_path = self._host.filesystem.join(self._build_dir, binary)
                 cmd = [
                     self._path_to_generate_breakpad_symbols(),
@@ -147,7 +147,7 @@ class DumpReaderMultipart(DumpReader):
                 try:
                     self._host.executive.run_command(cmd)
                 except:
-                    _log.error('Failed to execute "%s"' % ' '.join(cmd))
+                    _log.error('Failed to execute "%s"', ' '.join(cmd))
         finally:
             queue.put(None)
             thread.join()

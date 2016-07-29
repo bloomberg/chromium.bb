@@ -152,7 +152,7 @@ class PerfTestsRunner(object):
                 if filesystem.exists(filesystem.join(self._base_path, relpath)):
                     paths.append(filesystem.normpath(relpath))
                 else:
-                    _log.warn('Path was not found:' + arg)
+                    _log.warning('Path was not found:' + arg)
 
         skipped_directories = set(['.svn', 'resources'])
         test_files = find_files.find(filesystem, self._base_path, paths, skipped_directories, _is_test_file)
@@ -198,7 +198,7 @@ class PerfTestsRunner(object):
 
             tests = self._collect_tests()
             runs = ' (Run %d of %d)' % (run_count, repeat) if repeat > 1 else ''
-            _log.info("Running %d tests%s" % (len(tests), runs))
+            _log.info("Running %d tests%s", len(tests), runs)
 
             for test in tests:
                 if not test.prepare(self._options.time_out_ms):
@@ -313,7 +313,7 @@ class PerfTestsRunner(object):
 
     def _merge_slave_config_json(self, slave_config_json_path, contents):
         if not self._host.filesystem.isfile(slave_config_json_path):
-            _log.error("Missing slave configuration JSON file: %s" % slave_config_json_path)
+            _log.error("Missing slave configuration JSON file: %s", slave_config_json_path)
             return None
 
         try:
@@ -323,7 +323,7 @@ class PerfTestsRunner(object):
                 contents['builder' + key.capitalize()] = slave_config[key]
             return contents
         except Exception as error:
-            _log.error("Failed to merge slave configuration JSON file %s: %s" % (slave_config_json_path, error))
+            _log.error("Failed to merge slave configuration JSON file %s: %s", slave_config_json_path, error)
         return None
 
     def _merge_outputs_if_needed(self, output_json_path, output):
@@ -333,7 +333,7 @@ class PerfTestsRunner(object):
             existing_outputs = json.loads(self._host.filesystem.read_text_file(output_json_path))
             return existing_outputs + [output]
         except Exception as error:
-            _log.error("Failed to merge output JSON file %s: %s" % (output_json_path, error))
+            _log.error("Failed to merge output JSON file %s: %s", output_json_path, error)
         return None
 
     def _upload_json(self, test_results_server, json_path, host_path="/api/report", file_uploader=FileUploader):
@@ -342,7 +342,7 @@ class PerfTestsRunner(object):
         try:
             response = uploader.upload_single_text_file(self._host.filesystem, 'application/json', json_path)
         except Exception as error:
-            _log.error("Failed to upload JSON file to %s in 120s: %s" % (url, error))
+            _log.error("Failed to upload JSON file to %s in 120s: %s", url, error)
             return False
 
         response_body = [line.strip('\n') for line in response]
@@ -350,16 +350,16 @@ class PerfTestsRunner(object):
             try:
                 parsed_response = json.loads('\n'.join(response_body))
             except:
-                _log.error("Uploaded JSON to %s but got a bad response:" % url)
+                _log.error("Uploaded JSON to %s but got a bad response:", url)
                 for line in response_body:
                     _log.error(line)
                 return False
             if parsed_response.get('status') != 'OK':
-                _log.error("Uploaded JSON to %s but got an error:" % url)
+                _log.error("Uploaded JSON to %s but got an error:", url)
                 _log.error(json.dumps(parsed_response, indent=4))
                 return False
 
-        _log.info("JSON file uploaded to %s." % url)
+        _log.info("JSON file uploaded to %s.", url)
         return True
 
     def _run_tests_set(self, tests):
@@ -367,7 +367,7 @@ class PerfTestsRunner(object):
         self._results = []
 
         for i, test in enumerate(tests):
-            _log.info('Running %s (%d of %d)' % (test.test_name(), i + 1, len(tests)))
+            _log.info('Running %s (%d of %d)', test.test_name(), i + 1, len(tests))
             start_time = time.time()
             metrics = test.run(self._options.time_out_ms)
             if metrics:
@@ -376,7 +376,7 @@ class PerfTestsRunner(object):
                 failures += 1
                 _log.error('FAILED')
 
-            _log.info('Finished: %f s' % (time.time() - start_time))
+            _log.info('Finished: %f s', time.time() - start_time)
             _log.info('')
 
         return failures

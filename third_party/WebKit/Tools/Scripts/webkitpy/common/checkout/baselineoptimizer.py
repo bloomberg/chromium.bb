@@ -285,10 +285,10 @@ class BaselineOptimizer(object):
 
         if new_results_by_directory == results_by_directory:
             if new_results_by_directory:
-                _log.debug("  %s: (already optimal)" % basename)
+                _log.debug("  %s: (already optimal)", basename)
                 self.write_by_directory(results_by_directory, _log.debug, "    ")
             else:
-                _log.debug("  %s: (no baselines found)" % basename)
+                _log.debug("  %s: (no baselines found)", basename)
             # This is just used for unittests. Intentionally set it to the old data if we don't modify anything.
             self.new_results_by_directory.append(results_by_directory)
             return True
@@ -297,11 +297,11 @@ class BaselineOptimizer(object):
                 new_results_by_directory, baseline_name):
             # This really should never happen. Just a sanity check to make sure the script fails in the case of bugs
             # instead of committing incorrect baselines.
-            _log.error("  %s: optimization failed" % basename)
+            _log.error("  %s: optimization failed", basename)
             self.write_by_directory(results_by_directory, _log.warning, "      ")
             return False
 
-        _log.debug("  %s:" % basename)
+        _log.debug("  %s:", basename)
         _log.debug("    Before: ")
         self.write_by_directory(results_by_directory, _log.debug, "      ")
         _log.debug("    After: ")

@@ -133,7 +133,7 @@ class ApacheHTTP(server_base.ServerBase):
         self._start_cmd = start_cmd
 
     def _spawn_process(self):
-        _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))
+        _log.debug('Starting %s server, cmd="%s"', self._name, str(self._start_cmd))
         self._process = self._executive.popen(self._start_cmd)
         retval = self._process.returncode
         if retval:

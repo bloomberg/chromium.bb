@@ -156,8 +156,7 @@ class DiffParser(object):
             lines_changed = lines_changed_pattern.match(line)
             if lines_changed:
                 if state != _DECLARED_FILE_PATH and state != _PROCESSING_CHUNK:
-                    _log.error('Unexpected line change without file path '
-                               'declaration: %r' % line)
+                    _log.error('Unexpected line change without file path declaration: %r', line)
                 old_diff_line = int(lines_changed.group('OldStartLine'))
                 new_diff_line = int(lines_changed.group('NewStartLine'))
                 state = _PROCESSING_CHUNK
@@ -178,6 +177,5 @@ class DiffParser(object):
                     # Nothing to do.  We may still have some added lines.
                     pass
                 else:
-                    _log.error('Unexpected diff format when parsing a '
-                               'chunk: %r' % line)
+                    _log.error('Unexpected diff format when parsing a chunk: %r', line)
         return files

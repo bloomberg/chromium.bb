@@ -84,7 +84,7 @@ class MockExecutive(object):
             if process_name_filter(process_name):
                 running_pids.append(process_pid)
 
-        _log.info("MOCK running_pids: %s" % running_pids)
+        _log.info("MOCK running_pids: %s", running_pids)
         return running_pids
 
     def command_for_printing(self, args):
@@ -112,7 +112,7 @@ class MockExecutive(object):
             input_string = ""
             if input:
                 input_string = ", input=%s" % input
-            _log.info("MOCK run_command: %s, cwd=%s%s%s" % (args, cwd, env_string, input_string))
+            _log.info("MOCK run_command: %s, cwd=%s%s%s", args, cwd, env_string, input_string)
         output = "MOCK output of child process"
 
         if self._should_throw_when_run.intersection(args):
@@ -144,14 +144,14 @@ class MockExecutive(object):
             env_string = ""
             if env:
                 env_string = ", env=%s" % env
-            _log.info("MOCK popen: %s%s%s" % (args, cwd_string, env_string))
+            _log.info("MOCK popen: %s%s%s", args, cwd_string, env_string)
         if not self._proc:
             self._proc = MockProcess()
         return self._proc
 
     def call(self, args, **kwargs):
         self.calls.append(args)
-        _log.info('Mock call: %s' % args)
+        _log.info('Mock call: %s', args)
 
     def run_in_parallel(self, commands):
         assert len(commands)
