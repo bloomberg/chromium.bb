@@ -2633,6 +2633,7 @@ if (enable_java_templates) {
                                [
                                  "deps",
                                  "requires_android",
+                                 "jar_excluded_patterns",
                                ])
         if (!defined(deps)) {
           deps = []
