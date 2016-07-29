@@ -241,15 +241,23 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Transform a point that is in the coordinate space of a Surface that is
   // embedded within the RenderWidgetHostViewBase's Surface to the
-  // coordinate space of the embedding Surface. Typically this means that a
-  // point was received from an out-of-process iframe's RenderWidget and needs
-  // to be translated to viewport coordinates for the root RWHV, in which case
-  // this method is called on the root RWHV with the out-of-process iframe's
-  // SurfaceId.
-  virtual void TransformPointToLocalCoordSpace(
+  // coordinate space of an embedding, or embedded, Surface. Typically this
+  // means that a point was received from an out-of-process iframe's
+  // RenderWidget and needs to be translated to viewport coordinates for the
+  // root RWHV, in which case this method is called on the root RWHV with the
+  // out-of-process iframe's SurfaceId.
+  // This does not transform points between surfaces where one does not
+  // contain the other. To transform between sibling surfaces, the point must
+  // be transformed to the root's coordinate space as an intermediate step.
+  virtual gfx::Point TransformPointToLocalCoordSpace(
       const gfx::Point& point,
-      const cc::SurfaceId& original_surface,
-      gfx::Point* transformed_point);
+      const cc::SurfaceId& original_surface);
+
+  // Transform a point that is in the coordinate space for the current
+  // RenderWidgetHostView to the coordinate space of the target_view.
+  virtual gfx::Point TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view);
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.

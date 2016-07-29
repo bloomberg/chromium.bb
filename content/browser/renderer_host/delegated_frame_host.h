@@ -167,9 +167,17 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Surface, find the relative transform between the Surfaces and apply it
   // to a point. If a Surface has not yet been created this returns the
   // same point with no transform applied.
-  void TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
-                                       gfx::Point* transformed_point);
+  gfx::Point TransformPointToLocalCoordSpace(
+      const gfx::Point& point,
+      const cc::SurfaceId& original_surface);
+
+  // Given a RenderWidgetHostViewBase that renders to a Surface that is
+  // contained within this class' Surface, find the relative transform between
+  // the Surfaces and apply it to a point. If a Surface has not yet been
+  // created this returns the same point with no transform applied.
+  gfx::Point TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view);
 
   // Exposed for tests.
   cc::SurfaceId SurfaceIdForTesting() const { return surface_id_; }

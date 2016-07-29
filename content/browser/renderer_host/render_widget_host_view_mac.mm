@@ -1469,19 +1469,27 @@ void RenderWidgetHostViewMac::ProcessGestureEvent(
   render_widget_host_->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
-void RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
+gfx::Point RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
-    gfx::Point* transformed_point) {
+    const cc::SurfaceId& original_surface) {
+  gfx::Point transformed_point;
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
   float scale_factor = display::Screen::GetScreen()
                            ->GetDisplayNearestWindow(cocoa_view_)
                            .device_scale_factor();
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
-  browser_compositor_->GetDelegatedFrameHost()->TransformPointToLocalCoordSpace(
-      point_in_pixels, original_surface, transformed_point);
-  *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
+  transformed_point =
+      browser_compositor_->GetDelegatedFrameHost()
+          ->TransformPointToLocalCoordSpace(point_in_pixels, original_surface);
+  return gfx::ConvertPointToDIP(scale_factor, transformed_point);
+}
+
+gfx::Point RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
+    const gfx::Point& point,
+    RenderWidgetHostViewBase* target_view) {
+  return browser_compositor_->GetDelegatedFrameHost()
+      ->TransformPointToCoordSpaceForView(point, target_view);
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {

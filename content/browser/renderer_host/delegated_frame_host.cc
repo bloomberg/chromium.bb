@@ -226,21 +226,26 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   return target_surface_id;
 }
 
-void DelegatedFrameHost::TransformPointToLocalCoordSpace(
+gfx::Point DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
-    gfx::Point* transformed_point) {
-  *transformed_point = point;
+    const cc::SurfaceId& original_surface) {
   if (surface_id_.is_null() || original_surface == surface_id_)
-    return;
+    return point;
 
-  gfx::Transform transform;
+  gfx::Point transformed_point = point;
   cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
-  if (hittest.GetTransformToTargetSurface(surface_id_, original_surface,
-                                          &transform) &&
-      transform.GetInverse(&transform)) {
-    transform.TransformPoint(transformed_point);
-  }
+  hittest.TransformPointToTargetSurface(original_surface, surface_id_,
+                                        &transformed_point);
+  return transformed_point;
+}
+
+gfx::Point DelegatedFrameHost::TransformPointToCoordSpaceForView(
+    const gfx::Point& point,
+    RenderWidgetHostViewBase* target_view) {
+  if (surface_id_.is_null())
+    return point;
+
+  return target_view->TransformPointToLocalCoordSpace(point, surface_id_);
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {

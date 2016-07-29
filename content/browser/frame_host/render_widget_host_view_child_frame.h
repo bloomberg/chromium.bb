@@ -134,6 +134,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void ProcessGestureEvent(const blink::WebGestureEvent& event,
                            const ui::LatencyInfo& latency) override;
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
+  gfx::Point TransformPointToLocalCoordSpace(
+      const gfx::Point& point,
+      const cc::SurfaceId& original_surface) override;
+  gfx::Point TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view) override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
@@ -176,6 +182,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   CrossProcessFrameConnector* FrameConnectorForTesting() const {
     return frame_connector_;
   }
+
+  // Returns the view into which this view is directly embedded. This can
+  // return nullptr when this view's associated child frame is not connected
+  // to the frame tree.
+  RenderWidgetHostViewBase* GetParentView();
 
   void RegisterSurfaceNamespaceId();
   void UnregisterSurfaceNamespaceId();

@@ -305,6 +305,12 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
 }
 
+RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
+  if (!frame_connector_)
+    return nullptr;
+  return frame_connector_->GetParentRenderWidgetHostView();
+}
+
 void RenderWidgetHostViewChildFrame::RegisterSurfaceNamespaceId() {
   // If Destroy() has been called before we get here, host_ may be null.
   if (host_ && host_->delegate() && host_->delegate()->GetInputEventRouter()) {
@@ -518,6 +524,26 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(point, surface_id_);
+}
+
+gfx::Point RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
+    const gfx::Point& point,
+    const cc::SurfaceId& original_surface) {
+  if (!frame_connector_ || surface_id_.is_null())
+    return point;
+
+  return frame_connector_->TransformPointToLocalCoordSpace(
+      point, original_surface, surface_id_);
+}
+
+gfx::Point RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
+    const gfx::Point& point,
+    RenderWidgetHostViewBase* target_view) {
+  if (!frame_connector_ || surface_id_.is_null() || target_view == this)
+    return point;
+
+  return frame_connector_->TransformPointToCoordSpaceForView(point, target_view,
+                                                             surface_id_);
 }
 
 #if defined(OS_MACOSX)

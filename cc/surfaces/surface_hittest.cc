@@ -55,6 +55,30 @@ bool SurfaceHittest::GetTransformToTargetSurface(
                                              transform);
 }
 
+bool SurfaceHittest::TransformPointToTargetSurface(
+    const SurfaceId& original_surface_id,
+    const SurfaceId& target_surface_id,
+    gfx::Point* point) {
+  gfx::Transform transform;
+  // Two possibilities need to be considered: original_surface_id can be
+  // embedded in target_surface_id, or vice versa.
+  if (GetTransformToTargetSurface(target_surface_id, original_surface_id,
+                                  &transform)) {
+    if (transform.GetInverse(&transform))
+      transform.TransformPoint(point);
+    else
+      return false;
+  } else if (GetTransformToTargetSurface(original_surface_id, target_surface_id,
+                                         &transform)) {
+    // No need to invert the transform matrix in this case.
+    transform.TransformPoint(point);
+  } else {
+    return false;
+  }
+
+  return true;
+}
+
 bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
     const SurfaceId& surface_id,
     const RenderPassId& render_pass_id,

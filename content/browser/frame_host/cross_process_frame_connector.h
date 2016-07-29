@@ -97,7 +97,20 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void GetScreenInfo(blink::WebScreenInfo* results);
   void UpdateCursor(const WebCursor& cursor);
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point,
-                                            cc::SurfaceId surface_id);
+                                            const cc::SurfaceId& surface_id);
+  // TransformPointToLocalCoordSpace() can only transform points between
+  // surfaces where one is embedded (not necessarily directly) within the
+  // other. For points that can be in sibling surfaces, they must first be
+  // converted to the root surface's coordinate space.
+  gfx::Point TransformPointToLocalCoordSpace(
+      const gfx::Point& point,
+      const cc::SurfaceId& original_surface,
+      const cc::SurfaceId& local_surface_id);
+  gfx::Point TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view,
+      const cc::SurfaceId& local_surface_id);
+
   // Pass acked touch events to the root view for gesture processing.
   void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                      InputEventAckState ack_result);

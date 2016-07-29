@@ -198,9 +198,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                          const ui::LatencyInfo& latency) override;
   void ProcessGestureEvent(const blink::WebGestureEvent& event,
                            const ui::LatencyInfo& latency) override;
-  void TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
-                                       gfx::Point* transformed_point) override;
+  gfx::Point TransformPointToLocalCoordSpace(
+      const gfx::Point& point,
+      const cc::SurfaceId& original_surface) override;
+  gfx::Point TransformPointToCoordSpaceForView(
+      const gfx::Point& point,
+      RenderWidgetHostViewBase* target_view) override;
+
   void FocusedNodeChanged(bool is_editable_node) override;
 
   // Overridden from ui::TextInputClient:
