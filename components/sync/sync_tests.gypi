@@ -503,7 +503,7 @@
           ],
           'variables': {
             'test_suite_name': 'sync_unit_tests',
-            'isolate_file': 'sync_unit_tests.isolate',
+            'isolate_file': '../sync_unit_tests.isolate',
           },
           'includes': [ '../../build/apk_test.gypi' ],
         },
@@ -540,7 +540,7 @@
             '../../build/isolate.gypi',
           ],
           'sources': [
-            'sync_unit_tests.isolate',
+            '../sync_unit_tests.isolate',
           ],
         },
       ],
