@@ -500,6 +500,9 @@ void MakeNotStale(HostCache::EntryStaleness* stale_info) {
   stale_info->stale_hits = 0;
 }
 
+// Persist data every five minutes (potentially, cache and learned RTT).
+const int64_t kPersistDelaySec = 300;
+
 }  // namespace
 
 //-----------------------------------------------------------------------------
@@ -1759,6 +1762,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB,
                                       entry.error());
 
+    resolver_->SchedulePersist();
+
     DCHECK(!requests_.empty());
 
     if (entry.error() == OK) {
@@ -1984,6 +1989,7 @@ HostResolverImpl::HostResolverImpl(
       additional_resolver_flags_(0),
       fallback_to_proctask_(true),
       worker_task_runner_(std::move(worker_task_runner)),
+      persist_initialized_(false),
       weak_ptr_factory_(this),
       probe_weak_ptr_factory_(this) {
   if (options.enable_caching)
@@ -2534,6 +2540,36 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   }
 
   AbortDnsTasks();
+}
+
+void HostResolverImpl::InitializePersistence(
+    const PersistCallback& persist_callback,
+    std::unique_ptr<const base::Value> old_data) {
+  DCHECK(!persist_initialized_);
+  persist_callback_ = persist_callback;
+  persist_initialized_ = true;
+  if (old_data)
+    ApplyPersistentData(std::move(old_data));
+}
+
+void HostResolverImpl::SchedulePersist() {
+  if (!persist_initialized_ || persist_timer_.IsRunning())
+    return;
+  persist_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kPersistDelaySec),
+      base::Bind(&HostResolverImpl::DoPersist, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HostResolverImpl::DoPersist() {
+  DCHECK(persist_initialized_);
+  persist_callback_.Run(GetPersistentData());
+}
+
+void HostResolverImpl::ApplyPersistentData(
+    std::unique_ptr<const base::Value> data) {}
+
+std::unique_ptr<const base::Value> HostResolverImpl::GetPersistentData() {
+  return std::unique_ptr<const base::Value>();
 }
 
 HostResolverImpl::RequestImpl::~RequestImpl() {

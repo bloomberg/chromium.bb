@@ -112,6 +112,10 @@ std::unique_ptr<base::Value> HostResolver::GetDnsConfigAsValue() const {
   return nullptr;
 }
 
+void HostResolver::InitializePersistence(
+    const PersistCallback& persist_callback,
+    std::unique_ptr<const base::Value> old_data) {}
+
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
     const Options& options,

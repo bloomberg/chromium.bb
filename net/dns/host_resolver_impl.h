@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_cache.h"
@@ -152,6 +153,10 @@ class NET_EXPORT HostResolverImpl
                             AddressList* addresses,
                             HostCache::EntryStaleness* stale_info,
                             const BoundNetLog& source_net_log);
+
+  void InitializePersistence(
+      const PersistCallback& persist_callback,
+      std::unique_ptr<const base::Value> old_data) override;
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
@@ -294,6 +299,12 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
+  void SchedulePersist();
+  void DoPersist();
+
+  void ApplyPersistentData(std::unique_ptr<const base::Value>);
+  std::unique_ptr<const base::Value> GetPersistentData();
+
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -349,6 +360,10 @@ class NET_EXPORT HostResolverImpl
   // blocking operations. Usually just the WorkerPool's task runner for slow
   // tasks, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> worker_task_runner_;
+
+  bool persist_initialized_;
+  PersistCallback persist_callback_;
+  base::OneShotTimer persist_timer_;
 
   base::WeakPtrFactory<HostResolverImpl> weak_ptr_factory_;
 
