@@ -293,7 +293,8 @@ public class ChromeLauncherActivity extends Activity
         // Don't reroute Chrome Intents.
         Context context = ContextUtils.getApplicationContext();
         if (TextUtils.equals(context.getPackageName(),
-                IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID))) {
+                IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID))
+                || IntentHandler.wasIntentSenderChrome(intent, context)) {
             return false;
         }
 
