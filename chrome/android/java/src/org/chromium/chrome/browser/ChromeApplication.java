@@ -334,15 +334,10 @@ public class ChromeApplication extends ContentApplication {
      */
     private void onForegroundActivityDestroyed() {
         if (ApplicationStatus.isEveryActivityDestroyed()) {
+            // These will all be re-initialized when a new Activity starts / upon next use.
             mBackgroundProcessing.onDestroy();
-            if (mDevToolsServer != null) {
-                mDevToolsServer.destroy();
-                mDevToolsServer = null;
-            }
-            stopApplicationActivityTracker();
             PartnerBrowserCustomizations.destroy();
             ShareHelper.clearSharedImages(this);
-            CombinedPolicyProvider.get().destroy();
         }
     }
 

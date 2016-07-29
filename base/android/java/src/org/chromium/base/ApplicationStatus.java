@@ -195,6 +195,13 @@ public class ApplicationStatus {
         ActivityInfo info = sActivityInfo.get(activity);
         info.setStatus(newState);
 
+        // Remove before calling listeners so that isEveryActivityDestroyed() returns false when
+        // this was the last activity.
+        if (newState == ActivityState.DESTROYED) {
+            sActivityInfo.remove(activity);
+            if (activity == sActivity) sActivity = null;
+        }
+
         // Notify all state observers that are specifically listening to this activity.
         for (ActivityStateListener listener : info.getListeners()) {
             listener.onActivityStateChange(activity, newState);
@@ -211,11 +218,6 @@ public class ApplicationStatus {
             for (ApplicationStateListener listener : sApplicationStateListeners) {
                 listener.onApplicationStateChange(applicationState);
             }
-        }
-
-        if (newState == ActivityState.DESTROYED) {
-            sActivityInfo.remove(activity);
-            if (activity == sActivity) sActivity = null;
         }
     }
 
