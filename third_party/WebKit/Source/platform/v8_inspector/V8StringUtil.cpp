@@ -8,7 +8,6 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
-#include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 
 namespace blink {
 
@@ -202,19 +201,6 @@ String16 findSourceMapURL(const String16& content, bool multiline, bool* depreca
 {
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
-
-namespace V8ContentSearchUtil {
-
-std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
-{
-    std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> matches = searchInTextByLinesImpl(session, text, query, caseSensitive, isRegex);
-    std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> result = protocol::Array<protocol::Debugger::API::SearchMatch>::create();
-    for (size_t i = 0; i < matches.size(); ++i)
-        result->addItem(std::move(matches[i]));
-    return result;
-}
-
-} // namespace V8ContentSearchUtil
 
 std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::Local<v8::Value> value, int maxDepth)
 {

@@ -232,7 +232,6 @@
         'V8StringUtil.cpp',
         'V8StringUtil.h',
         'public/V8EventListenerInfo.h',
-        'public/V8ContentSearchUtil.h',
         'public/V8ContextInfo.h',
         'public/V8Debugger.h',
         'public/V8DebuggerClient.h',

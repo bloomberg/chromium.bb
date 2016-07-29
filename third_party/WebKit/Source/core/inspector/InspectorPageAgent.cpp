@@ -63,7 +63,6 @@
 #include "platform/PlatformResourceLoader.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -516,7 +515,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    callback->sendSuccess(V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex));
+    callback->sendSuccess(m_v8Session->searchInTextByLines(content, query, caseSensitive, isRegex));
 }
 
 void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)

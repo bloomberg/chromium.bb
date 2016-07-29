@@ -61,6 +61,7 @@ public:
     void setSkipAllPauses(bool) override;
     void resume() override;
     void stepOver() override;
+    std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(const String16& text, const String16& query, bool caseSensitive, bool isRegex) override;
     void releaseObjectGroup(const String16& objectGroup) override;
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
     std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName) override;

@@ -14,6 +14,7 @@
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
+#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
@@ -311,6 +312,15 @@ void V8InspectorSessionImpl::stepOver()
 {
     ErrorString errorString;
     m_debuggerAgent->stepOver(&errorString);
+}
+
+std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> V8InspectorSessionImpl::searchInTextByLines(const String16& text, const String16& query, bool caseSensitive, bool isRegex)
+{
+    std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> matches = searchInTextByLinesImpl(this, text, query, caseSensitive, isRegex);
+    std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> result = protocol::Array<protocol::Debugger::API::SearchMatch>::create();
+    for (size_t i = 0; i < matches.size(); ++i)
+        result->addItem(std::move(matches[i]));
+    return result;
 }
 
 } // namespace blink

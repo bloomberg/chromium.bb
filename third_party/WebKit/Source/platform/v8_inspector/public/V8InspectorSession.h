@@ -5,7 +5,9 @@
 #ifndef V8InspectorSession_h
 #define V8InspectorSession_h
 
+#include "platform/inspector_protocol/Array.h"
 #include "platform/inspector_protocol/Platform.h"
+#include "platform/v8_inspector/public/protocol/Debugger.h"
 #include "platform/v8_inspector/public/protocol/Runtime.h"
 
 #include <v8.h>
@@ -36,6 +38,7 @@ public:
     virtual void setSkipAllPauses(bool) = 0;
     virtual void resume() = 0;
     virtual void stepOver() = 0;
+    virtual std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(const String16& text, const String16& query, bool caseSensitive, bool isRegex) = 0;
 
     // Remote objects.
     virtual std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName) = 0;
