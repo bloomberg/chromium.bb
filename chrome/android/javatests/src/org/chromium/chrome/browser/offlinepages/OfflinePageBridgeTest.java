@@ -275,14 +275,17 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         });
     }
 
-    private OfflinePageItem getPageByClientId(final ClientId clientId) throws InterruptedException {
+    private OfflinePageItem getPageByClientId(ClientId clientId) throws InterruptedException {
         final OfflinePageItem[] result = {null};
         final Semaphore semaphore = new Semaphore(0);
+        final List<ClientId> clientIdList = new ArrayList<>();
+        clientIdList.add(clientId);
+
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getPagesByClientId(
-                        clientId, new Callback<List<OfflinePageItem>>() {
+                mOfflinePageBridge.getPagesByClientIds(
+                        clientIdList, new Callback<List<OfflinePageItem>>() {
                             @Override
                             public void onResult(List<OfflinePageItem> items) {
                                 if (!items.isEmpty()) {

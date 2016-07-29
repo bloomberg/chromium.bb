@@ -211,19 +211,23 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Gets the offline pages associated with a provided client ID.
+     * Gets the offline pages associated with the provided client IDs.
      *
-     * @param clientId Client's ID associated with an offline page.
-     * @return A {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
+     * @param clientIds Client's IDs associated with offline pages.
+     * @return A list of {@link OfflinePageItem} matching the provided IDs, or an empty list if none
      * exist.
      */
     @VisibleForTesting
-    public void getPagesByClientId(
-            final ClientId clientId, final Callback<List<OfflinePageItem>> callback) {
+    public void getPagesByClientIds(
+            final List<ClientId> clientIds, final Callback<List<OfflinePageItem>> callback) {
         runWhenLoaded(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(getPagesByClientIdInternal(clientId));
+                List<OfflinePageItem> result = new ArrayList<>();
+                for (ClientId clientId : clientIds) {
+                    result.addAll(getPagesByClientIdInternal(clientId));
+                }
+                callback.onResult(result);
             }
         });
     }
