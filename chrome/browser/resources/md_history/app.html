@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-location.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-route.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
 <link rel="import" href="chrome://history/list_container.html">
@@ -35,9 +37,28 @@
         height: calc(100% - var(--toolbar-grouped-height));
       }
 
+      #content-side-bar {
+        float: left;
+      }
+
       #content,
       #content > * {
         height: 100%;
+      }
+
+      #drawer-header {
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        height: var(--toolbar-height);
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        -webkit-padding-start: 24px;
+        color: rgb(66, 66, 66);
+        font-size: 123%;
+        font-weight: 400;
       }
     </style>
     <app-location route="{{route_}}"></app-location>
@@ -52,10 +73,15 @@
         grouped-range="{{queryState_.range}}"
         search-term="{{queryState_.searchTerm}}"
         query-start-time="[[queryResult_.info.queryStartTime]]"
-        query-end-time="[[queryResult_.info.queryEndTime]]">
+        query-end-time="[[queryResult_.info.queryEndTime]]"
+        has-drawer="[[hasDrawer_]]">
     </history-toolbar>
 
     <div id="main-container">
+      <history-side-bar id="content-side-bar" selected-page="[[selectedPage_]]"
+          route="[[route_]]" show-footer="[[showSidebarFooter]]"
+          hidden$="[[hasDrawer_]]">
+      </history-side-bar>
       <iron-pages id="content" attr-for-selected="path"
           fallback-selection="history"
           selected="[[getSelectedPage_(selectedPage_, items)]]"
@@ -74,9 +100,21 @@
       </iron-pages>
     </div>
 
-    <history-side-bar id="side-bar" selected-page="[[selectedPage_]]"
-        route="[[route_]]">
-    </history-side-bar>
+    <template is="dom-if" if="[[hasDrawer_]]">
+      <app-drawer id="drawer" swipe-open align="start" tabindex="0"
+          on-focus="onDrawerFocus_">
+        <div id="drawer-header">
+          <h1>$i18n{title}</h1>
+        </div>
+        <history-side-bar id="drawer-side-bar" selected-page="[[selectedPage_]]"
+            route="[[route_]]" show-footer="[[showSidebarFooter]]" drawer>
+        </history-side-bar>
+      </app-drawer>
+    </template>
+
+    <iron-media-query query="(max-width: 1023px)"
+        query-matches="{{hasDrawer_}}">
+    </iron-media-query>
   </template>
   <script src="chrome://history/app.js"></script>
 </dom-module>

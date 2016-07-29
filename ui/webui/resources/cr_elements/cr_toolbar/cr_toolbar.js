@@ -19,6 +19,13 @@ Polymer({
     // the search field will show a processing spinner.
     spinnerActive: Boolean,
 
+    // Controls whether the menu button is shown at the start of the menu.
+    showMenu: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: true
+    },
+
     /** @private */
     narrow_: {
       type: Boolean,

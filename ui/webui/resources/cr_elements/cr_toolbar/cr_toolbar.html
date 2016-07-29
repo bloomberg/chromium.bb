@@ -15,6 +15,7 @@
 
       h1 {
         @apply(--layout-flex);
+        -webkit-margin-start: 6px;
         font-size: 123%;
         font-weight: 400;
         text-overflow: ellipsis;
@@ -23,15 +24,14 @@
       }
 
       #leftContent {
+        -webkit-margin-start: 18px;
         align-items: center;
         display: flex;
         position: absolute;
         transition: opacity 100ms;
       }
 
-      #leftContent paper-icon-button {
-        -webkit-margin-end: 6px;
-        -webkit-margin-start: 18px;
+      #menuButton {
         height: 32px;
         margin-bottom: 6px;
         margin-top: 6px;
@@ -40,7 +40,12 @@
         width: 32px;
       }
 
+      :host(:not([show-menu])) #menuButton {
+        display: none;
+      }
+
       #centeredContent {
+        -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
         -webkit-padding-end: 12px;
         display: flex;
         flex: 1 1 0;
@@ -60,7 +65,7 @@
       }
     </style>
     <div id="leftContent">
-      <paper-icon-button icon="cr:menu" on-tap="onMenuTap_">
+      <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_">
       </paper-icon-button>
       <h1>[[pageName]]</h1>
     </div>

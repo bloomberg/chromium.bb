@@ -34,6 +34,12 @@ Polymer({
       value: false
     },
 
+    hasDrawer: {
+      type: Boolean,
+      observer: 'hasDrawerChanged_',
+      reflectToAttribute: true,
+    },
+
     // Whether domain-grouped history is enabled.
     isGroupedMode: {
       type: Boolean,
@@ -122,5 +128,10 @@ Polymer({
     // TODO(calamity): Fix the format of these dates.
     return loadTimeData.getStringF(
       'historyInterval', queryStartTime, queryEndTime);
-  }
+  },
+
+  /** @private */
+  hasDrawerChanged_: function() {
+    this.updateStyles();
+  },
 });

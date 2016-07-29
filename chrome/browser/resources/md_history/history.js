@@ -60,8 +60,8 @@ function showNotification(
   // when WebUI is removed and this becomes the only client of
   // BrowsingHistoryHandler.
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */($('history-app'))
-        .getSideBar().showFooter = includeOtherFormsOfBrowsingHistory;
+    /** @type {HistoryAppElement} */ ($('history-app')).showSidebarFooter =
+        includeOtherFormsOfBrowsingHistory;
   });
 }
 

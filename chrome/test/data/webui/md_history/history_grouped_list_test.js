@@ -18,7 +18,7 @@ cr.define('md_history.history_grouped_list_test', function() {
         app.grouped_ = true;
 
         toolbar = app.$['toolbar'];
-        sidebar = app.$['side-bar'];
+        sidebar = app.$['content-side-bar'];
 
         SIMPLE_RESULTS = [
           createHistoryEntry('2016-03-16', 'https://www.google.com/'),

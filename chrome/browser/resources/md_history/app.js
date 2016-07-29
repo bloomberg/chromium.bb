@@ -6,6 +6,8 @@ Polymer({
   is: 'history-app',
 
   properties: {
+    showSidebarFooter: Boolean,
+
     // The id of the currently selected page.
     selectedPage_: {type: String, value: 'history', observer: 'unselectAll'},
 
@@ -50,6 +52,9 @@ Polymer({
 
     // The query params for the page.
     queryParams_: Object,
+
+    // True if the window is narrow enough for the page to have a drawer.
+    hasDrawer_: Boolean,
   },
 
   observers: [
@@ -70,6 +75,7 @@ Polymer({
     'unselect-all': 'unselectAll',
     'delete-selected': 'deleteSelected',
     'search-domain': 'searchDomain_',
+    'history-close-drawer': 'closeDrawer_',
   },
 
   /** @override */
@@ -88,7 +94,11 @@ Polymer({
   },
 
   /** @private */
-  onMenuTap_: function() { this.$['side-bar'].toggle(); },
+  onMenuTap_: function() {
+    var drawer = this.$$('#drawer');
+    if (drawer)
+      drawer.toggle();
+  },
 
   /**
    * Listens for history-item being selected or deselected (through checkbox)
@@ -98,13 +108,6 @@ Polymer({
   checkboxSelected: function(e) {
     var toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
     toolbar.count += e.detail.countAddition;
-  },
-
-  /**
-   * @return {HistorySideBarElement} The side bar of this history app.
-   */
-  getSideBar: function() {
-    return this.$['side-bar'];
   },
 
   /**
@@ -163,6 +166,13 @@ Polymer({
     }
   },
 
+  /** @private */
+  onDrawerFocus_: function() {
+    var sideBar = this.$$('#drawer-side-bar');
+    if (sideBar)
+      sideBar.focusCurrentPage();
+  },
+
   /**
    * @param {string} searchTerm
    * @private
@@ -211,7 +221,8 @@ Polymer({
     var syncedDeviceManagerElem =
       /** @type {HistorySyncedDeviceManagerElement} */this
           .$$('history-synced-device-manager');
-    syncedDeviceManagerElem.updateSignInState(isUserSignedIn);
+    if (syncedDeviceManagerElem)
+      syncedDeviceManagerElem.updateSignInState(isUserSignedIn);
   },
 
   /**
@@ -263,5 +274,12 @@ Polymer({
    */
   getSelectedPage_(selectedPage, items) {
     return selectedPage;
+  },
+
+  /** @private */
+  closeDrawer_: function() {
+    var drawer = this.$$('#drawer');
+    if (drawer)
+      drawer.close();
   },
 });

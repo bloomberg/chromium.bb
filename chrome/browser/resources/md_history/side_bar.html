@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -15,21 +14,6 @@
         height: 100%;
         padding-top: 5px;
         width: var(--side-bar-width);
-      }
-
-      #drawer-header {
-        align-items: center;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        display: flex;
-        height: var(--toolbar-height);
-        margin-bottom: 5px;
-      }
-
-      h1 {
-        -webkit-padding-start: 24px;
-        color: rgb(66, 66, 66);
-        font-size: 123%;
-        font-weight: 400;
       }
 
       div.separator {
@@ -89,12 +73,16 @@
       }
 
       #footer {
-        /* This compensates the 120px by which app-drawer protrudes under
-         * the viewport. */
-        bottom: 120px;
+        bottom: 0;
         color: var(--paper-grey-600);
         position: absolute;
         width: var(--side-bar-width);
+      }
+
+      :host([drawer]) #footer {
+        /* This compensates the 120px by which app-drawer protrudes under
+         * the viewport. */
+        bottom: 120px;
       }
 
       #footer-text {
@@ -109,33 +97,27 @@
       }
     </style>
 
-    <app-drawer id="drawer" tabindex="0" on-focus="onDrawerFocus_" swipe-open
-        align="start">
-      <div id="drawer-header">
-        <h1>$i18n{title}</h1>
-      </div>
-      <iron-selector id="menu" selected="{{selectedPage}}"
-          selectable=".page-item" attr-for-selected="path"
-          fallback-selection="history"
-          on-iron-activate="onSelectorActivate_">
-        <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
-          $i18n{historyMenuItem}
-        </a>
-        <a href="/syncedTabs[[getQueryString_(route)]]" class="page-item"
-            path="syncedTabs">
-          $i18n{openTabsMenuItem}
-        </a>
+    <iron-selector id="menu" selected="{{selectedPage}}"
+        selectable=".page-item" attr-for-selected="path"
+        fallback-selection="history"
+        on-iron-activate="onSelectorActivate_">
+      <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
+        $i18n{historyMenuItem}
+      </a>
+      <a href="/syncedTabs[[getQueryString_(route)]]" class="page-item"
+          path="syncedTabs">
+        $i18n{openTabsMenuItem}
+      </a>
+      <div class="separator"></div>
+      <a href="chrome://settings/clearBrowserData"
+          on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
+        $i18n{clearBrowsingData}
+      </a>
+      <div id="footer" hidden="[[!showFooter]]">
         <div class="separator"></div>
-        <a href="chrome://settings/clearBrowserData"
-            on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
-          $i18n{clearBrowsingData}
-        </a>
-        <div id="footer" hidden="[[!showFooter]]">
-          <div class="separator"></div>
-          <div id="footer-text">$i18nRaw{sidebarFooter}</div>
-        </div>
-      </iron-selector>
-    </app-drawer>
+        <div id="footer-text">$i18nRaw{sidebarFooter}</div>
+      </div>
+    </iron-selector>
   </template>
   <script src="chrome://history/side_bar.js"></script>
 </dom-module>

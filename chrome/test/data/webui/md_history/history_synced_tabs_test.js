@@ -47,7 +47,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         assertEquals(null, app.$$('#synced-devices'));
 
         app.selectedPage_ = 'syncedTabs';
-        assertEquals('syncedTabs', app.$['side-bar'].$.menu.selected);
+        assertEquals('syncedTabs', app.$['content-side-bar'].$.menu.selected);
         return flush().then(function() {
           element = app.$$('#synced-devices');
           assertTrue(!!element);

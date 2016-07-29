@@ -14,14 +14,15 @@ Polymer({
     route: Object,
 
     showFooter: Boolean,
+
+    // If true, the sidebar is contained within an app-drawer.
+    drawer: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
   },
 
-  toggle: function() {
-    this.$.drawer.toggle();
-  },
-
-  /** @private */
-  onDrawerFocus_: function() {
+  focusCurrentPage: function() {
     // The desired behavior is for the app-drawer to focus the currently
     // selected menu item on opening. However, it will always focus the first
     // focusable child. Therefore, we set tabindex=0 on the app-drawer so that
@@ -32,7 +33,7 @@ Polymer({
 
   /** @private */
   onSelectorActivate_: function() {
-    this.$.drawer.close();
+    this.fire('history-close-drawer');
   },
 
   /**

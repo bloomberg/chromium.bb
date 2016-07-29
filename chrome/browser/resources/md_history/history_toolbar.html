@@ -37,6 +37,18 @@
         height: var(--toolbar-height);
       }
 
+      cr-toolbar {
+        --cr-toolbar-field-margin: var(--side-bar-width);
+      }
+
+      cr-toolbar[show-menu] {
+        --cr-toolbar-field-margin: 0;
+      }
+
+      :host(:not([has-drawer])) #overlay-wrapper {
+        -webkit-margin-start: var(--side-bar-width);
+      }
+
       #overlay-buttons {
         margin: 0 auto;
         max-width: var(--card-max-width);
@@ -118,6 +130,7 @@
       <cr-toolbar id="main-toolbar" page-name="$i18n{title}"
           clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}"
           hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]"
+          show-menu="[[hasDrawer]]"
           on-search-changed="onSearchChanged_">
       </cr-toolbar>
       <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">

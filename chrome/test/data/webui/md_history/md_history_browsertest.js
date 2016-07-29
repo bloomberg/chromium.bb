@@ -29,6 +29,7 @@ MaterialHistoryBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
     'browser_service_test.js',
+    'history_drawer_test.js',
     'history_grouped_list_test.js',
     'history_item_test.js',
     'history_list_test.js',
@@ -54,6 +55,11 @@ MaterialHistoryBrowserTest.prototype = {
 
 TEST_F('MaterialHistoryBrowserTest', 'BrowserServiceTest', function() {
   md_history.browser_service_test.registerTests();
+  mocha.run();
+});
+
+TEST_F('MaterialHistoryBrowserTest', 'DrawerTest', function() {
+  md_history.history_drawer_test.registerTests();
   mocha.run();
 });
 
