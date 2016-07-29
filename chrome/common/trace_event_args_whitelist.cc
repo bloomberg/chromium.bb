@@ -89,7 +89,7 @@ bool IsTraceEventArgsWhitelisted(
 }
 
 bool IsMetadataWhitelisted(const std::string& metadata_name) {
-  for (auto key : kMetadataWhitelist) {
+  for (auto* key : kMetadataWhitelist) {
     if (base::MatchPattern(metadata_name, key)) {
       return true;
     }

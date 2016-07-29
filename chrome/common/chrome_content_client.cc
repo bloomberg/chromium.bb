@@ -502,7 +502,7 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
 
   std::map<PluginSortKey, content::PepperPluginInfo*> plugin_map;
 
-  for (const auto& plugin : plugins) {
+  for (auto* plugin : plugins) {
     Version version(plugin->version);
     DCHECK(version.IsValid());
     plugin_map[PluginSortKey(version, plugin->is_debug,
