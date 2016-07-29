@@ -22,7 +22,7 @@ namespace {
 // full page MimeHandlerViewGuest plugin. Otherwise, returns false.
 bool StoreFullPagePlugin(content::WebContents** result,
                          content::WebContents* guest_contents) {
-  auto guest_view =
+  auto* guest_view =
       extensions::MimeHandlerViewGuest::FromWebContents(guest_contents);
   if (guest_view && guest_view->is_full_page_plugin()) {
     *result = guest_contents;
@@ -59,7 +59,7 @@ void StartPrint(content::WebContents* contents,
   using PrintViewManagerImpl = PrintViewManagerBasic;
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
-  auto print_view_manager =
+  auto* print_view_manager =
       PrintViewManagerImpl::FromWebContents(GetWebContentsToUse(contents));
   if (!print_view_manager)
     return;
