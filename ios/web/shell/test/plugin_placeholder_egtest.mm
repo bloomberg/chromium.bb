@@ -37,10 +37,10 @@ void LoadPage(const std::string& page_content) {
 
 // Plugin placeholder test cases for the web shell. These tests verify that web
 // page shows a placeholder for unsupported plugins.
-@interface PluginPlaceholderTest : ShellBaseTestCase
+@interface PluginPlaceholderTestCase : ShellBaseTestCase
 @end
 
-@implementation PluginPlaceholderTest
+@implementation PluginPlaceholderTestCase
 
 // Tests that a large <applet> with text fallback is untouched.
 - (void)testPluginPlaceholderAppletFallback {

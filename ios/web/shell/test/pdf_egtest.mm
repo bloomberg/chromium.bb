@@ -57,10 +57,10 @@ using web::shell_test_util::LoadUrl;
 using web::test::HttpServer;
 
 // PDF test cases for the web shell.
-@interface PDFTest : ShellBaseTestCase
+@interface PDFTestCase : ShellBaseTestCase
 @end
 
-@implementation PDFTest
+@implementation PDFTestCase
 
 // Tests MIME type of the loaded PDF document.
 - (void)testMIMEType {

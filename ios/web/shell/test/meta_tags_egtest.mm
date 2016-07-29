@@ -38,10 +38,10 @@ using web::addressFieldText;
 using web::webViewContainingText;
 
 // META tag test cases for the web shell.
-@interface MetaTagsTest : ShellBaseTestCase
+@interface MetaTagsTestCase : ShellBaseTestCase
 @end
 
-@implementation MetaTagsTest
+@implementation MetaTagsTestCase
 
 // Tests loading of a page with a META tag having a refresh value of 0 seconds.
 - (void)testMetaRefresh0Seconds {

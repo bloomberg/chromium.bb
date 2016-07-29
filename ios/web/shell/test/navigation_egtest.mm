@@ -22,10 +22,10 @@
 
 // Navigation test cases for the web shell. These are Earl Grey integration
 // tests, which are based on XCTest.
-@interface NavigationTest : ShellBaseTestCase
+@interface NavigationTestCase : ShellBaseTestCase
 @end
 
-@implementation NavigationTest
+@implementation NavigationTestCase
 
 // Tests clicking a link to about:blank.
 - (void)testNavigationLinkToAboutBlank {

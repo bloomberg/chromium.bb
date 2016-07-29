@@ -22,10 +22,10 @@ using web::test::HttpServer;
 using web::webViewContainingText;
 
 // Redirect test cases for the web shell.
-@interface RedirectTest : ShellBaseTestCase
+@interface RedirectTestCase : ShellBaseTestCase
 @end
 
-@implementation RedirectTest
+@implementation RedirectTestCase
 
 // Tests loading of page that is redirected 3 times using a 301 redirect.
 - (void)testMultipleRedirects {

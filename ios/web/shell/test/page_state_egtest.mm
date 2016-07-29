@@ -52,10 +52,10 @@ using web::test::HttpServer;
 using web::webViewContainingText;
 
 // Page state test cases for the web shell.
-@interface PageStateTest : ShellBaseTestCase
+@interface PageStateTestCase : ShellBaseTestCase
 @end
 
-@implementation PageStateTest
+@implementation PageStateTestCase
 
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
