@@ -63,6 +63,7 @@ class VerifyTreeCalcsLayerTreeSettings : public LayerTreeSettings {
  public:
   VerifyTreeCalcsLayerTreeSettings() {
     verify_transform_tree_calculations = true;
+    verify_clip_tree_calculations = true;
   }
 };
 

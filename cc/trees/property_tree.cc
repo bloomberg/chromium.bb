@@ -1993,20 +1993,33 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
   transform->MakeIdentity();
 
   int target_transform_id;
+  const EffectNode* effect_node = effect_tree.Node(effect_id);
   if (effect_id == EffectTree::kInvalidNodeId) {
     // This can happen when PaintArtifactCompositor builds property trees as
     // it doesn't set effect ids on clip nodes. We want to compute transform
     // to the root in this case.
     target_transform_id = TransformTree::kRootNodeId;
   } else {
-    const EffectNode* effect_node = effect_tree.Node(effect_id);
     DCHECK(effect_node->has_render_surface ||
            effect_node->id == EffectTree::kRootNodeId);
     target_transform_id = effect_node->transform_id;
   }
 
-  return transform_tree.ComputeTransform(transform_id, target_transform_id,
-                                         transform);
+  bool success = transform_tree.ComputeTransform(
+      transform_id, target_transform_id, transform);
+  if (verify_transform_tree_calculations &&
+      transform_id > target_transform_id) {
+    gfx::Transform to_target;
+    to_target.ConcatTransform(
+        GetDrawTransforms(transform_id, effect_id).to_target);
+    if (effect_node->surface_contents_scale.x() != 0.f &&
+        effect_node->surface_contents_scale.y() != 0.f)
+      to_target.matrix().postScale(
+          1.0f / effect_node->surface_contents_scale.x(),
+          1.0f / effect_node->surface_contents_scale.y(), 1.0f);
+    DCHECK(to_target.ApproximatelyEqual(*transform));
+  }
+  return success;
 }
 
 bool PropertyTrees::ComputeTransformFromTarget(
@@ -2016,20 +2029,31 @@ bool PropertyTrees::ComputeTransformFromTarget(
   transform->MakeIdentity();
 
   int target_transform_id;
+  const EffectNode* effect_node = effect_tree.Node(effect_id);
   if (effect_id == EffectTree::kInvalidNodeId) {
     // This can happen when PaintArtifactCompositor builds property trees as
     // it doesn't set effect ids on clip nodes. We want to compute transform
     // to the root in this case.
     target_transform_id = TransformTree::kRootNodeId;
   } else {
-    const EffectNode* effect_node = effect_tree.Node(effect_id);
     DCHECK(effect_node->has_render_surface ||
            effect_node->id == EffectTree::kRootNodeId);
     target_transform_id = effect_node->transform_id;
   }
 
-  return transform_tree.ComputeTransform(target_transform_id, transform_id,
-                                         transform);
+  bool success = transform_tree.ComputeTransform(target_transform_id,
+                                                 transform_id, transform);
+  if (verify_transform_tree_calculations &&
+      transform_id < target_transform_id) {
+    auto draw_transforms = GetDrawTransforms(transform_id, effect_id);
+    gfx::Transform from_target;
+    from_target.ConcatTransform(draw_transforms.from_target);
+    from_target.Scale(effect_node->surface_contents_scale.x(),
+                      effect_node->surface_contents_scale.y());
+    DCHECK(from_target.ApproximatelyEqual(*transform) ||
+           !draw_transforms.invertible);
+  }
+  return success;
 }
 
 }  // namespace cc

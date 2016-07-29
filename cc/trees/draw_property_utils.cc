@@ -803,8 +803,8 @@ void ComputeClips(PropertyTrees* property_trees,
     if (parent_target_transform_node &&
         parent_target_transform_node->id != clip_node->target_transform_id &&
         non_root_surfaces_enabled) {
-      success &= property_trees->ComputeTransformToTarget(
-          parent_target_transform_node->id, clip_node->target_effect_id,
+      success &= property_trees->ComputeTransformFromTarget(
+          clip_node->target_transform_id, parent_clip_node->target_effect_id,
           &parent_to_current);
       // We don't have to apply surface contents scale when target is root.
       if (clip_node->target_effect_id != EffectTree::kContentsRootNodeId) {

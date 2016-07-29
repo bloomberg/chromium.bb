@@ -132,7 +132,7 @@ namespace {
 TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
   FakeLayerTreeHostClient host_client;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = LayerTreeSettingsForTesting();
   std::unique_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           base::WrapUnique(new FakeImageSerializationProcessor);
@@ -281,7 +281,7 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<OutputSurface> output_surface(
       FakeOutputSurface::CreateDelegating3d());
-  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
+  LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
@@ -325,7 +325,7 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<OutputSurface> output_surface(
       FakeOutputSurface::CreateDelegating3d());
-  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
+  LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
@@ -462,11 +462,9 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
 // non-monotonically. This executes that code path under this scenario allowing
 // for the code to verify correctness with DCHECKs.
 TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = LayerTreeSettingsForTesting();
   settings.single_thread_proxy_scheduler = false;
   settings.use_zero_copy = true;
-  settings.verify_clip_tree_calculations = true;
-  settings.verify_transform_tree_calculations = true;
 
   StubLayerTreeHostSingleThreadClient single_thread_client;
   FakeLayerTreeHostClient host_client1;
