@@ -969,4 +969,25 @@ TEST_F(ResourcePrefetchPredictorTest, GetCorrectPLT) {
   profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
+TEST_F(ResourcePrefetchPredictorTest, HandledResourceTypes) {
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_STYLESHEET, "bogus/mime-type"));
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_STYLESHEET, ""));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_WORKER, "text/css"));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_WORKER, ""));
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_PREFETCH, "text/css"));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_PREFETCH, "bogus/mime-type"));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_PREFETCH, ""));
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_PREFETCH, "application/font-woff"));
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_PREFETCH, "font/woff2"));
+}
+
 }  // namespace predictors

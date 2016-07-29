@@ -104,13 +104,14 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
 }
 
 void ResourcePrefetchPredictorTables::ResourceRow::UpdateScore() {
-  // The score is calculated so that when the rows are sorted, the stylesheets
-  // and scripts appear first, sorted by position(ascending) and then the rest
-  // of the resources sorted by position(ascending).
+  // The score is calculated so that when the rows are sorted, stylesheets,
+  // scripts and fonts appear first, sorted by position(ascending) and then the
+  // rest of the resources sorted by position (ascending).
   static const int kMaxResourcesPerType = 100;
   switch (resource_type) {
     case content::RESOURCE_TYPE_STYLESHEET:
     case content::RESOURCE_TYPE_SCRIPT:
+    case content::RESOURCE_TYPE_FONT_RESOURCE:
       score = (2 * kMaxResourcesPerType) - average_position;
       break;
 

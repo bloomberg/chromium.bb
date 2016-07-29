@@ -430,6 +430,26 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
 
 // Test cases.
 
+TEST_F(ResourcePrefetchPredictorTablesTest, ComputeScore) {
+  typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
+  ResourceRow js_resource(std::string(),
+                          "http://www.resources.google.com/script.js",
+                          content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 1.);
+  ResourceRow image_resource(std::string(),
+                             "http://www.resources.google.com/image.jpg",
+                             content::RESOURCE_TYPE_IMAGE, 11, 0, 0, 1.);
+  ResourceRow css_resource(std::string(),
+                           "http://www.resources.google.com/stylesheet.css",
+                           content::RESOURCE_TYPE_STYLESHEET, 11, 0, 0, 1.);
+  ResourceRow font_resource(std::string(),
+                            "http://www.resources.google.com/font.woff",
+                            content::RESOURCE_TYPE_FONT_RESOURCE, 11, 0, 0, 1.);
+  EXPECT_TRUE(js_resource.score == css_resource.score);
+  EXPECT_TRUE(js_resource.score == font_resource.score);
+  EXPECT_NEAR(199., js_resource.score, 1e-4);
+  EXPECT_NEAR(99., image_resource.score, 1e-4);
+}
+
 TEST_F(ResourcePrefetchPredictorTablesTest, GetAllData) {
   TestGetAllData();
 }

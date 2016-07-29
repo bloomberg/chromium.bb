@@ -145,6 +145,7 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            OnSubresourceResponse);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, HandledResourceTypes);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
@@ -178,7 +179,12 @@ class ResourcePrefetchPredictor
   static bool IsHandledMainPage(net::URLRequest* request);
 
   // Returns true if the subresource request is supported for prediction.
-  static bool IsHandledSubresource(net::URLRequest* request);
+  static bool IsHandledSubresource(net::URLRequest* request,
+                                   content::ResourceType resource_type);
+
+  // Returns true if the subresource has a supported type.
+  static bool IsHandledResourceType(content::ResourceType resource_type,
+                                    const std::string& mime_type);
 
   // Returns true if the request (should have a response in it) is cacheable.
   static bool IsCacheable(const net::URLRequest* request);

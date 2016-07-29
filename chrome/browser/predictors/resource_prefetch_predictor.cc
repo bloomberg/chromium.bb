@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <utility>
@@ -40,12 +41,26 @@ using content::BrowserThread;
 
 namespace {
 
+// Sorted by decreasing likelihood according to HTTP archive.
+const char* kFontMimeTypes[] = {"font/woff2",
+                                "application/x-font-woff",
+                                "application/font-woff",
+                                "application/font-woff2",
+                                "font/x-woff",
+                                "application/x-font-ttf",
+                                "font/woff",
+                                "font/ttf",
+                                "application/x-font-otf",
+                                "x-font/woff",
+                                "application/font-sfnt",
+                                "application/font-ttf"};
+
 // For reporting whether a subresource is handled or not, and for what reasons.
 enum ResourceStatus {
   RESOURCE_STATUS_HANDLED = 0,
   RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_PAGE = 1,
   RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_RESOURCE = 2,
-  RESOURCE_STATUS_UNSUPPORTED_MIME_TYPE = 4,
+  RESOURCE_STATUS_UNSUPPORTED_RESOURCE_TYPE = 4,
   RESOURCE_STATUS_NOT_GET = 8,
   RESOURCE_STATUS_URL_TOO_LONG = 16,
   RESOURCE_STATUS_NOT_CACHEABLE = 32,
@@ -211,8 +226,10 @@ bool ResourcePrefetchPredictor::ShouldRecordResponse(
   if (!request_info->IsMainFrame())
     return false;
 
-  return request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME ?
-      IsHandledMainPage(response) : IsHandledSubresource(response);
+  content::ResourceType resource_type = request_info->GetResourceType();
+  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME
+             ? IsHandledMainPage(response)
+             : IsHandledSubresource(response, resource_type);
 }
 
 // static
@@ -237,7 +254,8 @@ bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
 
 // static
 bool ResourcePrefetchPredictor::IsHandledSubresource(
-    net::URLRequest* response) {
+    net::URLRequest* response,
+    content::ResourceType resource_type) {
   int resource_status = 0;
 
   if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS())
@@ -248,11 +266,8 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
 
   std::string mime_type;
   response->GetMimeType(&mime_type);
-  if (!mime_type.empty() && !mime_util::IsSupportedImageMimeType(mime_type) &&
-      !mime_util::IsSupportedJavascriptMimeType(mime_type) &&
-      !net::MatchesMimeType("text/css", mime_type)) {
-    resource_status |= RESOURCE_STATUS_UNSUPPORTED_MIME_TYPE;
-  }
+  if (!IsHandledResourceType(resource_type, mime_type))
+    resource_status |= RESOURCE_STATUS_UNSUPPORTED_RESOURCE_TYPE;
 
   if (response->method() != "GET")
     resource_status |= RESOURCE_STATUS_NOT_GET;
@@ -276,6 +291,27 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
 }
 
 // static
+bool ResourcePrefetchPredictor::IsHandledResourceType(
+    content::ResourceType resource_type,
+    const std::string& mime_type) {
+  bool handled = resource_type == content::RESOURCE_TYPE_STYLESHEET ||
+                 resource_type == content::RESOURCE_TYPE_SCRIPT ||
+                 resource_type == content::RESOURCE_TYPE_IMAGE ||
+                 resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
+  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE} to a small set of
+  // mime types, because these resource types don't communicate how the
+  // resources
+  // will be used.
+  if ((resource_type == content::RESOURCE_TYPE_PREFETCH ||
+       resource_type == content::RESOURCE_TYPE_SUB_RESOURCE)) {
+    content::ResourceType resource_type_from_mime = GetResourceTypeFromMimeType(
+        mime_type, content::RESOURCE_TYPE_LAST_TYPE);
+    handled = resource_type_from_mime != content::RESOURCE_TYPE_LAST_TYPE;
+  }
+  return handled;
+}
+
+// static
 bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
   if (response->was_cached())
     return true;
@@ -296,14 +332,24 @@ bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
 content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
     const std::string& mime_type,
     content::ResourceType fallback) {
-  if (mime_util::IsSupportedImageMimeType(mime_type))
-    return content::RESOURCE_TYPE_IMAGE;
-  else if (mime_util::IsSupportedJavascriptMimeType(mime_type))
-    return content::RESOURCE_TYPE_SCRIPT;
-  else if (net::MatchesMimeType("text/css", mime_type))
-    return content::RESOURCE_TYPE_STYLESHEET;
-  else
+  if (mime_type.empty()) {
     return fallback;
+  } else if (mime_util::IsSupportedImageMimeType(mime_type)) {
+    return content::RESOURCE_TYPE_IMAGE;
+  } else if (mime_util::IsSupportedJavascriptMimeType(mime_type)) {
+    return content::RESOURCE_TYPE_SCRIPT;
+  } else if (net::MatchesMimeType("text/css", mime_type)) {
+    return content::RESOURCE_TYPE_STYLESHEET;
+  } else {
+    bool found =
+        std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
+                    [&mime_type](const std::string& mime) {
+                      return net::MatchesMimeType(mime, mime_type);
+                    });
+    if (found)
+      return content::RESOURCE_TYPE_FONT_RESOURCE;
+  }
+  return fallback;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

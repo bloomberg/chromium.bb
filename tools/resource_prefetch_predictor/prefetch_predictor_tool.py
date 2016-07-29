@@ -17,8 +17,10 @@ import sqlite3
 
 
 class ResourceType(object):
+  """Partially mirrors content::ResourceType."""
   STYLESHEET = 2
   SCRIPT = 3
+  FONT_RESOURCE = 5
 
 
 class Entry(object):
@@ -44,7 +46,8 @@ class Entry(object):
   def _Score(self):
     """Mirrors ResourcePrefetchPredictorTables::ResourceRow::UpdateScore."""
     multiplier = 1
-    if self.resource_type in (ResourceType.STYLESHEET, ResourceType.SCRIPT):
+    if self.resource_type in (ResourceType.STYLESHEET, ResourceType.SCRIPT,
+                              ResourceType.FONT_RESOURCE):
       multiplier = 2
     return multiplier * 100 - self.average_position
 
