@@ -673,6 +673,10 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
   text-align: end;
 }
 
+.remove-warning-button {
+  font-weight: bold;
+}
+
 /* Hide dialog elements not in a correct category. Only combinations currently
    in use are included here. */
 .pod.legacy-supervised .non-sync,
