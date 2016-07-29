@@ -268,7 +268,6 @@ public:
     void didUpdateTextOfFocusedElementByNonUserInput() override {}
     void hasTouchEventHandlers(bool) override {}
     void initializeLayerTreeView() override {}
-    WebLayerTreeView* layerTreeView() override { return 0; }
     void onMouseDown(const WebNode& mouseDownNode) override {}
     void resetInputMethod() override {}
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }

@@ -309,7 +309,6 @@ class CONTENT_EXPORT RenderViewImpl
                      const blink::WebFloatSize& velocityInViewport) override;
   void didUpdateTextOfFocusedElementByNonUserInput() override;
   void hasTouchEventHandlers(bool has_handlers) override;
-  blink::WebLayerTreeView* layerTreeView() override;
   void resetInputMethod() override;
   blink::WebScreenInfo screenInfo() override;
   void setToolTipText(const blink::WebString&,

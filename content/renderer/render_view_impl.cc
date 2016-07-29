@@ -2035,10 +2035,6 @@ void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
   RenderWidget::hasTouchEventHandlers(has_handlers);
 }
 
-blink::WebLayerTreeView* RenderViewImpl::layerTreeView() {
-  return RenderWidget::layerTreeView();
-}
-
 void RenderViewImpl::resetInputMethod() {
   RenderWidget::resetInputMethod();
 }
