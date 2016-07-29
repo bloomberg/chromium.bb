@@ -79753,8 +79753,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Main frame without interstitial">
     Auth prompt displayed for the main frame, without a blank interstitial
   </int>
-  <int value="2" label="Subresource">
-    Auth prompt displayed for a subresource
+  <int value="2" label="Same origin subresource">
+    Auth prompt displayed for a subresource from the same origin
+  </int>
+  <int value="3" label="Cross origin subresource">
+    Auth prompt displayed for a subresource from a different origin
   </int>
 </enum>
 

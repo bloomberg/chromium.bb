@@ -65,8 +65,9 @@ namespace {
 enum AuthPromptType {
   AUTH_PROMPT_TYPE_WITH_INTERSTITIAL = 0,
   AUTH_PROMPT_TYPE_MAIN_FRAME = 1,
-  AUTH_PROMPT_TYPE_SUBRESOURCE = 2,
-  AUTH_PROMPT_TYPE_ENUM_COUNT = 3
+  AUTH_PROMPT_TYPE_SUBRESOURCE_SAME_ORIGIN = 2,
+  AUTH_PROMPT_TYPE_SUBRESOURCE_CROSS_ORIGIN = 3,
+  AUTH_PROMPT_TYPE_ENUM_COUNT = 4
 };
 
 // Helper to remove the ref from an net::URLRequest to the LoginHandler.
@@ -608,10 +609,12 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
   // being displayed simultaneously. This is specially important when the proxy
   // is accessed via an open connection while the target server is considered
   // secure.
+  const bool is_cross_origin_request =
+      parent_contents->GetLastCommittedURL().GetOrigin() !=
+      request_url.GetOrigin();
   if (is_main_frame &&
-      (parent_contents->ShowingInterstitialPage() || auth_info->is_proxy ||
-       parent_contents->GetLastCommittedURL().GetOrigin() !=
-           request_url.GetOrigin())) {
+      (is_cross_origin_request || parent_contents->ShowingInterstitialPage() ||
+       auth_info->is_proxy)) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
 
     // Show a blank interstitial for main-frame, cross origin requests
@@ -628,8 +631,13 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
             ->GetWeakPtr());
 
   } else {
-    RecordHttpAuthPromptType(is_main_frame ? AUTH_PROMPT_TYPE_MAIN_FRAME
-                                           : AUTH_PROMPT_TYPE_SUBRESOURCE);
+    if (is_main_frame) {
+      RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_MAIN_FRAME);
+    } else {
+      RecordHttpAuthPromptType(is_cross_origin_request
+                                   ? AUTH_PROMPT_TYPE_SUBRESOURCE_CROSS_ORIGIN
+                                   : AUTH_PROMPT_TYPE_SUBRESOURCE_SAME_ORIGIN);
+    }
     ShowLoginPrompt(request_url, auth_info, handler);
   }
 }
