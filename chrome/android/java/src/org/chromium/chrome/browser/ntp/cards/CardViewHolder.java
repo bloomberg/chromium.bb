@@ -4,9 +4,15 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,8 +43,8 @@ import org.chromium.chrome.browser.util.MathUtils;
  */
 public class CardViewHolder extends NewTabPageViewHolder {
     private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
-
     private static final Interpolator TRANSITION_INTERPOLATOR = new FastOutSlowInInterpolator();
+    private static final int DISMISS_ANIMATION_TIME_MS = 300;
 
     /** Value used for max peeking card height and padding. */
     private final int mMaxPeekPadding;
@@ -94,6 +100,15 @@ public class CardViewHolder extends NewTabPageViewHolder {
             }
         });
 
+        itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override
+            public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
+                if (!isPeeking()) {
+                    CardViewHolder.this.createContextMenu(menu);
+                }
+            }
+        });
+
         mUiConfig = uiConfig;
         mDisplayStyleObserverAdapter = MarginResizer.createWithViewAdapter(itemView, mUiConfig);
     }
@@ -109,8 +124,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
         setPeekingPercentage(0f);
 
-        // Reset the transparency in case a faded card is being recycled.
+        // Reset the transparency and translation in case a dismissed card is being recycled.
         itemView.setAlpha(1f);
+        itemView.setTranslationX(0f);
     }
 
     @Override
@@ -171,6 +187,8 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     @Override
     public void updateViewStateForDismiss(float dX) {
+        // Any changes in the animation here should be reflected also in |dismiss|
+        // and reset in onBindViewHolder.
         float input = Math.abs(dX) / itemView.getMeasuredWidth();
         float alpha = 1 - FADE_INTERPOLATOR.getInterpolation(input);
         itemView.setAlpha(alpha);
@@ -181,6 +199,12 @@ public class CardViewHolder extends NewTabPageViewHolder {
      * currently peeking.
      */
     protected void onCardTapped() {}
+
+    /**
+     * Override this to provide a context menu for the card. This method will not be called if the
+     * card is currently peeking.
+     */
+    protected void createContextMenu(ContextMenu menu) {}
 
     private void setPeekingPercentage(float peekingPercentage) {
         if (mPeekingPercentage == peekingPercentage) return;
@@ -225,5 +249,36 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     private RecyclerView.LayoutParams getParams() {
         return (RecyclerView.LayoutParams) itemView.getLayoutParams();
+    }
+
+    /**
+     * Animates the card being swiped to the right as if the user had dismissed it. You must check
+     * {@link #isDismissable()} before calling.
+     */
+    protected void dismiss() {
+        assert isDismissable();
+
+        // Any changes in the animation here should be reflected also in |updateViewStateForDismiss|
+        // and reset in onBindViewHolder.
+        AnimatorSet animation = new AnimatorSet();
+        animation.playTogether(
+                ObjectAnimator.ofFloat(itemView, View.ALPHA, 0f),
+                ObjectAnimator.ofFloat(itemView, View.TRANSLATION_X, (float) itemView.getWidth()));
+
+        animation.setDuration(DISMISS_ANIMATION_TIME_MS);
+        animation.setInterpolator(FADE_INTERPOLATOR);
+        animation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRecyclerView.onItemDismissStarted(itemView);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                ((NewTabPageAdapter) mRecyclerView.getAdapter()).dismissItem(CardViewHolder.this);
+                mRecyclerView.onItemDismissFinished(itemView);
+            }
+        });
+        animation.start();
     }
 }

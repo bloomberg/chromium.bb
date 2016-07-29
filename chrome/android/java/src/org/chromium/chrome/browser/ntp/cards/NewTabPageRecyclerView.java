@@ -274,13 +274,13 @@ public class NewTabPageRecyclerView extends RecyclerView {
     }
 
     /** Called when an item is in the process of being removed from the view. */
-    void onItemDismissStarted(View itemView) {
+    public void onItemDismissStarted(View itemView) {
         mCompensationHeight += itemView.getHeight();
         refreshBottomSpacing();
     }
 
     /** Called when an item has finished being removed from the view. */
-    void onItemDismissFinished(View itemView) {
+    public void onItemDismissFinished(View itemView) {
         mCompensationHeight -= itemView.getHeight();
         assert mCompensationHeight >= 0;
     }

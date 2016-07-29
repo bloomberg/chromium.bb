@@ -57,7 +57,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRecyclerView.onItemDismissStarted(viewHolder.itemView);
 
             NewTabPageAdapter.this.dismissItem(viewHolder);
-            addStatusCardIfNecessary();
         }
 
         @Override
@@ -290,7 +289,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mRecyclerView = (NewTabPageRecyclerView) recyclerView;
     }
 
-    private void dismissItem(ViewHolder itemViewHolder) {
+    public void dismissItem(ViewHolder itemViewHolder) {
         assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
@@ -308,6 +307,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mSnippetsBridge.discardSnippet(dismissedSnippet);
         mItems.remove(position);
         notifyItemRemoved(position);
+
+        addStatusCardIfNecessary();
     }
 
     private void addStatusCardIfNecessary() {

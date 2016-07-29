@@ -293,14 +293,14 @@ public class NewTabPage
         @Override
         public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
             if (mIsDestroyed) return;
-            if (MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity)) {
+            if (isOpenInNewWindowEnabled()) {
                 menu.add(Menu.NONE, ID_OPEN_IN_NEW_WINDOW, Menu.NONE,
                         R.string.contextmenu_open_in_other_window)
                         .setOnMenuItemClickListener(listener);
             }
             menu.add(Menu.NONE, ID_OPEN_IN_NEW_TAB, Menu.NONE, R.string.contextmenu_open_in_new_tab)
                     .setOnMenuItemClickListener(listener);
-            if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+            if (isOpenInIncognitoEnabled()) {
                 menu.add(Menu.NONE, ID_OPEN_IN_INCOGNITO_TAB, Menu.NONE,
                         R.string.contextmenu_open_in_incognito_tab).setOnMenuItemClickListener(
                         listener);
@@ -314,22 +314,15 @@ public class NewTabPage
             if (mIsDestroyed) return false;
             switch (menuId) {
                 case ID_OPEN_IN_NEW_WINDOW:
-                    TabDelegate tabDelegate = new TabDelegate(false);
-                    LoadUrlParams loadUrlParams = new LoadUrlParams(item.getUrl());
-                    tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity,
-                            mTab.getParentId());
+                    openUrlInNewWindow(item.getUrl());
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(
-                            new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK),
-                            TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, false);
+                    openUrlInNewTab(item.getUrl(), false);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(
-                            new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK),
-                            TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
+                    openUrlInNewTab(item.getUrl(), true);
                     return true;
                 case ID_REMOVE:
                     mMostVisitedSites.addBlacklistedUrl(item.getUrl());
@@ -338,6 +331,29 @@ public class NewTabPage
                 default:
                     return false;
             }
+        }
+
+        @Override
+        public boolean isOpenInNewWindowEnabled() {
+            return MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity);
+        }
+
+        @Override
+        public boolean isOpenInIncognitoEnabled() {
+            return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+        }
+
+        @Override
+        public void openUrlInNewWindow(String url) {
+            TabDelegate tabDelegate = new TabDelegate(false);
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+            tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity, mTab.getParentId());
+        }
+
+        @Override
+        public void openUrlInNewTab(String url, boolean incognito) {
+            mTabModelSelector.openNewTab(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK),
+                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, incognito);
         }
 
         @Override

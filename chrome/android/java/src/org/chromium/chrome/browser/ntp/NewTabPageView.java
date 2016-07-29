@@ -137,6 +137,12 @@ public class NewTabPageView extends FrameLayout
         /** @return Whether the omnibox 'Search or type URL' text should be shown. */
         boolean isFakeOmniboxTextEnabledTablet();
 
+        /** @return Whether context menus should allow the option to open a link in a new window. */
+        boolean isOpenInNewWindowEnabled();
+
+        /** @return Whether context menus should allow the option to open a link in incognito. */
+        boolean isOpenInIncognitoEnabled();
+
         /** Opens the bookmarks page in the current tab. */
         void navigateToBookmarks();
 
@@ -144,13 +150,19 @@ public class NewTabPageView extends FrameLayout
         void navigateToRecentTabs();
 
         /**
-         * Opens an url in the current tab and records related metrics.
+         * Opens a URL in the current tab and records related metrics.
          * @param url the URL to open
          */
         void openSnippet(String url);
 
-        /** Opens a url in the current tab. */
+        /** Opens a URL in the current tab. */
         void openUrl(String url);
+
+        /** Opens a URL in a new window. */
+        void openUrlInNewWindow(String url);
+
+        /** Opens a URL in a new tab. */
+        void openUrlInNewTab(String url, boolean incognito);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
