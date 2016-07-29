@@ -525,12 +525,15 @@ interface CharacterData : Node
     getter length
     getter nextElementSibling
     getter previousElementSibling
+    method after
     method appendData
+    method before
     method constructor
     method deleteData
     method insertData
     method remove
     method replaceData
+    method replaceWith
     method substringData
     setter data
 interface ClientRect
@@ -888,6 +891,7 @@ interface Document : Node
     getter xmlStandalone
     getter xmlVersion
     method adoptNode
+    method append
     method caretRangeFromPoint
     method close
     method constructor
@@ -922,6 +926,7 @@ interface Document : Node
     method hasFocus
     method importNode
     method open
+    method prepend
     method queryCommandEnabled
     method queryCommandIndeterm
     method queryCommandState
@@ -1028,8 +1033,10 @@ interface DocumentFragment : Node
     getter children
     getter firstElementChild
     getter lastElementChild
+    method append
     method constructor
     method getElementById
+    method prepend
     method querySelector
     method querySelectorAll
 interface DocumentType : Node
@@ -1038,8 +1045,11 @@ interface DocumentType : Node
     getter name
     getter publicId
     getter systemId
+    method after
+    method before
     method constructor
     method remove
+    method replaceWith
 interface DragEvent : MouseEvent
     attribute @@toStringTag
     getter dataTransfer
@@ -1094,8 +1104,11 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
+    method after
     method animate
+    method append
     method attachShadow
+    method before
     method closest
     method constructor
     method createShadowRoot
@@ -1116,12 +1129,14 @@ interface Element : Node
     method insertAdjacentHTML
     method insertAdjacentText
     method matches
+    method prepend
     method querySelector
     method querySelectorAll
     method remove
     method removeAttribute
     method removeAttributeNS
     method removeAttributeNode
+    method replaceWith
     method requestPointerLock
     method scrollIntoView
     method scrollIntoViewIfNeeded
