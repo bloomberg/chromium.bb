@@ -16,9 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/event_listener_map.h"
@@ -195,10 +193,6 @@ bool CertificateProviderServiceFactory::ServiceIsNULLWhileTesting() const {
 
 KeyedService* CertificateProviderServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (chromeos::ProfileHelper::IsSigninProfile(
-          Profile::FromBrowserContext(context))) {
-    return nullptr;
-  }
   CertificateProviderService* const service = new CertificateProviderService();
   service->SetDelegate(base::WrapUnique(new DefaultDelegate(
       service,
