@@ -252,7 +252,8 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
       stream_->avail_out = kChunkSize;
       stream_->next_out = (unsigned char*)buffer;
       err = deflate(stream_.get(), finished ? Z_FINISH : Z_NO_FLUSH);
-      if (err != (finished ? Z_STREAM_END : Z_OK)) {
+      if (err != Z_OK && (!finished || err != Z_STREAM_END)) {
+        LOG(ERROR) << "Deflate stream error: " << err;
         stream_.reset();
         return;
       }

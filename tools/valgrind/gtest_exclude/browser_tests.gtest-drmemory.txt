@@ -159,6 +159,3 @@ AppViewTests/AppViewTest.KillGuestCommunicatingWithWrongAppView/*
 
 # https://crbug.com/620370
 MdSettingsUITest.BackForwardDoesntCrash
-
-# https://crbug.com/629530
-BackgroundTracingManagerBrowserTest.CrashWhenSubprocessWithoutArgumentFilter

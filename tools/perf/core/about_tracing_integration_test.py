@@ -8,8 +8,7 @@ from telemetry.testing import tab_test_case
 class AboutTracingIntegrationTest(tab_test_case.TabTestCase):
 
   @decorators.Disabled('android',
-                       'mac',  # Flaky, see crbug.com/632238.
-                       'win')  # crbug.com/630030
+                       'win')  # https://crbug.com/632871
   def testBasicTraceRecording(self):
     action_runner = self._tab.action_runner
     action_runner.Navigate('chrome://tracing')
