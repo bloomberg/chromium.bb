@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "content/browser/media/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
-#include "content/test/webrtc_content_browsertest_base.h"
 
 namespace {
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/media/webrtc/webrtc_webcam_browsertest.h"
+
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -40,31 +42,25 @@ void RemoveFakeDeviceFromCommandLine(base::CommandLine* command_line) {
 
 namespace content {
 
-// This class doesn't inherit from WebRtcContentBrowserTestBase like the others
-// since we want it to actually acquire the real webcam on the system (if there
-// is one).
-class WebRtcWebcamBrowserTest: public ContentBrowserTest {
- public:
-  ~WebRtcWebcamBrowserTest() override {}
+void WebRtcWebcamBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  // Allows for accessing capture devices without prompting for permission.
+  command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+  // The content_browsertests run with this flag by default, and this test is
+  // the only current exception to that rule, so just remove the flag
+  // --use-fake-device-for-media-stream here. We could also have all tests
+  // involving media streams add this flag explicitly, but it will be really
+  // unintuitive for developers to write tests involving media stream and have
+  // them fail on what looks like random bots, so running with fake devices
+  // is really a reasonable default.
+  RemoveFakeDeviceFromCommandLine(command_line);
+}
 
-    // The content_browsertests run with this flag by default, and this test is
-    // the only current exception to that rule, so just remove the flag
-    // --use-fake-device-for-media-stream here. We could also have all tests
-    // involving media streams add this flag explicitly, but it will be really
-    // unintuitive for developers to write tests involving media stream and have
-    // them fail on what looks like random bots, so running with fake devices
-    // is really a reasonable default.
-    RemoveFakeDeviceFromCommandLine(command_line);
-  }
-
-  void SetUp() override {
-    EnablePixelOutput();
-    ContentBrowserTest::SetUp();
-  }
-};
+void WebRtcWebcamBrowserTest::SetUp() {
+  EnablePixelOutput();
+  ContentBrowserTest::SetUp();
+}
 
 // The test is tagged as MANUAL since the webcam is a system-level resource; we
 // only want it to run on bots where we can ensure sequential execution. The

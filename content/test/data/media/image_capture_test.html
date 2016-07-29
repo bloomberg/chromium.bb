@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Image Capture Browser Test -->
+</head>
+<body>
+<script type="text/javascript" src="webrtc_test_utilities.js"></script>
+<script>
+
+// Runs an ImageCapture.getPhotoCapabilities().
+function testCreateAndGetCapabilities() {
+  var hasVideoInputDevice = false;
+  navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        devices.forEach(function(device) {
+          if (device.kind === "videoinput")
+            hasVideoInputDevice = true;
+        });
+
+        if (!hasVideoInputDevice)
+          return Promise.reject("no video devices");
+      })
+      .catch(err => {
+        return failTest('Error enumerating devices: ' + err.toString());
+      });
+
+  navigator.mediaDevices.getUserMedia({"video" : true})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        return new ImageCapture(stream.getVideoTracks()[0]);
+      })
+      .then(capturer => {
+        return capturer.getPhotoCapabilities();
+      })
+      .then(capabilities => {
+        assertNotEquals(0, capabilities.imageHeight.min);
+        assertNotEquals(0, capabilities.imageHeight.current);
+        assertNotEquals(0, capabilities.imageHeight.max);
+        assertNotEquals(0, capabilities.imageWidth.min);
+        assertNotEquals(0, capabilities.imageWidth.current);
+        assertNotEquals(0, capabilities.imageWidth.max);
+        assertNotEquals(0, capabilities.zoom.min);
+        assertNotEquals(0, capabilities.zoom.current);
+        assertNotEquals(0, capabilities.zoom.max);
+
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
+</script>
+</body>
+</html>

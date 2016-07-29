@@ -310,14 +310,16 @@
       'browser/media/webrtc/webrtc_browsertest_audio.cc',
       'browser/media/webrtc/webrtc_browsertest_data.cc',
       'browser/media/webrtc/webrtc_capture_from_element_browsertest.cc',
+      'browser/media/webrtc/webrtc_content_browsertest_base.cc',
+      'browser/media/webrtc/webrtc_content_browsertest_base.h',
       'browser/media/webrtc/webrtc_datachannel_browsertest.cc',
       'browser/media/webrtc/webrtc_getusermedia_browsertest.cc',
+      'browser/media/webrtc/webrtc_image_capture_browsertest.cc',
       'browser/media/webrtc/webrtc_internals_browsertest.cc',
       'browser/media/webrtc/webrtc_ip_permissions_browsertest.cc',
       'browser/media/webrtc/webrtc_media_recorder_browsertest.cc',
       'browser/media/webrtc/webrtc_webcam_browsertest.cc',
-      'test/webrtc_content_browsertest_base.cc',
-      'test/webrtc_content_browsertest_base.h',
+      'browser/media/webrtc/webrtc_webcam_browsertest.h',
     ],
     'content_browsertests_plugins_sources': [
       'renderer/pepper/fake_pepper_plugin_instance.cc',
@@ -770,8 +772,8 @@
     ],
     # WebRTC-specific sources. Put WebRTC plugin-related stuff further below.
     'content_unittests_webrtc_sources': [
-      'browser/media/webrtc/webrtc_internals_unittest.cc',
       'browser/media/webrtc/webrtc_eventlog_host_unittest.cc',
+      'browser/media/webrtc/webrtc_internals_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
       'browser/renderer_host/p2p/socket_host_test_utils.cc',

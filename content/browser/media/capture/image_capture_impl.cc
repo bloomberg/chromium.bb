@@ -32,6 +32,9 @@ void RunFailedGetCapabilitiesCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   media::mojom::PhotoCapabilitiesPtr empty_capabilities =
       media::mojom::PhotoCapabilities::New();
+  empty_capabilities->iso = media::mojom::Range::New();
+  empty_capabilities->width = media::mojom::Range::New();
+  empty_capabilities->height = media::mojom::Range::New();
   empty_capabilities->zoom = media::mojom::Range::New();
   cb.Run(std::move(empty_capabilities));
 }
