@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_
-#define CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_
+#ifndef CONTENT_BROWSER_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_
+#define CONTENT_BROWSER_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_
 
 #include "content/public/test/content_browser_test.h"
 
@@ -49,4 +49,4 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_
+#endif  // CONTENT_BROWSER_WEBRTC_WEBRTC_CONTENT_BROWSERTEST_BASE_H_

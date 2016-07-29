@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "content/browser/media/webrtc/webrtc_webcam_browsertest.h"
+#include "content/browser/webrtc/webrtc_webcam_browsertest.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"

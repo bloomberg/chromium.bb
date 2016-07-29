@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/webrtc/webrtc_internals_ui.h"
+#include "content/browser/webrtc/webrtc_internals_ui.h"
 
-#include "content/browser/media/webrtc/webrtc_internals_message_handler.h"
+#include "content/browser/webrtc/webrtc_internals_message_handler.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"

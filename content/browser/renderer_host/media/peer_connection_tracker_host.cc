@@ -4,9 +4,9 @@
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
 #include "base/power_monitor/power_monitor.h"
-#include "content/browser/media/webrtc/webrtc_eventlog_host.h"
-#include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/webrtc/webrtc_eventlog_host.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 
 namespace content {

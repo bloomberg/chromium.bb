@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/webrtc/webrtc_eventlog_host.h"
+#include "content/browser/webrtc/webrtc_eventlog_host.h"
 
 #include <algorithm>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/media/webrtc/webrtc_internals.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/webrtc/webrtc_internals_message_handler.h"
+#include "content/browser/webrtc/webrtc_internals_message_handler.h"
 
 #include <memory>
 #include <string>
 
 #include "base/run_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/media/webrtc/webrtc_internals.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_web_ui.h"

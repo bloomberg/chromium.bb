@@ -19,7 +19,7 @@
 #include "content/public/common/url_constants.h"
 
 #if defined(ENABLE_WEBRTC)
-#include "content/browser/media/webrtc/webrtc_internals_ui.h"
+#include "content/browser/webrtc/webrtc_internals_ui.h"
 #endif
 
 namespace content {

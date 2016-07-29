@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/webrtc/webrtc_internals.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/media/webrtc/webrtc_internals_ui_observer.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/browser/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
