@@ -41,7 +41,6 @@ from third_party import colorama
 from third_party import httplib2
 from third_party import upload
 import auth
-from luci_hacks import trigger_luci_job as luci_trigger
 import clang_format
 import commit_queue
 import dart_format
@@ -279,19 +278,6 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
     time.sleep(0.5 + 1.5*try_count)
     try_count += 1
   assert False, 'unreachable'
-
-
-def trigger_luci_job(changelist, masters, options):
-  """Send a job to run on LUCI."""
-  issue_props = changelist.GetIssueProperties()
-  issue = changelist.GetIssue()
-  patchset = changelist.GetMostRecentPatchset()
-  for builders_and_tests in sorted(masters.itervalues()):
-    # TODO(hinoka et al): add support for other properties.
-    # Currently, this completely ignores testfilter and other properties.
-    for builder in sorted(builders_and_tests):
-      luci_trigger.trigger(
-          builder, 'HEAD', issue, patchset, issue_props['project'])
 
 
 def trigger_try_jobs(auth_config, changelist, options, masters, category):
@@ -4450,7 +4436,6 @@ def CMDtry(parser, args):
   group.add_option(
       "-m", "--master", default='',
       help=("Specify a try master where to run the tries."))
-  group.add_option( "--luci", action='store_true')
   group.add_option(
       "-r", "--revision",
       help="Revision to use for the try job; default: the "
@@ -4612,9 +4597,7 @@ def CMDtry(parser, args):
         '\nWARNING Mismatch between local config and server. Did a previous '
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
-  if options.luci:
-    trigger_luci_job(cl, masters, options)
-  elif not options.use_rietveld:
+  if not options.use_rietveld:
     try:
       trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
     except BuildbucketResponseException as ex:
