@@ -84,10 +84,17 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
       return true;
   }
 
+#if !defined(OS_ANDROID)
   // Safeguard, in case background tracing is responsible for a crash on
   // startup.
   if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED)
     return false;
+#else
+  // In case of Android the exit state is always set as EXIT_CRASHED. So,
+  // preemptive mode cannot be used safely.
+  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE)
+    return false;
+#endif
 
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
