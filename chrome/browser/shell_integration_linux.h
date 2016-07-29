@@ -30,10 +30,11 @@ base::FilePath GetDataWriteLocation(base::Environment* env);
 // Called on the FILE thread.
 std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env);
 
-// Gets the name for use as the res_class (and possibly res_name) of the
-// window's WM_CLASS property. This is the program name from argv[0], with the
-// first letter capitalized. Equivalent to GDK's gdk_get_program_class().
+// Gets the name for use as the res_name of the window's WM_CLASS property.
 std::string GetProgramClassName();
+
+// Gets the name for use as the res_class of the window's WM_CLASS property.
+std::string GetProgramClassClass();
 
 // Returns filename of the desktop shortcut used to launch the browser.
 std::string GetDesktopName(base::Environment* env);
@@ -135,6 +136,17 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 // Delete any desktop shortcuts on desktop or in the application menu that have
 // for the profile in |profile_path|.
 void DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
+
+namespace internal {
+
+// Exposed for testing.  Clients should use the corresponding functions in
+// shell_integration_linux instead.
+std::string GetProgramClassName(const base::CommandLine& command_line,
+                                const std::string& desktop_file_name);
+std::string GetProgramClassClass(const base::CommandLine& command_line,
+                                 const std::string& desktop_file_name);
+
+}  // namespace internal
 
 }  // namespace shell_integration_linux
 

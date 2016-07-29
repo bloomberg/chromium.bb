@@ -315,6 +315,7 @@ extern const char kOpenAsh[];
 extern const char kHelp[];
 extern const char kHelpShort[];
 extern const char kPasswordStore[];
+extern const char kWmClass[];
 extern const char kWmUserTimeMs[];
 #endif
 

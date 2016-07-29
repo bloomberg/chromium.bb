@@ -61,7 +61,15 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
 // from browser and above.
 std::string GetDesktopName(base::Environment* env) {
 #if defined(GOOGLE_CHROME_BUILD)
-  return "google-chrome.desktop";
+  version_info::Channel product_channel(chrome::GetChannel());
+  switch (product_channel) {
+    case version_info::Channel::DEV:
+      return "google-chrome-unstable.desktop";
+    case version_info::Channel::BETA:
+      return "google-chrome-beta.desktop";
+    default:
+      return "google-chrome.desktop";
+  }
 #else  // CHROMIUM_BUILD
   // Allow $CHROME_DESKTOP to override the built-in value, so that development
   // versions can set themselves as the default without interfering with
