@@ -245,7 +245,7 @@ BrowserAccessibilityWin
                     LONG* position_in_group) override;
 
   //
-  // IAccessibleEx methods not implemented.
+  // IAccessible2 methods not implemented.
   //
   CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
   CONTENT_EXPORT STDMETHODIMP
