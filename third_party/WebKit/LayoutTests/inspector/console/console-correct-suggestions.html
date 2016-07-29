@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function templateString()
+{
+    console.log("The template string should not run and you should not see this log");
+    return {
+        shouldNotFindThis:56
+    };
+}
+
+function test()
+{
+    function testCompletions(base, prefix, expected)
+    {
+        var callback;
+        var promise = new Promise(fulfill => callback = fulfill);
+        var div = document.createElement("div");
+        var text = base + prefix;
+        div.textContent = text;
+        var range = document.createRange();
+        range.setStart(div.childNodes[0], base.length);
+        range.setEnd(div.childNodes[0], text.length);
+        WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext(div, range, false, checkExpected);
+        return promise;
+
+        function checkExpected(completions)
+        {
+            InspectorTest.addResult("Checking '" + base + prefix + "'");
+            for (var i = 0; i < expected.length; i++)
+                InspectorTest.addResult(((completions.indexOf(expected[i]) !== -1) ? "Found" : "Not Found") + ": " + expected[i]);
+            InspectorTest.addResult("");
+            callback();
+        }
+    }
+    function sequential(tests)
+    {
+        var promise = Promise.resolve();
+        for (var i = 0; i < tests.length; i++)
+            promise = promise.then(tests[i]);
+        return promise;
+    }
+
+    sequential([
+        () => testCompletions("window.", "do", ["document"]),
+        () => testCompletions("", "win", ["window"]),
+        () => testCompletions("window[", '"doc', ['"document"]']),
+        () => testCompletions('window["document"].', "bo", ["body"]),
+        () => testCompletions('window["document"]["body"].', "textC", ["textContent"]),
+        () => testCompletions('document.body.', "inner", ["innerText", "innerHTML"]),
+        () => testCompletions('document["body"][window.', "do", ["document"]),
+        () => testCompletions('document["body"][window["document"].body.childNodes[0].', "text", ["textContent"]),
+        () => testCompletions("templateString`asdf`", "should", ["shouldNotFindThis"])
+    ]).then(InspectorTest.completeTest);
+
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that console correctly finds suggestions in complicated cases.</p>
+</body>
+</html>

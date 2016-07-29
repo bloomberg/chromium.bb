@@ -1,0 +1,31 @@
+Tests that console correctly finds suggestions in complicated cases.
+
+Checking 'window.do'
+Found: document
+
+Checking 'win'
+Found: window
+
+Checking 'window["doc'
+Found: "document"]
+
+Checking 'window["document"].bo'
+Found: body
+
+Checking 'window["document"]["body"].textC'
+Found: textContent
+
+Checking 'document.body.inner'
+Found: innerText
+Found: innerHTML
+
+Checking 'document["body"][window.do'
+Found: document
+
+Checking 'document["body"][window["document"].body.childNodes[0].text'
+Found: textContent
+
+Checking 'templateString`asdf`should'
+Not Found: shouldNotFindThis
+
+
