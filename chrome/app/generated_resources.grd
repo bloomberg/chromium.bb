@@ -5426,11 +5426,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISPLAY_LIST_2D_CANVAS_DESCRIPTION" desc="Description of the 'Enable display list 2D canvas' lab.">
         Enables the use of display lists to record 2D canvas commands. This allows 2D canvas rasterization to be performed on separate thread.
       </message>
-      <message name="IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_NAME" desc="Enable canvas 2D dynamic pipeline switching mode.">
+      <message name="IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_NAME" desc="Option that allows canvas 2D contexts to switch from one rendering mode to another on the fly.">
         Enable 2D canvas dynamic rendering mode switching.
       </message>
       <message name="IDS_FLAGS_ENABLE_2D_CANVAS_DYNAMIC_RENDERING_MODE_SWITCHING_DESCRIPTION" desc="Description of 'Enable canvas 2D dynamic pipeline switching mode'">
-        Enables dynamic graphics rendering pipeline switching in the 2D canvas to optimize performance based on the types of draw operations being invoked.
+        There are multiple implementations of the graphics rendering pipeline for the 2D canvas. These different implementations have different performance characteristics. Turning on this flag allows canvas 2D contexts to switch between these implementations on the fly based on how the canvas is used in order to increase performance. For example, going from an implementation that uses the GPU to one that doesn't.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
