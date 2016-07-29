@@ -2618,11 +2618,8 @@ create_outputs(struct drm_backend *b, uint32_t option_connector,
 		drmModeFreeConnector(connector);
 	}
 
-	if (wl_list_empty(&b->compositor->output_list)) {
+	if (wl_list_empty(&b->compositor->output_list))
 		weston_log("No currently active connector found.\n");
-		drmModeFreeResources(resources);
-		return -1;
-	}
 
 	drmModeFreeResources(resources);
 
