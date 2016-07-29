@@ -100,8 +100,12 @@ def main():
                       help='Linking command')
   args = parser.parse_args()
 
+  # Work-around for gold being slow-by-default. http://crbug.com/632230
+  fast_env = dict(os.environ)
+  fast_env['LC_ALL'] = 'C'
+
   # First, run the actual link.
-  result = subprocess.call(CommandToRun(args.command))
+  result = subprocess.call(CommandToRun(args.command), env=fast_env)
   if result != 0:
     return result
 
