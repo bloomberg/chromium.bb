@@ -97,6 +97,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     , m_compositorState(nullptr)
     , m_compositorPending(false)
     , m_compositorGroup(0)
+    , m_preFinalizerRegistered(false)
     , m_currentTimePending(false)
     , m_stateIsBeingUpdated(false)
     , m_effectSuppressed(false)
@@ -903,6 +904,12 @@ void Animation::endUpdatingState()
 void Animation::createCompositorPlayer()
 {
     if (Platform::current()->isThreadedAnimationEnabled() && !m_compositorPlayer) {
+        // We only need to pre-finalize if we are running animations on the compositor.
+        if (!m_preFinalizerRegistered) {
+            ThreadState::current()->registerPreFinalizer(this);
+            m_preFinalizerRegistered = true;
+        }
+
         ASSERT(Platform::current()->compositorSupport());
         m_compositorPlayer = CompositorAnimationPlayer::create();
         ASSERT(m_compositorPlayer);

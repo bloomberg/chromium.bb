@@ -62,6 +62,7 @@ class CORE_EXPORT Animation final
     , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Animation);
+    USING_PRE_FINALIZER(Animation, dispose);
 public:
     enum AnimationPlayState {
         Unset,
@@ -302,6 +303,7 @@ private:
     int m_compositorGroup;
 
     std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
+    bool m_preFinalizerRegistered;
 
     bool m_currentTimePending;
     bool m_stateIsBeingUpdated;
