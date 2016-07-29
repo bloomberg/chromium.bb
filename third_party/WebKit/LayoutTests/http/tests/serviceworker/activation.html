@@ -52,7 +52,7 @@ function setup_activation_test(t, scope, worker_url) {
       })
     .then(r => {
         registration = r;
-        add_result_callback(() => registration.unregister);
+        add_result_callback(() => registration.unregister());
 
         return wait_for_state(t, r.installing, 'activated');
       })
