@@ -211,7 +211,7 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
 
   std::vector<ProfileAttributesEntry*> entries =
       storage()->GetAllProfilesAttributes();
-  for (auto& entry : entries) {
+  for (auto* entry : entries) {
     EXPECT_NE(GetProfilePath("testing_profile_path0"), entry->GetPath());
   }
 }

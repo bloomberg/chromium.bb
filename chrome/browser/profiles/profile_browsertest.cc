@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   Profile* profile = loaded_profiles[0];
 
 #if defined(OS_CHROMEOS)
-  for (const auto& loaded_profile : loaded_profiles) {
+  for (auto* loaded_profile : loaded_profiles) {
     if (!chromeos::ProfileHelper::IsSigninProfile(loaded_profile)) {
       profile = loaded_profile;
       break;
