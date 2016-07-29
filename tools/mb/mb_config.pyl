@@ -183,7 +183,7 @@
       'ClangToTWin64(dll)':
         'swarming_gn_clang_tot_minimal_symbols_shared_release_x64',
       'ClangToTWin64(dll) tester': 'none',
-      'ClangToTiOS': 'ios_gyp',
+      'ClangToTiOS': 'ios_gn',
       'Closure Compilation Linux': 'closure_compilation',
       'CrWinAsan':
        'swarming_gyp_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
@@ -214,7 +214,7 @@
       'CrWinClngLLDdbg':
         'swarming_gn_clang_tot_minimal_symbols_shared_debug_use_lld_x86',
       'CrWinClngLLDdbg tester': 'none',
-      'EarlGreyiOS': 'ios_gyp',
+      'EarlGreyiOS': 'ios_gn',
       'Headless Linux (dbg)':
         '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
       'MD Top Chrome ChromeOS material-hybrid':
@@ -391,10 +391,10 @@
       'Mac10.11 Tests': 'none',
       'Mac10.9 Tests (dbg)': 'none',
       'Mac10.9 Tests': 'none',
-      'ios-device': 'ios_gyp',
+      'ios-device': 'ios_gn',
       'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
-      'ios-simulator-cronet': 'ios_gyp',
+      'ios-simulator-cronet': 'ios_gn',
       'ios-simulator-gn': 'ios_gn',
     },
 
@@ -835,10 +835,10 @@
     },
 
     'tryserver.chromium.mac': {
-      'ios-device': 'ios_gyp',
+      'ios-device': 'ios_gn',
       'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
-      'ios-simulator-cronet': 'ios_gyp',
+      'ios-simulator-cronet': 'ios_gn',
       'ios-simulator-gn': 'ios_gn',
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_gn_release_trybot',
