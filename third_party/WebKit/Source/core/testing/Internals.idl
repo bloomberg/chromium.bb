@@ -160,7 +160,6 @@
         boolean ignoreClipping, boolean allowChildFrameContent);
 
     boolean hasSpellingMarker(Document document, long from, long length);
-    boolean hasGrammarMarker(Document document, long from, long length);
     void setContinuousSpellCheckingEnabled(boolean enabled);
 
     bool canHyphenate(DOMString locale);
