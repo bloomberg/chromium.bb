@@ -30,7 +30,6 @@ class _StartWithExt(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Disabled('mac')  # crbug.com/563424
 @benchmark.Disabled('win', 'linux', 'reference', 'android')
 class StartWithExtCold(_StartWithExt):
   """Measure time to start Chrome cold with extensions."""
@@ -43,7 +42,6 @@ class StartWithExtCold(_StartWithExt):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Disabled('mac')  # crbug.com/563424
 @benchmark.Disabled('win', 'linux', 'reference', 'android')
 class StartWithExtWarm(_StartWithExt):
   """Measure time to start Chrome warm with extensions."""
