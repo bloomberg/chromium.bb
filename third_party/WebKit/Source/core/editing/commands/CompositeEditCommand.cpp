@@ -736,7 +736,7 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(Text* textNode, in
     // current text node.
         isStartOfParagraph(visibleUpstreamPos) || upstream == 0,
         (isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length())
-        && !(textNode->nextSibling() && textNode->nextSibling()->isTextNode()));
+        && !(textNode->nextSibling() && textNode->nextSibling()->isTextNode() && toText(textNode->nextSibling())->data().length() != 0));
 
     if (string != rebalancedString)
         replaceTextInNodePreservingMarkers(textNode, upstream, length, rebalancedString);
