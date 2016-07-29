@@ -52,6 +52,9 @@ typedef HeapVector<CursorData> CursorList;
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific properties.
 // By grouping them together, we save space, and only allocate this object when someone
 // actually uses one of these properties.
+// TODO(sashab): Move this into a private class on ComputedStyle, and remove
+// all methods on it, merging them into copy/creation methods on ComputedStyle
+// instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleRareInheritedData : public RefCounted<StyleRareInheritedData> {
 public:
     static PassRefPtr<StyleRareInheritedData> create() { return adoptRef(new StyleRareInheritedData); }
