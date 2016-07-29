@@ -24,8 +24,8 @@ namespace {
 TEST_P(GLES3DecoderTest, BindBufferBaseValidArgs) {
   EXPECT_CALL(
       *gl_, BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kServiceBufferId));
-  SpecializedSetup<cmds::BindBufferBase, 0>(true);
-  cmds::BindBufferBase cmd;
+  SpecializedSetup<BindBufferBase, 0>(true);
+  BindBufferBase cmd;
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -36,8 +36,8 @@ TEST_P(GLES3DecoderTest, BindBufferBaseValidArgsNewId) {
               BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewServiceId));
   EXPECT_CALL(*gl_, GenBuffersARB(1, _))
       .WillOnce(SetArgPointee<1>(kNewServiceId));
-  SpecializedSetup<cmds::BindBufferBase, 0>(true);
-  cmds::BindBufferBase cmd;
+  SpecializedSetup<BindBufferBase, 0>(true);
+  BindBufferBase cmd;
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -48,8 +48,8 @@ TEST_P(GLES3DecoderTest, BindBufferBaseValidArgsNewId) {
 TEST_P(GLES3DecoderTest, BindBufferRangeValidArgs) {
   EXPECT_CALL(*gl_, BindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 2,
                                     kServiceBufferId, 4, 4));
-  SpecializedSetup<cmds::BindBufferRange, 0>(true);
-  cmds::BindBufferRange cmd;
+  SpecializedSetup<BindBufferRange, 0>(true);
+  BindBufferRange cmd;
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_, 4, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -60,8 +60,8 @@ TEST_P(GLES3DecoderTest, BindBufferRangeValidArgsNewId) {
                                     kNewServiceId, 4, 4));
   EXPECT_CALL(*gl_, GenBuffersARB(1, _))
       .WillOnce(SetArgPointee<1>(kNewServiceId));
-  SpecializedSetup<cmds::BindBufferRange, 0>(true);
-  cmds::BindBufferRange cmd;
+  SpecializedSetup<BindBufferRange, 0>(true);
+  BindBufferRange cmd;
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId, 4, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

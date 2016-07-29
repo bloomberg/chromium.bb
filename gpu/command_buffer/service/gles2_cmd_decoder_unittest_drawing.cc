@@ -320,7 +320,7 @@ TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
-  GenHelper<cmds::GenTexturesImmediate>(kNewClientId);
+  GenHelper<GenTexturesImmediate>(kNewClientId);
   DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
   // Pass some data so the texture will be marked as cleared.
   DoTexImage2D(GL_TEXTURE_2D,

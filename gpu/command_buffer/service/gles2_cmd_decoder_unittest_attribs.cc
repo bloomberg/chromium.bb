@@ -269,8 +269,8 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
   }
 
   void GenVertexArraysOESImmediateDuplicateOrNullIds() {
-    cmds::GenVertexArraysOESImmediate* cmd =
-        GetImmediateAs<cmds::GenVertexArraysOESImmediate>();
+    GenVertexArraysOESImmediate* cmd =
+        GetImmediateAs<GenVertexArraysOESImmediate>();
     GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
     cmd->Init(3, temp);
     EXPECT_EQ(error::kInvalidArguments,

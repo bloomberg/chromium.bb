@@ -771,7 +771,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
-  GenHelper<cmds::GenTexturesImmediate>(kNewClientId);
+  GenHelper<GenTexturesImmediate>(kNewClientId);
 
   TextureManager* manager = group().texture_manager();
 
@@ -864,7 +864,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
-  GenHelper<cmds::GenTexturesImmediate>(kNewClientId);
+  GenHelper<GenTexturesImmediate>(kNewClientId);
 
   TextureManager* manager = group().texture_manager();
 
@@ -2480,7 +2480,7 @@ TEST_P(
                     GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, _))
         .Times(1)
         .RetiresOnSaturation();
-    cmds::TexImage2D cmd;
+    TexImage2D cmd;
     cmd.Init(GL_TEXTURE_2D,
              0,
              GL_RGBA,
@@ -3231,7 +3231,7 @@ TEST_P(GLES2DecoderTest, GLImageAttachedAfterSubTexImage2D) {
                                   height, format, type, _))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::TexSubImage2D tex_sub_image_2d_cmd;
+  TexSubImage2D tex_sub_image_2d_cmd;
   tex_sub_image_2d_cmd.Init(target, level, xoffset, yoffset, width, height,
                             format, type, pixels_shm_id, pixels_shm_offset,
                             internal);
@@ -3873,7 +3873,7 @@ TEST_P(GLES3DecoderTest, TexStorage3DValidArgs) {
   EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::TexStorage3D cmd;
+  TexStorage3D cmd;
   cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -4073,7 +4073,7 @@ TEST_P(GLES3DecoderTest, ClearLevel3DMultipleCallsPerLayer) {
 }
 
 TEST_P(GLES3DecoderTest, BindSamplerInvalidUnit) {
-  cmds::BindSampler cmd;
+  BindSampler cmd;
   cmd.Init(kNumTextureUnits, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -4169,7 +4169,7 @@ TEST_P(GLES2DecoderTest, BindTextureValidArgs) {
         .Times(1)
         .RetiresOnSaturation();
   }
-  cmds::BindTexture cmd;
+  BindTexture cmd;
   cmd.Init(GL_TEXTURE_2D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -4189,7 +4189,7 @@ TEST_P(GLES2DecoderTest, BindTextureValidArgsNewId) {
         .Times(1)
         .RetiresOnSaturation();
   }
-  cmds::BindTexture cmd;
+  BindTexture cmd;
   cmd.Init(GL_TEXTURE_2D, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -4198,7 +4198,7 @@ TEST_P(GLES2DecoderTest, BindTextureValidArgsNewId) {
 
 TEST_P(GLES2DecoderTest, BindTextureInvalidArgs) {
   EXPECT_CALL(*gl_, BindTexture(_, _)).Times(0);
-  cmds::BindTexture cmd;
+  BindTexture cmd;
   cmd.Init(GL_TEXTURE_1D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());

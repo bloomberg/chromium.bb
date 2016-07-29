@@ -1788,7 +1788,7 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform1uiValidArgs) {
   EXPECT_CALL(*gl_, Uniform1uiv(kUniform4RealLocation, 1, _));
-  cmds::Uniform1ui cmd;
+  Uniform1ui cmd;
   cmd.Init(kUniform4FakeLocation, 2);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1848,8 +1848,8 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1ivSamplerIsLimited) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform1uivImmediateValidArgs) {
-  cmds::Uniform1uivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform1uivImmediate>();
+  Uniform1uivImmediate& cmd =
+      *GetImmediateAs<Uniform1uivImmediate>();
   EXPECT_CALL(
       *gl_,
       Uniform1uiv(kUniform4RealLocation, 1,
@@ -1890,7 +1890,7 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1uivZeroCount) {
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform2uiValidArgs) {
   EXPECT_CALL(*gl_, Uniform2uiv(kUniform5RealLocation, 1, _));
-  cmds::Uniform2ui cmd;
+  Uniform2ui cmd;
   cmd.Init(kUniform5FakeLocation, 2, 3);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1900,8 +1900,8 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform2uiValidArgs) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform2uivImmediateValidArgs) {
-  cmds::Uniform2uivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform2uivImmediate>();
+  Uniform2uivImmediate& cmd =
+      *GetImmediateAs<Uniform2uivImmediate>();
   EXPECT_CALL(
       *gl_,
       Uniform2uiv(kUniform5RealLocation, 1,
@@ -1919,7 +1919,7 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform2uivImmediateValidArgs) {
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform3uiValidArgs) {
   EXPECT_CALL(*gl_, Uniform3uiv(kUniform6RealLocation, 1, _));
-  cmds::Uniform3ui cmd;
+  Uniform3ui cmd;
   cmd.Init(kUniform6FakeLocation, 2, 3, 4);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1929,8 +1929,8 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform3uiValidArgs) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform3uivImmediateValidArgs) {
-  cmds::Uniform3uivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform3uivImmediate>();
+  Uniform3uivImmediate& cmd =
+      *GetImmediateAs<Uniform3uivImmediate>();
   EXPECT_CALL(
       *gl_,
       Uniform3uiv(kUniform6RealLocation, 1,
@@ -1948,7 +1948,7 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform3uivImmediateValidArgs) {
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform4uiValidArgs) {
   EXPECT_CALL(*gl_, Uniform4uiv(kUniform7RealLocation, 1, _));
-  cmds::Uniform4ui cmd;
+  Uniform4ui cmd;
   cmd.Init(kUniform7FakeLocation, 2, 3, 4, 5);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1958,8 +1958,8 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform4uiValidArgs) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform4uivImmediateValidArgs) {
-  cmds::Uniform4uivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform4uivImmediate>();
+  Uniform4uivImmediate& cmd =
+      *GetImmediateAs<Uniform4uivImmediate>();
   EXPECT_CALL(
       *gl_,
       Uniform4uiv(kUniform7RealLocation, 1,
@@ -2212,8 +2212,8 @@ TEST_P(GLES3DecoderWithESSL3ShaderTest, Basic) {
 
 TEST_P(GLES3DecoderWithESSL3ShaderTest, UniformBlockBindingValidArgs) {
   EXPECT_CALL(*gl_, UniformBlockBinding(kServiceProgramId, 1, 3));
-  SpecializedSetup<cmds::UniformBlockBinding, 0>(true);
-  cmds::UniformBlockBinding cmd;
+  SpecializedSetup<UniformBlockBinding, 0>(true);
+  UniformBlockBinding cmd;
   cmd.Init(client_program_id_, 1, 3);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -2318,7 +2318,7 @@ TEST_P(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
     EXPECT_CALL(*gl_, UseProgram(kServiceProgramId))
         .Times(1)
         .RetiresOnSaturation();
-    cmds::UseProgram cmd;
+    UseProgram cmd;
     cmd.Init(client_program_id_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
@@ -2327,7 +2327,7 @@ TEST_P(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
 TEST_P(GLES2DecoderWithShaderTest, UseDeletedProgram) {
   DoDeleteProgram(client_program_id_, kServiceProgramId);
   {
-    cmds::UseProgram cmd;
+    UseProgram cmd;
     cmd.Init(client_program_id_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
@@ -2340,7 +2340,7 @@ TEST_P(GLES2DecoderWithShaderTest, DetachDeletedShader) {
     EXPECT_CALL(*gl_, DetachShader(kServiceProgramId, kServiceFragmentShaderId))
         .Times(1)
         .RetiresOnSaturation();
-    cmds::DetachShader cmd;
+    DetachShader cmd;
     cmd.Init(client_program_id_, client_fragment_shader_id_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }

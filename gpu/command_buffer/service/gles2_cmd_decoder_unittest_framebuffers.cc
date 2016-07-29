@@ -153,7 +153,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DValidArgs) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -171,7 +171,7 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DValidArgs) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -183,7 +183,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DInvalidArgs0_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_RENDERBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -195,7 +195,7 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DInvalidArgs0_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_RENDERBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -207,7 +207,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DInvalidArgs1_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR, GL_TEXTURE_2D, client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -218,7 +218,7 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DInvalidArgs1_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR, GL_TEXTURE_2D, client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -229,7 +229,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DInvalidArgs2_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -241,7 +241,7 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DInvalidArgs2_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
            client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -253,7 +253,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DInvalidArgs4_0) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -271,7 +271,7 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DValidArgs4_0) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -284,7 +284,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DMismatchedTexture1) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -297,7 +297,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DMismatchedTexture2) {
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
-  cmds::FramebufferTexture2D cmd;
+  FramebufferTexture2D cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
            client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1915,8 +1915,8 @@ TEST_P(GLES3DecoderTest, ClearBufferivImmediateValidArgs) {
   framebuffer->MarkAttachmentAsCleared(
       group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
 
-  cmds::ClearBufferivImmediate& cmd =
-      *GetImmediateAs<cmds::ClearBufferivImmediate>();
+  ClearBufferivImmediate& cmd =
+      *GetImmediateAs<ClearBufferivImmediate>();
   GLint temp[4] = { 0 };
   cmd.Init(GL_COLOR, 0, &temp[0]);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
@@ -1949,8 +1949,8 @@ TEST_P(GLES3DecoderTest, ClearBufferuivImmediateValidArgs) {
   framebuffer->MarkAttachmentAsCleared(
       group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
 
-  cmds::ClearBufferuivImmediate& cmd =
-      *GetImmediateAs<cmds::ClearBufferuivImmediate>();
+  ClearBufferuivImmediate& cmd =
+      *GetImmediateAs<ClearBufferuivImmediate>();
   GLuint temp[4] = { 0u };
   cmd.Init(GL_COLOR, 0, &temp[0]);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
@@ -1990,8 +1990,8 @@ TEST_P(GLES3DecoderTest, ClearBufferfvImmediateValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd_enable));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  cmds::ClearBufferfvImmediate& cmd =
-      *GetImmediateAs<cmds::ClearBufferfvImmediate>();
+  ClearBufferfvImmediate& cmd =
+      *GetImmediateAs<ClearBufferfvImmediate>();
   GLfloat temp[4] = { 1.0f };
   cmd.Init(GL_DEPTH, 0, &temp[0]);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
@@ -2033,7 +2033,7 @@ TEST_P(GLES3DecoderTest, ClearBufferfiValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd_enable));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  cmds::ClearBufferfi cmd;
+  ClearBufferfi cmd;
   cmd.Init(GL_DEPTH_STENCIL, 0, 1.0f, 0);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
@@ -3378,7 +3378,7 @@ TEST_P(GLES2DecoderTest, ImplementationReadColorFormatAndType) {
 TEST_P(GLES3DecoderTest, FramebufferTextureLayerNoBoundFramebuffer) {
   DoBindTexture(GL_TEXTURE_3D, client_texture_id_, kServiceTextureId);
   EXPECT_CALL(*gl_, FramebufferTextureLayer(_, _, _, _, _)).Times(0);
-  cmds::FramebufferTextureLayer cmd;
+  FramebufferTextureLayer cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, client_texture_id_, 4, 5);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -3389,7 +3389,7 @@ TEST_P(GLES3DecoderTest, FramebufferTextureLayerInvalidTextureTarget) {
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   EXPECT_CALL(*gl_, FramebufferTextureLayer(_, _, _, _, _)).Times(0);
-  cmds::FramebufferTextureLayer cmd;
+  FramebufferTextureLayer cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, client_texture_id_, 4, 5);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -3404,7 +3404,7 @@ TEST_P(GLES3DecoderTest, FramebufferTextureLayerValidArgs) {
                                             kServiceTextureId, 4, 5))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::FramebufferTextureLayer cmd;
+  FramebufferTextureLayer cmd;
   cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, client_texture_id_, 4, 5);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

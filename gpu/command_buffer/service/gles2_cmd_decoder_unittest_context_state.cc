@@ -417,7 +417,7 @@ TEST_P(GLES3DecoderTest, ES3PixelStoreiWithPixelUnpackBuffer) {
   // Without PIXEL_UNPACK_BUFFER bound, PixelStorei with unpack parameters
   // is cached and not passed down to GL.
   EXPECT_CALL(*gl_, PixelStorei(_, _)).Times(0);
-  cmds::PixelStorei cmd;
+  PixelStorei cmd;
   cmd.Init(GL_UNPACK_ROW_LENGTH, 8);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
@@ -455,7 +455,7 @@ TEST_P(GLES2DecoderManualInitTest, MipmapHintOnCoreProfile) {
   init.gl_version = "3.2";
   InitDecoder(init);
 
-  cmds::Hint cmd;
+  Hint cmd;
   cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
   EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_NICEST)).Times(0);
@@ -471,7 +471,7 @@ TEST_P(GLES2DecoderManualInitTest, MipmapHintOnCompatibilityProfile) {
   init.extensions += " GL_ARB_compatibility";
   InitDecoder(init);
 
-  cmds::Hint cmd;
+  Hint cmd;
   cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
   EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_NICEST))
