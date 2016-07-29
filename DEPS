@@ -762,6 +762,15 @@ hooks = [
                '-s', 'src/third_party/WebKit',
                '-o', 'src/build/util/LASTCHANGE.blink'],
   },
+  {
+    # Update skia_commit_hash.h.
+    'name': 'lastchange_skia',
+    'pattern': '.',
+    'action': ['python', 'src/build/util/lastchange.py',
+               '-m', 'SKIA_COMMIT_HASH',
+               '-s', 'src/third_party/skia',
+               '--header', 'src/skia/ext/skia_commit_hash.h'],
+  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',

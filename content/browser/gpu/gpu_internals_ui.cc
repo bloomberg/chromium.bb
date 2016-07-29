@@ -17,6 +17,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -36,7 +37,9 @@
 #include "content/public/common/url_constants.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
+#include "skia/ext/skia_commit_hash.h"
 #include "third_party/angle/src/common/version.h"
+#include "third_party/skia/include/core/SkMilestone.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_LINUX) && defined(USE_X11)
@@ -486,7 +489,9 @@ base::Value* GpuMessageHandler::OnRequestClientInfo(
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
   dict->SetString("angle_commit_id", ANGLE_COMMIT_HASH);
-  dict->SetString("graphics_backend", "Skia");
+  dict->SetString("graphics_backend",
+                  std::string("Skia/" STRINGIZE(SK_MILESTONE)
+                              " " SKIA_COMMIT_HASH));
   dict->SetString("blacklist_version",
       GpuDataManagerImpl::GetInstance()->GetBlacklistVersion());
   dict->SetString("driver_bug_list_version",
