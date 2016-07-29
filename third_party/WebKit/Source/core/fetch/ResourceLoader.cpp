@@ -179,7 +179,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         } else {
             if (!m_resource->isCacheValidator() || resourceResponse.httpStatusCode() != 304)
                 m_resource->setResponse(resourceResponse);
-            if (!m_fetcher->canAccessResource(m_resource.get(), m_resource->options().securityOrigin.get(), response.url(), ResourceFetcher::ShouldLogAccessControlErrors)) {
+            if (!m_fetcher->canAccessResource(m_resource.get(), m_resource->options().securityOrigin.get(), response.url())) {
                 m_fetcher->didReceiveResponse(m_resource.get(), resourceResponse);
                 didFail(nullptr, ResourceError::cancelledDueToAccessCheckError(KURL(response.url())));
                 return;

@@ -239,7 +239,7 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
     return resource.get();
 }
 
-bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url, AccessControlLoggingDecision logErrorsDecision) const
+bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
 {
     // Redirects can change the response URL different from one of request.
     bool forPreload = resource->isUnusedPreload();
@@ -255,7 +255,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     String errorDescription;
     if (!resource->passesAccessControlCheck(sourceOrigin, errorDescription)) {
         resource->setCORSFailed();
-        if (!forPreload && (logErrorsDecision == ShouldLogAccessControlErrors)) {
+        if (!forPreload) {
             String resourceType = Resource::resourceTypeToString(resource->getType(), resource->options().initiatorInfo);
             context().addConsoleMessage(resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
         }

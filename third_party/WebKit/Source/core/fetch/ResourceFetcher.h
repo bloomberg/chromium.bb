@@ -119,11 +119,7 @@ public:
     void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
     bool defersLoading() const;
 
-    enum AccessControlLoggingDecision {
-        ShouldLogAccessControlErrors,
-        ShouldNotLogAccessControlErrors
-    };
-    bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const;
+    bool canAccessResource(Resource*, SecurityOrigin*, const KURL&) const;
     bool isControlledByServiceWorker() const;
 
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
