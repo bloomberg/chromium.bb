@@ -551,7 +551,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                                 return getBrowserContextOnUiThread().getHttpAuthDatabase(context);
                             }
                         });
-                mWebViewDatabase = new WebViewDatabaseAdapter(awDatabase);
+                mWebViewDatabase = new WebViewDatabaseAdapter(this, awDatabase);
             }
         }
         return mWebViewDatabase;
