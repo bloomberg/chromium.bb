@@ -177,7 +177,7 @@ void ResourcePrefetcher::ReadFullResponse(net::URLRequest* request) {
 
     if (status) {
       status = ShouldContinueReadingRequest(request, bytes_read);
-    } else if (request->status().error()) {
+    } else if (!request->status().is_success()) {
       FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
       return;
     }
@@ -222,7 +222,7 @@ void ResourcePrefetcher::OnSSLCertificateError(net::URLRequest* request,
 }
 
 void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request) {
-  if (request->status().error()) {
+  if (!request->status().is_success()) {
     FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
     return;
   }
@@ -233,7 +233,7 @@ void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request) {
 
 void ResourcePrefetcher::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
-  if (request->status().error()) {
+  if (!request->status().is_success()) {
     FinishRequest(request, Request::PREFETCH_STATUS_FAILED);
     return;
   }
