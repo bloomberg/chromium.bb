@@ -20,7 +20,7 @@
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 #if defined(USE_WAYLAND_EGL)
-#include "ui/ozone/platform/wayland/wayland_egl_surface.h"
+#include "ui/ozone/platform/wayland/gl_surface_wayland.h"
 #endif
 
 namespace ui {
@@ -132,6 +132,43 @@ WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
 
+scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateViewGLSurface(
+    gl::GLImplementation implementation,
+    gfx::AcceleratedWidget widget) {
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+#if defined(USE_WAYLAND_EGL)
+  WaylandWindow* window = connection_->GetWindow(widget);
+  DCHECK(window);
+  // The wl_egl_window needs to be created before the GLSurface so it can be
+  // used in the GLSurface constructor.
+  auto egl_window = CreateWaylandEglWindow(window);
+  if (!egl_window)
+    return nullptr;
+  return gl::InitializeGLSurface(new GLSurfaceWayland(std::move(egl_window)));
+#else
+  return nullptr;
+#endif
+}
+
+scoped_refptr<gl::GLSurface> WaylandSurfaceFactory::CreateOffscreenGLSurface(
+    gl::GLImplementation implementation,
+    const gfx::Size& size) {
+  if (implementation != gl::kGLImplementationEGLGLES2) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+#if defined(USE_WAYLAND_EGL)
+  return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
+#else
+  return nullptr;
+#endif
+}
+
 intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
   return reinterpret_cast<intptr_t>(connection_->display());
 }
@@ -154,22 +191,6 @@ WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
   return base::WrapUnique(new WaylandCanvasSurface(connection_, window));
-}
-
-std::unique_ptr<SurfaceOzoneEGL>
-WaylandSurfaceFactory::CreateEGLSurfaceForWidget(
-    gfx::AcceleratedWidget widget) {
-#if defined(USE_WAYLAND_EGL)
-  WaylandWindow* window = connection_->GetWindow(widget);
-  DCHECK(window);
-  auto surface = base::WrapUnique(
-      new WaylandEGLSurface(window, window->GetBounds().size()));
-  if (!surface->Initialize())
-    return nullptr;
-  return std::move(surface);
-#else
-  return nullptr;
-#endif
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(

@@ -24,7 +24,7 @@ intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
 }
 
 bool SurfaceFactoryOzone::UseNewSurfaceAPI() {
-  return false;
+  return true;
 }
 
 scoped_refptr<gl::GLSurface> SurfaceFactoryOzone::CreateViewGLSurface(

@@ -58,8 +58,8 @@
             '../../third_party/khronos/khronos.gyp:khronos_headers',
           ],
           'sources': [
-            'wayland_egl_surface.cc',
-            'wayland_egl_surface.h',
+            'gl_surface_wayland.cc',
+            'gl_surface_wayland.h',
           ],
         }],
       ],

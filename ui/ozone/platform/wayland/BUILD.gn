@@ -52,8 +52,8 @@ source_set("wayland") {
 
   if (use_wayland_egl) {
     sources += [
-      "wayland_egl_surface.cc",
-      "wayland_egl_surface.h",
+      "gl_surface_wayland.cc",
+      "gl_surface_wayland.h",
     ]
     configs += [
       ":wayland-egl",
