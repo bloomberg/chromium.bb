@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -320,6 +321,13 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   if (!ServiceWorkerUtils::CanRegisterServiceWorker(
           provider_host->document_url(), pattern, script_url)) {
+    // Temporary debugging for https://crbug.com/630495
+    base::debug::ScopedCrashKey host_url_key(
+        "swdh_register_cannot_host_url", provider_host->document_url().spec());
+    base::debug::ScopedCrashKey scope_url_key("swdh_register_cannot_scope_url",
+                                              pattern.spec());
+    base::debug::ScopedCrashKey script_url_key(
+        "swdh_register_cannot_script_url", script_url.spec());
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }
@@ -486,6 +494,12 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 
   if (!CanUnregisterServiceWorker(provider_host->document_url(),
                                   registration->pattern())) {
+    // Temporary debugging for https://crbug.com/619294
+    base::debug::ScopedCrashKey host_url_key(
+        "swdh_unregister_cannot_host_url",
+        provider_host->document_url().spec());
+    base::debug::ScopedCrashKey scope_url_key(
+        "swdh_unregister_cannot_scope_url", registration->pattern().spec());
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_CANNOT);
     return;
   }
@@ -555,6 +569,12 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
   }
 
   if (!CanGetRegistration(provider_host->document_url(), document_url)) {
+    // Temporary debugging for https://crbug.com/630496
+    base::debug::ScopedCrashKey host_url_key(
+        "swdh_get_registration_cannot_host_url",
+        provider_host->document_url().spec());
+    base::debug::ScopedCrashKey document_url_key(
+        "swdh_get_registration_cannot_document_url", document_url.spec());
     bad_message::ReceivedBadMessage(this,
                                     bad_message::SWDH_GET_REGISTRATION_CANNOT);
     return;

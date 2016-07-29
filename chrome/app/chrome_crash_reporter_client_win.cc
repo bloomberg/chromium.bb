@@ -149,6 +149,19 @@ size_t RegisterCrashKeysHelper() {
 
       // Temporary for https://crbug.com/616149.
       {"existing_extension_pref_value_type", crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/630495.
+      {"swdh_register_cannot_host_url", crash_keys::kLargeSize},
+      {"swdh_register_cannot_scope_url", crash_keys::kLargeSize},
+      {"swdh_register_cannot_script_url", crash_keys::kLargeSize},
+
+      // Temporary for https://crbug.com/619294.
+      {"swdh_unregister_cannot_host_url", crash_keys::kLargeSize},
+      {"swdh_unregister_cannot_scope_url", crash_keys::kLargeSize},
+
+      // Temporary for https://crbug.com/630496.
+      {"swdh_get_registration_cannot_host_url", crash_keys::kLargeSize},
+      {"swdh_get_registration_cannot_document_url", crash_keys::kLargeSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
