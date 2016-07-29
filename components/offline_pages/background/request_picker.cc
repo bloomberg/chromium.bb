@@ -111,7 +111,7 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
   // eligible to try again.
   // TODO(petewil): Instead, we should have code to remove the page from the
   // queue after the last retry.
-  if (request.attempt_count() >= policy_->GetMaxRetries())
+  if (request.attempt_count() > policy_->GetMaxTries())
     return false;
 
   // If the request is expired, do not consider it.

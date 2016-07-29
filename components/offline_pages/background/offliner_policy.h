@@ -6,7 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_OFFLINER_POLICY_H_
 
 namespace {
-const int kMaxRetries = 2;
+const int kMaxTries = 1;
 const int kBackgroundProcessingTimeBudgetSeconds = 170;
 const int kSinglePageTimeLimitSeconds = 120;
 const int kMinimumBatteryPercentageForNonUserRequestOfflining = 50;
@@ -22,7 +22,7 @@ class OfflinerPolicy {
   OfflinerPolicy()
       : prefer_untried_requests_(false),
         prefer_earlier_requests_(true),
-        retry_count_is_more_important_than_recency_(true) {}
+        retry_count_is_more_important_than_recency_(false) {}
 
   OfflinerPolicy(bool prefer_untried,
                  bool prefer_earlier,
@@ -49,7 +49,7 @@ class OfflinerPolicy {
   }
 
   // The max number of times we will retry a request.
-  int GetMaxRetries() const { return kMaxRetries; }
+  int GetMaxTries() const { return kMaxTries; }
 
   bool PowerRequiredForUserRequestedPage() const { return false; }
 

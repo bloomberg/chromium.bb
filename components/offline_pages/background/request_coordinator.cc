@@ -209,7 +209,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   // Remove the request from the queue if it either succeeded or exceeded the
   // max number of retries.
   if (status == Offliner::RequestStatus::SAVED
-       || new_attempt_count > policy_->GetMaxRetries()) {
+       || new_attempt_count > policy_->GetMaxTries()) {
     queue_->RemoveRequest(request.request_id(),
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr()));
