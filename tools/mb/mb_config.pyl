@@ -652,7 +652,7 @@
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
       'win': 'gn_official',
-      'win-asan': 'gn_official_syzyasan',
+      'win-asan': 'gn_official_syzyasan_x86',
       'win-pgo': [
         'gn_official_chrome_pgo_phase_1_x86',
         'gn_official_chrome_pgo_phase_2_x86',
@@ -1371,8 +1371,8 @@
       'gn', 'official', 'goma', 'chromeos',
     ],
 
-    'gn_official_syzyasan': [
-      'gn', 'official', 'syzyasan',
+    'gn_official_syzyasan_x86': [
+      'gn', 'official', 'syzyasan', 'x86',
     ],
 
     'gn_official_six_concurrent_links': [
