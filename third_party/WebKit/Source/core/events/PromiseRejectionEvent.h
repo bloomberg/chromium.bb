@@ -18,6 +18,7 @@ namespace blink {
 
 class CORE_EXPORT PromiseRejectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(PromiseRejectionEvent, dispose);
 public:
     static PromiseRejectionEvent* create()
     {
@@ -47,6 +48,7 @@ private:
     PromiseRejectionEvent();
     PromiseRejectionEvent(ScriptState*, const AtomicString&, const PromiseRejectionEventInit&);
     ~PromiseRejectionEvent() override;
+    void dispose();
 
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_promise;

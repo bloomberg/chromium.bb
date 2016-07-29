@@ -17,6 +17,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicStr
     : Event(type, initializer)
     , m_scriptState(state)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     ASSERT(initializer.hasPromise());
     m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
     m_promise.setPhantom();
@@ -28,6 +29,15 @@ PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicStr
 
 PromiseRejectionEvent::~PromiseRejectionEvent()
 {
+}
+
+void PromiseRejectionEvent::dispose()
+{
+    // Clear ScopedPersistents so that V8 doesn't call phantom callbacks
+    // (and touch the ScopedPersistents) after Oilpan starts lazy sweeping.
+    m_promise.clear();
+    m_reason.clear();
+    m_scriptState.clear();
 }
 
 ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const
