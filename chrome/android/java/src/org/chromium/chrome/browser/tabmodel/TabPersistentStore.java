@@ -647,7 +647,11 @@ public class TabPersistentStore extends TabPersister {
             model.moveTab(tabId, restoredIndex);
         }
 
-        if (setAsActive) {
+        // If the tab is being restored from a merge and its index is 0, then the model being
+        // merged into doesn't contain any tabs. Select the first tab to avoid having no tab
+        // selected. TODO(twellington): The first tab will always be selected. Instead, the tab that
+        // was selected in the other model before the merge should be selected after the merge.
+        if (setAsActive || (tabToRestore.fromMerge && restoredIndex == 0)) {
             TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId));
         }
         restoredTabs.put(tabToRestore.originalIndex, tabId);
@@ -1126,7 +1130,15 @@ public class TabPersistentStore extends TabPersister {
             // TabPersistentStore and delete the metadata file for the other instance, then notify
             // observers.
             if (mMergeInProgress) {
-                saveTabListAsynchronously();
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This eventually calls serializeTabModelSelector() which much be called
+                        // from the UI thread. #mergeState() starts an async task in the background
+                        // that goes through this code path.
+                        saveTabListAsynchronously();
+                    }
+                });
                 deleteFileAsync(getStateFileName(mOtherSelectorIndex));
                 if (mObserver != null) mObserver.onStateMerged();
             }
