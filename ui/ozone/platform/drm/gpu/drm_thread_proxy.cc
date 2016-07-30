@@ -63,4 +63,11 @@ void DrmThreadProxy::GetScanoutFormats(
                  widget, scanout_formats));
 }
 
+void DrmThreadProxy::AddBinding(ozone::mojom::DeviceCursorRequest request) {
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DrmThread::AddBinding, base::Unretained(&drm_thread_),
+                 base::Passed(&request)));
+}
+
 }  // namespace ui

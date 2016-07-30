@@ -14,11 +14,16 @@
         "ui::mojom::InputDeviceServer",
         "ui::mojom::WindowTreeFactory"
       ],
+      // Interfaces provided by mus-gpu for mus-ws.
+      "ozone": [
+        "ui::ozone::mojom::DeviceCursor"
+      ],
       "test": [
         "ui::mojom::WindowServerTest"
       ]
     },
     "required": {
+      "mojo:ui": { "classes": [ "ozone" ] },
       "*": { "classes": [ "app" ] },
       "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
     }

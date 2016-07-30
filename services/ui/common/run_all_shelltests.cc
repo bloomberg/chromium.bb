@@ -20,7 +20,9 @@ class MusGpuTestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 #if defined(USE_OZONE)
-    ui::OzonePlatform::InitializeForGPU();
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
 #endif
   }
 };

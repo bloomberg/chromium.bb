@@ -155,6 +155,7 @@ source_set("platform") {
   deps = [
     ":generate_constructor_list",
     ":generate_ozone_platform_list",
+    "//ui/ozone/public/interfaces",
   ]
 
   deps += ozone_platform_deps

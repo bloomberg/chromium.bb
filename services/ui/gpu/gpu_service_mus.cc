@@ -194,6 +194,8 @@ void GpuServiceMus::InitializeOnGpuThread(IPC::ChannelHandle* channel_handle,
       media::GpuJpegDecodeAccelerator::IsSupported();
 
 #if defined(USE_OZONE)
+  // TODO(rjkroege): Must plumb the shell::Connector* to here and pass into
+  // ozone.
   ui::OzonePlatform::InitializeForGPU();
 #endif
 

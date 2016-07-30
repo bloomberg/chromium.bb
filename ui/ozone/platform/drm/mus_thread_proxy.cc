@@ -15,6 +15,24 @@
 
 namespace ui {
 
+CursorProxyThread::CursorProxyThread(MusThreadProxy* mus_thread_proxy)
+    : mus_thread_proxy_(mus_thread_proxy) {}
+CursorProxyThread::~CursorProxyThread() {}
+
+void CursorProxyThread::CursorSet(gfx::AcceleratedWidget window,
+                                  const std::vector<SkBitmap>& bitmaps,
+                                  const gfx::Point& point,
+                                  int frame_delay_ms) {
+  mus_thread_proxy_->CursorSet(window, bitmaps, point, frame_delay_ms);
+}
+void CursorProxyThread::Move(gfx::AcceleratedWidget window,
+                             const gfx::Point& point) {
+  mus_thread_proxy_->Move(window, point);
+}
+void CursorProxyThread::InitializeOnEvdev() {
+  mus_thread_proxy_->InitializeOnEvdev();
+}
+
 MusThreadProxy::MusThreadProxy()
     : ws_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       drm_thread_(nullptr),

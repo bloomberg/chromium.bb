@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/shell/public/cpp/connection.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -168,10 +169,10 @@ void DrmThread::SetWindowBounds(gfx::AcceleratedWidget widget,
   screen_manager_->GetWindow(widget)->SetBounds(bounds);
 }
 
-void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
+void DrmThread::SetCursor(const gfx::AcceleratedWidget& widget,
                           const std::vector<SkBitmap>& bitmaps,
                           const gfx::Point& location,
-                          int frame_delay_ms) {
+                          int32_t frame_delay_ms) {
   screen_manager_->GetWindow(widget)
       ->SetCursor(bitmaps, location, frame_delay_ms);
 }
@@ -252,6 +253,12 @@ void DrmThread::SetColorCorrection(
     const std::vector<float>& correction_matrix) {
   display_manager_->SetColorCorrection(display_id, degamma_lut, gamma_lut,
                                        correction_matrix);
+}
+
+// DrmThread requires a BindingSet instead of a simple Binding because it will
+// be used from multiple threads in multiple processes.
+void DrmThread::AddBinding(ozone::mojom::DeviceCursorRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace ui

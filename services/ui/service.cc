@@ -156,7 +156,6 @@ void Service::OnStart(const shell::Identity& identity) {
   ui::OzonePlatform::InitParams params;
   params.connector = connector();
   params.single_process = false;
-
   ui::OzonePlatform::InitializeForUI(params);
 
   // TODO(kylechar): We might not always want a US keyboard layout.

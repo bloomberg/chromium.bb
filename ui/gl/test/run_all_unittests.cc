@@ -30,12 +30,12 @@ class GlTestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 #if defined(USE_OZONE)
+    main_loop_.reset(new base::MessageLoopForUI());
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "mojo-platform-channel-handle");
-    main_loop_.reset(new base::MessageLoopForUI());
-    ui::OzonePlatform::InitializeForUI();
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForUI(params);
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

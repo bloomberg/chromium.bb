@@ -31,6 +31,8 @@ source_set("gbm") {
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
     "common/scoped_drm_types.h",
+    "cursor_proxy_mojo.cc",
+    "cursor_proxy_mojo.h",
     "gpu/crtc_controller.cc",
     "gpu/crtc_controller.h",
     "gpu/drm_buffer.cc",
@@ -125,6 +127,8 @@ source_set("gbm") {
   deps = [
     "//base",
     "//ipc",
+    "//mojo/common:common_base",
+    "//services/shell/public/cpp:sources",
     "//skia",
     "//third_party/minigbm",
     "//ui/base",
@@ -143,6 +147,7 @@ source_set("gbm") {
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/ozone/gl",
+    "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]
 

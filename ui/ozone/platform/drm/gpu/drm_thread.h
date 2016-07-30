@@ -13,10 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/connection.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace base {
@@ -26,6 +29,10 @@ struct FileDescriptor;
 namespace gfx {
 class Point;
 class Rect;
+}
+
+namespace shell {
+class Connection;
 }
 
 namespace ui {
@@ -48,7 +55,7 @@ struct OverlayPlane;
 // (for example jank in the cursor if the GPU main thread is performing heavy
 // operations). The inverse is also true as blocking operations on the DRM
 // thread (such as modesetting) no longer block the GPU main thread.
-class DrmThread : public base::Thread {
+class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
  public:
   DrmThread();
   ~DrmThread() override;
@@ -80,12 +87,12 @@ class DrmThread : public base::Thread {
   void CreateWindow(gfx::AcceleratedWidget widget);
   void DestroyWindow(gfx::AcceleratedWidget widget);
   void SetWindowBounds(gfx::AcceleratedWidget widget, const gfx::Rect& bounds);
-  void SetCursor(gfx::AcceleratedWidget widget,
+  void SetCursor(const gfx::AcceleratedWidget& widget,
                  const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& location,
-                 int frame_delay_ms);
+                 int32_t frame_delay_ms) override;
   void MoveCursor(const gfx::AcceleratedWidget& widget,
-                  const gfx::Point& location);
+                  const gfx::Point& location) override;
   void CheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const std::vector<OverlayCheck_Params>& overlays,
@@ -122,11 +129,18 @@ class DrmThread : public base::Thread {
   // base::Thread:
   void Init() override;
 
+  // Mojo support for DeviceCursorRequest.
+  void AddBinding(ozone::mojom::DeviceCursorRequest request);
+
  private:
   std::unique_ptr<DrmDeviceManager> device_manager_;
   std::unique_ptr<ScanoutBufferGenerator> buffer_generator_;
   std::unique_ptr<ScreenManager> screen_manager_;
   std::unique_ptr<DrmGpuDisplayManager> display_manager_;
+
+  // The mojo implementation requires a BindingSet because the DrmThread serves
+  // requests from two different client threads.
+  mojo::BindingSet<ozone::mojom::DeviceCursor> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmThread);
 };

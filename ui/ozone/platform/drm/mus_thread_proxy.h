@@ -14,6 +14,7 @@
 #include "ui/ozone/platform/drm/gpu/inter_thread_messaging_proxy.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
+#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,6 +27,24 @@ class DrmDisplayHostManager;
 class DrmOverlayManager;
 class DrmThread;
 class GpuThreadObserver;
+class MusThreadProxy;
+
+// Forwarding proxy to handle ownership semantics.
+class CursorProxyThread : public DrmCursorProxy {
+ public:
+  explicit CursorProxyThread(MusThreadProxy* mus_thread_proxy);
+  ~CursorProxyThread() override;
+
+ private:
+  // DrmCursorProxy.
+  void CursorSet(gfx::AcceleratedWidget window,
+                 const std::vector<SkBitmap>& bitmaps,
+                 const gfx::Point& point,
+                 int frame_delay_ms) override;
+  void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override;
+  void InitializeOnEvdev() override;
+  MusThreadProxy* const mus_thread_proxy_;  // Not owned.
+};
 
 // In Mus, the window server thread (analogous to Chrome's UI thread), GPU and
 // DRM threads coexist in a single Mus process. The |MusThreadProxy| connects

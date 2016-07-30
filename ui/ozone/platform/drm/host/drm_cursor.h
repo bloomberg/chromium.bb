@@ -30,7 +30,7 @@ class DrmCursorProxy {
                          const std::vector<SkBitmap>& bitmaps,
                          const gfx::Point& point,
                          int frame_delay_ms) = 0;
-  // Moves the cursor in |window| to |point|
+  // Moves the cursor in |window| to |point|.
   virtual void Move(gfx::AcceleratedWidget window, const gfx::Point& point) = 0;
 
   // Initialize EvdevThread-specific state.
