@@ -6007,11 +6007,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_DESCRIPTION" desc="Description for the flag to enable unified desktop mode.">
           Enable unified desktop mode which allows a window to span multiple displays.
         </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_WINDOW_CYCLE_UI_NAME" desc="Name for the flag to enable the window cycle (alt-tab) UI.">
+        <message name="IDS_FLAGS_ASH_ENABLE_WINDOW_CYCLE_UI_NAME" desc="Name for the flag to enable the window cycle (Alt+Tab) UI.">
           Enable window cycle UI.
         </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_WINDOW_CYCLE_UI_DESCRIPTION" desc="Description for the flag to enable the window cycle (alt-tab) UI.">
-          Enable window cycle UI (visual feedback for alt-tab).
+        <message name="IDS_FLAGS_ASH_ENABLE_WINDOW_CYCLE_UI_DESCRIPTION" desc="Description for the flag to enable the window cycle (Alt+Tab) UI.">
+          Enable window cycle UI (visual feedback for Alt+Tab).
         </message>
         <message name="IDS_FLAGS_BOOT_ANIMATION" desc="Name for the flag for wallpaper boot animation (except for OOBE).">
           Boot animation
