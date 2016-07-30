@@ -27,7 +27,7 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
     : instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       is_mask_(false) {
-  inputs_.client = client;
+  picture_layer_inputs_.client = client;
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client,
@@ -52,7 +52,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   DCHECK_EQ(layer_impl->is_mask(), is_mask_);
   DropRecordingSourceContentIfInvalid();
 
-  layer_impl->SetNearestNeighbor(inputs_.nearest_neighbor);
+  layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
 
   // Preserve lcd text settings from the current raster source.
   bool can_use_lcd_text = layer_impl->RasterSourceUsesLCDText();
@@ -95,8 +95,9 @@ bool PictureLayer::Update() {
   gfx::Size layer_size = paint_properties().bounds;
 
   recording_source_->SetBackgroundColor(SafeOpaqueBackgroundColor());
-  recording_source_->SetRequiresClear(!contents_opaque() &&
-                                      !inputs_.client->FillsBoundsCompletely());
+  recording_source_->SetRequiresClear(
+      !contents_opaque() &&
+      !picture_layer_inputs_.client->FillsBoundsCompletely());
 
   TRACE_EVENT1("cc", "PictureLayer::Update",
                "source_frame_number",
@@ -108,9 +109,9 @@ bool PictureLayer::Update() {
   // anything not explicitly recorded in this frame. We give this region
   // to the impl side so that it drops tiles that may not have a recording
   // for them.
-  DCHECK(inputs_.client);
+  DCHECK(picture_layer_inputs_.client);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      inputs_.client, &last_updated_invalidation_, layer_size,
+      picture_layer_inputs_.client, &last_updated_invalidation_, layer_size,
       update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
 
   if (updated) {
@@ -139,7 +140,7 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
   std::unique_ptr<RecordingSource> recording_source(new RecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
-      inputs_.client, &recording_invalidation, layer_size,
+      picture_layer_inputs_.client, &recording_invalidation, layer_size,
       update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source =
@@ -153,20 +154,20 @@ bool PictureLayer::IsSuitableForGpuRasterization() const {
 }
 
 void PictureLayer::ClearClient() {
-  inputs_.client = nullptr;
+  picture_layer_inputs_.client = nullptr;
   UpdateDrawsContent(HasDrawableContent());
 }
 
 void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
-  if (inputs_.nearest_neighbor == nearest_neighbor)
+  if (picture_layer_inputs_.nearest_neighbor == nearest_neighbor)
     return;
 
-  inputs_.nearest_neighbor = nearest_neighbor;
+  picture_layer_inputs_.nearest_neighbor = nearest_neighbor;
   SetNeedsCommit();
 }
 
 bool PictureLayer::HasDrawableContent() const {
-  return inputs_.client && Layer::HasDrawableContent();
+  return picture_layer_inputs_.client && Layer::HasDrawableContent();
 }
 
 void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
@@ -196,7 +197,7 @@ void PictureLayer::LayerSpecificPropertiesToProto(
 
   RegionToProto(last_updated_invalidation_, picture->mutable_invalidation());
   picture->set_is_mask(is_mask_);
-  picture->set_nearest_neighbor(inputs_.nearest_neighbor);
+  picture->set_nearest_neighbor(picture_layer_inputs_.nearest_neighbor);
 
   picture->set_update_source_frame_number(update_source_frame_number_);
 
@@ -225,7 +226,7 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
   Region new_invalidation = RegionFromProto(picture.invalidation());
   last_updated_invalidation_.Swap(&new_invalidation);
   is_mask_ = picture.is_mask();
-  inputs_.nearest_neighbor = picture.nearest_neighbor();
+  picture_layer_inputs_.nearest_neighbor = picture.nearest_neighbor();
 
   update_source_frame_number_ = picture.update_source_frame_number();
 }

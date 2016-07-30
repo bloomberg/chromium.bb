@@ -389,16 +389,24 @@ class LayerSerializationTest : public testing::Test {
     deserialized_scrollbar->FromLayerSpecificPropertiesProto(
         serialized_scrollbar);
 
-    EXPECT_EQ(source_scrollbar->track_start_,
-              deserialized_scrollbar->track_start_);
-    EXPECT_EQ(source_scrollbar->thumb_thickness_,
-              deserialized_scrollbar->thumb_thickness_);
-    EXPECT_EQ(source_scrollbar->scroll_layer_id_,
-              deserialized_scrollbar->scroll_layer_id_);
-    EXPECT_EQ(source_scrollbar->is_left_side_vertical_scrollbar_,
-              deserialized_scrollbar->is_left_side_vertical_scrollbar_);
-    EXPECT_EQ(source_scrollbar->orientation_,
-              deserialized_scrollbar->orientation_);
+    EXPECT_EQ(source_scrollbar->solid_color_scrollbar_layer_inputs_.track_start,
+              deserialized_scrollbar->solid_color_scrollbar_layer_inputs_
+                  .track_start);
+    EXPECT_EQ(
+        source_scrollbar->solid_color_scrollbar_layer_inputs_.thumb_thickness,
+        deserialized_scrollbar->solid_color_scrollbar_layer_inputs_
+            .thumb_thickness);
+    EXPECT_EQ(
+        source_scrollbar->solid_color_scrollbar_layer_inputs_.scroll_layer_id,
+        deserialized_scrollbar->solid_color_scrollbar_layer_inputs_
+            .scroll_layer_id);
+    EXPECT_EQ(source_scrollbar->solid_color_scrollbar_layer_inputs_
+                  .is_left_side_vertical_scrollbar,
+              deserialized_scrollbar->solid_color_scrollbar_layer_inputs_
+                  .is_left_side_vertical_scrollbar);
+    EXPECT_EQ(source_scrollbar->solid_color_scrollbar_layer_inputs_.orientation,
+              deserialized_scrollbar->solid_color_scrollbar_layer_inputs_
+                  .orientation);
 
     deserialized_scrollbar->SetLayerTreeHost(nullptr);
   }

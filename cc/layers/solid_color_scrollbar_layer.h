@@ -57,11 +57,23 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
  private:
   friend class LayerSerializationTest;
 
-  int scroll_layer_id_;
-  ScrollbarOrientation orientation_;
-  int thumb_thickness_;
-  int track_start_;
-  bool is_left_side_vertical_scrollbar_;
+  // Encapsulate all data, callbacks, interfaces received from the embedder.
+  struct SolidColorScrollbarLayerInputs {
+    SolidColorScrollbarLayerInputs(ScrollbarOrientation orientation,
+                                   int thumb_thickness,
+                                   int track_start,
+                                   bool is_left_side_vertical_scrollbar,
+                                   int scroll_layer_id);
+    ~SolidColorScrollbarLayerInputs();
+
+    int scroll_layer_id;
+    ScrollbarOrientation orientation;
+    int thumb_thickness;
+    int track_start;
+    bool is_left_side_vertical_scrollbar;
+  };
+
+  SolidColorScrollbarLayerInputs solid_color_scrollbar_layer_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidColorScrollbarLayer);
 };

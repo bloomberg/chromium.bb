@@ -37,7 +37,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
 
-  ContentLayerClient* client() { return inputs_.client; }
+  ContentLayerClient* client() { return picture_layer_inputs_.client; }
 
   RecordingSource* GetRecordingSourceForTesting() {
     return recording_source_.get();
@@ -73,12 +73,12 @@ class CC_EXPORT PictureLayer : public Layer {
   bool is_mask_;
 
   // Encapsulates all data, callbacks or interfaces received from the embedder.
-  struct Inputs {
+  struct PictureLayerInputs {
     ContentLayerClient* client = nullptr;
     bool nearest_neighbor = false;
   };
 
-  Inputs inputs_;
+  PictureLayerInputs picture_layer_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
