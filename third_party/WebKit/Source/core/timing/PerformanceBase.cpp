@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/timing/PerformanceCompositeTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceRenderTiming.h"
@@ -185,7 +186,7 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size)
         dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
 }
 
-static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin)
+static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin, ExecutionContext* context)
 {
     RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
     if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
@@ -195,12 +196,18 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 
-    if (timingAllowOriginString == "*")
+    if (timingAllowOriginString == "*") {
+        UseCounter::count(context, UseCounter::StarInTimingAllowOrigin);
         return true;
+    }
 
     const String& securityOrigin = initiatorSecurityOrigin.toString();
     Vector<String> timingAllowOrigins;
     timingAllowOriginString.getString().split(' ', timingAllowOrigins);
+    if (timingAllowOrigins.size() > 1)
+        UseCounter::count(context, UseCounter::MultipleOriginsInTimingAllowOrigin);
+    else if (timingAllowOrigins.size() == 1)
+        UseCounter::count(context, UseCounter::SingleOriginInTimingAllowOrigin);
     for (const String& allowOrigin : timingAllowOrigins) {
         if (allowOrigin == securityOrigin)
             return true;
@@ -209,13 +216,13 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
     return false;
 }
 
-static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, const SecurityOrigin& initiatorSecurityOrigin)
+static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, const SecurityOrigin& initiatorSecurityOrigin, ExecutionContext* context)
 {
-    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, AtomicString()))
+    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, AtomicString(), context))
         return false;
 
     for (const ResourceResponse& response : redirectChain) {
-        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, AtomicString()))
+        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, AtomicString(), context))
             return false;
     }
 
@@ -227,13 +234,14 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
     if (isResourceTimingBufferFull() && !hasObserverFor(PerformanceEntry::Resource))
         return;
     SecurityOrigin* securityOrigin = nullptr;
-    if (ExecutionContext* context = getExecutionContext())
+    ExecutionContext* context = getExecutionContext();
+    if (context)
         securityOrigin = context->getSecurityOrigin();
     if (!securityOrigin)
         return;
 
     const ResourceResponse& finalResponse = info.finalResponse();
-    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, *securityOrigin, info.originalTimingAllowOrigin());
+    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, *securityOrigin, info.originalTimingAllowOrigin(), context);
     double startTime = info.initialTime();
 
     if (info.redirectChain().isEmpty()) {
@@ -245,7 +253,7 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
     }
 
     const Vector<ResourceResponse>& redirectChain = info.redirectChain();
-    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, *securityOrigin);
+    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, *securityOrigin, context);
 
     if (!allowRedirectDetails) {
         ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();

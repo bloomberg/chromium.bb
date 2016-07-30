@@ -77463,6 +77463,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1478" label="PerformanceResourceTimingSizes"/>
   <int value="1479" label="EventSourceDocument"/>
   <int value="1480" label="EventSourceWorker"/>
+  <int value="1481" label="SingleOriginInTimingAllowOrigin"/>
+  <int value="1482" label="MultipleOriginsInTimingAllowOrigin"/>
+  <int value="1483" label="StarInTimingAllowOrigin"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
