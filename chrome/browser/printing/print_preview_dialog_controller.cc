@@ -347,6 +347,14 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
     NOTREACHED();
     return;
   }
+  if (details) {
+    ui::PageTransition type = details->entry->GetTransitionType();
+    content::NavigationType nav_type = details->type;
+    if (nav_type == content::NAVIGATION_TYPE_EXISTING_PAGE &&
+        (ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_TYPED) ||
+         ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_LINK)))
+      return;
+  }
 
   RemoveInitiator(contents);
 }
