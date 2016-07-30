@@ -414,8 +414,6 @@ InspectorTest.createHeapSnapshotMockFactories();
 
 InspectorTest.startProfilerTest = function(callback)
 {
-    WebInspector.settingForTest("showAdvancedHeapSnapshotProperties").set(true);
-
     InspectorTest.addResult("Profiler was enabled.");
     // We mock out HeapProfilerAgent -- as DRT runs in single-process mode, Inspector
     // and test share the same heap. Taking a snapshot takes too long for a test,
