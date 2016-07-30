@@ -59,6 +59,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       user_scrollable_vertical_(true),
       should_flatten_transform_from_property_tree_(false),
       layer_property_changed_(false),
+      may_contain_video_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
       use_parent_backface_visibility_(false),
@@ -327,6 +328,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       should_flatten_transform_from_property_tree_;
   layer->masks_to_bounds_ = masks_to_bounds_;
   layer->contents_opaque_ = contents_opaque_;
+  layer->may_contain_video_ = may_contain_video_;
   layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
   layer->use_local_transform_for_backface_visibility_ =
       use_local_transform_for_backface_visibility_;

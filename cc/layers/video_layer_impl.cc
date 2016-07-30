@@ -51,7 +51,9 @@ VideoLayerImpl::VideoLayerImpl(
     : LayerImpl(tree_impl, id),
       provider_client_impl_(std::move(provider_client_impl)),
       frame_(nullptr),
-      video_rotation_(video_rotation) {}
+      video_rotation_(video_rotation) {
+  set_may_contain_video(true);
+}
 
 VideoLayerImpl::~VideoLayerImpl() {
   if (!provider_client_impl_->Stopped()) {

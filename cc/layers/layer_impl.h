@@ -421,6 +421,9 @@ class CC_EXPORT LayerImpl {
     return is_drawn_render_surface_layer_list_member_;
   }
 
+  void set_may_contain_video(bool yes) { may_contain_video_ = yes; }
+  bool may_contain_video() const { return may_contain_video_; }
+
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
@@ -518,6 +521,7 @@ class CC_EXPORT LayerImpl {
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_ : 1;
+  bool may_contain_video_ : 1;
 
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;

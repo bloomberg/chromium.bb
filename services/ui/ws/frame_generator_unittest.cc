@@ -63,8 +63,9 @@ class FrameGeneratorTest : public testing::Test {
 };
 
 void FrameGeneratorTest::DrawWindowTree(cc::RenderPass* pass) {
-  frame_generator_->DrawWindowTree(
-      pass, frame_generator_delegate_->GetRootWindow(), gfx::Vector2d(), 1.0f);
+  frame_generator_->DrawWindowTree(pass,
+                                   frame_generator_delegate_->GetRootWindow(),
+                                   gfx::Vector2d(), 1.0f, nullptr);
 }
 
 void FrameGeneratorTest::SetUp() {

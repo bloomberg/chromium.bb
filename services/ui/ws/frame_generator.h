@@ -64,14 +64,16 @@ class FrameGenerator {
   void DidDraw();
 
   // Generates the CompositorFrame for the current |dirty_rect_|.
-  cc::CompositorFrame GenerateCompositorFrame();
+  cc::CompositorFrame GenerateCompositorFrame(
+      const gfx::Rect& output_rect) const;
 
   // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
   // for each that lacks one.
   void DrawWindowTree(cc::RenderPass* pass,
                       ServerWindow* window,
                       const gfx::Vector2d& parent_to_root_origin_offset,
-                      float opacity);
+                      float opacity,
+                      bool* may_contain_video) const;
 
   FrameGeneratorDelegate* delegate_;
   scoped_refptr<SurfacesState> surfaces_state_;
@@ -83,6 +85,7 @@ class FrameGenerator {
   gfx::Rect dirty_rect_;
   base::Timer draw_timer_;
   bool frame_pending_ = false;
+  bool may_contain_video_ = false;
 
   base::WeakPtrFactory<FrameGenerator> weak_factory_;
 

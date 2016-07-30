@@ -172,6 +172,7 @@ class LayerSerializationTest : public testing::Test {
               dest->offset_to_transform_parent_);
     EXPECT_EQ(src->inputs_.double_sided, dest->inputs_.double_sided);
     EXPECT_EQ(src->draws_content_, dest->draws_content_);
+    EXPECT_EQ(src->may_contain_video_, dest->may_contain_video_);
     EXPECT_EQ(src->inputs_.hide_layer_and_subtree,
               dest->inputs_.hide_layer_and_subtree);
     EXPECT_EQ(src->inputs_.masks_to_bounds, dest->inputs_.masks_to_bounds);
@@ -287,6 +288,7 @@ class LayerSerializationTest : public testing::Test {
     layer->offset_to_transform_parent_ = gfx::Vector2dF(3.14f, 1.618f);
     layer->inputs_.double_sided = true;
     layer->draws_content_ = true;
+    layer->may_contain_video_ = true;
     layer->inputs_.hide_layer_and_subtree = false;
     layer->inputs_.masks_to_bounds = true;
     layer->inputs_.main_thread_scrolling_reasons =
@@ -331,6 +333,7 @@ class LayerSerializationTest : public testing::Test {
     layer->offset_to_transform_parent_ = gfx::Vector2dF(3.14f, 1.618f);
     layer->inputs_.double_sided = !layer->inputs_.double_sided;
     layer->draws_content_ = !layer->draws_content_;
+    layer->may_contain_video_ = !layer->may_contain_video_;
     layer->inputs_.hide_layer_and_subtree =
         !layer->inputs_.hide_layer_and_subtree;
     layer->inputs_.masks_to_bounds = !layer->inputs_.masks_to_bounds;

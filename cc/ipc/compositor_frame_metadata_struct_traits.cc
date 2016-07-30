@@ -29,6 +29,7 @@ bool StructTraits<cc::mojom::CompositorFrameMetadata,
   out->max_page_scale_factor = data.max_page_scale_factor();
   out->root_overflow_x_hidden = data.root_overflow_x_hidden();
   out->root_overflow_y_hidden = data.root_overflow_y_hidden();
+  out->may_contain_video = data.may_contain_video();
   out->is_resourceless_software_draw_with_scroll_or_animation =
       data.is_resourceless_software_draw_with_scroll_or_animation();
   if (!data.ReadLocationBarOffset(&out->location_bar_offset) ||

@@ -65,6 +65,7 @@ void ServerWindowSurface::SubmitCompositorFrame(
     surface_id_ = surface_id_allocator_.GenerateId();
     surface_factory_.Create(surface_id_);
   }
+  may_contain_video_ = frame.metadata.may_contain_video;
   surface_factory_.SubmitCompositorFrame(surface_id_, std::move(frame),
                                          callback);
   last_submitted_frame_size_ = frame_size;

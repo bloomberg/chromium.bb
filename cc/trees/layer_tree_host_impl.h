@@ -227,6 +227,7 @@ class CC_EXPORT LayerTreeHostImpl
     const LayerImplList* render_surface_layer_list;
     LayerImplList will_draw_layers;
     bool has_no_damage;
+    bool may_contain_video;
 
     // RenderPassSink implementation.
     void AppendRenderPass(std::unique_ptr<RenderPass> render_pass) override;

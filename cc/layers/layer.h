@@ -475,6 +475,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetLayerPropertyChanged();
   bool layer_property_changed() const { return layer_property_changed_; }
 
+  void SetMayContainVideo(bool yes);
+
   void DidBeginTracing();
 
   int num_copy_requests_in_target_subtree();
@@ -713,6 +715,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool layer_property_changed_ : 1;
+  bool may_contain_video_ : 1;
   SkColor safe_opaque_background_color_;
   // draw_blend_mode may be different than blend_mode_,
   // when a RenderSurface re-parents the layer's blend_mode.

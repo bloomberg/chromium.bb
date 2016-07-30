@@ -69,8 +69,19 @@ void FrameGenerator::Draw() {
   if (!delegate_->GetRootWindow()->visible())
     return;
 
+  const ViewportMetrics& metrics = delegate_->GetViewportMetrics();
+  const gfx::Rect& output_rect = metrics.bounds;
+  dirty_rect_.Intersect(output_rect);
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame());
+  cc::CompositorFrame frame(GenerateCompositorFrame(output_rect));
+  if (frame.metadata.may_contain_video != may_contain_video_) {
+    may_contain_video_ = frame.metadata.may_contain_video;
+    // TODO(sad): Schedule notifying observers.
+    if (may_contain_video_) {
+      // TODO(sad): Start a timer to reset the bit if no new frame with video
+      // is submitted 'soon'.
+    }
+  }
   frame_pending_ = true;
   if (display_compositor_) {
     display_compositor_->SubmitCompositorFrame(
@@ -87,17 +98,16 @@ void FrameGenerator::DidDraw() {
     WantToDraw();
 }
 
-cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
-  const ViewportMetrics& metrics = delegate_->GetViewportMetrics();
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  gfx::Rect output_rect = metrics.bounds;
-  dirty_rect_.Intersect(output_rect);
+cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
+    const gfx::Rect& output_rect) const {
   const cc::RenderPassId render_pass_id(1, 1);
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
                       gfx::Transform());
 
+  bool may_contain_video = false;
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
-                 1.0f);
+                 1.0f, &may_contain_video);
 
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
@@ -123,6 +133,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
 
   cc::CompositorFrame frame;
   frame.delegated_frame_data = std::move(frame_data);
+  frame.metadata.may_contain_video = may_contain_video;
   return frame;
 }
 
@@ -130,7 +141,8 @@ void FrameGenerator::DrawWindowTree(
     cc::RenderPass* pass,
     ServerWindow* window,
     const gfx::Vector2d& parent_to_root_origin_offset,
-    float opacity) {
+    float opacity,
+    bool* may_contain_video) const {
   if (!window->visible())
     return;
 
@@ -144,7 +156,7 @@ void FrameGenerator::DrawWindowTree(
   const float combined_opacity = opacity * window->opacity();
   for (ServerWindow* child : base::Reversed(children)) {
     DrawWindowTree(pass, child, absolute_bounds.OffsetFromOrigin(),
-                   combined_opacity);
+                   combined_opacity, may_contain_video);
   }
 
   if (!window->surface_manager() || !window->surface_manager()->ShouldDraw())
@@ -176,6 +188,8 @@ void FrameGenerator::DrawWindowTree(
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                  default_surface->id());
+    if (default_surface->may_contain_video())
+      *may_contain_video = true;
   }
   if (underlay_surface) {
     const gfx::Rect underlay_absolute_bounds =
@@ -198,6 +212,7 @@ void FrameGenerator::DrawWindowTree(
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                  underlay_surface->id());
+    DCHECK(!underlay_surface->may_contain_video());
   }
 }
 

@@ -702,6 +702,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   }
 
   referenced_surfaces_.erase(it);
+  if (!damage_rect.IsEmpty() && surface_frame.metadata.may_contain_video)
+    result->may_contain_video = true;
   return damage_rect;
 }
 
@@ -786,6 +788,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
       PrewalkTree(surface_id, false, RenderPassId(), &prewalk_result);
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
+  frame.metadata.may_contain_video = prewalk_result.may_contain_video;
 
   CopyUndrawnSurfaces(&prewalk_result);
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;

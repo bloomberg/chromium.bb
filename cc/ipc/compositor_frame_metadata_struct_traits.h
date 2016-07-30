@@ -57,6 +57,10 @@ struct StructTraits<cc::mojom::CompositorFrameMetadata,
     return metadata.root_overflow_y_hidden;
   }
 
+  static bool may_contain_video(const cc::CompositorFrameMetadata& metadata) {
+    return metadata.may_contain_video;
+  }
+
   static bool is_resourceless_software_draw_with_scroll_or_animation(
       const cc::CompositorFrameMetadata& metadata) {
     return metadata.is_resourceless_software_draw_with_scroll_or_animation;

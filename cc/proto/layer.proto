@@ -67,7 +67,7 @@ message LayerProperties {
   optional SolidColorScrollbarLayerProperties solid_scrollbar = 7;
 }
 
-// NEXT ID: 55
+// NEXT ID: 56
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
@@ -80,6 +80,7 @@ message BaseLayerProperties {
   optional Vector2dF offset_to_transform_parent = 7;
   optional bool double_sided = 8;
   optional bool draws_content = 9;
+  optional bool may_contain_video = 55;
   optional bool hide_layer_and_subtree = 10;
   optional bool subtree_property_changed = 47;
   optional bool layer_property_changed = 54;

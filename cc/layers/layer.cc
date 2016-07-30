@@ -96,6 +96,7 @@ Layer::Layer()
       force_render_surface_for_testing_(false),
       subtree_property_changed_(false),
       layer_property_changed_(false),
+      may_contain_video_(false),
       safe_opaque_background_color_(0),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       num_unclipped_descendants_(0) {}
@@ -1156,6 +1157,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_ || layer_property_changed_)
     layer->NoteLayerPropertyChanged();
+  layer->set_may_contain_video(may_contain_video_);
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
   layer->set_main_thread_scrolling_reasons(
       inputs_.main_thread_scrolling_reasons);
@@ -1365,6 +1367,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
                    base->mutable_offset_to_transform_parent());
   base->set_double_sided(inputs_.double_sided);
   base->set_draws_content(draws_content_);
+  base->set_may_contain_video(may_contain_video_);
   base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
   base->set_subtree_property_changed(subtree_property_changed_);
   base->set_layer_property_changed(layer_property_changed_);
@@ -1455,6 +1458,7 @@ void Layer::FromLayerSpecificPropertiesProto(
       ProtoToVector2dF(base.offset_to_transform_parent());
   inputs_.double_sided = base.double_sided();
   draws_content_ = base.draws_content();
+  may_contain_video_ = base.may_contain_video();
   inputs_.hide_layer_and_subtree = base.hide_layer_and_subtree();
   subtree_property_changed_ = base.subtree_property_changed();
   layer_property_changed_ = base.layer_property_changed();
@@ -1609,6 +1613,13 @@ void Layer::SetLayerPropertyChanged() {
   if (layer_property_changed_)
     return;
   layer_property_changed_ = true;
+  SetNeedsPushProperties();
+}
+
+void Layer::SetMayContainVideo(bool yes) {
+  if (may_contain_video_ == yes)
+    return;
+  may_contain_video_ = yes;
   SetNeedsPushProperties();
 }
 

@@ -41,6 +41,8 @@ class ServerWindowSurface : public mojom::Surface,
     return last_submitted_frame_size_;
   }
 
+  bool may_contain_video() const { return may_contain_video_; }
+
   // mojom::Surface:
   void SubmitCompositorFrame(
       cc::CompositorFrame frame,
@@ -71,6 +73,8 @@ class ServerWindowSurface : public mojom::Surface,
 
   // Set of surface ids that need to be destroyed.
   std::set<cc::SurfaceId> surfaces_scheduled_for_destruction_;
+
+  bool may_contain_video_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowSurface);
 };

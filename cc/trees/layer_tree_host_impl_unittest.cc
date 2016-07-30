@@ -6713,6 +6713,55 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
+static bool MayContainVideoBitSetOnFrameData(LayerTreeHostImpl* host_impl) {
+  host_impl->active_tree()->BuildPropertyTreesForTesting();
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
+  host_impl->DrawLayers(&frame);
+  host_impl->SwapBuffers(frame);
+  host_impl->DidDrawAllLayers(frame);
+  return frame.may_contain_video;
+}
+
+TEST_F(LayerTreeHostImplTest, MayContainVideo) {
+  gfx::Size big_size(1000, 1000);
+  host_impl_->SetViewportSize(big_size);
+
+  int layer_id = 1;
+  host_impl_->active_tree()->SetRootLayerForTesting(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), layer_id++));
+  DidDrawCheckLayer* root =
+      static_cast<DidDrawCheckLayer*>(*host_impl_->active_tree()->begin());
+
+  root->test_properties()->AddChild(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), layer_id++));
+  DidDrawCheckLayer* video_layer =
+      static_cast<DidDrawCheckLayer*>(root->test_properties()->children.back());
+  video_layer->set_may_contain_video(true);
+  EXPECT_TRUE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
+
+  // Test with the video layer occluded.
+  root->test_properties()->AddChild(
+      DidDrawCheckLayer::Create(host_impl_->active_tree(), layer_id++));
+  DidDrawCheckLayer* large_layer =
+      static_cast<DidDrawCheckLayer*>(root->test_properties()->children.back());
+  large_layer->SetBounds(big_size);
+  large_layer->SetContentsOpaque(true);
+  EXPECT_FALSE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
+
+  // Remove the large layer.
+  root->test_properties()->RemoveChild(large_layer);
+  EXPECT_TRUE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
+
+  // Move the video layer so it goes beyond the root.
+  video_layer->SetPosition(gfx::PointF(100.f, 100.f));
+  EXPECT_FALSE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
+
+  video_layer->SetPosition(gfx::PointF(0.f, 0.f));
+  video_layer->NoteLayerPropertyChanged();
+  EXPECT_TRUE(MayContainVideoBitSetOnFrameData(host_impl_.get()));
+}
+
 class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  protected:
   LayerTreeHostImplViewportCoveredTest() :

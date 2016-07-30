@@ -2120,6 +2120,9 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     } else {
       container_->setWebLayer(web_layer_.get());
     }
+    if (is_flash_plugin_) {
+      web_layer_->ccLayer()->SetMayContainVideo(true);
+    }
   }
 
   layer_bound_to_fullscreen_ = !!fullscreen_container_;

@@ -165,7 +165,9 @@ DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeDuration");
 
 LayerTreeHostImpl::FrameData::FrameData()
-    : render_surface_layer_list(nullptr), has_no_damage(false) {}
+    : render_surface_layer_list(nullptr),
+      has_no_damage(false),
+      may_contain_video(false) {}
 
 LayerTreeHostImpl::FrameData::~FrameData() {}
 
@@ -912,6 +914,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         DCHECK_EQ(active_tree_.get(), it->layer_tree_impl());
 
         frame->will_draw_layers.push_back(*it);
+        if (it->may_contain_video())
+          frame->may_contain_video = true;
 
         it->AppendQuads(target_render_pass, &append_quads_data);
       }
@@ -1100,6 +1104,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   frame->render_passes.clear();
   frame->will_draw_layers.clear();
   frame->has_no_damage = false;
+  frame->may_contain_video = false;
 
   if (active_tree_->RootRenderSurface()) {
     gfx::Rect device_viewport_damage_rect = viewport_damage_rect_;
@@ -1815,6 +1820,7 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
     return false;
   }
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  metadata.may_contain_video = frame.may_contain_video;
   active_tree()->FinishSwapPromises(&metadata);
   for (auto& latency : metadata.latency_info) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark",

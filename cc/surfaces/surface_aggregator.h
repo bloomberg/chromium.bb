@@ -60,6 +60,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     // This is the set of Surfaces that were referenced by another Surface, but
     // not included in a SurfaceDrawQuad.
     std::set<SurfaceId> undrawn_surfaces;
+    bool may_contain_video = false;
   };
 
   ClipData CalculateClipRect(const ClipData& surface_clip,
