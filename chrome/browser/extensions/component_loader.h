@@ -13,6 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -91,11 +92,6 @@ class ComponentLoader {
   // Similar to above but adds the default component extensions for kiosk mode.
   void AddDefaultComponentExtensionsForKioskMode(bool skip_session_components);
 
-  // Parse the given JSON manifest. Returns NULL if it cannot be parsed, or if
-  // if the result is not a DictionaryValue.
-  base::DictionaryValue* ParseManifest(
-      const std::string& manifest_contents) const;
-
   // Clear the list of registered extensions.
   void ClearAllRegistered();
 
@@ -115,6 +111,8 @@ class ComponentLoader {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ComponentLoaderTest, ParseManifest);
+
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
     ComponentExtensionInfo(const base::DictionaryValue* manifest,
@@ -129,6 +127,11 @@ class ComponentLoader {
     // The component extension's ID.
     std::string extension_id;
   };
+
+  // Parses the given JSON manifest. Returns nullptr if it cannot be parsed or
+  // if the result is not a DictionaryValue.
+  base::DictionaryValue* ParseManifest(
+      base::StringPiece manifest_contents) const;
 
   std::string Add(const std::string& manifest_contents,
                   const base::FilePath& root_directory,

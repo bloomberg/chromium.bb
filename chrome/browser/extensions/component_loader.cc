@@ -150,7 +150,7 @@ void ComponentLoader::LoadAll() {
 }
 
 base::DictionaryValue* ComponentLoader::ParseManifest(
-    const std::string& manifest_contents) const {
+    base::StringPiece manifest_contents) const {
   JSONStringValueDeserializer deserializer(manifest_contents);
   std::unique_ptr<base::Value> manifest = deserializer.Deserialize(NULL, NULL);
 
@@ -175,9 +175,9 @@ void ComponentLoader::ClearAllRegistered() {
 std::string ComponentLoader::GetExtensionID(
     int manifest_resource_id,
     const base::FilePath& root_directory) {
-  std::string manifest_contents = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(manifest_resource_id).as_string();
-  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
+  base::DictionaryValue* manifest =
+      ParseManifest(ResourceBundle::GetSharedInstance().GetRawDataResource(
+          manifest_resource_id));
   if (!manifest)
     return std::string();
 
@@ -418,9 +418,9 @@ void ComponentLoader::AddWithNameAndDescription(
       !IsComponentExtensionWhitelisted(manifest_resource_id))
     return;
 
-  std::string manifest_contents =
+  base::StringPiece manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          manifest_resource_id).as_string();
+          manifest_resource_id);
 
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
