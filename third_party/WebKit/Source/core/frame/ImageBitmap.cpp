@@ -308,13 +308,11 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, Optional<IntRect> cropRect, Do
     IntSize playerSize;
     if (video->webMediaPlayer())
         playerSize = video->webMediaPlayer()->naturalSize();
-
-    // TODO(xidachen); implement the resize option.
     ParsedOptions parsedOptions = parseOptions(options, cropRect, video->bitmapSourceSize());
 
     IntRect videoRect = IntRect(IntPoint(), playerSize);
     IntRect srcRect = intersection(parsedOptions.cropRect, videoRect);
-    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(parsedOptions.cropRect.size(), NonOpaque, DoNotInitializeImagePixels);
+    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(IntSize(parsedOptions.resizeWidth, parsedOptions.resizeHeight), NonOpaque, DoNotInitializeImagePixels);
     if (!buffer)
         return;
 
@@ -323,7 +321,16 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, Optional<IntRect> cropRect, Do
         buffer->canvas()->scale(1, -1);
     }
     IntPoint dstPoint = IntPoint(std::max(0, -parsedOptions.cropRect.x()), std::max(0, -parsedOptions.cropRect.y()));
-    video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
+    IntSize dstSize = srcRect.size();
+    SkPaint paint;
+    if (parsedOptions.shouldScaleInput) {
+        float scaleRatioX = static_cast<float>(parsedOptions.resizeWidth) / parsedOptions.cropRect.width();
+        float scaleRatioY = static_cast<float>(parsedOptions.resizeHeight) / parsedOptions.cropRect.height();
+        dstPoint.scale(scaleRatioX, scaleRatioY);
+        paint.setFilterQuality(parsedOptions.resizeQuality);
+        dstSize.scale(scaleRatioX, scaleRatioY);
+    }
+    video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, dstSize), parsedOptions.shouldScaleInput ? &paint : nullptr);
 
     RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
     if (!parsedOptions.premultiplyAlpha)

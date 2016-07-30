@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+function checkNoCrop(imageBitmap)
+{
+    var canvas = document.createElement("canvas");
+    canvas.width = 50;
+    canvas.height = 50;
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imageBitmap, 0, 0);
+    var d = ctx.getImageData(0, 0, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(29, 0, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(0, 29, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(29, 29, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(41, 0, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+    d = ctx.getImageData(0, 31, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+    d = ctx.getImageData(41, 31, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+}
+
+function checkCrop(imageBitmap)
+{
+    var canvas = document.createElement("canvas");
+    canvas.width = 50;
+    canvas.height = 50;
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imageBitmap, 0, 0);
+    var d = ctx.getImageData(0, 0, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(39, 0, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(0, 39, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(39, 39, 1, 1).data;
+    assert_equals(d[3], 255, "This pixel should be opaque");
+    d = ctx.getImageData(41, 0, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+    d = ctx.getImageData(0, 41, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+    d = ctx.getImageData(41, 41, 1, 1).data;
+    assert_equals(d[3], 0, "This pixel should be transparent");
+}
+
+function compareBitmaps(bitmap1, bitmap2)
+{
+    var canvas1 = document.createElement("canvas");
+    var canvas2 = document.createElement("canvas");
+    canvas1.width = 50;
+    canvas1.height = 50;
+    canvas2.width = 50;
+    canvas2.height = 50;
+    var ctx1 = canvas1.getContext("2d");
+    var ctx2 = canvas2.getContext("2d");
+    ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+    ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+    ctx1.drawImage(bitmap1, 0, 0);
+    ctx2.drawImage(bitmap2, 0, 0);
+    var data1 = ctx1.getImageData(0, 0, 50, 50).data;
+    var data2 = ctx2.getImageData(0, 0, 50, 50).data;
+    var dataMatched = true;
+    for (var i = 0; i < data1.length; i++) {
+        if (data1[i] != data2[i]) {
+            dataMatched = false;
+            break;
+        }
+    }
+    assert_false(dataMatched);
+}
+
+function testImageBitmap(source)
+{
+    return Promise.all([
+        createImageBitmap(source, {resizeWidth: 40, resizeHeight: 30, resizeQuality: "high"}),
+        createImageBitmap(source, {resizeWidth: 40, resizeHeight: 30, resizeQuality: "medium"}),
+        createImageBitmap(source, {resizeWidth: 40, resizeHeight: 30, resizeQuality: "low"}),
+        createImageBitmap(source, {resizeWidth: 40, resizeHeight: 30, resizeQuality: "pixelated"}),
+        createImageBitmap(source, 50, 50, 100, 100, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "high"}),
+        createImageBitmap(source, 50, 50, 100, 100, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "medium"}),
+        createImageBitmap(source, 50, 50, 100, 100, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "low"}),
+        createImageBitmap(source, 50, 50, 100, 100, {resizeWidth: 40, resizeHeight: 40, resizeQuality: "pixelated"}),
+    ]).then(([noCropHigh, noCropMedium, noCropLow, noCropPixelated, cropHigh, cropMedium, cropLow, cropPixelated]) => {
+        checkNoCrop(noCropHigh);
+        checkNoCrop(noCropMedium);
+        checkNoCrop(noCropLow);
+        checkNoCrop(noCropPixelated);
+        checkCrop(cropHigh);
+        checkCrop(cropMedium);
+        checkCrop(cropLow);
+        checkCrop(cropPixelated);
+        // Brute-force comparison among all bitmaps is too expensive
+        compareBitmaps(noCropHigh, noCropMedium);
+        compareBitmaps(noCropLow, noCropPixelated);
+        compareBitmaps(cropHigh, cropMedium);
+        compareBitmaps(cropLow, cropPixelated);
+    });
+}
+
+// HTMLVideoElement
+promise_test(function() {
+    var video = document.createElement("video");
+    video.oncanplaythrough = function() {
+        return testImageBitmap(video);
+    };
+    video.src = "../../compositing/resources/video.ogv";
+}, 'createImageBitmap from a HTMLVideoElement with resize option.');
+</script>
