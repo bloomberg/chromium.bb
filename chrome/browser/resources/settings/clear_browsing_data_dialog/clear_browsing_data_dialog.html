@@ -30,6 +30,7 @@
 
       #dialog .footer {
         background-color: #fff;
+        color: var(--paper-grey-600);
       }
 
       .row {
@@ -95,11 +96,15 @@
         display: inline;
       }
 
-      /* Cap the height on smaller screens to avoid unfavorable clipping. */
+      /* Cap the height on smaller screens to avoid unfavorable clipping.
+       * Replace the bottom margin with padding to avoid the gap between
+       * the scrollbar and the bottom separator. */
       @media all and (max-height: 714px) {
-        .body {
+        #dialog .body {
+          margin-bottom: 0;
           max-height: 270px;
           overflow-y: scroll;
+          padding-bottom: 12px;
         }
       }
     </style>
