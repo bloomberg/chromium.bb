@@ -193,23 +193,19 @@ void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
     }
 }
 
-v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
+bool V8InspectorSessionImpl::unwrapObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Value>* object, v8::Local<v8::Context>* context, String16* objectGroup)
 {
     std::unique_ptr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
-        return v8::Local<v8::Value>();
+        return false;
     InjectedScript* injectedScript = findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
-        return v8::Local<v8::Value>();
-    v8::Local<v8::Value> objectValue;
-    injectedScript->findObject(errorString, *remoteId, &objectValue);
-    if (objectValue.IsEmpty())
-        return v8::Local<v8::Value>();
-    if (context)
-        *context = injectedScript->context()->context();
-    if (groupName)
-        *groupName = injectedScript->objectGroupName(*remoteId);
-    return objectValue;
+        return false;
+    if (!injectedScript->findObject(errorString, *remoteId, object))
+        return false;
+    *context = injectedScript->context()->context();
+    *objectGroup = injectedScript->objectGroupName(*remoteId);
+    return true;
 }
 
 std::unique_ptr<protocol::Runtime::API::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName)

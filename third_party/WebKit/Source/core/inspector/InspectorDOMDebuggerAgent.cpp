@@ -410,11 +410,10 @@ void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, in
 void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, const String& objectId, std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>* listenersArray)
 {
     v8::HandleScope handles(m_isolate);
-
+    v8::Local<v8::Value> value;
     v8::Local<v8::Context> context;
     String16 objectGroup;
-    v8::Local<v8::Value> value = m_v8Session->findObject(errorString, objectId, &context, &objectGroup);
-    if (value.IsEmpty())
+    if (!m_v8Session->unwrapObject(errorString, objectId, &value, &context, &objectGroup))
         return;
     v8::Context::Scope scope(context);
     *listenersArray = protocol::Array<protocol::DOMDebugger::EventListener>::create();
