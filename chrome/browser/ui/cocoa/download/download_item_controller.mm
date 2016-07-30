@@ -284,6 +284,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [progressView_ setToolTip:base::SysUTF16ToNSString(tooltip_text)];
 }
 
+- (void)updateDownloadItemView {
+  [progressView_ setNeedsDisplay:YES];
+}
+
 - (void)clearDangerousMode {
   [self setState:kNormal];
   // The state change hide the dangerouse download view and is now showing the

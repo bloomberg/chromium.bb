@@ -82,7 +82,8 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 - (void)installTrackingArea;
 - (void)removeTrackingArea;
 - (void)willEnterFullscreen;
-- (void)willLeaveFullscreen;
+- (void)didExitFullscreen;
+- (void)updateDownloadItemView;
 - (void)updateCloseButton;
 @end
 
@@ -134,8 +135,8 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
                         name:NSWindowWillEnterFullScreenNotification
                       object:nil];
   [defaultCenter addObserver:self
-                    selector:@selector(willLeaveFullscreen)
-                        name:NSWindowWillExitFullScreenNotification
+                    selector:@selector(didExitFullscreen)
+                        name:NSWindowDidExitFullScreenNotification
                       object:nil];
   [self installTrackingArea];
 }
@@ -478,9 +479,15 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
   [self updateCloseButton];
 }
 
-- (void)willLeaveFullscreen {
+- (void)didExitFullscreen {
   isFullscreen_ = NO;
   [self updateCloseButton];
+  [self updateDownloadItemView];
+}
+
+- (void)updateDownloadItemView {
+  for (DownloadItemController* controller in downloadItemControllers_.get())
+    [controller updateDownloadItemView];
 }
 
 - (void)updateCloseButton {
