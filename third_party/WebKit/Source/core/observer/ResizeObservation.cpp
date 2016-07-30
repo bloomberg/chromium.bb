@@ -15,18 +15,21 @@ ResizeObservation::ResizeObservation(Element* target, ResizeObserver* observer)
     : m_target(target)
     , m_observer(observer)
     , m_observationSize(0, 0)
+    , m_elementSizeChanged(true)
 {
     DCHECK(m_target);
+    m_observer->elementSizeChanged();
 }
 
 void ResizeObservation::setObservationSize(const LayoutSize& size)
 {
     m_observationSize = size;
+    m_elementSizeChanged = false;
 }
 
 bool ResizeObservation::observationSizeOutOfSync() const
 {
-    return m_observationSize != ResizeObservation::getTargetSize(m_target);
+    return m_elementSizeChanged && m_observationSize != ResizeObservation::getTargetSize(m_target);
 }
 
 size_t ResizeObservation::targetDepth()
@@ -51,6 +54,11 @@ LayoutSize ResizeObservation::getTargetSize(Element* target) // static
     return LayoutSize();
 }
 
+void ResizeObservation::elementSizeChanged()
+{
+    m_elementSizeChanged = true;
+    m_observer->elementSizeChanged();
+}
 
 DEFINE_TRACE(ResizeObservation)
 {

@@ -24,6 +24,7 @@ public:
     void setObservationSize(const LayoutSize&);
     // True if observationSize differs from target's current size.
     bool observationSizeOutOfSync() const;
+    void elementSizeChanged();
 
     static LayoutSize getTargetSize(Element* target);
 
@@ -34,6 +35,7 @@ private:
     Member<ResizeObserver> m_observer;
     // Target size sent in last observation notification.
     LayoutSize m_observationSize;
+    bool m_elementSizeChanged;
 };
 
 } // namespace blink
