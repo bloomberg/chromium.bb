@@ -6,21 +6,18 @@ suite('route', function() {
   test('tree structure', function() {
     // Set up root page routes.
     var BASIC = new settings.Route('/');
-    BASIC.page = 'basic';
     var ADVANCED = new settings.Route('/advanced');
-    ADVANCED.page = 'advanced';
     assertDeepEquals([], ADVANCED.subpage);
 
     // Test a section route.
     var PRIVACY = ADVANCED.createChild('/privacy');
     PRIVACY.section = 'privacy';
     assertEquals(ADVANCED, PRIVACY.parent);
-    assertEquals('advanced', PRIVACY.page);
     assertDeepEquals([], PRIVACY.subpage);
-    assertFalse(PRIVACY.isDescendantOf(BASIC));
-    assertTrue(PRIVACY.isDescendantOf(ADVANCED));
-    assertFalse(PRIVACY.isDescendantOf(PRIVACY));
-    assertFalse(ADVANCED.isDescendantOf(PRIVACY));
+    assertFalse(BASIC.contains(PRIVACY));
+    assertTrue(ADVANCED.contains(PRIVACY));
+    assertTrue(PRIVACY.contains(PRIVACY));
+    assertFalse(PRIVACY.contains(ADVANCED));
 
     // Test a subpage route.
     var SITE_SETTINGS = PRIVACY.createChild('/siteSettings', 'site-settings');
@@ -28,11 +25,10 @@ suite('route', function() {
     assertEquals(PRIVACY, SITE_SETTINGS.parent);
     assertFalse(!!SITE_SETTINGS.dialog);
     assertDeepEquals(['site-settings'], SITE_SETTINGS.subpage);
-    assertEquals('advanced', SITE_SETTINGS.page);
     assertEquals('privacy', SITE_SETTINGS.section);
-    assertFalse(SITE_SETTINGS.isDescendantOf(BASIC));
-    assertTrue(SITE_SETTINGS.isDescendantOf(ADVANCED));
-    assertTrue(SITE_SETTINGS.isDescendantOf(PRIVACY));
+    assertFalse(BASIC.contains(SITE_SETTINGS));
+    assertTrue(ADVANCED.contains(SITE_SETTINGS));
+    assertTrue(PRIVACY.contains(SITE_SETTINGS));
 
     // Test a sub-subpage route.
     var SITE_SETTINGS_ALL =
@@ -47,11 +43,9 @@ suite('route', function() {
     assertEquals(PRIVACY, CLEAR_BROWSING_DATA.parent);
     assertEquals('clear-browsing-data', CLEAR_BROWSING_DATA.dialog);
     assertEquals('privacy', CLEAR_BROWSING_DATA.section);
-    assertEquals('advanced', CLEAR_BROWSING_DATA.page);
-    assertEquals('privacy', CLEAR_BROWSING_DATA.section);
-    assertFalse(CLEAR_BROWSING_DATA.isDescendantOf(BASIC));
-    assertTrue(CLEAR_BROWSING_DATA.isDescendantOf(ADVANCED));
-    assertTrue(CLEAR_BROWSING_DATA.isDescendantOf(PRIVACY));
+    assertFalse(BASIC.contains(CLEAR_BROWSING_DATA));
+    assertTrue(ADVANCED.contains(CLEAR_BROWSING_DATA));
+    assertTrue(PRIVACY.contains(CLEAR_BROWSING_DATA));
   });
 
   test('no duplicate routes', function() {

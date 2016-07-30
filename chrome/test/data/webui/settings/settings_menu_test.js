@@ -12,9 +12,7 @@ cr.define('settings_menu', function() {
       setup(function() {
         PolymerTest.clearBody();
         settingsMenu = document.createElement('settings-menu');
-        settingsMenu.currentRoute = {
-          page: 'basic', section: '', subpage: []
-        };
+        settingsMenu.currentRoute = settings.Route.BASIC;
         document.body.appendChild(settingsMenu);
       });
 
@@ -44,11 +42,9 @@ cr.define('settings_menu', function() {
       });
 
       test('openResetSection', function() {
-        settingsMenu.currentRoute = {
-          page: 'advanced', section: 'reset', subpage: []
-        };
+        settingsMenu.currentRoute = settings.Route.RESET;
         var advancedPage = settingsMenu.$.advancedPage;
-        assertEquals('reset',
+        assertEquals('/reset',
             advancedPage.querySelector('paper-menu').selected);
       });
     });

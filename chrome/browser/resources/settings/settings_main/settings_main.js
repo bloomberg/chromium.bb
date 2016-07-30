@@ -122,13 +122,13 @@ Polymer({
     this.inSubpage_ = newRoute.subpage.length > 0;
     this.style.height = this.inSubpage_ ? '100%' : '';
 
-    if (newRoute.page == 'about') {
+    if (settings.Route.ABOUT.contains(newRoute)) {
       this.showPages_ = {about: true, basic: false, advanced: false};
     } else {
       this.showPages_ = {
         about: false,
-        basic: newRoute.page == 'basic' || !this.inSubpage_,
-        advanced: newRoute.page == 'advanced' ||
+        basic: settings.Route.BASIC.contains(newRoute) || !this.inSubpage_,
+        advanced: settings.Route.ADVANCED.contains(newRoute) ||
             (!this.inSubpage_ && this.advancedToggleExpanded_),
       };
 

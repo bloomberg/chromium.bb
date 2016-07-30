@@ -407,10 +407,9 @@ var RoutableBehaviorImpl = {
           this.collapseSection(section);
       }
 
-      if (newRoute && newRoute.section &&
-          this.$$('[data-page=' + newRoute.page + ']')) {
+      // Scrolls to the section if this main page contains the route's section.
+      if (newRoute && newRoute.section && this.getSection_(newRoute.section))
         this.scrollToSection_();
-      }
     }
   },
 

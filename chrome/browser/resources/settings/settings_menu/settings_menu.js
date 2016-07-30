@@ -48,28 +48,8 @@ Polymer({
       this.fire('toggle-advanced-page', false);
     }.bind(this));
 
-    this.fire('toggle-advanced-page', this.currentRoute.page == 'advanced');
-  },
-
-  /**
-   * @param {!settings.Route} newRoute
-   * @private
-   */
-  currentRouteChanged_: function(newRoute) {
-    // Sync URL changes to the side nav menu.
-
-    if (newRoute.page == 'advanced') {
-      assert(!this.pageVisibility ||
-             this.pageVisibility.advancedSettings !== false);
-      this.$.advancedMenu.selected = this.currentRoute.section;
-      this.$.basicMenu.selected = null;
-    } else if (newRoute.page == 'basic') {
-      this.$.advancedMenu.selected = null;
-      this.$.basicMenu.selected = this.currentRoute.section;
-    } else {
-      this.$.advancedMenu.selected = null;
-      this.$.basicMenu.selected = null;
-    }
+    this.fire('toggle-advanced-page',
+              settings.Route.ADVANCED.contains(this.currentRoute));
   },
 
   /**
@@ -92,22 +72,10 @@ Polymer({
    */
   openPage_: function(event) {
     this.ripple_(/** @type {!Node} */(event.currentTarget));
-    var page = event.currentTarget.parentNode.dataset.page;
-    if (!page)
-      return;
 
-    var section = event.currentTarget.dataset.section;
-    // TODO(tommycli): Use Object.values once Closure compilation supports it.
-    var matchingKey = Object.keys(settings.Route).find(function(key) {
-      var route = settings.Route[key];
-      // TODO(tommycli): Remove usage of page, section, and subpage properties.
-      // Routes should be somehow directly bound to the menu elements.
-      return route.page == page && route.section == section &&
-          route.subpage.length == 0;
-    });
-
-    if (matchingKey)
-      settings.navigateTo(settings.Route[matchingKey]);
+    var route = settings.getRouteForPath(event.currentTarget.dataset.path);
+    assert(route, 'settings-menu has an an entry with an invalid path');
+    settings.navigateTo(route);
   },
 
   /**

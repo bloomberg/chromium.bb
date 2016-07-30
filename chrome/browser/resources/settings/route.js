@@ -17,7 +17,6 @@ cr.define('settings', function() {
 
     // Below are all legacy properties to provide compatibility with the old
     // routing system. TODO(tommycli): Remove once routing refactor complete.
-    this.page = '';
     this.section = '';
     /** @type {!Array<string>} */ this.subpage = [];
   };
@@ -40,7 +39,6 @@ cr.define('settings', function() {
 
       var route = new Route(newUrl);
       route.parent = this;
-      route.page = this.page;
       route.section = this.section;
       route.subpage = this.subpage.slice();  // Shallow copy.
 
@@ -78,16 +76,15 @@ cr.define('settings', function() {
     },
 
     /**
-     * Returns true if this route is a descendant of the parameter.
+     * Returns true if this route matches or is an ancestor of the parameter.
      * @param {!settings.Route} route
      * @return {boolean}
      */
-    isDescendantOf: function(route) {
-      for (var parent = this.parent; parent != null; parent = parent.parent) {
-        if (route == parent)
+    contains: function(route) {
+      for (var r = route; r != null; r = r.parent) {
+        if (this == r)
           return true;
       }
-
       return false;
     },
   };
@@ -97,11 +94,8 @@ cr.define('settings', function() {
 
   // Root pages.
   r.BASIC = new Route('/');
-  r.BASIC.page = 'basic';
   r.ADVANCED = new Route('/advanced');
-  r.ADVANCED.page = 'advanced';
   r.ABOUT = new Route('/help');
-  r.ABOUT.page = 'about';
 
 <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');
@@ -270,8 +264,27 @@ cr.define('settings', function() {
    */
   var navigateTo = null;
 
+  /**
+   * Returns the matching canonical route, or null if none matches.
+   * @param {string} path
+   * @return {?settings.Route}
+   * @private
+   */
+  var getRouteForPath = function(path) {
+    // TODO(tommycli): Use Object.values once Closure compilation supports it.
+    var matchingKey = Object.keys(Route).find(function(key) {
+      return Route[key].path == path;
+    });
+
+    if (!matchingKey)
+      return null;
+
+    return Route[matchingKey];
+  };
+
   return {
     Route: Route,
     navigateTo: navigateTo,
+    getRouteForPath: getRouteForPath,
   };
 });
