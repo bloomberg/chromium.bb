@@ -82,6 +82,7 @@
             '../third_party/wayland-protocols/wayland-protocols.gyp:gaming_input_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:remote_shell_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:secure_output_protocol',
+            '../third_party/wayland-protocols/wayland-protocols.gyp:stylus_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:viewporter_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:vsync_feedback_protocol',
