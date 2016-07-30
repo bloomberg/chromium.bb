@@ -43,14 +43,6 @@ def print_landmines():
   if platform() in ('win', 'mac'):
     print ('Improper dependency for create_nmf.py broke in r240802, '
            'fixed in r240860.')
-  if (platform() == 'win' and
-      gyp_msvs_version() == '2012' and
-      gyp_defines().get('target_arch') == 'x64' and
-      gyp_defines().get('dcheck_always_on') == '1'):
-    print "Switched win x64 trybots from VS2010 to VS2012."
-  if (platform() == 'win' and
-      gyp_msvs_version().startswith('2013')):
-    print "Switch to VS2013"
   if (platform() == 'win' and gyp_msvs_version().startswith('2015')):
     print 'Switch to VS2015 Update 2'
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
