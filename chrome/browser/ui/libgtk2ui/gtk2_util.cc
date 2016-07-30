@@ -14,8 +14,6 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/version_info.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -58,22 +56,12 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
   CommonInitFromCommandLine(command_line, gtk_init);
 }
 
-// This function should be kept in sync with the copy in
-// shell_integration_linux.cc.
-//
-// Because of how libgtk2ui.so is structured as a stand alone .so, we can't call
-// code from browser and above.
+// TODO(erg): This method was copied out of shell_integration_linux.cc. Because
+// of how this library is structured as a stand alone .so, we can't call code
+// from browser and above.
 std::string GetDesktopName(base::Environment* env) {
 #if defined(GOOGLE_CHROME_BUILD)
-  version_info::Channel product_channel(chrome::GetChannel());
-  switch (product_channel) {
-    case version_info::Channel::DEV:
-      return "google-chrome-unstable.desktop";
-    case version_info::Channel::BETA:
-      return "google-chrome-beta.desktop";
-    default:
-      return "google-chrome.desktop";
-  }
+  return "google-chrome.desktop";
 #else  // CHROMIUM_BUILD
   // Allow $CHROME_DESKTOP to override the built-in value, so that development
   // versions can set themselves as the default without interfering with

@@ -635,7 +635,6 @@ std::string GetProgramClassClass() {
                                         GetDesktopName(env.get()));
 }
 
-// This function should be kept in sync with the copy in gtk2_util.cc.
 std::string GetDesktopName(base::Environment* env) {
 #if defined(GOOGLE_CHROME_BUILD)
   version_info::Channel product_channel(chrome::GetChannel());
