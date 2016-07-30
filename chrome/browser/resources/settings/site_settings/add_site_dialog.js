@@ -46,6 +46,11 @@ Polymer({
     }.bind(this));
   },
 
+  /** @private */
+  onCancelTap_: function() {
+    this.$.dialog.cancel();
+  },
+
   /**
    * The tap handler for the Add [Site] button (adds the pattern and closes
    * the dialog).
