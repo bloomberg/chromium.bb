@@ -37,7 +37,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId));
+                billingAddressId, "" /* serverId */));
     }
 
     /** Click [X] to cancel payment. */

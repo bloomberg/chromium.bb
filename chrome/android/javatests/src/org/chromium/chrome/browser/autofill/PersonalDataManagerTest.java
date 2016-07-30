@@ -367,11 +367,13 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         // Create a local card and an identical server card.
         CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */);
+                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */,
+                "" /* serverId */);
 
         CreditCard card2 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                 false /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */);
+                "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */,
+                "" /* serverId */);
 
         mHelper.setCreditCard(card1);
         mHelper.addServerCreditCard(card2);
@@ -412,7 +414,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         String guid = mHelper.setCreditCard(
                 new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                     true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "",
-                    "5", "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */));
+                    "5", "2020", "Visa", 0 /* issuerIconDrawableId */, "" /* billingAddressId */,
+                    "" /* serverId */));
 
         // Make sure the credit card does not have the specific use stats form the start.
         assertTrue(1234 != mHelper.getCreditCardUseCountForTesting(guid));
@@ -462,7 +465,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                     new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
                             true /* isLocal */, false /* isCached */, "John Doe",
                             "1234123412341234", "", "5", "2020", "Visa",
-                            0 /* issuerIconDrawableId */, "" /* billingAddressId */));
+                            0 /* issuerIconDrawableId */, "" /* billingAddressId */,
+                            "" /* serverId */));
 
         // Set specific use stats for the credit card.
         mHelper.setCreditCardUseStatsForTesting(guid, 1234, 1234);

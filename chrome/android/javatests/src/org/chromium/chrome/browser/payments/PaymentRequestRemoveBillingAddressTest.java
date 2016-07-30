@@ -39,7 +39,7 @@ public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBa
                 "US", "555-555-5555", "jon.doe@google.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Alice",
                 "4111111111111111", "1111", "1", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId));
+                billingAddressId, "" /* serverId */));
         helper.deleteProfile(billingAddressId);
     }
 

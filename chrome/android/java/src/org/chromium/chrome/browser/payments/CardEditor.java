@@ -72,6 +72,15 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
     /** The web contents where the web payments API is invoked. */
     private final WebContents mWebContents;
 
+    /**
+     * The map from GUIDs to profiles that can be used for billing address. This cache avoids
+     * re-reading profiles from disk, which may have changed due to sync, for example. Note that
+     * this cache prevents the user from adding a shipping address and then immediately using it as
+     * a billing address. This is consistent with the rest of the PaymentRequest UI, because adding
+     * a billing address does not enable its immediate use as a shipping address either.
+     */
+    private final Map<String, AutofillProfile> mProfilesForBillingAddress;
+
     /** Used for verifying billing address completeness and also editing billing addresses. */
     private final AddressEditor mAddressEditor;
 
@@ -125,6 +134,19 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
         mWebContents = webContents;
         mAddressEditor = addressEditor;
         mObserverForTest = observerForTest;
+
+        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesForSettings();
+        mProfilesForBillingAddress = new HashMap<>();
+        for (int i = 0; i < profiles.size(); i++) {
+            AutofillProfile profile = profiles.get(i);
+            // 1) Include only local profiles, because GUIDs of server profiles change on every
+            //    browser restart. Server profiles are not supported as billing addresses.
+            // 2) Include only complete profiles, so that user launches the editor only when
+            //    explicitly selecting [+ ADD ADDRESS] in the dropdown.
+            if (profile.getIsLocal() && mAddressEditor.isProfileComplete(profile)) {
+                mProfilesForBillingAddress.put(profile.getGUID(), profile);
+            }
+        }
 
         mCardTypes = new HashMap<>();
         mCardTypes.put("amex",
@@ -182,9 +204,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
      * @return Whether the card is complete.
      */
     public boolean isCardComplete(CreditCard card) {
-        if (card == null || TextUtils.isEmpty(card.getBillingAddressId())
-                || !mAddressEditor.isProfileComplete(PersonalDataManager.getInstance().getProfile(
-                        card.getBillingAddressId()))) {
+        if (card == null || !mProfilesForBillingAddress.containsKey(card.getBillingAddressId())) {
             return false;
         }
 
@@ -288,8 +308,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
             @Override
             public void run() {
                 commitChanges(card, isNewCard);
-                instrument.completeInstrument(card,
-                        PersonalDataManager.getInstance().getProfile(card.getBillingAddressId()));
+                instrument.completeInstrument(
+                        card, mProfilesForBillingAddress.get(card.getBillingAddressId()));
                 callback.onResult(instrument);
             }
         });
@@ -425,21 +445,10 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
         billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_NONE,
                 mContext.getString(R.string.select)));
 
-        // Re-read profiles every time, in case any of them have changed. This does not cause a disk
-        // read, because personal_data_manager.h holds a cache.
-        final PersonalDataManager pdm = PersonalDataManager.getInstance();
-        List<AutofillProfile> profiles = pdm.getProfilesForSettings();
-
-        // 1) Include only local profiles, because GUIDs of server profiles change on every browser
-        //    restart. Server profiles are not supported as billing addresses.
-        // 2) Include only complete profiles, so that user launches the editor only when explicitly
-        //    selecting [+ ADD ADDRESS] in the dropdown.
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillProfile profile = profiles.get(i);
-            if (profile.getIsLocal() && mAddressEditor.isProfileComplete(profile)) {
-                // Key is profile GUID. Value is profile label.
-                billingAddresses.add(new DropdownKeyValue(profile.getGUID(), profile.getLabel()));
-            }
+        for (Map.Entry<String, AutofillProfile> address : mProfilesForBillingAddress.entrySet()) {
+            // Key is profile GUID. Value is profile label.
+            billingAddresses.add(
+                    new DropdownKeyValue(address.getKey(), address.getValue().getLabel()));
         }
 
         billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_ADD_NEW,
@@ -474,6 +483,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
                         } else {
                             // User has added a new complete address. Add it to the top of the
                             // dropdown, under the "Select" prompt.
+                            mProfilesForBillingAddress.put(
+                                    billingAddress.getIdentifier(), billingAddress.getProfile());
                             billingAddresses.add(1, new DropdownKeyValue(
                                     billingAddress.getIdentifier(), billingAddress.getSublabel()));
                             mBillingAddressField.setDropdownKeyValues(billingAddresses);
@@ -517,7 +528,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
 
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         if (!card.getIsLocal()) {
-            pdm.updateServerCardBillingAddress(card.getGUID(), card.getBillingAddressId());
+            pdm.updateServerCardBillingAddress(card.getServerId(), card.getBillingAddressId());
             return;
         }
 

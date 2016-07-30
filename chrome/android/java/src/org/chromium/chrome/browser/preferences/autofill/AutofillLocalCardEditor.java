@@ -167,7 +167,8 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
                 String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),
                 (String) mExpirationYear.getSelectedItem(), "" /* basicCardPaymentType */,
                 0 /* issuerIconDrawableId */,
-                ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID() /* billing */);
+                ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID() /* billing */,
+                "" /* serverId */);
         PersonalDataManager.getInstance().setCreditCard(card);
     }
 

@@ -91,7 +91,7 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
 
     @Override
     protected void saveEntry() {
-        PersonalDataManager.getInstance().updateServerCardBillingAddress(mGUID,
+        PersonalDataManager.getInstance().updateServerCardBillingAddress(mCard.getServerId(),
                 ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID());
     }
 

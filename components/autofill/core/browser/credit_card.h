@@ -134,6 +134,7 @@ class CreditCard : public AutofillDataModel {
   void SetExpirationYear(int expiration_year);
 
   const std::string& server_id() const { return server_id_; }
+  void set_server_id(const std::string& server_id) { server_id_ = server_id; }
 
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);

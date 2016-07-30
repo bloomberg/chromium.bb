@@ -61,7 +61,7 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         // Create a credit card associated with the fourth profile.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                guid4));
+                guid4, "" /* serverId */));
 
         // Set the use stats so that profile1 has the highest frecency score, profile2 the second
         // highest, profile 3 the third lowest, profile4 the second lowest and profile 5 the lowest.

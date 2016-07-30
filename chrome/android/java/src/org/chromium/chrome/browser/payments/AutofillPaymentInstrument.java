@@ -61,12 +61,7 @@ public class AutofillPaymentInstrument
         assert mIsComplete;
         assert mCallback == null;
         mCallback = callback;
-        if (mCard.getGUID().isEmpty()) {
-            PersonalDataManager.getInstance().getFullTemporaryCard(mWebContents, mCard.getNumber(),
-                    mCard.getName(), mCard.getMonth(), mCard.getYear(), this);
-        } else {
-            PersonalDataManager.getInstance().getFullCard(mWebContents, mCard.getGUID(), this);
-        }
+        PersonalDataManager.getInstance().getFullCard(mWebContents, mCard, this);
     }
 
     @Override

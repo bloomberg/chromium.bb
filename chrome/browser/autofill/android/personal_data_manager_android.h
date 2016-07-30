@@ -113,11 +113,12 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
-  // Updates the billing address of a server credit card with GUID |jguid|.
+  // Updates the billing address of a server credit card with server ID
+  // |jcard_server_id|.
   void UpdateServerCardBillingAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jguid,
+      const base::android::JavaParamRef<jstring>& jcard_server_id,
       const base::android::JavaParamRef<jstring>& jbilling_address_id);
 
   // Returns the card type according to PaymentRequest spec, or an empty string
@@ -153,24 +154,7 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jweb_contents,
-      const base::android::JavaParamRef<jstring>& jguid,
-      const base::android::JavaParamRef<jobject>& jdelegate);
-
-  // Gets the card CVC and expiration date (if it's expired) for a card that's
-  // temporary and not stored on disk. No unmasking is performed. If the user
-  // has entered new expiration date, the new date is not saved on disk, because
-  // this card is temporary.
-  //
-  // The card number, name on card, and expiration date are used for UI display
-  // and are sent to the delegate after user confirms their CVC.
-  void GetFullTemporaryCardForPaymentRequest(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents,
-      const base::android::JavaParamRef<jstring>& jcard_number,
-      const base::android::JavaParamRef<jstring>& jname_on_card,
-      const base::android::JavaParamRef<jstring>& jexpiration_month,
-      const base::android::JavaParamRef<jstring>& jexpiration_year,
+      const base::android::JavaParamRef<jobject>& jcard,
       const base::android::JavaParamRef<jobject>& jdelegate);
 
   // PersonalDataManagerObserver:

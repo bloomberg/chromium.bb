@@ -39,7 +39,7 @@ public class PaymentRequestUseStatsTest extends PaymentRequestTestBase {
                 "US", "555-555-5555", "", "en-US"));
         mCreditCardId = mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true,
                 "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                mBillingAddressId));
+                mBillingAddressId, "" /* serverId */));
         // Set specific use stats for the profile and credit card.
         mHelper.setProfileUseStatsForTesting(mBillingAddressId, 20, 5000);
         mHelper.setCreditCardUseStatsForTesting(mCreditCardId, 10, 5000);

@@ -35,7 +35,7 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
                 "US", "333-333-3333", "jon.doe" /* invalid email address */, "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId));
+                billingAddressId, "" /* serverId */));
     }
 
     /** Attempt to update the contact information with invalid data and cancel the transaction. */
