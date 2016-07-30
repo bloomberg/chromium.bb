@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -138,6 +139,13 @@ class AshTestBase : public testing::Test {
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
 
+  // Sets material mode for the test. This will override material mode set via
+  // command line switches.
+  void set_material_mode(MaterialDesignController::Mode material_mode) {
+    CHECK(!setup_called_);
+    material_mode_ = material_mode;
+  }
+
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
   void RunAllPendingInMessageLoop();
@@ -170,6 +178,7 @@ class AshTestBase : public testing::Test {
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_;
+  MaterialDesignController::Mode material_mode_;
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;

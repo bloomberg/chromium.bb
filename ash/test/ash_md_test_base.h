@@ -21,14 +21,11 @@ class AshMDTestBase
 
   // AshTestBase:
   void SetUp() override;
-  void TearDown() override;
 
   int GetMdMaximizedWindowHeightOffset();
   int GetMdAutoHiddenShelfHeightOffset();
 
  private:
-  std::unique_ptr<MaterialDesignControllerTestAPI> material_design_state_;
-
   // The material design shelf is taller (by 1px) so use this offset to
   // adjust the expected height of a maximized window.
   int md_maximized_window_height_offset_ = 0;

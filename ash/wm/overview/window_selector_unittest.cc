@@ -113,9 +113,8 @@ class WindowSelectorTest
   ~WindowSelectorTest() override {}
 
   void SetUp() override {
+    set_material_mode(GetParam());
     test::AshTestBase::SetUp();
-    material_design_state_.reset(
-        new test::MaterialDesignControllerTestAPI(GetParam()));
     if (!ash::MaterialDesignController::IsOverviewMaterial()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kAshEnableStableOverviewOrder);
@@ -126,11 +125,6 @@ class WindowSelectorTest
         test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
     shelf_view_test_->SetAnimationDuration(1);
     ScopedTransformOverviewWindow::SetImmediateCloseForTests();
-  }
-
-  void TearDown() override {
-    material_design_state_.reset();
-    test::AshTestBase::TearDown();
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
@@ -339,7 +333,6 @@ class WindowSelectorTest
   aura::test::TestWindowDelegate delegate_;
   NonActivatableActivationDelegate non_activatable_activation_delegate_;
   std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
-  std::unique_ptr<test::MaterialDesignControllerTestAPI> material_design_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };

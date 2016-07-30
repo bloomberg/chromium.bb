@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/test/material_design_controller_test_api.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
@@ -42,10 +44,12 @@ class AshTestHelper {
   explicit AshTestHelper(base::MessageLoopForUI* message_loop);
   ~AshTestHelper();
 
-  // Creates the ash::Shell and performs associated initialization.
-  // Set |start_session| to true if the user should log in before
-  // the test is run.
-  void SetUp(bool start_session);
+  // Creates the ash::Shell and performs associated initialization.  Set
+  // |start_session| to true if the user should log in before the test is run.
+  // |material_mode| determines the material design mode to be used for the
+  // tests. If |material_mode| is UNINITIALIZED, the value from command line
+  // switches is used.
+  void SetUp(bool start_session, MaterialDesignController::Mode material_mode);
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
@@ -106,6 +110,8 @@ class AshTestHelper {
   // Check if Bluez DBus Manager was initialized here.
   bool bluez_dbus_manager_initialized_;
 #endif
+
+  std::unique_ptr<test::MaterialDesignControllerTestAPI> material_design_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

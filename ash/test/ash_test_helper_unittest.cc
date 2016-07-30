@@ -22,7 +22,8 @@ class AshTestHelperTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     ash_test_helper_.reset(new ash::test::AshTestHelper(&message_loop_));
-    ash_test_helper_->SetUp(true);
+    ash_test_helper_->SetUp(true,
+                            ash::MaterialDesignController::Mode::UNINITIALIZED);
   }
 
   void TearDown() override {

@@ -91,7 +91,10 @@ class AshEventGeneratorDelegate
 /////////////////////////////////////////////////////////////////////////////
 
 AshTestBase::AshTestBase()
-    : setup_called_(false), teardown_called_(false), start_session_(true) {
+    : setup_called_(false),
+      teardown_called_(false),
+      start_session_(true),
+      material_mode_(MaterialDesignController::Mode::UNINITIALIZED) {
 #if defined(USE_X11)
   // This is needed for tests which use this base class but are run in browser
   // test binaries so don't get the default initialization in the unit test
@@ -130,7 +133,8 @@ void AshTestBase::SetUp() {
 #if defined(OS_WIN)
   ui::test::SetUsePopupAsRootWindowForTest(true);
 #endif
-  ash_test_helper_->SetUp(start_session_);
+
+  ash_test_helper_->SetUp(start_session_, material_mode_);
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
