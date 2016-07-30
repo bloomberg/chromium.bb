@@ -287,7 +287,7 @@ DevToolsMessageChunkProcessor::DevToolsMessageChunkProcessor(
 DevToolsMessageChunkProcessor::~DevToolsMessageChunkProcessor() {
 }
 
-void DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
+bool DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
     const DevToolsMessageChunk& chunk) {
   if (chunk.is_last && !chunk.post_state.empty())
     state_cookie_ = chunk.post_state;
@@ -295,9 +295,10 @@ void DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
     last_call_id_ = chunk.call_id;
 
   if (chunk.is_first && chunk.is_last) {
-    CHECK(message_buffer_size_ == 0);
+    if (message_buffer_size_ != 0)
+      return false;
     callback_.Run(chunk.session_id, chunk.data);
-    return;
+    return true;
   }
 
   if (chunk.is_first) {
@@ -306,16 +307,18 @@ void DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
     message_buffer_size_ = chunk.message_size;
   }
 
-  CHECK(message_buffer_.size() + chunk.data.size() <=
-      message_buffer_size_);
+  if (message_buffer_.size() + chunk.data.size() > message_buffer_size_)
+    return false;
   message_buffer_.append(chunk.data);
 
   if (chunk.is_last) {
-    CHECK(message_buffer_.size() == message_buffer_size_);
+    if (message_buffer_.size() != message_buffer_size_)
+      return false;
     callback_.Run(chunk.session_id, message_buffer_);
     message_buffer_ = std::string();
     message_buffer_size_ = 0;
   }
+  return true;
 }
 
 }  // namespace content

@@ -67612,6 +67612,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="129" label="SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH"/>
   <int value="130" label="MSDH_INVALID_FRAME_ID"/>
   <int value="131" label="SDH_INVALID_PORT_RANGE"/>
+  <int value="132" label="SCO_INVALID_ARGUMENT"/>
+  <int value="133" label="RFH_INCONSISTENT_DEVTOOLS_MESSAGE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

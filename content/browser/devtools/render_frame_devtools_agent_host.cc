@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
@@ -105,7 +106,7 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
                                const std::string& method,
                                const std::string& message);
   void InspectElement(int session_id, int x, int y);
-  void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
+  bool ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   void Suspend();
   void Resume();
 
@@ -217,10 +218,10 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
       host_->GetRoutingID(), session_id, x, y));
 }
 
-void
+bool
 RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
     const DevToolsMessageChunk& chunk) {
-  chunk_processor_.ProcessChunkedMessageFromAgent(chunk);
+  return chunk_processor_.ProcessChunkedMessageFromAgent(chunk);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
@@ -915,10 +916,16 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
 void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     RenderFrameHost* sender,
     const DevToolsMessageChunk& message) {
+  bool success = true;
   if (current_ && current_->host() == sender)
-    current_->ProcessChunkedMessageFromAgent(message);
+    success = current_->ProcessChunkedMessageFromAgent(message);
   else if (pending_ && pending_->host() == sender)
-    pending_->ProcessChunkedMessageFromAgent(message);
+    success = pending_->ProcessChunkedMessageFromAgent(message);
+  if (!success) {
+    bad_message::ReceivedBadMessage(
+        sender->GetProcess(),
+        bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
+  }
 }
 
 void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
