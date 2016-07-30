@@ -27,7 +27,7 @@ private:
     static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getInternalPropertiesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void suppressWarningsAndCallFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void objectHasOwnPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void proxyTargetValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);

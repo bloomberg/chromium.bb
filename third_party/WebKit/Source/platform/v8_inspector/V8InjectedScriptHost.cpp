@@ -48,7 +48,7 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     setFunctionProperty(context, injectedScriptHost, "isTypedArray", V8InjectedScriptHost::isTypedArrayCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "subtype", V8InjectedScriptHost::subtypeCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback, debuggerExternal);
-    setFunctionProperty(context, injectedScriptHost, "suppressWarningsAndCallFunction", V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback, debuggerExternal);
+    setFunctionProperty(context, injectedScriptHost, "objectHasOwnProperty", V8InjectedScriptHost::objectHasOwnPropertyCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "bind", V8InjectedScriptHost::bindCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "proxyTargetValue", V8InjectedScriptHost::proxyTargetValueCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "prototype", V8InjectedScriptHost::prototypeCallback, debuggerExternal);
@@ -150,47 +150,12 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
         info.GetReturnValue().Set(properties);
 }
 
-void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8InjectedScriptHost::objectHasOwnPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 2 || info.Length() > 3 || !info[0]->IsFunction()) {
-        NOTREACHED();
+    if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsString())
         return;
-    }
-    if (info.Length() > 2 && (!info[2]->IsArray() && !info[2]->IsUndefined())) {
-        NOTREACHED();
-        return;
-    }
-
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-
-    v8::Local<v8::Function> function = info[0].As<v8::Function>();
-    v8::Local<v8::Value> receiver = info[1];
-    std::unique_ptr<v8::Local<v8::Value>[]> argv = nullptr;
-    size_t argc = 0;
-
-    if (info.Length() > 2 && info[2]->IsArray()) {
-        v8::Local<v8::Array> arguments = info[2].As<v8::Array>();
-        argc = arguments->Length();
-        argv.reset(new v8::Local<v8::Value>[argc]);
-        for (size_t i = 0; i < argc; ++i) {
-            if (!arguments->Get(context, i).ToLocal(&argv[i]))
-                return;
-        }
-    }
-
-    V8DebuggerImpl* debugger = unwrapDebugger(info);
-    int contextGroupId = V8DebuggerImpl::getGroupId(context);
-    if (contextGroupId)
-        debugger->client()->muteWarningsAndDeprecations(contextGroupId);
-
-    v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Value> result;
-    if (function->Call(context, receiver, argc, argv.get()).ToLocal(&result))
-        info.GetReturnValue().Set(result);
-
-    if (contextGroupId)
-        debugger->client()->unmuteWarningsAndDeprecations(contextGroupId);
+    bool result = info[0].As<v8::Object>()->HasOwnProperty(info.GetIsolate()->GetCurrentContext(), v8::Local<v8::String>::Cast(info[1])).FromMaybe(false);
+    info.GetReturnValue().Set(v8::Boolean::New(info.GetIsolate(), result));
 }
 
 void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

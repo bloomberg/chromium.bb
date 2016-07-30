@@ -115,7 +115,7 @@ function isArrayLike(obj)
         return false;
     try {
         if (typeof obj.splice === "function") {
-            if (!InjectedScriptHost.suppressWarningsAndCallFunction(Object.prototype.hasOwnProperty, obj, ["length"]))
+            if (!InjectedScriptHost.objectHasOwnProperty(/** @type {!Object} */ (obj), "length"))
                 return false;
             var len = obj.length;
             return typeof len === "number" && isUInt32(len);
@@ -170,12 +170,10 @@ domAttributesWithObservableSideEffectOnGet["Response"]["body"] = true;
 function doesAttributeHaveObservableSideEffectOnGet(object, attribute)
 {
     for (var interfaceName in domAttributesWithObservableSideEffectOnGet) {
-        var isInstance = InjectedScriptHost.suppressWarningsAndCallFunction(function(object, interfaceName) {
-            return /* suppressBlacklist */ typeof inspectedGlobalObject[interfaceName] === "function" && object instanceof inspectedGlobalObject[interfaceName];
-        }, null, [object, interfaceName]);
-        if (isInstance) {
+        var interfaceFunction = inspectedGlobalObject[interfaceName];
+        var isInstance = typeof interfaceFunction === "function" && object instanceof interfaceFunction;
+        if (isInstance)
             return attribute in domAttributesWithObservableSideEffectOnGet[interfaceName];
-        }
     }
     return false;
 }
@@ -397,12 +395,12 @@ InjectedScript.prototype = {
 
                 try {
                     propertyProcessed[property] = true;
-                    var descriptor = nullifyObjectProto(InjectedScriptHost.suppressWarningsAndCallFunction(Object.getOwnPropertyDescriptor, Object, [o, property]));
+                    var descriptor = nullifyObjectProto(Object.getOwnPropertyDescriptor(o, property));
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
                         if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.formatAccessorsAsProperties(object, descriptor.get) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
-                            descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [property]);
+                            descriptor.value = object[property];
                             descriptor.isOwn = true;
                             delete descriptor.get;
                             delete descriptor.set;
@@ -442,7 +440,7 @@ InjectedScript.prototype = {
             for (var i = 0; i < propertyNamesOnly.length; ++i) {
                 var name = propertyNamesOnly[i];
                 for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
-                    if (InjectedScriptHost.suppressWarningsAndCallFunction(Object.prototype.hasOwnProperty, o, [name])) {
+                    if (InjectedScriptHost.objectHasOwnProperty(o, name)) {
                         for (var descriptor of process(o, [name]))
                             yield descriptor;
                         break;
@@ -624,7 +622,7 @@ InjectedScript.prototype = {
 
         if (isSymbol(obj)) {
             try {
-                return /** @type {string} */ (InjectedScriptHost.suppressWarningsAndCallFunction(Symbol.prototype.toString, obj)) || "Symbol";
+                return obj.toString() || "Symbol";
             } catch (e) {
                 return "Symbol";
             }
@@ -791,7 +789,7 @@ InjectedScript.RemoteObject.prototype = {
          */
         function wrap(object, customObjectConfig)
         {
-            return InjectedScriptHost.suppressWarningsAndCallFunction(injectedScript._wrapObject, injectedScript, [ object, objectGroupName, false, false, null, false, false, customObjectConfig ]);
+            return injectedScript._wrapObject(object, objectGroupName, false, false, null, false, false, customObjectConfig);
         }
 
         try {

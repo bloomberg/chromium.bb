@@ -127,7 +127,7 @@ void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Objec
         return;
     }
 
-    std::unique_ptr<protocol::Value> protocolValue = toProtocolValue(function.context(), resultValue);
+    std::unique_ptr<protocol::Value> protocolValue = toProtocolValue(m_context->context(), resultValue);
     if (hasInternalError(errorString, !protocolValue))
         return;
     protocol::ErrorSupport errors(errorString);
