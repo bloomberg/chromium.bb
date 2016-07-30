@@ -11,8 +11,8 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "platform/LayoutLocale.h"
 #include "platform/text/hyphenation/HyphenatorAOSP.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "public/platform/modules/hyphenation/hyphenation.mojom-blink.h"
 
 namespace blink {
@@ -38,8 +38,7 @@ private:
 static mojom::blink::HyphenationPtr connectToRemoteService()
 {
     mojom::blink::HyphenationPtr service;
-    Platform::current()->serviceRegistry()->connectToRemoteService(
-        mojo::GetProxy(&service));
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&service));
     return service;
 }
 

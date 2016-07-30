@@ -11,8 +11,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -28,13 +28,13 @@ using blink::ScreenWakeLock;
 using blink::mojom::blink::WakeLockService;
 using blink::mojom::blink::WakeLockServiceRequest;
 
-// This class allows connecting service requests to a MockWakeLockService.
-class MockServiceRegistry : public blink::ServiceRegistry {
+// This class allows binding interface requests to a MockWakeLockService.
+class MockInterfaceProvider : public blink::InterfaceProvider {
 public:
-    MockServiceRegistry() : m_wakeLockStatus(false) {}
-    ~MockServiceRegistry() {}
+    MockInterfaceProvider() : m_wakeLockStatus(false) {}
+    ~MockInterfaceProvider() {}
 
-    void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle) override;
+    void getInterface(const char* name, mojo::ScopedMessagePipeHandle) override;
 
     bool wakeLockStatus() const { return m_wakeLockStatus; }
     void setWakeLockStatus(bool status) { m_wakeLockStatus = status; }
@@ -43,7 +43,7 @@ private:
     // A mock WakeLockService used to intercept calls to the mojo methods.
     class MockWakeLockService : public WakeLockService {
     public:
-        MockWakeLockService(MockServiceRegistry* registry, WakeLockServiceRequest request)
+        MockWakeLockService(MockInterfaceProvider* registry, WakeLockServiceRequest request)
             : m_binding(this, std::move(request))
             , m_registry(registry) {}
         ~MockWakeLockService() {}
@@ -54,27 +54,27 @@ private:
         void CancelWakeLock() override { m_registry->setWakeLockStatus(false); }
 
         mojo::Binding<WakeLockService> m_binding;
-        MockServiceRegistry* const m_registry;
+        MockInterfaceProvider* const m_registry;
     };
     std::unique_ptr<MockWakeLockService> m_mockWakeLockService;
 
     bool m_wakeLockStatus;
 };
 
-void MockServiceRegistry::connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle)
+void MockInterfaceProvider::getInterface(const char* name, mojo::ScopedMessagePipeHandle handle)
 {
     m_mockWakeLockService.reset(
         new MockWakeLockService(this, mojo::MakeRequest<WakeLockService>(std::move(handle))));
 }
 
-// A TestWebFrameClient to allow overriding the serviceRegistry() with a mock.
+// A TestWebFrameClient to allow overriding the interfaceProvider() with a mock.
 class TestWebFrameClient : public blink::FrameTestHelpers::TestWebFrameClient {
 public:
     ~TestWebFrameClient() override = default;
-    blink::ServiceRegistry* serviceRegistry() override { return &m_serviceRegistry; }
+    blink::InterfaceProvider* interfaceProvider() override { return &m_interfaceProvider; }
 
 private:
-    MockServiceRegistry m_serviceRegistry;
+    MockInterfaceProvider m_interfaceProvider;
 };
 
 class ScreenWakeLockTest: public testing::Test {
@@ -125,7 +125,7 @@ protected:
 
     bool clientKeepScreenAwake()
     {
-        return static_cast<MockServiceRegistry*>(m_testWebFrameClient.serviceRegistry())->wakeLockStatus();
+        return static_cast<MockInterfaceProvider*>(m_testWebFrameClient.interfaceProvider())->wakeLockStatus();
     }
 
     void setKeepAwake(bool keepAwake)

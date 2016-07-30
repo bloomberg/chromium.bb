@@ -4,15 +4,15 @@
 
 #include "platform/graphics/CanvasSurfaceLayerBridgeClientImpl.h"
 
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 
 namespace blink {
 
 CanvasSurfaceLayerBridgeClientImpl::CanvasSurfaceLayerBridgeClientImpl()
 {
     DCHECK(!m_service.is_bound());
-    Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 }
 
 CanvasSurfaceLayerBridgeClientImpl::~CanvasSurfaceLayerBridgeClientImpl()

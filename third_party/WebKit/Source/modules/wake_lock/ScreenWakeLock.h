@@ -15,7 +15,6 @@ namespace blink {
 
 class LocalFrame;
 class Screen;
-class ServiceRegistry;
 
 class MODULES_EXPORT ScreenWakeLock final : public GarbageCollectedFinalized<ScreenWakeLock>, public Supplement<LocalFrame>, public ContextLifecycleObserver, public PageVisibilityObserver {
     USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);

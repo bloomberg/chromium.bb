@@ -16,7 +16,7 @@
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
 
 namespace blink {
@@ -46,7 +46,7 @@ ScriptPromise MIDIAccessInitializer::start()
     Document* document = toDocument(getExecutionContext());
     DCHECK(document);
 
-    document->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_permissionService));
+    document->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_permissionService));
 
     bool requestSysEx = m_options.hasSysex() && m_options.sysex();
     Vector<PermissionName> permissions;

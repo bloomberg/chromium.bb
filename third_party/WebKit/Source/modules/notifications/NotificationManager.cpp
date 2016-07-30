@@ -5,8 +5,8 @@
 #include "modules/notifications/NotificationManager.h"
 
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
 namespace blink {
@@ -35,7 +35,7 @@ const char* NotificationManager::supplementName()
 NotificationManager::NotificationManager(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext)
 {
-    Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 }
 
 NotificationManager::~NotificationManager()

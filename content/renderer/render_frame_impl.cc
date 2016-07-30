@@ -1127,7 +1127,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
   remote_interfaces_.reset(new shell::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
-  blink_service_registry_.reset(new BlinkServiceRegistryImpl(
+  blink_interface_provider_.reset(new BlinkInterfaceProviderImpl(
       remote_interfaces_->GetWeakPtr()));
 
   std::pair<RoutingIDFrameMap::iterator, bool> result =
@@ -6211,8 +6211,8 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
                    .device_status());
 }
 
-blink::ServiceRegistry* RenderFrameImpl::serviceRegistry() {
-  return blink_service_registry_.get();
+blink::InterfaceProvider* RenderFrameImpl::interfaceProvider() {
+  return blink_interface_provider_.get();
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::visibilityState() const {

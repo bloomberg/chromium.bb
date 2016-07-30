@@ -35,7 +35,7 @@
 #include "modules/geolocation/GeolocationError.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
@@ -421,8 +421,7 @@ void Geolocation::requestPermission()
         return;
 
     m_geolocationPermission = PermissionRequested;
-    frame->serviceRegistry()->connectToRemoteService(
-        mojo::GetProxy(&m_permissionService));
+    frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_permissionService));
     m_permissionService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&Geolocation::onPermissionConnectionError, wrapWeakPersistent(this))));
 
     // Ask the embedder: it maintains the geolocation challenge policy itself.
@@ -494,7 +493,7 @@ void Geolocation::updateGeolocationServiceConnection()
     if (m_geolocationService)
         return;
 
-    frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_geolocationService));
+    frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_geolocationService));
     m_geolocationService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&Geolocation::onGeolocationConnectionError, wrapWeakPersistent(this))));
     if (m_enableHighAccuracy)
         m_geolocationService->SetHighAccuracy(true);

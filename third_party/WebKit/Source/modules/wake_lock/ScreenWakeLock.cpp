@@ -9,7 +9,7 @@
 #include "core/frame/Screen.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 
 namespace blink {
 
@@ -73,8 +73,8 @@ ScreenWakeLock::ScreenWakeLock(LocalFrame& frame)
     , m_keepAwake(false)
 {
     DCHECK(!m_service.is_bound());
-    DCHECK(frame.serviceRegistry());
-    frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    DCHECK(frame.interfaceProvider());
+    frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 }
 
 bool ScreenWakeLock::keepAwake() const

@@ -59,6 +59,7 @@ class FrameSelection;
 class FrameView;
 class HTMLPlugInElement;
 class InputMethodController;
+class InterfaceProvider;
 class IntPoint;
 class IntSize;
 class InstrumentingAgents;
@@ -73,7 +74,6 @@ template <typename Strategy> class PositionWithAffinityTemplate;
 class PluginData;
 class Range;
 class ScriptController;
-class ServiceRegistry;
 class SpellChecker;
 class WebFrameHostScheduler;
 class WebFrameScheduler;
@@ -83,7 +83,7 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 class CORE_EXPORT LocalFrame final : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
-    static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry* = nullptr);
+    static LocalFrame* create(FrameLoaderClient*, FrameHost*, FrameOwner*, InterfaceProvider* = nullptr);
 
     void init();
     void setView(FrameView*);
@@ -179,7 +179,7 @@ public:
 
     bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
 
-    ServiceRegistry* serviceRegistry() { return m_serviceRegistry; }
+    InterfaceProvider* interfaceProvider() { return m_interfaceProvider; }
 
     FrameLoaderClient* client() const;
 
@@ -188,7 +188,7 @@ public:
 private:
     friend class FrameNavigationDisabler;
 
-    LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry*);
+    LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*, InterfaceProvider*);
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override;
@@ -227,7 +227,7 @@ private:
 
     Member<InstrumentingAgents> m_instrumentingAgents;
 
-    ServiceRegistry* const m_serviceRegistry;
+    InterfaceProvider* const m_interfaceProvider;
 };
 
 inline void LocalFrame::init()

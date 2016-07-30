@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/mojo/blink_service_registry_impl.h"
+#include "content/renderer/mojo/blink_interface_provider_impl.h"
 
 #include <utility>
 
@@ -13,20 +13,20 @@
 
 namespace content {
 
-BlinkServiceRegistryImpl::BlinkServiceRegistryImpl(
+BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
     base::WeakPtr<shell::InterfaceProvider> remote_interfaces)
     : remote_interfaces_(remote_interfaces),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
-BlinkServiceRegistryImpl::~BlinkServiceRegistryImpl() = default;
+BlinkInterfaceProviderImpl::~BlinkInterfaceProviderImpl() = default;
 
-void BlinkServiceRegistryImpl::connectToRemoteService(
+void BlinkInterfaceProviderImpl::getInterface(
     const char* name,
     mojo::ScopedMessagePipeHandle handle) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlinkServiceRegistryImpl::connectToRemoteService,
+        FROM_HERE, base::Bind(&BlinkInterfaceProviderImpl::getInterface,
                               weak_ptr_factory_.GetWeakPtr(), name,
                               base::Passed(&handle)));
     return;

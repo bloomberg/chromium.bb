@@ -5,8 +5,8 @@
 #include "modules/battery/BatteryDispatcher.h"
 
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -50,8 +50,7 @@ void BatteryDispatcher::updateBatteryStatus(const BatteryStatus& batteryStatus)
 void BatteryDispatcher::startListening()
 {
     DCHECK(!m_monitor.is_bound());
-    Platform::current()->serviceRegistry()->connectToRemoteService(
-        mojo::GetProxy(&m_monitor));
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&m_monitor));
     queryNextStatus();
 }
 

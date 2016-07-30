@@ -8,7 +8,7 @@
       "platform/callback/WebClosure.h",
       "platform/Platform.h",
       "platform/FilePathConversion.h",
-      "platform/ServiceRegistry.h",
+      "platform/InterfaceProvider.h",
       "platform/URLConversion.h",
       "platform/UserMetricsAction.h",
       "platform/WebAddressSpace.h",

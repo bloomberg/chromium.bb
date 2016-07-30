@@ -9,8 +9,8 @@
 #include "core/events/EventQueue.h"
 #include "core/events/MessageEvent.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -26,7 +26,7 @@ mojom::blink::BroadcastChannelProviderPtr& getThreadSpecificProvider()
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>, provider, new ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>);
     if (!provider.isSet()) {
-        Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&*provider));
+        Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&*provider));
     }
     return *provider;
 }

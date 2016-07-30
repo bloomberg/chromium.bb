@@ -68,7 +68,7 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/rtc_certificate_generator.h"
-#include "content/renderer/mojo/blink_service_registry_impl.h"
+#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
@@ -266,8 +266,8 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       loading_task_runner_(renderer_scheduler->LoadingTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       renderer_scheduler_(renderer_scheduler),
-      blink_service_registry_(
-          new BlinkServiceRegistryImpl(remote_interfaces)) {
+      blink_interface_provider_(
+          new BlinkInterfaceProviderImpl(remote_interfaces)) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -1221,8 +1221,8 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
   platform_event_observers_.AddWithID(observer.release(), type);
 }
 
-blink::ServiceRegistry* RendererBlinkPlatformImpl::serviceRegistry() {
-  return blink_service_registry_.get();
+blink::InterfaceProvider* RendererBlinkPlatformImpl::interfaceProvider() {
+  return blink_interface_provider_.get();
 }
 
 void RendererBlinkPlatformImpl::startListening(

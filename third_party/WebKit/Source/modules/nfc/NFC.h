@@ -20,7 +20,6 @@ class NFCError;
 class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
-class ServiceRegistry;
 
 class NFC final
     : public GarbageCollectedFinalized<NFC>

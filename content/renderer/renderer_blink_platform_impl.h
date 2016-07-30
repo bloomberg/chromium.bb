@@ -53,7 +53,7 @@ class InterfaceProvider;
 }
 
 namespace content {
-class BlinkServiceRegistryImpl;
+class BlinkInterfaceProviderImpl;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
@@ -190,7 +190,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   createSharedOffscreenGraphicsContext3DProvider() override;
   blink::WebCompositorSupport* compositorSupport() override;
   blink::WebString convertIDNToUnicode(const blink::WebString& host) override;
-  blink::ServiceRegistry* serviceRegistry() override;
+  blink::InterfaceProvider* interfaceProvider() override;
   void startListening(blink::WebPlatformEventType,
                       blink::WebPlatformEventListener*) override;
   void stopListening(blink::WebPlatformEventType) override;
@@ -303,7 +303,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
 
-  std::unique_ptr<BlinkServiceRegistryImpl> blink_service_registry_;
+  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

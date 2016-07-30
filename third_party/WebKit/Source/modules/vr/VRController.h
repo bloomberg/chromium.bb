@@ -18,7 +18,6 @@
 namespace blink {
 
 class NavigatorVR;
-class ServiceRegistry;
 class VRGetDevicesCallback;
 
 class VRController final

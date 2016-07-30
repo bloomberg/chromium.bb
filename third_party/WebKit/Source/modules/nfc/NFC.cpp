@@ -16,7 +16,7 @@
 #include "modules/nfc/NFCMessage.h"
 #include "modules/nfc/NFCPushOptions.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 
 namespace nfc = device::nfc::blink;
 
@@ -443,7 +443,7 @@ NFC::NFC(LocalFrame* frame)
     , m_client(this)
 {
     ThreadState::current()->registerPreFinalizer(this);
-    frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_nfc));
+    frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_nfc));
     m_nfc.set_connection_error_handler(convertToBaseCallback(WTF::bind(&NFC::OnConnectionError, wrapWeakPersistent(this))));
     m_nfc->SetClient(m_client.CreateInterfacePtrAndBind());
 }

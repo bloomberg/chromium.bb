@@ -81,7 +81,7 @@
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/text/TextStream.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
@@ -242,9 +242,9 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
-LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
+LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, InterfaceProvider* interfaceProvider)
 {
-    LocalFrame* frame = new LocalFrame(client, host, owner, serviceRegistry ? serviceRegistry : ServiceRegistry::getEmptyServiceRegistry());
+    LocalFrame* frame = new LocalFrame(client, host, owner, interfaceProvider ? interfaceProvider : InterfaceProvider::getEmptyInterfaceProvider());
     InspectorInstrumentation::frameAttachedToParent(frame);
     return frame;
 }
@@ -802,7 +802,7 @@ bool LocalFrame::shouldThrottleRendering() const
     return view() && view()->shouldThrottleRendering();
 }
 
-inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
+inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, InterfaceProvider* interfaceProvider)
     : Frame(client, host, owner)
     , m_frameScheduler(page()->chromeClient().createFrameScheduler(client->frameBlameContext()))
     , m_loader(this)
@@ -818,7 +818,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
-    , m_serviceRegistry(serviceRegistry)
+    , m_interfaceProvider(interfaceProvider)
 {
     if (isLocalRoot())
         m_instrumentingAgents = new InstrumentingAgents();

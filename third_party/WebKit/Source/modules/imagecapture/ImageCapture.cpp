@@ -16,8 +16,8 @@
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebImageCaptureFrameGrabber.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/PtrUtil.h"
@@ -188,7 +188,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     DCHECK(m_streamTrack);
     DCHECK(!m_service.is_bound());
 
-    Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 
     m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(&ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));
 

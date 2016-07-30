@@ -17,7 +17,7 @@
 #include "modules/webusb/USBDeviceRequestOptions.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "wtf/Functional.h"
 
 namespace usb = device::usb::blink;
@@ -55,7 +55,7 @@ USB::USB(LocalFrame& frame)
     , m_clientBinding(this)
 {
     ThreadState::current()->registerPreFinalizer(this);
-    frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_deviceManager));
+    frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_deviceManager));
     m_deviceManager.set_connection_error_handler(convertToBaseCallback(WTF::bind(&USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));
     m_deviceManager->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
 }
@@ -105,7 +105,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
             resolver->reject(DOMException::create(NotSupportedError));
             return promise;
         }
-        frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_chooserService));
+        frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_chooserService));
         m_chooserService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&USB::onChooserServiceConnectionError, wrapWeakPersistent(this))));
     }
 

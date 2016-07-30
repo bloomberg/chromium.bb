@@ -66,7 +66,7 @@
 namespace blink {
 
 enum class WebTreeScopeType;
-class ServiceRegistry;
+class InterfaceProvider;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebAppBannerClient;
@@ -700,7 +700,7 @@ public:
     }
 
     // Mojo ----------------------------------------------------------------
-    virtual ServiceRegistry* serviceRegistry() { return nullptr; }
+    virtual InterfaceProvider* interfaceProvider() { return nullptr; }
 
     // Visibility ----------------------------------------------------------
 

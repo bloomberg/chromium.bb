@@ -36,8 +36,8 @@
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "wtf/HashMap.h"
 
@@ -139,9 +139,9 @@ WebThread* Platform::mainThread() const
     return m_mainThread;
 }
 
-ServiceRegistry* Platform::serviceRegistry()
+InterfaceProvider* Platform::interfaceProvider()
 {
-    return ServiceRegistry::getEmptyServiceRegistry();
+    return InterfaceProvider::getEmptyInterfaceProvider();
 }
 
 } // namespace blink

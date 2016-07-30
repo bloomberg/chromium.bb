@@ -180,7 +180,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayer.h"
@@ -1398,7 +1398,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     // disappear, so Page::m_mainFrame can't be updated just yet.
     FrameOwner* tempOwner = DummyFrameOwner::create();
     // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to reuse it here.
-    LocalFrame* frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner, client ? client->serviceRegistry() : nullptr);
+    LocalFrame* frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner, client ? client->interfaceProvider() : nullptr);
     // Set the name and unique name directly, bypassing any of the normal logic
     // to calculate unique name.
     frame->tree().setPrecalculatedName(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
@@ -1491,7 +1491,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 
 void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& uniqueName)
 {
-    setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner, client() ? client()->serviceRegistry() : nullptr));
+    setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner, client() ? client()->interfaceProvider() : nullptr));
     frame()->tree().setPrecalculatedName(name, uniqueName);
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be

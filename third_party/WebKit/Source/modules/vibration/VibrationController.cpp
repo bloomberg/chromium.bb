@@ -25,7 +25,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
@@ -80,7 +80,7 @@ VibrationController::VibrationController(Document& document)
     , m_isCallingCancel(false)
     , m_isCallingVibrate(false)
 {
-    document.frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    document.frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 }
 
 VibrationController::~VibrationController()

@@ -19,8 +19,8 @@
 #include "modules/permissions/PermissionStatus.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 #include "wtf/Functional.h"
 #include "wtf/NotFound.h"
 #include "wtf/PtrUtil.h"
@@ -100,18 +100,18 @@ Nullable<PermissionName> parsePermission(ScriptState* scriptState, const Diction
 // static
 bool Permissions::connectToService(ExecutionContext* executionContext, mojom::blink::PermissionServiceRequest request)
 {
-    ServiceRegistry* serviceRegistry = nullptr;
+    InterfaceProvider* interfaceProvider = nullptr;
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
         if (document->frame())
-            serviceRegistry = document->frame()->serviceRegistry();
+            interfaceProvider = document->frame()->interfaceProvider();
     } else {
-        serviceRegistry = Platform::current()->serviceRegistry();
+        interfaceProvider = Platform::current()->interfaceProvider();
     }
 
-    if (serviceRegistry)
-        serviceRegistry->connectToRemoteService(std::move(request));
-    return serviceRegistry;
+    if (interfaceProvider)
+        interfaceProvider->getInterface(std::move(request));
+    return interfaceProvider;
 }
 
 ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& rawPermission)

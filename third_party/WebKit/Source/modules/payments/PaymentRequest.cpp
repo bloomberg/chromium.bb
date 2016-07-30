@@ -24,7 +24,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "wtf/HashSet.h"
 #include <utility>
 
@@ -381,7 +381,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Cannot show the payment request"));
 
     DCHECK(!m_paymentProvider.is_bound());
-    scriptState->domWindow()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
+    scriptState->domWindow()->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_paymentProvider));
     m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this), mojom::blink::PaymentErrorReason::UNKNOWN)));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
     m_paymentProvider->Show(mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(m_methodData), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options));

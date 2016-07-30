@@ -10,8 +10,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/ServiceRegistry.h"
 
 namespace blink {
 
@@ -85,7 +85,7 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState, const String& titl
         DCHECK(doc);
         LocalFrame* frame = doc->frame();
         DCHECK(frame);
-        frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+        frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
         DCHECK(m_service);
     }
 

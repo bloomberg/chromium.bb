@@ -64,7 +64,7 @@ template<class T> class Local;
 
 namespace blink {
 
-class ServiceRegistry;
+class InterfaceProvider;
 class WebAudioBus;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
@@ -517,7 +517,7 @@ public:
 
     // Mojo ---------------------------------------------------------------
 
-    virtual ServiceRegistry* serviceRegistry();
+    virtual InterfaceProvider* interfaceProvider();
 
     // Platform events -----------------------------------------------------
     // Device Orientation, Device Motion, Device Light, Battery, Gamepad.

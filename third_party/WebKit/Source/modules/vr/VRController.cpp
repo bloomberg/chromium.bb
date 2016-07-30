@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRGetDevicesCallback.h"
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 
 #include "wtf/Assertions.h"
 
@@ -20,7 +20,7 @@ VRController::VRController(NavigatorVR* navigatorVR)
     , m_navigatorVR(navigatorVR)
     , m_binding(this)
 {
-    navigatorVR->document()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
+    navigatorVR->document()->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
     m_service->SetClient(m_binding.CreateInterfacePtrAndBind());
 }
 

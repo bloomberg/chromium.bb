@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/ServiceRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
 namespace {
 
-class EmptyServiceRegistry : public ServiceRegistry {
-    void connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle) override {}
+class EmptyInterfaceProvider : public InterfaceProvider {
+    void getInterface(const char* name, mojo::ScopedMessagePipeHandle) override {}
 };
 
 }
 
-ServiceRegistry* ServiceRegistry::getEmptyServiceRegistry()
+InterfaceProvider* InterfaceProvider::getEmptyInterfaceProvider()
 {
-    DEFINE_STATIC_LOCAL(EmptyServiceRegistry, emptyServiceRegistry, ());
-    return &emptyServiceRegistry;
+    DEFINE_STATIC_LOCAL(EmptyInterfaceProvider, emptyInterfaceProvider, ());
+    return &emptyInterfaceProvider;
 }
 
 }
