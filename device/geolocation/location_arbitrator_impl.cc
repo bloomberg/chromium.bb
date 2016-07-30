@@ -39,8 +39,7 @@ LocationArbitratorImpl::LocationArbitratorImpl(
       is_permission_granted_(false),
       is_running_(false) {}
 
-LocationArbitratorImpl::~LocationArbitratorImpl() {
-}
+LocationArbitratorImpl::~LocationArbitratorImpl() {}
 
 GURL LocationArbitratorImpl::DefaultNetworkProviderURL() {
   return GURL(kDefaultNetworkProviderUrl);
@@ -180,7 +179,8 @@ base::Time LocationArbitratorImpl::GetTimeNow() const {
 }
 
 bool LocationArbitratorImpl::IsNewPositionBetter(
-    const Geoposition& old_position, const Geoposition& new_position,
+    const Geoposition& old_position,
+    const Geoposition& new_position,
     bool from_same_provider) const {
   // Updates location_info if it's better than what we currently have,
   // or if it's a newer update from the same provider.

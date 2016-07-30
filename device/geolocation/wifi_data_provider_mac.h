@@ -31,6 +31,6 @@ class WifiDataProviderMac : public WifiDataProviderCommon {
 // API can not be initialized.
 WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi();
 
-} // namespace device
+}  // namespace device
 
 #endif  // DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_

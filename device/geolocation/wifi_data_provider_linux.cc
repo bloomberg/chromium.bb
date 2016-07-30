@@ -25,10 +25,10 @@
 namespace device {
 namespace {
 // The time periods between successive polls of the wifi data.
-const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
-const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;  // 2 mins
+const int kDefaultPollingIntervalMilliseconds = 10 * 1000;           // 10s
+const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;      // 2 mins
 const int kTwoNoChangePollingIntervalMilliseconds = 10 * 60 * 1000;  // 10 mins
-const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000;            // 20s
 
 const char kNetworkManagerServiceName[] = "org.freedesktop.NetworkManager";
 const char kNetworkManagerPath[] = "/org/freedesktop/NetworkManager";
@@ -98,9 +98,7 @@ int frquency_in_khz_to_channel(int frequency_khz) {
   return AccessPointData().channel;  // invalid channel
 }
 
-NetworkManagerWlanApi::NetworkManagerWlanApi()
-    : network_manager_proxy_(NULL) {
-}
+NetworkManagerWlanApi::NetworkManagerWlanApi() : network_manager_proxy_(NULL) {}
 
 NetworkManagerWlanApi::~NetworkManagerWlanApi() {
   // Close the connection.
@@ -117,9 +115,8 @@ bool NetworkManagerWlanApi::Init() {
 bool NetworkManagerWlanApi::InitWithBus(dbus::Bus* bus) {
   system_bus_ = bus;
   // system_bus_ will own all object proxies created from the bus.
-  network_manager_proxy_ =
-      system_bus_->GetObjectProxy(kNetworkManagerServiceName,
-                                  dbus::ObjectPath(kNetworkManagerPath));
+  network_manager_proxy_ = system_bus_->GetObjectProxy(
+      kNetworkManagerServiceName, dbus::ObjectPath(kNetworkManagerPath));
   // Validate the proxy object by checking we can enumerate devices.
   std::vector<dbus::ObjectPath> adapter_paths;
   const bool success = GetAdapterDeviceList(&adapter_paths);
@@ -143,8 +140,7 @@ bool NetworkManagerWlanApi::GetAccessPointData(
     VLOG(1) << "Checking device: " << device_path.value();
 
     dbus::ObjectProxy* device_proxy =
-        system_bus_->GetObjectProxy(kNetworkManagerServiceName,
-                                    device_path);
+        system_bus_->GetObjectProxy(kNetworkManagerServiceName, device_path);
 
     dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES, "Get");
     dbus::MessageWriter builder(&method_call);
@@ -196,17 +192,15 @@ bool NetworkManagerWlanApi::GetAdapterDeviceList(
   return true;
 }
 
-
 bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
-    const dbus::ObjectPath& adapter_path, WifiData::AccessPointDataSet* data) {
+    const dbus::ObjectPath& adapter_path,
+    WifiData::AccessPointDataSet* data) {
   // Create a proxy object for this wifi adapter, and ask it to do a scan
   // (or at least, dump its scan results).
   dbus::ObjectProxy* device_proxy =
-      system_bus_->GetObjectProxy(kNetworkManagerServiceName,
-                                  adapter_path);
-  dbus::MethodCall method_call(
-      "org.freedesktop.NetworkManager.Device.Wireless",
-      "GetAccessPoints");
+      system_bus_->GetObjectProxy(kNetworkManagerServiceName, adapter_path);
+  dbus::MethodCall method_call("org.freedesktop.NetworkManager.Device.Wireless",
+                               "GetAccessPoints");
   std::unique_ptr<dbus::Response> response(device_proxy->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response) {
@@ -229,9 +223,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     const dbus::ObjectPath& access_point_path = access_point_paths[i];
     VLOG(1) << "Checking access point: " << access_point_path.value();
 
-    dbus::ObjectProxy* access_point_proxy =
-        system_bus_->GetObjectProxy(kNetworkManagerServiceName,
-                                    access_point_path);
+    dbus::ObjectProxy* access_point_proxy = system_bus_->GetObjectProxy(
+        kNetworkManagerServiceName, access_point_path);
 
     AccessPointData access_point_data;
     {
@@ -258,7 +251,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       access_point_data.ssid = base::UTF8ToUTF16(ssid);
     }
 
-    { // Read the mac address
+    {  // Read the mac address
       std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "HwAddress"));
       if (!response)
@@ -298,7 +291,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       access_point_data.radio_signal_strength = -100 + strength / 2;
     }
 
-    { // Read the channel
+    {  // Read the channel
       std::unique_ptr<dbus::Response> response(
           GetAccessPointProperty(access_point_proxy, "Frequency"));
       if (!response)
@@ -312,8 +305,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       }
 
       // NetworkManager returns frequency in MHz.
-      access_point_data.channel =
-          frquency_in_khz_to_channel(frequency * 1000);
+      access_point_data.channel = frquency_in_khz_to_channel(frequency * 1000);
     }
     VLOG(1) << "Access point data of " << access_point_path.value() << ": "
             << "SSID: " << access_point_data.ssid << ", "
@@ -349,14 +341,11 @@ WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderLinux();
 }
 
-WifiDataProviderLinux::WifiDataProviderLinux() {
-}
+WifiDataProviderLinux::WifiDataProviderLinux() {}
 
-WifiDataProviderLinux::~WifiDataProviderLinux() {
-}
+WifiDataProviderLinux::~WifiDataProviderLinux() {}
 
-WifiDataProviderCommon::WlanApiInterface*
-WifiDataProviderLinux::NewWlanApi() {
+WifiDataProviderCommon::WlanApiInterface* WifiDataProviderLinux::NewWlanApi() {
   std::unique_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
   if (wlan_api->Init())
     return wlan_api.release();

@@ -10,11 +10,9 @@
 
 namespace device {
 
-GeolocationServiceContext::GeolocationServiceContext() : paused_(false) {
-}
+GeolocationServiceContext::GeolocationServiceContext() : paused_(false) {}
 
-GeolocationServiceContext::~GeolocationServiceContext() {
-}
+GeolocationServiceContext::~GeolocationServiceContext() {}
 
 void GeolocationServiceContext::CreateService(
     const base::Closure& update_callback,

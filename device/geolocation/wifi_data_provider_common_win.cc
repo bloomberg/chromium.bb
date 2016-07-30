@@ -13,7 +13,7 @@
 namespace device {
 
 bool ConvertToAccessPointData(const NDIS_WLAN_BSSID& data,
-                              AccessPointData *access_point_data) {
+                              AccessPointData* access_point_data) {
   // Currently we get only MAC address, signal strength and SSID.
   // TODO(steveblock): Work out how to get age, channel and signal-to-noise.
   DCHECK(access_point_data);
@@ -21,8 +21,7 @@ bool ConvertToAccessPointData(const NDIS_WLAN_BSSID& data,
   access_point_data->radio_signal_strength = data.Rssi;
   // Note that _NDIS_802_11_SSID::Ssid::Ssid is not null-terminated.
   base::UTF8ToUTF16(reinterpret_cast<const char*>(data.Ssid.Ssid),
-                    data.Ssid.SsidLength,
-                    &access_point_data->ssid);
+                    data.Ssid.SsidLength, &access_point_data->ssid);
   return true;
 }
 
@@ -36,7 +35,7 @@ int GetDataFromBssIdList(const NDIS_802_11_BSSID_LIST& bss_id_list,
   const uint8_t* end_of_buffer =
       reinterpret_cast<const uint8_t*>(&bss_id_list) + list_size;
   for (int i = 0; i < static_cast<int>(bss_id_list.NumberOfItems); ++i) {
-    const NDIS_WLAN_BSSID *bss_id =
+    const NDIS_WLAN_BSSID* bss_id =
         reinterpret_cast<const NDIS_WLAN_BSSID*>(iterator);
     // Check that the length of this BSS ID is reasonable.
     if (bss_id->Length < sizeof(NDIS_WLAN_BSSID) ||

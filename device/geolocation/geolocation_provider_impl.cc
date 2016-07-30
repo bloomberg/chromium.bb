@@ -93,12 +93,10 @@ GeolocationProviderImpl::GeolocationProviderImpl()
       ignore_location_updates_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  high_accuracy_callbacks_.set_removal_callback(
-      base::Bind(&GeolocationProviderImpl::OnClientsChanged,
-                 base::Unretained(this)));
-  low_accuracy_callbacks_.set_removal_callback(
-      base::Bind(&GeolocationProviderImpl::OnClientsChanged,
-                 base::Unretained(this)));
+  high_accuracy_callbacks_.set_removal_callback(base::Bind(
+      &GeolocationProviderImpl::OnClientsChanged, base::Unretained(this)));
+  low_accuracy_callbacks_.set_removal_callback(base::Bind(
+      &GeolocationProviderImpl::OnClientsChanged, base::Unretained(this)));
 }
 
 GeolocationProviderImpl::~GeolocationProviderImpl() {

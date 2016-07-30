@@ -49,10 +49,8 @@ class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
 class MockPollingPolicy : public WifiPollingPolicy {
  public:
   MockPollingPolicy() {
-    ON_CALL(*this,PollingInterval())
-        .WillByDefault(Return(1));
-    ON_CALL(*this,NoWifiInterval())
-        .WillByDefault(Return(1));
+    ON_CALL(*this, PollingInterval()).WillByDefault(Return(1));
+    ON_CALL(*this, NoWifiInterval()).WillByDefault(Return(1));
   }
 
   MOCK_METHOD0(PollingInterval, int());
@@ -141,29 +139,23 @@ TEST_F(GeolocationWifiDataProviderCommonTest, CreateDestroy) {
 }
 
 TEST_F(GeolocationWifiDataProviderCommonTest, RunNormal) {
-  EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
-      .Times(AtLeast(1));
-  EXPECT_CALL(*polling_policy_, PollingInterval())
-      .Times(AtLeast(1));
+  EXPECT_CALL(*wlan_api_, GetAccessPointData(_)).Times(AtLeast(1));
+  EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   provider_->StartDataProvider();
   RunLoop();
   SUCCEED();
 }
 
 TEST_F(GeolocationWifiDataProviderCommonTest, NoWifi) {
-  EXPECT_CALL(*polling_policy_, NoWifiInterval())
-      .Times(AtLeast(1));
-  EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*polling_policy_, NoWifiInterval()).Times(AtLeast(1));
+  EXPECT_CALL(*wlan_api_, GetAccessPointData(_)).WillRepeatedly(Return(false));
   provider_->StartDataProvider();
   RunLoop();
 }
 
 TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi) {
-  EXPECT_CALL(*polling_policy_, PollingInterval())
-      .Times(AtLeast(1));
-  EXPECT_CALL(*polling_policy_, NoWifiInterval())
-      .Times(1);
+  EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
+  EXPECT_CALL(*polling_policy_, NoWifiInterval()).Times(1);
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .WillOnce(Return(true))
       .WillOnce(Return(false))
@@ -188,10 +180,8 @@ TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi) {
 #define MAYBE_DoAnEmptyScan DoAnEmptyScan
 #endif
 TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoAnEmptyScan) {
-  EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
-      .Times(AtLeast(1));
-  EXPECT_CALL(*polling_policy_, PollingInterval())
-      .Times(AtLeast(1));
+  EXPECT_CALL(*wlan_api_, GetAccessPointData(_)).Times(AtLeast(1));
+  EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   provider_->StartDataProvider();
   RunLoop();
   EXPECT_EQ(wlan_api_->calls_, 1);
@@ -206,10 +196,8 @@ TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoAnEmptyScan) {
 #define MAYBE_DoScanWithResults DoScanWithResults
 #endif
 TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoScanWithResults) {
-  EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
-      .Times(AtLeast(1));
-  EXPECT_CALL(*polling_policy_, PollingInterval())
-      .Times(AtLeast(1));
+  EXPECT_CALL(*wlan_api_, GetAccessPointData(_)).Times(AtLeast(1));
+  EXPECT_CALL(*polling_policy_, PollingInterval()).Times(AtLeast(1));
   AccessPointData single_access_point;
   single_access_point.channel = 2;
   single_access_point.mac_address = 3;

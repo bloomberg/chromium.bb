@@ -6,11 +6,9 @@
 
 namespace device {
 
-LocationProviderBase::LocationProviderBase() {
-}
+LocationProviderBase::LocationProviderBase() {}
 
-LocationProviderBase::~LocationProviderBase() {
-}
+LocationProviderBase::~LocationProviderBase() {}
 
 void LocationProviderBase::NotifyCallback(const Geoposition& position) {
   if (!callback_.is_null())
@@ -22,7 +20,6 @@ void LocationProviderBase::SetUpdateCallback(
   callback_ = callback;
 }
 
-void LocationProviderBase::RequestRefresh() {
-}
+void LocationProviderBase::RequestRefresh() {}
 
 }  // namespace device

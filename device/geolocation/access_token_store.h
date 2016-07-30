@@ -42,8 +42,8 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
   // so it is efficient to piggyback it onto this request.
   virtual void LoadAccessTokens(const LoadAccessTokensCallback& callback) = 0;
 
-  virtual void SaveAccessToken(
-      const GURL& server_url, const base::string16& access_token) = 0;
+  virtual void SaveAccessToken(const GURL& server_url,
+                               const base::string16& access_token) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<AccessTokenStore>;

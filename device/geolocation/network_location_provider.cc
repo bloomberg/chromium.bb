@@ -72,9 +72,8 @@ const Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
 // Returns true if a good key was generated, false otherwise.
 //
 // static
-bool NetworkLocationProvider::PositionCache::MakeKey(
-    const WifiData& wifi_data,
-    base::string16* key) {
+bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
+                                                     base::string16* key) {
   // Currently we use only WiFi data and base the key only on the MAC addresses.
   DCHECK(key);
   key->clear();
@@ -97,8 +96,8 @@ LocationProviderBase* NewNetworkLocationProvider(
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     const base::string16& access_token) {
-  return new NetworkLocationProvider(
-      access_token_store, context, url, access_token);
+  return new NetworkLocationProvider(access_token_store, context, url,
+                                     access_token);
 }
 
 // NetworkLocationProvider
@@ -119,8 +118,7 @@ NetworkLocationProvider::NetworkLocationProvider(
       position_cache_(new PositionCache),
       weak_factory_(this) {
   request_.reset(new NetworkLocationRequest(
-      url_context_getter,
-      url,
+      url_context_getter, url,
       base::Bind(&NetworkLocationProvider::OnLocationResponse,
                  base::Unretained(this))));
 }

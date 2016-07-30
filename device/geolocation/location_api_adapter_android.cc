@@ -31,9 +31,9 @@ static void NewLocationAvailable(JNIEnv* env,
                                  jdouble heading,
                                  jboolean has_speed,
                                  jdouble speed) {
-  AndroidLocationApiAdapter::OnNewLocationAvailable(latitude, longitude,
-      time_stamp, has_altitude, altitude, has_accuracy, accuracy,
-      has_heading, heading, has_speed, speed);
+  AndroidLocationApiAdapter::OnNewLocationAvailable(
+      latitude, longitude, time_stamp, has_altitude, altitude, has_accuracy,
+      accuracy, has_heading, heading, has_speed, speed);
 }
 
 static void NewErrorAvailable(JNIEnv* env,
@@ -45,8 +45,7 @@ static void NewErrorAvailable(JNIEnv* env,
 namespace device {
 
 AndroidLocationApiAdapter::AndroidLocationApiAdapter()
-    : location_provider_(NULL) {
-}
+    : location_provider_(NULL) {}
 
 AndroidLocationApiAdapter::~AndroidLocationApiAdapter() {
   CHECK(!location_provider_);
@@ -55,7 +54,8 @@ AndroidLocationApiAdapter::~AndroidLocationApiAdapter() {
 }
 
 bool AndroidLocationApiAdapter::Start(
-    LocationProviderAndroid* location_provider, bool high_accuracy) {
+    LocationProviderAndroid* location_provider,
+    bool high_accuracy) {
   JNIEnv* env = AttachCurrentThread();
   if (!location_provider_) {
     location_provider_ = location_provider;
@@ -74,8 +74,8 @@ bool AndroidLocationApiAdapter::Start(
   CHECK(!java_location_provider_android_object_.is_null());
   // We'll start receiving notifications from java in the main thread looper
   // until Stop() is called.
-  return Java_LocationProviderAdapter_start(env,
-      java_location_provider_android_object_.obj(), high_accuracy);
+  return Java_LocationProviderAdapter_start(
+      env, java_location_provider_android_object_.obj(), high_accuracy);
 }
 
 void AndroidLocationApiAdapter::Stop() {
@@ -109,12 +109,17 @@ void AndroidLocationApiAdapter::NotifyProviderNewGeoposition(
 }
 
 // static
-void AndroidLocationApiAdapter::OnNewLocationAvailable(
-    double latitude, double longitude, double time_stamp,
-    bool has_altitude, double altitude,
-    bool has_accuracy, double accuracy,
-    bool has_heading, double heading,
-    bool has_speed, double speed) {
+void AndroidLocationApiAdapter::OnNewLocationAvailable(double latitude,
+                                                       double longitude,
+                                                       double time_stamp,
+                                                       bool has_altitude,
+                                                       double altitude,
+                                                       bool has_accuracy,
+                                                       double accuracy,
+                                                       bool has_heading,
+                                                       double heading,
+                                                       bool has_speed,
+                                                       double speed) {
   Geoposition position;
   position.latitude = latitude;
   position.longitude = longitude;
@@ -153,8 +158,8 @@ bool AndroidLocationApiAdapter::RegisterGeolocationService(JNIEnv* env) {
 void AndroidLocationApiAdapter::CreateJavaObject(JNIEnv* env) {
   // Create the Java LocationProviderAdapter object.
   java_location_provider_android_object_.Reset(
-      Java_LocationProviderAdapter_create(env,
-          base::android::GetApplicationContext()));
+      Java_LocationProviderAdapter_create(
+          env, base::android::GetApplicationContext()));
   CHECK(!java_location_provider_android_object_.is_null());
 }
 

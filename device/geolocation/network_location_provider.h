@@ -42,8 +42,7 @@ class NetworkLocationProvider : public base::NonThreadSafe,
     // WiFi data. In the case of the cache exceeding kMaximumSize this will
     // evict old entries in FIFO orderer of being added.
     // Returns true on success, false otherwise.
-    bool CachePosition(const WifiData& wifi_data,
-                       const Geoposition& position);
+    bool CachePosition(const WifiData& wifi_data, const Geoposition& position);
 
     // Searches for a cached position response for the current set of data.
     // Returns NULL if the position is not in the cache, or the cached
@@ -53,8 +52,7 @@ class NetworkLocationProvider : public base::NonThreadSafe,
    private:
     // Makes the key for the map of cached positions, using a set of
     // data. Returns true if a good key was generated, false otherwise.
-    static bool MakeKey(const WifiData& wifi_data,
-                        base::string16* key);
+    static bool MakeKey(const WifiData& wifi_data, base::string16* key);
 
     // The cache of positions. This is stored as a map keyed on a string that
     // represents a set of data, and a list to provide

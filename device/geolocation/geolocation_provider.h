@@ -63,7 +63,7 @@ class GeolocationProvider {
   virtual void OverrideLocationForTesting(const Geoposition& position) = 0;
 
  protected:
-  virtual~GeolocationProvider() {}
+  virtual ~GeolocationProvider() {}
 };
 
 }  // namespace device

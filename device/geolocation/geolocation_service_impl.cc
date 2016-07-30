@@ -52,8 +52,7 @@ void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
       code = GEOPOSITION_ERROR_CODE_TIMEOUT;
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("Geolocation.LocationUpdate.ErrorCode",
-                            code,
+  UMA_HISTOGRAM_ENUMERATION("Geolocation.LocationUpdate.ErrorCode", code,
                             GEOPOSITION_ERROR_CODE_COUNT);
 }
 
@@ -69,9 +68,8 @@ GeolocationServiceImpl::GeolocationServiceImpl(
       high_accuracy_(false),
       has_position_to_report_(false) {
   DCHECK(context_);
-  binding_.set_connection_error_handler(
-      base::Bind(&GeolocationServiceImpl::OnConnectionError,
-                 base::Unretained(this)));
+  binding_.set_connection_error_handler(base::Bind(
+      &GeolocationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 GeolocationServiceImpl::~GeolocationServiceImpl() {

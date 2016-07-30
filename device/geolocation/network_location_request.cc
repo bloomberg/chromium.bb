@@ -52,13 +52,13 @@ enum NetworkLocationRequestEvent {
 };
 
 void RecordUmaEvent(NetworkLocationRequestEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Geolocation.NetworkLocationRequest.Event",
-      event, NETWORK_LOCATION_REQUEST_EVENT_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Geolocation.NetworkLocationRequest.Event", event,
+                            NETWORK_LOCATION_REQUEST_EVENT_COUNT);
 }
 
 void RecordUmaResponseCode(int code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Geolocation.NetworkLocationRequest.ResponseCode",
-      code);
+                              code);
 }
 
 void RecordUmaAccessPoints(int count) {
@@ -66,7 +66,7 @@ void RecordUmaAccessPoints(int count) {
   const int max = 20;
   const int buckets = 21;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Geolocation.NetworkLocationRequest.AccessPoints",
-      count, min, max, buckets);
+                              count, min, max, buckets);
 }
 
 // Local functions
@@ -106,11 +106,9 @@ NetworkLocationRequest::NetworkLocationRequest(
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     LocationResponseCallback callback)
-    : url_context_(context), location_response_callback_(callback), url_(url) {
-}
+    : url_context_(context), location_response_callback_(callback), url_(url) {}
 
-NetworkLocationRequest::~NetworkLocationRequest() {
-}
+NetworkLocationRequest::~NetworkLocationRequest() {}
 
 bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
                                          const WifiData& wifi_data,
@@ -132,18 +130,17 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
   std::string upload_data;
   FormUploadData(wifi_data, wifi_timestamp, access_token, &upload_data);
   url_fetcher_->SetUploadData("application/json", upload_data);
-  url_fetcher_->SetLoadFlags(
-      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
   return true;
 }
 
-void NetworkLocationRequest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
   net::URLRequestStatus status = source->GetStatus();
@@ -165,17 +162,14 @@ void NetworkLocationRequest::OnURLFetchComplete(
     const base::TimeDelta request_time =
         base::TimeTicks::Now() - request_start_time_;
 
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.Wifi.LbsLatency",
-        request_time,
-        base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromSeconds(10),
-        100);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.Wifi.LbsLatency", request_time,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(10), 100);
   }
 
   DVLOG(1) << "NetworkLocationRequest::OnURLFetchComplete() : run callback.";
-  location_response_callback_.Run(
-      position, server_error, access_token, wifi_data_);
+  location_response_callback_.Run(position, server_error, access_token,
+                                  wifi_data_);
 }
 
 // Local functions.
@@ -224,14 +218,16 @@ void FormUploadData(const WifiData& wifi_data,
   base::JSONWriter::Write(request, upload_data);
 }
 
-void AddString(const std::string& property_name, const std::string& value,
+void AddString(const std::string& property_name,
+               const std::string& value,
                base::DictionaryValue* dict) {
   DCHECK(dict);
   if (!value.empty())
     dict->SetString(property_name, value);
 }
 
-void AddInteger(const std::string& property_name, int value,
+void AddInteger(const std::string& property_name,
+                int value,
                 base::DictionaryValue* dict) {
   DCHECK(dict);
   if (value != std::numeric_limits<int32_t>::min())
@@ -268,14 +264,14 @@ void AddWifiData(const WifiData& wifi_data,
 void FormatPositionError(const GURL& server_url,
                          const std::string& message,
                          Geoposition* position) {
-    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-    position->error_message = "Network location provider at '";
-    position->error_message += server_url.GetOrigin().spec();
-    position->error_message += "' : ";
-    position->error_message += message;
-    position->error_message += ".";
-    VLOG(1) << "NetworkLocationRequest::GetLocationFromResponse() : "
-            << position->error_message;
+  position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  position->error_message = "Network location provider at '";
+  position->error_message += server_url.GetOrigin().spec();
+  position->error_message += "' : ";
+  position->error_message += message;
+  position->error_message += ".";
+  VLOG(1) << "NetworkLocationRequest::GetLocationFromResponse() : "
+          << position->error_message;
 }
 
 void GetLocationFromResponse(bool http_post_result,
@@ -314,8 +310,8 @@ void GetLocationFromResponse(bool http_post_result,
   // The response was successfully parsed, but it may not be a valid
   // position fix.
   if (!position->Validate()) {
-    FormatPositionError(server_url,
-                        "Did not provide a good position fix", position);
+    FormatPositionError(server_url, "Did not provide a good position fix",
+                        position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_INVALID_FIX);
     return;
   }
@@ -364,8 +360,7 @@ bool ParseServerResponse(const std::string& response_body,
       base::JSONReader::ReadAndReturnError(response_body, base::JSON_PARSE_RFC,
                                            NULL, &error_msg);
   if (response_value == NULL) {
-    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
-                 << error_msg;
+    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : " << error_msg;
     return false;
   }
 

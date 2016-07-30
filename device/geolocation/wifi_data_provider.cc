@@ -16,8 +16,7 @@ WifiDataProvider::WifiDataProvider()
   DCHECK(client_task_runner_);
 }
 
-WifiDataProvider::~WifiDataProvider() {
-}
+WifiDataProvider::~WifiDataProvider() {}
 
 void WifiDataProvider::AddCallback(WifiDataUpdateCallback* callback) {
   callbacks_.insert(callback);

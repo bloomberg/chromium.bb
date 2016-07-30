@@ -26,10 +26,10 @@ class WifiPollingPolicy {
 
 // Generic polling policy, constants are compile-time parameterized to allow
 // tuning on a per-platform basis.
-template<int DEFAULT_INTERVAL,
-         int NO_CHANGE_INTERVAL,
-         int TWO_NO_CHANGE_INTERVAL,
-         int NO_WIFI_INTERVAL>
+template <int DEFAULT_INTERVAL,
+          int NO_CHANGE_INTERVAL,
+          int TWO_NO_CHANGE_INTERVAL,
+          int NO_WIFI_INTERVAL>
 class GenericWifiPollingPolicy : public WifiPollingPolicy {
  public:
   GenericWifiPollingPolicy() : polling_interval_(DEFAULT_INTERVAL) {}

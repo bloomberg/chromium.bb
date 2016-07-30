@@ -13,8 +13,8 @@ namespace device {
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
 class DEVICE_GEOLOCATION_EXPORT LocationArbitrator {
-public:
-  virtual ~LocationArbitrator() {};
+ public:
+  virtual ~LocationArbitrator(){};
 
   // See more details in geolocation_provider.
   virtual void StartProviders(bool enable_high_accuracy) = 0;

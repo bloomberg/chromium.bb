@@ -22,7 +22,7 @@ struct DEVICE_GEOLOCATION_EXPORT AccessPointData {
   int radio_signal_strength;  // Measured in dBm
   int channel;
   int signal_to_noise;  // Ratio in dB
-  base::string16 ssid;   // Network identifier
+  base::string16 ssid;  // Network identifier
 };
 
 // This is to allow AccessPointData to be used in std::set. We order

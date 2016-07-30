@@ -17,8 +17,8 @@ class EmptyWifiDataProvider : public WifiDataProvider {
   EmptyWifiDataProvider();
 
   // WifiDataProvider implementation
-  void StartDataProvider() override { }
-  void StopDataProvider() override { }
+  void StartDataProvider() override {}
+  void StopDataProvider() override {}
   bool GetData(WifiData* data) override;
 
  private:

@@ -50,10 +50,14 @@ class AndroidLocationApiAdapter {
   static void OnNewLocationAvailable(double latitude,
                                      double longitude,
                                      double time_stamp,
-                                     bool has_altitude, double altitude,
-                                     bool has_accuracy, double accuracy,
-                                     bool has_heading, double heading,
-                                     bool has_speed, double speed);
+                                     bool has_altitude,
+                                     double altitude,
+                                     bool has_accuracy,
+                                     double accuracy,
+                                     bool has_heading,
+                                     double heading,
+                                     bool has_speed,
+                                     double speed);
   static void OnNewErrorAvailable(JNIEnv* env, jstring message);
 
  private:

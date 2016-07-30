@@ -18,7 +18,8 @@
 #include "device/geolocation/geoposition.h"
 
 namespace base {
-template<typename Type> struct DefaultSingletonTraits;
+template <typename Type>
+struct DefaultSingletonTraits;
 class SingleThreadTaskRunner;
 }
 

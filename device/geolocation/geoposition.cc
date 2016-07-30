@@ -12,7 +12,7 @@ const double kBadLatitudeLongitude = 200;
 // Lowest point on land is at approximately -400 meters.
 const int kBadAltitude = -10000;
 const int kBadAccuracy = -1;  // Accuracy must be non-negative.
-const int kBadHeading = -1;  // Heading must be non-negative.
+const int kBadHeading = -1;   // Heading must be non-negative.
 const int kBadSpeed = -1;
 }
 
@@ -26,16 +26,13 @@ Geoposition::Geoposition()
       altitude_accuracy(kBadAccuracy),
       heading(kBadHeading),
       speed(kBadSpeed),
-      error_code(ERROR_CODE_NONE) {
-}
+      error_code(ERROR_CODE_NONE) {}
 
 Geoposition::Geoposition(const Geoposition& other) = default;
 
 bool Geoposition::Validate() const {
-  return latitude >= -90. && latitude <= 90. &&
-         longitude >= -180. && longitude <= 180. &&
-         accuracy >= 0. &&
-         !timestamp.is_null();
+  return latitude >= -90. && latitude <= 90. && longitude >= -180. &&
+         longitude <= 180. && accuracy >= 0. && !timestamp.is_null();
 }
 
 }  // namespace device

@@ -16,11 +16,11 @@ namespace device {
 
 FakeAccessTokenStore::FakeAccessTokenStore() {
   ON_CALL(*this, LoadAccessTokens(_))
-      .WillByDefault(Invoke(this,
-                            &FakeAccessTokenStore::DefaultLoadAccessTokens));
+      .WillByDefault(
+          Invoke(this, &FakeAccessTokenStore::DefaultLoadAccessTokens));
   ON_CALL(*this, SaveAccessToken(_, _))
-      .WillByDefault(Invoke(this,
-                            &FakeAccessTokenStore::DefaultSaveAccessToken));
+      .WillByDefault(
+          Invoke(this, &FakeAccessTokenStore::DefaultSaveAccessToken));
 }
 
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
@@ -43,7 +43,8 @@ void FakeAccessTokenStore::DefaultLoadAccessTokens(
 }
 
 void FakeAccessTokenStore::DefaultSaveAccessToken(
-    const GURL& server_url, const base::string16& access_token) {
+    const GURL& server_url,
+    const base::string16& access_token) {
   DCHECK(server_url.is_valid());
   access_token_map_[server_url] = access_token;
 }

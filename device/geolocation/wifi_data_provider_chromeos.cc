@@ -20,10 +20,10 @@ namespace device {
 namespace {
 
 // The time periods between successive polls of the wifi data.
-const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
-const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;  // 2 mins
+const int kDefaultPollingIntervalMilliseconds = 10 * 1000;           // 10s
+const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;      // 2 mins
 const int kTwoNoChangePollingIntervalMilliseconds = 10 * 60 * 1000;  // 10 mins
-const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000;            // 20s
 
 }  // namespace
 
@@ -32,8 +32,7 @@ WifiDataProviderChromeOs::WifiDataProviderChromeOs()
       is_first_scan_complete_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {
-}
+WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {}
 
 void WifiDataProviderChromeOs::StartDataProvider() {
   DCHECK(CalledOnClientThread());
@@ -147,8 +146,9 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
 
   chromeos::WifiAccessPointVector access_points;
   int64_t age_ms = 0;
-  if (!chromeos::NetworkHandler::Get()->geolocation_handler()->
-      GetWifiAccessPoints(&access_points, &age_ms)) {
+  if (!chromeos::NetworkHandler::Get()
+           ->geolocation_handler()
+           ->GetWifiAccessPoints(&access_points, &age_ms)) {
     return false;
   }
   for (const auto& access_point : access_points) {

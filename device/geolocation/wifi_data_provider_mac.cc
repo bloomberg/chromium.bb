@@ -10,10 +10,10 @@
 namespace device {
 namespace {
 // The time periods, in milliseconds, between successive polls of the wifi data.
-const int kDefaultPollingInterval = 120000;  // 2 mins
-const int kNoChangePollingInterval = 300000;  // 5 mins
-const int kTwoNoChangePollingInterval = 600000;  // 10 mins
-const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
+const int kDefaultPollingInterval = 120000;                // 2 mins
+const int kNoChangePollingInterval = 300000;               // 5 mins
+const int kTwoNoChangePollingInterval = 600000;            // 10 mins
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000;  // 20s
 }  // namespace
 
 // static
@@ -21,11 +21,9 @@ WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderMac();
 }
 
-WifiDataProviderMac::WifiDataProviderMac() {
-}
+WifiDataProviderMac::WifiDataProviderMac() {}
 
-WifiDataProviderMac::~WifiDataProviderMac() {
-}
+WifiDataProviderMac::~WifiDataProviderMac() {}
 
 WifiDataProviderMac::WlanApiInterface* WifiDataProviderMac::NewWlanApi() {
   WifiDataProviderMac::WlanApiInterface* core_wlan_api = NewCoreWlanApi();
@@ -37,10 +35,9 @@ WifiDataProviderMac::WlanApiInterface* WifiDataProviderMac::NewWlanApi() {
 }
 
 WifiPollingPolicy* WifiDataProviderMac::NewPollingPolicy() {
-  return new GenericWifiPollingPolicy<kDefaultPollingInterval,
-                                      kNoChangePollingInterval,
-                                      kTwoNoChangePollingInterval,
-                                      kNoWifiPollingIntervalMilliseconds>;
+  return new GenericWifiPollingPolicy<
+      kDefaultPollingInterval, kNoChangePollingInterval,
+      kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>;
 }
 
 }  // namespace device

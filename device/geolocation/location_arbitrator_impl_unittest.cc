@@ -172,13 +172,9 @@ class GeolocationLocationArbitratorTest : public testing::Test {
         LocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
   }
 
-  MockLocationProvider* cell() {
-    return arbitrator_->cell_;
-  }
+  MockLocationProvider* cell() { return arbitrator_->cell_; }
 
-  MockLocationProvider* gps() {
-    return arbitrator_->gps_;
-  }
+  MockLocationProvider* gps() { return arbitrator_->gps_; }
 
   const scoped_refptr<FakeAccessTokenStore> access_token_store_;
   const std::unique_ptr<MockLocationObserver> observer_;
@@ -223,16 +219,14 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
-            observer_->last_position_.error_code);
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
 
   SetReferencePosition(cell());
 
   EXPECT_TRUE(observer_->last_position_.Validate() ||
               observer_->last_position_.error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(cell()->position_.latitude,
-            observer_->last_position_.latitude);
+  EXPECT_EQ(cell()->position_.latitude, observer_->last_position_.latitude);
 
   EXPECT_FALSE(cell()->is_permission_granted_);
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());

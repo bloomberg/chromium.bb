@@ -8,11 +8,9 @@
 
 namespace device {
 
-EmptyWifiDataProvider::EmptyWifiDataProvider() {
-}
+EmptyWifiDataProvider::EmptyWifiDataProvider() {}
 
-EmptyWifiDataProvider::~EmptyWifiDataProvider() {
-}
+EmptyWifiDataProvider::~EmptyWifiDataProvider() {}
 
 bool EmptyWifiDataProvider::GetData(WifiData* data) {
   DCHECK(data);

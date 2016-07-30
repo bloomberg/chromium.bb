@@ -12,8 +12,7 @@
 namespace device {
 
 // LocationProviderAndroid
-LocationProviderAndroid::LocationProviderAndroid() {
-}
+LocationProviderAndroid::LocationProviderAndroid() {}
 
 LocationProviderAndroid::~LocationProviderAndroid() {
   StopProvider();

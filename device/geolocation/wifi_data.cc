@@ -34,17 +34,15 @@ bool WifiData::DiffersSignificantly(const WifiData& other) const {
       std::min(access_point_data.size(), other.access_point_data.size());
   const size_t max_ap_count =
       std::max(access_point_data.size(), other.access_point_data.size());
-  const size_t difference_threadhold = std::min(kMinChangedAccessPoints,
-                                                min_ap_count / 2);
+  const size_t difference_threadhold =
+      std::min(kMinChangedAccessPoints, min_ap_count / 2);
   if (max_ap_count > min_ap_count + difference_threadhold)
     return true;
   // Compute size of intersection of old and new sets.
   size_t num_common = 0;
   for (AccessPointDataSet::const_iterator iter = access_point_data.begin();
-       iter != access_point_data.end();
-       iter++) {
-    if (other.access_point_data.find(*iter) !=
-        other.access_point_data.end()) {
+       iter != access_point_data.end(); iter++) {
+    if (other.access_point_data.find(*iter) != other.access_point_data.end()) {
       ++num_common;
     }
   }

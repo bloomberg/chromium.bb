@@ -10,9 +10,7 @@
 namespace device {
 
 MockLocationArbitrator::MockLocationArbitrator()
-    : permission_granted_(false),
-      providers_started_(false) {
-}
+    : permission_granted_(false), providers_started_(false) {}
 
 void MockLocationArbitrator::StartProviders(bool enable_high_accuracy) {
   providers_started_ = true;

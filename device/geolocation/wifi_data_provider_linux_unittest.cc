@@ -35,41 +35,33 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     mock_bus_ = new dbus::MockBus(options);
 
     // Create a mock proxy that behaves as NetworkManager.
-    mock_network_manager_proxy_ =
-        new dbus::MockObjectProxy(
-            mock_bus_.get(),
-            "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager"));
+    mock_network_manager_proxy_ = new dbus::MockObjectProxy(
+        mock_bus_.get(), "org.freedesktop.NetworkManager",
+        dbus::ObjectPath("/org/freedesktop/NetworkManager"));
     // Set an expectation so mock_network_manager_proxy_'s
     // CallMethodAndBlock() will use CreateNetworkManagerProxyResponse()
     // to return responses.
     EXPECT_CALL(*mock_network_manager_proxy_.get(),
                 MockCallMethodAndBlock(_, _))
-        .WillRepeatedly(Invoke(this,
-                               &GeolocationWifiDataProviderLinuxTest::
-                                   CreateNetworkManagerProxyResponse));
+        .WillRepeatedly(Invoke(this, &GeolocationWifiDataProviderLinuxTest::
+                                         CreateNetworkManagerProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/Devices/0.
-    mock_device_proxy_ =
-        new dbus::MockObjectProxy(
-            mock_bus_.get(),
-            "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
+    mock_device_proxy_ = new dbus::MockObjectProxy(
+        mock_bus_.get(), "org.freedesktop.NetworkManager",
+        dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
     EXPECT_CALL(*mock_device_proxy_.get(), MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
-             this,
-             &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
+            this,
+            &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/AccessPoint/0.
-    mock_access_point_proxy_ =
-        new dbus::MockObjectProxy(
-            mock_bus_.get(),
-            "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
+    mock_access_point_proxy_ = new dbus::MockObjectProxy(
+        mock_bus_.get(), "org.freedesktop.NetworkManager",
+        dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
     EXPECT_CALL(*mock_access_point_proxy_.get(), MockCallMethodAndBlock(_, _))
-        .WillRepeatedly(Invoke(this,
-                               &GeolocationWifiDataProviderLinuxTest::
-                                   CreateAccessPointProxyResponse));
+        .WillRepeatedly(Invoke(this, &GeolocationWifiDataProviderLinuxTest::
+                                         CreateAccessPointProxyResponse));
 
     // Set an expectation so mock_bus_'s GetObjectProxy() for the given
     // service name and the object path will return
@@ -113,7 +105,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
   scoped_refptr<dbus::MockObjectProxy> mock_network_manager_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_access_point_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_device_proxy_;
-  scoped_refptr<WifiDataProviderLinux>  wifi_provider_linux_;
+  scoped_refptr<WifiDataProviderLinux> wifi_provider_linux_;
   std::unique_ptr<WifiDataProviderCommon::WlanApiInterface> wlan_api_;
 
  private:
@@ -158,7 +150,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
         return response.release();
       }
     } else if (method_call->GetInterface() ==
-               "org.freedesktop.NetworkManager.Device.Wireless" &&
+                   "org.freedesktop.NetworkManager.Device.Wireless" &&
                method_call->GetMember() == "GetAccessPoints") {
       // The list of access points is asked. Return the object path.
       std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
@@ -173,7 +165,6 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
     return NULL;
   }
-
 
   // Creates a response for |mock_access_point_proxy_|.
   dbus::Response* CreateAccessPointProxyResponse(dbus::MethodCall* method_call,

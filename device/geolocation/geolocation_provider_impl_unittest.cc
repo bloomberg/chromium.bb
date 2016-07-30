@@ -34,9 +34,7 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
   ~LocationProviderForTestArbitrator() override {}
 
   // Only valid for use on the geolocation thread.
-  MockLocationArbitrator* mock_arbitrator() const {
-    return mock_arbitrator_;
-  }
+  MockLocationArbitrator* mock_arbitrator() const { return mock_arbitrator_; }
 
  protected:
   // GeolocationProviderImpl implementation:
@@ -78,8 +76,7 @@ class MockGeolocationCallbackWrapper {
   MOCK_METHOD1(Callback, void(const Geoposition& position));
 };
 
-class GeopositionEqMatcher
-    : public MatcherInterface<const Geoposition&> {
+class GeopositionEqMatcher : public MatcherInterface<const Geoposition&> {
  public:
   explicit GeopositionEqMatcher(const Geoposition& expected)
       : expected_(expected) {}
@@ -119,9 +116,7 @@ Matcher<const Geoposition&> GeopositionEq(const Geoposition& expected) {
 class GeolocationProviderTest : public testing::Test {
  protected:
   GeolocationProviderTest()
-      : message_loop_(),
-        provider_(new LocationProviderForTestArbitrator) {
-  }
+      : message_loop_(), provider_(new LocationProviderForTestArbitrator) {}
 
   ~GeolocationProviderTest() override {}
 
@@ -138,7 +133,6 @@ class GeolocationProviderTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<LocationProviderForTestArbitrator> provider_;
 };
-
 
 bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(provider_->IsRunning());
@@ -172,8 +166,7 @@ TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
   EXPECT_TRUE(provider()->user_did_opt_into_location_services_for_testing());
 }
 
-void DummyFunction(const Geoposition& position) {
-}
+void DummyFunction(const Geoposition& position) {}
 
 TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_FALSE(provider()->IsRunning());
@@ -198,9 +191,9 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   first_position.timestamp = base::Time::Now();
 
   AsyncMockGeolocationObserver first_observer;
-  GeolocationProviderImpl::LocationUpdateCallback first_callback = base::Bind(
-      &MockGeolocationObserver::OnLocationUpdate,
-      base::Unretained(&first_observer));
+  GeolocationProviderImpl::LocationUpdateCallback first_callback =
+      base::Bind(&MockGeolocationObserver::OnLocationUpdate,
+                 base::Unretained(&first_observer));
   EXPECT_CALL(first_observer, OnLocationUpdate(GeopositionEq(first_position)));
   std::unique_ptr<GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(first_callback, false);
@@ -220,9 +213,9 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   // After adding a second observer, check that no unexpected position update
   // is sent.
   EXPECT_CALL(second_observer, OnLocationUpdate(testing::_)).Times(0);
-  GeolocationProviderImpl::LocationUpdateCallback second_callback = base::Bind(
-      &MockGeolocationObserver::OnLocationUpdate,
-      base::Unretained(&second_observer));
+  GeolocationProviderImpl::LocationUpdateCallback second_callback =
+      base::Bind(&MockGeolocationObserver::OnLocationUpdate,
+                 base::Unretained(&second_observer));
   std::unique_ptr<GeolocationProvider::Subscription> subscription2 =
       provider()->AddLocationUpdateCallback(second_callback, false);
   base::RunLoop().RunUntilIdle();
@@ -245,9 +238,9 @@ TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   // update the observer with our overridden position.
   MockGeolocationObserver mock_observer;
   EXPECT_CALL(mock_observer, OnLocationUpdate(GeopositionEq(position)));
-  GeolocationProviderImpl::LocationUpdateCallback callback = base::Bind(
-      &MockGeolocationObserver::OnLocationUpdate,
-      base::Unretained(&mock_observer));
+  GeolocationProviderImpl::LocationUpdateCallback callback =
+      base::Bind(&MockGeolocationObserver::OnLocationUpdate,
+                 base::Unretained(&mock_observer));
   std::unique_ptr<GeolocationProvider::Subscription> subscription =
       provider()->AddLocationUpdateCallback(callback, false);
   subscription.reset();
