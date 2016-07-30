@@ -259,7 +259,6 @@ void V8ProfilerAgentImpl::start(ErrorString* error)
     m_frontendInitiatedProfileId = nextProfileId();
     startProfiling(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
-    m_session->client()->profilingStarted();
 }
 
 void V8ProfilerAgentImpl::stop(ErrorString* errorString, std::unique_ptr<protocol::Profiler::CPUProfile>* profile)
@@ -278,7 +277,6 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, std::unique_ptr<protoco
     }
     m_frontendInitiatedProfileId = String16();
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
-    m_session->client()->profilingStopped();
 }
 
 String16 V8ProfilerAgentImpl::nextProfileId()

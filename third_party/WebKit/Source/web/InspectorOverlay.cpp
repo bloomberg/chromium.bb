@@ -178,7 +178,7 @@ InspectorOverlay::InspectorOverlay(WebViewImpl* webViewImpl)
     , m_resizeTimerActive(false)
     , m_omitTooltip(false)
     , m_timer(this, &InspectorOverlay::onTimer)
-    , m_suspendCount(0)
+    , m_suspended(false)
     , m_inLayout(false)
     , m_needsUpdate(false)
     , m_inspectMode(InspectorDOMAgent::NotSearching)
@@ -354,7 +354,7 @@ void InspectorOverlay::highlightQuad(std::unique_ptr<FloatQuad> quad, const Insp
 
 bool InspectorOverlay::isEmpty()
 {
-    if (m_suspendCount)
+    if (m_suspended)
         return true;
     bool hasVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize) || !m_pausedInDebuggerMessage.isNull();
     return !hasVisibleElements && m_inspectMode == InspectorDOMAgent::NotSearching;
@@ -672,13 +672,15 @@ void InspectorOverlay::overlayClearSelection(bool commitChanges)
 
 void InspectorOverlay::suspend()
 {
-    if (!m_suspendCount++)
+    if (!m_suspended) {
+        m_suspended = true;
         clearInternal();
+    }
 }
 
 void InspectorOverlay::resume()
 {
-    --m_suspendCount;
+    m_suspended = false;
 }
 
 void InspectorOverlay::pageLayoutInvalidated(bool resized)

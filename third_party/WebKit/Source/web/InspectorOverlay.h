@@ -155,7 +155,7 @@ private:
     bool m_resizeTimerActive;
     bool m_omitTooltip;
     Timer<InspectorOverlay> m_timer;
-    int m_suspendCount;
+    bool m_suspended;
     bool m_inLayout;
     bool m_needsUpdate;
     V8InspectorSession* m_v8Session;

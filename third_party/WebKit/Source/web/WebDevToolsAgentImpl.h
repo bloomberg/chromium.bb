@@ -118,14 +118,12 @@ private:
 
     // InspectorPageAgent::Client implementation.
     void pageLayoutInvalidated(bool resized) override;
-    void setPausedInDebuggerMessage(const String&) override;
+    void configureOverlay(bool suspended, const String& message) override;
     void waitForCreateWindow(LocalFrame*) override;
 
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
     void resumeStartup() override;
-    void profilingStarted() override;
-    void profilingStopped() override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;

@@ -62,7 +62,7 @@ public:
     public:
         virtual ~Client() { }
         virtual void pageLayoutInvalidated(bool resized) { }
-        virtual void setPausedInDebuggerMessage(const String&) { }
+        virtual void configureOverlay(bool suspended, const String& message) { }
         virtual void waitForCreateWindow(LocalFrame*) { }
     };
 
@@ -108,7 +108,7 @@ public:
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
     void startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
-    void setOverlayMessage(ErrorString*, const Maybe<String>& message) override;
+    void configureOverlay(ErrorString*, const Maybe<bool>& suspended, const Maybe<String>& message) override;
     void setBlockedEventsWarningThreshold(ErrorString*, double threshold) override;
 
     // InspectorInstrumentation API

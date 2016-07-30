@@ -80,6 +80,8 @@ static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvalua
 static const char screencastEnabled[] = "screencastEnabled";
 static const char autoAttachToCreatedPages[] = "autoAttachToCreatedPages";
 static const char blockedEventsWarningThreshold[] = "blockedEventsWarningThreshold";
+static const char overlaySuspended[] = "overlaySuspended";
+static const char overlayMessage[] = "overlayMessage";
 }
 
 namespace {
@@ -349,6 +351,11 @@ void InspectorPageAgent::restore()
     if (m_state->booleanProperty(PageAgentState::pageAgentEnabled, false))
         enable(&error);
     setBlockedEventsWarningThreshold(&error, m_state->doubleProperty(PageAgentState::blockedEventsWarningThreshold, 0.0));
+    if (m_client) {
+        String16 overlayMessage;
+        m_state->getString(PageAgentState::overlayMessage, &overlayMessage);
+        m_client->configureOverlay(m_state->booleanProperty(PageAgentState::overlaySuspended, false), overlayMessage.isEmpty() ? String() : String(overlayMessage));
+    }
 }
 
 void InspectorPageAgent::enable(ErrorString*)
@@ -369,6 +376,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_inspectorResourceContentLoader->cancel(m_resourceContentLoaderClientId);
 
     stopScreencast(0);
+    configureOverlay(nullptr, false, String());
 
     finishReload();
 }
@@ -739,10 +747,12 @@ void InspectorPageAgent::stopScreencast(ErrorString*)
     m_state->setBoolean(PageAgentState::screencastEnabled, false);
 }
 
-void InspectorPageAgent::setOverlayMessage(ErrorString*, const Maybe<String>& message)
+void InspectorPageAgent::configureOverlay(ErrorString*, const Maybe<bool>& suspended, const Maybe<String>& message)
 {
+    m_state->setBoolean(PageAgentState::overlaySuspended, suspended.fromMaybe(false));
+    m_state->setString(PageAgentState::overlaySuspended, message.fromMaybe(String()));
     if (m_client)
-        m_client->setPausedInDebuggerMessage(message.fromMaybe(String()));
+        m_client->configureOverlay(suspended.fromMaybe(false), message.fromMaybe(String()));
 }
 
 void InspectorPageAgent::setBlockedEventsWarningThreshold(ErrorString*, double threshold)

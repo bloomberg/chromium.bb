@@ -35,8 +35,6 @@ public:
     public:
         virtual void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) = 0;
         virtual void resumeStartup() { }
-        virtual void profilingStarted() { }
-        virtual void profilingStopped() { }
         virtual ~Client() {}
     };
 
@@ -62,8 +60,6 @@ private:
     // V8InspectorSessionClient implementation.
     void resumeStartup() override;
     bool canExecuteScripts() override;
-    void profilingStarted() override;
-    void profilingStopped() override;
 
     Client* m_client;
     std::unique_ptr<V8InspectorSession> m_v8Session;

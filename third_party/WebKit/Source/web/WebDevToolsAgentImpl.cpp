@@ -594,28 +594,21 @@ void WebDevToolsAgentImpl::resumeStartup()
         m_client->resumeStartup();
 }
 
-void WebDevToolsAgentImpl::profilingStarted()
-{
-    if (m_overlay)
-        m_overlay->suspend();
-}
-
-void WebDevToolsAgentImpl::profilingStopped()
-{
-    if (m_overlay)
-        m_overlay->resume();
-}
-
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)
 {
     if (m_overlay)
         m_overlay->pageLayoutInvalidated(resized);
 }
 
-void WebDevToolsAgentImpl::setPausedInDebuggerMessage(const String& message)
+void WebDevToolsAgentImpl::configureOverlay(bool suspended, const String& message)
 {
-    if (m_overlay)
-        m_overlay->setPausedInDebuggerMessage(message);
+    if (!m_overlay)
+        return;
+    m_overlay->setPausedInDebuggerMessage(message);
+    if (suspended)
+        m_overlay->suspend();
+    else
+        m_overlay->resume();
 }
 
 void WebDevToolsAgentImpl::waitForCreateWindow(LocalFrame* frame)

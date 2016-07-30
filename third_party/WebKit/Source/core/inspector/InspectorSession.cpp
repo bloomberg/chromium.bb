@@ -134,16 +134,6 @@ bool InspectorSession::canExecuteScripts()
     return m_inspectedFrames ? m_inspectedFrames->root()->script().canExecuteScripts(NotAboutToExecuteScript) : true;
 }
 
-void InspectorSession::profilingStarted()
-{
-    m_client->profilingStarted();
-}
-
-void InspectorSession::profilingStopped()
-{
-    m_client->profilingStopped();
-}
-
 DEFINE_TRACE(InspectorSession)
 {
     visitor->trace(m_instrumentingAgents);
