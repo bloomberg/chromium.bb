@@ -96,7 +96,10 @@ def filter_latest_jobs(jobs):
     for j in jobs:
         if j.build_number > builder_to_highest_number.get(j.builder_name, 0):
             builder_to_highest_number[j.builder_name] = j.build_number
-    return [j for j in jobs if builder_to_highest_number[j.builder_name] == j.build_number]
+    return [j for j in jobs if (
+        j.builder_name in builder_to_highest_number and
+        builder_to_highest_number[j.builder_name] == j.build_number
+    )]
 
 
 def get_latest_try_job_results(issue_number, web):

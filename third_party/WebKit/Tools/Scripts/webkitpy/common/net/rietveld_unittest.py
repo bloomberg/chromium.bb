@@ -98,24 +98,15 @@ class RietveldTest(unittest.TestCase):
 
     def test_filter_latest_jobs_higher_build_first(self):
         self.assertEqual(
-            filter_latest_jobs([
-                Build('foo', 5),
-                Build('foo', 3),
-                Build('bar', 5),
-            ]),
-            [
-                Build('foo', 5),
-                Build('bar', 5),
-            ])
+            filter_latest_jobs([Build('foo', 5), Build('foo', 3), Build('bar', 5)]),
+            [Build('foo', 5), Build('bar', 5)])
 
     def test_filter_latest_jobs_higher_build_last(self):
         self.assertEqual(
-            filter_latest_jobs([
-                Build('foo', 3),
-                Build('bar', 5),
-                Build('foo', 5),
-            ]),
-            [
-                Build('bar', 5),
-                Build('foo', 5),
-            ])
+            filter_latest_jobs([Build('foo', 3), Build('bar', 5), Build('foo', 5)]),
+            [Build('bar', 5), Build('foo', 5)])
+
+    def test_filter_latest_jobs_no_build_number(self):
+        self.assertEqual(
+            filter_latest_jobs([Build('foo', 3), Build('bar')]),
+            [Build('foo', 3)])
