@@ -56,18 +56,16 @@ Polymer({
   /** @private */
   onManageCertificatesTap_: function() {
 <if expr="use_nss_certs">
-    var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
     settings.navigateTo(settings.Route.CERTIFICATES);
 </if>
 <if expr="is_win or is_macosx">
     settings.PrivacyPageBrowserProxyImpl.getInstance().
-      showManageSSLCertificates();
+        showManageSSLCertificates();
 </if>
   },
 
   /** @private */
   onSiteSettingsTap_: function() {
-    var pages = /** @type {!SettingsAnimatedPagesElement} */(this.$.pages);
     settings.navigateTo(settings.Route.SITE_SETTINGS);
   },
 

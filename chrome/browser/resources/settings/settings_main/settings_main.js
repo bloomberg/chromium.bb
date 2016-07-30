@@ -72,28 +72,12 @@ Polymer({
   },
 
   /** @override */
-  created: function() {
-    /** @private {!PromiseResolver} */
-    this.resolver_ = new PromiseResolver;
-    settings.main.rendered = this.resolver_.promise;
-  },
-
-  /** @override */
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.advancedToggleExpanded_ = e.detail;
       settings.navigateTo(this.advancedToggleExpanded_ ?
           settings.Route.ADVANCED : settings.Route.BASIC);
     }.bind(this));
-
-    doWhenReady(
-        function() {
-          var basicPage = this.$$('settings-basic-page');
-          return !!basicPage && basicPage.scrollHeight > 0;
-        }.bind(this),
-        function() {
-          this.resolver_.resolve();
-        }.bind(this));
   },
 
   /**

@@ -177,13 +177,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_JS"
                  file="settings_main/settings_main.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_RENDERED_HTML"
-                 file="settings_main/settings_main_rendered.html"
-                 type="chrome_html"
-                 allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_RENDERED_JS"
-                 file="settings_main/settings_main_rendered.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_HTML"
                  file="settings_menu/settings_menu.html"
                  type="chrome_html"
