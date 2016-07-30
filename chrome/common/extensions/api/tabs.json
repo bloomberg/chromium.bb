@@ -981,6 +981,11 @@
                 "optional": true,
                 "description": "The tab's new audible state."
               },
+              "discarded": {
+                "type": "boolean",
+                "optional": true,
+                "description": "The tab's new discarded state."
+              },
               "mutedInfo": {
                 "$ref": "MutedInfo",
                 "optional": true,
