@@ -22,6 +22,18 @@ var gIceCandidates = [];
  */
 var gHasSeenCryptoInSdp = 'no-crypto-seen';
 
+/**
+ * The default video codec that should be used.
+ * @private
+ */
+var gDefaultVideoCodec = null;
+
+/**
+ * Flag to indicate if Opus Dtx should be enabled.
+ * @private
+ */
+var gOpusDtx = false;
+
 // Public interface to tests. These are expected to be called with
 // ExecuteJavascript invocations from the browser tests and will return answers
 // through the DOM automation controller.
@@ -68,25 +80,45 @@ function preparePeerConnectionWithCertificate(certificate) {
 }
 
 /**
+ * Sets the flag to force Opus Dtx to be used when creating an offer.
+ */
+function forceOpusDtx() {
+  gOpusDtx = true;
+  returnToTest('ok-forced');
+}
+
+/**
+ * Sets the default video codec be used when creating an offer.
+ * @param {string} videoCodec promotes the specified codec to be the default
+ *     video codec, e.g. the first one in the list on the 'm=video' SDP offer
+ *     line. |videoCodec| is the case-sensitive codec name, e.g. 'VP8' or
+ *     'H264'.
+ */
+function forceVideoCodec(videoCodec) {
+  gDefaultVideoCodec = videoCodec;
+  returnToTest('ok-forced');
+}
+
+/**
  * Asks this page to create a local offer.
  *
  * Returns a string on the format ok-(JSON encoded session description).
  *
  * @param {!Object} constraints Any createOffer constraints.
- * @param {string} videoCodec If not null, promotes the specified codec to be
- *     the default video codec, e.g. the first one in the list on the 'm=video'
- *     SDP offer line. |videoCodec| is the case-sensitive codec name, e.g.
- *     'VP8' or 'H264'.
  */
-function createLocalOffer(constraints, videoCodec = null) {
+function createLocalOffer(constraints) {
   peerConnection_().createOffer(
       function(localOffer) {
         success('createOffer');
 
         setLocalDescription(peerConnection, localOffer);
-        if (videoCodec !== null)
-          localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp, videoCodec);
-
+        if (gDefaultVideoCodec !== null) {
+          localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp,
+                                                   gDefaultVideoCodec);
+        }
+        if (gOpusDtx) {
+          localOffer.sdp = setOpusDtxEnabled(localOffer.sdp);
+        }
         returnToTest('ok-' + JSON.stringify(localOffer));
       },
       function(error) { failure('createOffer', error); },
@@ -119,6 +151,9 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
       function(answer) {
         success('createAnswer');
         setLocalDescription(peerConnection, answer);
+        if (gOpusDtx) {
+          answer.sdp = setOpusDtxEnabled(answer.sdp);
+        }
         returnToTest('ok-' + JSON.stringify(answer));
       },
       function(error) { failure('createAnswer', error); },
@@ -126,16 +161,21 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
 }
 
 /**
- * Verifies that the specified codec is the default video codec, e.g. the first
- * one in the list on the 'm=video' SDP answer line. If this is not the case,
- * |failure| occurs.
+ * Verifies that the codec previously set using forceVideoCodec() is the
+ * default video codec, e.g. the first one in the list on the 'm=video' SDP
+ * answer line. If this is not the case, |failure| occurs. If no codec was
+ * previously set using forceVideoCodec(), this function will return
+ * 'ok-no-default-set'.
  *
  * @param {!string} sessionDescJson A JSON-encoded session description.
- * @param {!string} expectedVideoCodec The case-sensitive codec name, e.g.
- *     'VP8' or 'H264'.
  */
-function verifyDefaultVideoCodec(sessionDescJson, expectedVideoCodec) {
+function verifyDefaultVideoCodec(sessionDescJson) {
   var sessionDesc = parseJson_(sessionDescJson);
+  var defaultVideoCodec = getSdpDefaultVideoCodec(sessionDesc.sdp);
+  if (gDefaultVideoCodec === null) {
+    returnToTest('ok-no-default-set');
+    return;
+  }
   if (!sessionDesc.type) {
     failure('verifyDefaultVideoCodec',
              'Invalid session description: ' + sessionDescJson);
@@ -145,9 +185,9 @@ function verifyDefaultVideoCodec(sessionDescJson, expectedVideoCodec) {
     failure('verifyDefaultVideoCodec',
              'Could not determine default video codec.');
   }
-  if (expectedVideoCodec !== defaultVideoCodec) {
+  if (gDefaultVideoCodec !== defaultVideoCodec) {
     failure('verifyDefaultVideoCodec',
-             'Expected default video codec ' + expectedVideoCodec +
+             'Expected default video codec ' + gDefaultVideoCodec +
              ', got ' + defaultVideoCodec + '.');
   }
   returnToTest('ok-verified');

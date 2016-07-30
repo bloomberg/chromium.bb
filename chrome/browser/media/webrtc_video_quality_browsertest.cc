@@ -267,7 +267,11 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     SetupPeerconnectionWithLocalStream(left_tab);
     SetupPeerconnectionWithLocalStream(right_tab);
 
-    NegotiateCall(left_tab, right_tab, video_codec);
+    if (!video_codec.empty()) {
+      SetDefaultVideoCodec(left_tab, video_codec);
+      SetDefaultVideoCodec(right_tab, video_codec);
+    }
+    NegotiateCall(left_tab, right_tab);
 
     // Poll slower here to avoid flooding the log with messages: capturing and
     // sending frames take quite a bit of time.

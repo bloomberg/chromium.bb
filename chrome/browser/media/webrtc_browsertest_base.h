@@ -129,10 +129,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // If |video_codec| is not |kUseDefaultVideoCodec|, the SDP offer is modified
   // (and SDP answer verified) so that the specified video codec (case-sensitive
   // name) is used during the call instead of the default one.
-  void NegotiateCall(
-      content::WebContents* from_tab,
-      content::WebContents* to_tab,
-      const std::string& video_codec = kUseDefaultVideoCodec) const;
+  void NegotiateCall(content::WebContents* from_tab,
+                     content::WebContents* to_tab) const;
 
   // Hangs up a negotiated call.
   void HangUp(content::WebContents* from_tab) const;
@@ -166,17 +164,20 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void GenerateAndCloneCertificate(content::WebContents* tab,
                                    const std::string& keygen_algorithm) const;
 
+  // Change the default video codec in the offer SDP.
+  void SetDefaultVideoCodec(content::WebContents* tab,
+                            const std::string& video_codec) const;
+
+  // Add 'usedtx=1' to the offer SDP.
+  void EnableOpusDtx(content::WebContents* tab) const;
+
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;
 
-  std::string CreateLocalOffer(
-      content::WebContents* from_tab,
-      std::string default_video_codec = kUseDefaultVideoCodec) const;
-  std::string CreateAnswer(
-      std::string local_offer,
-      content::WebContents* to_tab,
-      std::string default_video_codec = kUseDefaultVideoCodec) const;
+  std::string CreateLocalOffer(content::WebContents* from_tab) const;
+  std::string CreateAnswer(std::string local_offer,
+                           content::WebContents* to_tab) const;
   void ReceiveAnswer(const std::string& answer,
                      content::WebContents* from_tab) const;
   void GatherAndSendIceCandidates(content::WebContents* from_tab,

@@ -33,6 +33,13 @@
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
+std::string MakePerfTestLabel(std::string base, bool opus_dtx) {
+  if (opus_dtx) {
+    return base + "_with_opus_dtx";
+  }
+  return base;
+}
+
 // Performance browsertest for WebRTC. This test is manual since it takes long
 // to execute and requires the reference files provided by the webrtc.DEPS
 // solution (which is only available on WebRTC internal bots).
@@ -122,7 +129,11 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(left_tab);
     SetupPeerconnectionWithLocalStream(right_tab);
 
-    NegotiateCall(left_tab, right_tab, video_codec);
+    if (!video_codec.empty()) {
+      SetDefaultVideoCodec(left_tab, video_codec);
+      SetDefaultVideoCodec(right_tab, video_codec);
+    }
+    NegotiateCall(left_tab, right_tab);
 
     StartDetectingVideo(left_tab, "remote-view");
     StartDetectingVideo(right_tab, "remote-view");
@@ -149,7 +160,8 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
   }
 
   void RunsOneWayCall60SecsAndLogsInternalMetrics(
-      const std::string& video_codec) {
+      const std::string& video_codec,
+      bool opus_dtx) {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -165,7 +177,15 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(left_tab);
     SetupPeerconnectionWithoutLocalStream(right_tab);
 
-    NegotiateCall(left_tab, right_tab, video_codec);
+    if (!video_codec.empty()) {
+      SetDefaultVideoCodec(left_tab, video_codec);
+      SetDefaultVideoCodec(right_tab, video_codec);
+    }
+    if (opus_dtx) {
+      EnableOpusDtx(left_tab);
+      EnableOpusDtx(right_tab);
+    }
+    NegotiateCall(left_tab, right_tab);
 
     // Remote video will only play in one tab since the call is one-way.
     StartDetectingVideo(right_tab, "remote-view");
@@ -183,14 +203,18 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     const base::DictionaryValue* first_pc_dict =
         GetDataOnPeerConnection(all_data.get(), 0);
     ASSERT_TRUE(first_pc_dict != NULL);
-    test::PrintBweForVideoMetrics(*first_pc_dict, "_sendonly", video_codec);
-    test::PrintMetricsForSendStreams(*first_pc_dict, "_sendonly", video_codec);
+    test::PrintBweForVideoMetrics(
+        *first_pc_dict, MakePerfTestLabel("_sendonly", opus_dtx), video_codec);
+    test::PrintMetricsForSendStreams(
+        *first_pc_dict, MakePerfTestLabel("_sendonly", opus_dtx), video_codec);
 
     const base::DictionaryValue* second_pc_dict =
         GetDataOnPeerConnection(all_data.get(), 1);
     ASSERT_TRUE(second_pc_dict != NULL);
-    test::PrintBweForVideoMetrics(*second_pc_dict, "_recvonly", video_codec);
-    test::PrintMetricsForRecvStreams(*second_pc_dict, "_recvonly", video_codec);
+    test::PrintBweForVideoMetrics(
+        *second_pc_dict, MakePerfTestLabel("_recvonly", opus_dtx), video_codec);
+    test::PrintMetricsForRecvStreams(
+        *second_pc_dict, MakePerfTestLabel("_recvonly", opus_dtx), video_codec);
 
     HangUp(left_tab);
     HangUp(right_tab);
@@ -231,5 +255,11 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcPerfBrowserTest,
     MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsDefault) {
-  RunsOneWayCall60SecsAndLogsInternalMetrics("");
+  RunsOneWayCall60SecsAndLogsInternalMetrics("", false);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcPerfBrowserTest,
+    MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsWithOpusDtx) {
+  RunsOneWayCall60SecsAndLogsInternalMetrics("", true);
 }

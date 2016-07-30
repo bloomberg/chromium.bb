@@ -73,6 +73,10 @@ static void MaybePrintResultsForAudioSend(
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
   perf_test::PrintResult(
       "audio_tx", modifier, "goog_rtt", value, "ms", false);
+  EXPECT_TRUE(
+      pc_dict.GetString(Statistic("packetsSentPerSecond", ssrc), &value));
+  perf_test::PrintResult("audio_tx", modifier, "packets_sent_per_second", value,
+                         "packets", false);
 }
 
 static void MaybePrintResultsForVideoSend(

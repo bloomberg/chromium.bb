@@ -62,7 +62,11 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(left_tab_, offer_cert_keygen_alg);
     SetupPeerconnectionWithLocalStream(right_tab_, answer_cert_keygen_alg);
 
-    NegotiateCall(left_tab_, right_tab_, video_codec);
+    if (!video_codec.empty()) {
+      SetDefaultVideoCodec(left_tab_, video_codec);
+      SetDefaultVideoCodec(right_tab_, video_codec);
+    }
+    NegotiateCall(left_tab_, right_tab_);
 
     DetectVideoAndHangUp();
   }
@@ -84,7 +88,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
         left_tab_, "gCertificateClone");
     SetupPeerconnectionWithLocalStream(right_tab_, cert_keygen_alg);
 
-    NegotiateCall(left_tab_, right_tab_, WebRtcTestBase::kUseDefaultVideoCodec);
+    NegotiateCall(left_tab_, right_tab_);
 
     DetectVideoAndHangUp();
   }
