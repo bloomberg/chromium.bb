@@ -396,6 +396,7 @@
       'ios-simulator': 'ios_gyp',
       'ios-simulator-cronet': 'ios_gn',
       'ios-simulator-gn': 'ios_gn',
+      'ios-simulator-swarming': 'ios_gn',
     },
 
     'chromium.memory': {
@@ -881,6 +882,7 @@
       'ios-simulator': 'ios_gyp',
       'ios-simulator-cronet': 'ios_gn',
       'ios-simulator-gn': 'ios_gn',
+      'ios-simulator-swarming': 'ios_gn',
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_gn_release_trybot',
       'mac_chromium_archive_rel_ng': 'noswarming_gn_release_bot_mac_strip',
