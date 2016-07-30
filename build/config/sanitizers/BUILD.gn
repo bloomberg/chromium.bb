@@ -238,16 +238,30 @@ config("asan_flags") {
     }
 
     if (is_win) {
-      assert(current_cpu == "x86", "WinASan is 32-bit only currently")
-      if (is_component_build) {
-        libs = [
-          "clang_rt.asan_dynamic-i386.lib",
-          "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
-        ]
+      if (target_cpu == "x64") {
+        # Windows 64-bit.
+        if (is_component_build) {
+          libs = [
+            "clang_rt.asan_dynamic-x86_64.lib",
+            "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
+          ]
+        } else {
+          # TODO(etienneb): DLLs in the non-component build should link against
+          # clang_rt.asan_dll_thunk-x86_64.lib instead.
+          libs = [ "clang_rt.asan-x86_64.lib" ]
+        }
       } else {
-        # TODO(rnk): DLLs in the non-component build should link against
-        # clang_rt.asan_dll_thunk-i386.lib instead.
-        libs = [ "clang_rt.asan-i386.lib" ]
+        assert(target_cpu == "x86", "WinASan unsupported architecture")
+        if (is_component_build) {
+          libs = [
+            "clang_rt.asan_dynamic-i386.lib",
+            "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
+          ]
+        } else {
+          # TODO(etienneb): DLLs in the non-component build should link against
+          # clang_rt.asan_dll_thunk-i386.lib instead.
+          libs = [ "clang_rt.asan-i386.lib" ]
+        }
       }
     }
   }

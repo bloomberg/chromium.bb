@@ -109,9 +109,13 @@ if (is_win) {
       "//courgette:copy_courgette_binaries",
       "//remoting/webapp",
     ]
-    if (target_cpu == "x86") {
-      deps += [ "//courgette(//build/toolchain/win:x64)" ]
 
+    if (target_cpu == "x86") {
+      if (is_clang) {
+        deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
+      } else {
+        deps += [ "//courgette(//build/toolchain/win:x64)" ]
+      }
       if (is_chrome_branded) {
         deps += [ "//remoting/host:remoting_host_installation" ]
       }

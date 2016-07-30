@@ -340,11 +340,11 @@ if (current_os == "win" || current_os == "winrt_81" ||
 # These patterns filter out platform-specific files when assigning to the
 # sources variable. The magic variable |sources_assignment_filter| is applied
 # to each assignment or appending to the sources variable and matches are
-# automatcally removed.
+# automatically removed.
 #
 # Note that the patterns are NOT regular expressions. Only "*" and "\b" (path
 # boundary = end of string or slash) are supported, and the entire string
-# muct match the pattern (so you need "*.cc" to match all .cc files, for
+# must match the pattern (so you need "*.cc" to match all .cc files, for
 # example).
 
 # DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call

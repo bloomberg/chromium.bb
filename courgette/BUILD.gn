@@ -134,7 +134,13 @@ if (!is_ios) {
       # Make sure that we have a copy of courgette64.exe in the root out
       # directory.
       copy("copy_courgette_binaries") {
-        courgette64_label = ":courgette(//build/toolchain/win:x64)"
+        if (is_clang) {
+          courgette64_toolchain = "//build/toolchain/win:clang_x64"
+        } else {
+          courgette64_toolchain = "//build/toolchain/win:x64"
+        }
+        courgette64_label = ":courgette($courgette64_toolchain)"
+
         courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
         sources = [
           "$courgette64_out_dir/courgette64.exe",
