@@ -28,6 +28,7 @@ if (is_android) {
   import("//build/util/version.gni")
   import("//build_overrides/v8.gni")
   import("//media/cdm/ppapi/cdm_paths.gni")
+  import("//third_party/icu/config.gni")
 }
 
 if (is_win) {
@@ -749,7 +750,6 @@ if (is_win) {
       "$root_gen_dir/repack/resources.pak",
       "$root_out_dir/app_mode_loader.app",
       "$root_out_dir/chrome_100_percent.pak",
-      "$root_out_dir/icudtl.dat",
       "app/theme/default_100_percent/$branding_path_component/product_logo_32.png",
       "browser/mac/install.sh",
     ]
@@ -762,7 +762,6 @@ if (is_win) {
       ":packed_extra_resources",
       ":packed_resources",
       "//chrome/app_shim:app_mode_loader",
-      "//third_party/icu:icudata",
     ]
 
     if (enable_hidpi) {
@@ -784,6 +783,11 @@ if (is_win) {
         "browser/mac/keystone_promote_postflight.sh",
         "browser/mac/keystone_promote_preflight.sh",
       ]
+    }
+
+    if (icu_use_data_file) {
+      sources += [ "$root_out_dir/icudtl.dat" ]
+      public_deps += [ "//third_party/icu:icudata" ]
     }
 
     if (v8_use_external_startup_data) {
