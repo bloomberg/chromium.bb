@@ -74,6 +74,11 @@ public:
         std::unique_ptr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
+    void awaitPromise(ErrorString*,
+        const String16& promiseObjectId,
+        const Maybe<bool>& returnByValue,
+        const Maybe<bool>& generatePreview,
+        std::unique_ptr<AwaitPromiseCallback>) override;
     void callFunctionOn(ErrorString*,
         const String16& objectId,
         const String16& expression,

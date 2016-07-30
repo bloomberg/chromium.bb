@@ -1,0 +1,96 @@
+CONSOLE ERROR: line 1: Uncaught (in promise) #<Object>
+CONSOLE ERROR: Uncaught (in promise) #<Object>
+CONSOLE ERROR: Uncaught (in promise) 239
+Tests that Runtime.awaitPromise works.
+
+Running test: testResolvedPromise
+{
+    result : {
+        description : 239
+        type : number
+        value : 239
+    }
+}
+
+Running test: testRejectedPromise
+{
+    exceptionDetails : {
+        columnNumber : 0
+        lineNumber : 0
+        scriptId : 
+        stackTrace : {
+            callFrames : [
+            ]
+        }
+        text : Promise was rejected
+    }
+    result : {
+        type : object
+        value : {
+            a : 1
+        }
+    }
+    wasThrown : true
+}
+
+Running test: testRejectedPromiseWithStack
+{
+    exceptionDetails : {
+        columnNumber : 0
+        lineNumber : 0
+        scriptId : 
+        stackTrace : {
+            callFrames : [
+            ]
+            parent : {
+                callFrames : [
+                    [0] : {
+                        columnNumber : 4
+                        functionName : rejectPromise
+                        lineNumber : 21
+                        scriptId : 0
+                        url : 
+                    }
+                    [1] : {
+                        columnNumber : 0
+                        functionName : 
+                        lineNumber : 0
+                        scriptId : 0
+                        url : 
+                    }
+                ]
+                description : Promise.reject
+            }
+        }
+        text : Promise was rejected
+    }
+    result : {
+        description : 239
+        type : number
+        value : 239
+    }
+    wasThrown : true
+}
+
+Running test: testPendingPromise
+{
+    result : {
+        description : 239
+        type : number
+        value : 239
+    }
+}
+
+Running test: testResolvedWithoutArgsPromise
+{
+    result : {
+        type : undefined
+    }
+}
+
+Running test: testGarbageCollectedPromise
+{
+    code : -32000
+    message : Promise was collected
+}
+

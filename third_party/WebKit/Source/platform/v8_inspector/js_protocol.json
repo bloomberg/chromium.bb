@@ -196,6 +196,22 @@
                 "description": "Evaluates expression on global object."
             },
             {
+                "name": "awaitPromise",
+                "hidden": true,
+                "async": true,
+                "parameters": [
+                    { "name": "promiseObjectId", "$ref": "RemoteObjectId", "description": "Identifier of the promise." },
+                    { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
+                    { "name": "generatePreview", "type": "boolean", "optional": true, "description": "Whether preview should be generated for the result." }
+                ],
+                "returns": [
+                    { "name": "result", "$ref": "RemoteObject", "description": "Promise result. Will contain rejected value if promise was rejected." },
+                    { "name": "wasThrown", "type": "boolean", "optional": true, "description": "True if the promise was rejected." },
+                    { "name": "exceptionDetails", "$ref": "ExceptionDetails", "optional": true, "description": "Exception details if stack strace is available."}
+                ],
+                "description": "Add handler to promise with given promise object id."
+            },
+            {
                 "name": "callFunctionOn",
                 "parameters": [
                     { "name": "objectId", "$ref": "RemoteObjectId", "description": "Identifier of the object to call function on." },

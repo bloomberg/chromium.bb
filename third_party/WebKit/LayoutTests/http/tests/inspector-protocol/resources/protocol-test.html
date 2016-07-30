@@ -75,6 +75,14 @@ InspectorTest.sendCommandOrDie = function(command, properties, callback)
     }
 }
 
+InspectorTest.sendCommandPromise = function(method, params)
+{
+    var callback;
+    var promise = new Promise(fulfill => callback = fulfill);
+    InspectorTest.sendCommand(method, params, callback);
+    return promise;
+}
+
 InspectorTest.domUndo = function(callback)
 {
     InspectorTest.sendCommandOrDie("DOM.undo", {}, callback);
