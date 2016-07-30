@@ -10,3 +10,6 @@ pdf_enable_xfa_override = false
 
 # Disable use of Skia backend.
 pdf_use_skia_override = false
+
+# Disable experimental win32 APIs.
+pdf_use_win32_gdi_override = false
