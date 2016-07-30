@@ -93,7 +93,7 @@ cr.define('site_details_permission', function() {
           assertFalse(testElement.$.details.hidden);
 
           var header = testElement.$.details.querySelector(
-              '.permission-header');
+              '#permissionHeader');
           assertEquals('Camera', header.innerText.trim(),
               'Widget should be labelled correctly');
 

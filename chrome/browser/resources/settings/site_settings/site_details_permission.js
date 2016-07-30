@@ -18,17 +18,6 @@ Polymer({
      * @type {SiteException}
      */
     site: Object,
-
-    i18n_: {
-      readOnly: true,
-      type: Object,
-      value: function() {
-        return {
-          allowAction: loadTimeData.getString('siteSettingsActionAllow'),
-          blockAction: loadTimeData.getString('siteSettingsActionBlock'),
-        };
-      },
-    },
   },
 
   observers: ['siteChanged_(site, category)'],
