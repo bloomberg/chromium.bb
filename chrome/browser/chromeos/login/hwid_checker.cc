@@ -133,9 +133,20 @@ bool IsMachineHWIDCorrect() {
     std::string system_vendor;
     stats->GetMachineStatistic(chromeos::system::kSystemVendorKey,
                                &system_vendor);
-    LOG(ERROR) << "Machine has malformed HWID '" << hwid << "'. "
-               << "The system vendor is '" << system_vendor << "'.";
-    return false;
+    std::string firmware_type;
+    const bool non_chrome_firmware =
+        stats->GetMachineStatistic(chromeos::system::kFirmwareTypeKey,
+                                   &firmware_type) &&
+        firmware_type == system::kFirmwareTypeValueNonchrome;
+    if (non_chrome_firmware) {
+      LOG(WARNING) << "Detected non-Chrome firmware with malformed HWID '"
+                   << hwid << "', assuming VM environment. "
+                   << "The system vendor is '" << system_vendor << "'.";
+    } else {
+      LOG(ERROR) << "Machine has malformed HWID '" << hwid << "'. "
+                 << "The system vendor is '" << system_vendor << "'.";
+      return false;
+    }
   }
   return true;
 }
