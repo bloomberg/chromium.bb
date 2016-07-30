@@ -1,31 +1,32 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="/settings_vars_css.html">
+<link rel="import" href="internet_shared_css.html">
 
 <dom-module id="network-proxy-exclusions">
   <template>
-    <style>
-      span {
-        margin: 5px;
-      }
-
+    <style include="internet-shared">
       iron-icon {
         @apply(--settings-actionable);
         margin: 5px;
       }
 
-      div#container {
+      #container {
+        align-self: stretch;
         border: 1px solid lightgrey;
+        display: flex;
+        flex-direction: column;
         height: 100px;
-        margin: 5px;
+        margin-top: 10px;
         overflow-y: auto;
+        padding: 5px;
       }
     </style>
-    <div id="container" class="layout vertical">
+    <div id="container">
       <template is="dom-repeat" items="[[exclusions]]">
-        <div class="layout horizontal">
-          <span class="flex">[[item]]</span>
-          <iron-icon icon="cr:clear" on-tap="onRemoveTap_"></iron-icon>
+        <div class="layout horizontal center">
+          <div class="flex">[[item]]</div>
+          <iron-icon class="favicon-image" icon="cr:clear"
+              on-tap="onRemoveTap_"></iron-icon>
         </div>
       </template>
     </div>

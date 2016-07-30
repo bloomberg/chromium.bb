@@ -1,49 +1,36 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="internet_shared_css.html">
 <link rel="import" href="network_property_list.html">
 
 <dom-module id="network-apnlist">
   <template>
-    <style>
-      #outerDiv {
-        margin-bottom: 10px;
-      }
-
-      #selectDiv {
-        margin-bottom: 10px;
-      }
-
-      #selectDiv select {
-        -webkit-margin-start: 10px;
-        padding: 5px;
-      }
-
-      #otherDiv network-property-list {
-        -webkit-margin-start: 15px;
-      }
+    <style include="internet-shared">
     </style>
-    <div id="outerDiv" class="layout vertical">
-      <div id="selectDiv" class="layout horizontal center">
-        <span>Access Point:</span>
-        <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
-        <select id="selectApn" value="{{selectedApn::change}}"
-            on-change="onSelectApnChange_">
-          <template is="dom-repeat"
-              items="[[apnSelectList]]" on-dom-change="onSelectApnUpdated_">
-            <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
+    <div class="settings-box">
+      <div class="start">Access Point</div> 
+      <paper-dropdown-menu vertical-align="auto" no-label-float>
+        <paper-listbox id="selectApn"
+            class="dropdown-content" on-iron-activate="onSelectApnChange_"
+            selected="{{selectedApn}}" attr-for-selected="value">
+          <template is="dom-repeat" items="[[apnSelectList]]">
+            <button class="dropdown-item" role="option"
+                value="[[item.AccessPointName]]">
+              [[apnDesc_(item)]]
+            </button>
           </template>
-        </select>
-      </div>
-      <div id="otherDiv" class="layout vertical"
-          hidden$="[[!isOtherSelected_(networkProperties, selectedApn)]]">
-        <network-property-list
-            fields="[[otherApnFields_]]" property-dict="[[otherApn]]"
-            edit-field-types="[[otherApnEditTypes_]]"
-            on-property-change="onOtherApnChange_">
-        </network-property-list>
-        <paper-button on-tap="onSaveOtherTap_">Save</paper-button>
-      </div>
+        </paper-listbox>
+      </paper-dropdown-menu>
+    </div>
+
+    <div class="settings-box continuation single-column"
+        hidden$="[[!isOtherSelected_(networkProperties, selectedApn)]]">
+      <network-property-list on-property-change="onOtherApnChange_"
+          fields="[[otherApnFields_]]" property-dict="[[otherApn]]"
+          edit-field-types="[[otherApnEditTypes_]]">
+      </network-property-list>
+      <paper-button on-tap="onSaveOtherTap_">Save</paper-button>
     </div>
   </template>
   <script src="network_apnlist.js"></script>

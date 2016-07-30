@@ -7,9 +7,6 @@
  * a network state. TODO(stevenjb): Allow editing of static IP configurations
  * when 'editable' is true.
  */
-(function() {
-'use strict';
-
 Polymer({
   is: 'network-ip-config',
 
@@ -21,7 +18,7 @@ Polymer({
      */
     networkProperties: {
       type: Object,
-      observer: 'networkPropertiesChanged_'
+      observer: 'networkPropertiesChanged_',
     },
 
     /**
@@ -30,7 +27,7 @@ Polymer({
      */
     editable: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /**
@@ -39,7 +36,7 @@ Polymer({
     automatic: {
       type: Boolean,
       value: false,
-      observer: 'automaticChanged_'
+      observer: 'automaticChanged_',
     },
 
     /**
@@ -50,9 +47,7 @@ Polymer({
      *   ipv6: !CrOnc.IPConfigUIProperties
      * }|undefined}
      */
-    ipConfig: {
-      type: Object
-    },
+    ipConfig: {type: Object},
 
     /**
      * Array of properties to pass to the property list.
@@ -65,7 +60,7 @@ Polymer({
           'ipv4.IPAddress',
           'ipv4.RoutingPrefix',
           'ipv4.Gateway',
-          'ipv6.IPAddress'
+          'ipv6.IPAddress',
         ];
       },
       readOnly: true
@@ -117,7 +112,7 @@ Polymer({
           this.automatic ? CrOnc.IPConfigType.DHCP : CrOnc.IPConfigType.STATIC;
       this.fire('ip-change', {
         field: 'IPAddressConfigType',
-        value: configType
+        value: configType,
       });
     } else {
       // Restore the saved static IP configuration.
@@ -125,11 +120,11 @@ Polymer({
         Gateway: this.savedStaticIp_.Gateway,
         IPAddress: this.savedStaticIp_.IPAddress,
         RoutingPrefix: this.savedStaticIp_.RoutingPrefix,
-        Type: this.savedStaticIp_.Type
+        Type: this.savedStaticIp_.Type,
       };
       this.fire('ip-change', {
         field: 'StaticIPConfig',
-        value: this.getIPConfigProperties_(ipconfig)
+        value: this.getIPConfigProperties_(ipconfig),
       });
     }
   },
@@ -174,9 +169,14 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.IPConfigUIProperties} ipConfig The IP Config UI properties.
-   * @param {boolean} editable The editable property.
-   * @param {boolean} automatic The automatic property.
+   * @return {boolean}
+   * @private
+   */
+  showIPEditFields_: function(editable, automatic) {
+    return editable && !automatic;
+  },
+
+  /**
    * @return {Object} An object with the edit type for each editable field.
    * @private
    */
@@ -209,4 +209,3 @@ Polymer({
     });
   },
 });
-})();
