@@ -200,9 +200,7 @@ void StringBuilder::append(const LChar* characters, unsigned length)
 
     ensureBuffer16(length);
     m_string = String();
-    m_buffer16->reserveCapacity(m_buffer16->size() + length);
-    for (size_t i = 0; i < length; ++i)
-        m_buffer16->uncheckedAppend(characters[i]);
+    m_buffer16->append(characters, length);
     m_length += length;
 }
 
