@@ -11,7 +11,7 @@
 #  KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
 #  DEBIAN_PACKAGES="gcc libz libssl"
 
-#@ This script builds a Debian sysroot images for building Google Chrome.
+#@ This script builds Debian/Ubuntu sysroot images for building Google Chrome.
 #@
 #@  Generally this script is invoked as:
 #@  sysroot-creator-<flavour>.sh <mode> <args>*
@@ -49,6 +49,15 @@ if [ -z "${DEBIAN_PACKAGES:-}" ]; then
 fi
 
 readonly REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
+readonly REPO_BASEDIR_ARM=${REPO_BASEDIR_ARM:=$REPO_BASEDIR}
+readonly REPO_BASEDIR_ARM64=${REPO_BASEDIR_ARM64:=$REPO_BASEDIR}
+readonly REPO_BASEDIR_MIPS=${REPO_BASEDIR_MIPS:=$REPO_BASEDIR}
+
+readonly HAS_ARCH_AMD64=${HAS_ARCH_AMD64:=0}
+readonly HAS_ARCH_I386=${HAS_ARCH_I386:=0}
+readonly HAS_ARCH_ARM=${HAS_ARCH_ARM:=0}
+readonly HAS_ARCH_ARM64=${HAS_ARCH_ARM64:=0}
+readonly HAS_ARCH_MIPS=${HAS_ARCH_MIPS:=0}
 
 readonly REQUIRED_TOOLS="wget"
 
@@ -68,9 +77,9 @@ readonly PACKAGE_FILE_ARM64="main/binary-arm64/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_FILE_MIPS="main/binary-mipsel/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_LIST_AMD64="${REPO_BASEDIR}/${PACKAGE_FILE_AMD64}"
 readonly PACKAGE_LIST_I386="${REPO_BASEDIR}/${PACKAGE_FILE_I386}"
-readonly PACKAGE_LIST_ARM="${REPO_BASEDIR}/${PACKAGE_FILE_ARM}"
-readonly PACKAGE_LIST_ARM64="${REPO_BASEDIR}/${PACKAGE_FILE_ARM64}"
-readonly PACKAGE_LIST_MIPS="${REPO_BASEDIR}/${PACKAGE_FILE_MIPS}"
+readonly PACKAGE_LIST_ARM="${REPO_BASEDIR_ARM}/${PACKAGE_FILE_ARM}"
+readonly PACKAGE_LIST_ARM64="${REPO_BASEDIR_ARM64}/${PACKAGE_FILE_ARM64}"
+readonly PACKAGE_LIST_MIPS="${REPO_BASEDIR_MIPS}/${PACKAGE_FILE_MIPS}"
 
 readonly DEBIAN_DEP_LIST_AMD64="packagelist.${DIST}.amd64"
 readonly DEBIAN_DEP_LIST_I386="packagelist.${DIST}.i386"
@@ -190,7 +199,7 @@ CreateTarBall() {
 }
 
 ExtractPackageBz2() {
-  if [ "${PACKAGES_EXT}" == "bz2" ]; then
+  if [ "${PACKAGES_EXT}" = "bz2" ]; then
     bzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
   else
     xzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
@@ -205,7 +214,7 @@ GeneratePackageListAmd64() {
   VerifyPackageListing "${PACKAGE_FILE_AMD64}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-    ${DEBIAN_PACKAGES_X86} ${DEBIAN_PACKAGES_AMD64}"
+    ${DEBIAN_PACKAGES_X86:=} ${DEBIAN_PACKAGES_AMD64:=}"
 }
 
 GeneratePackageListI386() {
@@ -216,7 +225,7 @@ GeneratePackageListI386() {
   VerifyPackageListing "${PACKAGE_FILE_I386}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-    ${DEBIAN_PACKAGES_X86}"
+    ${DEBIAN_PACKAGES_X86:=}"
 }
 
 GeneratePackageListARM() {
@@ -227,10 +236,10 @@ GeneratePackageListARM() {
   VerifyPackageListing "${PACKAGE_FILE_ARM}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-    ${DEBIAN_PACKAGES_ARM}"
+    ${DEBIAN_PACKAGES_ARM:=}"
 }
 
-function GeneratePackageListARM64() {
+GeneratePackageListARM64() {
   local output_file="$1"
   local package_list="${BUILD_DIR}/Packages.${DIST}_arm64.${PACKAGES_EXT}"
   local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_arm64"
@@ -238,7 +247,7 @@ function GeneratePackageListARM64() {
   VerifyPackageListing "${PACKAGE_FILE_ARM64}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-    ${DEBIAN_PACKAGES_ARM64}"
+    ${DEBIAN_PACKAGES_ARM64:=}"
 }
 
 GeneratePackageListMips() {
@@ -340,7 +349,7 @@ HacksAndPatchesARM() {
       ${INSTALL_ROOT}/usr/lib/pkgconfig
 }
 
-function HacksAndPatchesARM64() {
+HacksAndPatchesARM64() {
   Banner "Misc Hacks & Patches"
   # these are linker scripts with absolute pathnames in them
   # which we rewrite here
@@ -427,7 +436,7 @@ CleanupJailSymlinks() {
   cd ${INSTALL_ROOT}
   local libdirs="lib usr/lib"
   if [ "${ARCH}" != "MIPS" ]; then
-    libdirs+=" lib64"
+    libdirs="${libdirs} lib64"
   fi
   find $libdirs -type l -printf '%p %l\n' | while read link target; do
     # skip links with non-absolute paths
@@ -470,6 +479,9 @@ CleanupJailSymlinks() {
 #@
 #@    Build everything and package it
 BuildSysrootAmd64() {
+  if [ "$HAS_ARCH_AMD64" = "0" ]; then
+    return
+  fi
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_amd64"
   GeneratePackageListAmd64 "$package_file"
@@ -487,6 +499,9 @@ BuildSysrootAmd64() {
 #@
 #@    Build everything and package it
 BuildSysrootI386() {
+  if [ "$HAS_ARCH_I386" = "0" ]; then
+    return
+  fi
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_i386"
   GeneratePackageListI386 "$package_file"
@@ -504,13 +519,16 @@ BuildSysrootI386() {
 #@
 #@    Build everything and package it
 BuildSysrootARM() {
+  if [ "$HAS_ARCH_ARM" = "0" ]; then
+    return
+  fi
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_arm"
   GeneratePackageListARM "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_ARM"
-  APT_REPO=${APR_REPO_ARM:=$APT_REPO}
+  APT_REPO=${APT_REPO_ARM:=$APT_REPO}
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesARM
@@ -521,14 +539,17 @@ BuildSysrootARM() {
 #@ BuildSysrootARM64
 #@
 #@    Build everything and package it
-function BuildSysrootARM64() {
+BuildSysrootARM64() {
+  if [ "$HAS_ARCH_ARM64" = "0" ]; then
+    return
+  fi
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_arm64"
   GeneratePackageListARM64 "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_ARM64"
-  APT_REPO=${APR_REPO_ARM64:=$APT_REPO}
+  APT_REPO=${APT_REPO_ARM64:=$APT_REPO}
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesARM64
@@ -541,13 +562,16 @@ function BuildSysrootARM64() {
 #@
 #@    Build everything and package it
 BuildSysrootMips() {
+  if [ "$HAS_ARCH_MIPS" = "0" ]; then
+    return
+  fi
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_arm"
   GeneratePackageListMips "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_MIPS"
-  APT_REPO=${APR_REPO_MIPS:=$APT_REPO}
+  APT_REPO=${APT_REPO_MIPS:=$APT_REPO}
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesMips
@@ -581,6 +605,9 @@ UploadSysroot() {
 #@ UploadSysrootAmd64 <revision>
 #@
 UploadSysrootAmd64() {
+  if [ "$HAS_ARCH_AMD64" = "0" ]; then
+    return
+  fi
   UploadSysroot "$@"
 }
 
@@ -588,6 +615,9 @@ UploadSysrootAmd64() {
 #@ UploadSysrootI386 <revision>
 #@
 UploadSysrootI386() {
+  if [ "$HAS_ARCH_I386" = "0" ]; then
+    return
+  fi
   UploadSysroot "$@"
 }
 
@@ -595,13 +625,19 @@ UploadSysrootI386() {
 #@ UploadSysrootARM <revision>
 #@
 UploadSysrootARM() {
+  if [ "$HAS_ARCH_ARM" = "0" ]; then
+    return
+  fi
   UploadSysroot "$@"
 }
 
 #@
 #@ UploadSysrootARM64 <revision>
 #@
-function UploadSysrootARM64() {
+UploadSysrootARM64() {
+  if [ "$HAS_ARCH_ARM64" = "0" ]; then
+    return
+  fi
   UploadSysroot "$@"
 }
 
@@ -609,6 +645,9 @@ function UploadSysrootARM64() {
 #@ UploadSysrootMips <revision>
 #@
 UploadSysrootMips() {
+  if [ "$HAS_ARCH_MIPS" = "0" ]; then
+    return
+  fi
   UploadSysroot "$@"
 }
 
@@ -708,6 +747,9 @@ GeneratePackageList() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For amd64)
 UpdatePackageListsAmd64() {
+  if [ "$HAS_ARCH_AMD64" = "0" ]; then
+    return
+  fi
   GeneratePackageListAmd64 "$DEBIAN_DEP_LIST_AMD64"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_AMD64"
 }
@@ -718,6 +760,9 @@ UpdatePackageListsAmd64() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For i386)
 UpdatePackageListsI386() {
+  if [ "$HAS_ARCH_I386" = "0" ]; then
+    return
+  fi
   GeneratePackageListI386 "$DEBIAN_DEP_LIST_I386"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_I386"
 }
@@ -728,6 +773,9 @@ UpdatePackageListsI386() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For arm)
 UpdatePackageListsARM() {
+  if [ "$HAS_ARCH_ARM" = "0" ]; then
+    return
+  fi
   GeneratePackageListARM "$DEBIAN_DEP_LIST_ARM"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_ARM"
 }
@@ -737,7 +785,10 @@ UpdatePackageListsARM() {
 #@
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For arm)
-function UpdatePackageListsARM64() {
+UpdatePackageListsARM64() {
+  if [ "$HAS_ARCH_ARM64" = "0" ]; then
+    return
+  fi
   GeneratePackageListARM64 "$DEBIAN_DEP_LIST_ARM64"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_ARM64"
 }
@@ -748,6 +799,9 @@ function UpdatePackageListsARM64() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For arm)
 UpdatePackageListsMips() {
+  if [ "$HAS_ARCH_MIPS" = "0" ]; then
+    return
+  fi
   GeneratePackageListMips "$DEBIAN_DEP_LIST_MIPS"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_MIPS"
 }
