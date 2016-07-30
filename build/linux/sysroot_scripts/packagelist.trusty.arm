@@ -73,6 +73,7 @@ main/libt/libtasn1-6/libtasn1-6_3.4-3_armhf.deb
 main/libx/libx11/libx11-6_1.6.2-1ubuntu2_armhf.deb
 main/libx/libx11/libx11-dev_1.6.2-1ubuntu2_armhf.deb
 main/libx/libx11/libx11-xcb1_1.6.2-1ubuntu2_armhf.deb
+main/libx/libx11/libx11-xcb-dev_1.6.2-1ubuntu2_armhf.deb
 main/libx/libxau/libxau6_1.0.8-1_armhf.deb
 main/libx/libxau/libxau-dev_1.0.8-1_armhf.deb
 main/libx/libxcb/libxcb1_1.10-2ubuntu1_armhf.deb

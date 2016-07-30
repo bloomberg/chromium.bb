@@ -91,6 +91,7 @@ main/libt/libthai/libthai0_0.1.21-1_arm64.deb
 main/libx/libx11/libx11-6_1.6.2-3_arm64.deb
 main/libx/libx11/libx11-dev_1.6.2-3_arm64.deb
 main/libx/libx11/libx11-xcb1_1.6.2-3_arm64.deb
+main/libx/libx11/libx11-xcb-dev_1.6.2-3_arm64.deb
 main/libx/libxau/libxau6_1.0.8-1_arm64.deb
 main/libx/libxau/libxau-dev_1.0.8-1_arm64.deb
 main/libx/libxcb/libxcb1_1.10-3+b1_arm64.deb

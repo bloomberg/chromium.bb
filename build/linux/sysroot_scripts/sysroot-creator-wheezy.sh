@@ -129,6 +129,7 @@ DEBIAN_PACKAGES="\
   libx11-6
   libx11-dev
   libx11-xcb1
+  libx11-xcb-dev
   libxau6
   libxau-dev
   libxcb1
