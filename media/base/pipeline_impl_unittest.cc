@@ -899,15 +899,14 @@ class PipelineTeardownTest : public PipelineImplTest {
         EXPECT_CALL(*renderer_, Initialize(_, _, _))
             .WillOnce(
                 DoAll(Stop(pipeline_.get()), PostCallback<2>(PIPELINE_OK)));
-        // Note: OnStart or OnMetadata callback are not called
-        // after pipeline is stopped.
+        // Note: OnStart is not callback after pipeline is stopped.
       } else {
         EXPECT_CALL(*renderer_, Initialize(_, _, _))
             .WillOnce(PostCallback<2>(PIPELINE_ERROR_INITIALIZATION_FAILED));
-        EXPECT_CALL(callbacks_, OnMetadata(_));
         EXPECT_CALL(callbacks_, OnStart(PIPELINE_ERROR_INITIALIZATION_FAILED));
       }
 
+      EXPECT_CALL(callbacks_, OnMetadata(_));
       EXPECT_CALL(*demuxer_, Stop());
       return;
     }

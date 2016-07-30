@@ -32,7 +32,7 @@ class TextRenderer;
 //   [ *Created ]                       [ Any State ]
 //         | Start()                         | Stop() / SetError()
 //         V                                 V
-//   [ InitXXX (for each filter) ]      [ Stopping ]
+//   [ Starting ]                       [ Stopping ]
 //         |                                 |
 //         V                                 V
 //   [ Playing ] <---------.            [ Stopped ]
@@ -114,8 +114,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // from MediaLog.
   enum State {
     kCreated,
-    kInitDemuxer,
-    kInitRenderer,
+    kStarting,
     kSeeking,
     kPlaying,
     kStopping,
@@ -139,8 +138,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoOpacityChange(bool opaque);
 
   // Task completion callbacks from RendererWrapper.
-  void OnSeekDone(base::TimeDelta start_time);
-  void OnSuspendDone(base::TimeDelta suspend_time);
+  void OnSeekDone();
+  void OnSuspendDone();
 
   // Parameters passed in the constructor.
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
