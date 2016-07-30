@@ -125,12 +125,15 @@ Polymer({
 
     // Wait for any other changes prior to calculating the overflow padding.
     setTimeout(function() {
+      // Ensure any dom-if reflects the current properties.
+      Polymer.dom.flush();
+
       this.$.overscroll.style.paddingBottom = this.overscrollHeight_() + 'px';
     }.bind(this));
   },
 
   /**
-   * Return the height that the over scroll padding should be set to.
+   * Return the height that the overscroll padding should be set to.
    * This is used to determine how much padding to apply to the end of the
    * content so that the last element may align with the top of the content
    * area.
@@ -143,39 +146,19 @@ Polymer({
       return 0;
     }
 
-    // Ensure any dom-if reflects the current properties.
-    Polymer.dom.flush();
+    var query = 'settings-section[section="' + this.currentRoute.section + '"]';
+    var topSection = this.$$('settings-basic-page').$$(query);
+    if (!topSection && this.showPages_.advanced)
+      topSection = this.$$('settings-advanced-page').$$(query);
 
-    /**
-     * @param {!Element} element
-     * @return {number}
-     */
-    var calcHeight = function(element) {
-      var style = getComputedStyle(element);
-      var height = this.parentNode.scrollHeight - element.offsetHeight +
-          parseFloat(style.marginTop) + parseFloat(style.marginBottom);
-      assert(height >= 0);
-      return height;
-    }.bind(this);
-
-    if (this.showPages_.advanced) {
-      var lastSection = this.$$('settings-advanced-page').$$(
-          'settings-section:last-of-type');
-      // |lastSection| may be null in unit tests.
-      if (!lastSection)
-        return 0;
-      return calcHeight(lastSection);
-    }
-
-    assert(this.showPages_.basic);
-    var lastSection = this.$$('settings-basic-page').$$(
-        'settings-section:last-of-type');
-    // |lastSection| may be null in unit tests.
-    if (!lastSection)
+    if (!topSection)
       return 0;
-    var toggleContainer = this.$$('#toggleContainer');
-    return calcHeight(lastSection) -
-        (toggleContainer ? toggleContainer.offsetHeight : 0);
+
+    // Offset to the selected section (relative to the scrolling window).
+    let sectionTop = topSection.offsetParent.offsetTop + topSection.offsetTop;
+    // The height of the selected section and remaining content (sections).
+    let heightOfShownSections = this.$.overscroll.offsetTop - sectionTop;
+    return Math.max(0, this.parentNode.scrollHeight - heightOfShownSections);
   },
 
   /** @private */
