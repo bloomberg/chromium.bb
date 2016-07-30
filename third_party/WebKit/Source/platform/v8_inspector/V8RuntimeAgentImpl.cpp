@@ -60,9 +60,10 @@ static bool hasInternalError(ErrorString* errorString, bool hasError)
 
 namespace {
 
+template<typename Callback>
 class ProtocolPromiseHandler {
 public:
-    static void add(V8DebuggerImpl* debugger, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<protocol::Runtime::Backend::AwaitPromiseCallback> callback, bool returnByValue, bool generatePreview)
+    static void add(V8DebuggerImpl* debugger, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<Callback> callback, bool returnByValue, bool generatePreview)
     {
         ErrorString errorString;
         InjectedScript::ObjectScope scope(&errorString, debugger, contextGroupId, promiseObjectId);
@@ -75,8 +76,8 @@ public:
             return;
         }
 
-        protocol::Runtime::Backend::AwaitPromiseCallback* rawCallback = callback.get();
-        ProtocolPromiseHandler* handler = new ProtocolPromiseHandler(debugger, contextGroupId, promiseObjectId, std::move(callback), returnByValue, generatePreview);
+        Callback* rawCallback = callback.get();
+        ProtocolPromiseHandler<Callback>* handler = new ProtocolPromiseHandler(debugger, contextGroupId, promiseObjectId, std::move(callback), returnByValue, generatePreview);
         v8::Local<v8::Value> wrapper = handler->m_wrapper.Get(debugger->isolate());
         v8::Local<v8::Promise> promise = v8::Local<v8::Promise>::Cast(scope.object());
 
@@ -95,7 +96,7 @@ public:
 private:
     static void thenCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
-        ProtocolPromiseHandler* handler = static_cast<ProtocolPromiseHandler*>(info.Data().As<v8::External>()->Value());
+        ProtocolPromiseHandler<Callback>* handler = static_cast<ProtocolPromiseHandler<Callback>*>(info.Data().As<v8::External>()->Value());
         DCHECK(handler);
         v8::Local<v8::Value> value = info.Length() > 0 ? info[0] : v8::Local<v8::Value>::Cast(v8::Undefined(info.GetIsolate()));
         handler->m_callback->sendSuccess(handler->wrapObject(value), Maybe<bool>(), Maybe<protocol::Runtime::ExceptionDetails>());
@@ -103,7 +104,7 @@ private:
 
     static void catchCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
-        ProtocolPromiseHandler* handler = static_cast<ProtocolPromiseHandler*>(info.Data().As<v8::External>()->Value());
+        ProtocolPromiseHandler<Callback>* handler = static_cast<ProtocolPromiseHandler<Callback>*>(info.Data().As<v8::External>()->Value());
         DCHECK(handler);
         v8::Local<v8::Value> value = info.Length() > 0 ? info[0] : v8::Local<v8::Value>::Cast(v8::Undefined(info.GetIsolate()));
 
@@ -121,7 +122,7 @@ private:
         handler->m_callback->sendSuccess(handler->wrapObject(value), true, std::move(exceptionDetails));
     }
 
-    ProtocolPromiseHandler(V8DebuggerImpl* debugger, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<V8RuntimeAgentImpl::AwaitPromiseCallback> callback, bool returnByValue, bool generatePreview)
+    ProtocolPromiseHandler(V8DebuggerImpl* debugger, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<Callback> callback, bool returnByValue, bool generatePreview)
         : m_debugger(debugger)
         , m_contextGroupId(contextGroupId)
         , m_promiseObjectId(promiseObjectId)
@@ -133,7 +134,7 @@ private:
         m_wrapper.SetWeak(this, cleanup, v8::WeakCallbackType::kParameter);
     }
 
-    static void cleanup(const v8::WeakCallbackInfo<ProtocolPromiseHandler>& data)
+    static void cleanup(const v8::WeakCallbackInfo<ProtocolPromiseHandler<Callback>>& data)
     {
         if (!data.GetParameter()->m_wrapper.IsEmpty()) {
             data.GetParameter()->m_wrapper.Reset();
@@ -163,7 +164,7 @@ private:
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     String16 m_promiseObjectId;
-    std::unique_ptr<V8RuntimeAgentImpl::AwaitPromiseCallback> m_callback;
+    std::unique_ptr<Callback> m_callback;
     bool m_returnByValue;
     bool m_generatePreview;
     v8::Global<v8::External> m_wrapper;
@@ -194,9 +195,8 @@ void V8RuntimeAgentImpl::evaluate(
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     const Maybe<bool>& userGesture,
-    std::unique_ptr<RemoteObject>* result,
-    Maybe<bool>* wasThrown,
-    Maybe<ExceptionDetails>* exceptionDetails)
+    const Maybe<bool>& awaitPromise,
+    std::unique_ptr<EvaluateCallback> callback)
 {
     int contextId;
     if (executionContextId.isJust()) {
@@ -205,23 +205,27 @@ void V8RuntimeAgentImpl::evaluate(
         v8::HandleScope handles(m_debugger->isolate());
         v8::Local<v8::Context> defaultContext = m_debugger->client()->ensureDefaultContextInGroup(m_session->contextGroupId());
         if (defaultContext.IsEmpty()) {
-            *errorString = "Cannot find default execution context";
+            callback->sendFailure("Cannot find default execution context");
             return;
         }
         contextId = V8DebuggerImpl::contextId(defaultContext);
     }
 
     InjectedScript::ContextScope scope(errorString, m_debugger, m_session->contextGroupId(), contextId);
-    if (!scope.initialize())
+    if (!scope.initialize()) {
+        callback->sendFailure(*errorString);
         return;
+    }
 
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
     if (userGesture.fromMaybe(false))
         scope.pretendUserGesture();
 
-    if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
+    if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI()) {
+        callback->sendFailure(*errorString);
         return;
+    }
 
     bool evalIsDisabled = !scope.context()->IsCodeGenerationFromStringsAllowed();
     // Temporarily enable allow evals for inspector.
@@ -237,17 +241,45 @@ void V8RuntimeAgentImpl::evaluate(
         scope.context()->AllowCodeGenerationFromStrings(false);
 
     // Re-initialize after running client's code, as it could have destroyed context or session.
-    if (!scope.initialize())
+    if (!scope.initialize()) {
+        callback->sendFailure(*errorString);
         return;
+    }
+
+    std::unique_ptr<RemoteObject> result;
+    Maybe<bool> wasThrown;
+    Maybe<protocol::Runtime::ExceptionDetails> exceptionDetails;
+
     scope.injectedScript()->wrapEvaluateResult(errorString,
         maybeResultValue,
         scope.tryCatch(),
         objectGroup.fromMaybe(""),
-        returnByValue.fromMaybe(false),
-        generatePreview.fromMaybe(false),
-        result,
-        wasThrown,
-        exceptionDetails);
+        returnByValue.fromMaybe(false) && !awaitPromise.fromMaybe(false),
+        generatePreview.fromMaybe(false) && !awaitPromise.fromMaybe(false),
+        &result,
+        &wasThrown,
+        &exceptionDetails);
+    if (!errorString->isEmpty()) {
+        callback->sendFailure(*errorString);
+        return;
+    }
+
+    if (!awaitPromise.fromMaybe(false) || wasThrown.fromMaybe(false)) {
+        callback->sendSuccess(std::move(result), wasThrown, exceptionDetails);
+        return;
+    }
+
+    if (maybeResultValue.IsEmpty()) {
+        callback->sendFailure("Internal error");
+        return;
+    }
+
+    if (!maybeResultValue.ToLocalChecked()->IsPromise()) {
+        callback->sendFailure("Result of expression is not a promise.");
+        return;
+    }
+
+    ProtocolPromiseHandler<EvaluateCallback>::add(m_debugger, m_session->contextGroupId(), result->getObjectId(String16()), std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
 }
 
 void V8RuntimeAgentImpl::awaitPromise(ErrorString* errorString,
@@ -256,7 +288,7 @@ void V8RuntimeAgentImpl::awaitPromise(ErrorString* errorString,
     const Maybe<bool>& generatePreview,
     std::unique_ptr<AwaitPromiseCallback> callback)
 {
-    ProtocolPromiseHandler::add(m_debugger, m_session->contextGroupId(), promiseObjectId, std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
+    ProtocolPromiseHandler<AwaitPromiseCallback>::add(m_debugger, m_session->contextGroupId(), promiseObjectId, std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
 }
 
 void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,

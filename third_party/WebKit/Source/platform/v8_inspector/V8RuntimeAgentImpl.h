@@ -71,9 +71,8 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         const Maybe<bool>& userGesture,
-        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown,
-        Maybe<protocol::Runtime::ExceptionDetails>*) override;
+        const Maybe<bool>& awaitPromise,
+        std::unique_ptr<EvaluateCallback>) override;
     void awaitPromise(ErrorString*,
         const String16& promiseObjectId,
         const Maybe<bool>& returnByValue,
