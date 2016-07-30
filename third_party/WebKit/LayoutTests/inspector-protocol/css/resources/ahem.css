@@ -1,0 +1,9 @@
+@font-face {
+    font-family: "ahem";
+    src: url('./Ahem.ttf');
+}
+
+body {
+    font-family: "ahem";
+}
+

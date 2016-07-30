@@ -709,6 +709,12 @@ void InspectorCSSAgent::mediaQueryResultChanged()
     frontend()->mediaQueryResultChanged();
 }
 
+void InspectorCSSAgent::fontsUpdated()
+{
+    flushPendingProtocolNotifications();
+    frontend()->fontsUpdated();
+}
+
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
     if (m_isSettingStyleSheetText)

@@ -118,6 +118,7 @@ public:
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
+    void fontsUpdated();
 
     void enable(ErrorString*, std::unique_ptr<EnableCallback>) override;
     void disable(ErrorString*) override;

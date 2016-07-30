@@ -107,6 +107,9 @@ class XMLHttpRequest;
     void activeStyleSheetsUpdated([Keep] Document*);
 
     [CSS]
+    void fontsUpdated(Document*);
+
+    [CSS]
     void mediaQueryResultChanged(Document*);
 
     [DOM]

@@ -1,0 +1,4 @@
+Verifies that CSS.fontsUpdated event is sent as the web font is loaded.
+
+SUCCESS: CSS.FontsUpdated event received.
+
