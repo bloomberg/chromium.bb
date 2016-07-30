@@ -66,7 +66,7 @@ public:
     void reportPendingActivity(bool hasPendingActivity);
 
     // WorkerReportingProxy overrides.
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
+    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void didEvaluateWorkerScript(bool success) override { }

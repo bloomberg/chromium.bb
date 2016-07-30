@@ -37,6 +37,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ErrorEvent;
 class SourceLocation;
 class WorkerThread;
 
@@ -53,7 +54,7 @@ public:
     int contextGroupId();
     void contextCreated(v8::Local<v8::Context>);
     void contextWillBeDestroyed(v8::Local<v8::Context>);
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>);
+    void exceptionThrown(ErrorEvent*);
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
 
     // V8DebuggerClient implementation.

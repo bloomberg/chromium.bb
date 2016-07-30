@@ -107,7 +107,7 @@ public:
         if (m_shouldLogToConsole && m_promiseRejectionId) {
             V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
             if (data->threadDebugger())
-                data->threadDebugger()->debugger()->promiseRejectionRevoked(m_scriptState->context(), m_promiseRejectionId);
+                data->threadDebugger()->promiseRejectionRevoked(m_scriptState->context(), m_promiseRejectionId);
         }
     }
 

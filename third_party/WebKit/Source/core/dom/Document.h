@@ -955,7 +955,7 @@ public:
     void cancelIdleCallback(int id);
 
     EventTarget* errorEventTarget() final;
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
+    void exceptionThrown(ErrorEvent*) final;
 
     void initDNSPrefetch();
 

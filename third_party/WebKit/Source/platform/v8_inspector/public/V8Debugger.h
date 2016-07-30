@@ -38,18 +38,16 @@ public:
     virtual void idleStarted() = 0;
     virtual void idleFinished() = 0;
 
-    // Async call stacks instrumentation.
+    // Async stack traces instrumentation.
     virtual void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) = 0;
     virtual void asyncTaskCanceled(void* task) = 0;
     virtual void asyncTaskStarted(void* task) = 0;
     virtual void asyncTaskFinished(void* task) = 0;
     virtual void allAsyncTasksCanceled() = 0;
 
-    // Runtime instrumentation.
-    // TODO(dgozman): can we pass exception object?
-    virtual void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
-    virtual unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
-    virtual void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) = 0;
+    // Exceptions instrumentation.
+    virtual unsigned exceptionThrown(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> exception, const String16& detailedMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
+    virtual void exceptionRevoked(v8::Local<v8::Context>, unsigned exceptionId, const String16& message) = 0;
 
     // API methods.
     virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) = 0;

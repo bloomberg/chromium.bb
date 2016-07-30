@@ -76,7 +76,7 @@ public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
     // WorkerReportingProxy methods:
-    void reportException(const WTF::String&, std::unique_ptr<SourceLocation>) override;
+    void reportException(const WTF::String&, std::unique_ptr<SourceLocation>, int exceptionId) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void didEvaluateWorkerScript(bool success) override { }

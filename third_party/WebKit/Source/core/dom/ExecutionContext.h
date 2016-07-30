@@ -106,7 +106,7 @@ public:
     void reportException(ErrorEvent*, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
-    virtual void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
+    virtual void exceptionThrown(ErrorEvent*) = 0;
 
     PublicURLManager& publicURLManager();
 
@@ -170,8 +170,7 @@ private:
     unsigned m_circularSequentialID;
 
     bool m_inDispatchErrorEvent;
-    class PendingException;
-    std::unique_ptr<Vector<std::unique_ptr<PendingException>>> m_pendingExceptions;
+    HeapVector<Member<ErrorEvent>> m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;

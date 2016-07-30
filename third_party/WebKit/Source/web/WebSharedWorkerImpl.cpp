@@ -220,7 +220,7 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* WebSharedWorkerImpl::createClie
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::reportException(const String& errorMessage, std::unique_ptr<SourceLocation>)
+void WebSharedWorkerImpl::reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId)
 {
     // Not suppported in SharedWorker.
 }

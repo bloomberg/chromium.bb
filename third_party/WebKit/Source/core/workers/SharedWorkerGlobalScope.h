@@ -65,7 +65,7 @@ public:
 
 private:
     SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
+    void exceptionThrown(ErrorEvent*) override;
 
     String m_name;
 };

@@ -117,10 +117,16 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
     else if (message.startWith("Uncaught "))
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
-    unsigned result = debugger()->promiseRejected(context, message, exception, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
-    // TODO(dgozman): maybe not wrap in ConsoleMessage.
+    unsigned result = debugger()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    // TODO(dgozman): do not wrap in ConsoleMessage.
     reportConsoleMessage(toExecutionContext(context), ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message, std::move(location)));
     return result;
+}
+
+void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
+{
+    const String16 message = "Handler added to rejected promise";
+    debugger()->exceptionRevoked(context, promiseRejectionId, message);
 }
 
 void ThreadDebugger::beginUserGesture()

@@ -2,6 +2,6 @@ CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token }
 CONSOLE ERROR: line 2: Uncaught SyntaxError: Unexpected token }
 Tests that syntax errors in eval are logged into console, contains correct link and doesn't cause browser crash.
 
-VM:1 Uncaught SyntaxError: Unexpected token }foo @ console-log-eval-syntax-error.html:8
-boo.js:2 Uncaught SyntaxError: Unexpected token }boo @ console-log-eval-syntax-error.html:12
+VM:1 Uncaught SyntaxError: Unexpected token }(…)foo @ console-log-eval-syntax-error.html:8
+boo.js:2 Uncaught SyntaxError: Unexpected token }(…)boo @ console-log-eval-syntax-error.html:12
 

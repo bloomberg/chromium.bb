@@ -2,4 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-throw new Error('Exception thrown in extension page.');
+throw 'Exception thrown in extension page.';

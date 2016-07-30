@@ -55,10 +55,10 @@ public:
     MockWorkerReportingProxy() { }
     ~MockWorkerReportingProxy() override { }
 
-    MOCK_METHOD2(reportExceptionMock, void(const String& errorMessage, SourceLocation*));
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+    MOCK_METHOD3(reportExceptionMock, void(const String& errorMessage, SourceLocation*, int exceptionId));
+    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
     {
-        reportExceptionMock(errorMessage, location.get());
+        reportExceptionMock(errorMessage, location.get(), exceptionId);
     }
     MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
@@ -166,7 +166,7 @@ public:
         return EventTargetNames::DedicatedWorkerGlobalScope;
     }
 
-    void exceptionThrown(const String&, std::unique_ptr<SourceLocation>) override
+    void exceptionThrown(ErrorEvent*) override
     {
     }
 

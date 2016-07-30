@@ -34,13 +34,16 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/events/ErrorEvent.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -150,12 +153,32 @@ void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
     debugger()->contextDestroyed(scriptState->context());
 }
 
-void MainThreadDebugger::exceptionThrown(LocalFrame* frame, const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* event)
 {
+    LocalFrame* frame = nullptr;
+    ScriptState* scriptState = nullptr;
+    if (context->isDocument()) {
+        frame = toDocument(context)->frame();
+        scriptState = event->world() ? ScriptState::forWorld(frame, *event->world()) : nullptr;
+    }
+    if (context->isMainThreadWorkletGlobalScope()) {
+        frame = toMainThreadWorkletGlobalScope(context)->frame();
+        scriptState = toMainThreadWorkletGlobalScope(context)->scriptController()->getScriptState();
+    }
+
     if (frame->host() && frame->host()->consoleMessageStorage().isMuted())
         return;
-    debugger()->exceptionThrown(contextGroupId(frame), errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
-    frame->console().reportMessageToClient(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
+
+    const String16 defaultMessage = "Uncaught";
+    if (scriptState && scriptState->contextIsValid()) {
+        ScriptState::Scope scope(scriptState);
+        v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
+        SourceLocation* location = event->location();
+        debugger()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    }
+
+    // TODO(dgozman): do not wrap in ConsoleMessage.
+    frame->console().reportMessageToClient(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location()->clone()));
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -246,7 +269,7 @@ void MainThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType 
         return;
     if (type == V8ConsoleAPIType::kClear && frame->host())
         frame->host()->consoleMessageStorage().clear();
-    // TODO(dgozman): maybe not wrap with ConsoleMessage.
+    // TODO(dgozman): do not wrap in ConsoleMessage.
     ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
     frame->console().reportMessageToClient(consoleMessage);
 }

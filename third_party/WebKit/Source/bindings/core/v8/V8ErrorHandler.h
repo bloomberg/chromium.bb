@@ -48,6 +48,7 @@ public:
         return eventListener;
     }
     static void storeExceptionOnErrorEventWrapper(ScriptState*, ErrorEvent*, v8::Local<v8::Value>, v8::Local<v8::Object> creationContext);
+    static v8::Local<v8::Value> loadExceptionFromErrorEventWrapper(ScriptState*, ErrorEvent*, v8::Local<v8::Object> creationContext);
 
 private:
     V8ErrorHandler(bool isInline, ScriptState*);

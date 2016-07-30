@@ -6,7 +6,7 @@ function createTestFunction(expected_message) {
   return function(tab) {
     function onDebuggerEvent(debuggee, method, params) {
       if (debuggee.tabId == tab.id && method == 'Runtime.exceptionThrown') {
-        if (params.details.text.indexOf(expected_message) > -1) {
+        if (params.exception.value.indexOf(expected_message) > -1) {
           chrome.debugger.onEvent.removeListener(onDebuggerEvent);
           chrome.test.succeed();
         }

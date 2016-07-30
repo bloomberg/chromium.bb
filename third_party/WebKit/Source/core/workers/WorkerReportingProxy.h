@@ -47,7 +47,7 @@ class CORE_EXPORT WorkerReportingProxy {
 public:
     virtual ~WorkerReportingProxy() { }
 
-    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
+    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) = 0;
     virtual void reportConsoleMessage(ConsoleMessage*) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
 

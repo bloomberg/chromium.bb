@@ -30,7 +30,7 @@ public:
 
     using LocalFrameLifecycleObserver::frame;
     void addConsoleMessage(ConsoleMessage*) final;
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
+    void exceptionThrown(ErrorEvent*) final;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

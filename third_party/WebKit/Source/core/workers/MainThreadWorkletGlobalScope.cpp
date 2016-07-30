@@ -36,9 +36,9 @@ void MainThreadWorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMess
     frame()->console().addMessage(consoleMessage);
 }
 
-void MainThreadWorkletGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void MainThreadWorkletGlobalScope::exceptionThrown(ErrorEvent* event)
 {
-    MainThreadDebugger::instance()->exceptionThrown(frame(), errorMessage, std::move(location));
+    MainThreadDebugger::instance()->exceptionThrown(this, event);
 }
 
 } // namespace blink

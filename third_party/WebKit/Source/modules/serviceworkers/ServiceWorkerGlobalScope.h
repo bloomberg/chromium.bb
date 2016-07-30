@@ -96,7 +96,7 @@ private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     void importScripts(const Vector<String>& urls, ExceptionState&) override;
     CachedMetadataHandler* createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) override;
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) override;
+    void exceptionThrown(ErrorEvent*) override;
     void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) override;
 
     Member<ServiceWorkerClients> m_clients;

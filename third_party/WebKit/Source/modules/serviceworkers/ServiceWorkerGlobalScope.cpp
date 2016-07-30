@@ -213,11 +213,11 @@ CachedMetadataHandler* ServiceWorkerGlobalScope::createWorkerScriptCachedMetadat
     return ServiceWorkerScriptCachedMetadataHandler::create(this, scriptURL, metaData);
 }
 
-void ServiceWorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void ServiceWorkerGlobalScope::exceptionThrown(ErrorEvent* event)
 {
-    WorkerGlobalScope::exceptionThrown(errorMessage, location->clone());
+    WorkerGlobalScope::exceptionThrown(event);
     if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
-        debugger->exceptionThrown(errorMessage, std::move(location));
+        debugger->exceptionThrown(event);
 }
 
 void ServiceWorkerGlobalScope::scriptLoaded(size_t scriptSize, size_t cachedMetadataSize)

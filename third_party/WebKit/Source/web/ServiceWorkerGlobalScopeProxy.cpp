@@ -229,7 +229,7 @@ bool ServiceWorkerGlobalScopeProxy::hasFetchEventHandler()
     return m_workerGlobalScope->hasEventListeners(EventTypeNames::fetch);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
     client().reportException(errorMessage, location->lineNumber(), location->columnNumber(), location->url());
 }

@@ -2896,9 +2896,9 @@ EventTarget* Document::errorEventTarget()
     return domWindow();
 }
 
-void Document::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void Document::exceptionThrown(ErrorEvent* event)
 {
-    MainThreadDebugger::instance()->exceptionThrown(m_frame.get(), errorMessage, std::move(location));
+    MainThreadDebugger::instance()->exceptionThrown(this, event);
 }
 
 void Document::setURL(const KURL& url)

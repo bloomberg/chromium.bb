@@ -36,13 +36,14 @@ public:
 
     static std::unique_ptr<V8ConsoleMessage> createForException(
         double timestamp,
-        const String16& message,
+        const String16& detailedMessage,
         const String16& url,
         unsigned lineNumber,
         unsigned columnNumber,
         std::unique_ptr<V8StackTraceImpl>,
         int scriptId,
         v8::Isolate*,
+        const String16& message,
         int contextId,
         v8::Local<v8::Value> exception,
         unsigned exceptionId);
@@ -79,6 +80,7 @@ private:
     unsigned m_exceptionId;
     unsigned m_revokedExceptionId;
     Arguments m_arguments;
+    String16 m_detailedMessage;
 };
 
 class V8ConsoleMessageStorage {

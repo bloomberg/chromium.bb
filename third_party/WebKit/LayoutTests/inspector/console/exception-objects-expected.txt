@@ -1,0 +1,37 @@
+CONSOLE ERROR: line 8: Uncaught Error: error_text
+CONSOLE ERROR: line 13: Uncaught [object Object]
+CONSOLE ERROR: line 18: Uncaught 42
+CONSOLE ERROR: line 23: Uncaught (in promise) Error: promise_error
+CONSOLE ERROR: line 23: Uncaught (in promise) Error: promise_error
+CONSOLE ERROR: line 28: Uncaught (in promise) #<Object>
+CONSOLE ERROR: line 28: Uncaught (in promise) #<Object>
+Tests that expressions have thrown objects.
+
+setTimeout(throwError, 0); undefined
+undefined
+foo.js:4 Uncaught Error: error_text(…)throwError @ foo.js:4
+throwError();
+foo.js:4 Uncaught Error: error_text(…)throwError @ foo.js:4(anonymous function) @ VM:1
+setTimeout(throwObject, 0); undefined
+undefined
+foo.js:9 Uncaught Object {a: 42}throwObject @ foo.js:9
+throwObject();
+foo.js:9 Uncaught Object {a: 42}throwObject @ foo.js:9(anonymous function) @ VM:1
+setTimeout(throwNumber, 0); undefined
+undefined
+foo.js:14 Uncaught 42throwNumber @ foo.js:14
+throwNumber();
+foo.js:14 Uncaught 42throwNumber @ foo.js:14(anonymous function) @ VM:1
+setTimeout(rejectWithError, 0); undefined
+undefined
+foo.js:19 Uncaught (in promise) Error: promise_error(…)rejectWithError @ foo.js:19
+rejectWithError();
+undefined
+foo.js:19 Uncaught (in promise) Error: promise_error(…)rejectWithError @ foo.js:19(anonymous function) @ VM:1
+setTimeout(rejectWithObject, 0); undefined
+undefined
+foo.js:24 Uncaught (in promise) Object {b: 42}rejectWithObject @ foo.js:24
+rejectWithObject();
+undefined
+foo.js:24 Uncaught (in promise) Object {b: 42}rejectWithObject @ foo.js:24(anonymous function) @ VM:1
+

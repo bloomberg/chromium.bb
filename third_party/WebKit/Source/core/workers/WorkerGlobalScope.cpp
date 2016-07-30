@@ -134,10 +134,12 @@ void WorkerGlobalScope::dispose()
     m_thread = nullptr;
 }
 
-void WorkerGlobalScope::exceptionUnhandled(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void WorkerGlobalScope::exceptionUnhandled(int exceptionId)
 {
+    ErrorEvent* event = m_pendingErrorEvents.take(exceptionId);
+    DCHECK(event);
     if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
-        debugger->exceptionThrown(errorMessage, std::move(location));
+        debugger->exceptionThrown(event);
 }
 
 void WorkerGlobalScope::registerEventListener(V8AbstractEventListener* eventListener)
@@ -299,6 +301,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone())
     , m_timeOrigin(timeOrigin)
     , m_consoleMessageStorage(new ConsoleMessageStorage())
+    , m_lastPendingErrorEventId(0)
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
@@ -330,9 +333,11 @@ void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage
     m_consoleMessageStorage->addConsoleMessage(this, consoleMessage);
 }
 
-void WorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void WorkerGlobalScope::exceptionThrown(ErrorEvent* event)
 {
-    thread()->workerReportingProxy().reportException(errorMessage, std::move(location));
+    int nextId = ++m_lastPendingErrorEventId;
+    m_pendingErrorEvents.set(nextId, event);
+    thread()->workerReportingProxy().reportException(event->messageForConsole(), event->location()->clone(), nextId);
 }
 
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
@@ -371,6 +376,7 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_timers);
     visitor->trace(m_consoleMessageStorage);
     visitor->trace(m_eventListeners);
+    visitor->trace(m_pendingErrorEvents);
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
     SecurityContext::trace(visitor);

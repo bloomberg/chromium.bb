@@ -44,19 +44,6 @@
 
 namespace blink {
 
-class ExecutionContext::PendingException {
-    WTF_MAKE_NONCOPYABLE(PendingException);
-public:
-    PendingException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
-        : m_errorMessage(errorMessage)
-        , m_location(std::move(location))
-    {
-    }
-
-    String m_errorMessage;
-    std::unique_ptr<SourceLocation> m_location;
-};
-
 ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
@@ -145,24 +132,19 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
 void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
 {
     if (m_inDispatchErrorEvent) {
-        if (!m_pendingExceptions)
-            m_pendingExceptions = wrapUnique(new Vector<std::unique_ptr<PendingException>>());
-        m_pendingExceptions->append(wrapUnique(new PendingException(errorEvent->messageForConsole(), errorEvent->location()->clone())));
+        m_pendingExceptions.append(errorEvent);
         return;
     }
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        exceptionThrown(errorEvent->messageForConsole(), errorEvent->location()->clone());
+        exceptionThrown(errorEvent);
 
-    if (!m_pendingExceptions)
+    if (m_pendingExceptions.isEmpty())
         return;
-
-    for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
-        PendingException* e = m_pendingExceptions->at(i).get();
-        exceptionThrown(e->m_errorMessage, std::move(e->m_location));
-    }
-    m_pendingExceptions.reset();
+    for (ErrorEvent* e : m_pendingExceptions)
+        exceptionThrown(e);
+    m_pendingExceptions.clear();
 }
 
 bool ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
@@ -293,6 +275,7 @@ void ExecutionContext::removeURLFromMemoryCache(const KURL& url)
 DEFINE_TRACE(ExecutionContext)
 {
     visitor->trace(m_publicURLManager);
+    visitor->trace(m_pendingExceptions);
     ContextLifecycleNotifier::trace(visitor);
     Supplementable<ExecutionContext>::trace(visitor);
 }

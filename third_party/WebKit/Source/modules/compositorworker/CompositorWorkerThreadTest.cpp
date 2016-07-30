@@ -40,7 +40,7 @@ public:
     }
 
     // (Empty) WorkerReportingProxy implementation:
-    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) {}
+    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) {}
     void reportConsoleMessage(ConsoleMessage*) override {}
     void postMessageToPageInspector(const String&) override {}
 

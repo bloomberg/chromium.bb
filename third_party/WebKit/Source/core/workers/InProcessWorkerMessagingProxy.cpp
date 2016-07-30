@@ -57,10 +57,10 @@ namespace blink {
 
 namespace {
 
-void processUnhandledExceptionOnWorkerGlobalScope(const String& errorMessage, std::unique_ptr<SourceLocation> location, ExecutionContext* scriptContext)
+void processUnhandledExceptionOnWorkerGlobalScope(int exceptionId, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-    globalScope->exceptionUnhandled(errorMessage, std::move(location));
+    globalScope->exceptionUnhandled(exceptionId);
 }
 
 void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, std::unique_ptr<MessagePortChannelArray> channels, InProcessWorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
@@ -177,7 +177,7 @@ void InProcessWorkerMessagingProxy::postTaskToLoader(std::unique_ptr<ExecutionCo
     getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
-void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
     DCHECK(isParentContextThread());
     if (!m_workerObject)
@@ -191,7 +191,7 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
 
     ErrorEvent* event = ErrorEvent::create(errorMessage, location->clone(), nullptr);
     if (m_workerObject->dispatchEvent(event) == DispatchEventResult::NotCanceled)
-        postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, errorMessage, passed(std::move(location))));
+        postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, exceptionId));
 }
 
 void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location)

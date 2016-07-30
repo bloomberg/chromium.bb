@@ -97,6 +97,21 @@ void V8ErrorHandler::storeExceptionOnErrorEventWrapper(ScriptState* scriptState,
     privateError.set(scriptState->context(), wrappedEvent.As<v8::Object>(), data);
 }
 
+// static
+v8::Local<v8::Value> V8ErrorHandler::loadExceptionFromErrorEventWrapper(ScriptState* scriptState, ErrorEvent* event, v8::Local<v8::Object> creationContext)
+{
+    v8::Local<v8::Value> wrappedEvent = toV8(event, creationContext, scriptState->isolate());
+    if (wrappedEvent.IsEmpty() || !wrappedEvent->IsObject())
+        return v8::Local<v8::Value>();
+
+    DCHECK(wrappedEvent->IsObject());
+    auto privateError = V8PrivateProperty::getErrorEventError(scriptState->isolate());
+    v8::Local<v8::Value> error = privateError.getOrUndefined(scriptState->context(), wrappedEvent.As<v8::Object>());
+    if (error->IsUndefined())
+        return v8::Local<v8::Value>();
+    return error;
+}
+
 bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)
 {
     return returnValue->IsBoolean() && returnValue.As<v8::Boolean>()->Value();

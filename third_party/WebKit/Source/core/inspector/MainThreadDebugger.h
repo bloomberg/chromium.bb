@@ -42,6 +42,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ErrorEvent;
 class LocalFrame;
 class SecurityOrigin;
 class SourceLocation;
@@ -75,7 +76,7 @@ public:
     void didClearContextsForFrame(LocalFrame*);
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
-    void exceptionThrown(LocalFrame*, const String& errorMessage, std::unique_ptr<SourceLocation>);
+    void exceptionThrown(ExecutionContext*, ErrorEvent*);
 
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 

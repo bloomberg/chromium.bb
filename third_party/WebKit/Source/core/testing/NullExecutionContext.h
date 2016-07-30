@@ -37,7 +37,7 @@ public:
     DOMTimerCoordinator* timers() override { return nullptr; }
 
     void addConsoleMessage(ConsoleMessage*) override { }
-    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) override { }
+    void exceptionThrown(ErrorEvent*) override { }
 
     void setIsSecureContext(bool);
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;

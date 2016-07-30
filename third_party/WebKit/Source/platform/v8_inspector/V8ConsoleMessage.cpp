@@ -252,9 +252,10 @@ std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> V8ConsoleMessa
 void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V8InspectorSessionImpl* session, bool generatePreview) const
 {
     if (m_origin == V8MessageOrigin::kException) {
+        std::unique_ptr<protocol::Runtime::RemoteObject> exception = wrapException(session, generatePreview);
         // TODO(dgozman): unify with InjectedScript::createExceptionDetails.
         std::unique_ptr<protocol::Runtime::ExceptionDetails> details = protocol::Runtime::ExceptionDetails::create()
-            .setText(m_message)
+            .setText(exception ? m_message : m_detailedMessage)
             .setLineNumber(m_lineNumber ? m_lineNumber - 1 : 0)
             .setColumnNumber(m_columnNumber ? m_columnNumber - 1 : 0)
             .setScriptId(m_scriptId ? String16::fromInteger(m_scriptId) : String16())
@@ -263,8 +264,6 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
             details->setUrl(m_url);
         if (m_stackTrace)
             details->setStackTrace(m_stackTrace->buildInspectorObjectImpl());
-
-        std::unique_ptr<protocol::Runtime::RemoteObject> exception = wrapException(session, generatePreview);
 
         if (exception)
             frontend->exceptionThrown(m_exceptionId, m_timestamp, std::move(details), std::move(exception), m_contextId);
@@ -351,16 +350,17 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
 }
 
 // static
-std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForException(double timestamp, const String16& messageText, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTraceImpl> stackTrace, int scriptId, v8::Isolate* isolate, int contextId, v8::Local<v8::Value> exception, unsigned exceptionId)
+std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForException(double timestamp, const String16& detailedMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTraceImpl> stackTrace, int scriptId, v8::Isolate* isolate, const String16& message, int contextId, v8::Local<v8::Value> exception, unsigned exceptionId)
 {
-    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kException, timestamp, messageText));
-    message->setLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId);
-    message->m_exceptionId = exceptionId;
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kException, timestamp, message));
+    consoleMessage->setLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId);
+    consoleMessage->m_exceptionId = exceptionId;
+    consoleMessage->m_detailedMessage = detailedMessage;
     if (contextId && !exception.IsEmpty()) {
-        message->m_contextId = contextId;
-        message->m_arguments.push_back(wrapUnique(new v8::Global<v8::Value>(isolate, exception)));
+        consoleMessage->m_contextId = contextId;
+        consoleMessage->m_arguments.push_back(wrapUnique(new v8::Global<v8::Value>(isolate, exception)));
     }
-    return message;
+    return consoleMessage;
 }
 
 // static
