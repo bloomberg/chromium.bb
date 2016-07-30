@@ -36,7 +36,6 @@ public:
     void notifyContextDestroyed();
 
 private:
-    bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     void muteWarningsAndDeprecations(int) override { }
@@ -45,6 +44,8 @@ private:
 
     bool isExecutionAllowed() override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
+    void beginEnsureAllContextsInGroup(int contextGroupId) override { }
+    void endEnsureAllContextsInGroup(int contextGroupId) override { }
     void beginUserGesture() override { }
     void endUserGesture() override { }
     bool isInspectableHeapObject(v8::Local<v8::Object>) override { return true; }
@@ -63,8 +64,6 @@ private:
     void cancelTimer(void* data) override { }
 
     // V8InspectorSessionClient
-    void runtimeEnabled() override { };
-    void runtimeDisabled() override { };
     void resumeStartup() override { };
     bool canExecuteScripts() override;
     void profilingStarted() override { };

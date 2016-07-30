@@ -25,11 +25,6 @@ V8Inspector::~V8Inspector()
     disconnectFrontend();
 }
 
-bool V8Inspector::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
-{
-    return true;
-}
-
 String16 V8Inspector::valueSubtype(v8::Local<v8::Value> value)
 {
     return String16();
