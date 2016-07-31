@@ -22,7 +22,7 @@
   ],
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
-    "component=static_library",
+    "is_component_build=false",
     "disable_brotli_filter=true",
     "disable_file_support=true",
     "disable_ftp_support=true",
