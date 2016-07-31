@@ -9,7 +9,6 @@
 #include "core/frame/VisualViewport.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
-#include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatSize.h"
 
 namespace blink {

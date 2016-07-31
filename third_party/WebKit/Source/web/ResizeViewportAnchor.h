@@ -6,6 +6,7 @@
 #define ResizeViewportAnchor_h
 
 #include "core/page/Page.h"
+#include "platform/geometry/DoubleSize.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -18,7 +19,7 @@ class FrameView;
 // It is needed when the layout viewport grows (causing its own scroll position
 // to be clamped) and also when it shrinks (causing the visual viewport's scroll
 // position to be clamped).
-class ResizeViewportAnchor : public GarbageCollectedFinalized<ResizeViewportAnchor> {
+class ResizeViewportAnchor final : public GarbageCollected<ResizeViewportAnchor> {
     WTF_MAKE_NONCOPYABLE(ResizeViewportAnchor);
 public:
     ResizeViewportAnchor(Page& page)
