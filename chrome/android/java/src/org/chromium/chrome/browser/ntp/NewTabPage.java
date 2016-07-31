@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -671,16 +672,30 @@ public class NewTabPage
     /**
      * Get the bounds of the search box in relation to the top level NewTabPage view.
      *
-     * @param originalBounds The bounding region of the search box without external transforms
-     *                       applied.  The delta between this and the transformed bounds determines
-     *                       the amount of scroll applied to this view.
-     * @param transformedBounds The bounding region of the search box including any transforms
-     *                          applied by the parent view hierarchy up to the NewTabPage view.
-     *                          This more accurately reflects the current drawing location of the
-     *                          search box.
+     * @param bounds The current drawing location of the search box.
+     * @param translation The translation applied to the search box by the parent view hierarchy up
+     *                    to the NewTabPage view.
      */
-    public void getSearchBoxBounds(Rect originalBounds, Rect transformedBounds) {
-        mNewTabPageView.getSearchBoxBounds(originalBounds, transformedBounds);
+    public void getSearchBoxBounds(Rect bounds, Point translation) {
+        mNewTabPageView.getSearchBoxBounds(bounds, translation);
+    }
+
+    /**
+     * Updates the opacity of the search box when scrolling.
+     *
+     * @param alpha opacity (alpha) value to use.
+     */
+    public void setSearchBoxAlpha(float alpha) {
+        mNewTabPageView.setSearchBoxAlpha(alpha);
+    }
+
+    /**
+     * Updates the opacity of the search provider logo when scrolling.
+     *
+     * @param alpha opacity (alpha) value to use.
+     */
+    public void setSearchProviderLogoAlpha(float alpha) {
+        mNewTabPageView.setSearchProviderLogoAlpha(alpha);
     }
 
     /**

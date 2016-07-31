@@ -172,8 +172,6 @@ public class LocationBarPhone extends LocationBarLayout {
             mUrlActionsContainer.setVisibility(GONE);
         }
 
-        mDeleteButton.setAlpha(percent);
-        mMicButton.setAlpha(percent);
         if (showMenuButtonInOmnibox()) mMenuButtonWrapper.setAlpha(1f - percent);
 
         updateButtonVisibility();
