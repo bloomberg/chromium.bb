@@ -137,8 +137,8 @@ private:
         // The following methods are overridden by the subclasses to implement
         // code to forward did.* method invocations to the worker context's
         // thread which is specialized for sync and async case respectively.
-        virtual void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) = 0;
-        virtual void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
 
         // All executed on the main thread.
         void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
@@ -166,8 +166,8 @@ private:
     private:
         ~MainThreadAsyncBridge() override;
 
-        void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
     };
 
     class MainThreadSyncBridge final : public MainThreadBridgeBase {
@@ -176,17 +176,27 @@ private:
         void start(const ResourceRequest&, const WorkerGlobalScope&) override;
 
     private:
+        struct ClientTask {
+            WebTraceLocation m_location;
+            std::unique_ptr<ExecutionContextTask> m_task;
+
+            ClientTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+            ~ClientTask();
+
+            ClientTask(ClientTask&&);
+        };
+
         ~MainThreadSyncBridge() override;
 
-        void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorker(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
 
         bool m_done;
         std::unique_ptr<WaitableEvent> m_loaderDoneEvent;
         // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
         // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
         // on the worker context thread only after |m_loaderDoneEvent| is signaled.
-        Vector<std::unique_ptr<ExecutionContextTask>> m_clientTasks;
+        Vector<ClientTask> m_clientTasks;
         Mutex m_lock;
     };
 

@@ -38,12 +38,12 @@ public:
     MockWorkerLoaderProxyProvider() { }
     ~MockWorkerLoaderProxyProvider() override { }
 
-    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) override
+    void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
     {
         NOTIMPLEMENTED();
     }
 
-    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) override
+    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
     {
         NOTIMPLEMENTED();
         return false;

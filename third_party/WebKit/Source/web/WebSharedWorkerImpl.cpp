@@ -270,16 +270,16 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 
 // WorkerLoaderProxyProvider -----------------------------------------------------------
 
-void WebSharedWorkerImpl::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
+void WebSharedWorkerImpl::postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
     // consider using m_mainThreadTaskRunners->getLoadingTaskRunner() instead.
-    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
+    m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
 
-bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
+bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
-    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
+    m_workerThread->postTask(location, std::move(task));
     return true;
 }
 

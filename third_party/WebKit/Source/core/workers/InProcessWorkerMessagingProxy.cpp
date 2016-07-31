@@ -159,22 +159,22 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<Se
     }
 }
 
-bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
+bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate)
         return false;
 
     DCHECK(m_workerThread);
-    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
+    m_workerThread->postTask(location, std::move(task));
     return true;
 }
 
-void InProcessWorkerMessagingProxy::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
+void InProcessWorkerMessagingProxy::postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     DCHECK(getExecutionContext()->isDocument());
     // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and use
     // m_parentFrameTaskRunners->getLoadingTaskRunner() instead.
-    getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
+    getExecutionContext()->postTask(location, std::move(task));
 }
 
 void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
@@ -191,7 +191,7 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
 
     ErrorEvent* event = ErrorEvent::create(errorMessage, location->clone(), nullptr);
     if (m_workerObject->dispatchEvent(event) == DispatchEventResult::NotCanceled)
-        postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, exceptionId));
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, exceptionId));
 }
 
 void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location)

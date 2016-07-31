@@ -36,6 +36,7 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
@@ -152,7 +153,7 @@ public:
 
     private:
         // Returns false if shutdown event is received before method completion.
-        bool waitForMethodCompletion(std::unique_ptr<ExecutionContextTask>);
+        bool waitForMethodCompletion(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
 
         Member<WebSocketChannelClient> m_client;
         Member<WorkerGlobalScope> m_workerGlobalScope;

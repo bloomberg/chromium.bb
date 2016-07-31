@@ -342,7 +342,7 @@ void WorkerGlobalScope::exceptionThrown(ErrorEvent* event)
 
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
 {
-    m_thread->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&removeURLFromMemoryCacheInternal, url));
+    m_thread->workerLoaderProxy()->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&removeURLFromMemoryCacheInternal, url));
 }
 
 KURL WorkerGlobalScope::virtualCompleteURL(const String& url) const

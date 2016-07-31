@@ -170,23 +170,25 @@ public:
     void createLoader(ThreadableLoaderClient* client, CrossOriginRequestPolicy crossOriginRequestPolicy) override
     {
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
-        postTaskToWorkerGlobalScope(createCrossThreadTask(
-            &WorkerThreadableLoaderTestHelper::workerCreateLoader,
-            crossThreadUnretained(this),
-            crossThreadUnretained(client),
-            crossThreadUnretained(completionEvent.get()),
-            crossOriginRequestPolicy));
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE,
+            createCrossThreadTask(
+                &WorkerThreadableLoaderTestHelper::workerCreateLoader,
+                crossThreadUnretained(this),
+                crossThreadUnretained(client),
+                crossThreadUnretained(completionEvent.get()),
+                crossOriginRequestPolicy));
         completionEvent->wait();
     }
 
     void startLoader(const ResourceRequest& request) override
     {
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
-        postTaskToWorkerGlobalScope(createCrossThreadTask(
-            &WorkerThreadableLoaderTestHelper::workerStartLoader,
-            crossThreadUnretained(this),
-            crossThreadUnretained(completionEvent.get()),
-            request));
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE,
+            createCrossThreadTask(
+                &WorkerThreadableLoaderTestHelper::workerStartLoader,
+                crossThreadUnretained(this),
+                crossThreadUnretained(completionEvent.get()),
+                request));
         completionEvent->wait();
     }
 
@@ -224,11 +226,12 @@ public:
         testing::runPendingTasks();
 
         std::unique_ptr<WaitableEvent> completionEvent = wrapUnique(new WaitableEvent());
-        postTaskToWorkerGlobalScope(createCrossThreadTask(
-            &WorkerThreadableLoaderTestHelper::workerCallCheckpoint,
-            crossThreadUnretained(this),
-            crossThreadUnretained(completionEvent.get()),
-            n));
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE,
+            createCrossThreadTask(
+                &WorkerThreadableLoaderTestHelper::workerCallCheckpoint,
+                crossThreadUnretained(this),
+                crossThreadUnretained(completionEvent.get()),
+                n));
         completionEvent->wait();
     }
 
@@ -252,7 +255,7 @@ public:
 
     void onTearDown() override
     {
-        postTaskToWorkerGlobalScope(createCrossThreadTask(&WorkerThreadableLoaderTestHelper::clearLoader, crossThreadUnretained(this)));
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoaderTestHelper::clearLoader, crossThreadUnretained(this)));
         m_workerThread->terminateAndWait();
 
         // Needed to clean up the things on the main thread side and
@@ -312,17 +315,17 @@ private:
     }
 
     // WorkerLoaderProxyProvider methods.
-    void postTaskToLoader(std::unique_ptr<ExecutionContextTask> task) override
+    void postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
     {
         ASSERT(m_workerThread);
         ASSERT(m_workerThread->isCurrentThread());
-        document().postTask(BLINK_FROM_HERE, std::move(task));
+        document().postTask(location, std::move(task));
     }
 
-    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task) override
+    bool postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
     {
         ASSERT(m_workerThread);
-        m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
+        m_workerThread->postTask(location, std::move(task));
         return true;
     }
 

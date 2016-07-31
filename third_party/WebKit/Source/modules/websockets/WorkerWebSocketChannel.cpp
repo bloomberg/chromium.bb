@@ -277,7 +277,7 @@ static void workerGlobalScopeDidConnect(Bridge* bridge, const String& subprotoco
 void Peer::didConnect(const String& subprotocol, const String& extensions)
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
 }
 
 static void workerGlobalScopeDidReceiveTextMessage(Bridge* bridge, const String& payload, ExecutionContext* context)
@@ -290,7 +290,7 @@ static void workerGlobalScopeDidReceiveTextMessage(Bridge* bridge, const String&
 void Peer::didReceiveTextMessage(const String& payload)
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
 static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, std::unique_ptr<Vector<char>> payload, ExecutionContext* context)
@@ -303,7 +303,7 @@ static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, std::unique
 void Peer::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload)
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, passed(std::move(payload))));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, passed(std::move(payload))));
 }
 
 static void workerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge, uint64_t consumed, ExecutionContext* context)
@@ -316,7 +316,7 @@ static void workerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge, uint64_t c
 void Peer::didConsumeBufferedAmount(uint64_t consumed)
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));
 }
 
 static void workerGlobalScopeDidStartClosingHandshake(Bridge* bridge, ExecutionContext* context)
@@ -329,7 +329,7 @@ static void workerGlobalScopeDidStartClosingHandshake(Bridge* bridge, ExecutionC
 void Peer::didStartClosingHandshake()
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_bridge));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_bridge));
 }
 
 static void workerGlobalScopeDidClose(Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason, ExecutionContext* context)
@@ -346,7 +346,7 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
         m_mainWebSocketChannel->disconnect();
         m_mainWebSocketChannel = nullptr;
     }
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidClose, m_bridge, closingHandshakeCompletion, code, reason));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidClose, m_bridge, closingHandshakeCompletion, code, reason));
 }
 
 static void workerGlobalScopeDidError(Bridge* bridge, ExecutionContext* context)
@@ -359,7 +359,7 @@ static void workerGlobalScopeDidError(Bridge* bridge, ExecutionContext* context)
 void Peer::didError()
 {
     ASSERT(isMainThread());
-    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
+    m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
 void Peer::contextDestroyed()
@@ -407,7 +407,7 @@ void Bridge::initialize(std::unique_ptr<SourceLocation> location)
 {
     // Wait for completion of the task on the main thread because the connection
     // must synchronously be established (see Bridge::connect).
-    if (!waitForMethodCompletion(createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
+    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -420,7 +420,7 @@ bool Bridge::connect(const KURL& url, const String& protocol)
 
     // Wait for completion of the task on the main thread because the mixed
     // content check must synchronously be conducted.
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::connect, wrapCrossThreadPersistent(m_peer.get()), url, protocol)))
+    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Peer::connect, wrapCrossThreadPersistent(m_peer.get()), url, protocol)))
         return false;
 
     return m_syncHelper->connectRequestResult();
@@ -433,7 +433,7 @@ void Bridge::send(const CString& message)
     if (message.length())
         memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(data))));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendTextAsCharVector, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(data))));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
@@ -444,25 +444,25 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(data))));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendBinaryAsCharVector, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(data))));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBlob, wrapCrossThreadPersistent(m_peer.get()), data));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendBlob, wrapCrossThreadPersistent(m_peer.get()), data));
 }
 
 void Bridge::close(int code, const String& reason)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::close, wrapCrossThreadPersistent(m_peer.get()), code, reason));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::close, wrapCrossThreadPersistent(m_peer.get()), code, reason));
 }
 
 void Bridge::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(std::move(location))));
+    m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(std::move(location))));
 }
 
 void Bridge::disconnect()
@@ -472,7 +472,7 @@ void Bridge::disconnect()
 
     // Wait for completion of the task on the main thread to ensure that
     // |m_peer| does not touch this Bridge object after this point.
-    waitForMethodCompletion(createCrossThreadTask(&Peer::disconnect, wrapCrossThreadPersistent(m_peer.get())));
+    waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Peer::disconnect, wrapCrossThreadPersistent(m_peer.get())));
 
     m_client = nullptr;
     m_peer = nullptr;
@@ -483,12 +483,12 @@ void Bridge::disconnect()
 
 // Caller of this function should hold a reference to the bridge, because this function may call WebSocket::didClose() in the end,
 // which causes the bridge to get disconnected from the WebSocket and deleted if there is no other reference.
-bool Bridge::waitForMethodCompletion(std::unique_ptr<ExecutionContextTask> task)
+bool Bridge::waitForMethodCompletion(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     ASSERT(m_workerGlobalScope);
     ASSERT(m_syncHelper);
 
-    m_loaderProxy->postTaskToLoader(std::move(task));
+    m_loaderProxy->postTaskToLoader(location, std::move(task));
 
     // We wait for the syncHelper event even if a shutdown event is fired.
     // See https://codereview.chromium.org/267323004/#msg43 for why we need to wait this.

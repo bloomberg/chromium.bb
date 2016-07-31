@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Forward.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -60,11 +61,11 @@ public:
     virtual ~WorkerLoaderProxyProvider() { }
 
     // Posts a task to the thread which runs the loading code (normally, the main thread).
-    virtual void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) = 0;
+    virtual void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
 
     // Posts callbacks from loading code to the WorkerGlobalScope.
     // Returns true if the task was posted successfully.
-    virtual bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) = 0;
+    virtual bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy final : public ThreadSafeRefCounted<WorkerLoaderProxy> {
@@ -76,8 +77,8 @@ public:
 
     ~WorkerLoaderProxy();
 
-    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>);
-    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>);
+    void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
 
     // Notification from the provider that it can no longer be
     // accessed. An implementation of WorkerLoaderProxyProvider is

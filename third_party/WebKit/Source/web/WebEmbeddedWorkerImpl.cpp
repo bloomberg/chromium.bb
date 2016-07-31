@@ -254,19 +254,19 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
     m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-void WebEmbeddedWorkerImpl::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
+void WebEmbeddedWorkerImpl::postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
     // consider using m_mainThreadTaskRunners->getLoadingTaskRunner() instead.
-    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
+    m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
 
-bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
+bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate || !m_workerThread)
         return false;
 
-    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
+    m_workerThread->postTask(location, std::move(task));
     return !m_workerThread->terminated();
 }
 
