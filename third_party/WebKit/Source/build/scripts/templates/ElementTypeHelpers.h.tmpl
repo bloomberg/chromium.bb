@@ -23,8 +23,6 @@ inline bool is{{tag.interface}}(const {{namespace}}Element& element) {
     return element.hasTagName({{namespace}}Names::{{tag|symbol}}Tag);
 }
 inline bool is{{tag.interface}}(const {{namespace}}Element* element) { return element && is{{tag.interface}}(*element); }
-template<typename T> inline bool is{{tag.interface}}(const PassRefPtr<T>& node) { return is{{tag.interface}}(node.get()); }
-template<typename T> inline bool is{{tag.interface}}(const RefPtr<T>& node) { return is{{tag.interface}}(node.get()); }
 inline bool is{{tag.interface}}(const Node& node) { return node.is{{namespace}}Element() && is{{tag.interface}}(to{{namespace}}Element(node)); }
 inline bool is{{tag.interface}}(const Node* node) { return node && is{{tag.interface}}(*node); }
 template <> inline bool isElementOfType<const {{tag.interface}}>(const Node& node) { return is{{tag.interface}}(node); }
