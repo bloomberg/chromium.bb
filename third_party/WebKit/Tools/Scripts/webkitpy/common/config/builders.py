@@ -100,8 +100,11 @@ BUILDERS = {
         "specifiers": ['Mac10.11', 'Release'],
         "is_try_builder": True,
     },
-    # TODO(qyearsley): Add mac retina builder here
-    # when it is ready. http://crbug.com/590036.
+    "mac10.11_retina_blink_rel": {
+        "port_name": "mac-retina",
+        "specifiers": ['Retina', 'Release'],
+        "is_try_builder": True,
+    },
     "win7_blink_rel": {
         "port_name": "win-win7",
         "specifiers": ['Win7', 'Release'],
@@ -110,6 +113,11 @@ BUILDERS = {
     "win10_blink_rel": {
         "port_name": "win-win7",
         "specifiers": ['Win7', 'Release'],
+        "is_try_builder": True,
+    },
+    "android_blink_rel": {
+        "port_name": "android",
+        "specifiers": ['Android', 'Release'],
         "is_try_builder": True,
     },
 }
