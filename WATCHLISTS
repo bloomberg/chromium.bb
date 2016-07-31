@@ -444,6 +444,9 @@
     'gpu': {
       'filepath': 'gpu/',
     },
+    'gyp': {
+      'filepath': '.gyp$|.gypi$',
+    },
     'history_ui': {
       'filepath': 'chrome/browser/resources/(md_)?history|'\
                   'chrome/browser/ui/webui/.*history',
@@ -1735,6 +1738,7 @@
     'gn': ['dpranke@chromium.org',
            'tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
+    'gyp': ['dpranke@chromium.org'],
     'history_ui': ['dbeam+watch-history@chromium.org',
                    'dubroy@chromium.org',
                    'pam+watch@chromium.org'],

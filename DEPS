@@ -973,12 +973,6 @@ hooks = [
                'src/build/android/download_doclava.py',
     ],
   },
-  {
-    # A change to a .gyp, .gypi, or to GYP itself should run the generator.
-    'name': 'gyp',
-    'pattern': '.',
-    'action': ['python', 'src/build/gyp_chromium', '--running-as-hook'],
-  },
 ]
 
 # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
