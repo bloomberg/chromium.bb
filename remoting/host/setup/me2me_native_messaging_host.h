@@ -5,7 +5,9 @@
 #ifndef REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 #define REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 
+#include <cstdint>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,10 +30,6 @@ class GaiaOAuthClient;
 }  // namespace gaia
 
 namespace remoting {
-
-const char kElevatingSwitchName[] = "elevate";
-const char kInputSwitchName[] = "input";
-const char kOutputSwitchName[] = "output";
 
 namespace protocol {
 class PairingRegistry;

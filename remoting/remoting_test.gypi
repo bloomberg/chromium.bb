@@ -398,6 +398,10 @@
               '-lwtsapi32.lib',
             ],
           },
+          'sources': [
+            'host/win/launch_native_messaging_host_process.cc',
+            'host/win/launch_native_messaging_host_process.h',
+          ],
         }],
         [ 'chromeos==0', {
           'sources!': [

@@ -364,6 +364,12 @@ source_set("unit_tests") {
   if (is_android) {
     sources -= [ "it2me/it2me_native_messaging_host_unittest.cc" ]
   }
+  if (is_win) {
+    sources += [
+      "win/launch_native_messaging_host_process.cc",
+      "win/launch_native_messaging_host_process.h",
+    ]
+  }
 
   configs += [ "//remoting:version" ]
 
@@ -593,6 +599,8 @@ if (is_win) {
       "win/core_resource.h",
       "win/host_service.cc",
       "win/host_service.h",
+      "win/launch_native_messaging_host_process.cc",
+      "win/launch_native_messaging_host_process.h",
       "win/omaha.cc",
       "win/omaha.h",
       "win/rdp_desktop_session.cc",

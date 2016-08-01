@@ -32,6 +32,15 @@ extern const char kProcessTypeDesktop[];
 extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
 
+// Used to pass the HWND for the parent process to a child process.
+extern const char kParentWindowSwitchName[];
+
+// Name of the pipe used to communicate from the parent to the child process.
+extern const char kInputSwitchName[];
+
+// Name of the pipe used to communicate from the child to the parent process.
+extern const char kOutputSwitchName[];
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_SWITCHES_H_

@@ -19,4 +19,9 @@ const char kProcessTypeDesktop[] = "desktop";
 const char kProcessTypeHost[] = "host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
 
+const char kParentWindowSwitchName[] = "parent-window";
+
+const char kInputSwitchName[] = "input";
+const char kOutputSwitchName[] = "output";
+
 }  // namespace remoting

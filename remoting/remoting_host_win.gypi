@@ -240,6 +240,8 @@
         'host/win/core_resource.h',
         'host/win/host_service.cc',
         'host/win/host_service.h',
+        'host/win/launch_native_messaging_host_process.cc',
+        'host/win/launch_native_messaging_host_process.h',
         'host/win/omaha.cc',
         'host/win/omaha.h',
         'host/win/rdp_desktop_session.cc',

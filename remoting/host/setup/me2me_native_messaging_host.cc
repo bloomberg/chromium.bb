@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -14,34 +16,27 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringize_macros.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/google_api_keys.h"
-#include "ipc/ipc_channel.h"
 #include "net/base/network_interfaces.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/oauth_client.h"
+#include "remoting/host/switches.h"
 #include "remoting/protocol/pairing_registry.h"
 
 #if defined(OS_WIN)
-#include <shellapi.h>
+#include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "remoting/host/win/security_descriptor.h"
+#include "remoting/host/win/launch_native_messaging_host_process.h"
 #endif  // defined(OS_WIN)
 
 namespace {
 
 #if defined(OS_WIN)
-// Windows will use default buffer size when 0 is passed to CreateNamedPipeW().
-const DWORD kBufferSize = 0;
-const int kTimeOutMilliseconds = 2000;
-const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome_remote_desktop.";
 const int kElevatedHostTimeoutSeconds = 300;
 #endif  // defined(OS_WIN)
 
@@ -582,147 +577,24 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   if (elevated_channel_)
     return;
 
-  // presubmit: allow wstring
-  std::wstring user_sid;
-  if (!base::win::GetUserSidString(&user_sid)) {
-    LOG(ERROR) << "Failed to query the current user SID.";
-    OnError();
-    return;
-  }
-
-  // Create a security descriptor that gives full access to the caller and
-  // BUILTIN_ADMINISTRATORS and denies access by anyone else.
-  // Local admins need access because the privileged host process will run
-  // as a local admin which may not be the same user as the current user.
-  std::string user_sid_ascii = base::UTF16ToASCII(user_sid);
-  std::string security_descriptor =
-      base::StringPrintf("O:%sG:%sD:(A;;GA;;;%s)(A;;GA;;;BA)",
-                         user_sid_ascii.c_str(), user_sid_ascii.c_str(),
-                         user_sid_ascii.c_str());
-
-  ScopedSd sd = ConvertSddlToSd(security_descriptor);
-  if (!sd) {
-    PLOG(ERROR) << "Failed to create a security descriptor for the"
-                << "Chromoting Me2Me native messaging host.";
-    OnError();
-    return;
-  }
-
-  SECURITY_ATTRIBUTES security_attributes = {0};
-  security_attributes.nLength = sizeof(security_attributes);
-  security_attributes.lpSecurityDescriptor = sd.get();
-  security_attributes.bInheritHandle = FALSE;
-
-  // Generate a unique name for the input channel.
-  std::string input_pipe_name(kChromePipeNamePrefix);
-  input_pipe_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
-
-  base::win::ScopedHandle delegate_write_handle(::CreateNamedPipe(
-      base::ASCIIToUTF16(input_pipe_name).c_str(),
-      PIPE_ACCESS_OUTBOUND,
-      PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_REJECT_REMOTE_CLIENTS,
-      1,
-      kBufferSize,
-      kBufferSize,
-      kTimeOutMilliseconds,
-      &security_attributes));
-
-  if (!delegate_write_handle.IsValid()) {
-    PLOG(ERROR) << "Failed to create named pipe '" << input_pipe_name << "'";
-    OnError();
-    return;
-  }
-
-  // Generate a unique name for the input channel.
-  std::string output_pipe_name(kChromePipeNamePrefix);
-  output_pipe_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
-
-  base::win::ScopedHandle delegate_read_handle(::CreateNamedPipe(
-      base::ASCIIToUTF16(output_pipe_name).c_str(),
-      PIPE_ACCESS_INBOUND,
-      PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_REJECT_REMOTE_CLIENTS,
-      1,
-      kBufferSize,
-      kBufferSize,
-      kTimeOutMilliseconds,
-      &security_attributes));
-
-  if (!delegate_read_handle.IsValid()) {
-    PLOG(ERROR) << "Failed to create named pipe '" << output_pipe_name << "'";
-    OnError();
-    return;
-  }
-
-  const base::CommandLine* current_command_line =
-      base::CommandLine::ForCurrentProcess();
-  const base::CommandLine::SwitchMap& switches =
-      current_command_line->GetSwitches();
-  base::CommandLine::StringVector args = current_command_line->GetArgs();
-
-  // Create the child process command line by copying switches from the current
-  // command line.
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(kElevatingSwitchName);
-  command_line.AppendSwitchASCII(kInputSwitchName, input_pipe_name);
-  command_line.AppendSwitchASCII(kOutputSwitchName, output_pipe_name);
-
-  DCHECK(!current_command_line->HasSwitch(kElevatingSwitchName));
-  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
-       i != switches.end(); ++i) {
-      command_line.AppendSwitchNative(i->first, i->second);
-  }
-  for (base::CommandLine::StringVector::const_iterator i = args.begin();
-       i != args.end(); ++i) {
-    command_line.AppendArgNative(*i);
-  }
-
+  base::win::ScopedHandle read_handle;
+  base::win::ScopedHandle write_handle;
   // Get the name of the binary to launch.
-  base::FilePath binary = current_command_line->GetProgram();
-  base::CommandLine::StringType parameters =
-      command_line.GetCommandLineString();
-
-  // Launch the child process requesting elevation.
-  SHELLEXECUTEINFO info;
-  memset(&info, 0, sizeof(info));
-  info.cbSize = sizeof(info);
-  info.hwnd = reinterpret_cast<HWND>(parent_window_handle_);
-  info.lpVerb = L"runas";
-  info.lpFile = binary.value().c_str();
-  info.lpParameters = parameters.c_str();
-  info.nShow = SW_HIDE;
-
-  if (!ShellExecuteEx(&info)) {
-    DWORD error = ::GetLastError();
-    PLOG(ERROR) << "Unable to launch '" << binary.value() << "'";
-    if (error != ERROR_CANCELLED) {
+  base::FilePath binary = base::CommandLine::ForCurrentProcess()->GetProgram();
+  ProcessLaunchResult result = LaunchNativeMessagingHostProcess(
+      binary, parent_window_handle_,
+      /*elevate_process=*/true, &read_handle, &write_handle);
+  if (result != PROCESS_LAUNCH_RESULT_SUCCESS) {
+    if (result != PROCESS_LAUNCH_RESULT_CANCELLED) {
       OnError();
     }
     return;
-  }
-
-  if (!::ConnectNamedPipe(delegate_write_handle.Get(), nullptr)) {
-    DWORD error = ::GetLastError();
-    if (error != ERROR_PIPE_CONNECTED) {
-      PLOG(ERROR) << "Unable to connect '" << input_pipe_name << "'";
-      OnError();
-      return;
-    }
-  }
-
-  if (!::ConnectNamedPipe(delegate_read_handle.Get(), nullptr)) {
-    DWORD error = ::GetLastError();
-    if (error != ERROR_PIPE_CONNECTED) {
-      PLOG(ERROR) << "Unable to connect '" << output_pipe_name << "'";
-      OnError();
-      return;
-    }
   }
 
   // Set up the native messaging channel to talk to the elevated host.
   // Note that input for the elevated channel is output for the elevated host.
-  elevated_channel_.reset(
-      new PipeMessagingChannel(base::File(delegate_read_handle.Take()),
-                               base::File(delegate_write_handle.Take())));
+  elevated_channel_.reset(new PipeMessagingChannel(
+      base::File(read_handle.Take()), base::File(write_handle.Take())));
 
   elevated_channel_event_handler_.reset(
       new Me2MeNativeMessagingHost::ElevatedChannelEventHandler(this));

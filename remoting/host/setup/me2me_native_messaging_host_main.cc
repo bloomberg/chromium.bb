@@ -4,8 +4,9 @@
 
 #include "remoting/host/setup/me2me_native_messaging_host_main.h"
 
-#include <stdint.h>
-
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -26,6 +27,7 @@
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/setup/gaia_oauth_client.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_MACOSX)
@@ -43,12 +45,6 @@
 #endif  // defined(OS_LINUX)
 
 using remoting::protocol::PairingRegistry;
-
-namespace {
-
-const char kParentWindowSwitchName[] = "parent-window";
-
-}  // namespace
 
 namespace remoting {
 
@@ -117,7 +113,7 @@ int StartMe2MeNativeMessagingHost() {
 #if defined(OS_WIN)
   needs_elevation = !IsProcessElevated();
 
-  if (command_line->HasSwitch(kElevatingSwitchName)) {
+  if (command_line->HasSwitch(kElevateSwitchName)) {
     DCHECK(!needs_elevation);
 
     // The "elevate" switch is always accompanied by the "input" and "output"
