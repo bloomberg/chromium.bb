@@ -15,7 +15,7 @@
     "werror="
   ],
   "gn_args": [
-    "component=static_library",
+    "is_component_build=false",
     "ios_enable_code_signing=false",
     "target_cpu=\"arm\"",
     "target_os=\"ios\""

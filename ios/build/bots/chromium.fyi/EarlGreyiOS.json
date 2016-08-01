@@ -16,7 +16,7 @@
     "target_subarch=arm64"
   ],
   "gn_args": [
-    "component=static_library",
+    "is_component_build=false",
     "goma_dir=\"$(goma_dir)\"",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
