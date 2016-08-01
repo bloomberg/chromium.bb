@@ -412,9 +412,13 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                     ? mLightModeTint
                     : ApiCompatibilityUtils.getColorStateList(
                             getResources(), R.color.blue_mode_tint));
+            mBookmarkButton.setContentDescription(getContext().getString(
+                    R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
             mBookmarkButton.setTint(isIncognito() ? mLightModeTint : mDarkModeTint);
+            mBookmarkButton.setContentDescription(getContext().getString(
+                    R.string.accessibility_menu_bookmark));
         }
         mBookmarkButton.setEnabled(editingAllowed);
     }
