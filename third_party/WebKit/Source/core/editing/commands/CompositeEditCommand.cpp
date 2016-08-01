@@ -736,14 +736,17 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(Text* textNode, in
     VisiblePosition visibleDownstreamPos = createVisiblePosition(Position(textNode, downstream));
 
     String string = text.substring(upstream, length);
-    String rebalancedString = stringWithRebalancedWhitespace(string,
     // FIXME: Because of the problem mentioned at the top of this function, we
     // must also use nbsps at the start/end of the string because this function
     // doesn't get all surrounding whitespace, just the whitespace in the
-    // current text node.
-        isStartOfParagraph(visibleUpstreamPos) || upstream == 0,
-        (isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length())
-        && !(textNode->nextSibling() && textNode->nextSibling()->isTextNode() && toText(textNode->nextSibling())->data().length() != 0));
+    // current text node. However, if the next sibling node is a text node
+    // (not empty, see http://crbug.com/632300), we should use a plain space.
+    // See http://crbug.com/310149
+    const bool nextSiblingIsTextNode = textNode->nextSibling() && textNode->nextSibling()->isTextNode()
+        && toText(textNode->nextSibling())->data().length();
+    const bool shouldEmitNBSPbeforeEnd =(isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length()) && !nextSiblingIsTextNode;
+    String rebalancedString = stringWithRebalancedWhitespace(string,
+        isStartOfParagraph(visibleUpstreamPos) || !upstream, shouldEmitNBSPbeforeEnd);
 
     if (string != rebalancedString)
         replaceTextInNodePreservingMarkers(textNode, upstream, length, rebalancedString);

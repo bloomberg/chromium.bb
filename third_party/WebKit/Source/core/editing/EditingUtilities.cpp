@@ -972,7 +972,6 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
             continue;
         }
 
-        // We need to ensure there is no next sibling text node. See http://crbug.com/310149
         if (previousCharacterWasSpace || (!i && startIsStartOfParagraph) || (i + 1 == length && shouldEmitNBSPbeforeEnd)) {
             rebalancedString.append(noBreakSpaceCharacter);
             previousCharacterWasSpace = false;
