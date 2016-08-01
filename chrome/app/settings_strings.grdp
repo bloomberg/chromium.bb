@@ -1743,6 +1743,9 @@
     </message>
 
     <!-- Note -->
+    <message name="IDS_OPTIONS_NOTE_TITLE" desc="Title of the note-taking options (non material-design) page.">
+      Note settings
+    </message>
     <message name="IDS_SETTINGS_NOTE_TITLE" desc="Title of the note-taking settings page.">
       Note
     </message>

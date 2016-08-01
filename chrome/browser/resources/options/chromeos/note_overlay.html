@@ -1,0 +1,31 @@
+<div id="note-overlay" class="page" hidden>
+  <div class="close-button"></div>
+  <h1 i18n-content="noteOverlay"></h1>
+  <div class="content-area">
+    <div class="option-control-table">
+      <div class="option-name">
+        <div class="checkbox controlled-setting-with-label">
+          <label>
+            <input pref="settings.launch_note_app_on_eject_event"
+                   type="checkbox">
+            <span i18n-content="noteDefaultAppAutoLaunch"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODO(jdufault): Real webstore link -->
+    <a is="action-link" i18n-content="noteFindMoreApps" target="_blank"
+       id='note-find-more-link'
+       href="https://chrome.google.com/webstore/category/apps"></a>
+  </div>
+
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="note-cancel" type="reset" i18n-content="cancel"></button>
+      <button id="note-confirm" class="default-button" type="submit"
+          i18n-content="ok">
+      </button>
+    </div>
+  </div>
+</div>

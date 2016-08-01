@@ -333,6 +333,12 @@ cr.define('options', function() {
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
+        if (loadTimeData.getBoolean('showNoteSettings')) {
+          $('note-settings-link').onclick = function(event) {
+            PageManager.showPageByName('note-overlay');
+          };
+          $('note-row').hidden = false;
+        }
         if (loadTimeData.getBoolean('showPowerStatus')) {
           $('power-settings-link').onclick = function(evt) {
             PageManager.showPageByName('power-overlay');
