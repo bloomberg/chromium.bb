@@ -77,19 +77,14 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
   if (!outer_->use_super_mac_)
     return;
 
-  // The store must be initialized and have a valid super MAC to be trusted.
-
-  const base::DictionaryValue* store_contents = contents_->GetContents();
-  if (!store_contents)
-    return;
-
+  // The store must have a valid super MAC to be trusted.
   std::string super_mac = contents_->GetSuperMac();
   if (super_mac.empty())
     return;
 
   super_mac_valid_ =
-      outer_->pref_hash_calculator_.Validate("", store_contents, super_mac) ==
-      PrefHashCalculator::VALID;
+      outer_->pref_hash_calculator_.Validate(
+          "", contents_->GetContents(), super_mac) == PrefHashCalculator::VALID;
 }
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::
