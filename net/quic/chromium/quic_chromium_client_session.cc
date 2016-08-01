@@ -430,11 +430,6 @@ void QuicChromiumClientSession::RemoveObserver(Observer* observer) {
 int QuicChromiumClientSession::TryCreateStream(
     StreamRequest* request,
     QuicChromiumClientStream** stream) {
-  if (!crypto_stream_->encryption_established()) {
-    DLOG(DFATAL) << "Encryption not established.";
-    return ERR_CONNECTION_CLOSED;
-  }
-
   if (goaway_received()) {
     DVLOG(1) << "Going away.";
     return ERR_CONNECTION_CLOSED;
