@@ -48,7 +48,6 @@
 namespace blink {
 
 class ConsoleMessage;
-class ParentFrameTaskRunners;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebLocalFrameImpl;
@@ -144,8 +143,6 @@ private:
     std::unique_ptr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
-
-    std::unique_ptr<ParentFrameTaskRunners> m_mainThreadTaskRunners;
 
     std::unique_ptr<WorkerThread> m_workerThread;
 

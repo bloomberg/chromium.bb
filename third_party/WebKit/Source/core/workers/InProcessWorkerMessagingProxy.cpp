@@ -32,7 +32,6 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/FrameConsole.h"
@@ -44,12 +43,10 @@
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
-#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "public/platform/WebTaskRunner.h"
 #include "wtf/WTF.h"
 #include <memory>
 
@@ -85,7 +82,6 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase
     , m_askedToTerminate(false)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_workerClients(workerClients)
-    , m_parentFrameTaskRunners(ParentFrameTaskRunners::create(toDocument(m_executionContext.get())))
 {
     DCHECK(isParentContextThread());
     DCHECK(m_workerObject);
@@ -172,8 +168,6 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(const WebTraceLo
 void InProcessWorkerMessagingProxy::postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     DCHECK(getExecutionContext()->isDocument());
-    // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and use
-    // m_parentFrameTaskRunners->getLoadingTaskRunner() instead.
     getExecutionContext()->postTask(location, std::move(task));
 }
 
@@ -229,7 +223,7 @@ void InProcessWorkerMessagingProxy::workerObjectDestroyed()
     // cleared before this method gets called.
     DCHECK(!m_workerObject);
 
-    m_parentFrameTaskRunners->getUnthrottledTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, unretained(this)));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, crossThreadUnretained(this)));
 }
 
 void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()

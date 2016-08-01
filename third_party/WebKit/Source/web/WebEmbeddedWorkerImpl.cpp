@@ -39,7 +39,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
@@ -256,8 +255,6 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
-    // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
-    // consider using m_mainThreadTaskRunners->getLoadingTaskRunner() instead.
     m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
 
@@ -438,12 +435,6 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();
-
-    // We have a dummy document here for loading but it doesn't really represent
-    // the document/frame of associated document(s) for this worker. Here we
-    // populate the task runners with null document not to confuse the frame
-    // scheduler (which will end up using the thread's default task runner).
-    m_mainThreadTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
     m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *document, *m_workerContextClient);
     m_loaderProxy = WorkerLoaderProxy::create(this);
