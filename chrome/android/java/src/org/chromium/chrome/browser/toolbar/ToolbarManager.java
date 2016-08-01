@@ -853,6 +853,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     @Override
     public void openHomepage() {
+        RecordUserAction.record("Home");
+
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab == null) return;
         Context context = mToolbar.getContext();
