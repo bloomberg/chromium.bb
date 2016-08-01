@@ -262,6 +262,11 @@ IPC_MESSAGE_ROUTED0(InputMsg_ImeEventAck)
 IPC_MESSAGE_ROUTED0(InputMsg_RequestTextInputStateUpdate)
 #endif
 
+// Request from browser to update the cursor and composition information.
+IPC_MESSAGE_ROUTED2(InputMsg_RequestCompositionUpdate,
+                    bool /* immediate request */,
+                    bool /* monitor request */)
+
 IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)
 
 // -----------------------------------------------------------------------------

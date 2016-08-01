@@ -78,6 +78,8 @@ class ImeAdapterAndroid {
                              int before,
                              int after);
   void ResetImeAdapter(JNIEnv*, const base::android::JavaParamRef<jobject>&);
+  void RequestCursorUpdate(JNIEnv*, const base::android::JavaParamRef<jobject>&,
+                           bool immediateRequest, bool monitorRequest);
   bool RequestTextInputStateUpdate(JNIEnv*,
                                    const base::android::JavaParamRef<jobject>&);
   bool IsImeThreadEnabled(JNIEnv*, const base::android::JavaParamRef<jobject>&);

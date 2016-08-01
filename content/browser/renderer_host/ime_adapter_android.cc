@@ -328,6 +328,18 @@ bool ImeAdapterAndroid::RequestTextInputStateUpdate(
   return true;
 }
 
+void ImeAdapterAndroid::RequestCursorUpdate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    bool immediate_request,
+    bool monitor_request) {
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
+  if (!rwhi)
+    return;
+  rwhi->Send(new InputMsg_RequestCompositionUpdate(
+      rwhi->GetRoutingID(), immediate_request, monitor_request));
+}
+
 bool ImeAdapterAndroid::IsImeThreadEnabled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&) {

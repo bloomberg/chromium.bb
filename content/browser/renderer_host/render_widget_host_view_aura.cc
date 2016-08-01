@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -107,7 +108,6 @@
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "content/common/input_messages.h"
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
@@ -2996,8 +2996,23 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   const TextInputState* state = text_input_manager_->GetTextInputState();
 
   if (state && state->show_ime_if_needed &&
-      state->type != ui::TEXT_INPUT_TYPE_NONE)
+      state->type != ui::TEXT_INPUT_TYPE_NONE) {
     GetInputMethod()->ShowImeIfNeeded();
+
+    // Start monitoring the composition information if the focused node is
+    // editable.
+    host_->Send(new InputMsg_RequestCompositionUpdate(
+        host_->GetRoutingID(),
+        false /* immediate request */,
+        true /* monitor request */));
+  } else {
+    // Stop monitoring the composition information if the focused node is not
+    // editable.
+    host_->Send(new InputMsg_RequestCompositionUpdate(
+        host_->GetRoutingID(),
+        false /* immediate request */,
+        false /* monitor request */));
+  }
 }
 
 void RenderWidgetHostViewAura::OnImeCancelComposition(
