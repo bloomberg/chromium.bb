@@ -281,6 +281,8 @@ static_library("test_support") {
   if (enable_webrtc) {
     public_deps += [
       "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/webrtc/libjingle/xmllite",
+      "//third_party/webrtc/libjingle/xmpp",
       "//third_party/webrtc/modules/desktop_capture",
     ]
   }
@@ -767,7 +769,11 @@ if (enable_remoting_host && !is_android) {
     }
 
     if (enable_webrtc) {
-      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      deps += [
+        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/webrtc/libjingle/xmllite",
+        "//third_party/webrtc/libjingle/xmpp",
+      ]
     }
   }
 
@@ -893,7 +899,11 @@ if (enable_me2me_host) {
     }
 
     if (enable_webrtc) {
-      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      deps += [
+        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/webrtc/libjingle/xmllite",
+        "//third_party/webrtc/libjingle/xmpp",
+      ]
     }
 
     if (is_desktop_linux) {

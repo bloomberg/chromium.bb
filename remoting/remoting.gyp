@@ -239,11 +239,15 @@
         '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
+        '../third_party/webrtc/libjingle/xmpp/xmpp.gyp:rtc_xmpp',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         'remoting_base',
       ],
       'export_dependent_settings': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
+        '../third_party/webrtc/libjingle/xmpp/xmpp.gyp:rtc_xmpp',
       ],
       'sources': [
         '<@(remoting_protocol_sources)',
@@ -254,6 +258,8 @@
         ['enable_webrtc == 1', {
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+            '../third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
+            '../third_party/webrtc/libjingle/xmpp/xmpp.gyp:rtc_xmpp',
           ],
         }],
       ],

@@ -90,6 +90,8 @@ if (enable_webrtc || !is_android) {
 
     public_deps = [
       "//third_party/libjingle",
+      "//third_party/webrtc/libjingle/xmllite",
+      "//third_party/webrtc/libjingle/xmpp",
     ]
     deps = [
       ":jingle_glue",
@@ -163,6 +165,8 @@ if (enable_webrtc || !is_android) {
 
     public_deps = [
       "//third_party/libjingle",
+      "//third_party/webrtc/libjingle/xmllite",
+      "//third_party/webrtc/libjingle/xmpp",
     ]
     deps = [
       ":jingle_glue",

@@ -172,13 +172,17 @@ target(link_target_type, "renderer") {
     deps += [
       "//crypto",
       "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/libjingle:libstunprober",
       "//third_party/libvpx",
+      "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/common_video",
+      "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/audio_device",
       "//third_party/webrtc/modules/audio_processing",
       "//third_party/webrtc/modules/video_coding:webrtc_h264",
+      "//third_party/webrtc/p2p:libstunprober",
+      "//third_party/webrtc/p2p:rtc_p2p",
+      "//third_party/webrtc/pc:rtc_pc",
       "//third_party/webrtc/system_wrappers",
     ]
     if (rtc_use_h264) {

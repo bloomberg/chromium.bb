@@ -149,7 +149,9 @@ static_library("test_support") {
 
     deps += [
       "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/video_capture",
     ]
   }
@@ -728,7 +730,9 @@ test("content_unittests") {
     deps += [
       "//media/blink",
       "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/desktop_capture:primitives",
       "//third_party/webrtc/modules/video_capture",
       "//ui/shell_dialogs:shell_dialogs",
