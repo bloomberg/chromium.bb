@@ -6,14 +6,13 @@
 #define REMOTING_HOST_IT2ME_IT2ME_NATIVE_MESSAGING_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
-#include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_host.h"
 
 #if !defined(OS_CHROMEOS)
@@ -23,9 +22,12 @@
 namespace base {
 class DictionaryValue;
 class Value;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
+
+class ChromotingHostContext;
 
 // Implementation of the native messaging host process.
 class It2MeNativeMessagingHost : public It2MeHost::Observer,
@@ -38,8 +40,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // extensions::NativeMessageHost implementation.
   void OnMessage(const std::string& message) override;
   void Start(Client* client) override;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
   // It2MeHost::Observer implementation.
   void OnClientAuthenticated(const std::string& client_username)

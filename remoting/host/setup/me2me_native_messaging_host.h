@@ -15,14 +15,15 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
-#include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/host/setup/oauth_client.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace gaia {
@@ -35,24 +36,25 @@ namespace protocol {
 class PairingRegistry;
 }  // namespace protocol
 
+class ChromotingHostContext;
+class LogMessageHandler;
+
 // Implementation of the me2me native messaging host.
-class Me2MeNativeMessagingHost
-    : public extensions::NativeMessagingChannel::EventHandler {
+class Me2MeNativeMessagingHost : public extensions::NativeMessageHost {
  public:
   Me2MeNativeMessagingHost(
       bool needs_elevation,
       intptr_t parent_window_handle,
-      std::unique_ptr<extensions::NativeMessagingChannel> channel,
+      std::unique_ptr<ChromotingHostContext> host_context,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       std::unique_ptr<OAuthClient> oauth_client);
   ~Me2MeNativeMessagingHost() override;
 
-  void Start(const base::Closure& quit_closure);
-
-  // extensions::NativeMessagingChannel::EventHandler implementation
-  void OnMessage(std::unique_ptr<base::Value> message) override;
-  void OnDisconnect() override;
+  // extensions::NativeMessageHost implementation.
+  void OnMessage(const std::string& message) override;
+  void Start(extensions::NativeMessageHost::Client* client) override;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
  private:
   // These "Process.." methods handle specific request types. The |response|
@@ -114,10 +116,9 @@ class Me2MeNativeMessagingHost
   void SendCredentialsResponse(std::unique_ptr<base::DictionaryValue> response,
                                const std::string& user_email,
                                const std::string& refresh_token);
+  void SendMessageToClient(std::unique_ptr<base::Value> message) const;
 
-  void OnError();
-
-  void Stop();
+  void OnError(const std::string& error_message);
 
   // Returns true if the request was successfully delegated to the elevated
   // host and false otherwise.
@@ -127,12 +128,16 @@ class Me2MeNativeMessagingHost
   class ElevatedChannelEventHandler
       : public extensions::NativeMessagingChannel::EventHandler {
    public:
-    ElevatedChannelEventHandler(Me2MeNativeMessagingHost* host);
+    ElevatedChannelEventHandler(extensions::NativeMessageHost::Client* client);
 
+    // extensions::NativeMessagingChannel::EventHandler implementation.
     void OnMessage(std::unique_ptr<base::Value> message) override;
     void OnDisconnect() override;
+
    private:
-    Me2MeNativeMessagingHost* parent_;
+    extensions::NativeMessageHost::Client* client_;
+
+    base::ThreadChecker thread_checker_;
   };
 
   // Create and connect to an elevated host process if necessary.
@@ -161,13 +166,10 @@ class Me2MeNativeMessagingHost
   intptr_t parent_window_handle_;
 #endif  // defined(OS_WIN)
 
-  base::Closure quit_closure_;
+  extensions::NativeMessageHost::Client* client_;
+  std::unique_ptr<ChromotingHostContext> host_context_;
 
-  // Native messaging channel used to communicate with the native message
-  // client.
-  std::unique_ptr<extensions::NativeMessagingChannel> channel_;
-
-  LogMessageHandler log_message_handler_;
+  std::unique_ptr<LogMessageHandler> log_message_handler_;
 
   scoped_refptr<DaemonController> daemon_controller_;
 
@@ -176,8 +178,6 @@ class Me2MeNativeMessagingHost
 
   // Used to exchange the service account authorization code for credentials.
   std::unique_ptr<OAuthClient> oauth_client_;
-
-  base::ThreadChecker thread_checker_;
 
   base::WeakPtr<Me2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<Me2MeNativeMessagingHost> weak_factory_;

@@ -5,8 +5,10 @@
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -23,7 +25,9 @@
 #include "net/base/file_stream.h"
 #include "net/base/network_interfaces.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
+#include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/mock_oauth_client.h"
@@ -279,7 +283,7 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
 
   // Task runner of the host thread.
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
-  std::unique_ptr<remoting::Me2MeNativeMessagingHost> host_;
+  std::unique_ptr<NativeMessagingPipe> native_messaging_pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHostTest);
 };
@@ -334,6 +338,8 @@ void Me2MeNativeMessagingHostTest::StartHost() {
       new SynchronousPairingRegistry(
           base::WrapUnique(new MockPairingRegistryDelegate()));
 
+  native_messaging_pipe_.reset(new NativeMessagingPipe());
+
   std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(input_read_file),
                                std::move(output_write_file)));
@@ -341,11 +347,18 @@ void Me2MeNativeMessagingHostTest::StartHost() {
   std::unique_ptr<OAuthClient> oauth_client(
       new MockOAuthClient("fake_user_email", "fake_refresh_token"));
 
-  host_.reset(new Me2MeNativeMessagingHost(false, 0, std::move(channel),
-                                           daemon_controller, pairing_registry,
-                                           std::move(oauth_client)));
-  host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
-                          base::Unretained(this)));
+  std::unique_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
+          host_task_runner_, base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
+                                        base::Unretained(this))));
+
+  std::unique_ptr<remoting::Me2MeNativeMessagingHost> host(
+      new Me2MeNativeMessagingHost(false, 0, std::move(context),
+                                   daemon_controller, pairing_registry,
+                                   std::move(oauth_client)));
+  host->Start(native_messaging_pipe_.get());
+
+  native_messaging_pipe_->Start(std::move(host), std::move(channel));
 
   // Notify the test that the host has finished starting up.
   test_message_loop_->task_runner()->PostTask(
@@ -355,7 +368,7 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 void Me2MeNativeMessagingHostTest::StopHost() {
   DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
 
-  host_.reset();
+  native_messaging_pipe_.reset();
 
   // Wait till all shutdown tasks have completed.
   base::RunLoop().RunUntilIdle();

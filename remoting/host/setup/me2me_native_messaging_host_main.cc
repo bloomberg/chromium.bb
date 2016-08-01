@@ -19,10 +19,13 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "net/url_request/url_fetcher.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
+#include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/setup/gaia_oauth_client.h"
@@ -230,16 +233,27 @@ int StartMe2MeNativeMessagingHost() {
       CreatePairingRegistry(io_thread.task_runner());
 #endif  // !defined(OS_WIN)
 
+  std::unique_ptr<NativeMessagingPipe> native_messaging_pipe(
+      new NativeMessagingPipe());
+
   // Set up the native messaging channel.
   std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
+  std::unique_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
+          message_loop.task_runner(), run_loop.QuitClosure()));
+
   // Create the native messaging host.
-  std::unique_ptr<Me2MeNativeMessagingHost> host(new Me2MeNativeMessagingHost(
-      needs_elevation, static_cast<intptr_t>(native_view_handle),
-      std::move(channel), daemon_controller, pairing_registry,
-      std::move(oauth_client)));
-  host->Start(run_loop.QuitClosure());
+  std::unique_ptr<extensions::NativeMessageHost> host(
+      new Me2MeNativeMessagingHost(needs_elevation,
+                                   static_cast<intptr_t>(native_view_handle),
+                                   std::move(context), daemon_controller,
+                                   pairing_registry, std::move(oauth_client)));
+
+  host->Start(native_messaging_pipe.get());
+
+  native_messaging_pipe->Start(std::move(host), std::move(channel));
 
   // Run the loop until channel is alive.
   run_loop.Run();
