@@ -1439,7 +1439,7 @@
     ],
 
     'gn_official_chrome_pgo_phase_2_x86': [
-      'gn', 'official_optimize', 'chrome_pgo_phase_2', 'x86',
+      'gn', 'official', 'chrome_pgo_phase_2', 'x86',
     ],
 
     'gn_official_optimize_chrome_pgo_phase_1_x64': [
