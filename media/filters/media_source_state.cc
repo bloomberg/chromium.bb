@@ -5,7 +5,10 @@
 #include "media/filters/media_source_state.h"
 
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
 #include "media/filters/chunk_demuxer.h"
@@ -572,6 +575,7 @@ bool MediaSourceState::OnNewConfigs(
                                     GetCodecName(audio_config.codec()));
     }
 
+    bool audio_stream_just_created = false;
     if (!audio_) {
       audio_ = create_demuxer_stream_cb_.Run(DemuxerStream::AUDIO);
 
@@ -579,6 +583,7 @@ bool MediaSourceState::OnNewConfigs(
         DVLOG(1) << "Failed to create an audio stream.";
         return false;
       }
+      audio_stream_just_created = true;
 
       if (!frame_processor_->AddTrack(FrameProcessor::kAudioTrackId, audio_)) {
         DVLOG(1) << "Failed to add audio track to frame processor.";
@@ -588,6 +593,19 @@ bool MediaSourceState::OnNewConfigs(
 
     frame_processor_->OnPossibleAudioConfigUpdate(audio_config);
     success &= audio_->UpdateAudioConfig(audio_config, media_log_);
+
+    if (audio_stream_just_created) {
+      std::string audio_buf_limit_switch =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMSEAudioBufferSizeLimit);
+      unsigned audio_buf_size_limit = 0;
+      if (base::StringToUint(audio_buf_limit_switch, &audio_buf_size_limit) &&
+          audio_buf_size_limit > 0) {
+        MEDIA_LOG(INFO, media_log_) << "Custom audio SourceBuffer size limit="
+                                    << audio_buf_size_limit;
+        audio_->SetStreamMemoryLimit(audio_buf_size_limit);
+      }
+    }
   }
 
   if (video_config.IsValidConfig()) {
@@ -600,6 +618,7 @@ bool MediaSourceState::OnNewConfigs(
                                     GetCodecName(video_config.codec()));
     }
 
+    bool video_stream_just_created = false;
     if (!video_) {
       video_ = create_demuxer_stream_cb_.Run(DemuxerStream::VIDEO);
 
@@ -607,6 +626,7 @@ bool MediaSourceState::OnNewConfigs(
         DVLOG(1) << "Failed to create a video stream.";
         return false;
       }
+      video_stream_just_created = true;
 
       if (!frame_processor_->AddTrack(FrameProcessor::kVideoTrackId, video_)) {
         DVLOG(1) << "Failed to add video track to frame processor.";
@@ -615,6 +635,19 @@ bool MediaSourceState::OnNewConfigs(
     }
 
     success &= video_->UpdateVideoConfig(video_config, media_log_);
+
+    if (video_stream_just_created) {
+      std::string video_buf_limit_switch =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMSEVideoBufferSizeLimit);
+      unsigned video_buf_size_limit = 0;
+      if (base::StringToUint(video_buf_limit_switch, &video_buf_size_limit) &&
+          video_buf_size_limit > 0) {
+        MEDIA_LOG(INFO, media_log_) << "Custom video SourceBuffer size limit="
+                                    << video_buf_size_limit;
+        video_->SetStreamMemoryLimit(video_buf_size_limit);
+      }
+    }
   }
 
   typedef StreamParser::TextTrackConfigMap::const_iterator TextConfigItr;

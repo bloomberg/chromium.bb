@@ -129,6 +129,11 @@ const char kEnableVp9InMp4[] = "enable-vp9-in-mp4";
 // Force media player using SurfaceView instead of SurfaceTexture on Android.
 const char kForceVideoOverlays[] = "force-video-overlays";
 
+// Allows explicitly specifying MSE audio/video buffer sizes.
+// Default values are 150M for video and 12M for audio.
+const char kMSEAudioBufferSizeLimit[] = "mse-audio-buffer-size-limit";
+const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
+
 }  // namespace switches
 
 namespace media {

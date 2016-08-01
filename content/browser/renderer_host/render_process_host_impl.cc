@@ -1485,6 +1485,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMaxUntiledLayerHeight,
     switches::kMemoryMetrics,
     switches::kMojoLocalStorage,
+    switches::kMSEAudioBufferSizeLimit,
+    switches::kMSEVideoBufferSizeLimit,
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kOverridePluginPowerSaverForTesting,
