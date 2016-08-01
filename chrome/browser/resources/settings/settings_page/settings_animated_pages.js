@@ -108,10 +108,21 @@ Polymer({
       }
     }
 
-    if (newRouteIsSubpage && newRoute.section == this.section)
+    if (newRouteIsSubpage && newRoute.section == this.section) {
+      if (!oldRouteIsSubpage) {
+        // Set the height the expand animation should start at before beginning
+        // the transition to the new sub-page.
+        // TODO(michaelpg): Remove MainPageBehavior's dependency on this height
+        // being set.
+        this.style.height = this.clientHeight + 'px';
+        this.async(function() {
+          this.style.height = '';
+        });
+      }
       this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
-    else
+    } else {
       this.$.animatedPages.selected = 'main';
+    }
   },
 
   /**
