@@ -1077,6 +1077,8 @@ crbug.com/509025 [ Mac10.10 ] virtual/prefer_compositing_to_lcd_text/compositing
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
+crbug.com/633026 compositing/overflow/updating-scrolling-container-and-content.html [ Pass Failure Crash Timeout ]
+
 crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
 crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
 crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
