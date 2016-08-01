@@ -214,11 +214,11 @@ enum zwp_remote_shell_v1_error {
  */
 enum zwp_remote_shell_v1_layout_mode {
 	/**
-	 * mulitple windows
+	 * multiple windows
 	 */
 	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED = 1,
 	/**
-	 * restricted mode for table
+	 * restricted mode for tablet
 	 */
 	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET = 2,
 };
@@ -275,6 +275,7 @@ struct zwp_remote_shell_v1_interface {
 #define ZWP_REMOTE_SHELL_V1_CONFIGURE	0
 #define ZWP_REMOTE_SHELL_V1_ACTIVATED	1
 #define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED	2
+#define ZWP_REMOTE_SHELL_V1_CONFIGURATION_CHANGED	3
 
 /**
  * @ingroup iface_zwp_remote_shell_v1
@@ -288,6 +289,10 @@ struct zwp_remote_shell_v1_interface {
  * @ingroup iface_zwp_remote_shell_v1
  */
 #define ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED_SINCE_VERSION	8
+/**
+ * @ingroup iface_zwp_remote_shell_v1
+ */
+#define ZWP_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION	9
 
 /**
  * @ingroup iface_zwp_remote_shell_v1
@@ -320,6 +325,17 @@ static inline void
 zwp_remote_shell_v1_send_layout_mode_changed(struct wl_resource *resource_, uint32_t layout_mode)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_CHANGED, layout_mode);
+}
+
+/**
+ * @ingroup iface_zwp_remote_shell_v1
+ * Sends an configuration_changed event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zwp_remote_shell_v1_send_configuration_changed(struct wl_resource *resource_, int32_t width, int32_t height, int32_t transform, wl_fixed_t scale_factor, int32_t work_area_inset_left, int32_t work_area_inset_top, int32_t work_area_inset_right, int32_t work_area_inset_bottom, uint32_t layout_mode)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SHELL_V1_CONFIGURATION_CHANGED, width, height, transform, scale_factor, work_area_inset_left, work_area_inset_top, work_area_inset_right, work_area_inset_bottom, layout_mode);
 }
 
 /**
@@ -543,6 +559,16 @@ struct zwp_remote_surface_v1_interface {
 	 */
 	void (*unset_system_modal)(struct wl_client *client,
 				   struct wl_resource *resource);
+	/**
+	 * suggests the window's background opacity
+	 *
+	 * Suggests the window's background opacity when the shadow is
+	 * requested.
+	 * @since 9
+	 */
+	void (*set_rectangular_shadow_background_opacity)(struct wl_client *client,
+							  struct wl_resource *resource,
+							  wl_fixed_t opacity);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

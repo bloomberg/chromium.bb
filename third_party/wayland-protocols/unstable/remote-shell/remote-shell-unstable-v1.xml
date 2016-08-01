@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="8">
+  <interface name="zwp_remote_shell_v1" version="9">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -107,7 +107,7 @@
 
     <event name="configure">
       <description summary="suggests a re-layout of remote shell">
-	Suggests a re-layout of remote surface geometry.
+	Obsolete: Suggests a re-layout of remote surface geometry.
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
@@ -148,9 +148,26 @@
       </description>
       <arg name="layout_mode" type="uint"/>
     </event>
+
+    <!-- Version 9 additions -->
+
+    <event name="configuration_changed" since="9">
+      <description summary="suggests a re-configuration of remote shell">
+	Suggests a re-configuration of remote shell.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="transform" type="int"/>
+      <arg name="scale_factor" type="fixed"/>
+      <arg name="work_area_inset_left" type="int"/>
+      <arg name="work_area_inset_top" type="int"/>
+      <arg name="work_area_inset_right" type="int"/>
+      <arg name="work_area_inset_bottom" type="int"/>
+      <arg name="layout_mode" type="uint"/>
+    </event>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="8">
+  <interface name="zwp_remote_surface_v1" version="9">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -469,6 +486,16 @@
 	Suggests a surface should become non system modal.
       </description>
     </request>
+
+    <!-- Version 9 additions -->
+
+    <request name="set_rectangular_shadow_background_opacity" since="9">
+      <description summary="suggests the window's background opacity">
+	Suggests the window's background opacity when the shadow is requested.
+      </description>
+      <arg name="opacity" type="fixed"/>
+    </request>
+
   </interface>
 
   <!-- Version 6 additions -->

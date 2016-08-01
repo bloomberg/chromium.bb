@@ -38,6 +38,9 @@ static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
+	NULL,
 	&zwp_remote_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
@@ -50,20 +53,21 @@ static const struct wl_interface *types[] = {
 
 static const struct wl_message zwp_remote_shell_v1_requests[] = {
 	{ "destroy", "", types + 0 },
-	{ "get_remote_surface", "nou", types + 6 },
-	{ "get_notification_surface", "6nos", types + 9 },
+	{ "get_remote_surface", "nou", types + 9 },
+	{ "get_notification_surface", "6nos", types + 12 },
 };
 
 static const struct wl_message zwp_remote_shell_v1_events[] = {
 	{ "configure", "iiiiii", types + 0 },
-	{ "activated", "?o?o", types + 12 },
+	{ "activated", "?o?o", types + 15 },
 	{ "layout_mode_changed", "8u", types + 0 },
+	{ "configuration_changed", "9iiifiiiiu", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 8,
+	"zwp_remote_shell_v1", 9,
 	3, zwp_remote_shell_v1_requests,
-	3, zwp_remote_shell_v1_events,
+	4, zwp_remote_shell_v1_events,
 };
 
 static const struct wl_message zwp_remote_surface_v1_requests[] = {
@@ -83,6 +87,7 @@ static const struct wl_message zwp_remote_surface_v1_requests[] = {
 	{ "set_top_inset", "5i", types + 0 },
 	{ "set_system_modal", "8", types + 0 },
 	{ "unset_system_modal", "8", types + 0 },
+	{ "set_rectangular_shadow_background_opacity", "9f", types + 0 },
 };
 
 static const struct wl_message zwp_remote_surface_v1_events[] = {
@@ -99,8 +104,8 @@ static const struct wl_message zwp_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 8,
-	16, zwp_remote_surface_v1_requests,
+	"zwp_remote_surface_v1", 9,
+	17, zwp_remote_surface_v1_requests,
 	10, zwp_remote_surface_v1_events,
 };
 

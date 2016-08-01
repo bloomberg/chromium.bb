@@ -1521,6 +1521,14 @@ void remote_surface_unset_system_modal(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetSystemModal(false);
 }
 
+void remote_surface_set_rectangular_shadow_background_opacity(
+    wl_client* client,
+    wl_resource* resource,
+    wl_fixed_t opacity) {
+  GetUserDataAs<ShellSurface>(resource)->SetRectangularShadowBackgroundOpacity(
+      wl_fixed_to_double(opacity));
+}
+
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -1537,7 +1545,8 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_title,
     remote_surface_set_top_inset,
     remote_surface_set_system_modal,
-    remote_surface_unset_system_modal};
+    remote_surface_unset_system_modal,
+    remote_surface_set_rectangular_shadow_background_opacity};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -1569,7 +1578,7 @@ class WaylandRemoteShell : public ash::ShellObserver,
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->activation_client()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
-    SendConfigure();
+    SendPrimaryDisplayMetrics();
     SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
   }
   ~WaylandRemoteShell() override {
@@ -1593,14 +1602,23 @@ class WaylandRemoteShell : public ash::ShellObserver,
   void OnDisplayAdded(const display::Display& new_display) override {}
   void OnDisplayRemoved(const display::Display& new_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override {
-    if (display.id() == display_id_)
-      SendConfigure();
+                               uint32_t changed_metrics) override {
+    if (display.id() != display_id_)
+      return;
+
+    if (changed_metrics &
+        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+         DISPLAY_METRIC_ROTATION | DISPLAY_METRIC_WORK_AREA)) {
+      SendDisplayMetrics(display);
+    }
+    SendConfigure_DEPRECATED(display);
   }
 
   // Overridden from ash::ShellObserver:
   void OnMaximizeModeStarted() override {
-    SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET);
+    layout_mode_ = ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
+    SendLayoutModeChange_DEPRECATED();
+
     send_configure_after_layout_change_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
@@ -1608,7 +1626,8 @@ class WaylandRemoteShell : public ash::ShellObserver,
         base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
   }
   void OnMaximizeModeEnded() override {
-    SendLayoutModeChange(ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED);
+    layout_mode_ = ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
+    SendLayoutModeChange_DEPRECATED();
     send_configure_after_layout_change_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&WaylandRemoteShell::MaybeSendConfigure,
@@ -1625,16 +1644,43 @@ class WaylandRemoteShell : public ash::ShellObserver,
   }
 
  private:
-  void MaybeSendConfigure() {
-    if (send_configure_after_layout_change_)
-      SendConfigure();
-  }
-
-  void SendConfigure() {
-    send_configure_after_layout_change_ = false;
-    const display::Display& display =
+  void SendPrimaryDisplayMetrics() {
+    const display::Display& primary =
         ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
             display_id_);
+    SendConfigure_DEPRECATED(primary);
+    SendDisplayMetrics(primary);
+  }
+
+  void MaybeSendConfigure() {
+    if (send_configure_after_layout_change_)
+      SendPrimaryDisplayMetrics();
+  }
+
+  void SendDisplayMetrics(const display::Display& display) {
+    send_configure_after_layout_change_ = false;
+
+    if (wl_resource_get_version(remote_shell_resource_) < 9)
+      return;
+
+    const gfx::Insets& work_area_insets = display.GetWorkAreaInsets();
+
+    zwp_remote_shell_v1_send_configuration_changed(
+        remote_shell_resource_, display.size().width(), display.size().height(),
+        OutputTransform(display.rotation()),
+        wl_fixed_from_double(display.device_scale_factor()),
+        work_area_insets.left(), work_area_insets.top(),
+        work_area_insets.right(), work_area_insets.bottom(), layout_mode_);
+
+    wl_client_flush(wl_resource_get_client(remote_shell_resource_));
+  }
+
+  void SendConfigure_DEPRECATED(const display::Display& display) {
+    send_configure_after_layout_change_ = false;
+
+    if (wl_resource_get_version(remote_shell_resource_) >= 9)
+      return;
+
     gfx::Insets work_area_insets = display.GetWorkAreaInsets();
     zwp_remote_shell_v1_send_configure(
         remote_shell_resource_, display.size().width(), display.size().height(),
@@ -1643,10 +1689,11 @@ class WaylandRemoteShell : public ash::ShellObserver,
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
-  void SendLayoutModeChange(uint32_t mode) {
+  void SendLayoutModeChange_DEPRECATED() {
     if (wl_resource_get_version(remote_shell_resource_) < 8)
       return;
-    zwp_remote_shell_v1_send_layout_mode_changed(remote_shell_resource_, mode);
+    zwp_remote_shell_v1_send_layout_mode_changed(remote_shell_resource_,
+                                                 layout_mode_);
     wl_client_flush(wl_resource_get_client(remote_shell_resource_));
   }
 
@@ -1693,6 +1740,8 @@ class WaylandRemoteShell : public ash::ShellObserver,
   wl_resource* const remote_shell_resource_;
 
   bool send_configure_after_layout_change_ = false;
+
+  int layout_mode_ = ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
   base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_;
 
@@ -1839,7 +1888,7 @@ const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 8;
+const uint32_t remote_shell_version = 9;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

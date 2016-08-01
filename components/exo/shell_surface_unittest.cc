@@ -599,6 +599,9 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   surface->Commit();
 
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
+  // Underlay should be created even without shadow.
+  ASSERT_TRUE(shell_surface->shadow_underlay_for_test());
+  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
 
   // Restore the window and make sure the shadow is created, visible and
   // has the latest bounds.

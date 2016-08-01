@@ -487,6 +487,13 @@ void ShellSurface::SetRectangularShadow(const gfx::Rect& content_bounds) {
   shadow_content_bounds_ = content_bounds;
 }
 
+void ShellSurface::SetRectangularShadowBackgroundOpacity(float opacity) {
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowBackgroundOpacity",
+               "opacity", opacity);
+
+  rectangular_shadow_background_opacity_ = opacity;
+}
+
 void ShellSurface::SetScale(double scale) {
   TRACE_EVENT1("exo", "ShellSurface::SetScale", "scale", scale);
 
@@ -1183,20 +1190,15 @@ void ShellSurface::UpdateShadow() {
       shadow_underlay_->Hide();
   } else {
     wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR);
-    wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
-    // Maximized/Fullscreen window does not create a shadow.
-    if (!shadow)
-      return;
 
-    if (!shadow_overlay_) {
-      shadow_overlay_ = new aura::Window(nullptr);
-      DCHECK(shadow_overlay_->owned_by_parent());
-      shadow_overlay_->set_ignore_events(true);
-      shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
-      shadow_overlay_->layer()->Add(shadow->layer());
-      window->AddChild(shadow_overlay_);
-      shadow_overlay_->Show();
-    }
+    // TODO(oshima): Adjust the coordinates from client screen to
+    // chromeos screen when multi displays are supported.
+    gfx::Point origin = window->bounds().origin();
+    gfx::Point shadow_origin = shadow_content_bounds_.origin();
+    shadow_origin -= origin.OffsetFromOrigin();
+    gfx::Rect shadow_bounds(shadow_origin, shadow_content_bounds_.size());
+
+    // Always create and show the underlay, even in maximized/fullscreen.
     if (!shadow_underlay_) {
       shadow_underlay_ = new aura::Window(nullptr);
       DCHECK(shadow_underlay_->owned_by_parent());
@@ -1211,17 +1213,26 @@ void ShellSurface::UpdateShadow() {
       window->AddChild(shadow_underlay_);
       window->StackChildAtBottom(shadow_underlay_);
     }
+    shadow_underlay_->layer()->SetOpacity(
+        rectangular_shadow_background_opacity_);
+    shadow_underlay_->SetBounds(shadow_bounds);
     shadow_underlay_->Show();
 
-    // TODO(oshima): Adjust the coordinates from client screen to
-    // chromeos screen when multi displays are support.
-    gfx::Point origin = window->bounds().origin();
-    gfx::Point shadow_origin = shadow_content_bounds_.origin();
-    shadow_origin -= origin.OffsetFromOrigin();
-    gfx::Rect shadow_bounds(shadow_origin, shadow_content_bounds_.size());
+    wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+    // Maximized/Fullscreen window does not create a shadow.
+    if (!shadow)
+      return;
 
+    if (!shadow_overlay_) {
+      shadow_overlay_ = new aura::Window(nullptr);
+      DCHECK(shadow_overlay_->owned_by_parent());
+      shadow_overlay_->set_ignore_events(true);
+      shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
+      shadow_overlay_->layer()->Add(shadow->layer());
+      window->AddChild(shadow_overlay_);
+      shadow_overlay_->Show();
+    }
     shadow_overlay_->SetBounds(shadow_bounds);
-    shadow_underlay_->SetBounds(shadow_bounds);
     shadow->SetContentBounds(gfx::Rect(shadow_bounds.size()));
   }
 }

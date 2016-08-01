@@ -211,11 +211,11 @@ enum zwp_remote_shell_v1_error {
  */
 enum zwp_remote_shell_v1_layout_mode {
 	/**
-	 * mulitple windows
+	 * multiple windows
 	 */
 	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED = 1,
 	/**
-	 * restricted mode for table
+	 * restricted mode for tablet
 	 */
 	ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET = 2,
 };
@@ -229,7 +229,7 @@ struct zwp_remote_shell_v1_listener {
 	/**
 	 * suggests a re-layout of remote shell
 	 *
-	 * Suggests a re-layout of remote surface geometry.
+	 * Obsolete: Suggests a re-layout of remote surface geometry.
 	 */
 	void (*configure)(void *data,
 			  struct zwp_remote_shell_v1 *zwp_remote_shell_v1,
@@ -249,7 +249,7 @@ struct zwp_remote_shell_v1_listener {
 			  struct wl_surface *gained_active,
 			  struct wl_surface *lost_active);
 	/**
-	 * dlayout mode changed
+	 * layout mode changed
 	 *
 	 * The shell_mode_changed event is sent by the compositor when
 	 * the shell mode was changed.
@@ -260,6 +260,23 @@ struct zwp_remote_shell_v1_listener {
 	void (*layout_mode_changed)(void *data,
 				    struct zwp_remote_shell_v1 *zwp_remote_shell_v1,
 				    uint32_t layout_mode);
+	/**
+	 * suggests a re-configuration of remote shell
+	 *
+	 * Suggests a re-configuration of remote shell.
+	 * @since 9
+	 */
+	void (*configuration_changed)(void *data,
+				      struct zwp_remote_shell_v1 *zwp_remote_shell_v1,
+				      int32_t width,
+				      int32_t height,
+				      int32_t transform,
+				      wl_fixed_t scale_factor,
+				      int32_t work_area_inset_left,
+				      int32_t work_area_inset_top,
+				      int32_t work_area_inset_right,
+				      int32_t work_area_inset_bottom,
+				      uint32_t layout_mode);
 };
 
 /**
@@ -529,6 +546,7 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_SET_TOP_INSET	13
 #define ZWP_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL	14
 #define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL	15
+#define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY	16
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -594,6 +612,10 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL_SINCE_VERSION	8
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY_SINCE_VERSION	9
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -881,6 +903,18 @@ zwp_remote_surface_v1_unset_system_modal(struct zwp_remote_surface_v1 *zwp_remot
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Suggests the window's background opacity when the shadow is requested.
+ */
+static inline void
+zwp_remote_surface_v1_set_rectangular_shadow_background_opacity(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, wl_fixed_t opacity)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY, opacity);
 }
 
 #define ZWP_NOTIFICATION_SURFACE_V1_DESTROY	0
