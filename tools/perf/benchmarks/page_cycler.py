@@ -86,6 +86,11 @@ class PageCyclerTop10Mobile(_PageCycler):
       stories.RemoveStory(found)
     return stories
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/633222 (Android Nexus 5).
+    return possible_browser.platform.GetDeviceTypeName() == 'Nexus 5'
+
 
 @benchmark.Disabled('android')  # crbug.com/357326
 class PageCyclerToughLayoutCases(_PageCycler):
