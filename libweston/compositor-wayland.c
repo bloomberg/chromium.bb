@@ -193,6 +193,18 @@ struct wayland_input {
 
 struct gl_renderer_interface *gl_renderer;
 
+static inline struct wayland_output *
+to_wayland_output(struct weston_output *base)
+{
+	return container_of(base, struct wayland_output, base);
+}
+
+static inline struct wayland_backend *
+to_wayland_backend(struct weston_compositor *base)
+{
+	return container_of(base->backend, struct wayland_backend, base);
+}
+
 static void
 wayland_shm_buffer_destroy(struct wayland_shm_buffer *buffer)
 {
@@ -229,7 +241,7 @@ static struct wayland_shm_buffer *
 wayland_output_get_shm_buffer(struct wayland_output *output)
 {
 	struct wayland_backend *b =
-		(struct wayland_backend *) output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 	struct wl_shm *shm = b->parent.shm;
 	struct wayland_shm_buffer *sb;
 
@@ -434,9 +446,9 @@ wayland_output_update_gl_border(struct wayland_output *output)
 static void
 wayland_output_start_repaint_loop(struct weston_output *output_base)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *wb =
-		(struct wayland_backend *)output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 	struct wl_callback *callback;
 
 	/* If this is the initial frame, we need to attach a buffer so that
@@ -460,7 +472,7 @@ static int
 wayland_output_repaint_gl(struct weston_output *output_base,
 			  pixman_region32_t *damage)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_output *output = to_wayland_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
 	struct wl_callback *callback;
 
@@ -567,9 +579,9 @@ static int
 wayland_output_repaint_pixman(struct weston_output *output_base,
 			      pixman_region32_t *damage)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *b =
-		(struct wayland_backend *)output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 	struct wl_callback *callback;
 	struct wayland_shm_buffer *sb;
 
@@ -607,9 +619,9 @@ wayland_output_repaint_pixman(struct weston_output *output_base,
 static void
 wayland_output_destroy(struct weston_output *output_base)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *b =
-		(struct wayland_backend *) output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 
 	if (b->use_pixman) {
 		pixman_renderer_output_destroy(output_base);
@@ -684,7 +696,7 @@ static void
 wayland_output_resize_surface(struct wayland_output *output)
 {
 	struct wayland_backend *b =
-		(struct wayland_backend *)output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 	struct wayland_shm_buffer *buffer, *next;
 	int32_t ix, iy, iwidth, iheight;
 	int32_t width, height;
@@ -761,7 +773,7 @@ static int
 wayland_output_set_windowed(struct wayland_output *output)
 {
 	struct wayland_backend *b =
-		(struct wayland_backend *)output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 	int tlen;
 	char *title;
 
@@ -808,7 +820,7 @@ wayland_output_set_fullscreen(struct wayland_output *output,
 			      uint32_t framerate, struct wl_output *target)
 {
 	struct wayland_backend *b =
-		(struct wayland_backend *)output->base.compositor->backend;
+		to_wayland_backend(output->base.compositor);
 
 	if (output->frame) {
 		frame_destroy(output->frame);
@@ -898,7 +910,7 @@ static int
 wayland_output_switch_mode(struct weston_output *output_base,
 			   struct weston_mode *mode)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *b;
 	struct wl_surface *old_surface;
 	struct weston_mode *old_mode;
@@ -916,7 +928,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 		return -1;
 	}
 
-	b = (struct wayland_backend *)output_base->compositor->backend;
+	b = to_wayland_backend(output_base->compositor);
 
 	if (output->parent.shell_surface || !b->parent.fshell)
 		return -1;
@@ -2105,7 +2117,7 @@ wayland_restore(struct weston_compositor *ec)
 static void
 wayland_destroy(struct weston_compositor *ec)
 {
-	struct wayland_backend *b = (struct wayland_backend *) ec->backend;
+	struct wayland_backend *b = to_wayland_backend(ec);
 
 	weston_compositor_shutdown(ec);
 
