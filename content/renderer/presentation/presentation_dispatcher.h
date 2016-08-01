@@ -97,8 +97,8 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnDestruct() override;
 
   // blink::mojom::PresentationServiceClient
-  void OnScreenAvailabilityNotSupported(const mojo::String& url) override;
-  void OnScreenAvailabilityUpdated(const mojo::String& url,
+  void OnScreenAvailabilityNotSupported(const std::string& url) override;
+  void OnScreenAvailabilityUpdated(const std::string& url,
                                    bool available) override;
   void OnConnectionStateChanged(
       blink::mojom::PresentationSessionInfoPtr connection,
@@ -106,10 +106,10 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnConnectionClosed(
       blink::mojom::PresentationSessionInfoPtr connection,
       blink::mojom::PresentationConnectionCloseReason reason,
-      const mojo::String& message) override;
+      const std::string& message) override;
   void OnSessionMessagesReceived(
       blink::mojom::PresentationSessionInfoPtr session_info,
-      mojo::Array<blink::mojom::SessionMessagePtr> messages) override;
+      std::vector<blink::mojom::SessionMessagePtr> messages) override;
   void OnDefaultSessionStarted(
       blink::mojom::PresentationSessionInfoPtr session_info) override;
 

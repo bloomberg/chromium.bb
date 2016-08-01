@@ -313,10 +313,9 @@ void PresentationDispatcher::OnDestruct() {
   delete this;
 }
 
-void PresentationDispatcher::OnScreenAvailabilityUpdated(
-    const mojo::String& url, bool available) {
-  const std::string& availability_url = url.get();
-  auto status_it = availability_status_.find(availability_url);
+void PresentationDispatcher::OnScreenAvailabilityUpdated(const std::string& url,
+                                                         bool available) {
+  auto status_it = availability_status_.find(url);
   if (status_it == availability_status_.end())
     return;
   AvailabilityStatus* status = status_it->second.get();
@@ -338,9 +337,8 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(
 }
 
 void PresentationDispatcher::OnScreenAvailabilityNotSupported(
-    const mojo::String& url) {
-  const std::string& availability_url = url.get();
-  auto status_it = availability_status_.find(availability_url);
+    const std::string& url) {
+  auto status_it = availability_status_.find(url);
   if (status_it == availability_status_.end())
     return;
   AvailabilityStatus* status = status_it->second.get();
@@ -407,7 +405,7 @@ void PresentationDispatcher::OnConnectionStateChanged(
 void PresentationDispatcher::OnConnectionClosed(
     blink::mojom::PresentationSessionInfoPtr connection,
     blink::mojom::PresentationConnectionCloseReason reason,
-    const mojo::String& message) {
+    const std::string& message) {
   if (!controller_)
     return;
 
@@ -420,7 +418,7 @@ void PresentationDispatcher::OnConnectionClosed(
 
 void PresentationDispatcher::OnSessionMessagesReceived(
     blink::mojom::PresentationSessionInfoPtr session_info,
-    mojo::Array<blink::mojom::SessionMessagePtr> messages) {
+    std::vector<blink::mojom::SessionMessagePtr> messages) {
   if (!controller_)
     return;
 
@@ -431,16 +429,18 @@ void PresentationDispatcher::OnSessionMessagesReceived(
         new PresentationConnectionClient(session_info->url, session_info->id));
     switch (messages[i]->type) {
       case blink::mojom::PresentationMessageType::TEXT: {
+        // TODO(mfoltz): Do we need to DCHECK(messages[i]->message)?
         controller_->didReceiveSessionTextMessage(
             session_client.release(),
-            blink::WebString::fromUTF8(messages[i]->message));
+            blink::WebString::fromUTF8(messages[i]->message.value()));
         break;
       }
       case blink::mojom::PresentationMessageType::ARRAY_BUFFER:
       case blink::mojom::PresentationMessageType::BLOB: {
+        // TODO(mfoltz): Do we need to DCHECK(messages[i]->data)?
         controller_->didReceiveSessionBinaryMessage(
-            session_client.release(), &(messages[i]->data.front()),
-            messages[i]->data.size());
+            session_client.release(), &(messages[i]->data->front()),
+            messages[i]->data->size());
         break;
       }
       default: {
@@ -519,8 +519,7 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
   blink::mojom::SessionMessagePtr session_message =
       blink::mojom::SessionMessage::New();
   session_message->type = type;
-  std::vector<uint8_t> tmp_data_vector(data, data + length);
-  session_message->data.Swap(&tmp_data_vector);
+  session_message->data = std::vector<uint8_t>(data, data + length);
   return new SendMessageRequest(std::move(session_info),
                                 std::move(session_message));
 }
