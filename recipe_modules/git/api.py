@@ -208,11 +208,16 @@ class GitApi(recipe_api.RecipeApi):
         self.resource('git_setup.py'),
         git_setup_args)
 
+    # Some of the commands below require depot_tools to be in PATH.
+    path = self.m.path.pathsep.join([
+        str(self.package_repo_resource()), '%(PATH)s'])
+
     if use_git_cache:
       self('retry', 'cache', 'fetch', '-c', self.m.path['git_cache'],
            cwd=dir_path,
            name='fetch cache',
-           can_fail_build=can_fail_build)
+           can_fail_build=can_fail_build,
+           env={'PATH': path})
 
     # There are five kinds of refs we can be handed:
     # 0) None. In this case, we default to properties['branch'].
@@ -246,7 +251,7 @@ class GitApi(recipe_api.RecipeApi):
     if recursive:
       fetch_args.append('--recurse-submodules')
 
-    fetch_env = {}
+    fetch_env = {'PATH': path}
     fetch_stderr = None
     if curl_trace_file:
       fetch_env['GIT_CURL_VERBOSE'] = '1'
