@@ -4,6 +4,7 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -46,35 +47,36 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
       crash_reporter_client->GetCrashDumpLocation(&database_path);
 
-      // TODO(mark): Reading the Breakpad keys is temporary and transitional. At
-      // the very least, they should be renamed to Crashpad. For the time being,
-      // this isn't the worst thing: Crashpad is still uploading to a
-      // Breakpad-type server, after all.
-      NSBundle* framework_bundle = base::mac::FrameworkBundle();
-      NSString* product = base::mac::ObjCCast<NSString>(
-          [framework_bundle objectForInfoDictionaryKey:@"BreakpadProduct"]);
-      NSString* version = base::mac::ObjCCast<NSString>(
-          [framework_bundle objectForInfoDictionaryKey:@"BreakpadVersion"]);
-      NSString* url_ns = base::mac::ObjCCast<NSString>(
-          [framework_bundle objectForInfoDictionaryKey:@"BreakpadURL"]);
-#if defined(GOOGLE_CHROME_BUILD)
-      NSString* channel = base::mac::ObjCCast<NSString>(
-          [base::mac::OuterBundle() objectForInfoDictionaryKey:@"KSChannelID"]);
+#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
+      // Only allow the possibility of report upload in official builds. This
+      // crash server won't have symbols for any other build types.
+      std::string url = "https://clients2.google.com/cr/report";
 #else
-      NSString* channel = nil;
+      std::string url;
 #endif
 
-      std::string url = base::SysNSStringToUTF8(url_ns);
-
       std::map<std::string, std::string> process_annotations;
-      process_annotations["prod"] = base::SysNSStringToUTF8(product);
-      process_annotations["ver"] = base::SysNSStringToUTF8(version);
+
+      NSBundle* outer_bundle = base::mac::OuterBundle();
+      NSString* product = base::mac::ObjCCast<NSString>([outer_bundle
+          objectForInfoDictionaryKey:base::mac::CFToNSCast(kCFBundleNameKey)]);
+      process_annotations["prod"] =
+          base::SysNSStringToUTF8(product).append("_Mac");
+
+#if defined(GOOGLE_CHROME_BUILD)
+      NSString* channel = base::mac::ObjCCast<NSString>(
+          [outer_bundle objectForInfoDictionaryKey:@"KSChannelID"]);
       if (channel) {
         process_annotations["channel"] = base::SysNSStringToUTF8(channel);
       }
-      process_annotations["plat"] = std::string("OS X");
+#endif
 
-      crashpad::CrashpadClient crashpad_client;
+      NSString* version =
+          base::mac::ObjCCast<NSString>([base::mac::FrameworkBundle()
+              objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+      process_annotations["ver"] = base::SysNSStringToUTF8(version);
+
+      process_annotations["plat"] = std::string("OS X");
 
       std::vector<std::string> arguments;
       if (!browser_process) {
@@ -86,6 +88,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
             "--reset-own-crash-exception-port-to-system-default");
       }
 
+      crashpad::CrashpadClient crashpad_client;
       bool result = crashpad_client.StartHandler(handler_path,
                                                  database_path,
                                                  url,

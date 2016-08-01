@@ -936,13 +936,8 @@ if (is_win) {
 
   tweak_info_plist("chrome_framework_plist") {
     info_plist = "app/framework-Info.plist"
-    _breakpad_uploads_arg = "0"
-    if (enable_mac_crash_collection) {
-      _breakpad_uploads_arg = "1"
-    }
     args = [
-      "--breakpad=1",
-      "--breakpad_uploads=$_breakpad_uploads_arg",
+      "--breakpad=0",
       "--keystone=0",
       "--scm=1",
       "--branding",

@@ -164,6 +164,8 @@ def _AddBreakpadKeys(plist, branding, platform):
   plist['BreakpadReportInterval'] = '3600'  # Deliberately a string.
   plist['BreakpadProduct'] = '%s_%s' % (branding, platform)
   plist['BreakpadProductDisplay'] = branding
+  plist['BreakpadURL'] = 'https://clients2.google.com/cr/report'
+
   # These are both deliberately strings and not boolean.
   plist['BreakpadSendAndExit'] = 'YES'
   plist['BreakpadSkipConfirm'] = 'YES'
@@ -234,9 +236,6 @@ def Main(argv):
       'the tweaked plist, rather than overwriting the input.')
   parser.add_option('--breakpad', dest='use_breakpad', action='store',
       type='int', default=False, help='Enable Breakpad [1 or 0]')
-  parser.add_option('--breakpad_uploads', dest='breakpad_uploads',
-      action='store', type='int', default=False,
-      help='Enable Breakpad\'s uploading of crash dumps [1 or 0]')
   parser.add_option('--keystone', dest='use_keystone', action='store',
       type='int', default=False, help='Enable Keystone [1 or 0]')
   parser.add_option('--scm', dest='add_scm_info', action='store', type='int',
@@ -327,16 +326,6 @@ def Main(argv):
     # the platform as known by breakpad.
     platform = {'mac': 'Mac', 'ios': 'iOS'}[options.platform]
     _AddBreakpadKeys(plist, options.branding, platform)
-    if options.breakpad_uploads:
-      plist['BreakpadURL'] = 'https://clients2.google.com/cr/report'
-    else:
-      # This allows crash dumping to a file without uploading the
-      # dump, for testing purposes.  Breakpad does not recognise
-      # "none" as a special value, but this does stop crash dump
-      # uploading from happening.  We need to specify something
-      # because if "BreakpadURL" is not present, Breakpad will not
-      # register its crash handler and no crash dumping will occur.
-      plist['BreakpadURL'] = 'none'
   else:
     _RemoveBreakpadKeys(plist)
 
