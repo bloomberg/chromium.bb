@@ -127,7 +127,7 @@ def _AddVersionKeys(
     return False
   values = dict(zip(('MAJOR', 'MINOR', 'BUILD', 'PATCH'), groups))
 
-  for key in ('CFBundleVersion', 'CFBundleShortVersionString'):
+  for key in version_format_for_key:
     plist[key] = _GetVersion(version_format_for_key[key], values, overrides)
 
   # Return with no error.
@@ -164,7 +164,6 @@ def _AddBreakpadKeys(plist, branding, platform):
   plist['BreakpadReportInterval'] = '3600'  # Deliberately a string.
   plist['BreakpadProduct'] = '%s_%s' % (branding, platform)
   plist['BreakpadProductDisplay'] = branding
-  plist['BreakpadVersion'] = plist['CFBundleShortVersionString']
   # These are both deliberately strings and not boolean.
   plist['BreakpadSendAndExit'] = 'YES'
   plist['BreakpadSkipConfirm'] = 'YES'
@@ -308,6 +307,10 @@ def Main(argv):
       'CFBundleShortVersionString': '@MAJOR@.@BUILD@.@PATCH@',
       'CFBundleVersion': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
     }
+
+  if options.use_breakpad:
+    version_format_for_key['BreakpadVersion'] = \
+        '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
 
   # Insert the product version.
   if not _AddVersionKeys(
