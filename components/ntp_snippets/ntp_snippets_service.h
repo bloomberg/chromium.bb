@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_category.h"
+#include "components/ntp_snippets/content_suggestions_category_factory.h"
 #include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -76,6 +77,7 @@ class NTPSnippetsService : public KeyedService,
   NTPSnippetsService(bool enabled,
                      PrefService* pref_service,
                      suggestions::SuggestionsService* suggestions_service,
+                     ContentSuggestionsCategoryFactory* category_factory,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -139,6 +141,7 @@ class NTPSnippetsService : public KeyedService,
   // ContentSuggestionsProvider implementation
   // TODO(pke): At some point reorder the implementations in the .cc file
   // accordingly.
+  std::vector<ContentSuggestionsCategory> GetProvidedCategories() override;
   void SetObserver(Observer* observer) override;
   ContentSuggestionsCategoryStatus GetCategoryStatus(
       ContentSuggestionsCategory category) override;
@@ -322,6 +325,8 @@ class NTPSnippetsService : public KeyedService,
   // Set to true if FetchSnippets is called before the database has been loaded.
   // The fetch will be executed after the database load finishes.
   bool fetch_after_load_;
+
+  const ContentSuggestionsCategory provided_category_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };

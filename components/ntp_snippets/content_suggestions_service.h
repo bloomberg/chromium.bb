@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_H_
 
-#include <stddef.h>
-
 #include <map>
 #include <string>
 #include <vector>
@@ -14,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ntp_snippets/content_suggestions_category_factory.h"
 #include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
@@ -119,8 +118,19 @@ class ContentSuggestionsService : public KeyedService,
   // dismissed suggestions reappear (only for certain providers).
   void ClearDismissedSuggestionsForDebugging();
 
+  ContentSuggestionsCategoryFactory* category_factory() {
+    return &category_factory_;
+  }
+
  private:
   friend class ContentSuggestionsServiceTest;
+
+  // This is just an arbitrary ordering by ID, used by the maps in this class,
+  // because the ordering needs to be constant for maps.
+  struct CompareCategoriesByID {
+    bool operator()(const ContentSuggestionsCategory& left,
+                    const ContentSuggestionsCategory& right) const;
+  };
 
   // Implementation of ContentSuggestionsProvider::Observer.
   void OnNewSuggestions(ContentSuggestionsCategory changed_category,
@@ -139,22 +149,29 @@ class ContentSuggestionsService : public KeyedService,
   // Whether the content suggestions feature is enabled.
   State state_;
 
+  // Provides new and existing categories and an order for them.
+  ContentSuggestionsCategoryFactory category_factory_;
+
   // All registered providers. A provider may be contained multiple times, if it
   // provides multiple categories. The keys of this map are exactly the entries
   // of |categories_|.
-  std::map<ContentSuggestionsCategory, ContentSuggestionsProvider*> providers_;
+  std::map<ContentSuggestionsCategory,
+           ContentSuggestionsProvider*,
+           CompareCategoriesByID>
+      providers_;
 
-  // All current suggestion categories, in an order determined by the service.
-  // Currently, this is simply the order in which the providers were registered.
-  // This vector contains exactly the same categories as |providers_|.
-  // TODO(pke): Implement a useful and consistent ordering for categories.
+  // All current suggestion categories, in an order determined by the
+  // |category_factory_|. This vector contains exactly the same categories as
+  // |providers_|.
   std::vector<ContentSuggestionsCategory> categories_;
 
   // All current suggestions grouped by category. This contains an entry for
   // every category in |categories_| whose status is an available status. It may
   // contain an empty vector if the category is available but empty (or still
   // loading).
-  std::map<ContentSuggestionsCategory, std::vector<ContentSuggestion>>
+  std::map<ContentSuggestionsCategory,
+           std::vector<ContentSuggestion>,
+           CompareCategoriesByID>
       suggestions_by_category_;
 
   // Map used to determine the category of a suggestion (of which only the ID

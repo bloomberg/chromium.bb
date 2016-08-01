@@ -29,6 +29,7 @@
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::ContentSuggestionsCategory;
 using ntp_snippets::ContentSuggestionsCategoryStatus;
+using ntp_snippets::KnownSuggestionsCategories;
 
 namespace {
 
@@ -74,19 +75,18 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
   return entry;
 }
 
-std::string MapCategoryName(ContentSuggestionsCategory category) {
-  switch (category) {
-    case ContentSuggestionsCategory::ARTICLES:
-      return "Articles";
-    case ContentSuggestionsCategory::OFFLINE_PAGES:
-      return "Offline pages (continue browsing)";
-    case ContentSuggestionsCategory::COUNT:
-      NOTREACHED() << "Category::COUNT must not be used as a value";
+// TODO(pke): Replace this as soon as the service delivers the title directly.
+std::string GetCategoryTitle(ContentSuggestionsCategory category) {
+  if (category.IsKnownCategory(KnownSuggestionsCategories::ARTICLES)) {
+    return "Articles";
+  }
+  if (category.IsKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES)) {
+    return "Offline pages (continue browsing)";
   }
   return std::string();
 }
 
-std::string MapCategoryStatus(ContentSuggestionsCategoryStatus status) {
+std::string GetCategoryStatusName(ContentSuggestionsCategoryStatus status) {
   switch (status) {
     case ContentSuggestionsCategoryStatus::INITIALIZING:
       return "INITIALIZING";
@@ -350,8 +350,8 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
 
     std::unique_ptr<base::DictionaryValue> category_entry(
         new base::DictionaryValue);
-    category_entry->SetString("name", MapCategoryName(category));
-    category_entry->SetString("status", MapCategoryStatus(status));
+    category_entry->SetString("title", GetCategoryTitle(category));
+    category_entry->SetString("status", GetCategoryStatusName(status));
     category_entry->Set("suggestions", std::move(suggestions_list));
     categories_list->Append(std::move(category_entry));
   }

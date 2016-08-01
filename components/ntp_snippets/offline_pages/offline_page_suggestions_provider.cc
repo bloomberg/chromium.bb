@@ -20,11 +20,14 @@ const int kMaxSuggestionsCount = 5;
 }  // namespace
 
 OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
+    ContentSuggestionsCategoryFactory* category_factory,
     OfflinePageModel* offline_page_model)
-    : ContentSuggestionsProvider({ContentSuggestionsCategory::OFFLINE_PAGES}),
+    : ContentSuggestionsProvider(category_factory),
       category_status_(ContentSuggestionsCategoryStatus::AVAILABLE_LOADING),
       observer_(nullptr),
-      offline_page_model_(offline_page_model) {
+      offline_page_model_(offline_page_model),
+      provided_category_(category_factory->FromKnownCategory(
+          KnownSuggestionsCategories::OFFLINE_PAGES)) {
   offline_page_model_->AddObserver(this);
 }
 
@@ -38,6 +41,11 @@ void OfflinePageSuggestionsProvider::Shutdown() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
+
+std::vector<ContentSuggestionsCategory>
+OfflinePageSuggestionsProvider::GetProvidedCategories() {
+  return std::vector<ContentSuggestionsCategory>({provided_category_});
+}
 
 void OfflinePageSuggestionsProvider::SetObserver(
     ContentSuggestionsProvider::Observer* observer) {
@@ -107,8 +115,7 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     // Currently, the browser opens the offline URL and then immediately
     // redirects to the online URL if the device is online.
     ContentSuggestion suggestion(
-        MakeUniqueID(ContentSuggestionsCategory::OFFLINE_PAGES,
-                     base::IntToString(item.offline_id)),
+        MakeUniqueID(provided_category_, base::IntToString(item.offline_id)),
         item.GetOfflineURL());
 
     // TODO(pke): Sort my most recently visited and only keep the top one of
@@ -123,8 +130,7 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
       break;
   }
 
-  observer_->OnNewSuggestions(ContentSuggestionsCategory::OFFLINE_PAGES,
-                              std::move(suggestions));
+  observer_->OnNewSuggestions(provided_category_, std::move(suggestions));
 }
 
 void OfflinePageSuggestionsProvider::NotifyStatusChanged(
@@ -135,8 +141,7 @@ void OfflinePageSuggestionsProvider::NotifyStatusChanged(
 
   if (!observer_)
     return;
-  observer_->OnCategoryStatusChanged(ContentSuggestionsCategory::OFFLINE_PAGES,
-                                     new_status);
+  observer_->OnCategoryStatusChanged(provided_category_, new_status);
 }
 
 }  // namespace ntp_snippets

@@ -14,7 +14,10 @@ static_library("ntp_snippets") {
   sources = [
     "content_suggestion.cc",
     "content_suggestion.h",
+    "content_suggestions_category.cc",
     "content_suggestions_category.h",
+    "content_suggestions_category_factory.cc",
+    "content_suggestions_category_factory.h",
     "content_suggestions_category_status.cc",
     "content_suggestions_category_status.h",
     "content_suggestions_provider.cc",

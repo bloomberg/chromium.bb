@@ -187,6 +187,7 @@ NTPSnippetsService::NTPSnippetsService(
     bool enabled,
     PrefService* pref_service,
     SuggestionsService* suggestions_service,
+    ContentSuggestionsCategoryFactory* category_factory,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -194,7 +195,7 @@ NTPSnippetsService::NTPSnippetsService(
     std::unique_ptr<ImageDecoder> image_decoder,
     std::unique_ptr<NTPSnippetsDatabase> database,
     std::unique_ptr<NTPSnippetsStatusService> status_service)
-    : ContentSuggestionsProvider({ContentSuggestionsCategory::ARTICLES}),
+    : ContentSuggestionsProvider(category_factory),
       state_(State::NOT_INITED),
       category_status_(ContentSuggestionsCategoryStatus::INITIALIZING),
       pref_service_(pref_service),
@@ -207,7 +208,9 @@ NTPSnippetsService::NTPSnippetsService(
       image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
-      fetch_after_load_(false) {
+      fetch_after_load_(false),
+      provided_category_(category_factory->FromKnownCategory(
+          KnownSuggestionsCategories::ARTICLES)) {
   // In some cases, don't even bother loading the database.
   if (!enabled) {
     EnterState(State::SHUT_DOWN,
@@ -276,6 +279,11 @@ void NTPSnippetsService::RescheduleFetching() {
   } else {
     scheduler_->Unschedule();
   }
+}
+
+std::vector<ContentSuggestionsCategory>
+NTPSnippetsService::GetProvidedCategories() {
+  return std::vector<ContentSuggestionsCategory>({provided_category_});
 }
 
 void NTPSnippetsService::FetchSuggestionImage(
@@ -351,7 +359,7 @@ void NTPSnippetsService::SetObserver(Observer* observer) {
 
 ContentSuggestionsCategoryStatus NTPSnippetsService::GetCategoryStatus(
     ContentSuggestionsCategory category) {
-  DCHECK_EQ(ContentSuggestionsCategory::ARTICLES, category);
+  DCHECK(category.IsKnownCategory(KnownSuggestionsCategories::ARTICLES));
   return category_status_;
 }
 
@@ -624,8 +632,7 @@ void NTPSnippetsService::OnSnippetImageDecoded(
     const ImageFetchedCallback& callback,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
-    callback.Run(MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet_id),
-                 image);
+    callback.Run(MakeUniqueID(provided_category_, snippet_id), image);
     return;
   }
 
@@ -644,8 +651,7 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
                      return snippet->id() == snippet_id;
                    });
   if (it == snippets_.end()) {
-    callback.Run(MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet_id),
-                 gfx::Image());
+    callback.Run(MakeUniqueID(provided_category_, snippet_id), gfx::Image());
     return;
   }
 
@@ -786,7 +792,7 @@ void NTPSnippetsService::NotifyNewSuggestions() {
     if (!snippet->is_complete())
       continue;
     ContentSuggestion suggestion(
-        MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet->id()),
+        MakeUniqueID(provided_category_, snippet->id()),
         snippet->best_source().url);
     suggestion.set_amp_url(snippet->best_source().amp_url);
     suggestion.set_title(snippet->title());
@@ -796,14 +802,12 @@ void NTPSnippetsService::NotifyNewSuggestions() {
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }
-  observer_->OnNewSuggestions(ContentSuggestionsCategory::ARTICLES,
-                              std::move(result));
+  observer_->OnNewSuggestions(provided_category_, std::move(result));
 }
 
 void NTPSnippetsService::NotifyCategoryStatusChanged() {
   if (observer_) {
-    observer_->OnCategoryStatusChanged(ContentSuggestionsCategory::ARTICLES,
-                                       category_status_);
+    observer_->OnCategoryStatusChanged(provided_category_, category_status_);
   }
 }
 

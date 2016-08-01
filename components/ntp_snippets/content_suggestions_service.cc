@@ -13,6 +13,12 @@
 
 namespace ntp_snippets {
 
+bool ContentSuggestionsService::CompareCategoriesByID::operator()(
+    const ContentSuggestionsCategory& left,
+    const ContentSuggestionsCategory& right) const {
+  return left.id() < right.id();
+}
+
 ContentSuggestionsService::ContentSuggestionsService(State state)
     : state_(state) {}
 
@@ -58,10 +64,10 @@ void ContentSuggestionsService::FetchSuggestionImage(
     callback.Run(suggestion_id, gfx::Image());
     return;
   }
-  ContentSuggestionsCategory category = id_category_map_[suggestion_id];
+  ContentSuggestionsCategory category = id_category_map_.at(suggestion_id);
   if (!providers_.count(category)) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
-                 << " for unavailable category " << static_cast<int>(category);
+                 << " for unavailable category " << category;
     callback.Run(suggestion_id, gfx::Image());
     return;
   }
@@ -89,10 +95,10 @@ void ContentSuggestionsService::DismissSuggestion(
     LOG(WARNING) << "Dismissed unknown suggestion " << suggestion_id;
     return;
   }
-  ContentSuggestionsCategory category = id_category_map_[suggestion_id];
+  ContentSuggestionsCategory category = id_category_map_.at(suggestion_id);
   if (!providers_.count(category)) {
     LOG(WARNING) << "Dismissed suggestion " << suggestion_id
-                 << " for unavailable category " << static_cast<int>(category);
+                 << " for unavailable category " << category;
     return;
   }
   providers_[category]->DismissSuggestion(suggestion_id);
@@ -128,11 +134,10 @@ void ContentSuggestionsService::RegisterProvider(
   if (state_ == State::DISABLED)
     return;
 
-  for (ContentSuggestionsCategory category : provider->provided_categories()) {
+  for (ContentSuggestionsCategory category :
+       provider->GetProvidedCategories()) {
     DCHECK_EQ(0ul, providers_.count(category));
     providers_[category] = provider;
-    // TODO(pke): In the future, make sure that the categories have some useful
-    // (maybe constant, at least consistent) ordering for the UI.
     categories_.push_back(category);
     if (IsContentSuggestionsCategoryStatusAvailable(
             provider->GetCategoryStatus(category))) {
@@ -140,6 +145,11 @@ void ContentSuggestionsService::RegisterProvider(
     }
     NotifyCategoryStatusChanged(category);
   }
+  std::sort(categories_.begin(), categories_.end(),
+            [this](const ContentSuggestionsCategory& left,
+                   const ContentSuggestionsCategory& right) {
+              return category_factory_.CompareCategories(left, right);
+            });
   provider->SetObserver(this);
 }
 
@@ -157,7 +167,7 @@ void ContentSuggestionsService::OnNewSuggestions(
   }
 
   for (const ContentSuggestion& suggestion : new_suggestions) {
-    id_category_map_[suggestion.id()] = changed_category;
+    id_category_map_.insert(std::make_pair(suggestion.id(), changed_category));
   }
 
   suggestions_by_category_[changed_category] = std::move(new_suggestions);
@@ -180,7 +190,8 @@ void ContentSuggestionsService::OnCategoryStatusChanged(
 
 void ContentSuggestionsService::OnProviderShutdown(
     ContentSuggestionsProvider* provider) {
-  for (ContentSuggestionsCategory category : provider->provided_categories()) {
+  for (ContentSuggestionsCategory category :
+       provider->GetProvidedCategories()) {
     auto iterator = std::find(categories_.begin(), categories_.end(), category);
     DCHECK(iterator != categories_.end());
     categories_.erase(iterator);

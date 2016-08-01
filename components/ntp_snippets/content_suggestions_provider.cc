@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "components/ntp_snippets/content_suggestions_category_factory.h"
 
 namespace ntp_snippets {
 
@@ -17,21 +18,18 @@ const char kSeparator = '|';
 }  // namespace
 
 ContentSuggestionsProvider::ContentSuggestionsProvider(
-    const std::vector<ContentSuggestionsCategory>& provided_categories)
-    : provided_categories_(provided_categories) {}
+    ContentSuggestionsCategoryFactory* category_factory)
+    : category_factory_(category_factory) {}
 
 ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 
-// static
 std::string ContentSuggestionsProvider::MakeUniqueID(
     ContentSuggestionsCategory category,
     const std::string& within_category_id) {
-  return base::StringPrintf(kCombinedIDFormat,
-                            static_cast<int>(category),
+  return base::StringPrintf(kCombinedIDFormat, category.id(),
                             within_category_id.c_str());
 }
 
-// static
 ContentSuggestionsCategory ContentSuggestionsProvider::GetCategoryFromUniqueID(
     const std::string& unique_id) {
   size_t colon_index = unique_id.find(kSeparator);
@@ -40,12 +38,9 @@ ContentSuggestionsCategory ContentSuggestionsProvider::GetCategoryFromUniqueID(
   int category = -1;
   DCHECK(base::StringToInt(unique_id.substr(0, colon_index), &category))
       << "Non-numeric category part in unique_id: " << unique_id;
-  DCHECK(0 <= category && category < int(ContentSuggestionsCategory::COUNT))
-      << "Category does not exist: " << category;
-  return ContentSuggestionsCategory(category);
+  return category_factory_->FromIDValue(category);
 }
 
-// static
 std::string ContentSuggestionsProvider::GetWithinCategoryIDFromUniqueID(
     const std::string& unique_id) {
   size_t colon_index = unique_id.find(kSeparator);

@@ -12,6 +12,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_category.h"
+#include "components/ntp_snippets/content_suggestions_category_factory.h"
 #include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -32,6 +33,7 @@ class OfflinePageSuggestionsProvider
       public offline_pages::OfflinePageModel::Observer {
  public:
   OfflinePageSuggestionsProvider(
+      ContentSuggestionsCategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model);
   ~OfflinePageSuggestionsProvider() override;
 
@@ -40,6 +42,7 @@ class OfflinePageSuggestionsProvider
 
  private:
   // ContentSuggestionsProvider implementation.
+  std::vector<ContentSuggestionsCategory> GetProvidedCategories() override;
   void SetObserver(ContentSuggestionsProvider::Observer* observer) override;
   ContentSuggestionsCategoryStatus GetCategoryStatus(
       ContentSuggestionsCategory category) override;
@@ -70,6 +73,8 @@ class OfflinePageSuggestionsProvider
   ContentSuggestionsProvider::Observer* observer_;
 
   offline_pages::OfflinePageModel* offline_page_model_;
+
+  const ContentSuggestionsCategory provided_category_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageSuggestionsProvider);
 };

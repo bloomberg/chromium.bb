@@ -34,8 +34,8 @@ enum class ContentSuggestionsCategoryStatus {
   // Content suggestions are not available because the user is not signed in.
   SIGNED_OUT,
 
-  // Content suggestions are not available because an error occured when loading
-  // or updating them.
+  // Content suggestions are not available because an error occurred when
+  // loading or updating them.
   LOADING_ERROR
 };
 

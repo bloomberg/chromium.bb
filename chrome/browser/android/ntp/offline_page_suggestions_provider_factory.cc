@@ -68,7 +68,8 @@ KeyedService* OfflinePageSuggestionsProviderFactory::BuildServiceInstanceFor(
       OfflinePageModelFactory::GetForBrowserContext(profile);
 
   OfflinePageSuggestionsProvider* offline_page_suggestions_provider =
-      new OfflinePageSuggestionsProvider(offline_page_model);
+      new OfflinePageSuggestionsProvider(
+          content_suggestions_service->category_factory(), offline_page_model);
   content_suggestions_service->RegisterProvider(
       offline_page_suggestions_provider);
   return offline_page_suggestions_provider;

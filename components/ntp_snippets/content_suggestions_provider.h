@@ -66,6 +66,11 @@ class ContentSuggestionsProvider {
   // ownership of the observer and the observer must outlive this provider.
   virtual void SetObserver(Observer* observer) = 0;
 
+  // Returns the categories provided by this provider.
+  // TODO(pke): "The value returned by this getter must not change unless
+  // OnXxx is called on the observer."
+  virtual std::vector<ContentSuggestionsCategory> GetProvidedCategories() = 0;
+
   // Determines the status of the given |category|, see
   // ContentSuggestionsCategoryStatus.
   virtual ContentSuggestionsCategoryStatus GetCategoryStatus(
@@ -94,13 +99,9 @@ class ContentSuggestionsProvider {
   // have been permanently deleted, depending on the provider implementation.
   virtual void ClearDismissedSuggestionsForDebugging() = 0;
 
-  const std::vector<ContentSuggestionsCategory>& provided_categories() const {
-    return provided_categories_;
-  }
-
  protected:
   ContentSuggestionsProvider(
-      const std::vector<ContentSuggestionsCategory>& provided_categories);
+      ContentSuggestionsCategoryFactory* category_factory);
   virtual ~ContentSuggestionsProvider();
 
   // Creates a unique ID. The given |within_category_id| must be unique among
@@ -108,16 +109,19 @@ class ContentSuggestionsProvider {
   // combines it with the |category| to form an ID that is unique
   // application-wide, because this provider is the only one that provides
   // suggestions for that category.
-  static std::string MakeUniqueID(ContentSuggestionsCategory category,
-                                  const std::string& within_category_id);
+  std::string MakeUniqueID(ContentSuggestionsCategory category,
+                           const std::string& within_category_id);
   // Reverse functions for MakeUniqueID()
-  static ContentSuggestionsCategory GetCategoryFromUniqueID(
+  ContentSuggestionsCategory GetCategoryFromUniqueID(
       const std::string& unique_id);
-  static std::string GetWithinCategoryIDFromUniqueID(
-      const std::string& unique_id);
+  std::string GetWithinCategoryIDFromUniqueID(const std::string& unique_id);
+
+  ContentSuggestionsCategoryFactory* category_factory() const {
+    return category_factory_;
+  }
 
  private:
-  const std::vector<ContentSuggestionsCategory> provided_categories_;
+  ContentSuggestionsCategoryFactory* category_factory_;
 };
 
 }  // namespace ntp_snippets

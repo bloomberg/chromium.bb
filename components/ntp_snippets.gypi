@@ -32,8 +32,11 @@
       'sources': [
         'ntp_snippets/content_suggestion.cc',
         'ntp_snippets/content_suggestion.h',
+        'ntp_snippets/content_suggestions_category_factory.cc',
+        'ntp_snippets/content_suggestions_category_factory.h',
         'ntp_snippets/content_suggestions_category_status.cc',
         'ntp_snippets/content_suggestions_category_status.h',
+        'ntp_snippets/content_suggestions_category.cc',
         'ntp_snippets/content_suggestions_category.h',
         'ntp_snippets/content_suggestions_provider.cc',
         'ntp_snippets/content_suggestions_provider.h',

@@ -34,6 +34,7 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using ntp_snippets::ContentSuggestionsCategory;
 using ntp_snippets::ContentSuggestionsCategoryStatus;
+using ntp_snippets::KnownSuggestionsCategories;
 
 namespace {
 
@@ -128,7 +129,8 @@ void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
 int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return static_cast<int>(content_suggestions_service_->GetCategoryStatus(
-      ContentSuggestionsCategory::ARTICLES));
+      content_suggestions_service_->category_factory()->FromKnownCategory(
+          KnownSuggestionsCategories::ARTICLES)));
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
@@ -190,7 +192,7 @@ void NTPSnippetsBridge::OnNewSuggestions() {
 void NTPSnippetsBridge::OnCategoryStatusChanged(
     ContentSuggestionsCategory category,
     ContentSuggestionsCategoryStatus new_status) {
-  if (category != ContentSuggestionsCategory::ARTICLES)
+  if (!category.IsKnownCategory(KnownSuggestionsCategories::ARTICLES))
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();

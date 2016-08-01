@@ -116,6 +116,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
   ntp_snippets::NTPSnippetsService* ntp_snippets_service =
       new ntp_snippets::NTPSnippetsService(
           enabled, profile->GetPrefs(), suggestions_service,
+          content_suggestions_service->category_factory(),
           g_browser_process->GetApplicationLocale(), scheduler,
           base::MakeUnique<ntp_snippets::NTPSnippetsFetcher>(
               signin_manager, token_service, request_context,

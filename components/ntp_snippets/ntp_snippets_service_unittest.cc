@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/ntp_snippets/content_suggestions_category_factory.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -325,7 +326,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     SetUpFetchResponse(GetTestJson({GetSnippet()}));
 
     service_.reset(new NTPSnippetsService(
-        enabled, pref_service(), nullptr, "fr", &scheduler_,
+        enabled, pref_service(), nullptr, &category_factory_, "fr", &scheduler_,
         std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
         /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
                                        database_dir_.path(), task_runner),
@@ -337,8 +338,9 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   }
 
   std::string MakeUniqueID(const std::string& within_category_id) {
-    return NTPSnippetsService::MakeUniqueID(
-        ContentSuggestionsCategory::ARTICLES, within_category_id);
+    return service()->MakeUniqueID(category_factory_.FromKnownCategory(
+                                       KnownSuggestionsCategories::ARTICLES),
+                                   within_category_id);
   }
 
  protected:
@@ -366,6 +368,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   const GURL test_url_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
+  ContentSuggestionsCategoryFactory category_factory_;
   // Last so that the dependencies are deleted after the service.
   std::unique_ptr<NTPSnippetsService> service_;
 
