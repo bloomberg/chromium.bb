@@ -214,10 +214,11 @@ MessageLoopRunner::MessageLoopRunner()
       quit_closure_called_(false) {
 }
 
-MessageLoopRunner::~MessageLoopRunner() {
-}
+MessageLoopRunner::~MessageLoopRunner() = default;
 
 void MessageLoopRunner::Run() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Do not run the message loop if our quit closure has already been called.
   // This helps in scenarios where the closure has a chance to run before
   // we Run explicitly.
@@ -233,6 +234,8 @@ base::Closure MessageLoopRunner::QuitClosure() {
 }
 
 void MessageLoopRunner::Quit() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   quit_closure_called_ = true;
 
   // Only run the quit task if we are running the message loop.

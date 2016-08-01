@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,6 +118,8 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
   bool quit_closure_called_;
 
   base::RunLoop run_loop_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopRunner);
 };
