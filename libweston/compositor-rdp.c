@@ -137,6 +137,18 @@ struct rdp_peer_context {
 };
 typedef struct rdp_peer_context RdpPeerContext;
 
+static inline struct rdp_output *
+to_rdp_output(struct weston_output *base)
+{
+	return container_of(base, struct rdp_output, base);
+}
+
+static inline struct rdp_backend *
+to_rdp_backend(struct weston_compositor *base)
+{
+	return container_of(base->backend, struct rdp_backend, base);
+}
+
 static void
 rdp_peer_refresh_rfx(pixman_region32_t *damage, pixman_image_t *image, freerdp_peer *peer)
 {
@@ -362,7 +374,7 @@ rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
 static void
 rdp_output_destroy(struct weston_output *output_base)
 {
-	struct rdp_output *output = (struct rdp_output *)output_base;
+	struct rdp_output *output = to_rdp_output(output_base);
 
 	wl_event_source_remove(output->finish_frame_timer);
 	free(output);
@@ -532,7 +544,7 @@ rdp_restore(struct weston_compositor *ec)
 static void
 rdp_destroy(struct weston_compositor *ec)
 {
-	struct rdp_backend *b = (struct rdp_backend *) ec->backend;
+	struct rdp_backend *b = to_rdp_backend(ec);
 	int i;
 
 	weston_compositor_shutdown(ec);
