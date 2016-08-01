@@ -152,7 +152,7 @@ void V8DebuggerAgentImpl::enable(ErrorString* errorString)
     if (enabled())
         return;
 
-    if (!m_session->client()->canExecuteScripts()) {
+    if (!m_debugger->client()->canExecuteScripts(m_session->contextGroupId())) {
         *errorString = "Script execution is prohibited";
         return;
     }
@@ -200,7 +200,7 @@ void V8DebuggerAgentImpl::restore()
     DCHECK(!m_enabled);
     if (!m_state->booleanProperty(DebuggerAgentState::debuggerEnabled, false))
         return;
-    if (!m_session->client()->canExecuteScripts())
+    if (!m_debugger->client()->canExecuteScripts(m_session->contextGroupId()))
         return;
 
     enable();

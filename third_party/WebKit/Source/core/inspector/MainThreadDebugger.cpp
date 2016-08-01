@@ -262,6 +262,12 @@ void MainThreadDebugger::endEnsureAllContextsInGroup(int contextGroupId)
     frame->settings()->setForceMainWorldInitialization(false);
 }
 
+bool MainThreadDebugger::canExecuteScripts(int contextGroupId)
+{
+    LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    return frame->script().canExecuteScripts(NotAboutToExecuteScript);
+}
+
 void MainThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);

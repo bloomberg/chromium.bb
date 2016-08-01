@@ -66,7 +66,7 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
-    m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
+    m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
     m_session->append(new InspectorLogAgent(m_thread->consoleMessageStorage()));
 }
 

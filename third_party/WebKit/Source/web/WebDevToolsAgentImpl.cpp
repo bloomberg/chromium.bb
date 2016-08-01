@@ -368,7 +368,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
 
-    m_session = new InspectorSession(this, m_inspectedFrames.get(), m_instrumentingAgents.get(), sessionId, false /* autoFlush */, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()), state);
+    m_session = new InspectorSession(this, m_instrumentingAgents.get(), sessionId, false /* autoFlush */, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()), state);
 
     InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_session->v8Session(), m_overlay.get());
     m_domAgent = domAgent;
