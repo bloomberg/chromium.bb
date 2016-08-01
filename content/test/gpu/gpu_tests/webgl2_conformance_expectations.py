@@ -620,6 +620,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/instancedrendering.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
