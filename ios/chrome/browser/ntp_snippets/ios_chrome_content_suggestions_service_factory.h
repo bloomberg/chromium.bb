@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_NTP_SNIPPETS_SERVICE_FACTORY_H_
-#define IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_NTP_SNIPPETS_SERVICE_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
+#define IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
 
 #include <memory>
 
@@ -20,30 +20,30 @@ class ChromeBrowserState;
 }  // namespace ios
 
 namespace ntp_snippets {
-class NTPSnippetsService;
+class ContentSuggestionsService;
 }  // namespace ntp_snippets
 
-// A factory to create NTPSnippetsService and associate them to
+// A factory to create a ContentSuggestionsService and associate it to
 // ios::ChromeBrowserState.
-class IOSChromeNTPSnippetsServiceFactory
+class IOSChromeContentSuggestionsServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  static IOSChromeNTPSnippetsServiceFactory* GetInstance();
-  static ntp_snippets::NTPSnippetsService* GetForBrowserState(
+  static IOSChromeContentSuggestionsServiceFactory* GetInstance();
+  static ntp_snippets::ContentSuggestionsService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
  private:
   friend struct base::DefaultSingletonTraits<
-      IOSChromeNTPSnippetsServiceFactory>;
+      IOSChromeContentSuggestionsServiceFactory>;
 
-  IOSChromeNTPSnippetsServiceFactory();
-  ~IOSChromeNTPSnippetsServiceFactory() override;
+  IOSChromeContentSuggestionsServiceFactory();
+  ~IOSChromeContentSuggestionsServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeNTPSnippetsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(IOSChromeContentSuggestionsServiceFactory);
 };
 
-#endif  // IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_NTP_SNIPPETS_SERVICE_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_NTP_SNIPPETS_IOS_CHROME_CONTENT_SUGGESTIONS_SERVICE_FACTORY_H_
