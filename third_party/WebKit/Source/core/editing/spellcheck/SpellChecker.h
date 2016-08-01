@@ -61,11 +61,7 @@ public:
     static bool isSpellCheckingEnabledFor(const VisibleSelection&);
     void markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection);
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
-    bool markMisspellings(const VisibleSelection&);
-    void markBadGrammar(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
     void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
     void didBeginEditing(Element*);
@@ -76,7 +72,6 @@ public:
     void removeSpellingMarkers();
     void removeSpellingMarkersUnderWords(const Vector<String>& words);
     void spellCheckAfterBlur();
-    void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 
     void didEndEditingOnTextField(Element*);
     bool selectionStartHasMarkerFor(DocumentMarker::MarkerType, int from, int length) const;
@@ -106,7 +101,13 @@ private:
         return *m_frame;
     }
 
+    bool markMisspellings(const VisibleSelection&);
+    void markBadGrammar(const VisibleSelection&);
     bool markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling);
+    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
+    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
+    void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
+
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
 
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
