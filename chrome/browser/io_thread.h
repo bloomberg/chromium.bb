@@ -44,6 +44,10 @@ class ExternalDataUseObserver;
 }
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
+namespace base {
+class CommandLine;
+}
+
 namespace certificate_transparency {
 class TreeStateTracker;
 }
@@ -297,6 +301,13 @@ class IOThread : public content::BrowserThreadDelegate {
       IOThread::Globals* globals,
       const net::HttpNetworkSession::Params& params,
       net::NetLog* net_log);
+
+  // Parse command line flags and use components/network_session_configurator to
+  // configure |params|.
+  static void ConfigureParamsFromFieldTrialsAndCommandLine(
+      const base::CommandLine& command_line,
+      bool is_quic_allowed_by_policy,
+      net::HttpNetworkSession::Params* params);
 
   // TODO(willchan): Remove proxy script fetcher context since it's not
   // necessary now that I got rid of refcounting URLRequestContexts.

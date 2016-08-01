@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/network_session_configurator/switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "net/http/http_stream_factory.h"
@@ -54,30 +53,19 @@ void ConfigureTCPFastOpenParams(base::StringPiece tfo_trial_group,
     params->enable_tcp_fast_open_for_ssl = true;
 }
 
-void ConfigureHttp2Params(const base::CommandLine& command_line,
-                          base::StringPiece http2_trial_group,
+void ConfigureHttp2Params(base::StringPiece http2_trial_group,
                           net::HttpNetworkSession::Params* params) {
-  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-  if (command_line.HasSwitch(switches::kDisableHttp2)) {
-    params->enable_http2 = false;
-    return;
-  }
-
   if (http2_trial_group.starts_with(kHttp2FieldTrialDisablePrefix)) {
     params->enable_http2 = false;
   }
 }
 
-bool ShouldEnableQuic(const base::CommandLine& command_line,
-                      base::StringPiece quic_trial_group,
-                      bool is_quic_allowed_by_policy) {
-  if (command_line.HasSwitch(switches::kDisableQuic) ||
-      !is_quic_allowed_by_policy)
+bool ShouldEnableQuic(base::StringPiece quic_trial_group,
+                      bool is_quic_force_disabled,
+                      bool is_quic_force_enabled) {
+  if (is_quic_force_disabled)
     return false;
-
-  if (command_line.HasSwitch(switches::kEnableQuic))
+  if (is_quic_force_enabled)
     return true;
 
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
@@ -100,7 +88,6 @@ bool ShouldQuicDisableConnectionPooling(
 }
 
 bool ShouldQuicEnableAlternativeServicesForDifferentHost(
-    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
   return !base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params,
@@ -108,24 +95,8 @@ bool ShouldQuicEnableAlternativeServicesForDifferentHost(
       "false");
 }
 
-bool ShouldEnableQuicPortSelection(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kDisableQuicPortSelection))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableQuicPortSelection))
-    return true;
-
-  return false;  // Default to disabling port selection on all channels.
-}
-
 net::QuicTagVector GetQuicConnectionOptions(
-    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
-    return net::QuicUtils::ParseQuicConnectionOptions(
-        command_line.GetSwitchValueASCII(switches::kQuicConnectionOptions));
-  }
-
   VariationParameters::const_iterator it =
       quic_trial_params.find("connection_options");
   if (it == quic_trial_params.end()) {
@@ -244,14 +215,9 @@ bool ShouldQuicDisablePreConnectIfZeroRtt(
 }
 
 std::unordered_set<std::string> GetQuicHostWhitelist(
-    const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
-  std::string whitelist;
-  if (command_line.HasSwitch(switches::kQuicHostWhitelist)) {
-    whitelist = command_line.GetSwitchValueASCII(switches::kQuicHostWhitelist);
-  } else {
-    whitelist = GetVariationParam(quic_trial_params, "quic_host_whitelist");
-  }
+  std::string whitelist =
+      GetVariationParam(quic_trial_params, "quic_host_whitelist");
   std::unordered_set<std::string> hosts;
   for (const std::string& host : base::SplitString(
            whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -282,18 +248,7 @@ bool ShouldQuicAllowServerMigration(
       "true");
 }
 
-size_t GetQuicMaxPacketLength(const base::CommandLine& command_line,
-                              const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
-    unsigned value;
-    if (!base::StringToUint(
-            command_line.GetSwitchValueASCII(switches::kQuicMaxPacketLength),
-            &value)) {
-      return 0;
-    }
-    return value;
-  }
-
+size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   unsigned value;
   if (base::StringToUint(
           GetVariationParam(quic_trial_params, "max_packet_length"), &value)) {
@@ -302,42 +257,24 @@ size_t GetQuicMaxPacketLength(const base::CommandLine& command_line,
   return 0;
 }
 
-net::QuicVersion ParseQuicVersion(const std::string& quic_version) {
-  net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
-  for (size_t i = 0; i < supported_versions.size(); ++i) {
-    net::QuicVersion version = supported_versions[i];
-    if (net::QuicVersionToString(version) == quic_version) {
-      return version;
-    }
-  }
-
-  return net::QUIC_VERSION_UNSUPPORTED;
+net::QuicVersion GetQuicVersion(const VariationParameters& quic_trial_params) {
+  return network_session_configurator::ParseQuicVersion(
+      GetVariationParam(quic_trial_params, "quic_version"));
 }
 
-net::QuicVersion GetQuicVersion(const base::CommandLine& command_line,
-                                const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kQuicVersion)) {
-    return ParseQuicVersion(
-        command_line.GetSwitchValueASCII(switches::kQuicVersion));
-  }
-
-  return ParseQuicVersion(GetVariationParam(quic_trial_params, "quic_version"));
-}
-
-void ConfigureQuicParams(const base::CommandLine& command_line,
-                         base::StringPiece quic_trial_group,
+void ConfigureQuicParams(base::StringPiece quic_trial_group,
                          const VariationParameters& quic_trial_params,
-                         bool is_quic_allowed_by_policy,
+                         bool is_quic_force_disabled,
+                         bool is_quic_force_enabled,
                          const std::string& quic_user_agent_id,
                          net::HttpNetworkSession::Params* params) {
-  params->enable_quic = ShouldEnableQuic(command_line, quic_trial_group,
-                                         is_quic_allowed_by_policy);
+  params->enable_quic = ShouldEnableQuic(
+      quic_trial_group, is_quic_force_disabled, is_quic_force_enabled);
   params->disable_quic_on_timeout_with_open_streams =
       ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
 
   params->enable_quic_alternative_service_with_different_host =
-      ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
-                                                          quic_trial_params);
+      ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params);
 
   if (params->enable_quic) {
     params->quic_always_require_handshake_confirmation =
@@ -372,10 +309,10 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     float packet_loss_threshold = GetQuicPacketLossThreshold(quic_trial_params);
     if (packet_loss_threshold != 0)
       params->quic_packet_loss_threshold = packet_loss_threshold;
-    params->enable_quic_port_selection =
-        ShouldEnableQuicPortSelection(command_line);
+    // Default to disabling port selection on all channels.
+    params->enable_quic_port_selection = false;
     params->quic_connection_options =
-        GetQuicConnectionOptions(command_line, quic_trial_params);
+        GetQuicConnectionOptions(quic_trial_params);
     params->quic_close_sessions_on_ip_change =
         ShouldQuicCloseSessionsOnIpChange(quic_trial_params);
     int idle_connection_timeout_seconds =
@@ -386,8 +323,7 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     }
     params->quic_disable_preconnect_if_0rtt =
         ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params);
-    params->quic_host_whitelist =
-        GetQuicHostWhitelist(command_line, quic_trial_params);
+    params->quic_host_whitelist = GetQuicHostWhitelist(quic_trial_params);
     params->quic_migrate_sessions_on_network_change =
         ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params);
     params->quic_migrate_sessions_early =
@@ -396,80 +332,57 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
         ShouldQuicAllowServerMigration(quic_trial_params);
   }
 
-  size_t max_packet_length =
-      GetQuicMaxPacketLength(command_line, quic_trial_params);
+  size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);
   if (max_packet_length != 0) {
     params->quic_max_packet_length = max_packet_length;
   }
 
   params->quic_user_agent_id = quic_user_agent_id;
 
-  net::QuicVersion version = GetQuicVersion(command_line, quic_trial_params);
+  net::QuicVersion version = GetQuicVersion(quic_trial_params);
   if (version != net::QUIC_VERSION_UNSUPPORTED) {
     net::QuicVersionVector supported_versions;
     supported_versions.push_back(version);
     params->quic_supported_versions = supported_versions;
   }
-
-  if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
-    std::string origins =
-        command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
-    for (const std::string& host_port : base::SplitString(
-             origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      if (host_port == "*")
-        params->origins_to_force_quic_on.insert(net::HostPortPair());
-      net::HostPortPair quic_origin = net::HostPortPair::FromString(host_port);
-      if (!quic_origin.IsEmpty())
-        params->origins_to_force_quic_on.insert(quic_origin);
-    }
-  }
-}
-
-void ParseFieldTrialsAndCommandLineInternal(
-    const base::CommandLine& command_line,
-    bool is_quic_allowed_by_policy,
-    const std::string& quic_user_agent_id,
-    net::HttpNetworkSession::Params* params) {
-  // Always fetch the field trial groups to ensure they are reported correctly.
-  // The command line flags will be associated with a group that is reported so
-  // long as trial is actually queried.
-
-  std::string quic_trial_group =
-      base::FieldTrialList::FindFullName(kQuicFieldTrialName);
-  VariationParameters quic_trial_params;
-  if (!variations::GetVariationParams(kQuicFieldTrialName, &quic_trial_params))
-    quic_trial_params.clear();
-  ConfigureQuicParams(command_line, quic_trial_group, quic_trial_params,
-                      is_quic_allowed_by_policy, quic_user_agent_id, params);
-
-  std::string http2_trial_group =
-      base::FieldTrialList::FindFullName(kHttp2FieldTrialName);
-  ConfigureHttp2Params(command_line, http2_trial_group, params);
-
-  const std::string tfo_trial_group =
-      base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
-  ConfigureTCPFastOpenParams(tfo_trial_group, params);
 }
 
 }  // anonymous namespace
 
 namespace network_session_configurator {
 
-void ParseFieldTrials(bool is_quic_allowed_by_policy,
-                      const std::string& quic_user_agent_id,
-                      net::HttpNetworkSession::Params* params) {
-  const base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  ParseFieldTrialsAndCommandLineInternal(
-      command_line, is_quic_allowed_by_policy, quic_user_agent_id, params);
+net::QuicVersion ParseQuicVersion(const std::string& quic_version) {
+  net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
+  for (size_t i = 0; i < supported_versions.size(); ++i) {
+    net::QuicVersion version = supported_versions[i];
+    if (net::QuicVersionToString(version) == quic_version) {
+      return version;
+    }
+  }
+
+  return net::QUIC_VERSION_UNSUPPORTED;
 }
 
-void ParseFieldTrialsAndCommandLine(bool is_quic_allowed_by_policy,
-                                    const std::string& quic_user_agent_id,
-                                    net::HttpNetworkSession::Params* params) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  ParseFieldTrialsAndCommandLineInternal(
-      command_line, is_quic_allowed_by_policy, quic_user_agent_id, params);
+void ParseFieldTrials(bool is_quic_force_disabled,
+                      bool is_quic_force_enabled,
+                      const std::string& quic_user_agent_id,
+                      net::HttpNetworkSession::Params* params) {
+  std::string quic_trial_group =
+      base::FieldTrialList::FindFullName(kQuicFieldTrialName);
+  VariationParameters quic_trial_params;
+  if (!variations::GetVariationParams(kQuicFieldTrialName, &quic_trial_params))
+    quic_trial_params.clear();
+  ConfigureQuicParams(quic_trial_group, quic_trial_params,
+                      is_quic_force_disabled, is_quic_force_enabled,
+                      quic_user_agent_id, params);
+
+  std::string http2_trial_group =
+      base::FieldTrialList::FindFullName(kHttp2FieldTrialName);
+  ConfigureHttp2Params(http2_trial_group, params);
+
+  const std::string tfo_trial_group =
+      base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
+  ConfigureTCPFastOpenParams(tfo_trial_group, params);
 }
 
 }  // namespace network_session_configurator

@@ -51,6 +51,13 @@ class IOThreadPeer {
   static net::HttpAuthPreferences* GetAuthPreferences(IOThread* io_thread) {
     return io_thread->globals()->http_auth_preferences.get();
   }
+  static void ConfigureParamsFromFieldTrialsAndCommandLine(
+      const base::CommandLine& command_line,
+      bool is_quic_allowed_by_policy,
+      net::HttpNetworkSession::Params* params) {
+    IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
+        command_line, is_quic_allowed_by_policy, params);
+  }
 };
 
 class IOThreadTestWithIOThreadObject : public testing::Test {
@@ -237,5 +244,221 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
       base::Unretained(this), "acc2"));
 }
 #endif
+
+class ConfigureParamsFromFieldTrialsAndCommandLineTest
+    : public ::testing::Test {
+ public:
+  ConfigureParamsFromFieldTrialsAndCommandLineTest()
+      : command_line_(base::CommandLine::NO_PROGRAM),
+        is_quic_allowed_by_policy_(true) {}
+
+ protected:
+  void ConfigureParamsFromFieldTrialsAndCommandLine() {
+    IOThreadPeer::ConfigureParamsFromFieldTrialsAndCommandLine(
+        command_line_, is_quic_allowed_by_policy_, &params_);
+  }
+
+  base::CommandLine command_line_;
+  bool is_quic_allowed_by_policy_;
+  net::HttpNetworkSession::Params params_;
+};
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, Default) {
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_http2);
+  EXPECT_FALSE(params_.enable_quic);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
+  EXPECT_EQ(1350u, params_.quic_max_packet_length);
+  EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
+  EXPECT_TRUE(params_.origins_to_force_quic_on.empty());
+  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_FALSE(params_.enable_user_alternate_protocol_ports);
+  EXPECT_FALSE(params_.ignore_certificate_errors);
+  EXPECT_EQ(0, params_.testing_fixed_http_port);
+  EXPECT_EQ(0, params_.testing_fixed_https_port);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       Http2CommandLineDisableHttp2) {
+  command_line_.AppendSwitch("disable-http2");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_http2);
+}
+
+// Command line flag should not only disable QUIC but should also prevent QUIC
+// related field trials and command line flags from being parsed.
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       DisableQuicFromCommandLineOverridesFieldTrial) {
+  auto field_trial_list =
+      base::MakeUnique<base::FieldTrialList>(new base::MockEntropyProvider());
+  variations::testing::ClearAllVariationParams();
+
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["always_require_handshake_confirmation"] = "true";
+  field_trial_params["disable_delay_tcp_race"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  command_line_.AppendSwitch("disable-quic");
+  command_line_.AppendSwitchASCII("quic-host-whitelist",
+                                  "www.example.org, www.example.com");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_quic);
+  EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
+  EXPECT_TRUE(params_.quic_delay_tcp_race);
+  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       EnableQuicFromCommandLine) {
+  command_line_.AppendSwitch("enable-quic");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_quic);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       EnableAlternativeServicesFromCommandLineWithQuicDisabled) {
+  command_line_.AppendSwitch("enable-alternative-services");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_quic);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitch("enable-alternative-services");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_quic);
+  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicVersionFromCommandLine) {
+  command_line_.AppendSwitch("enable-quic");
+  std::string version =
+      net::QuicVersionToString(net::QuicSupportedVersions().back());
+  command_line_.AppendSwitchASCII("quic-version", version);
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  net::QuicVersionVector supported_versions;
+  supported_versions.push_back(net::QuicSupportedVersions().back());
+  EXPECT_EQ(supported_versions, params_.quic_supported_versions);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicConnectionOptionsFromCommandLine) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("quic-connection-options", "TIME,TBBR,REJ");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  net::QuicTagVector options;
+  options.push_back(net::kTIME);
+  options.push_back(net::kTBBR);
+  options.push_back(net::kREJ);
+  EXPECT_EQ(options, params_.quic_connection_options);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicOriginsToForceQuicOn) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("origin-to-force-quic-on",
+                                  "www.example.com:443, www.example.org:443");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(2u, params_.origins_to_force_quic_on.size());
+  EXPECT_TRUE(
+      ContainsKey(params_.origins_to_force_quic_on,
+                  net::HostPortPair::FromString("www.example.com:443")));
+  EXPECT_TRUE(
+      ContainsKey(params_.origins_to_force_quic_on,
+                  net::HostPortPair::FromString("www.example.org:443")));
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicOriginsToForceQuicOnAll) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("origin-to-force-quic-on", "*");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
+  EXPECT_TRUE(
+      ContainsKey(params_.origins_to_force_quic_on, net::HostPortPair()));
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicWhitelistFromCommandLinet) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("quic-host-whitelist",
+                                  "www.example.org, www.example.com");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.com"));
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       QuicDisallowedByPolicy) {
+  command_line_.AppendSwitch("enable-quic");
+  is_quic_allowed_by_policy_ = false;
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_quic);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, QuicMaxPacketLength) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("quic-max-packet-length", "1450");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(1450u, params_.quic_max_packet_length);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       EnableUserAlternateProtocolPorts) {
+  command_line_.AppendSwitch("enable-user-controlled-alternate-protocol-ports");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_user_alternate_protocol_ports);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
+       IgnoreCertificateErrors) {
+  command_line_.AppendSwitch("ignore-certificate-errors");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.ignore_certificate_errors);
+}
+
+TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, TestingFixedPort) {
+  command_line_.AppendSwitchASCII("testing-fixed-http-port", "42");
+  command_line_.AppendSwitchASCII("testing-fixed-https-port", "137");
+
+  ConfigureParamsFromFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(42u, params_.testing_fixed_http_port);
+  EXPECT_EQ(137u, params_.testing_fixed_https_port);
+}
 
 }  // namespace test

@@ -10,21 +10,20 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "net/http/http_network_session.h"
 
 namespace network_session_configurator {
 
-// Configure |params| based on field trials and policy arguments.
-void ParseFieldTrials(bool is_quic_allowed_by_policy,
+// Parse serialized QUIC version string.
+// Return QUIC_VERSION_UNSUPPORTED on failure.
+net::QuicVersion ParseQuicVersion(const std::string& quic_version);
+
+// Configure |params| based on field trials
+// and forcing (policy or command line) arguments.
+void ParseFieldTrials(bool is_quic_force_disabled,
+                      bool is_quic_force_enabled,
                       const std::string& quic_user_agent_id,
                       net::HttpNetworkSession::Params* params);
-
-// Configure |params| based on field trials, policy arguments,
-// and command line.
-void ParseFieldTrialsAndCommandLine(bool is_quic_allowed_by_policy,
-                                    const std::string& quic_user_agent_id,
-                                    net::HttpNetworkSession::Params* params);
 
 }  // namespace network_session_configurator
 

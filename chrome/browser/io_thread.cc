@@ -593,44 +593,22 @@ void IOThread::Init() {
         command_line.GetSwitchValueASCII(switches::kHostRules));
     TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
-  if (command_line.HasSwitch(
-          switches::kEnableUserAlternateProtocolPorts)) {
-    params_.enable_user_alternate_protocol_ports = true;
-  }
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
   params_.enable_token_binding =
       base::FeatureList::IsEnabled(features::kTokenBinding);
+
+  // Check for OS support of TCP FastOpen, and turn it on for all connections if
+  // indicated by user.
   // TODO(rch): Make the client socket factory a per-network session instance,
   // constructed from a NetworkSession::Params, to allow us to move this option
   // to IOThread::Globals & HttpNetworkSession::Params.
-  std::string quic_user_agent_id = chrome::GetChannelString();
-  if (!quic_user_agent_id.empty())
-    quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      version_info::GetProductNameAndVersionForUserAgent());
-  quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(content::BuildOSCpuInfo());
-  network_session_configurator::ParseFieldTrialsAndCommandLine(
-      is_quic_allowed_by_policy_, quic_user_agent_id, &params_);
-
-  // Parameters only controlled by command line.
-  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
-    params_.ignore_certificate_errors = true;
-  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    params_.testing_fixed_http_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
-  }
-  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    params_.testing_fixed_https_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
-  }
-
   bool always_enable_tfo_if_supported =
       command_line.HasSwitch(switches::kEnableTcpFastOpen);
-  // Check for OS support of TCP FastOpen, and turn it on for all connections if
-  // indicated by user.
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_tfo_if_supported);
+
+  ConfigureParamsFromFieldTrialsAndCommandLine(
+      command_line, is_quic_allowed_by_policy_, &params_);
 
   TRACE_EVENT_BEGIN0("startup",
                      "IOThread::Init:ProxyScriptFetcherRequestContext");
@@ -912,6 +890,108 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       globals->system_http_transaction_factory.get());
 
   return context;
+}
+
+// static
+void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
+    const base::CommandLine& command_line,
+    bool is_quic_allowed_by_policy,
+    net::HttpNetworkSession::Params* params) {
+  std::string quic_user_agent_id = chrome::GetChannelString();
+  if (!quic_user_agent_id.empty())
+    quic_user_agent_id.push_back(' ');
+  quic_user_agent_id.append(
+      version_info::GetProductNameAndVersionForUserAgent());
+  quic_user_agent_id.push_back(' ');
+  quic_user_agent_id.append(content::BuildOSCpuInfo());
+
+  bool is_quic_force_disabled = !is_quic_allowed_by_policy ||
+                                command_line.HasSwitch(switches::kDisableQuic);
+  bool is_quic_force_enabled = command_line.HasSwitch(switches::kEnableQuic);
+
+  network_session_configurator::ParseFieldTrials(is_quic_force_disabled,
+                                                 is_quic_force_enabled,
+                                                 quic_user_agent_id, params);
+
+  // Command line flags override field trials.
+  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
+
+  if (command_line.HasSwitch(switches::kDisableHttp2))
+    params->enable_http2 = false;
+
+  if (command_line.HasSwitch(switches::kDisableQuicPortSelection)) {
+    params->enable_quic_port_selection = false;
+  } else if (command_line.HasSwitch(switches::kEnableQuicPortSelection)) {
+    params->enable_quic_port_selection = true;
+  }
+
+  if (params->enable_quic) {
+    if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
+      params->quic_connection_options =
+          net::QuicUtils::ParseQuicConnectionOptions(
+              command_line.GetSwitchValueASCII(
+                  switches::kQuicConnectionOptions));
+    }
+
+    if (command_line.HasSwitch(switches::kQuicHostWhitelist)) {
+      std::string whitelist =
+          command_line.GetSwitchValueASCII(switches::kQuicHostWhitelist);
+      params->quic_host_whitelist.clear();
+      for (const std::string& host : base::SplitString(
+               whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+        params->quic_host_whitelist.insert(host);
+      }
+    }
+
+    if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
+      unsigned value;
+      if (base::StringToUint(
+              command_line.GetSwitchValueASCII(switches::kQuicMaxPacketLength),
+              &value)) {
+        params->quic_max_packet_length = value;
+      }
+    }
+
+    if (command_line.HasSwitch(switches::kQuicVersion)) {
+      net::QuicVersion version = network_session_configurator::ParseQuicVersion(
+          command_line.GetSwitchValueASCII(switches::kQuicVersion));
+      if (version != net::QUIC_VERSION_UNSUPPORTED) {
+        net::QuicVersionVector supported_versions;
+        supported_versions.push_back(version);
+        params->quic_supported_versions = supported_versions;
+      }
+    }
+
+    if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
+      std::string origins =
+          command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
+      for (const std::string& host_port : base::SplitString(
+               origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+        if (host_port == "*")
+          params->origins_to_force_quic_on.insert(net::HostPortPair());
+        net::HostPortPair quic_origin =
+            net::HostPortPair::FromString(host_port);
+        if (!quic_origin.IsEmpty())
+          params->origins_to_force_quic_on.insert(quic_origin);
+      }
+    }
+  }
+
+  // Parameters only controlled by command line.
+  if (command_line.HasSwitch(switches::kEnableUserAlternateProtocolPorts)) {
+    params->enable_user_alternate_protocol_ports = true;
+  }
+  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
+    params->ignore_certificate_errors = true;
+  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+    params->testing_fixed_http_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
+  }
+  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+    params->testing_fixed_https_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
+  }
 }
 
 // static
