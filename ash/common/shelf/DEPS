@@ -13,4 +13,7 @@ specific_include_rules = {
   "shelf_tooltip_manager.cc": [
     "+ash/shelf/shelf_view.h"
   ],
+  "shelf_tooltip_manager_unittest.cc": [
+    "+ash/shelf/shelf_view.h"
+  ],
 }
