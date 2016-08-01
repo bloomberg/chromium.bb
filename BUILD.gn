@@ -917,6 +917,11 @@ if (!is_ios) {
     if (is_linux) {
       deps += [ "//breakpad:dump_syms($host_toolchain)" ]
     }
+
+    data = [
+      "//third_party/WebKit/LayoutTests/",
+      "//third_party/WebKit/Tools/Scripts/",
+    ]
   }
 }
 
