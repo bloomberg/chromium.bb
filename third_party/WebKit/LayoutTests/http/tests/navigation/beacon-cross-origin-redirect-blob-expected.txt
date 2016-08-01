@@ -1,6 +1,6 @@
 PingLoader dispatched to 'http://127.0.0.1:8080/navigation/resources/redirection-response.php?status=302&simple=true&target=non-existent.php'.
 PingLoader dispatched to 'http://127.0.0.1:8080/navigation/resources/redirection-response.php?status=302&simple=false&target=non-existent.php'.
-CONSOLE ERROR: Redirect at origin 'http://127.0.0.1:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: Redirect from 'http://127.0.0.1:8080/navigation/resources/redirection-response.php?status=302&simple=false&target=non-existent.php' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
 Verifying navigator.sendBeacon(Blob) non-CORS cross-origin redirect handling.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

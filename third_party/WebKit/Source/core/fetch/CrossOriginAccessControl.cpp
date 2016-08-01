@@ -268,12 +268,12 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
 {
     // CORS restrictions imposed on Location: URL -- http://www.w3.org/TR/cors/#redirect-steps (steps 2 + 3.)
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestURL.protocol())) {
-        errorDescription = "The request was redirected to a URL ('" + requestURL.getString() + "') which has a disallowed scheme for cross-origin requests.";
+        errorDescription = "Redirect location '" + requestURL.getString() + "' has a disallowed scheme for cross-origin requests.";
         return false;
     }
 
     if (!(requestURL.user().isEmpty() && requestURL.pass().isEmpty())) {
-        errorDescription = "The request was redirected to a URL ('" + requestURL.getString() + "') containing userinfo, which is disallowed for cross-origin requests.";
+        errorDescription = "Redirect location '" + requestURL.getString() + "' contains userinfo, which is disallowed for cross-origin requests.";
         return false;
     }
 
@@ -294,24 +294,23 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
         String errorDescription;
 
         // Steps 3 & 4 - check if scheme and other URL restrictions hold.
-        bool allowRedirect = isLegalRedirectLocation(newURL, errorDescription);
-        if (allowRedirect) {
-            // Step 5: perform resource sharing access check.
-            allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription, newRequest.requestContext());
-            if (allowRedirect) {
-                RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
-                // Step 6: if the request URL origin is not same origin as the original URL's,
-                // set the source origin to a globally unique identifier.
-                if (!originalOrigin->canRequest(newURL)) {
-                    options.securityOrigin = SecurityOrigin::createUnique();
-                    securityOrigin = options.securityOrigin.get();
-                }
-            }
-        }
-        if (!allowRedirect) {
-            const String& originalOrigin = SecurityOrigin::create(originalURL)->toString();
-            errorMessage = "Redirect at origin '" + originalOrigin + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription;
+        if (!isLegalRedirectLocation(newURL, errorDescription)) {
+            errorMessage = "Redirect from '" + originalURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
             return false;
+        }
+
+        // Step 5: perform resource sharing access check.
+        if (!passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription, newRequest.requestContext())) {
+            errorMessage = "Redirect from '" + originalURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
+            return false;
+        }
+
+        RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
+        // Step 6: if the request URL origin is not same origin as the original URL's,
+        // set the source origin to a globally unique identifier.
+        if (!originalOrigin->canRequest(newURL)) {
+            options.securityOrigin = SecurityOrigin::createUnique();
+            securityOrigin = options.securityOrigin.get();
         }
     }
     if (redirectCrossOrigin) {

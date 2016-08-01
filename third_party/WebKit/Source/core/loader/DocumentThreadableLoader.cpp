@@ -150,7 +150,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_requestContext(WebURLRequest::RequestContextUnspecified)
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
     , m_requestStartedSeconds(0.0)
-    , m_corsRedirectLimit(kMaxCORSRedirects)
+    , m_corsRedirectLimit(m_options.crossOriginRequestPolicy == UseAccessControl ? kMaxCORSRedirects : 0)
     , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
     , m_didRedirect(false)
     , m_weakFactory(this)
@@ -507,73 +507,78 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         clear();
         client->didFailRedirectCheck();
         // |this| may be dead here.
-    } else if (m_options.crossOriginRequestPolicy == UseAccessControl) {
-        --m_corsRedirectLimit;
 
-        InspectorInstrumentation::didReceiveCORSRedirectResponse(document().frame(), resource->identifier(), document().frame()->loader().documentLoader(), redirectResponse, resource);
+        request = ResourceRequest();
 
-        bool allowRedirect = false;
-        String accessControlErrorDescription;
+        return;
+    }
 
+    --m_corsRedirectLimit;
+
+    InspectorInstrumentation::didReceiveCORSRedirectResponse(document().frame(), resource->identifier(), document().frame()->loader().documentLoader(), redirectResponse, resource);
+
+    bool allowRedirect = false;
+    String accessControlErrorDescription;
+
+    if (m_crossOriginNonSimpleRequest) {
         // Non-simple cross origin requests (both preflight and actual one) are
         // not allowed to follow redirect.
-        if (m_crossOriginNonSimpleRequest) {
-            accessControlErrorDescription = "The request was redirected to '"+ request.url().getString() + "', which is disallowed for cross-origin requests that require preflight.";
-        } else {
-            // The redirect response must pass the access control check if the
-            // original request was not same-origin.
-            allowRedirect = CrossOriginAccessControl::isLegalRedirectLocation(request.url(), accessControlErrorDescription)
-                && (m_sameOriginRequest || passesAccessControlCheck(redirectResponse, effectiveAllowCredentials(), getSecurityOrigin(), accessControlErrorDescription, m_requestContext));
-        }
+        accessControlErrorDescription = "Redirect from '" + redirectResponse.url().getString()+ "' to '" + request.url().getString() + "' has been blocked by CORS policy: Request requires preflight, which is disallowed to follow cross-origin redirect.";
+    } else if (!CrossOriginAccessControl::isLegalRedirectLocation(request.url(), accessControlErrorDescription)) {
+        accessControlErrorDescription = "Redirect from '" + redirectResponse.url().getString() + "' has been blocked by CORS policy: " + accessControlErrorDescription;
+    } else if (!m_sameOriginRequest && !passesAccessControlCheck(redirectResponse, effectiveAllowCredentials(), getSecurityOrigin(), accessControlErrorDescription, m_requestContext)) {
+        // The redirect response must pass the access control check if the
+        // original request was not same-origin.
+        accessControlErrorDescription = "Redirect from '" + redirectResponse.url().getString()+ "' to '" + request.url().getString() + "' has been blocked by CORS policy: " + accessControlErrorDescription;
+    } else {
+        allowRedirect = true;
+    }
 
-        if (allowRedirect) {
-            // FIXME: consider combining this with CORS redirect handling performed by
-            // CrossOriginAccessControl::handleRedirect().
-            clearResource();
-
-            RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(redirectResponse.url());
-            RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::create(request.url());
-            // If the original request wasn't same-origin, then if the request URL origin is not same origin with the original URL origin,
-            // set the source origin to a globally unique identifier. (If the original request was same-origin, the origin of the new request
-            // should be the original URL origin.)
-            if (!m_sameOriginRequest && !originalOrigin->isSameSchemeHostPort(requestOrigin.get()))
-                m_securityOrigin = SecurityOrigin::createUnique();
-            // Force any subsequent requests to use these checks.
-            m_sameOriginRequest = false;
-
-            // Since the request is no longer same-origin, if the user didn't request credentials in
-            // the first place, update our state so we neither request them nor expect they must be allowed.
-            if (m_resourceLoaderOptions.credentialsRequested == ClientDidNotRequestCredentials)
-                m_forceDoNotAllowStoredCredentials = true;
-
-            // Save the referrer to use when following the redirect.
-            m_didRedirect = true;
-            m_referrerAfterRedirect = Referrer(request.httpReferrer(), request.getReferrerPolicy());
-
-            // Remove any headers that may have been added by the network layer that cause access control to fail.
-            request.clearHTTPReferrer();
-            request.clearHTTPOrigin();
-            request.clearHTTPUserAgent();
-            // Add any CORS simple request headers which we previously saved from the original request.
-            for (const auto& header : m_simpleRequestHeaders)
-                request.setHTTPHeaderField(header.key, header.value);
-            makeCrossOriginAccessRequest(request);
-            // |this| may be dead here.
-            return;
-        }
-
+    if (!allowRedirect) {
         ThreadableLoaderClient* client = m_client;
         clear();
         client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, redirectResponse.url().getString(), accessControlErrorDescription));
         // |this| may be dead here.
-    } else {
-        ThreadableLoaderClient* client = m_client;
-        clear();
-        client->didFailRedirectCheck();
-        // |this| may be dead here.
+
+        request = ResourceRequest();
+
+        return;
     }
 
-    request = ResourceRequest();
+    // FIXME: consider combining this with CORS redirect handling performed by
+    // CrossOriginAccessControl::handleRedirect().
+    clearResource();
+
+    // If the original request wasn't same-origin, then if the request URL origin is not same origin with the original URL origin,
+    // set the source origin to a globally unique identifier. (If the original request was same-origin, the origin of the new request
+    // should be the original URL origin.)
+    if (!m_sameOriginRequest) {
+        RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(redirectResponse.url());
+        RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::create(request.url());
+        if (!originalOrigin->isSameSchemeHostPort(requestOrigin.get()))
+            m_securityOrigin = SecurityOrigin::createUnique();
+    }
+    // Force any subsequent requests to use these checks.
+    m_sameOriginRequest = false;
+
+    // Since the request is no longer same-origin, if the user didn't request credentials in
+    // the first place, update our state so we neither request them nor expect they must be allowed.
+    if (m_resourceLoaderOptions.credentialsRequested == ClientDidNotRequestCredentials)
+        m_forceDoNotAllowStoredCredentials = true;
+
+    // Save the referrer to use when following the redirect.
+    m_didRedirect = true;
+    m_referrerAfterRedirect = Referrer(request.httpReferrer(), request.getReferrerPolicy());
+
+    // Remove any headers that may have been added by the network layer that cause access control to fail.
+    request.clearHTTPReferrer();
+    request.clearHTTPOrigin();
+    request.clearHTTPUserAgent();
+    // Add any CORS simple request headers which we previously saved from the original request.
+    for (const auto& header : m_simpleRequestHeaders)
+        request.setHTTPHeaderField(header.key, header.value);
+    makeCrossOriginAccessRequest(request);
+    // |this| may be dead here.
 }
 
 void DocumentThreadableLoader::redirectBlocked()
