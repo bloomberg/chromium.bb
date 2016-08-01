@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/test/gtest_util.h"
 #include "base/third_party/libevent/event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -77,8 +78,6 @@ class StupidWatcher : public MessagePumpLibevent::Watcher {
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
 
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
-
 // Test to make sure that we catch calling WatchFileDescriptor off of the
 // wrong thread.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -91,19 +90,20 @@ TEST_F(MessagePumpLibeventTest, MAYBE_TestWatchingFromBadThread) {
   MessagePumpLibevent::FileDescriptorWatcher watcher;
   StupidWatcher delegate;
 
-  ASSERT_DEATH(io_loop()->WatchFileDescriptor(
-      STDOUT_FILENO, false, MessageLoopForIO::WATCH_READ, &watcher, &delegate),
+  ASSERT_DCHECK_DEATH(
+      io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
+                                     MessageLoopForIO::WATCH_READ, &watcher,
+                                     &delegate),
       "Check failed: "
       "watch_file_descriptor_caller_checker_.CalledOnValidThread\\(\\)");
 }
 
 TEST_F(MessagePumpLibeventTest, QuitOutsideOfRun) {
   std::unique_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
-  ASSERT_DEATH(pump->Quit(), "Check failed: in_run_. "
-                             "Quit was called outside of Run!");
+  ASSERT_DCHECK_DEATH(pump->Quit(),
+                      "Check failed: in_run_. "
+                      "Quit was called outside of Run!");
 }
-
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 class BaseWatcher : public MessagePumpLibevent::Watcher {
  public:

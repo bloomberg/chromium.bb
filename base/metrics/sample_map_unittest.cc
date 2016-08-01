@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -144,8 +145,6 @@ TEST(SampleMapIteratorTest, SkipEmptyRanges) {
   EXPECT_TRUE(it->Done());
 }
 
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
-
 TEST(SampleMapIteratorDeathTest, IterateDoneTest) {
   SampleMap samples(1);
 
@@ -156,17 +155,14 @@ TEST(SampleMapIteratorDeathTest, IterateDoneTest) {
   HistogramBase::Sample min;
   HistogramBase::Sample max;
   HistogramBase::Count count;
-  EXPECT_DEATH(it->Get(&min, &max, &count), "");
+  EXPECT_DCHECK_DEATH(it->Get(&min, &max, &count), "");
 
-  EXPECT_DEATH(it->Next(), "");
+  EXPECT_DCHECK_DEATH(it->Next(), "");
 
   samples.Accumulate(1, 100);
   it = samples.Iterator();
   EXPECT_FALSE(it->Done());
 }
-
-#endif
-// (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace base

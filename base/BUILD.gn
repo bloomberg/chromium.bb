@@ -1919,7 +1919,6 @@ test("base_unittests") {
     "task_scheduler/task_tracker_unittest.cc",
     "task_scheduler/test_task_factory.cc",
     "task_scheduler/test_task_factory.h",
-    "task_scheduler/test_utils.h",
     "template_util_unittest.cc",
     "test/histogram_tester_unittest.cc",
     "test/icu_test_util.cc",

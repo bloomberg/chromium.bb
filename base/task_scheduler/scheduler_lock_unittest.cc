@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task_scheduler/test_utils.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

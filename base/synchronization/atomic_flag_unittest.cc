@@ -8,19 +8,11 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// Death tests misbehave on Android.
-// TODO(fdoray): Remove this when https://codereview.chromium.org/2162053006
-// lands.
-#if DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-#define EXPECT_DCHECK_DEATH(statement, regex) EXPECT_DEATH(statement, regex)
-#else
-#define EXPECT_DCHECK_DEATH(statement, regex)
-#endif
 
 namespace base {
 

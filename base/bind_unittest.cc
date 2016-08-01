@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1095,17 +1096,12 @@ TEST_F(BindTest, WindowsCallingConventions) {
 }
 #endif
 
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
-
 // Test null callbacks cause a DCHECK.
 TEST(BindDeathTest, NullCallback) {
   base::Callback<void(int)> null_cb;
   ASSERT_TRUE(null_cb.is_null());
-  EXPECT_DEATH(base::Bind(null_cb, 42), "");
+  EXPECT_DCHECK_DEATH(base::Bind(null_cb, 42), "");
 }
-
-#endif  // (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) &&
-        //     GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace base

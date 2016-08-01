@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,21 +73,19 @@ class StupidWatcher : public MessagePumpIOSForIO::Watcher {
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
 
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
-
-// Test to make sure that we catch calling WatchFileDescriptor off of the
-//  wrong thread.
+// Test to make sure that we catch calling WatchFileDescriptor off of the wrong
+// thread.
 TEST_F(MessagePumpIOSForIOTest, TestWatchingFromBadThread) {
   MessagePumpIOSForIO::FileDescriptorWatcher watcher;
   StupidWatcher delegate;
 
-  ASSERT_DEBUG_DEATH(io_loop()->WatchFileDescriptor(
-      STDOUT_FILENO, false, MessageLoopForIO::WATCH_READ, &watcher, &delegate),
+  ASSERT_DCHECK_DEATH(
+      io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
+                                     MessageLoopForIO::WATCH_READ, &watcher,
+                                     &delegate),
       "Check failed: "
       "watch_file_descriptor_caller_checker_.CalledOnValidThread\\(\\)");
 }
-
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 class BaseWatcher : public MessagePumpIOSForIO::Watcher {
  public:

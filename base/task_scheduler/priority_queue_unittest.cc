@@ -13,7 +13,7 @@
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/task_scheduler/test_utils.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"

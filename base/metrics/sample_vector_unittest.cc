@@ -12,6 +12,7 @@
 
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -260,8 +261,6 @@ TEST(SampleVectorIteratorTest, IterateTest) {
   EXPECT_EQ(4, i);
 }
 
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
-
 TEST(SampleVectorIteratorDeathTest, IterateDoneTest) {
   BucketRanges ranges(5);
   ranges.set_range(0, 0);
@@ -278,17 +277,14 @@ TEST(SampleVectorIteratorDeathTest, IterateDoneTest) {
   HistogramBase::Sample min;
   HistogramBase::Sample max;
   HistogramBase::Count count;
-  EXPECT_DEATH(it->Get(&min, &max, &count), "");
+  EXPECT_DCHECK_DEATH(it->Get(&min, &max, &count), "");
 
-  EXPECT_DEATH(it->Next(), "");
+  EXPECT_DCHECK_DEATH(it->Next(), "");
 
   samples.Accumulate(2, 100);
   it = samples.Iterator();
   EXPECT_FALSE(it->Done());
 }
-
-#endif
-// (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace base

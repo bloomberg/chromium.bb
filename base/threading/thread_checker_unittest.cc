@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,8 +119,6 @@ TEST(ThreadCheckerTest, DetachFromThread) {
   call_on_thread.Join();
 }
 
-#if GTEST_HAS_DEATH_TEST || !ENABLE_THREAD_CHECKER
-
 void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
   std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
@@ -134,9 +133,8 @@ void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
 
 #if ENABLE_THREAD_CHECKER
 TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
-  ASSERT_DEATH({
-      ThreadCheckerClass::MethodOnDifferentThreadImpl();
-    }, "");
+  ASSERT_DCHECK_DEATH({ ThreadCheckerClass::MethodOnDifferentThreadImpl(); },
+                      "");
 }
 #else
 TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
@@ -163,17 +161,14 @@ void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
 
 #if ENABLE_THREAD_CHECKER
 TEST(ThreadCheckerDeathTest, DetachFromThreadInDebug) {
-  ASSERT_DEATH({
-    ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
-    }, "");
+  ASSERT_DCHECK_DEATH(
+      { ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl(); }, "");
 }
 #else
 TEST(ThreadCheckerTest, DetachFromThreadInRelease) {
   ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
 }
 #endif  // ENABLE_THREAD_CHECKER
-
-#endif  // GTEST_HAS_DEATH_TEST || !ENABLE_THREAD_CHECKER
 
 // Just in case we ever get lumped together with other compilation units.
 #undef ENABLE_THREAD_CHECKER

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,8 +107,6 @@ TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
   delete_on_thread.Join();
 }
 
-#if GTEST_HAS_DEATH_TEST || !ENABLE_NON_THREAD_SAFE
-
 void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
   std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
       new NonThreadSafeClass);
@@ -122,9 +121,8 @@ void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
 
 #if ENABLE_NON_THREAD_SAFE
 TEST(NonThreadSafeDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
-  ASSERT_DEATH({
-      NonThreadSafeClass::MethodOnDifferentThreadImpl();
-    }, "");
+  ASSERT_DCHECK_DEATH({ NonThreadSafeClass::MethodOnDifferentThreadImpl(); },
+                      "");
 }
 #else
 TEST(NonThreadSafeTest, MethodAllowedOnDifferentThreadInRelease) {
@@ -147,17 +145,14 @@ void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
 
 #if ENABLE_NON_THREAD_SAFE
 TEST(NonThreadSafeDeathTest, DestructorNotAllowedOnDifferentThreadInDebug) {
-  ASSERT_DEATH({
-      NonThreadSafeClass::DestructorOnDifferentThreadImpl();
-    }, "");
+  ASSERT_DCHECK_DEATH(
+      { NonThreadSafeClass::DestructorOnDifferentThreadImpl(); }, "");
 }
 #else
 TEST(NonThreadSafeTest, DestructorAllowedOnDifferentThreadInRelease) {
   NonThreadSafeClass::DestructorOnDifferentThreadImpl();
 }
 #endif  // ENABLE_NON_THREAD_SAFE
-
-#endif  // GTEST_HAS_DEATH_TEST || !ENABLE_NON_THREAD_SAFE
 
 // Just in case we ever get lumped together with other compilation units.
 #undef ENABLE_NON_THREAD_SAFE

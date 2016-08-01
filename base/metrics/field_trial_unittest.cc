@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -1120,15 +1121,15 @@ TEST(FieldTrialTestWithoutList, StatesStringFormat) {
   EXPECT_TRUE(field_trial_list.TrialExists("zzz"));
 }
 
-#if GTEST_HAS_DEATH_TEST
 TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
   // Trying to instantiate a one-time randomized field trial before the
   // FieldTrialList is created should crash.
-  EXPECT_DEATH(FieldTrialList::FactoryGetFieldTrial(
-      "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
-      base::FieldTrialList::kNoExpirationYear, 1, 1,
-      base::FieldTrial::ONE_TIME_RANDOMIZED, NULL), "");
+  EXPECT_DCHECK_DEATH(
+      FieldTrialList::FactoryGetFieldTrial(
+          "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
+          base::FieldTrialList::kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+      "");
 }
-#endif
 
 }  // namespace base

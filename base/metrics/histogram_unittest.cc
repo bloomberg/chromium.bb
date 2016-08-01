@@ -22,6 +22,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/gtest_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -701,7 +702,6 @@ TEST_P(HistogramTest, FactoryTime) {
           << "ns each.";
 }
 
-#if GTEST_HAS_DEATH_TEST
 // For Histogram, LinearHistogram and CustomHistogram, the minimum for a
 // declared range is 1, while the maximum is (HistogramBase::kSampleType_MAX -
 // 1). But we accept ranges exceeding those limits, and silently clamped to
@@ -735,17 +735,18 @@ TEST(HistogramDeathTest, BadRangesTest) {
 
   // CustomHistogram does not accepts kSampleType_MAX as range.
   custom_ranges.push_back(HistogramBase::kSampleType_MAX);
-  EXPECT_DEATH(CustomHistogram::FactoryGet("BadRangesCustom2", custom_ranges,
-                                           HistogramBase::kNoFlags),
-               "");
+  EXPECT_DCHECK_DEATH(
+      CustomHistogram::FactoryGet("BadRangesCustom2", custom_ranges,
+                                  HistogramBase::kNoFlags),
+      "");
 
   // CustomHistogram needs at least 1 valid range.
   custom_ranges.clear();
   custom_ranges.push_back(0);
-  EXPECT_DEATH(CustomHistogram::FactoryGet("BadRangesCustom3", custom_ranges,
-                                           HistogramBase::kNoFlags),
-               "");
+  EXPECT_DCHECK_DEATH(
+      CustomHistogram::FactoryGet("BadRangesCustom3", custom_ranges,
+                                  HistogramBase::kNoFlags),
+      "");
 }
-#endif
 
 }  // namespace base
