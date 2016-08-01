@@ -19,10 +19,10 @@
 #include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/content_suggestions_category.h"
-#include "components/ntp_snippets/content_suggestions_category_factory.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -77,7 +77,7 @@ class NTPSnippetsService : public KeyedService,
   NTPSnippetsService(bool enabled,
                      PrefService* pref_service,
                      suggestions::SuggestionsService* suggestions_service,
-                     ContentSuggestionsCategoryFactory* category_factory,
+                     CategoryFactory* category_factory,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -141,10 +141,9 @@ class NTPSnippetsService : public KeyedService,
   // ContentSuggestionsProvider implementation
   // TODO(pke): At some point reorder the implementations in the .cc file
   // accordingly.
-  std::vector<ContentSuggestionsCategory> GetProvidedCategories() override;
+  std::vector<Category> GetProvidedCategories() override;
   void SetObserver(Observer* observer) override;
-  ContentSuggestionsCategoryStatus GetCategoryStatus(
-      ContentSuggestionsCategory category) override;
+  CategoryStatus GetCategoryStatus(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
@@ -166,8 +165,8 @@ class NTPSnippetsService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
 
   // TODO(pke): As soon as the DisabledReason is replaced with the new status,
-  // also remove the old State enum and replace it with
-  // ContentSuggestionsCategoryStatus and a similar status diagram.
+  // also remove the old State enum and replace it with CategoryStatus and a
+  // similar status diagram.
   // Possible state transitions:
   //  +------- NOT_INITED ------+
   //  |        /       \        |
@@ -251,7 +250,7 @@ class NTPSnippetsService : public KeyedService,
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Also updates the provider status. Does nothing except updating the provider
   // status if called with the current state.
-  void EnterState(State state, ContentSuggestionsCategoryStatus status);
+  void EnterState(State state, CategoryStatus status);
 
   // Enables the service and triggers a fetch if required. Do not call directly,
   // use |EnterState| instead.
@@ -274,7 +273,7 @@ class NTPSnippetsService : public KeyedService,
 
   State state_;
 
-  ContentSuggestionsCategoryStatus category_status_;
+  CategoryStatus category_status_;
 
   PrefService* pref_service_;
 
@@ -326,7 +325,7 @@ class NTPSnippetsService : public KeyedService,
   // The fetch will be executed after the database load finishes.
   bool fetch_after_load_;
 
-  const ContentSuggestionsCategory provided_category_;
+  const Category provided_category_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };

@@ -10,10 +10,10 @@
 
 #include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/content_suggestions_category.h"
-#include "components/ntp_snippets/content_suggestions_category_factory.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_types.h"
@@ -33,7 +33,7 @@ class OfflinePageSuggestionsProvider
       public offline_pages::OfflinePageModel::Observer {
  public:
   OfflinePageSuggestionsProvider(
-      ContentSuggestionsCategoryFactory* category_factory,
+      CategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model);
   ~OfflinePageSuggestionsProvider() override;
 
@@ -42,10 +42,9 @@ class OfflinePageSuggestionsProvider
 
  private:
   // ContentSuggestionsProvider implementation.
-  std::vector<ContentSuggestionsCategory> GetProvidedCategories() override;
+  std::vector<Category> GetProvidedCategories() override;
   void SetObserver(ContentSuggestionsProvider::Observer* observer) override;
-  ContentSuggestionsCategoryStatus GetCategoryStatus(
-      ContentSuggestionsCategory category) override;
+  CategoryStatus GetCategoryStatus(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
@@ -66,15 +65,15 @@ class OfflinePageSuggestionsProvider
       const offline_pages::MultipleOfflinePageItemResult& result);
 
   // Updates the |category_status_| and notifies the |observer_|, if necessary.
-  void NotifyStatusChanged(ContentSuggestionsCategoryStatus new_status);
+  void NotifyStatusChanged(CategoryStatus new_status);
 
-  ContentSuggestionsCategoryStatus category_status_;
+  CategoryStatus category_status_;
 
   ContentSuggestionsProvider::Observer* observer_;
 
   offline_pages::OfflinePageModel* offline_page_model_;
 
-  const ContentSuggestionsCategory provided_category_;
+  const Category provided_category_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageSuggestionsProvider);
 };

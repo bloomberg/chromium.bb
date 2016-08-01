@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
@@ -117,7 +117,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mBottomSpacer = new SpacingListItem();
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mItems = new ArrayList<>();
-        mProviderStatus = ContentSuggestionsCategoryStatus.INITIALIZING;
+        mProviderStatus = CategoryStatus.INITIALIZING;
         mSnippetsBridge = snippetsBridge;
         mUiConfig = uiConfig;
         mStatusCard = StatusListItem.create(snippetsBridge.getCategoryStatus(), this);
@@ -153,8 +153,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     @Override
     public void onCategoryStatusChanged(int categoryStatus) {
         // Observers should not be registered for that state
-        assert categoryStatus
-                != ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
+        assert categoryStatus != CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
 
         mProviderStatus = categoryStatus;
         mStatusCard = StatusListItem.create(mProviderStatus, this);

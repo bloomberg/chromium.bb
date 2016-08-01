@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_CATEGORY_STATUS_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_CATEGORY_STATUS_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CATEGORY_STATUS_H_
+#define COMPONENTS_NTP_SNIPPETS_CATEGORY_STATUS_H_
 
 namespace ntp_snippets {
 
 // Represents the status of a category of content suggestions.
 // On Android builds, a Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
-enum class ContentSuggestionsCategoryStatus {
+enum class CategoryStatus {
   // The provider is still initializing and it is not yet determined whether
   // content suggestions will be available or not.
   INITIALIZING,
@@ -40,15 +40,13 @@ enum class ContentSuggestionsCategoryStatus {
 };
 
 // Determines whether the given status is one of the AVAILABLE statuses.
-bool IsContentSuggestionsCategoryStatusAvailable(
-    ContentSuggestionsCategoryStatus status);
+bool IsCategoryStatusAvailable(CategoryStatus status);
 
 // Determines whether the given status is INITIALIZING or one of the AVAILABLE
 // statuses. All of these statuses have in common that there is or will soon be
 // content.
-bool IsContentSuggestionsCategoryStatusInitOrAvailable(
-    ContentSuggestionsCategoryStatus status);
+bool IsCategoryStatusInitOrAvailable(CategoryStatus status);
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_CATEGORY_STATUS_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CATEGORY_STATUS_H_

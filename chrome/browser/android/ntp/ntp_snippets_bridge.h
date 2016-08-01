@@ -12,8 +12,8 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/ntp_snippets/content_suggestions_category.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 
 namespace gfx {
@@ -50,7 +50,7 @@ class NTPSnippetsBridge
                       const base::android::JavaParamRef<jstring>& jurl);
 
   // Returns the status of the ARTICLES category.
-  // See ContentSuggestionsCategoryStatus for more info.
+  // See CategoryStatus for more info.
   int GetCategoryStatus(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
@@ -62,8 +62,8 @@ class NTPSnippetsBridge
   // ContentSuggestionsService::Observer overrides
   void OnNewSuggestions() override;
   void OnCategoryStatusChanged(
-      ntp_snippets::ContentSuggestionsCategory category,
-      ntp_snippets::ContentSuggestionsCategoryStatus new_status) override;
+      ntp_snippets::Category category,
+      ntp_snippets::CategoryStatus new_status) override;
   void ContentSuggestionsServiceShutdown() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,

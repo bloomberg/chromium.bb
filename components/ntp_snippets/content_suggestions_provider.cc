@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "components/ntp_snippets/content_suggestions_category_factory.h"
+#include "components/ntp_snippets/category_factory.h"
 
 namespace ntp_snippets {
 
@@ -18,19 +18,19 @@ const char kSeparator = '|';
 }  // namespace
 
 ContentSuggestionsProvider::ContentSuggestionsProvider(
-    ContentSuggestionsCategoryFactory* category_factory)
+    CategoryFactory* category_factory)
     : category_factory_(category_factory) {}
 
 ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 
 std::string ContentSuggestionsProvider::MakeUniqueID(
-    ContentSuggestionsCategory category,
+    Category category,
     const std::string& within_category_id) {
   return base::StringPrintf(kCombinedIDFormat, category.id(),
                             within_category_id.c_str());
 }
 
-ContentSuggestionsCategory ContentSuggestionsProvider::GetCategoryFromUniqueID(
+Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
     const std::string& unique_id) {
   size_t colon_index = unique_id.find(kSeparator);
   DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "

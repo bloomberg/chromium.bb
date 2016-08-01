@@ -13,7 +13,7 @@ import android.widget.TextView;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 
@@ -138,30 +138,30 @@ public abstract class StatusListItem implements NewTabPageListItem {
     public static StatusListItem create(int categoryStatus, NewTabPageAdapter adapter) {
         switch (categoryStatus) {
             // TODO(dgn): AVAILABLE_LOADING and INITIALIZING should show a progress indicator.
-            case ContentSuggestionsCategoryStatus.AVAILABLE:
-            case ContentSuggestionsCategoryStatus.AVAILABLE_LOADING:
-            case ContentSuggestionsCategoryStatus.INITIALIZING:
+            case CategoryStatus.AVAILABLE:
+            case CategoryStatus.AVAILABLE_LOADING:
+            case CategoryStatus.INITIALIZING:
                 return new NoSnippets(adapter);
 
-            case ContentSuggestionsCategoryStatus.SIGNED_OUT:
+            case CategoryStatus.SIGNED_OUT:
                 return new SignedOut();
 
-            case ContentSuggestionsCategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
+            case CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
                 Log.wtf(TAG, "FATAL: Attempted to create a status card while the feature should be "
                         + "off.");
                 return null;
 
-            case ContentSuggestionsCategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
+            case CategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
                 Log.d(TAG, "Not showing ARTICLES suggestions because this category is disabled.");
                 // TODO(pke): Replace this.
                 return new CategoryExplicitlyDisabled();
 
-            case ContentSuggestionsCategoryStatus.NOT_PROVIDED:
+            case CategoryStatus.NOT_PROVIDED:
                 Log.wtf(TAG, "FATAL: Attempted to create a status card for content suggestions "
                                 + " when provider for ARTICLES is not registered.");
                 return null;
 
-            case ContentSuggestionsCategoryStatus.LOADING_ERROR:
+            case CategoryStatus.LOADING_ERROR:
                 Log.d(TAG, "Not showing ARTICLES suggestions because of provider error.");
                 // TODO(pke): Replace this.
                 return new ProviderError();

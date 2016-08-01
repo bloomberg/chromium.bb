@@ -187,7 +187,7 @@ NTPSnippetsService::NTPSnippetsService(
     bool enabled,
     PrefService* pref_service,
     SuggestionsService* suggestions_service,
-    ContentSuggestionsCategoryFactory* category_factory,
+    CategoryFactory* category_factory,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -197,7 +197,7 @@ NTPSnippetsService::NTPSnippetsService(
     std::unique_ptr<NTPSnippetsStatusService> status_service)
     : ContentSuggestionsProvider(category_factory),
       state_(State::NOT_INITED),
-      category_status_(ContentSuggestionsCategoryStatus::INITIALIZING),
+      category_status_(CategoryStatus::INITIALIZING),
       pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       application_language_code_(application_language_code),
@@ -209,17 +209,15 @@ NTPSnippetsService::NTPSnippetsService(
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
       fetch_after_load_(false),
-      provided_category_(category_factory->FromKnownCategory(
-          KnownSuggestionsCategories::ARTICLES)) {
+      provided_category_(
+          category_factory->FromKnownCategory(KnownCategories::ARTICLES)) {
   // In some cases, don't even bother loading the database.
   if (!enabled) {
-    EnterState(State::SHUT_DOWN,
-               ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
+    EnterState(State::SHUT_DOWN, CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
     return;
   }
   if (database_->IsErrorState()) {
-    EnterState(State::SHUT_DOWN,
-               ContentSuggestionsCategoryStatus::LOADING_ERROR);
+    EnterState(State::SHUT_DOWN, CategoryStatus::LOADING_ERROR);
     return;
   }
 
@@ -247,7 +245,7 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // Inherited from KeyedService.
 void NTPSnippetsService::Shutdown() {
-  EnterState(State::SHUT_DOWN, ContentSuggestionsCategoryStatus::NOT_PROVIDED);
+  EnterState(State::SHUT_DOWN, CategoryStatus::NOT_PROVIDED);
 }
 
 void NTPSnippetsService::FetchSnippets(bool force_request) {
@@ -281,9 +279,8 @@ void NTPSnippetsService::RescheduleFetching() {
   }
 }
 
-std::vector<ContentSuggestionsCategory>
-NTPSnippetsService::GetProvidedCategories() {
-  return std::vector<ContentSuggestionsCategory>({provided_category_});
+std::vector<Category> NTPSnippetsService::GetProvidedCategories() {
+  return std::vector<Category>({provided_category_});
 }
 
 void NTPSnippetsService::FetchSuggestionImage(
@@ -357,9 +354,8 @@ void NTPSnippetsService::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
-ContentSuggestionsCategoryStatus NTPSnippetsService::GetCategoryStatus(
-    ContentSuggestionsCategory category) {
-  DCHECK(category.IsKnownCategory(KnownSuggestionsCategories::ARTICLES));
+CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
+  DCHECK(category.IsKnownCategory(KnownCategories::ARTICLES));
   return category_status_;
 }
 
@@ -421,7 +417,7 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
 }
 
 void NTPSnippetsService::OnDatabaseError() {
-  EnterState(State::SHUT_DOWN, ContentSuggestionsCategoryStatus::LOADING_ERROR);
+  EnterState(State::SHUT_DOWN, CategoryStatus::LOADING_ERROR);
 }
 
 void NTPSnippetsService::OnSuggestionsChanged(
@@ -721,23 +717,20 @@ void NTPSnippetsService::OnDisabledReasonChanged(
 
   switch (disabled_reason) {
     case DisabledReason::NONE:
-      EnterState(State::READY, ContentSuggestionsCategoryStatus::AVAILABLE);
+      EnterState(State::READY, CategoryStatus::AVAILABLE);
       break;
 
     case DisabledReason::EXPLICITLY_DISABLED:
-      EnterState(
-          State::DISABLED,
-          ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
+      EnterState(State::DISABLED, CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 
     case DisabledReason::SIGNED_OUT:
-      EnterState(State::DISABLED, ContentSuggestionsCategoryStatus::SIGNED_OUT);
+      EnterState(State::DISABLED, CategoryStatus::SIGNED_OUT);
       break;
   }
 }
 
-void NTPSnippetsService::EnterState(State state,
-                                    ContentSuggestionsCategoryStatus status) {
+void NTPSnippetsService::EnterState(State state, CategoryStatus status) {
   if (status != category_status_) {
     category_status_ = status;
     NotifyCategoryStatusChanged();

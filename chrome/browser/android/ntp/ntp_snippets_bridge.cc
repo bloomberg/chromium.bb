@@ -32,9 +32,9 @@ using base::android::ToJavaLongArray;
 using base::android::ToJavaFloatArray;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using ntp_snippets::ContentSuggestionsCategory;
-using ntp_snippets::ContentSuggestionsCategoryStatus;
-using ntp_snippets::KnownSuggestionsCategories;
+using ntp_snippets::Category;
+using ntp_snippets::CategoryStatus;
+using ntp_snippets::KnownCategories;
 
 namespace {
 
@@ -130,7 +130,7 @@ int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return static_cast<int>(content_suggestions_service_->GetCategoryStatus(
       content_suggestions_service_->category_factory()->FromKnownCategory(
-          KnownSuggestionsCategories::ARTICLES)));
+          KnownCategories::ARTICLES)));
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
@@ -156,10 +156,9 @@ void NTPSnippetsBridge::OnNewSuggestions() {
   // them in a single section on the UI.
   // TODO(pke): This is only for debugging new sections and will be replaced
   // with proper multi-section UI support.
-  for (ContentSuggestionsCategory category :
-       content_suggestions_service_->GetCategories()) {
+  for (Category category : content_suggestions_service_->GetCategories()) {
     if (content_suggestions_service_->GetCategoryStatus(category) !=
-        ContentSuggestionsCategoryStatus::AVAILABLE) {
+        CategoryStatus::AVAILABLE) {
       continue;
     }
     for (const ntp_snippets::ContentSuggestion& suggestion :
@@ -189,10 +188,9 @@ void NTPSnippetsBridge::OnNewSuggestions() {
       ToJavaFloatArray(env, scores).obj());
 }
 
-void NTPSnippetsBridge::OnCategoryStatusChanged(
-    ContentSuggestionsCategory category,
-    ContentSuggestionsCategoryStatus new_status) {
-  if (!category.IsKnownCategory(KnownSuggestionsCategories::ARTICLES))
+void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
+                                                CategoryStatus new_status) {
+  if (!category.IsKnownCategory(KnownCategories::ARTICLES))
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();

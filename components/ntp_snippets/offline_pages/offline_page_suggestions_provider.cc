@@ -20,14 +20,14 @@ const int kMaxSuggestionsCount = 5;
 }  // namespace
 
 OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
-    ContentSuggestionsCategoryFactory* category_factory,
+    CategoryFactory* category_factory,
     OfflinePageModel* offline_page_model)
     : ContentSuggestionsProvider(category_factory),
-      category_status_(ContentSuggestionsCategoryStatus::AVAILABLE_LOADING),
+      category_status_(CategoryStatus::AVAILABLE_LOADING),
       observer_(nullptr),
       offline_page_model_(offline_page_model),
-      provided_category_(category_factory->FromKnownCategory(
-          KnownSuggestionsCategories::OFFLINE_PAGES)) {
+      provided_category_(
+          category_factory->FromKnownCategory(KnownCategories::OFFLINE_PAGES)) {
   offline_page_model_->AddObserver(this);
 }
 
@@ -36,15 +36,14 @@ OfflinePageSuggestionsProvider::~OfflinePageSuggestionsProvider() {}
 // Inherited from KeyedService.
 void OfflinePageSuggestionsProvider::Shutdown() {
   offline_page_model_->RemoveObserver(this);
-  category_status_ = ContentSuggestionsCategoryStatus::NOT_PROVIDED;
+  category_status_ = CategoryStatus::NOT_PROVIDED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-std::vector<ContentSuggestionsCategory>
-OfflinePageSuggestionsProvider::GetProvidedCategories() {
-  return std::vector<ContentSuggestionsCategory>({provided_category_});
+std::vector<Category> OfflinePageSuggestionsProvider::GetProvidedCategories() {
+  return std::vector<Category>({provided_category_});
 }
 
 void OfflinePageSuggestionsProvider::SetObserver(
@@ -54,9 +53,8 @@ void OfflinePageSuggestionsProvider::SetObserver(
     FetchOfflinePages();
 }
 
-ContentSuggestionsCategoryStatus
-OfflinePageSuggestionsProvider::GetCategoryStatus(
-    ContentSuggestionsCategory category) {
+CategoryStatus OfflinePageSuggestionsProvider::GetCategoryStatus(
+    Category category) {
   return category_status_;
 }
 
@@ -105,7 +103,7 @@ void OfflinePageSuggestionsProvider::FetchOfflinePages() {
 
 void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     const MultipleOfflinePageItemResult& result) {
-  NotifyStatusChanged(ContentSuggestionsCategoryStatus::AVAILABLE);
+  NotifyStatusChanged(CategoryStatus::AVAILABLE);
   if (!observer_)
     return;
 
@@ -134,7 +132,7 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
 }
 
 void OfflinePageSuggestionsProvider::NotifyStatusChanged(
-    ContentSuggestionsCategoryStatus new_status) {
+    CategoryStatus new_status) {
   if (category_status_ == new_status)
     return;
   category_status_ = new_status;

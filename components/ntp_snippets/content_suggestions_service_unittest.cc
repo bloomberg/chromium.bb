@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,23 +49,21 @@ std::vector<ContentSuggestion> CreateSuggestions(std::vector<int> numbers) {
 
 class MockProvider : public ContentSuggestionsProvider {
  public:
-  MockProvider(ContentSuggestionsCategoryFactory* category_factory,
-               ContentSuggestionsCategory provided_category)
-      : MockProvider(
-            category_factory,
-            std::vector<ContentSuggestionsCategory>({provided_category})){};
+  MockProvider(CategoryFactory* category_factory, Category provided_category)
+      : MockProvider(category_factory,
+                     std::vector<Category>({provided_category})){};
 
-  MockProvider(ContentSuggestionsCategoryFactory* category_factory,
-               std::vector<ContentSuggestionsCategory> provided_categories)
+  MockProvider(CategoryFactory* category_factory,
+               std::vector<Category> provided_categories)
       : ContentSuggestionsProvider(category_factory),
         observer_(nullptr),
         provided_categories_(provided_categories) {
-    for (ContentSuggestionsCategory category : provided_categories) {
-      statuses_[category.id()] = ContentSuggestionsCategoryStatus::AVAILABLE;
+    for (Category category : provided_categories) {
+      statuses_[category.id()] = CategoryStatus::AVAILABLE;
     }
   }
 
-  std::vector<ContentSuggestionsCategory> GetProvidedCategories() override {
+  std::vector<Category> GetProvidedCategories() override {
     return provided_categories_;
   }
 
@@ -73,18 +71,15 @@ class MockProvider : public ContentSuggestionsProvider {
 
   void SetObserver(Observer* observer) override { observer_ = observer; }
 
-  ContentSuggestionsCategoryStatus GetCategoryStatus(
-      ContentSuggestionsCategory category) {
+  CategoryStatus GetCategoryStatus(Category category) {
     return statuses_[category.id()];
   }
 
-  void FireSuggestionsChanged(ContentSuggestionsCategory category,
-                              std::vector<int> numbers) {
+  void FireSuggestionsChanged(Category category, std::vector<int> numbers) {
     observer_->OnNewSuggestions(category, CreateSuggestions(numbers));
   }
 
-  void FireCategoryStatusChanged(ContentSuggestionsCategory category,
-                                 ContentSuggestionsCategoryStatus new_status) {
+  void FireCategoryStatusChanged(Category category, CategoryStatus new_status) {
     statuses_[category.id()] = new_status;
     observer_->OnCategoryStatusChanged(category, new_status);
   }
@@ -103,16 +98,15 @@ class MockProvider : public ContentSuggestionsProvider {
 
  private:
   Observer* observer_;
-  std::vector<ContentSuggestionsCategory> provided_categories_;
-  std::map<int, ContentSuggestionsCategoryStatus> statuses_;
+  std::vector<Category> provided_categories_;
+  std::map<int, CategoryStatus> statuses_;
 };
 
 class MockServiceObserver : public ContentSuggestionsService::Observer {
  public:
   MOCK_METHOD0(OnNewSuggestions, void());
   MOCK_METHOD2(OnCategoryStatusChanged,
-               void(ContentSuggestionsCategory changed_category,
-                    ContentSuggestionsCategoryStatus new_status));
+               void(Category changed_category, CategoryStatus new_status));
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
   ~MockServiceObserver() override {}
 };
@@ -134,10 +128,8 @@ class ContentSuggestionsServiceTest : public testing::Test {
 
   // Verifies that exactly the suggestions with the given |numbers| are
   // returned by the service for the given |category|.
-  void ExpectThatSuggestionsAre(ContentSuggestionsCategory category,
-                                std::vector<int> numbers) {
-    std::vector<ContentSuggestionsCategory> categories =
-        service()->GetCategories();
+  void ExpectThatSuggestionsAre(Category category, std::vector<int> numbers) {
+    std::vector<Category> categories = service()->GetCategories();
     auto position = std::find(categories.begin(), categories.end(), category);
     if (!numbers.empty()) {
       EXPECT_NE(categories.end(), position);
@@ -160,19 +152,16 @@ class ContentSuggestionsServiceTest : public testing::Test {
     }
   }
 
-  const std::map<ContentSuggestionsCategory,
+  const std::map<Category,
                  ContentSuggestionsProvider*,
                  ContentSuggestionsService::CompareCategoriesByID>&
   providers() {
     return service()->providers_;
   }
 
-  ContentSuggestionsCategoryFactory* category_factory() {
-    return service()->category_factory();
-  }
+  CategoryFactory* category_factory() { return service()->category_factory(); }
 
-  ContentSuggestionsCategory FromKnownCategory(
-      KnownSuggestionsCategories known_category) {
+  Category FromKnownCategory(KnownCategories known_category) {
     return service()->category_factory()->FromKnownCategory(known_category);
   }
 
@@ -205,10 +194,9 @@ class ContentSuggestionsServiceDisabledTest
 TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProvidersAndShutdown) {
   EXPECT_THAT(service()->state(),
               Eq(ContentSuggestionsService::State::ENABLED));
-  ContentSuggestionsCategory articles_category =
-      FromKnownCategory(KnownSuggestionsCategories::ARTICLES);
-  ContentSuggestionsCategory offline_pages_category =
-      FromKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES);
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+  Category offline_pages_category =
+      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
   MockProvider provider1(category_factory(), articles_category);
   MockProvider provider2(category_factory(), offline_pages_category);
   ASSERT_THAT(provider1.observer(), IsNull());
@@ -216,9 +204,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProvidersAndShutdown) {
   ASSERT_THAT(providers(), IsEmpty());
   EXPECT_THAT(service()->GetCategories(), IsEmpty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
 
   service()->RegisterProvider(&provider1);
   EXPECT_THAT(provider1.observer(), NotNull());
@@ -227,9 +215,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProvidersAndShutdown) {
   EXPECT_THAT(providers().size(), Eq(1ul));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(articles_category));
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::AVAILABLE));
+              Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
 
   service()->RegisterProvider(&provider2);
   EXPECT_THAT(provider1.observer(), NotNull());
@@ -240,9 +228,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProvidersAndShutdown) {
   EXPECT_THAT(service()->GetCategories(),
               ElementsAre(offline_pages_category, articles_category));
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::AVAILABLE));
+              Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::AVAILABLE));
+              Eq(CategoryStatus::AVAILABLE));
 
   provider1.FireShutdown();
   EXPECT_THAT(providers().count(articles_category), Eq(0ul));
@@ -250,45 +238,41 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProvidersAndShutdown) {
   EXPECT_THAT(providers().size(), Eq(1ul));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(offline_pages_category));
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              ContentSuggestionsCategoryStatus::NOT_PROVIDED);
+              CategoryStatus::NOT_PROVIDED);
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              ContentSuggestionsCategoryStatus::AVAILABLE);
+              CategoryStatus::AVAILABLE);
 
   provider2.FireShutdown();
   EXPECT_THAT(providers(), IsEmpty());
   EXPECT_THAT(service()->GetCategories(), IsEmpty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
 }
 
 TEST_F(ContentSuggestionsServiceDisabledTest, ShouldDoNothingWhenDisabled) {
-  ContentSuggestionsCategory articles_category =
-      FromKnownCategory(KnownSuggestionsCategories::ARTICLES);
-  ContentSuggestionsCategory offline_pages_category =
-      FromKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES);
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+  Category offline_pages_category =
+      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
   EXPECT_THAT(service()->state(),
               Eq(ContentSuggestionsService::State::DISABLED));
   MockProvider provider1(category_factory(), articles_category);
   service()->RegisterProvider(&provider1);
   EXPECT_THAT(providers(), IsEmpty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::
-                     ALL_SUGGESTIONS_EXPLICITLY_DISABLED));
+              Eq(CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::
-                     ALL_SUGGESTIONS_EXPLICITLY_DISABLED));
+              Eq(CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED));
   EXPECT_THAT(service()->GetCategories(), IsEmpty());
   EXPECT_THAT(service()->GetSuggestionsForCategory(articles_category),
               IsEmpty());
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
-  ContentSuggestionsCategory articles_category =
-      FromKnownCategory(KnownSuggestionsCategories::ARTICLES);
-  ContentSuggestionsCategory offline_pages_category =
-      FromKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES);
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+  Category offline_pages_category =
+      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
   MockProvider provider1(category_factory(), articles_category);
   MockProvider provider2(category_factory(), offline_pages_category);
   service()->RegisterProvider(&provider1);
@@ -317,10 +301,9 @@ TEST_F(ContentSuggestionsServiceTest,
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
-  ContentSuggestionsCategory articles_category =
-      FromKnownCategory(KnownSuggestionsCategories::ARTICLES);
-  ContentSuggestionsCategory offline_pages_category =
-      FromKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES);
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+  Category offline_pages_category =
+      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
   MockProvider provider1(category_factory(), articles_category);
   MockProvider provider2(category_factory(), offline_pages_category);
   service()->RegisterProvider(&provider1);
@@ -337,10 +320,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
-  ContentSuggestionsCategory articles_category =
-      FromKnownCategory(KnownSuggestionsCategories::ARTICLES);
-  ContentSuggestionsCategory offline_pages_category =
-      FromKnownCategory(KnownSuggestionsCategories::OFFLINE_PAGES);
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+  Category offline_pages_category =
+      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
 
   // Create and register providers
   MockProvider provider1(category_factory(), articles_category);
@@ -382,35 +364,29 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // provider2 reports OFFLINE_PAGEs as unavailable
-  EXPECT_CALL(
-      observer,
-      OnCategoryStatusChanged(
-          offline_pages_category,
-          ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED))
+  EXPECT_CALL(observer, OnCategoryStatusChanged(
+                            offline_pages_category,
+                            CategoryStatus::CATEGORY_EXPLICITLY_DISABLED))
       .Times(1);
   provider2.FireCategoryStatusChanged(
-      offline_pages_category,
-      ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
+      offline_pages_category, CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::AVAILABLE));
-  EXPECT_THAT(
-      service()->GetCategoryStatus(offline_pages_category),
-      Eq(ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED));
+              Eq(CategoryStatus::AVAILABLE));
+  EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
+              Eq(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED));
   ExpectThatSuggestionsAre(articles_category, {1});
   ExpectThatSuggestionsAre(offline_pages_category, std::vector<int>());
   Mock::VerifyAndClearExpectations(&observer);
 
   // Let provider1 shut down
-  EXPECT_CALL(observer, OnCategoryStatusChanged(
-                            articles_category,
-                            ContentSuggestionsCategoryStatus::NOT_PROVIDED))
+  EXPECT_CALL(observer, OnCategoryStatusChanged(articles_category,
+                                                CategoryStatus::NOT_PROVIDED))
       .Times(1);
   provider1.FireShutdown();
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
-  EXPECT_THAT(
-      service()->GetCategoryStatus(offline_pages_category),
-      Eq(ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED));
+              Eq(CategoryStatus::NOT_PROVIDED));
+  EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
+              Eq(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED));
   ExpectThatSuggestionsAre(articles_category, std::vector<int>());
   ExpectThatSuggestionsAre(offline_pages_category, std::vector<int>());
   Mock::VerifyAndClearExpectations(&observer);
@@ -419,9 +395,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   provider2.FireShutdown();
   EXPECT_TRUE(providers().empty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
-              Eq(ContentSuggestionsCategoryStatus::NOT_PROVIDED));
+              Eq(CategoryStatus::NOT_PROVIDED));
 
   // Shutdown the service
   EXPECT_CALL(observer, ContentSuggestionsServiceShutdown());

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
@@ -139,16 +139,16 @@ public class NewTabPageAdapterTest {
 
         // If we get told that snippets are enabled, we just leave the current
         // ones there and not clear.
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // When snippets are disabled, we clear them and we should go back to
         // the situation with the status card.
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.SIGNED_OUT);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.SIGNED_OUT);
         assertEquals(4, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }
@@ -175,17 +175,17 @@ public class NewTabPageAdapterTest {
         assertEquals(3 + snippets.size() - 1, ntpa.getItemCount());
 
         // When snippets are disabled, we should not be able to load them
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.SIGNED_OUT);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.SIGNED_OUT);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(4, ntpa.getItemCount());
 
         // INITIALIZING lets us load snippets still.
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.INITIALIZING);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.INITIALIZING);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
-        mSnippetsObserver.onCategoryStatusChanged(ContentSuggestionsCategoryStatus.AVAILABLE);
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }

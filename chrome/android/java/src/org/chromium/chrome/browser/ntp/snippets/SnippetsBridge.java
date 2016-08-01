@@ -34,14 +34,12 @@ public class SnippetsBridge {
 
     public static boolean isCategoryStatusAvailable(int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
-        return status == ContentSuggestionsCategoryStatus.AVAILABLE_LOADING
-                || status == ContentSuggestionsCategoryStatus.AVAILABLE;
+        return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.AVAILABLE;
     }
 
     public static boolean isCategoryStatusInitOrAvailable(int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
-        return status == ContentSuggestionsCategoryStatus.INITIALIZING
-                || isCategoryStatusAvailable(status);
+        return status == CategoryStatus.INITIALIZING || isCategoryStatusAvailable(status);
     }
 
     /**

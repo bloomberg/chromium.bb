@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "components/ntp_snippets/content_suggestions_category.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -41,8 +41,8 @@ class SnippetsInternalsMessageHandler
   // ntp_snippets::ContentSuggestionsService::Observer:
   void OnNewSuggestions() override;
   void OnCategoryStatusChanged(
-      ntp_snippets::ContentSuggestionsCategory category,
-      ntp_snippets::ContentSuggestionsCategoryStatus new_status) override;
+      ntp_snippets::Category category,
+      ntp_snippets::CategoryStatus new_status) override;
   void ContentSuggestionsServiceShutdown() override;
 
   void HandleRefreshContent(const base::ListValue* args);

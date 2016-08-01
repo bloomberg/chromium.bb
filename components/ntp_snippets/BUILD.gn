@@ -12,14 +12,14 @@ if (is_android) {
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 static_library("ntp_snippets") {
   sources = [
+    "category.cc",
+    "category.h",
+    "category_factory.cc",
+    "category_factory.h",
+    "category_status.cc",
+    "category_status.h",
     "content_suggestion.cc",
     "content_suggestion.h",
-    "content_suggestions_category.cc",
-    "content_suggestions_category.h",
-    "content_suggestions_category_factory.cc",
-    "content_suggestions_category_factory.h",
-    "content_suggestions_category_status.cc",
-    "content_suggestions_category_status.h",
     "content_suggestions_provider.cc",
     "content_suggestions_provider.h",
     "content_suggestions_service.cc",
@@ -76,7 +76,7 @@ static_library("ntp_snippets") {
 if (is_android) {
   java_cpp_enum("ntp_snippets_java_enums_srcjar") {
     sources = [
-      "content_suggestions_category_status.h",
+      "category_status.h",
     ]
   }
 }

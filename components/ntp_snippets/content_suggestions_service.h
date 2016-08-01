@@ -12,8 +12,8 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/ntp_snippets/content_suggestions_category_factory.h"
-#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
 namespace gfx {
@@ -43,9 +43,8 @@ class ContentSuggestionsService : public KeyedService,
     // category have been invalidated, which means that they must no longer be
     // displayed to the user. The UI must immediately clear any suggestions of
     // that category.
-    virtual void OnCategoryStatusChanged(
-        ContentSuggestionsCategory category,
-        ContentSuggestionsCategoryStatus new_status) = 0;
+    virtual void OnCategoryStatusChanged(Category category,
+                                         CategoryStatus new_status) = 0;
 
     // Sent when the service is shutting down. After the service has shut down,
     // it will not provide any data anymore, though calling the getters is still
@@ -71,19 +70,16 @@ class ContentSuggestionsService : public KeyedService,
 
   // Gets all categories for which a provider is registered. The categories
   // may or may not be available, see |GetCategoryStatus()|.
-  const std::vector<ContentSuggestionsCategory>& GetCategories() const {
-    return categories_;
-  }
+  const std::vector<Category>& GetCategories() const { return categories_; }
 
   // Gets the status of a category.
-  ContentSuggestionsCategoryStatus GetCategoryStatus(
-      ContentSuggestionsCategory category) const;
+  CategoryStatus GetCategoryStatus(Category category) const;
 
   // Gets the available suggestions for a category. The result is empty if the
   // category is available and empty, but also if the category is unavailable
   // for any reason, see |GetCategoryStatus()|.
   const std::vector<ContentSuggestion>& GetSuggestionsForCategory(
-      ContentSuggestionsCategory category) const;
+      Category category) const;
 
   // Fetches the image for the suggestion with the given |suggestion_id| and
   // runs the |callback|. If that suggestion doesn't exist or the fetch fails,
@@ -118,9 +114,7 @@ class ContentSuggestionsService : public KeyedService,
   // dismissed suggestions reappear (only for certain providers).
   void ClearDismissedSuggestionsForDebugging();
 
-  ContentSuggestionsCategoryFactory* category_factory() {
-    return &category_factory_;
-  }
+  CategoryFactory* category_factory() { return &category_factory_; }
 
  private:
   friend class ContentSuggestionsServiceTest;
@@ -128,56 +122,50 @@ class ContentSuggestionsService : public KeyedService,
   // This is just an arbitrary ordering by ID, used by the maps in this class,
   // because the ordering needs to be constant for maps.
   struct CompareCategoriesByID {
-    bool operator()(const ContentSuggestionsCategory& left,
-                    const ContentSuggestionsCategory& right) const;
+    bool operator()(const Category& left, const Category& right) const;
   };
 
   // Implementation of ContentSuggestionsProvider::Observer.
-  void OnNewSuggestions(ContentSuggestionsCategory changed_category,
+  void OnNewSuggestions(Category changed_category,
                         std::vector<ContentSuggestion> suggestions) override;
-  void OnCategoryStatusChanged(
-      ContentSuggestionsCategory changed_category,
-      ContentSuggestionsCategoryStatus new_status) override;
+  void OnCategoryStatusChanged(Category changed_category,
+                               CategoryStatus new_status) override;
   void OnProviderShutdown(ContentSuggestionsProvider* provider) override;
 
   // Checks whether a provider for the given |category| is registered.
-  bool IsCategoryRegistered(ContentSuggestionsCategory category) const;
+  bool IsCategoryRegistered(Category category) const;
 
   // Fires the OnCategoryStatusChanged event for the given |category|.
-  void NotifyCategoryStatusChanged(ContentSuggestionsCategory category);
+  void NotifyCategoryStatusChanged(Category category);
 
   // Whether the content suggestions feature is enabled.
   State state_;
 
   // Provides new and existing categories and an order for them.
-  ContentSuggestionsCategoryFactory category_factory_;
+  CategoryFactory category_factory_;
 
   // All registered providers. A provider may be contained multiple times, if it
   // provides multiple categories. The keys of this map are exactly the entries
   // of |categories_|.
-  std::map<ContentSuggestionsCategory,
-           ContentSuggestionsProvider*,
-           CompareCategoriesByID>
+  std::map<Category, ContentSuggestionsProvider*, CompareCategoriesByID>
       providers_;
 
   // All current suggestion categories, in an order determined by the
   // |category_factory_|. This vector contains exactly the same categories as
   // |providers_|.
-  std::vector<ContentSuggestionsCategory> categories_;
+  std::vector<Category> categories_;
 
   // All current suggestions grouped by category. This contains an entry for
   // every category in |categories_| whose status is an available status. It may
   // contain an empty vector if the category is available but empty (or still
   // loading).
-  std::map<ContentSuggestionsCategory,
-           std::vector<ContentSuggestion>,
-           CompareCategoriesByID>
+  std::map<Category, std::vector<ContentSuggestion>, CompareCategoriesByID>
       suggestions_by_category_;
 
   // Map used to determine the category of a suggestion (of which only the ID
   // is available). This also determines the provider that delivered the
   // suggestion.
-  std::map<std::string, ContentSuggestionsCategory> id_category_map_;
+  std::map<std::string, Category> id_category_map_;
 
   base::ObserverList<Observer> observers_;
 
