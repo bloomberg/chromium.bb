@@ -83,7 +83,9 @@ void FileStream::Context::Orphan() {
 void FileStream::Context::Open(const base::FilePath& path,
                                int open_flags,
                                const CompletionCallback& callback) {
-  DCHECK(!async_in_progress_);
+  // TODO(jkarlin): Change back to a DCHECK once https://crbug.com/487732 is
+  // fixed.
+  CHECK(!async_in_progress_);
 
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
@@ -97,7 +99,9 @@ void FileStream::Context::Open(const base::FilePath& path,
 }
 
 void FileStream::Context::Close(const CompletionCallback& callback) {
-  DCHECK(!async_in_progress_);
+  // TODO(jkarlin): Change back to a DCHECK once https://crbug.com/487732 is
+  // fixed.
+  CHECK(!async_in_progress_);
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
@@ -112,7 +116,9 @@ void FileStream::Context::Close(const CompletionCallback& callback) {
 
 void FileStream::Context::Seek(int64_t offset,
                                const Int64CompletionCallback& callback) {
-  DCHECK(!async_in_progress_);
+  // TODO(jkarlin): Change back to a DCHECK once https://crbug.com/487732 is
+  // fixed.
+  CHECK(!async_in_progress_);
 
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
@@ -124,7 +130,9 @@ void FileStream::Context::Seek(int64_t offset,
 }
 
 void FileStream::Context::Flush(const CompletionCallback& callback) {
-  DCHECK(!async_in_progress_);
+  // TODO(jkarlin): Change back to a DCHECK once https://crbug.com/487732 is
+  // fixed.
+  CHECK(!async_in_progress_);
 
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
