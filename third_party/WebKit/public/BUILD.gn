@@ -171,26 +171,19 @@ mojom("mojo_bindings") {
     "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
+    "platform/modules/presentation/presentation.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",
-    ":new_wrapper_types_mojo_bindings",
     "//cc/ipc:interfaces_surfaceid_only",
     "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
     "//url/mojo:url_mojom_origin",
   ]
 
   use_new_wrapper_types = false
-}
-
-# GYP version: WebKit/public/blink.gyp:new_wrapper_types_mojo_bindings
-mojom("new_wrapper_types_mojo_bindings") {
-  sources = [
-    "platform/modules/presentation/presentation.mojom",
-  ]
 }
 
 # GYP version: WebKit/public/blink.gyp:android_mojo_bindings_java
