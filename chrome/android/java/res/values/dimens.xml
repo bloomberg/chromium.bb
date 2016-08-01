@@ -220,13 +220,14 @@
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
 
+    <dimen name="location_bar_margin_top">5dp</dimen>
+    <dimen name="location_bar_margin_bottom">5dp</dimen>
+
     <dimen name="toolbar_edge_padding">8dp</dimen>
-    <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_incognito_badge_padding">7dp</dimen>
-    <dimen name="location_bar_icon_width">32dp</dimen>
-    <dimen name="location_bar_corner_radius">1dp</dimen>
 
+    <dimen name="location_bar_icon_width">36dp</dimen>
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_start_padding_no_buttons">6dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
@@ -268,8 +269,8 @@
     <dimen name="ntp_search_box_material_margin_left">10dp</dimen>
     <dimen name="ntp_search_box_material_margin_right">10dp</dimen>
     <dimen name="ntp_search_box_material_margin_top">0dp</dimen>
-    <dimen name="ntp_search_box_material_margin_bottom">1dp</dimen>
-    <dimen name="ntp_search_box_material_height">62dp</dimen>
+    <dimen name="ntp_search_box_material_margin_bottom">5dp</dimen>
+    <dimen name="ntp_search_box_material_height">54dp</dimen>
     <dimen name="ntp_search_box_material_extra_width">4dp</dimen>
     <dimen name="ntp_search_box_material_padding_top">3dp</dimen>
     <dimen name="ntp_search_box_material_padding_bottom">3dp</dimen>

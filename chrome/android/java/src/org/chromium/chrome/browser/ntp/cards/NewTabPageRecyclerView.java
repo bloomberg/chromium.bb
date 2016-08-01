@@ -319,8 +319,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // Snap scroll to prevent resting in the middle of the omnibox transition.
         final int searchBoxTransitionLength = getResources()
                 .getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
-        int fakeBoxUpperBound = fakeBox.getTop() + fakeBox.getPaddingTop();
-        if (scrollOutOfRegion(fakeBoxUpperBound - searchBoxTransitionLength, fakeBoxUpperBound)) {
+        if (scrollOutOfRegion(fakeBox.getTop() - searchBoxTransitionLength, fakeBox.getTop())) {
             // The snap scrolling regions should never overlap.
             return;
         }

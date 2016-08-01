@@ -21,7 +21,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NavigationPopup;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -69,8 +68,6 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private final int mStartPaddingWithoutButtons;
     private boolean mShouldAnimateButtonVisibilityChange;
     private AnimatorSet mButtonVisibilityAnimators;
-
-    private NewTabPage mVisibleNtp;
 
     /**
      * Constructs a ToolbarTablet object.
@@ -340,38 +337,6 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             }
             mUseLightColorAssets = incognito;
         }
-
-        updateNtp();
-    }
-
-    /**
-     * Called when the currently visible New Tab Page changes.
-     */
-    private void updateNtp() {
-        NewTabPage newVisibleNtp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-        if (mVisibleNtp == newVisibleNtp) return;
-
-        if (mVisibleNtp != null) {
-            mVisibleNtp.setSearchBoxScrollListener(null);
-        }
-        mVisibleNtp = newVisibleNtp;
-        if (mVisibleNtp != null) {
-            mVisibleNtp.setSearchBoxScrollListener(new NewTabPage.OnSearchBoxScrollListener() {
-                @Override
-                public void onNtpScrollChanged(float scrollPercentage) {
-                    // Fade the search box out in the first 40% of the scrolling transition.
-                    float alpha = Math.max(1f - scrollPercentage * 2.5f, 0f);
-                    mVisibleNtp.setSearchBoxAlpha(alpha);
-                    mVisibleNtp.setSearchProviderLogoAlpha(alpha);
-                }
-            });
-        }
-    }
-
-    @Override
-    protected void onTabContentViewChanged() {
-        super.onTabContentViewChanged();
-        updateNtp();
     }
 
     @Override
