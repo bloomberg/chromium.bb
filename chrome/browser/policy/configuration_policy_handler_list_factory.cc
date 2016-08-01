@@ -29,6 +29,7 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -389,6 +390,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
   { key::kDHEEnabled,
     ssl_config::prefs::kDHEEnabled,
+    base::Value::TYPE_BOOLEAN },
+  { key::kNTPContentSuggestionsEnabled,
+    ntp_snippets::prefs::kEnableSnippets,
     base::Value::TYPE_BOOLEAN },
 #if defined(ENABLE_MEDIA_ROUTER)
   { key::kEnableMediaRouter,

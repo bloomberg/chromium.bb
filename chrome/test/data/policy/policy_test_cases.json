@@ -1943,6 +1943,14 @@
     ]
   },
 
+  "NTPContentSuggestionsEnabled": {
+    "os": ["android"],
+    "test_policy": { "NTPContentSuggestionsEnabled": false },
+    "pref_mappings": [
+      { "pref": "ntp_snippets.enable" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

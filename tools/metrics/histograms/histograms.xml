@@ -73378,6 +73378,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="336"
       label="Configure the list of installed apps on the login screen"/>
   <int value="337" label="Enable Android Backup Service"/>
+  <int value="338"
+      label="Enable generated content suggestions on the New Tab page"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
