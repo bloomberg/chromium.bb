@@ -293,14 +293,6 @@ TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
      "NVIDIA Corporation",
      "4.4.0 NVIDIA 331.79",
      "331.79"},
-    {"Gallium 0.4 on NVE7",
-     "nouveau",
-     "3.3 (Core Profile) Mesa 10.5.9",
-     "10.5.9"},
-    {"Mesa DRI Intel(R) Haswell Mobile",
-     "Intel Open Source Technology Center",
-     "OpenGL ES 3.0 Mesa 12.1.0-devel (git-ed9dd3b)",
-     "12.1.0"},
 #endif
     {NULL, NULL, NULL, NULL}
   };

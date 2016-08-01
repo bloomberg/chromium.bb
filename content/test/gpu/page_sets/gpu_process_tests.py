@@ -297,11 +297,12 @@ class DriverBugWorkaroundsUponGLRendererShared(GpuProcessSharedPageState):
       options.AppendExtraBrowserArgs('--gpu-testing-gl-version=OpenGL ES 2.0 ' \
         '(ANGLE 2.1.0.0c0d8006a9dd)')
     elif sys.platform.startswith('linux'):
-      # Hit id 40 from kGpuDriverBugListJson.
+      # Hit id 153 from kGpuDriverBugListJson.
       options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x0101')
       options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0102')
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=ARM')
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=Mali-400 MP')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=Vivante ' \
+        'Corporation')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=Vivante GC1000')
     elif sys.platform == 'darwin':
       # Currently on osx no workaround relies on gl-renderer.
       pass
@@ -316,7 +317,7 @@ class DriverBugWorkaroundsUponGLRendererPage(DriverBugWorkaroundsTestsPage):
       self.expected_workaround = "texsubimage_faster_than_teximage"
       self.unexpected_workaround = "disable_d3d11"
     elif sys.platform.startswith('linux'):
-      self.expected_workaround = "disable_discard_framebuffer"
+      self.expected_workaround = "disable_transparent_visuals"
     elif sys.platform == 'darwin':
       pass
     super(DriverBugWorkaroundsUponGLRendererPage, self).__init__(
