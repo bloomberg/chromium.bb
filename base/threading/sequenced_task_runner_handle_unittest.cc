@@ -27,6 +27,9 @@ namespace {
 
 class SequencedTaskRunnerHandleTest : public ::testing::Test {
  protected:
+  // Verifies that the context it runs on has a SequencedTaskRunnerHandle
+  // and that posting to it results in the posted task running in that same
+  // context (sequence). Runs |callback| on sequence when done.
   static void VerifyCurrentSequencedTaskRunner(const Closure& callback) {
     ASSERT_TRUE(SequencedTaskRunnerHandle::IsSet());
     scoped_refptr<SequencedTaskRunner> task_runner =
@@ -40,6 +43,13 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
         FROM_HERE,
         base::Bind(&SequencedTaskRunnerHandleTest::CheckValidSequence,
                    base::Passed(&sequence_checker), callback));
+  }
+
+  // Verifies that there is no SequencedTaskRunnerHandle in the context it runs.
+  // Runs |callback| when done.
+  static void VerifyNoSequencedTaskRunner(const Closure& callback) {
+    ASSERT_FALSE(SequencedTaskRunnerHandle::IsSet());
+    callback.Run();
   }
 
  private:
@@ -71,10 +81,9 @@ TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPoolTask) {
           &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner,
           base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
   event.Wait();
-  owner.pool()->Shutdown();
 }
 
-TEST_F(SequencedTaskRunnerHandleTest, FromUnsequencedTask) {
+TEST_F(SequencedTaskRunnerHandleTest, NoHandleFromUnsequencedTask) {
   // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
   // destruction.
   SequencedWorkerPoolOwner owner(3, "Test");
@@ -83,7 +92,7 @@ TEST_F(SequencedTaskRunnerHandleTest, FromUnsequencedTask) {
   owner.pool()->PostWorkerTask(
       FROM_HERE,
       base::Bind(
-          &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner,
+          &SequencedTaskRunnerHandleTest::VerifyNoSequencedTaskRunner,
           base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
   event.Wait();
 }
