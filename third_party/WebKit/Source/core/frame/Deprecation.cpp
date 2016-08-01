@@ -376,6 +376,12 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::MIDIMessageEventReceivedTime:
         return willBeRemoved("MIDIMessageEvent.receivedTime", 56, "5665772797952000");
 
+    case UseCounter::V8SVGSVGElement_UseCurrentView_AttributeGetter:
+        return willBeRemoved("SVGSVGElement.useCurrentView", 56, "4511711998509056");
+
+    case UseCounter::V8SVGSVGElement_CurrentView_AttributeGetter:
+        return willBeRemoved("SVGSVGElement.currentView", 56, "4511711998509056");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -31,8 +31,8 @@ interface SVGSVGElement : SVGGraphicsElement {
     [Measure] readonly attribute SVGRect viewport;
     // TODO(foolip): useCurrentView and currentView have been removed:
     // https://github.com/w3c/svgwg/commit/4c26fd36937a65192024208d85c144a21071b057
-    [Measure] readonly attribute boolean useCurrentView;
-    [Measure] readonly attribute SVGViewSpec currentView;
+    [DeprecateAs=V8SVGSVGElement_UseCurrentView_AttributeGetter] readonly attribute boolean useCurrentView;
+    [DeprecateAs=V8SVGSVGElement_CurrentView_AttributeGetter] readonly attribute SVGViewSpec currentView;
              attribute float currentScale;
     // TODO(foolip): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
