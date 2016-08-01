@@ -494,4 +494,43 @@ class BrowserDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(BrowserDomainCreateTwoContexts);
 
+class HeadlessDevToolsNavigationControlTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      page::ExperimentalObserver {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->GetExperimental()->SetControlNavigations(
+        headless::page::SetControlNavigationsParams::Builder()
+            .SetEnabled(true)
+            .Build());
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnNavigationRequested(
+      const headless::page::NavigationRequestedParams& params) override {
+    navigation_requested_ = true;
+    // Allow the navigation to proceed.
+    devtools_client_->GetPage()->GetExperimental()->ProcessNavigation(
+        headless::page::ProcessNavigationParams::Builder()
+            .SetNavigationId(params.GetNavigationId())
+            .SetResponse(headless::page::NavigationResponse::PROCEED)
+            .Build());
+  }
+
+  void OnFrameStoppedLoading(
+      const page::FrameStoppedLoadingParams& params) override {
+    EXPECT_TRUE(navigation_requested_);
+    FinishAsynchronousTest();
+  }
+
+ private:
+  bool navigation_requested_ = false;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsNavigationControlTest);
+
 }  // namespace headless

@@ -7,6 +7,8 @@
 
 #include <unordered_map>
 
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "headless/public/domains/accessibility.h"
 #include "headless/public/domains/animation.h"
@@ -147,13 +149,21 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   void SendMessageWithoutParams(const char* method, CallbackType callback);
 
   bool DispatchMessageReply(const base::DictionaryValue& message_dict);
-  bool DispatchEvent(const base::DictionaryValue& message_dict);
+
+  using EventHandler = base::Callback<void(const base::Value&)>;
+  using EventHandlerMap = std::unordered_map<std::string, EventHandler>;
+
+  bool DispatchEvent(std::unique_ptr<base::Value> owning_message,
+                     const base::DictionaryValue& message_dict);
+  void DispatchEventTask(std::unique_ptr<base::Value> owning_message,
+                         const EventHandler* event_handler,
+                         const base::DictionaryValue* result_dict);
 
   content::DevToolsAgentHost* agent_host_;  // Not owned.
   int next_message_id_;
   std::unordered_map<int, Callback> pending_messages_;
-  std::unordered_map<std::string, base::Callback<void(const base::Value&)>>
-      event_handlers_;
+
+  EventHandlerMap event_handlers_;
 
   accessibility::ExperimentalDomain accessibility_domain_;
   animation::ExperimentalDomain animation_domain_;
@@ -186,6 +196,8 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   service_worker::ExperimentalDomain service_worker_domain_;
   tracing::ExperimentalDomain tracing_domain_;
   worker::ExperimentalDomain worker_domain_;
+  scoped_refptr<base::SingleThreadTaskRunner> browser_main_thread_;
+  base::WeakPtrFactory<HeadlessDevToolsClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsClientImpl);
 };
