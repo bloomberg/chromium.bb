@@ -16,13 +16,10 @@
                                           {{serialization_context}});
   {{struct_macros.deserialize(struct, "input_data_view", "p_%s", "success")}}
   if (!success) {
-    mojo::internal::ValidationContext validation_context(
-        {{message}}->data(), {{message}}->data_num_bytes(),
-        {{message}}->handles()->size(), {{message}},
+    ReportValidationErrorForMessage(
+        {{message}},
+        mojo::internal::VALIDATION_ERROR_DESERIALIZATION_FAILED,
         "{{description}} deserializer");
-    ReportValidationError(
-        &validation_context,
-        mojo::internal::VALIDATION_ERROR_DESERIALIZATION_FAILED);
     return false;
   }
 {%- endmacro %}
@@ -100,9 +97,9 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
       reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
           message->mutable_payload());
 
+{%-       set desc = class_name~"::"~method.name~" response" %}
   {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_",
-                 "{{class_name}}::{{method.name}} response")}}
+                 "&serialization_context_", desc)}}
 
 {%-       for param in method.response_parameters %}
   *out_{{param.name}}_ = std::move(p_{{param.name}});
@@ -133,9 +130,9 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
       reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
           message->mutable_payload());
 
+{%-     set desc = class_name~"::"~method.name~" response" %}
   {{alloc_params(method.response_param_struct, "params", "message",
-                 "&serialization_context_",
-                 "{{class_name}}_{{method.name}} response")}}
+                 "&serialization_context_", desc)}}
   if (!callback_.is_null())
     callback_.Run({{pass_params(method.response_parameters)}});
   return true;
@@ -217,9 +214,7 @@ void {{proxy_name}}::{{method.name}}(
 {%-     set response_params_struct = method.response_param_struct %}
 {%-     set params_description =
             "%s.%s response"|format(interface.name, method.name) %}
-class {{class_name}}_{{method.name}}_ProxyToResponder
-    : public base::RefCountedThreadSafe<
-          {{class_name}}_{{method.name}}_ProxyToResponder> {
+class {{class_name}}_{{method.name}}_ProxyToResponder {
  public:
   static {{class_name}}::{{method.name}}Callback CreateCallback(
       uint64_t request_id,
@@ -227,26 +222,11 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
       mojo::MessageReceiverWithStatus* responder,
       scoped_refptr<mojo::AssociatedGroupController>
           group_controller) {
-    scoped_refptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy
-        = new {{class_name}}_{{method.name}}_ProxyToResponder(
-            request_id, is_sync, responder, group_controller);
+    std::unique_ptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy(
+        new {{class_name}}_{{method.name}}_ProxyToResponder(
+            request_id, is_sync, responder, group_controller));
     return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
-                      proxy);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<
-      {{class_name}}_{{method.name}}_ProxyToResponder>;
-
-  {{class_name}}_{{method.name}}_ProxyToResponder(
-      uint64_t request_id,
-      bool is_sync,
-      mojo::MessageReceiverWithStatus* responder,
-      scoped_refptr<mojo::AssociatedGroupController> group_controller)
-      : request_id_(request_id),
-        is_sync_(is_sync),
-        responder_(responder),
-        serialization_context_(std::move(group_controller)) {
+                      base::Passed(&proxy));
   }
 
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
@@ -261,6 +241,18 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
     // If the Callback was dropped then deleting the responder will close
     // the pipe so the calling application knows to stop waiting for a reply.
     delete responder_;
+  }
+
+ private:
+  {{class_name}}_{{method.name}}_ProxyToResponder(
+      uint64_t request_id,
+      bool is_sync,
+      mojo::MessageReceiverWithStatus* responder,
+      scoped_refptr<mojo::AssociatedGroupController> group_controller)
+      : request_id_(request_id),
+        is_sync_(is_sync),
+        responder_(responder),
+        serialization_context_(std::move(group_controller)) {
   }
 
   void Run(
@@ -320,9 +312,9 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
+{%-       set desc = class_name~"::"~method.name %}
       {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_", "{{class_name}}::{{method.name}}")
-              |indent(4)}}
+          "&serialization_context_", desc)|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
@@ -351,8 +343,9 @@ bool {{class_name}}Stub::AcceptWithResponder(
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->mutable_payload());
 
+{%-       set desc = class_name~"::"~method.name %}
       {{alloc_params(method.param_struct, "params", "message",
-          "&serialization_context_", "{{class_name}}::{{method.name}}")|
+          "&serialization_context_", desc)|
               indent(4)}}
       {{class_name}}::{{method.name}}Callback callback =
           {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(

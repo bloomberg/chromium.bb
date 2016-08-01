@@ -11,6 +11,9 @@
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 namespace mojo {
+
+class Message;
+
 namespace internal {
 
 enum ValidationError {
@@ -74,6 +77,11 @@ const char* ValidationErrorToString(ValidationError error);
 void ReportValidationError(ValidationContext* context,
                            ValidationError error,
                            const char* description = nullptr);
+
+void ReportValidationErrorForMessage(
+    mojo::Message* message,
+    ValidationError error,
+    const char* description = nullptr);
 
 // Only used by validation tests and when there is only one thread doing message
 // validation.

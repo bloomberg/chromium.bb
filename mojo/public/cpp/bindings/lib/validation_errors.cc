@@ -88,6 +88,17 @@ void ReportValidationError(ValidationContext* context,
   }
 }
 
+void ReportValidationErrorForMessage(
+    mojo::Message* message,
+    ValidationError error,
+    const char* description) {
+  ValidationContext validation_context(
+      message->data(), message->data_num_bytes(),
+      message->handles()->size(), message,
+      description);
+  ReportValidationError(&validation_context, error);
+}
+
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(
     const base::Closure& callback)
     : last_error_(VALIDATION_ERROR_NONE), callback_(callback) {
