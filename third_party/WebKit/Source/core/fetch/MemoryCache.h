@@ -199,11 +199,6 @@ public:
     void makeLive(Resource*);
     void makeDead(Resource*);
 
-    // This should be called when a Resource object is created.
-    void registerLiveResource(Resource&);
-    // This should be called when a Resource object becomes unnecesarry.
-    void unregisterLiveResource(Resource&);
-
     void removeURLFromCache(const KURL&);
 
     Statistics getStatistics();
