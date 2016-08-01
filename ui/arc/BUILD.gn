@@ -28,6 +28,7 @@ static_library("arc") {
     "//components/exo:exo",
     "//components/signin/core/account_id",
     "//skia",
+    "//ui/aura:aura",
     "//ui/base",
     "//ui/gfx",
     "//ui/message_center",

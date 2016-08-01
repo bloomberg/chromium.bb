@@ -2,6 +2,7 @@ include_rules = [
   "+components/exo",
   "+components/signin/core/account_id",
   "+third_party/skia",
+  "+ui/aura",
   "+ui/base",
   "+ui/gfx",
   "+ui/message_center",

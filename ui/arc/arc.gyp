@@ -15,6 +15,7 @@
         '../..',
       ],
       'dependencies': [
+        '../aura/aura.gyp:aura',
         '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx_geometry',
         '../message_center/message_center.gyp:message_center',

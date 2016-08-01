@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 
@@ -26,6 +27,7 @@ namespace arc {
 
 class ArcCustomNotificationView : public views::NativeViewHost,
                                   public views::ButtonListener,
+                                  public aura::WindowObserver,
                                   public ArcCustomNotificationItem::Observer {
  public:
   ArcCustomNotificationView(ArcCustomNotificationItem* item,
@@ -34,6 +36,7 @@ class ArcCustomNotificationView : public views::NativeViewHost,
 
  private:
   void CreateFloatingCloseButton();
+  void UpdatePreferredSize();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
@@ -42,6 +45,12 @@ class ArcCustomNotificationView : public views::NativeViewHost,
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // aura::WindowObserver
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // ArcCustomNotificationItem::Observer
   void OnItemDestroying() override;

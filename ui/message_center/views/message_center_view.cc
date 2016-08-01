@@ -397,7 +397,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == id) {
       int old_width = view->width();
-      int old_height = view->GetHeightForWidth(old_width);
+      int old_height = view->height();
       message_list_view_->UpdateNotification(view, **iter);
       if (view->GetHeightForWidth(old_width) != old_height)
         Update(true /* animate */);
