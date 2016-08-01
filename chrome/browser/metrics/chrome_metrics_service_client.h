@@ -130,6 +130,7 @@ class ChromeMetricsServiceClient
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
   void CollectFinalHistograms();
+  void MergeHistogramDeltas();
   void OnMemoryDetailCollectionDone();
   void OnHistogramSynchronizationDone();
 

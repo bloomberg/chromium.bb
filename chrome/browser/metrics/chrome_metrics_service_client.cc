@@ -650,6 +650,11 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
   details->StartFetch();
 }
 
+void ChromeMetricsServiceClient::MergeHistogramDeltas() {
+  DCHECK(GetMetricsService());
+  GetMetricsService()->MergeHistogramDeltas();
+}
+
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -668,19 +673,27 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   DCHECK_EQ(num_async_histogram_fetches_in_progress_, 0);
 
 #if !defined(ENABLE_PRINT_PREVIEW)
-  num_async_histogram_fetches_in_progress_ = 1;
-#else   // !ENABLE_PRINT_PREVIEW
   num_async_histogram_fetches_in_progress_ = 2;
+#else   // !ENABLE_PRINT_PREVIEW
+  num_async_histogram_fetches_in_progress_ = 3;
   // Run requests to service and content in parallel.
   if (!ServiceProcessControl::GetInstance()->GetHistograms(callback, timeout)) {
     // Assume |num_async_histogram_fetches_in_progress_| is not changed by
     // |GetHistograms()|.
-    DCHECK_EQ(num_async_histogram_fetches_in_progress_, 2);
+    DCHECK_EQ(num_async_histogram_fetches_in_progress_, 3);
     // Assign |num_async_histogram_fetches_in_progress_| above and decrement it
     // here to make code work even if |GetHistograms()| fired |callback|.
     --num_async_histogram_fetches_in_progress_;
   }
 #endif  // !ENABLE_PRINT_PREVIEW
+
+  // Merge histograms from metrics providers into StatisticsRecorder.
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ChromeMetricsServiceClient::MergeHistogramDeltas,
+                 weak_ptr_factory_.GetWeakPtr()),
+      callback);
 
   // Set up the callback task to call after we receive histograms from all
   // child processes. |timeout| specifies how long to wait before absolutely
