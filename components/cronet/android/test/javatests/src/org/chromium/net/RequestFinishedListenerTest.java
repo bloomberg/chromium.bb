@@ -232,7 +232,8 @@ public class RequestFinishedListenerTest extends CronetTestBase {
         assertTrue(requestInfo.getAnnotations().isEmpty());
         CronetEngine.UrlRequestMetrics metrics = requestInfo.getMetrics();
         assertNotNull("UrlRequestInfo.getMetrics() must not be null", metrics);
-        assertTrue(metrics.getTotalTimeMs() > 0);
+        // The failure is occasionally fast enough that time reported is 0, so just check for null
+        assertNotNull(metrics.getTotalTimeMs());
         assertNull(metrics.getTtfbMs());
         assertTrue(metrics.getReceivedBytesCount() == null || metrics.getReceivedBytesCount() == 0);
         mTestFramework.mCronetEngine.shutdown();
