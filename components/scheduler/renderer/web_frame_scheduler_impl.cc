@@ -61,10 +61,6 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
     loading_task_queue_ =
         renderer_scheduler_->NewLoadingTaskRunner("frame_loading_tq");
     loading_task_queue_->SetBlameContext(blame_context_);
-    if (parent_web_view_scheduler_->virtual_time_domain()) {
-      loading_task_queue_->SetTimeDomain(
-          parent_web_view_scheduler_->virtual_time_domain());
-    }
     loading_web_task_runner_.reset(new WebTaskRunnerImpl(loading_task_queue_));
   }
   return loading_web_task_runner_.get();
@@ -76,10 +72,7 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_ =
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
     timer_task_queue_->SetBlameContext(blame_context_);
-    if (parent_web_view_scheduler_->virtual_time_domain()) {
-      timer_task_queue_->SetTimeDomain(
-          parent_web_view_scheduler_->virtual_time_domain());
-    } else if (!page_visible_) {
+    if (!page_visible_) {
       renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
@@ -94,10 +87,6 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::unthrottledTaskRunner() {
     unthrottled_task_queue_ =
         renderer_scheduler_->NewUnthrottledTaskRunner("frame_unthrottled_tq");
     unthrottled_task_queue_->SetBlameContext(blame_context_);
-    if (parent_web_view_scheduler_->virtual_time_domain()) {
-      unthrottled_task_queue_->SetTimeDomain(
-          parent_web_view_scheduler_->virtual_time_domain());
-    }
     unthrottled_web_task_runner_.reset(
         new WebTaskRunnerImpl(unthrottled_task_queue_));
   }
@@ -133,10 +122,8 @@ void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
 
   page_visible_ = page_visible;
 
-  if (!timer_web_task_runner_ ||
-      parent_web_view_scheduler_->virtual_time_domain()) {
+  if (!timer_web_task_runner_)
     return;
-  }
 
   if (page_visible_) {
     renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
@@ -144,23 +131,6 @@ void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   } else {
     renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
         timer_task_queue_.get());
-  }
-}
-
-void WebFrameSchedulerImpl::OnVirtualTimeDomainChanged() {
-  DCHECK(parent_web_view_scheduler_);
-  DCHECK(parent_web_view_scheduler_->virtual_time_domain());
-
-  if (timer_task_queue_) {
-    renderer_scheduler_->throttling_helper()->UnregisterTaskQueue(
-        timer_task_queue_.get());
-    timer_task_queue_->SetTimeDomain(
-        parent_web_view_scheduler_->virtual_time_domain());
-  }
-
-  if (loading_task_queue_) {
-    loading_task_queue_->SetTimeDomain(
-        parent_web_view_scheduler_->virtual_time_domain());
   }
 }
 

@@ -48,8 +48,6 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   void didStopLoading(unsigned long identifier) override;
   void setDocumentParsingInBackground(bool background_parser_active) override;
 
-  void OnVirtualTimeDomainChanged();
-
  private:
   friend class WebViewSchedulerImpl;
 

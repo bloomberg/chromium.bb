@@ -38,10 +38,23 @@ protected:
         ScriptExecutionCallbackHelper callbackHelper;
         webView().mainFrame()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(
             WebScriptSource(WebString(scriptSource)), false, &callbackHelper);
-        testing::runPendingTasks();
         return callbackHelper.result();
     }
 };
+
+namespace {
+    void quitRunLoop()
+    {
+        base::MessageLoop::current()->QuitNow();
+    }
+
+    // Some task queues may have repeating v8 tasks that run forever so we impose a hard time limit.
+    void runTasksForPeriod(double delayMs)
+    {
+        Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, WTF::bind(&quitRunLoop), delayMs);
+        testing::enterRunLoop();
+    }
+}
 
 TEST_F(VirtualTimeTest, DOMTimersFireInExpectedOrder)
 {
@@ -61,6 +74,7 @@ TEST_F(VirtualTimeTest, DOMTimersFireInExpectedOrder)
     // take 100h to fire, but thanks to timer fast forwarding we can make them
     // fire immediatly.
 
+    testing::runPendingTasks();
     EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
 
@@ -79,8 +93,8 @@ TEST_F(VirtualTimeTest, SetInterval)
         "}, 1000);"
         "setTimeout(function() { run_order.push('timer'); }, 1500);");
 
-    // If virtual time is not supplied to TimerBase then the setInterval
-    // won't fire 10x.
+    runTasksForPeriod(12000);
+
     EXPECT_EQ("9, timer, 8, 7, 6, 5, 4, 3, 2, 1, 0", ExecuteJavaScript("run_order.join(', ')"));
 }
 
@@ -98,10 +112,11 @@ TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
         "timerFn(10, 'b');"
         "timerFn(1, 'c');");
 
+    testing::runPendingTasks();
     EXPECT_EQ("", ExecuteJavaScript("run_order.join(', ')"));
 
     webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::ADVANCE);
-    testing::runPendingTasks();
+    runTasksForPeriod(1000);
 
     EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
@@ -111,13 +126,11 @@ TEST_F(VirtualTimeTest, VirtualTimeNotAllowedToAdvanceWhileResourcesLoading)
     webView().scheduler()->enableVirtualTime();
     webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
 
-    EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
+    // To ensure determinism virtual time is not allowed to advance until we have seen at least one load.
+    EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
 
     SimRequest mainResource("https://example.com/test.html", "text/html");
     SimRequest cssResource("https://example.com/test.css", "text/css");
-
-    // Not loading, virtual time should be able to advance.
-    EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
 
     // Loading, virtual time should not advance.
     loadURL("https://example.com/test.html");

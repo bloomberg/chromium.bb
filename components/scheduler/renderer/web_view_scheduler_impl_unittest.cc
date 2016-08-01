@@ -34,9 +34,9 @@ class WebViewSchedulerImplTest : public testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_.get(), true));
-    delagate_ = SchedulerTqmDelegateForTest::Create(
+    delegate_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
-    scheduler_.reset(new RendererSchedulerImpl(delagate_));
+    scheduler_.reset(new RendererSchedulerImpl(delegate_));
     web_view_scheduler_.reset(new WebViewSchedulerImpl(
         nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
     web_frame_scheduler_ =
@@ -54,7 +54,7 @@ class WebViewSchedulerImplTest : public testing::Test {
 
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_refptr<SchedulerTqmDelegate> delagate_;
+  scoped_refptr<SchedulerTqmDelegate> delegate_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler_;
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;
@@ -505,7 +505,9 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
 TEST_F(WebViewSchedulerImplTest, VirtualTimePolicy_DETERMINISTIC_LOADING) {
   web_view_scheduler_->setVirtualTimePolicy(
       VirtualTimePolicy::DETERMINISTIC_LOADING);
-  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+  // Initially virtual time is not allowed to advance until we have seen at
+  // least one load.
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DidStartLoading(1u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
@@ -523,6 +525,12 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimePolicy_DETERMINISTIC_LOADING) {
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DidStopLoading(3u);
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStartLoading(4u);
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(4u);
   EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 }
 
@@ -552,15 +560,29 @@ TEST_F(WebViewSchedulerImplTest, RedundantDidStopLoadingCallsAreHarmless) {
 TEST_F(WebViewSchedulerImplTest, BackgroundParser_DETERMINISTIC_LOADING) {
   web_view_scheduler_->setVirtualTimePolicy(
       VirtualTimePolicy::DETERMINISTIC_LOADING);
-  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+  // Initially virtual time is not allowed to advance until we have seen at
+  // least one load.
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->IncrementBackgroundParserCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStartLoading(1u);
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(1u);
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->IncrementBackgroundParserCount();
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DecrementBackgroundParserCount();
+  EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DecrementBackgroundParserCount();
+  EXPECT_TRUE(web_view_scheduler_->virtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->IncrementBackgroundParserCount();
   EXPECT_FALSE(web_view_scheduler_->virtualTimeAllowedToAdvance());
 
   web_view_scheduler_->DecrementBackgroundParserCount();

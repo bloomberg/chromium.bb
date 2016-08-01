@@ -31,6 +31,7 @@ class ConvertableToTraceFormat;
 }
 
 namespace scheduler {
+class AutoAdvancingVirtualTimeDomain;
 class RenderWidgetSchedulingState;
 class WebViewSchedulerImpl;
 class ThrottlingHelper;
@@ -144,6 +145,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
+  // Tells the scheduler that all TaskQueues should use virtual time.
+  void EnableVirtualTime();
+
   void SetExpensiveTaskBlockingAllowed(bool allowed);
 
   void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
@@ -168,6 +172,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     return helper_.real_time_domain();
   }
 
+  AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
+
   ThrottlingHelper* throttling_helper() { return throttling_helper_.get(); }
 
  private:
@@ -180,6 +186,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   enum class TimeDomainType {
     REAL,
     THROTTLED,
+    VIRTUAL,
   };
 
   struct TaskQueuePolicy {
@@ -354,8 +361,12 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   const scoped_refptr<TaskQueue> compositor_task_runner_;
   std::set<scoped_refptr<TaskQueue>> loading_task_runners_;
   std::set<scoped_refptr<TaskQueue>> timer_task_runners_;
+  std::set<scoped_refptr<TaskQueue>> unthrottled_task_runners_;
   scoped_refptr<TaskQueue> default_loading_task_runner_;
   scoped_refptr<TaskQueue> default_timer_task_runner_;
+
+  // Note |virtual_time_domain_| is lazily created.
+  std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
@@ -401,6 +412,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool begin_frame_not_expected_soon;
     bool expensive_task_blocking_allowed;
     bool in_idle_period_for_testing;
+    bool use_virtual_time;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
   };

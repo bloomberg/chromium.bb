@@ -15,6 +15,7 @@
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
@@ -450,6 +451,30 @@ TEST_F(ThrottlingHelperTest, DoubleIncrementDoubleDecrement) {
   throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
   throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+}
+
+TEST_F(ThrottlingHelperTest, EnableVirtualTimeThenIncrement) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  scheduler_->EnableVirtualTime();
+  EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+}
+
+TEST_F(ThrottlingHelperTest, IncrementThenEnableVirtualTime) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  scheduler_->EnableVirtualTime();
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 }
 
 }  // namespace scheduler

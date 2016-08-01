@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/throttled_time_domain.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
@@ -21,8 +22,9 @@ ThrottlingHelper::ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
       time_domain_(new ThrottledTimeDomain(this, tracing_category)),
+      virtual_time_(false),
       weak_factory_(this) {
-  suspend_timers_when_backgrounded_closure_.Reset(base::Bind(
+  pump_throttled_tasks_closure_.Reset(base::Bind(
       &ThrottlingHelper::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
   forward_immediate_work_closure_ =
       base::Bind(&ThrottlingHelper::OnTimeDomainHasImmediateWork,
@@ -63,6 +65,9 @@ void ThrottlingHelper::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
 void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
 
+  if (virtual_time_)
+    return;
+
   std::pair<TaskQueueMap::iterator, bool> insert_result =
       throttled_queues_.insert(std::make_pair(
           task_queue, Metadata(1, task_queue->IsQueueEnabled())));
@@ -87,6 +92,9 @@ void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
 }
 
 void ThrottlingHelper::DecreaseThrottleRefCount(TaskQueue* task_queue) {
+  if (virtual_time_)
+    return;
+
   TaskQueueMap::iterator iter = throttled_queues_.find(task_queue);
 
   if (iter != throttled_queues_.end() &&
@@ -167,6 +175,9 @@ void ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked(
     const tracked_objects::Location& from_here,
     base::TimeTicks now,
     base::TimeTicks unthrottled_runtime) {
+  if (virtual_time_)
+    return;
+
   base::TimeTicks throttled_runtime =
       ThrottledRunTime(std::max(now, unthrottled_runtime));
   // If there is a pending call to PumpThrottledTasks and it's sooner than
@@ -178,14 +189,31 @@ void ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked(
 
   pending_pump_throttled_tasks_runtime_ = throttled_runtime;
 
-  suspend_timers_when_backgrounded_closure_.Cancel();
+  pump_throttled_tasks_closure_.Cancel();
 
   base::TimeDelta delay = pending_pump_throttled_tasks_runtime_ - now;
   TRACE_EVENT1(tracing_category_,
                "ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked",
                "delay_till_next_pump_ms", delay.InMilliseconds());
   task_runner_->PostDelayedTask(
-      from_here, suspend_timers_when_backgrounded_closure_.callback(), delay);
+      from_here, pump_throttled_tasks_closure_.callback(), delay);
+}
+
+void ThrottlingHelper::EnableVirtualTime() {
+  virtual_time_ = true;
+
+  pump_throttled_tasks_closure_.Cancel();
+
+  while (!throttled_queues_.empty()) {
+    TaskQueue* task_queue = throttled_queues_.begin()->first;
+    bool enabled = throttled_queues_.begin()->second.enabled;
+
+    throttled_queues_.erase(throttled_queues_.begin());
+
+    task_queue->SetTimeDomain(renderer_scheduler_->GetVirtualTimeDomain());
+    task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+    task_queue->SetQueueEnabled(enabled);
+  }
 }
 
 }  // namespace scheduler

@@ -16,6 +16,7 @@
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
@@ -96,6 +97,9 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
         &MainThreadOnly().timer_task_cost_estimator);
   }
 
+  if (virtual_time_domain_)
+    UnregisterTimeDomain(virtual_time_domain_.get());
+
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
   // terminated by this point.
@@ -138,6 +142,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       begin_frame_not_expected_soon(false),
       expensive_task_blocking_allowed(true),
       in_idle_period_for_testing(false),
+      use_virtual_time(false),
       rail_mode_observer(nullptr) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
@@ -201,7 +206,9 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
     const char* name) {
   helper_.CheckOnValidThread();
   scoped_refptr<TaskQueue> loading_task_queue(helper_.NewTaskQueue(
-      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
+      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true).SetTimeDomain(
+          MainThreadOnly().use_virtual_time ? GetVirtualTimeDomain()
+                                            : nullptr)));
   loading_task_runners_.insert(loading_task_queue);
   loading_task_queue->SetQueueEnabled(
       MainThreadOnly().current_policy.loading_queue_policy.is_enabled);
@@ -219,10 +226,14 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
 scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
     const char* name) {
   helper_.CheckOnValidThread();
+  // TODO(alexclarke): Consider using ApplyTaskQueuePolicy() for brevity.
   scoped_refptr<TaskQueue> timer_task_queue(
       helper_.NewTaskQueue(TaskQueue::Spec(name)
                                .SetShouldMonitorQuiescence(true)
-                               .SetShouldReportWhenExecutionBlocked(true)));
+                               .SetShouldReportWhenExecutionBlocked(true)
+                               .SetTimeDomain(MainThreadOnly().use_virtual_time
+                                                  ? GetVirtualTimeDomain()
+                                                  : nullptr)));
   timer_task_runners_.insert(timer_task_queue);
   timer_task_queue->SetQueueEnabled(
       MainThreadOnly().current_policy.timer_queue_policy.is_enabled);
@@ -241,7 +252,10 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewUnthrottledTaskRunner(
     const char* name) {
   helper_.CheckOnValidThread();
   scoped_refptr<TaskQueue> unthrottled_task_queue(helper_.NewTaskQueue(
-      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
+      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true).SetTimeDomain(
+          MainThreadOnly().use_virtual_time ? GetVirtualTimeDomain()
+                                            : nullptr)));
+  unthrottled_task_runners_.insert(unthrottled_task_queue);
   return unthrottled_task_queue;
 }
 
@@ -263,6 +277,9 @@ void RendererSchedulerImpl::OnUnregisterTaskQueue(
              timer_task_runners_.end()) {
     task_queue->RemoveTaskObserver(&MainThreadOnly().timer_task_cost_estimator);
     timer_task_runners_.erase(task_queue);
+  } else if (unthrottled_task_runners_.find(task_queue) !=
+             unthrottled_task_runners_.end()) {
+    unthrottled_task_runners_.erase(task_queue);
   }
 }
 
@@ -862,18 +879,26 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       }
       break;
   }
-
   MainThreadOnly().expensive_task_policy = expensive_task_policy;
 
   if (MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_policy.is_enabled = false;
+    // TODO(alexclarke): Figure out if we really need to do this.
     new_policy.timer_queue_policy.time_domain_type = TimeDomainType::REAL;
   }
 
   if (MainThreadOnly().renderer_suspended) {
     new_policy.loading_queue_policy.is_enabled = false;
     DCHECK(!new_policy.timer_queue_policy.is_enabled);
+  }
+
+  if (MainThreadOnly().use_virtual_time) {
+    new_policy.compositor_queue_policy.time_domain_type =
+        TimeDomainType::VIRTUAL;
+    new_policy.default_queue_policy.time_domain_type = TimeDomainType::VIRTUAL;
+    new_policy.loading_queue_policy.time_domain_type = TimeDomainType::VIRTUAL;
+    new_policy.timer_queue_policy.time_domain_type = TimeDomainType::VIRTUAL;
   }
 
   // Tracing is done before the early out check, because it's quite possible we
@@ -951,11 +976,15 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
 
   if (old_task_queue_policy.time_domain_type !=
       new_task_queue_policy.time_domain_type) {
-    if (new_task_queue_policy.time_domain_type == TimeDomainType::THROTTLED) {
-      throttling_helper_->IncreaseThrottleRefCount(task_queue);
-    } else if (old_task_queue_policy.time_domain_type ==
-               TimeDomainType::THROTTLED) {
+    if (old_task_queue_policy.time_domain_type == TimeDomainType::THROTTLED) {
       throttling_helper_->DecreaseThrottleRefCount(task_queue);
+    } else if (new_task_queue_policy.time_domain_type ==
+               TimeDomainType::THROTTLED) {
+      throttling_helper_->IncreaseThrottleRefCount(task_queue);
+    } else if (new_task_queue_policy.time_domain_type ==
+               TimeDomainType::VIRTUAL) {
+      DCHECK(virtual_time_domain_);
+      task_queue->SetTimeDomain(virtual_time_domain_.get());
     }
   }
 }
@@ -1407,6 +1436,28 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
+}
+
+AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {
+  if (!virtual_time_domain_) {
+    virtual_time_domain_.reset(
+        new AutoAdvancingVirtualTimeDomain(tick_clock()->NowTicks()));
+    RegisterTimeDomain(virtual_time_domain_.get());
+  }
+  return virtual_time_domain_.get();
+}
+
+void RendererSchedulerImpl::EnableVirtualTime() {
+  MainThreadOnly().use_virtual_time = true;
+
+  // The |unthrottled_task_runners_| are not actively managed by UpdatePolicy().
+  AutoAdvancingVirtualTimeDomain* time_domain = GetVirtualTimeDomain();
+  for (const scoped_refptr<TaskQueue>& task_queue : unthrottled_task_runners_)
+    task_queue->SetTimeDomain(time_domain);
+
+  throttling_helper_->EnableVirtualTime();
+
+  ForceUpdatePolicy();
 }
 
 // static

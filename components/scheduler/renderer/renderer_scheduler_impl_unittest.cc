@@ -16,6 +16,7 @@
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -3411,6 +3412,37 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
 
   EXPECT_EQ(0u, timer_count);
   EXPECT_EQ(500u, unthrottled_count);
+}
+
+TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
+  scheduler_->EnableVirtualTime();
+
+  scoped_refptr<TaskQueue> loading_tq =
+      scheduler_->NewLoadingTaskRunner("test");
+  scoped_refptr<TaskQueue> timer_tq = scheduler_->NewTimerTaskRunner("test");
+  scoped_refptr<TaskQueue> unthrottled_tq =
+      scheduler_->NewUnthrottledTaskRunner("test");
+
+  EXPECT_EQ(scheduler_->DefaultTaskRunner()->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_->CompositorTaskRunner()->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_->LoadingTaskRunner()->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_->TimerTaskRunner()->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+
+  EXPECT_EQ(loading_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(timer_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(unthrottled_tq->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+
+  EXPECT_EQ(scheduler_->NewLoadingTaskRunner("test")->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_->NewTimerTaskRunner("test")->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner("test")->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
 }
 
 }  // namespace scheduler

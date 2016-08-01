@@ -50,6 +50,10 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   // Removes |task_queue| from |throttled_queues_|.
   void UnregisterTaskQueue(TaskQueue* task_queue);
 
+  // Tells the ThrottlingHelper we're using virtual time, which disables all
+  // throttling.
+  void EnableVirtualTime();
+
   const ThrottledTimeDomain* time_domain() const { return time_domain_.get(); }
 
   static base::TimeTicks ThrottledRunTime(base::TimeTicks unthrottled_runtime);
@@ -86,8 +90,9 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   const char* tracing_category_;               // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
 
-  CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
+  CancelableClosureHolder pump_throttled_tasks_closure_;
   base::TimeTicks pending_pump_throttled_tasks_runtime_;
+  bool virtual_time_;
 
   base::WeakPtrFactory<ThrottlingHelper> weak_factory_;
 

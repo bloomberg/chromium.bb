@@ -5,6 +5,7 @@
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 
 #include "base/logging.h"
+#include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
 #include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -21,14 +22,15 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     blink::WebView* web_view,
     RendererSchedulerImpl* renderer_scheduler,
     bool disable_background_timer_throttling)
-    : virtual_time_pump_policy_(TaskQueue::PumpPolicy::AUTO),
-      web_view_(web_view),
+    : web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
       background_parser_count_(0),
       page_visible_(true),
       disable_background_timer_throttling_(disable_background_timer_throttling),
-      allow_virtual_time_to_advance_(true) {
+      allow_virtual_time_to_advance_(true),
+      have_seen_loading_task_(false),
+      virtual_time_(false) {
   renderer_scheduler->AddWebViewScheduler(this);
 }
 
@@ -39,8 +41,6 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
     frame_scheduler->DetachFromWebViewScheduler();
   }
   renderer_scheduler_->RemoveWebViewScheduler(this);
-  if (virtual_time_domain_)
-    renderer_scheduler_->UnregisterTimeDomain(virtual_time_domain_.get());
 }
 
 void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
@@ -84,34 +84,25 @@ void WebViewSchedulerImpl::AddConsoleWarning(const std::string& message) {
 }
 
 void WebViewSchedulerImpl::enableVirtualTime() {
-  // If we've already switched to virtual time then we don't need to do
-  // anything more.
-  if (virtual_time_domain_.get())
+  if (virtual_time_)
     return;
 
-  virtual_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
-      renderer_scheduler_->tick_clock()->NowTicks()));
-  renderer_scheduler_->RegisterTimeDomain(virtual_time_domain_.get());
-
-  virtual_time_domain_->SetCanAdvanceVirtualTime(
+  virtual_time_ = true;
+  renderer_scheduler_->GetVirtualTimeDomain()->SetCanAdvanceVirtualTime(
       allow_virtual_time_to_advance_);
 
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    frame_scheduler->OnVirtualTimeDomainChanged();
-  }
+  renderer_scheduler_->EnableVirtualTime();
 }
 
 void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
     bool allow_virtual_time_to_advance) {
-  if (allow_virtual_time_to_advance_ == allow_virtual_time_to_advance)
-    return;
-
   allow_virtual_time_to_advance_ = allow_virtual_time_to_advance;
 
-  if (virtual_time_domain_) {
-    virtual_time_domain_->SetCanAdvanceVirtualTime(
-        allow_virtual_time_to_advance);
-  }
+  if (!virtual_time_)
+    return;
+
+  renderer_scheduler_->GetVirtualTimeDomain()->SetCanAdvanceVirtualTime(
+      allow_virtual_time_to_advance);
 }
 
 bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
@@ -120,6 +111,7 @@ bool WebViewSchedulerImpl::virtualTimeAllowedToAdvance() const {
 
 void WebViewSchedulerImpl::DidStartLoading(unsigned long identifier) {
   pending_loads_.insert(identifier);
+  have_seen_loading_task_ = true;
   ApplyVirtualTimePolicy();
 }
 
@@ -162,8 +154,12 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
     return;
   }
 
+  // We pause virtual time until we've seen a loading task posted, because
+  // otherwise we could advance virtual time arbitarially far before the
+  // first load arrives.
   setAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
-                               background_parser_count_ == 0);
+                               background_parser_count_ == 0 &&
+                               have_seen_loading_task_);
 }
 
 }  // namespace scheduler
