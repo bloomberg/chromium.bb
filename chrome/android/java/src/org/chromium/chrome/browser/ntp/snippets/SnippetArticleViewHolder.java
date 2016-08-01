@@ -63,7 +63,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private static final int ID_REMOVE = 3;
 
     private final NewTabPageManager mNewTabPageManager;
-    private final SnippetsBridge mSnippetsBridge;
+    private final SnippetsSource mSnippetsSource;
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -81,15 +81,15 @@ public class SnippetArticleViewHolder extends CardViewHolder
      *
      * @param parent The ViewGroup that is going to contain the newly created view.
      * @param manager The NTPManager object used to open an article
-     * @param snippetsBridge The SnippetsBridge used to retrieve the snippet thumbnails.
+     * @param snippetsSource The SnippetsBridge used to retrieve the snippet thumbnails.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
-            SnippetsBridge snippetsBridge, UiConfig uiConfig) {
+            SnippetsSource snippetsSource, UiConfig uiConfig) {
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
 
         mNewTabPageManager = manager;
-        mSnippetsBridge = snippetsBridge;
+        mSnippetsSource = snippetsSource;
         mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
@@ -224,7 +224,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
             mImageCallback = new FetchImageCallback(this, mArticle);
-            mSnippetsBridge.fetchSnippetImage(mArticle, mImageCallback);
+            mSnippetsSource.fetchSnippetImage(mArticle, mImageCallback);
         }
 
         // Set the favicon of the publisher.

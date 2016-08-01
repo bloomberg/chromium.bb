@@ -16,21 +16,11 @@ import java.util.List;
 /**
  * Provides access to the snippets to display on the NTP using the C++ NTP Snippets Service
  */
-public class SnippetsBridge {
+public class SnippetsBridge implements SnippetsSource {
     private static final String TAG = "SnippetsBridge";
 
     private long mNativeSnippetsBridge;
     private SnippetsObserver mObserver;
-
-    /**
-     * An observer for events in the snippets service.
-     */
-    public interface SnippetsObserver {
-        void onSnippetsReceived(List<SnippetArticleListItem> snippets);
-
-        /** Called when the ARTICLES category changed its status. */
-        void onCategoryStatusChanged(int newStatus);
-    }
 
     public static boolean isCategoryStatusAvailable(int status) {
         // Note: This code is duplicated in content_suggestions_category_status.cc.
@@ -83,6 +73,7 @@ public class SnippetsBridge {
      *
      * @param snippet Snippet to discard.
      */
+    @Override
     public void discardSnippet(SnippetArticleListItem snippet) {
         assert mNativeSnippetsBridge != 0;
         nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mId);
@@ -91,6 +82,7 @@ public class SnippetsBridge {
     /**
      * Fetches the thumbnail image for a snippet.
      */
+    @Override
     public void fetchSnippetImage(SnippetArticleListItem snippet, Callback<Bitmap> callback) {
         nativeFetchImage(mNativeSnippetsBridge, snippet.mId, callback);
     }
@@ -98,6 +90,7 @@ public class SnippetsBridge {
     /**
      * Checks whether a snippet has been visited by querying the history for the snippet's URL.
      */
+    @Override
     public void getSnippedVisited(SnippetArticleListItem snippet, Callback<Boolean> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeSnippetVisited(mNativeSnippetsBridge, callback, snippet.mUrl);
@@ -112,6 +105,7 @@ public class SnippetsBridge {
      * @param observer object to notify when snippets are received, or {@code null} if we want to
      *                 stop observing.
      */
+    @Override
     public void setObserver(SnippetsObserver observer) {
         assert mObserver == null || mObserver == observer;
 
@@ -119,6 +113,7 @@ public class SnippetsBridge {
         nativeSetObserver(mNativeSnippetsBridge, observer == null ? null : this);
     }
 
+    @Override
     public int getCategoryStatus() {
         assert mNativeSnippetsBridge != 0;
         return nativeGetCategoryStatus(mNativeSnippetsBridge);
