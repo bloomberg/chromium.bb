@@ -199,9 +199,8 @@ by a child template that "extends" this file.
                 <data android:scheme="file"/>
                 <data android:scheme="content"/>
                 <data android:host="*" />
-                <data android:pathPattern=".*\\.mhtml"/>
-                <data android:pathPattern=".*\\.mht"/>
-                <data android:pathPattern=".*\\.eml"/> 
+                <data android:pathPattern="/.*\\.mhtml"/>
+                <data android:pathPattern="/.*\\.mht"/>
             </intent-filter>
             <!-- Same filter as above but with mimeType="*/*". Used for
                  handling intent send by ShareIt. -->
@@ -213,9 +212,8 @@ by a child template that "extends" this file.
                 <data android:scheme="content"/>
                 <data android:host="*" />
                 <data android:mimeType="*/*"/>
-                <data android:pathPattern=".*\\.mhtml"/>
-                <data android:pathPattern=".*\\.mht"/>
-                <data android:pathPattern=".*\\.eml"/> 
+                <data android:pathPattern="/.*\\.mhtml"/>
+                <data android:pathPattern="/.*\\.mht"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_SEARCH" />
