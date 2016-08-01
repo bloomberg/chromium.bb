@@ -66,4 +66,8 @@ void BaseFeatureProvider::AddFeature(base::StringPiece name,
   features_[name.as_string()] = std::move(feature);
 }
 
+void BaseFeatureProvider::AddFeature(base::StringPiece name, Feature* feature) {
+  features_[name.as_string()] = std::unique_ptr<Feature>(feature);
+}
+
 }  // namespace extensions

@@ -357,8 +357,7 @@ class Feature(object):
   def GetCode(self, feature_class):
     """Returns the Code object for generating this feature."""
     c = Code()
-    c.Append('std::unique_ptr<%s> feature(new %s());' %
-                 (feature_class, feature_class))
+    c.Append('%s* feature = new %s();' % (feature_class, feature_class))
     c.Append('feature->set_name("%s");' % self.name)
     for key in sorted(self.feature_values.keys()):
       if key in IGNORED_KEYS:
@@ -486,19 +485,17 @@ class FeatureCompiler(object):
       c.Sblock('{')
       feature = self._features[k]
       if type(feature) is list:
-        c.Append('std::unique_ptr<ComplexFeature::FeatureList> features(')
-        c.Append('    new ComplexFeature::FeatureList());')
+        c.Append('std::vector<Feature*> features;')
         for f in feature:
           c.Sblock('{')
           c.Concat(f.GetCode(self._feature_class))
-          c.Append('features->push_back(std::move(feature));')
+          c.Append('features.push_back(feature);')
           c.Eblock('}')
-        c.Append('std::unique_ptr<ComplexFeature> feature(')
-        c.Append('    new ComplexFeature(std::move(features)));')
+        c.Append('ComplexFeature* feature(new ComplexFeature(&features));')
         c.Append('feature->set_name("%s");' % k)
       else:
         c.Concat(feature.GetCode(self._feature_class))
-      c.Append('AddFeature("%s", std::move(feature));' % k)
+      c.Append('AddFeature("%s", feature);' % k)
       c.Eblock('}')
     c.Eblock('}')
     return c

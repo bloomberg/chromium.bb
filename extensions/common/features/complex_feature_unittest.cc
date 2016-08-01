@@ -17,8 +17,7 @@ namespace extensions {
 TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
-  std::unique_ptr<ComplexFeature::FeatureList> features(
-      new ComplexFeature::FeatureList());
+  std::vector<Feature*> features;
 
   // Rule: "extension", whitelist "foo".
   std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature);
@@ -28,7 +27,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
           .Set("extension_types", ListBuilder().Append("extension").Build())
           .Build());
   simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
+  features.push_back(simple_feature.release());
 
   // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature);
@@ -38,10 +37,9 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
                   ListBuilder().Append("legacy_packaged_app").Build())
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
+  features.push_back(simple_feature.release());
 
-  std::unique_ptr<ComplexFeature> feature(
-      new ComplexFeature(std::move(features)));
+  std::unique_ptr<ComplexFeature> feature(new ComplexFeature(&features));
 
   // Test match 1st rule.
   EXPECT_EQ(
@@ -80,8 +78,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
 
 // Tests that dependencies are correctly checked.
 TEST(ComplexFeatureTest, Dependencies) {
-  std::unique_ptr<ComplexFeature::FeatureList> features(
-      new ComplexFeature::FeatureList());
+  std::vector<Feature*> features;
 
   // Rule which depends on an extension-only feature (content_security_policy).
   std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature);
@@ -91,7 +88,7 @@ TEST(ComplexFeatureTest, Dependencies) {
                ListBuilder().Append("manifest:content_security_policy").Build())
           .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
+  features.push_back(simple_feature.release());
 
   // Rule which depends on an platform-app-only feature (serial).
   simple_feature.reset(new SimpleFeature);
@@ -100,10 +97,9 @@ TEST(ComplexFeatureTest, Dependencies) {
                   ListBuilder().Append("permission:serial").Build())
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(std::move(simple_feature));
+  features.push_back(simple_feature.release());
 
-  std::unique_ptr<ComplexFeature> feature(
-      new ComplexFeature(std::move(features)));
+  std::unique_ptr<ComplexFeature> feature(new ComplexFeature(&features));
 
   // Available to extensions because of the content_security_policy rule.
   EXPECT_EQ(
