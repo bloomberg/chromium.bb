@@ -56,11 +56,15 @@ struct AX_EXPORT AXTreeData {
 
   // The current text selection within this tree, if any, expressed as the
   // node ID and character offset of the anchor (selection start) and focus
-  // (selection end).
+  // (selection end). If the offset could correspond to a position on two
+  // different lines, sel_upstream_affinity means the cursor is on the first
+  // line, otherwise it's on the second line.
   int32_t sel_anchor_object_id;
   int32_t sel_anchor_offset;
+  ui::AXTextAffinity sel_anchor_affinity;
   int32_t sel_focus_object_id;
   int32_t sel_focus_offset;
+  ui::AXTextAffinity sel_focus_affinity;
 };
 
 AX_EXPORT bool operator==(const AXTreeData& lhs, const AXTreeData& rhs);

@@ -1821,10 +1821,14 @@ AXObject::AXRange AXLayoutObject::selection() const
     if (selection.isNone())
         return AXRange();
 
-    Position visibleStart = selection.visibleStart().toParentAnchoredPosition();
-    Position visibleEnd = selection.visibleEnd().toParentAnchoredPosition();
+    VisiblePosition visibleStart = selection.visibleStart();
+    Position start = visibleStart.toParentAnchoredPosition();
+    TextAffinity startAffinity = visibleStart.affinity();
+    VisiblePosition visibleEnd = selection.visibleEnd();
+    Position end = visibleEnd.toParentAnchoredPosition();
+    TextAffinity endAffinity = visibleEnd.affinity();
 
-    Node* anchorNode = visibleStart.anchorNode();
+    Node* anchorNode = start.anchorNode();
     ASSERT(anchorNode);
 
     AXLayoutObject* anchorObject = nullptr;
@@ -1842,7 +1846,7 @@ AXObject::AXRange AXLayoutObject::selection() const
             anchorNode = anchorNode->parentNode();
     }
 
-    Node* focusNode = visibleEnd.anchorNode();
+    Node* focusNode = end.anchorNode();
     ASSERT(focusNode);
 
     AXLayoutObject* focusObject = nullptr;
@@ -1860,15 +1864,12 @@ AXObject::AXRange AXLayoutObject::selection() const
     if (!anchorObject || !focusObject)
         return AXRange();
 
-    int anchorOffset = anchorObject->indexForVisiblePosition(
-        selection.visibleStart());
+    int anchorOffset = anchorObject->indexForVisiblePosition(visibleStart);
     ASSERT(anchorOffset >= 0);
-    int focusOffset = focusObject->indexForVisiblePosition(
-        selection.visibleEnd());
+    int focusOffset = focusObject->indexForVisiblePosition(visibleEnd);
     ASSERT(focusOffset >= 0);
-    return AXRange(
-        anchorObject, anchorOffset,
-        focusObject, focusOffset);
+    return AXRange(anchorObject, anchorOffset, startAffinity,
+        focusObject, focusOffset, endAffinity);
 }
 
 // Gets only the start and end offsets of the selection computed using the
@@ -1925,12 +1926,15 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const
     if (!axObject || !axObject->isAXLayoutObject())
         return AXRange();
 
+    VisibleSelection selection = layout->frame()->selection().selection();
     HTMLTextFormControlElement* textControl = toLayoutTextControl(
         layout)->textFormControlElement();
     ASSERT(textControl);
     int start = textControl->selectionStart();
     int end = textControl->selectionEnd();
-    return AXRange(axObject, start, axObject, end);
+
+    return AXRange(axObject, start, selection.visibleStart().affinity(),
+        axObject, end, selection.visibleEnd().affinity());
 }
 
 int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) const

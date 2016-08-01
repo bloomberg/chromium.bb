@@ -186,8 +186,8 @@ public:
 
     // The following selection functions get or set the global document
     // selection and can be called on any object in the tree.
-    BLINK_EXPORT void selection(WebAXObject& anchorObject, int& anchorOffset,
-        WebAXObject& focusObject, int& focusOffset) const;
+    BLINK_EXPORT void selection(WebAXObject& anchorObject, int& anchorOffset, WebAXTextAffinity& anchorAffinity,
+        WebAXObject& focusObject, int& focusOffset, WebAXTextAffinity& focusAffinity) const;
     BLINK_EXPORT void setSelection(const WebAXObject& anchorObject, int anchorOffset,
         const WebAXObject& focusObject, int focusOffset) const;
 

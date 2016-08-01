@@ -853,22 +853,26 @@ WebAXRole WebAXObject::role() const
     return static_cast<WebAXRole>(m_private->roleValue());
 }
 
-void WebAXObject::selection(WebAXObject& anchorObject, int& anchorOffset,
-    WebAXObject& focusObject, int& focusOffset) const
+void WebAXObject::selection(WebAXObject& anchorObject, int& anchorOffset, WebAXTextAffinity& anchorAffinity,
+    WebAXObject& focusObject, int& focusOffset, WebAXTextAffinity& focusAffinity) const
 {
     if (isDetached()) {
         anchorObject = WebAXObject();
         anchorOffset = -1;
+        anchorAffinity = WebAXTextAffinityDownstream;
         focusObject = WebAXObject();
         focusOffset = -1;
+        focusAffinity = WebAXTextAffinityDownstream;
         return;
     }
 
     AXObject::AXRange axSelection = m_private->selection();
     anchorObject = WebAXObject(axSelection.anchorObject);
     anchorOffset = axSelection.anchorOffset;
+    anchorAffinity = static_cast<WebAXTextAffinity>(axSelection.anchorAffinity);
     focusObject = WebAXObject(axSelection.focusObject);
     focusOffset = axSelection.focusOffset;
+    focusAffinity = static_cast<WebAXTextAffinity>(axSelection.focusAffinity);
     return;
 }
 
@@ -878,8 +882,8 @@ void WebAXObject::setSelection(const WebAXObject& anchorObject, int anchorOffset
     if (isDetached())
         return;
 
-    AXObject::AXRange axSelection(anchorObject, anchorOffset,
-        focusObject, focusOffset);
+    AXObject::AXRange axSelection(anchorObject, anchorOffset, TextAffinity::Upstream,
+        focusObject, focusOffset, TextAffinity::Downstream);
     m_private->setSelection(axSelection);
     return;
 }

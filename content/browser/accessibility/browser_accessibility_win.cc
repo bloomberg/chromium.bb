@@ -4373,17 +4373,26 @@ LONG BrowserAccessibilityWin::FindBoundary(
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
+  // If the boundary is relative to the caret, use the selection
+  // affinity, otherwise default to downstream affinity.
+  ui::AXTextAffinity affinity =
+      start_offset == IA2_TEXT_OFFSET_CARET ?
+      manager()->GetTreeData().sel_focus_affinity :
+      ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+
   HandleSpecialTextOffset(text, &start_offset);
   if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD)
     return GetWordStartBoundary(static_cast<int>(start_offset), direction);
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE)
-    return GetLineStartBoundary(static_cast<int>(start_offset), direction);
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
+    return GetLineStartBoundary(
+        static_cast<int>(start_offset), direction, affinity);
+  }
 
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   const std::vector<int32_t>& line_breaks =
       GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
   return ui::FindAccessibleTextBoundary(
-      text, line_breaks, boundary, start_offset, direction);
+      text, line_breaks, boundary, start_offset, direction, affinity);
 }
 
 LONG BrowserAccessibilityWin::FindStartOfStyle(

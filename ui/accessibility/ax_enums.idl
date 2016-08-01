@@ -508,4 +508,9 @@
     swipe_right_4,
     swipe_down_4
   };
+
+  enum AXTextAffinity {
+    downstream = 0,
+    upstream = 1
+  };
 };

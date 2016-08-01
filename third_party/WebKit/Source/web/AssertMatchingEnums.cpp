@@ -376,6 +376,9 @@ STATIC_ASSERT_ENUM(WebAXDescriptionFromContents, AXDescriptionFromContents);
 STATIC_ASSERT_ENUM(WebAXDescriptionFromPlaceholder, AXDescriptionFromPlaceholder);
 STATIC_ASSERT_ENUM(WebAXDescriptionFromRelatedElement, AXDescriptionFromRelatedElement);
 
+STATIC_ASSERT_ENUM(WebAXTextAffinityUpstream, TextAffinity::Upstream);
+STATIC_ASSERT_ENUM(WebAXTextAffinityDownstream, TextAffinity::Downstream);
+
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::Checking, ApplicationCacheHost::CHECKING);

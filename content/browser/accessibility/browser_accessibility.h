@@ -166,7 +166,8 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Starting at the given character offset, locates the start of the next or
   // previous line and returns its character offset.
   int GetLineStartBoundary(int start,
-                           ui::TextBoundaryDirection direction) const;
+                           ui::TextBoundaryDirection direction,
+                           ui::AXTextAffinity affinity) const;
 
   // Starting at the given character offset, locates the start of the next or
   // previous word and returns its character offset.

@@ -493,33 +493,48 @@ public:
         // The number of characters and child objects in the anchor object
         // before the range starts.
         int anchorOffset;
+        // When the same character offset could correspond to two possible
+        // cursor positions, upstream means it's on the previous line rather
+        // than the next line.
+        TextAffinity anchorAffinity;
+
         // The deepest descendant in which the range ends.
         // (nullptr means the current object.)
         Persistent<AXObject> focusObject;
         // The number of characters and child objects in the focus object
         // before the range ends.
         int focusOffset;
+        // When the same character offset could correspond to two possible
+        // cursor positions, upstream means it's on the previous line rather
+        // than the next line.
+        TextAffinity focusAffinity;
 
         AXRange()
             : anchorObject(nullptr)
             , anchorOffset(-1)
+            , anchorAffinity(TextAffinity::Upstream)
             , focusObject(nullptr)
             , focusOffset(-1)
+            , focusAffinity(TextAffinity::Downstream)
         { }
 
         AXRange(int startOffset, int endOffset)
             : anchorObject(nullptr)
             , anchorOffset(startOffset)
+            , anchorAffinity(TextAffinity::Upstream)
             , focusObject(nullptr)
             , focusOffset(endOffset)
+            , focusAffinity(TextAffinity::Downstream)
         { }
 
-        AXRange(AXObject* anchorObject, int anchorOffset,
-            AXObject* focusObject, int focusOffset)
+        AXRange(AXObject* anchorObject, int anchorOffset, TextAffinity anchorAffinity,
+            AXObject* focusObject, int focusOffset, TextAffinity focusAffinity)
             : anchorObject(anchorObject)
             , anchorOffset(anchorOffset)
+            , anchorAffinity(anchorAffinity)
             , focusObject(focusObject)
             , focusOffset(focusOffset)
+            , focusAffinity(focusAffinity)
         { }
 
         bool isValid() const

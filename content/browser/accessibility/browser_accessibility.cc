@@ -521,7 +521,8 @@ base::string16 BrowserAccessibility::GetValue() const {
 
 int BrowserAccessibility::GetLineStartBoundary(
     int start,
-    ui::TextBoundaryDirection direction) const {
+    ui::TextBoundaryDirection direction,
+    ui::AXTextAffinity affinity) const {
   DCHECK_GE(start, 0);
   DCHECK_LE(start, static_cast<int>(GetText().length()));
 
@@ -529,7 +530,8 @@ int BrowserAccessibility::GetLineStartBoundary(
     const std::vector<int32_t>& line_breaks =
         GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
     return ui::FindAccessibleTextBoundary(GetText(), line_breaks,
-                                          ui::LINE_BOUNDARY, start, direction);
+                                          ui::LINE_BOUNDARY, start, direction,
+                                          affinity);
   }
 
   // Keeps track of the start offset of each consecutive line.
@@ -545,21 +547,31 @@ int BrowserAccessibility::GetLineStartBoundary(
     if (child->IsTextOnlyObject())
       child_length = static_cast<int>(child->GetText().length());
 
+    // Determine if |start| is within this child. As a special case, if
+    // the affinity is upstream, then the cursor position between two
+    // lines belongs to the previous line.
+    bool start_index_within_child = start < child_length;
+    if (start == child_length &&
+        !child->IsNextSiblingOnSameLine() &&
+        affinity == ui::AX_TEXT_AFFINITY_UPSTREAM) {
+      start_index_within_child = true;
+    }
+
     // Stop when we reach both the child containing our start offset and, in
     // case we are searching forward, the child that is at the end of the line
     // on which this object is located.
-    if (start < child_length && (direction == ui::BACKWARDS_DIRECTION ||
-                                 !child->IsNextSiblingOnSameLine())) {
+    if (start_index_within_child && (direction == ui::BACKWARDS_DIRECTION ||
+                                     !child->IsNextSiblingOnSameLine())) {
       // Recurse into the inline text boxes.
       if (child->GetRole() == ui::AX_ROLE_STATIC_TEXT) {
         switch (direction) {
           case ui::FORWARDS_DIRECTION:
-            line_length +=
-                child->GetLineStartBoundary(std::max(start, 0), direction);
+            line_length += child->GetLineStartBoundary(
+                std::max(start, 0), direction, affinity);
             break;
           case ui::BACKWARDS_DIRECTION:
-            line_start +=
-                child->GetLineStartBoundary(std::max(start, 0), direction);
+            line_start += child->GetLineStartBoundary(
+                std::max(start, 0), direction, affinity);
             break;
         }
       } else {

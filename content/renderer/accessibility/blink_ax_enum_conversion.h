@@ -45,6 +45,8 @@ ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from);
 ui::AXDescriptionFrom AXDescriptionFromFromBlink(
     blink::WebAXDescriptionFrom description_from);
 
+ui::AXTextAffinity AXTextAffinityFromBlink(blink::WebAXTextAffinity affinity);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_ENUM_CONVERSION_H_

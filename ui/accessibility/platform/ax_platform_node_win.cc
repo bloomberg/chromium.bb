@@ -1146,7 +1146,8 @@ LONG AXPlatformNodeWin::FindBoundary(
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   std::vector<int32_t> line_breaks;
   return static_cast<LONG>(ui::FindAccessibleTextBoundary(
-      text, line_breaks, boundary, start_offset, direction));
+      text, line_breaks, boundary, start_offset, direction,
+      AX_TEXT_AFFINITY_DOWNSTREAM));
 }
 
 }  // namespace ui

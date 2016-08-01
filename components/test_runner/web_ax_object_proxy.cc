@@ -535,10 +535,14 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                    &WebAXObjectProxy::SelectionAnchorObject)
       .SetProperty("selectionAnchorOffset",
                    &WebAXObjectProxy::SelectionAnchorOffset)
+      .SetProperty("selectionAnchorAffinity",
+                   &WebAXObjectProxy::SelectionAnchorAffinity)
       .SetProperty("selectionFocusObject",
                    &WebAXObjectProxy::SelectionFocusObject)
       .SetProperty("selectionFocusOffset",
                    &WebAXObjectProxy::SelectionFocusOffset)
+      .SetProperty("selectionFocusAffinity",
+                   &WebAXObjectProxy::SelectionFocusAffinity)
       .SetProperty("selectionStart", &WebAXObjectProxy::SelectionStart)
       .SetProperty("selectionEnd", &WebAXObjectProxy::SelectionEnd)
       .SetProperty("selectionStartLineNumber",
@@ -788,10 +792,12 @@ v8::Local<v8::Value> WebAXObjectProxy::SelectionAnchorObject() {
 
   blink::WebAXObject anchorObject;
   int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
   blink::WebAXObject focusObject;
   int focusOffset = -1;
-  accessibility_object_.selection(anchorObject, anchorOffset,
-                                  focusObject, focusOffset);
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
   if (anchorObject.isNull())
     return v8::Null(blink::mainThreadIsolate());
 
@@ -803,14 +809,31 @@ int WebAXObjectProxy::SelectionAnchorOffset() {
 
   blink::WebAXObject anchorObject;
   int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
   blink::WebAXObject focusObject;
   int focusOffset = -1;
-  accessibility_object_.selection(anchorObject, anchorOffset,
-                                  focusObject, focusOffset);
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
   if (anchorOffset < 0)
     return -1;
 
   return anchorOffset;
+}
+
+std::string WebAXObjectProxy::SelectionAnchorAffinity() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
+  return anchorAffinity == blink::WebAXTextAffinityUpstream ?
+      "upstream" : "downstream";
 }
 
 v8::Local<v8::Value> WebAXObjectProxy::SelectionFocusObject() {
@@ -818,10 +841,12 @@ v8::Local<v8::Value> WebAXObjectProxy::SelectionFocusObject() {
 
   blink::WebAXObject anchorObject;
   int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
   blink::WebAXObject focusObject;
   int focusOffset = -1;
-  accessibility_object_.selection(anchorObject, anchorOffset,
-                                  focusObject, focusOffset);
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
   if (focusObject.isNull())
     return v8::Null(blink::mainThreadIsolate());
 
@@ -833,14 +858,31 @@ int WebAXObjectProxy::SelectionFocusOffset() {
 
   blink::WebAXObject anchorObject;
   int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
   blink::WebAXObject focusObject;
   int focusOffset = -1;
-  accessibility_object_.selection(anchorObject, anchorOffset,
-                                  focusObject, focusOffset);
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
   if (focusOffset < 0)
     return -1;
 
   return focusOffset;
+}
+
+std::string WebAXObjectProxy::SelectionFocusAffinity() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXTextAffinity anchorAffinity;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  blink::WebAXTextAffinity focusAffinity;
+  accessibility_object_.selection(anchorObject, anchorOffset, anchorAffinity,
+                                  focusObject, focusOffset, focusAffinity);
+  return focusAffinity == blink::WebAXTextAffinityUpstream ?
+      "upstream" : "downstream";
 }
 
 int WebAXObjectProxy::SelectionStart() {

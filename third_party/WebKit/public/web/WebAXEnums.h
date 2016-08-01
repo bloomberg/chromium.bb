@@ -319,6 +319,12 @@ enum WebAXDescriptionFrom {
     WebAXDescriptionFromRelatedElement,
 };
 
+// Text affinity for the start or end of a selection.
+enum WebAXTextAffinity {
+    WebAXTextAffinityUpstream,
+    WebAXTextAffinityDownstream
+};
+
 } // namespace blink
 
 #endif

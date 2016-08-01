@@ -25,8 +25,10 @@ AXTreeData::AXTreeData()
       focus_id(-1),
       sel_anchor_object_id(-1),
       sel_anchor_offset(-1),
+      sel_anchor_affinity(AX_TEXT_AFFINITY_UPSTREAM),
       sel_focus_object_id(-1),
-      sel_focus_offset(-1) {
+      sel_focus_offset(-1),
+      sel_focus_affinity(AX_TEXT_AFFINITY_DOWNSTREAM) {
 }
 
 AXTreeData::AXTreeData(const AXTreeData& other) = default;
@@ -65,10 +67,12 @@ std::string AXTreeData::ToString() const {
   if (sel_anchor_object_id != -1) {
     result += " sel_anchor_object_id=" + IntToString(sel_anchor_object_id);
     result += " sel_anchor_offset=" + IntToString(sel_anchor_offset);
+    result += " sel_anchor_affinity=" + ui::ToString(sel_anchor_affinity);
   }
   if (sel_focus_object_id != -1) {
     result += " sel_focus_object_id=" + IntToString(sel_focus_object_id);
     result += " sel_focus_offset=" + IntToString(sel_focus_offset);
+    result += " sel_focus_affinity=" + ui::ToString(sel_focus_affinity);
   }
 
   return result;
@@ -84,8 +88,10 @@ bool operator==(const AXTreeData& lhs, const AXTreeData& rhs) {
           lhs.url == rhs.url && lhs.focus_id == rhs.focus_id &&
           lhs.sel_anchor_object_id == rhs.sel_anchor_object_id &&
           lhs.sel_anchor_offset == rhs.sel_anchor_offset &&
+          lhs.sel_anchor_affinity == rhs.sel_anchor_affinity &&
           lhs.sel_focus_object_id == rhs.sel_focus_object_id &&
-          lhs.sel_focus_offset == rhs.sel_focus_offset);
+          lhs.sel_focus_offset == rhs.sel_focus_offset &&
+          lhs.sel_focus_affinity == rhs.sel_focus_affinity);
 }
 
 bool operator!=(const AXTreeData& lhs, const AXTreeData& rhs) {

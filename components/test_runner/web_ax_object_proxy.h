@@ -76,8 +76,10 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   // current selection and can be called on any object in the tree.
   v8::Local<v8::Value> SelectionAnchorObject();
   int SelectionAnchorOffset();
+  std::string SelectionAnchorAffinity();
   v8::Local<v8::Value> SelectionFocusObject();
   int SelectionFocusOffset();
+  std::string SelectionFocusAffinity();
 
   // The following selection functions return text offsets calculated starting
   // at this object. They only report on a selection that is placed on the

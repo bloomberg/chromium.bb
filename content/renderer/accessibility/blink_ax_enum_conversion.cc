@@ -551,4 +551,15 @@ ui::AXDescriptionFrom AXDescriptionFromFromBlink(
   return ui::AX_DESCRIPTION_FROM_NONE;
 }
 
+ui::AXTextAffinity AXTextAffinityFromBlink(blink::WebAXTextAffinity affinity) {
+  switch (affinity) {
+    case blink::WebAXTextAffinityUpstream:
+      return ui::AX_TEXT_AFFINITY_UPSTREAM;
+    case blink::WebAXTextAffinityDownstream:
+      return ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+  }
+  NOTREACHED();
+  return ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+}
+
 }  // namespace content.

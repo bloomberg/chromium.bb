@@ -17,7 +17,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
                                   TextBoundaryType boundary,
                                   size_t start_offset,
-                                  TextBoundaryDirection direction) {
+                                  TextBoundaryDirection direction,
+                                  AXTextAffinity affinity) {
   size_t text_size = text.size();
   DCHECK_LE(start_offset, text_size);
 
@@ -39,15 +40,23 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     if (direction == FORWARDS_DIRECTION) {
       for (size_t j = 0; j < line_breaks.size(); ++j) {
           size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
-        if (line_break > start_offset)
+        if ((affinity == AX_TEXT_AFFINITY_DOWNSTREAM &&
+             line_break > start_offset) ||
+            (affinity == AX_TEXT_AFFINITY_UPSTREAM &&
+             line_break >= start_offset)) {
           return line_break;
+        }
       }
       return text_size;
     } else {
       for (size_t j = line_breaks.size(); j != 0; --j) {
         size_t line_break = line_breaks[j - 1] >= 0 ? line_breaks[j - 1] : 0;
-        if (line_break <= start_offset)
+        if ((affinity == AX_TEXT_AFFINITY_DOWNSTREAM &&
+             line_break <= start_offset) ||
+            (affinity == AX_TEXT_AFFINITY_UPSTREAM &&
+             line_break < start_offset)) {
           return line_break;
+        }
       }
       return 0;
     }
