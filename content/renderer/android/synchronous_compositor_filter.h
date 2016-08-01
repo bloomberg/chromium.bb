@@ -71,7 +71,6 @@ class SynchronousCompositorFilter
   // Compositor thread methods.
   void FilterReadyOnCompositorThread();
   void OnMessageReceivedOnCompositorThread(const IPC::Message& message);
-  void CheckIsReady(int routing_id);
   void CreateSynchronousCompositorProxy(
       int routing_id,
       ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy);
