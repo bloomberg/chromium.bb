@@ -161,9 +161,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
   SetupPeerconnectionWithLocalStream(left_tab);
   SetupPeerconnectionWithLocalStream(right_tab);
 
-  SetDefaultVideoCodec(left_tab, "VP8");
-  SetDefaultVideoCodec(right_tab, "VP8");
-  NegotiateCall(left_tab, right_tab);
+  NegotiateCall(left_tab, right_tab, "VP8");
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
@@ -253,9 +251,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   SetupPeerconnectionWithLocalStream(left_tab);
   SetupPeerconnectionWithLocalStream(right_tab);
 
-  SetDefaultVideoCodec(left_tab, "VP8");
-  SetDefaultVideoCodec(right_tab, "VP8");
-  NegotiateCall(left_tab, right_tab);
+  NegotiateCall(left_tab, right_tab, "VP8");
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
