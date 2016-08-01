@@ -50,6 +50,12 @@
       /** @private {!settings.FontsBrowserProxy} */
       browserProxy_: Object,
 
+      /** @private {!DropdownMenuOptionList} */
+      encodingOptions_: Object,
+
+      /** @private {!DropdownMenuOptionList} */
+      fontOptions_: Object,
+
       /**
        * Common font sizes.
        * @private {!Array<number>}
@@ -130,10 +136,7 @@
           name: response.fontList[i][1]
         });
       }
-      this.$.standardFont.menuOptions = fontMenuOptions;
-      this.$.serifFont.menuOptions = fontMenuOptions;
-      this.$.sansSerifFont.menuOptions = fontMenuOptions;
-      this.$.fixedFont.menuOptions = fontMenuOptions;
+      this.fontOptions_ = fontMenuOptions;
 
       var encodingMenuOptions = [];
       for (i = 0; i < response.encodingList.length; ++i) {
@@ -142,7 +145,7 @@
           name: response.encodingList[i][1]
         });
       }
-      this.$.encoding.menuOptions = encodingMenuOptions;
+      this.encodingOptions_ = encodingMenuOptions;
       this.advancedExtensionUrl_ = response.extensionUrl;
     },
 
