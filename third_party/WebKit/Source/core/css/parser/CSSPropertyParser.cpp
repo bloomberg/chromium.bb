@@ -1909,7 +1909,7 @@ static CSSValue* consumeStrokeDasharray(CSSParserTokenRange& range)
 
     CSSValueList* dashes = CSSValueList::createCommaSeparated();
     do {
-        CSSPrimitiveValue* dash = consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
+        CSSPrimitiveValue* dash = consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeNonNegative);
         if (!dash || (consumeCommaIncludingWhitespace(range) && range.atEnd()))
             return nullptr;
         dashes->append(*dash);
