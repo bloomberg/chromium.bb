@@ -296,6 +296,11 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     if (!frame || m_isSubmittingOrInUserJSSubmitEvent)
         return;
 
+    if (document().isSandboxed(SandboxForms)) {
+        document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + m_attributes.action() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set."));
+        return;
+    }
+
     bool skipValidation = !document().page() || noValidate();
     ASSERT(event);
     HTMLFormControlElement* submitElement = submitElementFromEvent(event);
