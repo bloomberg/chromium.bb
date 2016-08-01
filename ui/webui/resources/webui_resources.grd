@@ -282,6 +282,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_HANDLER"
                  file="html/cr/ui/context_menu_handler.html"
                  type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_DRAG_WRAPPER"
+                 file="html/cr/ui/drag_wrapper.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_GRID"
                  file="html/cr/ui/focus_grid.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_MANAGER"

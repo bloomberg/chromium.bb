@@ -54,6 +54,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SIDEBAR_UPDATE_NOW);
   source->AddLocalizedString("developerMode",
                              IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE);
+  source->AddLocalizedString("dropToInstall",
+                             IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("getMoreExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
   source->AddLocalizedString("keyboardShortcuts",
@@ -144,9 +146,16 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("animation_helper.js",
                           IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS);
   source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
+  source->AddResourcePath("drag_and_drop_handler.html",
+                          IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_HTML);
+  source->AddResourcePath("drag_and_drop_handler.js",
+                          IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_JS);
   source->AddResourcePath("detail_view.html",
                           IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML);
   source->AddResourcePath("detail_view.js", IDR_MD_EXTENSIONS_DETAIL_VIEW_JS);
+  source->AddResourcePath("drop_overlay.html",
+                          IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML);
+  source->AddResourcePath("drop_overlay.js", IDR_MD_EXTENSIONS_DROP_OVERLAY_JS);
   source->AddResourcePath("keyboard_shortcuts.html",
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
   source->AddResourcePath("keyboard_shortcuts.js",
@@ -204,6 +213,10 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   if (::switches::MdExtensionsEnabled()) {
     source = CreateMdExtensionsSource();
+    InstallExtensionHandler* install_extension_handler =
+        new InstallExtensionHandler();
+    install_extension_handler->GetLocalizedValues(source);
+    web_ui->AddMessageHandler(install_extension_handler);
   } else {
     source = CreateExtensionsHTMLSource();
 

@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 <link rel="import" href="chrome://extensions/detail_view.html">
+<link rel="import" href="chrome://extensions/drop_overlay.html">
 <link rel="import" href="chrome://extensions/item_list.html">
 <link rel="import" href="chrome://extensions/keyboard_shortcuts.html">
 <link rel="import" href="chrome://extensions/pack_dialog.html">
@@ -15,6 +16,7 @@
 
 <dom-module id="extensions-manager">
   <template>
+    <extensions-drop-overlay></extensions-drop-overlay>
     <paper-header-panel id="panel">
       <div class="paper-header">
         <h1 i18n-content="toolbarTitle"></h1>
