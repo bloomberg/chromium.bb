@@ -63,7 +63,7 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
 
   for (const ExplodedFrameState& child_state : state.children) {
     NavigationEntryImpl::TreeNode* child_node =
-        new NavigationEntryImpl::TreeNode(nullptr);
+        new NavigationEntryImpl::TreeNode(node, nullptr);
     node->children.push_back(child_node);
     RecursivelyGenerateFrameEntries(child_state, child_node);
   }
@@ -103,17 +103,17 @@ void RecursivelyGenerateFrameState(
 
 int NavigationEntryImpl::kInvalidBindings = -1;
 
-NavigationEntryImpl::TreeNode::TreeNode(FrameNavigationEntry* frame_entry)
-    : frame_entry(frame_entry) {
-}
+NavigationEntryImpl::TreeNode::TreeNode(TreeNode* parent,
+                                        FrameNavigationEntry* frame_entry)
+    : parent(parent), frame_entry(frame_entry) {}
 
 NavigationEntryImpl::TreeNode::~TreeNode() {
 }
 
-bool NavigationEntryImpl::TreeNode::MatchesFrame(FrameTreeNode* frame_tree_node,
-                                                 bool is_root_tree_node) const {
+bool NavigationEntryImpl::TreeNode::MatchesFrame(
+    FrameTreeNode* frame_tree_node) const {
   // The root node is for the main frame whether the unique name matches or not.
-  if (is_root_tree_node)
+  if (!parent)
     return frame_tree_node->IsMainFrame();
 
   // Otherwise check the unique name for subframes.
@@ -127,13 +127,13 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
     bool clone_children_of_target,
     FrameTreeNode* target_frame_tree_node,
     FrameTreeNode* current_frame_tree_node,
-    bool is_root_tree_node) const {
+    TreeNode* parent_node) const {
   // Clone this TreeNode, possibly replacing its FrameNavigationEntry.
   bool is_target_frame =
-      target_frame_tree_node &&
-      MatchesFrame(target_frame_tree_node, is_root_tree_node);
+      target_frame_tree_node && MatchesFrame(target_frame_tree_node);
   std::unique_ptr<NavigationEntryImpl::TreeNode> copy(
       new NavigationEntryImpl::TreeNode(
+          parent_node,
           is_target_frame ? frame_navigation_entry : frame_entry->Clone()));
 
   // Recursively clone the children if needed.
@@ -146,7 +146,7 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
       if (!current_frame_tree_node) {
         copy->children.push_back(child->CloneAndReplace(
             frame_navigation_entry, clone_children_of_target,
-            target_frame_tree_node, nullptr, false));
+            target_frame_tree_node, nullptr, copy.get()));
         continue;
       }
 
@@ -170,7 +170,7 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
           copy->children.push_back(child->CloneAndReplace(
               frame_navigation_entry, clone_children_of_target,
               target_frame_tree_node, current_frame_tree_node->child_at(index),
-              false));
+              copy.get()));
           break;
         }
       }
@@ -212,7 +212,8 @@ NavigationEntryImpl::NavigationEntryImpl(
     const base::string16& title,
     ui::PageTransition transition_type,
     bool is_renderer_initiated)
-    : frame_tree_(new TreeNode(new FrameNavigationEntry("",
+    : frame_tree_(new TreeNode(nullptr,
+                               new FrameNavigationEntry("",
                                                         -1,
                                                         -1,
                                                         std::move(instance),
@@ -578,7 +579,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // the same tab.
   copy->frame_tree_ = frame_tree_->CloneAndReplace(
       frame_navigation_entry, clone_children_of_target, target_frame_tree_node,
-      root_frame_tree_node, true);
+      root_frame_tree_node, nullptr);
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.
@@ -794,7 +795,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       post_id);
   frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
-      new NavigationEntryImpl::TreeNode(frame_entry));
+      new NavigationEntryImpl::TreeNode(parent_node, frame_entry));
 }
 
 FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
@@ -828,7 +829,7 @@ NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
   while (!work_queue.empty()) {
     node = work_queue.front();
     work_queue.pop();
-    if (node->MatchesFrame(frame_tree_node, node == root_node()))
+    if (node->MatchesFrame(frame_tree_node))
       return node;
 
     // Enqueue any children and keep looking.

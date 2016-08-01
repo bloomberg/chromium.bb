@@ -36,15 +36,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   // history item.  The tree currently only tracks the main frame by default,
   // and is populated with subframe nodes in --site-per-process mode.
   struct TreeNode {
-    TreeNode(FrameNavigationEntry* frame_entry);
+    TreeNode(TreeNode* parent, FrameNavigationEntry* frame_entry);
     ~TreeNode();
 
     // Returns whether this TreeNode corresponds to |frame_tree_node|.  If this
-    // is called on the root TreeNode, then |is_root_tree_node| should be true
-    // and we only check if |frame_tree_node| is the main frame.  Otherwise, we
-    // check if the unique name matches.
-    bool MatchesFrame(FrameTreeNode* frame_tree_node,
-                      bool is_root_tree_node) const;
+    // is called on the root TreeNode, we only check if |frame_tree_node| is the
+    // main frame.  Otherwise, we check if the unique name matches.
+    bool MatchesFrame(FrameTreeNode* frame_tree_node) const;
 
     // Recursively makes a deep copy of TreeNode with copies of each of the
     // FrameNavigationEntries in the subtree.  Replaces the TreeNode
@@ -52,8 +50,6 @@ class CONTENT_EXPORT NavigationEntryImpl
     // unless |clone_children_of_target| is true.  This function omits any
     // subframe history items that do not correspond to frames actually in the
     // current page, using |current_frame_tree_node| (if present).
-    // |is_root_tree_node| indicates whether this is being called on the root
-    // NavigationEntryImpl::TreeNode.
     // TODO(creis): For --site-per-process, share FrameNavigationEntries between
     // NavigationEntries of the same tab.
     std::unique_ptr<TreeNode> CloneAndReplace(
@@ -61,7 +57,10 @@ class CONTENT_EXPORT NavigationEntryImpl
         bool clone_children_of_target,
         FrameTreeNode* target_frame_tree_node,
         FrameTreeNode* current_frame_tree_node,
-        bool is_root_tree_node) const;
+        TreeNode* parent_node) const;
+
+    // The parent of this node.
+    TreeNode* parent;
 
     // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
     // it is needed by this node's NavigationEntry.
