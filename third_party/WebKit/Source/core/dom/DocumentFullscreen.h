@@ -45,7 +45,7 @@ public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
 
     // Mozilla version
-    static Element* webkitCurrentFullScreenElement(Document&);
+    static Element* currentFullScreenElement(Document&);
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);

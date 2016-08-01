@@ -56,8 +56,7 @@ public:
     static Fullscreen* fromIfExists(Document&);
     static Element* fullscreenElementFrom(Document&);
     static Element* currentFullScreenElementFrom(Document&);
-    static bool isFullScreen(Document&);
-    static bool isActiveFullScreenElement(const Element&);
+    static bool isCurrentFullScreenElement(const Element&);
 
     enum RequestType {
         // Element.requestFullscreen()
@@ -76,7 +75,11 @@ public:
     void exitFullscreen();
 
     static bool fullscreenEnabled(Document&);
-    Element* fullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().first.get() : 0; }
+    // TODO(foolip): The fullscreen element stack is modified synchronously in
+    // requestFullscreen(), which is not per spec and means that
+    // |fullscreenElement()| is not always the same as
+    // |currentFullScreenElement()|, see https://crbug.com/402421.
+    Element* fullscreenElement() const { return !m_fullscreenElementStack.isEmpty() ? m_fullscreenElementStack.last().first.get() : nullptr; }
 
     void didEnterFullscreenForElement(Element*);
     void didExitFullscreen();
@@ -93,7 +96,11 @@ public:
     bool forCrossProcessDescendant() { return m_forCrossProcessDescendant; }
 
     // Mozilla API
-    Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
+    // TODO(foolip): |currentFullScreenElement()| is a remnant from before the
+    // fullscreen element stack. It is still maintained separately from the
+    // stack and is is what the :-webkit-full-screen pseudo-class depends on. It
+    // should be removed, see https://crbug.com/402421.
+    Element* currentFullScreenElement() const { return m_currentFullScreenElement.get(); }
 
     // ContextLifecycleObserver:
     void contextDestroyed() override;
@@ -115,8 +122,8 @@ private:
     void enqueueErrorEvent(Element&, RequestType);
     void eventQueueTimerFired(TimerBase*);
 
-    Member<Element> m_fullScreenElement;
-    HeapVector<std::pair<Member<Element>, RequestType>> m_fullScreenElementStack;
+    HeapVector<std::pair<Member<Element>, RequestType>> m_fullscreenElementStack;
+    Member<Element> m_currentFullScreenElement;
     LayoutFullScreen* m_fullScreenLayoutObject;
     Timer<Fullscreen> m_eventQueueTimer;
     HeapDeque<Member<Event>> m_eventQueue;
@@ -135,19 +142,18 @@ private:
     bool m_forCrossProcessDescendant;
 };
 
-inline bool Fullscreen::isActiveFullScreenElement(const Element& element)
-{
-    Fullscreen* fullscreen = fromIfExists(element.document());
-    if (!fullscreen)
-        return false;
-    return fullscreen->webkitCurrentFullScreenElement() == &element;
-}
-
 inline Fullscreen* Fullscreen::fromIfExists(Document& document)
 {
     if (!document.hasFullscreenSupplement())
-        return 0;
+        return nullptr;
     return fromIfExistsSlow(document);
+}
+
+inline bool Fullscreen::isCurrentFullScreenElement(const Element& element)
+{
+    if (Fullscreen* found = fromIfExists(element.document()))
+        return found->currentFullScreenElement() == &element;
+    return false;
 }
 
 } // namespace blink

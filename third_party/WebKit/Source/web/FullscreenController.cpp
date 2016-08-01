@@ -102,7 +102,7 @@ void FullscreenController::didExitFullscreen()
 
     if (Document* document = m_fullScreenFrame->document()) {
         if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
-            Element* element = fullscreen->webkitCurrentFullScreenElement();
+            Element* element = fullscreen->currentFullScreenElement();
             if (element) {
                 // When the client exits from full screen we have to call fullyExitFullscreen to notify
                 // the document. While doing that, suppress notifications back to the client.

@@ -321,9 +321,7 @@ void WebPluginContainerImpl::requestFullscreen()
 
 bool WebPluginContainerImpl::isFullscreenElement() const
 {
-    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(m_element->document()))
-        return m_element == fullscreen->webkitCurrentFullScreenElement();
-    return false;
+    return Fullscreen::isCurrentFullScreenElement(*m_element);
 }
 
 void WebPluginContainerImpl::cancelFullscreen()
