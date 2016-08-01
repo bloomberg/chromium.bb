@@ -267,9 +267,9 @@ class NTPSnippetsService : public KeyedService,
   // the observers.
   void NotifyNewSuggestions();
 
-  // Notifies the content suggestions observer about a change in the
-  // |category_status_|.
-  void NotifyCategoryStatusChanged();
+  // Updates the internal status |category_status_| and notifies the content
+  // suggestions observer if it changed.
+  void UpdateCategoryStatus(CategoryStatus status);
 
   State state_;
 

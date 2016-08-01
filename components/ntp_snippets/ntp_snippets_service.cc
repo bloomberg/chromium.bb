@@ -261,6 +261,10 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
     bool force_request) {
   if (!ready())
     return;
+
+  if (snippets_.empty())
+    UpdateCategoryStatus(CategoryStatus::AVAILABLE_LOADING);
+
   snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
                                             kMaxSnippetCount, force_request);
 }
@@ -421,6 +425,8 @@ void NTPSnippetsService::OnDatabaseError() {
   EnterState(State::SHUT_DOWN, CategoryStatus::LOADING_ERROR);
 }
 
+// TODO(dgn): name clash between content suggestions and suggestions hosts.
+// method name should be changed.
 void NTPSnippetsService::OnSuggestionsChanged(
     const SuggestionsProfile& suggestions) {
   DCHECK(initialized());
@@ -444,6 +450,9 @@ void NTPSnippetsService::OnSuggestionsChanged(
 
   StoreSnippetHostsToPrefs(hosts);
 
+  // We removed some suggestions, so we want to let the client know about that.
+  // The fetch might take a long time or not complete so we don't want to wait
+  // for its callback.
   NotifyNewSuggestions();
 
   FetchSnippetsFromHosts(hosts, /*force_request=*/false);
@@ -453,6 +462,9 @@ void NTPSnippetsService::OnFetchFinished(
     NTPSnippetsFetcher::OptionalSnippets snippets) {
   if (!ready())
     return;
+
+  DCHECK(category_status_ == CategoryStatus::AVAILABLE ||
+         category_status_ == CategoryStatus::AVAILABLE_LOADING);
 
   if (snippets) {
     // Sparse histogram used because the number of snippets is small (bound by
@@ -481,6 +493,7 @@ void NTPSnippetsService::OnFetchFinished(
                          dismissed_snippets_.size());
   }
 
+  UpdateCategoryStatus(CategoryStatus::AVAILABLE);
   NotifyNewSuggestions();
 }
 
@@ -661,6 +674,11 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
   if (fetch_snippets)
     FetchSnippets(/*force_request=*/false);
 
+  // FetchSnippets should set the status to |AVAILABLE_LOADING| if relevant,
+  // otherwise we transition to |AVAILABLE| here.
+  if (category_status_ != CategoryStatus::AVAILABLE_LOADING)
+    UpdateCategoryStatus(CategoryStatus::AVAILABLE);
+
   // If host restrictions are enabled, register for host list updates.
   // |suggestions_service_| can be null in tests.
   if (snippets_fetcher_->UsesHostRestrictions() && suggestions_service_) {
@@ -708,6 +726,8 @@ void NTPSnippetsService::FinishInitialization() {
   snippets_status_service_->Init(base::Bind(
       &NTPSnippetsService::OnDisabledReasonChanged, base::Unretained(this)));
 
+  // Always notify here even if we got nothing from the database, because we
+  // don't know how long the fetch will take or if it will even complete.
   NotifyNewSuggestions();
 }
 
@@ -718,7 +738,8 @@ void NTPSnippetsService::OnDisabledReasonChanged(
 
   switch (disabled_reason) {
     case DisabledReason::NONE:
-      EnterState(State::READY, CategoryStatus::AVAILABLE);
+      // Do not change the status. That will be done in EnterStateEnabled()
+      EnterState(State::READY, category_status_);
       break;
 
     case DisabledReason::EXPLICITLY_DISABLED:
@@ -732,10 +753,7 @@ void NTPSnippetsService::OnDisabledReasonChanged(
 }
 
 void NTPSnippetsService::EnterState(State state, CategoryStatus status) {
-  if (status != category_status_) {
-    category_status_ = status;
-    NotifyCategoryStatusChanged();
-  }
+  UpdateCategoryStatus(status);
 
   if (state == state_)
     return;
@@ -800,7 +818,11 @@ void NTPSnippetsService::NotifyNewSuggestions() {
   observer_->OnNewSuggestions(provided_category_, std::move(result));
 }
 
-void NTPSnippetsService::NotifyCategoryStatusChanged() {
+void NTPSnippetsService::UpdateCategoryStatus(CategoryStatus status) {
+  if (status == category_status_)
+    return;
+
+  category_status_ = status;
   if (observer_) {
     observer_->OnCategoryStatusChanged(provided_category_, category_status_);
   }
