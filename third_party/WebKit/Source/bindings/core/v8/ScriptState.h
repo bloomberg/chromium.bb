@@ -52,17 +52,26 @@ public:
     static PassRefPtr<ScriptState> create(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
     virtual ~ScriptState();
 
-    static ScriptState* current(v8::Isolate* isolate)
+    static ScriptState* current(v8::Isolate* isolate) // DEPRECATED
     {
         return from(isolate->GetCurrentContext());
     }
 
-    static ScriptState* forHolderObject(const v8::FunctionCallbackInfo<v8::Value>& info)
+    static ScriptState* forFunctionObject(const v8::FunctionCallbackInfo<v8::Value>& info)
+    {
+        // We're assuming that the current context is not yet changed since
+        // the callback function has got called back.
+        // TODO(yukishiino): Once info.GetFunctionContext() gets implemented,
+        // we should use it instead.
+        return from(info.GetIsolate()->GetCurrentContext());
+    }
+
+    static ScriptState* forReceiverObject(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         return from(info.Holder()->CreationContext());
     }
 
-    static ScriptState* forHolderObject(const v8::PropertyCallbackInfo<v8::Value>& info)
+    static ScriptState* forReceiverObject(const v8::PropertyCallbackInfo<v8::Value>& info)
     {
         return from(info.Holder()->CreationContext());
     }

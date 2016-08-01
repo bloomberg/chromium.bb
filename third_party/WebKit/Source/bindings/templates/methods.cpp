@@ -233,7 +233,11 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {% if method.is_call_with_script_state or method.is_call_with_this_value %}
 {# [ConstructorCallWith=ScriptState] #}
 {# [CallWith=ScriptState] #}
-ScriptState* scriptState = ScriptState::forHolderObject(info);
+{% if method.is_static %}
+ScriptState* scriptState = ScriptState::forFunctionObject(info);
+{% else %}
+ScriptState* scriptState = ScriptState::forReceiverObject(info);
+{% endif %}
 {% endif %}
 {% if method.is_call_with_execution_context %}
 {# [ConstructorCallWith=ExecutionContext] #}
@@ -502,7 +506,11 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% endif %}
     {% endif %}{# not method.overloads #}
     {% if world_suffix in method.activity_logging_world_list %}
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    {% if method.is_static %}
+    ScriptState* scriptState = ScriptState::forFunctionObject(info);
+    {% else %}
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    {% endif %}
     V8PerContextData* contextData = scriptState->perContextData();
     {% if method.activity_logging_world_check %}
     if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger())

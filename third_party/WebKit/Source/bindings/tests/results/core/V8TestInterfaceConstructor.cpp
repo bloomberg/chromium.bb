@@ -42,7 +42,7 @@ namespace TestInterfaceConstructorV8Internal {
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, exceptionState);
@@ -112,7 +112,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
     }
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
@@ -141,7 +141,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!arg.prepare())
             return;
         if (UNLIKELY(numArgsPassed <= 1)) {
-            ScriptState* scriptState = ScriptState::forHolderObject(info);
+            ScriptState* scriptState = ScriptState::forReceiverObject(info);
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
@@ -158,7 +158,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!optArg.prepare())
             return;
     }
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, optArg, exceptionState);
@@ -188,7 +188,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!arg3.prepare())
             return;
     }
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
@@ -304,7 +304,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
         if (!arg.prepare())
             return;
         if (UNLIKELY(numArgsPassed <= 1)) {
-            ScriptState* scriptState = ScriptState::forHolderObject(info);
+            ScriptState* scriptState = ScriptState::forReceiverObject(info);
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
@@ -321,7 +321,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
         if (!optArg.prepare())
             return;
     }
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);

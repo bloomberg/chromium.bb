@@ -523,7 +523,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterface5", info.Holder(), info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -541,7 +541,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterface5", info.Holder(), info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -559,7 +559,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterface5", info.Holder(), info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -593,7 +593,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
         thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
     }
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -621,7 +621,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface5", info.Holder(), info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();

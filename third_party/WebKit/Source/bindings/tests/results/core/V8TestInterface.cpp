@@ -1786,7 +1786,7 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "toJSON", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ScriptValue result = impl->toJSONForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
@@ -1815,7 +1815,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::forHolderObject(info);
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
