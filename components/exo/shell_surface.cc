@@ -887,8 +887,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
-  params.parent =
-      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_);
+  // Make shell surface a transient child if |parent_| has been set.
+  params.parent = parent_ ? parent_ :
+      ash::Shell::GetContainer(ash::Shell::GetTargetRootWindow(), container_);
   params.bounds = initial_bounds_;
   bool activatable = activatable_;
   // ShellSurfaces in system modal container are only activatable if input
@@ -923,10 +924,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   // Disable movement if initial bounds were specified.
   widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
   window_state->set_ignore_keyboard_bounds_change(!initial_bounds_.IsEmpty());
-
-  // Make shell surface a transient child if |parent_| has been set.
-  if (parent_)
-    wm::AddTransientChild(parent_, window);
 
   // Allow Ash to manage the position of a top-level shell surfaces if show
   // state is one that allows auto positioning and |initial_bounds_| has
