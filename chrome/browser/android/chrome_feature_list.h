@@ -12,6 +12,7 @@
 namespace chrome {
 namespace android {
 
+extern const base::Feature kAllBookmarksFeature;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kNTPMaterialDesign;

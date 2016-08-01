@@ -1,4 +1,12 @@
 {
+    "AllBookmarks": [
+        {
+            "enable_features": [
+                "AllBookmarks"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "AndroidSessionNotifications": [
         {
             "group_name": "Disabled"
