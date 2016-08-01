@@ -460,28 +460,24 @@ bool WebRtcTestBase::OnWin8() const {
 }
 
 void WebRtcTestBase::OpenDatabase(content::WebContents* tab) const {
-  std::string response = ExecuteJavascript("openDatabase()", tab);
-  EXPECT_EQ("ok-database-opened", response) << "Failed to open database: "
-      << response;
+  EXPECT_EQ("ok-database-opened", ExecuteJavascript("openDatabase()", tab));
 }
 
 void WebRtcTestBase::CloseDatabase(content::WebContents* tab) const {
-  std::string response = ExecuteJavascript("closeDatabase()", tab);
-  EXPECT_EQ("ok-database-closed", response) << "Failed to close database: "
-      << response;
+  EXPECT_EQ("ok-database-closed", ExecuteJavascript("closeDatabase()", tab));
 }
 
 void WebRtcTestBase::DeleteDatabase(content::WebContents* tab) const {
-  std::string response = ExecuteJavascript("deleteDatabase()", tab);
-  EXPECT_EQ("ok-database-deleted", response) << "Failed to delete database: "
-      << response;
+  EXPECT_EQ("ok-database-deleted", ExecuteJavascript("deleteDatabase()", tab));
 }
 
 void WebRtcTestBase::GenerateAndCloneCertificate(
     content::WebContents* tab, const std::string& keygen_algorithm) const {
   std::string javascript = base::StringPrintf(
       "generateAndCloneCertificate(%s)", keygen_algorithm.c_str());
-  std::string response = ExecuteJavascript(javascript, tab);
-  EXPECT_EQ("ok-generated-and-cloned", response) << "Failed to generate and "
-      "clone certificate: " << response;
+  EXPECT_EQ("ok-generated-and-cloned", ExecuteJavascript(javascript, tab));
+}
+
+void WebRtcTestBase::VerifyStatsGenerated(content::WebContents* tab) const {
+  EXPECT_EQ("ok-got-stats", ExecuteJavascript("verifyStatsGenerated()", tab));
 }

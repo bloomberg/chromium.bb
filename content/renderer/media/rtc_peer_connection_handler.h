@@ -32,6 +32,7 @@ class WebRTCAnswerOptions;
 class WebRTCDataChannelHandler;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
+class WebRTCStats;
 }
 
 namespace content {
@@ -51,10 +52,7 @@ class CONTENT_EXPORT LocalRTCStatsResponse
   }
 
   virtual blink::WebRTCStatsResponse webKitStatsResponse() const;
-  virtual size_t addReport(blink::WebString type, blink::WebString id,
-                           double timestamp);
-  virtual void addStatistic(size_t report,
-                            blink::WebString name, blink::WebString value);
+  virtual void addStats(const blink::WebRTCStats& stats);
 
  protected:
   ~LocalRTCStatsResponse() override {}

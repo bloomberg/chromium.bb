@@ -166,6 +166,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void GenerateAndCloneCertificate(content::WebContents* tab,
                                    const std::string& keygen_algorithm) const;
 
+  void VerifyStatsGenerated(content::WebContents* tab) const;
+
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;

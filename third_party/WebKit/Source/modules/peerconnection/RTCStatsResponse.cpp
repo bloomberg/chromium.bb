@@ -42,17 +42,15 @@ RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
     return nullptr;
 }
 
-size_t RTCStatsResponse::addReport(const String& id, const String& type, double timestamp)
+void RTCStatsResponse::addStats(const WebRTCStats& stats)
 {
-    m_result.append(RTCLegacyStatsReport::create(id, type, timestamp));
-    m_idmap.add(id, m_result.size() - 1);
-    return m_result.size() - 1;
-}
+    m_result.append(RTCLegacyStatsReport::create(stats.id(), stats.typeToString(), stats.timestamp()));
+    m_idmap.add(stats.id(), m_result.size() - 1);
+    RTCLegacyStatsReport* report = m_result[m_result.size() - 1].get();
 
-void RTCStatsResponse::addStatistic(size_t report, const String& name, const String& value)
-{
-    SECURITY_DCHECK(report >= 0 && report < m_result.size());
-    m_result[report]->addStatistic(name, value);
+    for (std::unique_ptr<WebRTCStatsMemberIterator> member(stats.iterator()); !member->isEnd(); member->next()) {
+        report->addStatistic(member->displayName(), member->valueToString());
+    }
 }
 
 DEFINE_TRACE(RTCStatsResponse)

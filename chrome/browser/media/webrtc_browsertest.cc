@@ -89,7 +89,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     DetectVideoAndHangUp();
   }
 
-private:
+protected:
   void StartServerAndOpenTabs() {
     ASSERT_TRUE(embedded_test_server()->Start());
     left_tab_ = OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
@@ -191,4 +191,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
                                     kKeygenAlgorithmEcdsa,
                                     kKeygenAlgorithmRsa);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStats) {
+  StartServerAndOpenTabs();
+  SetupPeerconnectionWithLocalStream(left_tab_);
+  SetupPeerconnectionWithLocalStream(right_tab_);
+  NegotiateCall(left_tab_, right_tab_);
+
+  VerifyStatsGenerated(left_tab_);
+
+  DetectVideoAndHangUp();
 }

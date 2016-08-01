@@ -27,6 +27,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "WebRTCStats.h"
 #include "WebString.h"
 
 namespace blink {
@@ -44,13 +45,10 @@ public:
         assign(other);
         return *this;
     }
-
     BLINK_PLATFORM_EXPORT void assign(const WebRTCStatsResponse&);
-
     BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_PLATFORM_EXPORT size_t addReport(const WebString& id, const WebString& type, double timestamp);
-    BLINK_PLATFORM_EXPORT void addStatistic(size_t report, const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void addStats(const WebRTCStats&);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCStatsResponse(RTCStatsResponseBase*);

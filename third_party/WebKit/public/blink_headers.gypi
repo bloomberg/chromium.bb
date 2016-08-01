@@ -172,6 +172,7 @@
       "platform/WebRTCPeerConnectionHandlerClient.h",
       "platform/WebRTCSessionDescription.h",
       "platform/WebRTCSessionDescriptionRequest.h",
+      "platform/WebRTCStats.h",
       "platform/WebRTCStatsRequest.h",
       "platform/WebRTCStatsResponse.h",
       "platform/WebRTCVoidRequest.h",

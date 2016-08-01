@@ -43,6 +43,7 @@
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
+#include "third_party/WebKit/public/platform/WebRTCStats.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/webrtc/pc/mediasession.h"
@@ -451,6 +452,40 @@ class SetSessionDescriptionRequest
   SessionDescriptionRequestTracker tracker_;
 };
 
+blink::WebRTCStatsType WebRTCStatsTypeFromStatsType(
+    webrtc::StatsReport::StatsType name) {
+  // TODO(hbos): Translate StatsType -> WebRTCStatsType. crbug.com/627816
+  return blink::WebRTCStatsTypeUnknown;
+}
+
+blink::WebRTCStatsMemberName WebRTCStatsMemberNameFromStatsValueName(
+    webrtc::StatsReport::StatsValueName name) {
+  // TODO(hbos): Translate StatsValueName -> WebRTCStatsMemberName.
+  // crbug.com/627816
+  return blink::WebRTCStatsMemberNameUnknown;
+}
+
+blink::WebRTCStatsMemberType WebRTCStatsMemberTypeFromStatsValueType(
+    webrtc::StatsReport::Value::Type type) {
+  switch (type) {
+    case StatsReport::Value::kInt:
+      return blink::WebRTCStatsMemberTypeInt;
+    case StatsReport::Value::kInt64:
+      return blink::WebRTCStatsMemberTypeInt64;
+    case StatsReport::Value::kFloat:
+      return blink::WebRTCStatsMemberTypeFloat;
+    case StatsReport::Value::kString:
+    case StatsReport::Value::kStaticString:
+      return blink::WebRTCStatsMemberTypeString;
+    case StatsReport::Value::kBool:
+      return blink::WebRTCStatsMemberTypeBool;
+    case StatsReport::Value::kId:
+      return blink::WebRTCStatsMemberTypeId;
+  }
+  NOTREACHED();
+  return blink::WebRTCStatsMemberTypeInt;
+}
+
 // Class mapping responses from calls to libjingle
 // GetStats into a blink::WebRTCStatsCallback.
 class StatsResponse : public webrtc::StatsObserver {
@@ -481,23 +516,101 @@ class StatsResponse : public webrtc::StatsObserver {
   }
 
  private:
-  struct Report {
-    Report(const StatsReport* report)
-        : thread_checker(), id(report->id()->ToString()),
-          type(report->TypeToString()),  timestamp(report->timestamp()),
-          values(report->values()) {
-    }
+  class Report : public blink::WebRTCStats {
+   public:
+    class MemberIterator : public blink::WebRTCStatsMemberIterator {
+     public:
+      MemberIterator(const StatsReport::Values::const_iterator& it,
+                     const StatsReport::Values::const_iterator& end)
+          : it_(it), end_(end) {}
 
-    ~Report() {
+      // blink::WebRTCStatsMemberIterator
+      bool isEnd() const override { return it_ == end_; }
+      void next() override { ++it_; }
+      blink::WebRTCStatsMemberName name() const override {
+        return WebRTCStatsMemberNameFromStatsValueName(it_->second->name);
+      }
+      blink::WebString displayName() const override {
+        return blink::WebString::fromUTF8(it_->second->display_name());
+      }
+      blink::WebRTCStatsMemberType type() const override {
+        return WebRTCStatsMemberTypeFromStatsValueType(it_->second->type());
+      }
+      int valueInt() const override {
+        return it_->second->int_val();
+      }
+      int64_t valueInt64() const override {
+        return it_->second->int64_val();
+      }
+      float valueFloat() const override {
+        return it_->second->float_val();
+      }
+      blink::WebString valueString() const override {
+        const StatsReport::ValuePtr& value = it_->second;
+        if (value->type() == StatsReport::Value::kString)
+          return blink::WebString::fromUTF8(value->string_val());
+        DCHECK_EQ(value->type(), StatsReport::Value::kStaticString);
+        return blink::WebString::fromUTF8(value->static_string_val());
+      }
+      bool valueBool() const override {
+        return it_->second->bool_val();
+      }
+      blink::WebString valueToString() const override {
+        const StatsReport::ValuePtr& value = it_->second;
+        if (value->type() == StatsReport::Value::kString)
+          return blink::WebString::fromUTF8(value->string_val());
+        if (value->type() == StatsReport::Value::kStaticString)
+          return blink::WebString::fromUTF8(value->static_string_val());
+        return blink::WebString::fromUTF8(value->ToString());
+      }
+
+     private:
+      StatsReport::Values::const_iterator it_;
+      StatsReport::Values::const_iterator end_;
+    };
+
+    Report(const StatsReport* report)
+        : thread_checker_(),
+          id_(report->id()->ToString()),
+          type_(report->type()),
+          type_name_(report->TypeToString()),
+          timestamp_(report->timestamp()),
+          values_(report->values()) {}
+
+    ~Report() override {
       // Since the values vector holds pointers to const objects that are bound
       // to the signaling thread, they must be released on the same thread.
-      DCHECK(thread_checker.CalledOnValidThread());
+      DCHECK(thread_checker_.CalledOnValidThread());
     }
 
-    const base::ThreadChecker thread_checker;
-    const std::string id, type;
-    const double timestamp;
-    const StatsReport::Values values;
+    // blink::WebRTCStats
+    blink::WebString id() const override {
+      return blink::WebString::fromUTF8(id_);
+    }
+    blink::WebRTCStatsType type() const override {
+      return WebRTCStatsTypeFromStatsType(type_);
+    }
+    blink::WebString typeToString() const override {
+      return blink::WebString::fromUTF8(type_name_);
+    }
+    double timestamp() const override {
+      return timestamp_;
+    }
+    blink::WebRTCStatsMemberIterator* iterator() const override {
+      return new MemberIterator(values_.cbegin(), values_.cend());
+    }
+
+    bool HasValues() const {
+      return values_.size() > 0;
+    }
+
+   private:
+    const base::ThreadChecker thread_checker_;
+    const std::string id_;
+    const StatsReport::StatsType type_;
+    const std::string type_name_;
+    const double timestamp_;
+    const StatsReport::Values values_;
   };
 
   static void DeleteReports(std::vector<Report*>* reports) {
@@ -514,7 +627,7 @@ class StatsResponse : public webrtc::StatsObserver {
     rtc::scoped_refptr<LocalRTCStatsResponse> response(
         request_->createResponse().get());
     for (const auto* report : *reports) {
-      if (report->values.size() > 0)
+      if (report->HasValues())
         AddReport(response.get(), *report);
     }
 
@@ -527,23 +640,7 @@ class StatsResponse : public webrtc::StatsObserver {
   }
 
   void AddReport(LocalRTCStatsResponse* response, const Report& report) {
-    int idx = response->addReport(blink::WebString::fromUTF8(report.id),
-                                  blink::WebString::fromUTF8(report.type),
-                                  report.timestamp);
-    blink::WebString name, value_str;
-    for (const auto& value : report.values) {
-      const StatsReport::ValuePtr& v = value.second;
-      name = blink::WebString::fromUTF8(value.second->display_name());
-
-      if (v->type() == StatsReport::Value::kString)
-        value_str = blink::WebString::fromUTF8(v->string_val());
-      if (v->type() == StatsReport::Value::kStaticString)
-        value_str = blink::WebString::fromUTF8(v->static_string_val());
-      else
-        value_str = blink::WebString::fromUTF8(v->ToString());
-
-      response->addStatistic(idx, name, value_str);
-    }
+    response->addStats(report);
   }
 
   rtc::scoped_refptr<LocalRTCStatsRequest> request_;
@@ -755,16 +852,8 @@ blink::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
-size_t LocalRTCStatsResponse::addReport(blink::WebString type,
-                                        blink::WebString id,
-                                        double timestamp) {
-  return impl_.addReport(type, id, timestamp);
-}
-
-void LocalRTCStatsResponse::addStatistic(size_t report,
-                                         blink::WebString name,
-                                         blink::WebString value) {
-  impl_.addStatistic(report, name, value);
+void LocalRTCStatsResponse::addStats(const blink::WebRTCStats& stats) {
+  impl_.addStats(stats);
 }
 
 // Receives notifications from a PeerConnection object about state changes,

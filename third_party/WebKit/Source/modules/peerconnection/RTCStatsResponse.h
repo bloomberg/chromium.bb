@@ -41,11 +41,9 @@ public:
     static RTCStatsResponse* create();
 
     const HeapVector<Member<RTCLegacyStatsReport>>& result() const { return m_result; }
-
     RTCLegacyStatsReport* namedItem(const AtomicString& name);
 
-    size_t addReport(const String& id, const String& type, double timestamp) override;
-    void addStatistic(size_t report, const String& name, const String& value) override;
+    void addStats(const WebRTCStats&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

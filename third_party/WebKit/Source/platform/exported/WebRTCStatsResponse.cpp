@@ -49,16 +49,10 @@ WebRTCStatsResponse::operator RTCStatsResponseBase*() const
     return m_private.get();
 }
 
-size_t WebRTCStatsResponse::addReport(const WebString& id, const WebString& type, double timestamp)
+void WebRTCStatsResponse::addStats(const WebRTCStats& stats)
 {
     ASSERT(!m_private.isNull());
-    return m_private->addReport(id, type, timestamp);
-}
-
-void WebRTCStatsResponse::addStatistic(size_t report, const WebString& name, const WebString& value)
-{
-    ASSERT(!m_private.isNull());
-    m_private->addStatistic(report, name, value);
+    m_private->addStats(stats);
 }
 
 } // namespace blink

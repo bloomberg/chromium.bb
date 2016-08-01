@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/test_runner/mock_webrtc_data_channel_handler.h"
@@ -28,6 +32,90 @@
 using namespace blink;
 
 namespace test_runner {
+
+namespace {
+
+class MockWebRTCStats : public blink::WebRTCStats {
+ public:
+  class MemberIterator : public blink::WebRTCStatsMemberIterator {
+   public:
+    MemberIterator(
+        const std::vector<std::pair<std::string, std::string>>* values)
+        : values_(values) {}
+
+    // blink::WebRTCStatsMemberIterator
+    bool isEnd() const override { return i >= values_->size(); }
+    void next() override { ++i; }
+    blink::WebRTCStatsMemberName name() const override {
+      return blink::WebRTCStatsMemberNameUnknown;
+    }
+    blink::WebString displayName() const override {
+      return blink::WebString::fromUTF8((*values_)[i].first);
+    }
+    blink::WebRTCStatsMemberType type() const override {
+      return blink::WebRTCStatsMemberTypeString;
+    }
+    int valueInt() const override {
+      NOTREACHED();
+      return 0;
+    }
+    int64_t valueInt64() const override {
+      NOTREACHED();
+      return 0;
+    }
+    float valueFloat() const override {
+      NOTREACHED();
+      return 0.0f;
+    }
+    blink::WebString valueString() const override {
+      return blink::WebString::fromUTF8((*values_)[i].second);
+    }
+    bool valueBool() const override {
+      NOTREACHED();
+      return false;
+    }
+    blink::WebString valueToString() const override {
+      return valueString();
+    }
+
+   private:
+    size_t i = 0;
+    const std::vector<std::pair<std::string, std::string>>* values_;
+  };
+
+  MockWebRTCStats(const char* id, const char* type_name, double timestamp)
+      : id_(id), type_name_(type_name), timestamp_(timestamp) {}
+
+  // blink::WebRTCStats
+  blink::WebString id() const override {
+    return blink::WebString::fromUTF8(id_);
+  }
+  blink::WebRTCStatsType type() const override {
+    return blink::WebRTCStatsTypeUnknown;
+  }
+  blink::WebString typeToString() const override {
+    return blink::WebString::fromUTF8(type_name_);
+  }
+  double timestamp() const override {
+    return timestamp_;
+  }
+  blink::WebRTCStatsMemberIterator* iterator() const override {
+    return new MemberIterator(&values_);
+  }
+
+  void addStatistic(const std::string& name, const std::string& value) {
+    values_.push_back(std::make_pair(name, value));
+  }
+
+ private:
+  const std::string id_;
+  const std::string type_name_;
+  const double timestamp_;
+  // (name, value) pairs.
+  std::vector<std::pair<std::string, std::string>> values_;
+};
+
+}  // namespace
 
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler()
     : weak_factory_(this) {}
@@ -291,16 +379,18 @@ void MockWebRTCPeerConnectionHandler::getStats(
       interfaces_->GetDelegate()->GetCurrentTimeInMillisecond();
   if (request.hasSelector()) {
     // FIXME: There is no check that the fetched values are valid.
-    size_t report_index =
-        response.addReport("Mock video", "ssrc", current_date);
-    response.addStatistic(report_index, "type", "video");
+    MockWebRTCStats stats("Mock video", "ssrc", current_date);
+    stats.addStatistic("type", "video");
+    response.addStats(stats);
   } else {
     for (int i = 0; i < stream_count_; ++i) {
-      size_t report_index =
-          response.addReport("Mock audio", "ssrc", current_date);
-      response.addStatistic(report_index, "type", "audio");
-      report_index = response.addReport("Mock video", "ssrc", current_date);
-      response.addStatistic(report_index, "type", "video");
+      MockWebRTCStats audio_stats("Mock audio", "ssrc", current_date);
+      audio_stats.addStatistic("type", "audio");
+      response.addStats(audio_stats);
+
+      MockWebRTCStats video_stats("Mock video", "ssrc", current_date);
+      video_stats.addStatistic("type", "video");
+      response.addStats(video_stats);
     }
   }
   interfaces_->GetDelegate()->PostTask(new WebCallbackTask(

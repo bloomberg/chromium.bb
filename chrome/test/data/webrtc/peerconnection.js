@@ -289,6 +289,31 @@ function hasSeenCryptoInSdp() {
   returnToTest(gHasSeenCryptoInSdp);
 }
 
+/**
+ * Verifies that |RTCPeerConnection.getStats| returns stats.
+ *
+ * Returns ok-got-stats on success.
+ */
+function verifyStatsGenerated() {
+  peerConnection_().getStats(
+    function(response) {
+      var reports = response.result();
+      var numStats = 0;
+      for (var i = 0; i < reports.length; i++) {
+        var statNames = reports[i].names();
+        numStats += statNames.length;
+        for (var j = 0; j < statNames.length; j++) {
+          var statValue = reports[i].stat(statNames[j]);
+          if (typeof statValue != 'string')
+            throw failTest('A stat was returned that is not a string.');
+        }
+      }
+      if (numStats === 0)
+        throw failTest('No stats was returned by getStats.');
+      returnToTest('ok-got-stats');
+    });
+}
+
 // Internals.
 
 /** @private */
