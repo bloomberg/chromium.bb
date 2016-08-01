@@ -1109,7 +1109,7 @@ cr.define('login', function() {
       this.updatePinClass_(this, visible);
 
       // Set the focus to the input element after showing/hiding pin keyboard.
-      if (visible)
+      if (this.pinKeyboard && visible)
         this.pinKeyboard.focus();
       else
         this.mainInput.focus();
@@ -1322,7 +1322,8 @@ cr.define('login', function() {
         this.classList.toggle('signing-in', true);
         chrome.send('attemptUnlock', [this.user.username]);
       } else if (this.isAuthTypePassword) {
-        var password = this.passwordElement.value || this.pinKeyboard.value;
+        var pinValue = this.pinKeyboard ? this.pinKeyboard.value : '';
+        var password = this.passwordElement.value || pinValue;
         if (!password)
           return false;
         Oobe.disableSigninUI();
@@ -1388,7 +1389,8 @@ cr.define('login', function() {
      */
     reset: function(takeFocus) {
       this.passwordElement.value = '';
-      this.pinKeyboard.value = '';
+      if (this.pinKeyboard)
+        this.pinKeyboard.value = '';
       this.classList.toggle('signing-in', false);
       if (takeFocus) {
         if (!this.multiProfilesPolicyApplied)
@@ -1784,6 +1786,11 @@ cr.define('login', function() {
         } else if (this.isAuthTypeUserClick && this.userClickAuthAllowed_) {
           // Note that this.userClickAuthAllowed_ is set in mouse down event
           // handler.
+          this.parentNode.setActivatedPod(this);
+        } else if (this.pinKeyboard &&
+                   e.target == this.pinKeyboard.submitButton) {
+          // Sets the pod as activated if the submit button is clicked so that
+          // it simulates what the enter button does for the password/pin.
           this.parentNode.setActivatedPod(this);
         }
 
