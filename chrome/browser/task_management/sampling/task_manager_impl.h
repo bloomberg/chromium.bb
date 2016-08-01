@@ -79,6 +79,8 @@ class TaskManagerImpl :
   const TaskIdList& GetTaskIdsList() const override;
   TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const override;
   size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;
+  TaskId GetTaskIdForWebContents(
+      content::WebContents* web_contents) const override;
 
   // task_management::TaskProviderObserver:
   void TaskAdded(Task* task) override;
@@ -102,6 +104,9 @@ class TaskManagerImpl :
   void Refresh() override;
   void StartUpdating() override;
   void StopUpdating() override;
+
+  // Lookup a task by its pid, child_id and possibly route_id.
+  Task* GetTaskByPidOrRoute(int pid, int child_id, int route_id) const;
 
   // Based on |param| the appropriate task will be updated by its network usage.
   // Returns true if it was able to match |param| to an existing task, returns
@@ -138,7 +143,7 @@ class TaskManagerImpl :
 
   // The list of the task providers that are owned and observed by this task
   // manager implementation.
-  ScopedVector<TaskProvider> task_providers_;
+  std::vector<std::unique_ptr<TaskProvider>> task_providers_;
 
   // The current GPU memory usage stats that was last received from the
   // GpuDataManager.

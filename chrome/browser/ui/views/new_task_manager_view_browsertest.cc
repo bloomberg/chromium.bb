@@ -6,14 +6,17 @@
 
 #include "base/macros.h"
 #include "base/strings/pattern.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/task_manager_browsertest_util.h"
 #include "chrome/browser/task_management/task_manager_tester.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "chrome/browser/ui/views/new_task_manager_view.h"
@@ -188,6 +191,38 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, ColumnsSettingsAreRestored) {
     EXPECT_EQ(!kColumns[i].default_visibility,
               table->IsColumnVisible(kColumns[i].id));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, InitialSelection) {
+  // Navigate the first tab.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("b.com", "/title3.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // When the task manager is initially shown, the row for the active tab should
+  // be selected.
+  chrome::ShowTaskManager(browser());
+
+  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(GetTable()->FirstSelectedRow(),
+            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(1)));
+
+  // Activate tab 0. The selection should not change.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(GetTable()->FirstSelectedRow(),
+            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(1)));
+
+  // If the user re-triggers chrome::ShowTaskManager (e.g. via shift-esc), this
+  // should set the TaskManager selection to the active tab.
+  chrome::ShowTaskManager(browser());
+
+  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(GetTable()->FirstSelectedRow(),
+            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {

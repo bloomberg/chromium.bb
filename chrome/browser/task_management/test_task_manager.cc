@@ -161,6 +161,11 @@ size_t TestTaskManager::GetNumberOfTasksOnSameProcess(TaskId task_id) const {
   return 1;
 }
 
+TaskId TestTaskManager::GetTaskIdForWebContents(
+    content::WebContents* web_contents) const {
+  return -1;
+}
+
 base::TimeDelta TestTaskManager::GetRefreshTime() {
   return GetCurrentRefreshTime();
 }

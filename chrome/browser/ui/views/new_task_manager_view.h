@@ -103,8 +103,11 @@ class NewTaskManagerView
   // Initializes the state of the always-on-top setting as the window is shown.
   void InitAlwaysOnTopState();
 
-  // Activates the tab associated with the focused row.
-  void ActivateFocusedTab();
+  // Activates the tab associated with the selected row.
+  void ActivateSelectedTab();
+
+  // Selects the active tab in the specified browser window.
+  void SelectTaskOfActiveTab(Browser* browser);
 
   // Restores saved "always on top" state from a previous session.
   void RetrieveSavedAlwaysOnTopState();

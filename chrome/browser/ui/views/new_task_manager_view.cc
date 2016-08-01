@@ -12,7 +12,9 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/pref_names.h"
@@ -61,6 +63,7 @@ task_management::TaskManagerTableModel* NewTaskManagerView::Show(
     Browser* browser) {
   if (g_task_manager_view) {
     // If there's a Task manager window open already, just activate it.
+    g_task_manager_view->SelectTaskOfActiveTab(browser);
     g_task_manager_view->GetWidget()->Activate();
     return g_task_manager_view->table_model_.get();
   }
@@ -91,6 +94,7 @@ task_management::TaskManagerTableModel* NewTaskManagerView::Show(
   }
 #endif
 
+  g_task_manager_view->SelectTaskOfActiveTab(browser);
   g_task_manager_view->GetWidget()->Show();
 
   // Set the initial focus to the list of tasks.
@@ -247,12 +251,12 @@ void NewTaskManagerView::OnSelectionChanged() {
 }
 
 void NewTaskManagerView::OnDoubleClick() {
-  ActivateFocusedTab();
+  ActivateSelectedTab();
 }
 
 void NewTaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
   if (keycode == ui::VKEY_RETURN)
-    ActivateFocusedTab();
+    ActivateSelectedTab();
 }
 
 void NewTaskManagerView::ShowContextMenuForView(
@@ -344,10 +348,17 @@ void NewTaskManagerView::InitAlwaysOnTopState() {
   GetWidget()->SetAlwaysOnTop(is_always_on_top_);
 }
 
-void NewTaskManagerView::ActivateFocusedTab() {
+void NewTaskManagerView::ActivateSelectedTab() {
   const int active_row = tab_table_->selection_model().active();
   if (active_row != ui::ListSelectionModel::kUnselectedIndex)
     table_model_->ActivateTask(active_row);
+}
+
+void NewTaskManagerView::SelectTaskOfActiveTab(Browser* browser) {
+  if (browser) {
+    tab_table_->Select(table_model_->GetRowForWebContents(
+        browser->tab_strip_model()->GetActiveWebContents()));
+  }
 }
 
 void NewTaskManagerView::RetrieveSavedAlwaysOnTopState() {

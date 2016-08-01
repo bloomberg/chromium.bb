@@ -24,6 +24,10 @@
 
 class PrefRegistrySimple;
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -204,6 +208,12 @@ class TaskManagerInterface {
   // Gets the number of task-manager tasks running on the same process on which
   // the Task with |task_id| is running.
   virtual size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const = 0;
+
+  // Returns the TaskId associated with the main task for |web_contents|.
+  // Returns -1 if |web_contents| is nullptr or does not currently have an
+  // associated Task.
+  virtual TaskId GetTaskIdForWebContents(
+      content::WebContents* web_contents) const = 0;
 
   // Returns true if the resource |type| usage calculation is enabled and
   // the implementation should refresh its value (this means that at least one

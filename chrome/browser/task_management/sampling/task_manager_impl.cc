@@ -19,6 +19,9 @@
 #include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/task_management/providers/arc/arc_process_task_provider.h"
@@ -49,13 +52,13 @@ TaskManagerImpl::TaskManagerImpl()
       is_running_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_providers_.push_back(new BrowserProcessTaskProvider());
-  task_providers_.push_back(new ChildProcessTaskProvider());
-  task_providers_.push_back(new WebContentsTaskProvider());
+  task_providers_.emplace_back(new BrowserProcessTaskProvider());
+  task_providers_.emplace_back(new ChildProcessTaskProvider());
+  task_providers_.emplace_back(new WebContentsTaskProvider());
 #if defined(OS_CHROMEOS)
   if (arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess())) {
-    task_providers_.push_back(new ArcProcessTaskProvider());
+    task_providers_.emplace_back(new ArcProcessTaskProvider());
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -362,6 +365,18 @@ size_t TaskManagerImpl::GetNumberOfTasksOnSameProcess(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->num_tasks();
 }
 
+TaskId TaskManagerImpl::GetTaskIdForWebContents(
+    content::WebContents* web_contents) const {
+  if (!web_contents)
+    return -1;
+  content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+  Task* task =
+      GetTaskByPidOrRoute(0, rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  if (!task)
+    return -1;
+  return task->task_id();
+}
+
 void TaskManagerImpl::TaskAdded(Task* task) {
   DCHECK(task);
 
@@ -470,7 +485,7 @@ void TaskManagerImpl::StartUpdating() {
 
   is_running_ = true;
 
-  for (auto* provider : task_providers_)
+  for (const auto& provider : task_providers_)
     provider->SetObserver(this);
 
   io_thread_helper_manager_.reset(new IoThreadHelperManager);
@@ -484,7 +499,7 @@ void TaskManagerImpl::StopUpdating() {
 
   io_thread_helper_manager_.reset();
 
-  for (auto* provider : task_providers_)
+  for (const auto& provider : task_providers_)
     provider->ClearObserver();
 
   STLDeleteValues(&task_groups_by_proc_id_);
@@ -492,17 +507,26 @@ void TaskManagerImpl::StopUpdating() {
   sorted_task_ids_.clear();
 }
 
+Task* TaskManagerImpl::GetTaskByPidOrRoute(int origin_pid,
+                                           int child_id,
+                                           int route_id) const {
+  for (const auto& task_provider : task_providers_) {
+    Task* task =
+        task_provider->GetTaskOfUrlRequest(origin_pid, child_id, route_id);
+    if (task)
+      return task;
+  }
+  return nullptr;
+}
+
 bool TaskManagerImpl::UpdateTasksWithBytesRead(const BytesReadParam& param) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (auto* task_provider : task_providers_) {
-    Task* task = task_provider->GetTaskOfUrlRequest(param.origin_pid,
-                                                    param.child_id,
-                                                    param.route_id);
-    if (task) {
-      task->OnNetworkBytesRead(param.byte_count);
-      return true;
-    }
+  Task* task =
+      GetTaskByPidOrRoute(param.origin_pid, param.child_id, param.route_id);
+  if (task) {
+    task->OnNetworkBytesRead(param.byte_count);
+    return true;
   }
 
   // Couldn't match the bytes to any existing task.

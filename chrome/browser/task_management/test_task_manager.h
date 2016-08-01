@@ -66,6 +66,8 @@ class TestTaskManager : public TaskManagerInterface {
   const TaskIdList& GetTaskIdsList() const override;
   TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const override;
   size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;
+  TaskId GetTaskIdForWebContents(
+      content::WebContents* web_contents) const override;
 
   base::TimeDelta GetRefreshTime();
   int64_t GetEnabledFlags();

@@ -14,6 +14,10 @@
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "ui/base/models/table_model.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace task_management {
 
 class TaskManagerValuesStringifier;
@@ -98,6 +102,11 @@ class TaskManagerTableModel
   void StoreColumnsSettings();
 
   void ToggleColumnVisibility(int column_id);
+
+  // Returns the row index corresponding to a particular WebContents. Returns -1
+  // if |web_contents| is nullptr, or is not currently found in the model (for
+  // example, if the tab is currently crashed).
+  int GetRowForWebContents(content::WebContents* web_contents);
 
  private:
   friend class TaskManagerTesterImpl;
