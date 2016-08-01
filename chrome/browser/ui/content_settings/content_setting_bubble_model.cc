@@ -1162,6 +1162,43 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
   }
 }
 
+// ContentSettingSubresourceFilterBubbleModel ----------------------------------
+
+ContentSettingSubresourceFilterBubbleModel::
+    ContentSettingSubresourceFilterBubbleModel(Delegate* delegate,
+                                               WebContents* web_contents,
+                                               Profile* profile)
+    : ContentSettingBubbleModel(delegate, web_contents, profile) {
+  SetTitle();
+  SetManageLink();
+}
+
+ContentSettingSubresourceFilterBubbleModel::
+    ~ContentSettingSubresourceFilterBubbleModel() {}
+
+void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
+  // TODO(melandory): For this bubble we need to introduce ability to have a
+  // caption (something which appears above title and has bigger font).
+  set_title(l10n_util::GetStringUTF8(
+      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
+}
+
+void ContentSettingSubresourceFilterBubbleModel::SetManageLink() {
+  // TODO(melandory): introduce the button instead of link.
+  set_manage_link(
+      l10n_util::GetStringUTF8(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+}
+
+void ContentSettingSubresourceFilterBubbleModel::OnManageLinkClicked() {
+  // TODO(melandory): Notify ContentSubresourceFilterDriverFactory page reload
+  // was requested.
+}
+
+ContentSettingSubresourceFilterBubbleModel*
+ContentSettingSubresourceFilterBubbleModel::AsSubresourceFilterBubbleModel() {
+  return this;
+}
+
 // ContentSettingMidiSysExBubbleModel ------------------------------------------
 
 class ContentSettingMidiSysExBubbleModel
@@ -1362,5 +1399,10 @@ ContentSettingSimpleBubbleModel*
 ContentSettingMediaStreamBubbleModel*
     ContentSettingBubbleModel::AsMediaStreamBubbleModel() {
   // In general, bubble models might not inherit from the media bubble model.
+  return nullptr;
+}
+
+ContentSettingSubresourceFilterBubbleModel*
+ContentSettingBubbleModel::AsSubresourceFilterBubbleModel() {
   return nullptr;
 }

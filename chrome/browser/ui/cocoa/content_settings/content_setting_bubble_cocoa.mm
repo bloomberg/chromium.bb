@@ -205,6 +205,7 @@ class ContentSettingBubbleWebContentsObserverBridge
         webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
          anchoredAt:(NSPoint)anchoredAt;
+- (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model;
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
@@ -268,6 +269,20 @@ const ContentTypeToNibPath kNibPaths[] = {
   observerBridge_.reset(
     new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
 
+  NSString* nibPath = [self getNibPathForModel:model.get()];
+
+  DCHECK_NE(0u, [nibPath length]);
+
+  if ((self = [super initWithWindowNibPath:nibPath
+                              parentWindow:parentWindow
+                                anchoredAt:anchoredAt])) {
+    contentSettingBubbleModel_.reset(model.release());
+    [self showWindow:nil];
+  }
+  return self;
+}
+
+- (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model {
   NSString* nibPath = @"";
 
   ContentSettingSimpleBubbleModel* simple_bubble = model->AsSimpleBubbleModel();
@@ -285,15 +300,9 @@ const ContentTypeToNibPath kNibPaths[] = {
   if (model->AsMediaStreamBubbleModel())
     nibPath = @"ContentBlockedMedia";
 
-  DCHECK_NE(0u, [nibPath length]);
-
-  if ((self = [super initWithWindowNibPath:nibPath
-                              parentWindow:parentWindow
-                                anchoredAt:anchoredAt])) {
-    contentSettingBubbleModel_.reset(model.release());
-    [self showWindow:nil];
-  }
-  return self;
+  if (model->AsSubresourceFilterBubbleModel())
+    nibPath = @"ContentSubresourceFilter";
+  return nibPath;
 }
 
 - (void)dealloc {

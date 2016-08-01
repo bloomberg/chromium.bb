@@ -128,6 +128,7 @@
       'vector_icons/smartphone.icon',
       'vector_icons/submenu_arrow.1x.icon',
       'vector_icons/submenu_arrow.icon',
+      'vector_icons/subresource_filter_active.icon',
       'vector_icons/supervisor_account.icon',
       'vector_icons/sync_problem.icon',
       'vector_icons/system_menu_accessibility.icon',

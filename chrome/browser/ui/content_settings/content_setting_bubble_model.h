@@ -45,10 +45,12 @@ class WebContents;
 //       ContentSettingCookiesBubbleModel            - cookies
 //       ContentSettingPluginBubbleModel             - plugins
 //       ContentSettingPopupBubbleModel              - popups
+//   ContentSettingSubresourceFilterBubbleModel  - filtered subresources
 
 // Forward declaration necessary for downcasts.
-class ContentSettingSimpleBubbleModel;
 class ContentSettingMediaStreamBubbleModel;
+class ContentSettingSimpleBubbleModel;
+class ContentSettingSubresourceFilterBubbleModel;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -161,6 +163,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   // Cast this bubble into ContentSettingMediaStreamBubbleModel if possible.
   virtual ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel();
+
+  // Cast this bubble into ContentSettingSubresourceFilterBubbleModel
+  // if possible.
+  virtual ContentSettingSubresourceFilterBubbleModel*
+  AsSubresourceFilterBubbleModel();
 
  protected:
   ContentSettingBubbleModel(
@@ -280,6 +287,28 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
   ProtocolHandler previous_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingRPHBubbleModel);
+};
+
+// The model for the deceptive content bubble.
+class ContentSettingSubresourceFilterBubbleModel
+    : public ContentSettingBubbleModel {
+ public:
+  ContentSettingSubresourceFilterBubbleModel(Delegate* delegate,
+                                             content::WebContents* web_contents,
+                                             Profile* profile);
+
+  ~ContentSettingSubresourceFilterBubbleModel() override;
+
+  void OnManageLinkClicked() override;
+  ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
+      override;
+
+ private:
+  // ContentSettingBubbleModel:
+  void SetTitle() override;
+  void SetManageLink() override;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterBubbleModel);
 };
 
 // The model of the content settings bubble for media settings.

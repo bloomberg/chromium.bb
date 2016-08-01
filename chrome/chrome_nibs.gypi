@@ -27,6 +27,7 @@
       'app/nibs/ContentBlockedPlugins.xib',
       'app/nibs/ContentBlockedPopups.xib',
       'app/nibs/ContentBlockedSimple.xib',
+      'app/nibs/ContentSubresourceFilter.xib',
       'app/nibs/ContentProtocolHandlers.xib',
       'app/nibs/CookieDetailsView.xib',
       'app/nibs/DownloadItem.xib',

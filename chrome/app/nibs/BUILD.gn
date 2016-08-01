@@ -26,6 +26,7 @@ mac_xib_bundle_data("chrome_xibs") {
     "ContentBlockedPopups.xib",
     "ContentBlockedSimple.xib",
     "ContentProtocolHandlers.xib",
+    "ContentSubresourceFilter.xib",
     "CookieDetailsView.xib",
     "DevicePermissionsPrompt.xib",
     "DownloadItem.xib",

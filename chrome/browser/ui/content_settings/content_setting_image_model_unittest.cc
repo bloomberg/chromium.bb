@@ -133,4 +133,22 @@ TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
   forwarder.clear();
 }
 
+TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  std::unique_ptr<ContentSettingImageModel> content_setting_image_model(
+      new ContentSettingSubresourceFilterImageModel());
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+  EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
+
+  content_settings->SetSubresourceBlocked(true);
+  content_setting_image_model->UpdateFromWebContents(web_contents());
+
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  EXPECT_TRUE(HasIcon(*content_setting_image_model));
+  // The anchor doesn't have tooltip text for now.
+  EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
+}
+
 }  // namespace

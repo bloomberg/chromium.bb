@@ -42,6 +42,7 @@ bool UseVectorGraphics() {
 //     ContentSettingRPHImageModel               - protocol handlers
 //     ContentSettingMIDISysExImageModel         - midi sysex
 //   ContentSettingMediaImageModel             - media
+//   ContentSettingSubresourceFilterImageModel - deceptive content
 
 class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
  public:
@@ -419,10 +420,6 @@ ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModel(
 
 bool ContentSettingMediaImageModel::ShouldRunAnimation(
     WebContents* web_contents) {
-  // TODO(msramek): For bubbles that are not tied to a single content setting,
-  // TabSpecificContentSettings is not a good place to store this bit.
-  // Perhaps we should instead use a map<WebContents*, bool> here in
-  // ContentSettingMediaImageModel.
   if (!web_contents)
     return false;
   TabSpecificContentSettings* content_settings =
@@ -447,6 +444,60 @@ void ContentSettingMediaImageModel::SetAnimationHasRun(
     content_settings->SetBlockageHasBeenIndicated(
         CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   }
+}
+
+// Subresource Filter ----------------------------------------------------------
+
+ContentSettingSubresourceFilterImageModel::
+    ContentSettingSubresourceFilterImageModel()
+    : ContentSettingImageModel() {}
+
+void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+
+  if (!web_contents)
+    return;
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+
+  if (!content_settings || !content_settings->IsSubresourceBlocked())
+    return;
+
+  set_icon_by_vector_id(gfx::VectorIconId::SUBRESOURCE_FILTER_ACTIVE,
+                        gfx::VectorIconId::BLOCKED_BADGE);
+  set_explanatory_string_id(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
+  // TODO(melandory): Set tooltip text.
+  set_visible(true);
+}
+
+ContentSettingBubbleModel*
+ContentSettingSubresourceFilterImageModel::CreateBubbleModel(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile) {
+  return new ContentSettingSubresourceFilterBubbleModel(delegate, web_contents,
+                                                        profile);
+}
+
+bool ContentSettingSubresourceFilterImageModel::ShouldRunAnimation(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  return content_settings && content_settings->IsSubresourceBlockageIndicated();
+}
+
+void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
+    WebContents* web_contents) {
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (content_settings)
+    content_settings->SetSubresourceBlockageIndicated();
 }
 
 // Protocol handlers -----------------------------------------------------------
@@ -563,6 +614,7 @@ ScopedVector<ContentSettingImageModel>
       new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
   result.push_back(new ContentSettingRPHImageModel());
   result.push_back(new ContentSettingMediaImageModel());
+  result.push_back(new ContentSettingSubresourceFilterImageModel());
   result.push_back(
       new ContentSettingBlockedImageModel(
           CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
