@@ -64,6 +64,10 @@ class PerfTestInstance(test_instance.TestInstance):
     self._dry_run = args.dry_run
     self._flaky_steps = args.flaky_steps
     self._output_dir_archive_path = args.output_dir_archive_path
+    # TODO(rnephew): Get rid of this when everything uses
+    # --output-dir-archive-path
+    if self._output_dir_archive_path is None and args.get_output_dir_archive:
+      self._output_dir_archive_path = args.get_output_dir_archive
     self._known_devices_file = args.known_devices_file
     self._max_battery_temp = args.max_battery_temp
     self._min_battery_level = args.min_battery_level
