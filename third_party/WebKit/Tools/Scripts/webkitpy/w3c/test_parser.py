@@ -38,8 +38,8 @@ _log = logging.getLogger(__name__)
 
 class TestParser(object):
 
-    def __init__(self, options, filename):
-        self.options = options
+    def __init__(self, filename, options=None):
+        self.options = options or {'all': False}
         self.filename = filename
         self.host = Host()
         self.filesystem = self.host.filesystem
