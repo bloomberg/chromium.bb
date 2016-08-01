@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -48,8 +49,6 @@ GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DEFINE_POINTER)
 
 bool GnomeKeyringLoader::keyring_loaded = false;
 
-#if defined(DLOPEN_GNOME_KEYRING)
-
 #define GNOME_KEYRING_FUNCTION_INFO(name) \
   {"gnome_keyring_"#name, reinterpret_cast<void**>(&gnome_keyring_##name)},
 const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
@@ -88,21 +87,6 @@ bool GnomeKeyringLoader::LoadGnomeKeyring() {
   // We leak the library handle. That's OK: this function is called only once.
   return true;
 }
-
-#else  // defined(DLOPEN_GNOME_KEYRING)
-
-bool GnomeKeyringLoader::LoadGnomeKeyring() {
-  if (keyring_loaded)
-    return true;
-#define GNOME_KEYRING_ASSIGN_POINTER(name) \
-  gnome_keyring_##name = &::gnome_keyring_##name;
-  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
-#undef GNOME_KEYRING_ASSIGN_POINTER
-  keyring_loaded = true;
-  return true;
-}
-
-#endif  // defined(DLOPEN_GNOME_KEYRING)
 
 namespace {
 

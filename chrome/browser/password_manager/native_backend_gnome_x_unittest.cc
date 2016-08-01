@@ -278,12 +278,16 @@ const gchar* mock_gnome_keyring_result_to_message(GnomeKeyringResult res) {
 class MockGnomeKeyringLoader : public GnomeKeyringLoader {
  public:
   static bool LoadMockGnomeKeyring() {
-    if (!LoadGnomeKeyring())
-      return false;
 #define GNOME_KEYRING_ASSIGN_POINTER(name) \
   gnome_keyring_##name = &mock_gnome_keyring_##name;
     GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
 #undef GNOME_KEYRING_ASSIGN_POINTER
+
+#define GNOME_KEYRING_ASSIGN_POINTER(name) \
+  gnome_keyring_##name = &::gnome_keyring_##name;
+    GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
+#undef GNOME_KEYRING_ASSIGN_POINTER
+
     keyring_loaded = true;
     // Reset the state of the mock library.
     mock_keyring_items.clear();

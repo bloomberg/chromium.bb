@@ -987,41 +987,14 @@
             'defines': [
               'USE_GNOME_KEYRING',
             ],
-            'conditions': [
-              ['linux_link_gnome_keyring==0', {
-                'defines': ['DLOPEN_GNOME_KEYRING'],
-              }],
-            ],
           },
-          'conditions': [
-            ['linux_link_gnome_keyring!=0', {
-              'link_settings': {
-                'ldflags': [
-                  '<!@(<(pkg-config) --libs-only-L --libs-only-other gnome-keyring-1)',
-                ],
-                'libraries': [
-                  '<!@(<(pkg-config) --libs-only-l gnome-keyring-1)',
-                ],
-              },
-            }, {
-              'conditions': [
-                ['OS=="linux"', {
-                 'link_settings': {
-                   'libraries': [
-                     '-ldl',
-                   ],
-                 },
-                }],
-              ],
-            }],
-          ],
         }],
       ],
     },
     {
       # The unit tests use a few convenience functions from the GNOME
-      # Keyring library directly. We ignore linux_link_gnome_keyring and
-      # link directly in this version of the target to allow this.
+      # Keyring library directly. We link directly in this version of
+      # the target to allow this.
       # *** Do not use this target in the main binary! ***
       'target_name': 'gnome_keyring_direct',
       'type': 'none',
@@ -1033,11 +1006,6 @@
             ],
             'defines': [
               'USE_GNOME_KEYRING',
-            ],
-            'conditions': [
-              ['linux_link_gnome_keyring==0', {
-                'defines': ['DLOPEN_GNOME_KEYRING'],
-              }],
             ],
           },
           'link_settings': {

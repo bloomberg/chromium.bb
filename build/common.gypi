@@ -1416,8 +1416,6 @@
     # Default of 'use_allocator' is set to 'none' if OS=='android' later.
     'use_allocator%': 'tcmalloc',
 
-    # Set to 1 to link against libgnome-keyring instead of using dlopen().
-    'linux_link_gnome_keyring%': 0,
     # Set to 1 to link against gsettings APIs instead of using dlopen().
     'linux_link_gsettings%': 0,
 

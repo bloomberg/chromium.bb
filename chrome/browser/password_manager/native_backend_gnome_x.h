@@ -71,7 +71,6 @@ class GnomeKeyringLoader {
   static bool keyring_loaded;
 
  private:
-#if defined(DLOPEN_GNOME_KEYRING)
   struct FunctionInfo {
     const char* name;
     void** pointer;
@@ -79,7 +78,6 @@ class GnomeKeyringLoader {
 
   // Make it easy to initialize the function pointers in LoadGnomeKeyring().
   static const FunctionInfo functions[];
-#endif  // defined(DLOPEN_GNOME_KEYRING)
 };
 
 // NativeBackend implementation using GNOME Keyring.
