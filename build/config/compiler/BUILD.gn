@@ -74,14 +74,6 @@ declare_args() {
   # explore favoring size over speed in this case as well.
   optimize_for_size = is_android || is_ios
 
-  # If this is set to true, or if LLVM_FORCE_HEAD_REVISION is set to 1
-  # in the environment, we use the revision in the llvm repo to determine
-  # the CLANG_REVISION to use, instead of the version hard-coded into
-  # //tools/clang/scripts/update.py. This should only be used in
-  # conjunction with setting LLVM_FORCE_HEAD_REVISION in the
-  # environment when `gclient runhooks` is run as well.
-  llvm_force_head_revision = false
-
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
   # See: https://bugs.chromium.org/p/chromium/issues/detail?id=457359
