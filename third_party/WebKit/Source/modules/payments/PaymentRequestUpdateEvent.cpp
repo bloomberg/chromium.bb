@@ -10,6 +10,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace {
@@ -71,7 +72,7 @@ private:
 
     ScriptValue call(ScriptValue value) override
     {
-        m_updater->onUpdatePaymentDetailsFailure(value);
+        m_updater->onUpdatePaymentDetailsFailure(toCoreString(value.v8Value()->ToString(getScriptState()->context()).ToLocalChecked()));
         return ScriptValue();
     }
 
@@ -129,7 +130,7 @@ void PaymentRequestUpdateEvent::onTimerFired(TimerBase*)
     if (!m_updater)
         return;
 
-    m_updater->onUpdatePaymentDetailsFailure(ScriptValue());
+    m_updater->onUpdatePaymentDetailsFailure("Timed out as the page didn't resolve the promise from change event");
 }
 
 DEFINE_TRACE(PaymentRequestUpdateEvent)

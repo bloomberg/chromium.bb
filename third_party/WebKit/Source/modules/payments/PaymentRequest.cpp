@@ -456,15 +456,12 @@ void PaymentRequest::onUpdatePaymentDetails(const ScriptValue& detailsScriptValu
     m_paymentProvider->UpdateWith(mojom::blink::PaymentDetails::From(details));
 }
 
-void PaymentRequest::onUpdatePaymentDetailsFailure(const ScriptValue& error)
+void PaymentRequest::onUpdatePaymentDetailsFailure(const String& error)
 {
-    String message;
-    error.toString(message);
-
     if (m_showResolver)
-        m_showResolver->reject(DOMException::create(AbortError, message));
+        m_showResolver->reject(DOMException::create(AbortError, error));
     if (m_completeResolver)
-        m_completeResolver->reject(DOMException::create(AbortError, message));
+        m_completeResolver->reject(DOMException::create(AbortError, error));
     clearResolversAndCloseMojoConnection();
 }
 

@@ -9,6 +9,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/EventTypeNames.h"
+#include "modules/payments/PaymentRequest.h"
+#include "modules/payments/PaymentTestHelper.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +28,7 @@ public:
     ~MockPaymentUpdater() override {}
 
     MOCK_METHOD1(onUpdatePaymentDetails, void(const ScriptValue& detailsScriptValue));
-    MOCK_METHOD1(onUpdatePaymentDetailsFailure, void(const ScriptValue& error));
+    MOCK_METHOD1(onUpdatePaymentDetailsFailure, void(const String& error));
 
     DEFINE_INLINE_TRACE() {}
 };
@@ -104,14 +106,20 @@ TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired)
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout)
 {
     V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
-    MockPaymentUpdater* updater = new MockPaymentUpdater;
-    event->setPaymentDetailsUpdater(updater);
+    event->setPaymentDetailsUpdater(request);
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_)).Times(0);
-    EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_));
+    String errorMessage;
+    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
     event->onTimerFired(0);
+
+    v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+    EXPECT_EQ("AbortError: Timed out as the page didn't resolve the promise from change event", errorMessage);
 }
 
 } // namespace

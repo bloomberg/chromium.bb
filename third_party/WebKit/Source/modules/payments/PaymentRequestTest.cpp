@@ -332,7 +332,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
     String errorMessage;
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
-    request->onUpdatePaymentDetailsFailure(ScriptValue::from(scope.getScriptState(), "oops"));
+    request->onUpdatePaymentDetailsFailure("oops");
 
     v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
     EXPECT_EQ("AbortError: oops", errorMessage);
@@ -351,7 +351,7 @@ TEST(PaymentRequestTest, RejectCompletePromiseOnUpdateDetailsFailure)
     String errorMessage;
     request->complete(scope.getScriptState(), Success).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
-    request->onUpdatePaymentDetailsFailure(ScriptValue::from(scope.getScriptState(), "oops"));
+    request->onUpdatePaymentDetailsFailure("oops");
 
     v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
     EXPECT_EQ("AbortError: oops", errorMessage);

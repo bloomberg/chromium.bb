@@ -68,7 +68,7 @@ public:
 
     // PaymentUpdater:
     void onUpdatePaymentDetails(const ScriptValue& detailsScriptValue) override;
-    void onUpdatePaymentDetailsFailure(const ScriptValue& error) override;
+    void onUpdatePaymentDetailsFailure(const String& error) override;
 
     DECLARE_TRACE();
 
