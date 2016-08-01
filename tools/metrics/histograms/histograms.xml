@@ -7161,14 +7161,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CrosFirstRun.DialogShown">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Records the number of times when first-run dialog was shown.
   </summary>
 </histogram>
 
 <histogram name="CrosFirstRun.FurthestStep">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Index of furthest step that was reached during tutorial. Since order of
     steps could change eventially and new steps could apear we use index here
@@ -7177,23 +7177,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CrosFirstRun.TimeSpent" units="ms">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>The total time that user spent on first-run tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TimeSpentOnStep" units="ms">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>The time that user spent on some step of tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TutorialCompletion"
     enum="CrosFirstRunTutorialCompletionType">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>Tracks the way how user left tutorial.</summary>
 </histogram>
 
 <histogram name="CrosFirstRun.TutorialLaunched">
-  <owner>dzhioev@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Records the number of times when first-run tutorial has been launched.
   </summary>
@@ -20837,12 +20837,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Login.NewUserPriorityPrefsSyncResult"
     enum="NewUserPriorityPrefsSyncResult">
-  <owner>dzhioev@chromeos.org</owner>
+  <owner>alemate@chromeos.org</owner>
   <summary>Records whether a new user's priority prefs sync timed out.</summary>
 </histogram>
 
 <histogram name="Login.NewUserPriorityPrefsSyncTime" units="ms">
-  <owner>dzhioev@chromeos.org</owner>
+  <owner>alemate@chromeos.org</owner>
   <summary>
     Time spent waiting for priority preferences to sync after new user sign in.
     The operation will time out after 10s.
