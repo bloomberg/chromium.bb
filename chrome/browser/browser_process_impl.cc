@@ -1089,11 +1089,11 @@ void BrowserProcessImpl::CreateNotificationPlatformBridge() {
 }
 
 void BrowserProcessImpl::CreateNotificationUIManager() {
-// Android does not use the NotificationUIManager anuymore
+// Android does not use the NotificationUIManager anymore
 // All notification traffic is routed through NotificationPlatformBridge.
 #if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
   DCHECK(!notification_ui_manager_);
-  notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
+  notification_ui_manager_.reset(NotificationUIManager::Create());
   created_notification_ui_manager_ = true;
 #endif
 }

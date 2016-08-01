@@ -220,8 +220,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 #if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
   if (!notification_ui_manager_.get())
-    notification_ui_manager_.reset(
-        NotificationUIManager::Create(local_state()));
+    notification_ui_manager_.reset(NotificationUIManager::Create());
   return notification_ui_manager_.get();
 #else
   NOTIMPLEMENTED();

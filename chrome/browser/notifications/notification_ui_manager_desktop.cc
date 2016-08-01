@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 
 // static
-NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
+NotificationUIManager* NotificationUIManager::Create() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
     return nullptr;

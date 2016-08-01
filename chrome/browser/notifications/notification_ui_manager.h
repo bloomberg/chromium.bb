@@ -15,7 +15,6 @@ typedef void* ProfileID;
 
 class GURL;
 class Notification;
-class PrefService;
 class Profile;
 
 // This virtual interface is used to manage the UI surfaces for desktop
@@ -41,9 +40,7 @@ class NotificationUIManager {
   virtual ~NotificationUIManager() {}
 
   // Creates an initialized UI manager.
-  // TODO(dewittj): Remove the PrefService argument which is unused. See
-  // crbug.com/530376
-  static NotificationUIManager* Create(PrefService* local_state);
+  static NotificationUIManager* Create();
 
   // Adds a notification to be displayed. Virtual for unit test override.
   virtual void Add(const Notification& notification, Profile* profile) = 0;
