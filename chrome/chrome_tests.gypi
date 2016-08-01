@@ -508,6 +508,7 @@
       'browser/ui/search_engines/search_engine_tab_helper_browsertest.cc',
       'browser/ui/settings_window_manager_browsertest.cc',
       'browser/ui/startup/startup_browser_creator_browsertest.cc',
+      'browser/ui/startup/startup_browser_creator_corrupt_profiles_browsertest_win.cc',
       'browser/ui/startup/startup_browser_creator_triggered_reset_browsertest_win.cc',
       'browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc',
       'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',

@@ -11419,15 +11419,20 @@ The following application will be launched if you accept this request:
       </if>
 
       <!-- General app failure messages -->
-      <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
+      <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile cannot be opened correctly due to problems reading or writing files in it.">
 Your profile could not be opened correctly.
 
 Some features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
       </message>
-      <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message displayed in an error dialog on startup if the user tries to run Chrome as root">
+      <message name="IDS_COULDNT_STARTUP_PROFILE_ERROR" desc="Error displayed when Chrome cannot start because profiles were not opened correctly.">
+Cannot start Chrome because your profile could not be opened correctly.
+
+Please check that the profile exists and you have permission to read and write its contents.
+      </message>
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message displayed in an error dialog on startup if the user tries to run Chrome as root.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can not be run as root.
       </message>
-      <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start Chrome as root">
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start Chrome as root.">
         Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
       </message>
       <if expr="is_win">

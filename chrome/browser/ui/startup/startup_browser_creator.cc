@@ -887,3 +887,76 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);
 }
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+Profile* GetStartupProfile(const base::FilePath& user_data_dir,
+                           const base::CommandLine& command_line) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  base::FilePath profile_path =
+      GetStartupProfilePath(user_data_dir, command_line);
+  Profile* profile = profile_manager->GetProfile(profile_path);
+
+  // If there is no entry in profile attributes storage, the profile is deleted,
+  // and we should show the user manager. Also, when using
+  // --new-profile-management, if the profile is locked we should show the user
+  // manager as well. When neither of these is true, we can safely start up with
+  // |profile|.
+  auto* storage = &profile_manager->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
+  bool has_entry = storage->GetProfileAttributesWithPath(profile_path, &entry);
+  if (has_entry && (!switches::IsNewProfileManagement() ||
+                    !entry->IsSigninRequired() || !profile)) {
+    return profile;
+  }
+
+  // We want to show the user manager. To indicate this, return the guest
+  // profile. However, we can only do this if the system profile (where the user
+  // manager lives) also exists (or is creatable).
+  return profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()) ?
+         profile_manager->GetProfile(ProfileManager::GetGuestProfilePath()) :
+         nullptr;
+}
+
+Profile* GetFallbackStartupProfile() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // The only known reason for profiles to fail initialization is being unable
+  // to create the profile directory, and this has already happened in
+  // GetStartupProfilePath() before calling this function. In this case,
+  // creation of new profiles is expected to fail. So only existing profiles are
+  // attempted for fallback.
+
+  // If the last used profile could not be initialized, see if any of other last
+  // opened profiles can be initialized successfully.
+  auto* storage = &profile_manager->GetProfileAttributesStorage();
+  for (Profile* profile : ProfileManager::GetLastOpenedProfiles()) {
+    // Return any profile that is not locked.
+    ProfileAttributesEntry* entry;
+    bool has_entry = storage->GetProfileAttributesWithPath(profile->GetPath(),
+                                                           &entry);
+    if (!has_entry || !entry->IsSigninRequired())
+      return profile;
+  }
+
+  // Couldn't initialize any last opened profiles. Try to show the user manager,
+  // which requires successful initialization of the guest and system profiles.
+  Profile* guest_profile =
+      profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
+  Profile* system_profile =
+      profile_manager->GetProfile(ProfileManager::GetSystemProfilePath());
+  if (guest_profile && system_profile)
+    return guest_profile;
+
+  // Couldn't show the user manager either. Try to open any profile that is not
+  // locked.
+  for (ProfileAttributesEntry* entry : storage->GetAllProfilesAttributes()) {
+    if (!entry->IsSigninRequired()) {
+      Profile* profile = profile_manager->GetProfile(entry->GetPath());
+      if (profile)
+        return profile;
+    }
+  }
+
+  return nullptr;
+}
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

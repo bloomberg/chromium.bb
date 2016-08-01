@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
+#include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -403,8 +404,10 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
 
   base::Time start = base::Time::Now();
-  if (profiles::IsMultipleProfilesEnabled() &&
-      parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
+  bool profile_dir_specified =
+      profiles::IsMultipleProfilesEnabled() &&
+      parsed_command_line.HasSwitch(switches::kProfileDirectory);
+  if (profile_dir_specified) {
     profiles::SetLastUsedProfile(
         parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));
     // Clear kProfilesLastActive since the user only wants to launch a specific
@@ -415,7 +418,7 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
     profile_list->Clear();
   }
 
-  Profile* profile = NULL;
+  Profile* profile = nullptr;
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // On ChromeOS and Android the ProfileManager will use the same path as the
   // one we got passed. GetActiveUserProfile will therefore use the correct path
@@ -423,44 +426,31 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   DCHECK_EQ(user_data_dir.value(),
             g_browser_process->profile_manager()->user_data_dir().value());
   profile = ProfileManager::GetActiveUserProfile();
+
+  // TODO(port): fix this. See comments near the definition of |user_data_dir|.
+  // It is better to CHECK-fail here than it is to silently exit because of
+  // missing code in the above test.
+  CHECK(profile) << "Cannot get default profile.";
+
 #else
-  base::FilePath profile_path =
-      GetStartupProfilePath(user_data_dir, parsed_command_line);
+  profile = GetStartupProfile(user_data_dir, parsed_command_line);
 
-  profile = g_browser_process->profile_manager()->GetProfile(
-      profile_path);
+  if (!profile && !profile_dir_specified)
+    profile = GetFallbackStartupProfile();
 
-  // If we're using the --new-profile-management flag and this profile is
-  // signed out, then we should show the user manager instead. By switching
-  // the active profile to the guest profile we ensure that no
-  // browser windows will be opened for the guest profile.
-  if (switches::IsNewProfileManagement() &&
-      profile &&
-      !profile->IsGuestSession()) {
-    ProfileAttributesEntry* entry;
-    bool has_entry = g_browser_process->profile_manager()->
-                         GetProfileAttributesStorage().
-                         GetProfileAttributesWithPath(profile_path, &entry);
-    if (has_entry && entry->IsSigninRequired()) {
-      profile = g_browser_process->profile_manager()->GetProfile(
-          ProfileManager::GetGuestProfilePath());
-    }
+  if (!profile) {
+    ProfileErrorType error_type = profile_dir_specified ?
+                                  PROFILE_ERROR_CREATE_FAILURE_SPECIFIED :
+                                  PROFILE_ERROR_CREATE_FAILURE_ALL;
+
+    ShowProfileErrorDialog(error_type, IDS_COULDNT_STARTUP_PROFILE_ERROR);
+    return nullptr;
   }
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  if (profile) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Startup.CreateFirstProfile", base::Time::Now() - start);
-    return profile;
-  }
 
-#if !defined(OS_WIN)
-  // TODO(port): fix this.  See comments near the definition of
-  // user_data_dir.  It is better to CHECK-fail here than it is to
-  // silently exit because of missing code in the above test.
-  CHECK(profile) << "Cannot get default profile.";
-#endif  // !defined(OS_WIN)
-
-  return NULL;
+  UMA_HISTOGRAM_LONG_TIMES(
+      "Startup.CreateFirstProfile", base::Time::Now() - start);
+  return profile;
 }
 
 #if defined(OS_MACOSX)

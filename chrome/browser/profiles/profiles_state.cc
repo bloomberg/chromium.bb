@@ -215,9 +215,9 @@ bool SetActiveProfileToGuestIfLocked() {
   bool has_entry =
       g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetProfileAttributesWithPath(active_profile_path, &entry);
-  DCHECK(has_entry);
 
-  if (!entry->IsSigninRequired())
+  // |has_entry| may be false if a profile is specified on the command line.
+  if (has_entry && !entry->IsSigninRequired())
     return false;
 
   SetLastUsedProfile(guest_path.BaseName().MaybeAsASCII());

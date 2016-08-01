@@ -20,6 +20,10 @@
 #include <jni.h>
 #endif
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace base {
 
 class FilePath;
@@ -40,6 +44,13 @@ bool DieFileDie(const FilePath& file, bool recurse);
 bool EvictFileFromSystemCache(const FilePath& file);
 
 #if defined(OS_WIN)
+// Deny |permission| on the file |path| for the current user. |permission| is an
+// ACCESS_MASK structure which is defined in
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa374892.aspx
+// Refer to https://msdn.microsoft.com/en-us/library/aa822867.aspx for a list of
+// possible values.
+bool DenyFilePermission(const FilePath& path, DWORD permission);
+
 // Returns true if the volume supports Alternate Data Streams.
 bool VolumeSupportsADS(const FilePath& path);
 

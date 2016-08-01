@@ -4,16 +4,19 @@
 
 #include "base/test/test_file_util.h"
 
-#include <windows.h>
 #include <aclapi.h>
 #include <shlwapi.h>
 #include <stddef.h>
+#include <wchar.h>
+#include <windows.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
@@ -26,42 +29,6 @@ struct PermissionInfo {
   PSECURITY_DESCRIPTOR security_descriptor;
   ACL dacl;
 };
-
-// Deny |permission| on the file |path|, for the current user.
-bool DenyFilePermission(const FilePath& path, DWORD permission) {
-  PACL old_dacl;
-  PSECURITY_DESCRIPTOR security_descriptor;
-  if (GetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
-                           SE_FILE_OBJECT,
-                           DACL_SECURITY_INFORMATION, NULL, NULL, &old_dacl,
-                           NULL, &security_descriptor) != ERROR_SUCCESS) {
-    return false;
-  }
-
-  EXPLICIT_ACCESS change;
-  change.grfAccessPermissions = permission;
-  change.grfAccessMode = DENY_ACCESS;
-  change.grfInheritance = 0;
-  change.Trustee.pMultipleTrustee = NULL;
-  change.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-  change.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
-  change.Trustee.TrusteeType = TRUSTEE_IS_USER;
-  change.Trustee.ptstrName = const_cast<wchar_t*>(L"CURRENT_USER");
-
-  PACL new_dacl;
-  if (SetEntriesInAcl(1, &change, old_dacl, &new_dacl) != ERROR_SUCCESS) {
-    LocalFree(security_descriptor);
-    return false;
-  }
-
-  DWORD rc = SetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
-                                  SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
-                                  NULL, NULL, new_dacl, NULL);
-  LocalFree(security_descriptor);
-  LocalFree(new_dacl);
-
-  return rc == ERROR_SUCCESS;
-}
 
 // Gets a blob indicating the permission information for |path|.
 // |length| is the length of the blob.  Zero on failure.
@@ -109,6 +76,13 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
   return rc == ERROR_SUCCESS;
 }
 
+std::unique_ptr<wchar_t[]> ToCStr(const std::basic_string<wchar_t>& str) {
+  size_t size = str.size() + 1;
+  std::unique_ptr<wchar_t[]> ptr = base::MakeUnique<wchar_t[]>(size);
+  wcsncpy(ptr.get(), str.c_str(), size);
+  return ptr;
+}
+
 }  // namespace
 
 bool DieFileDie(const FilePath& file, bool recurse) {
@@ -147,6 +121,42 @@ bool EvictFileFromSystemCache(const FilePath& file) {
   CHECK(::SetFileTime(file_handle.Get(), &bhi.ftCreationTime,
                       &bhi.ftLastAccessTime, &bhi.ftLastWriteTime));
   return true;
+}
+
+// Deny |permission| on the file |path|, for the current user.
+bool DenyFilePermission(const FilePath& path, DWORD permission) {
+  PACL old_dacl;
+  PSECURITY_DESCRIPTOR security_descriptor;
+
+  std::unique_ptr<TCHAR[]> path_ptr = ToCStr(path.value());
+  if (GetNamedSecurityInfo(path_ptr.get(), SE_FILE_OBJECT,
+                           DACL_SECURITY_INFORMATION, nullptr, nullptr,
+                           &old_dacl, nullptr,
+                           &security_descriptor) != ERROR_SUCCESS) {
+    return false;
+  }
+
+  std::unique_ptr<TCHAR[]> current_user = ToCStr(std::wstring(L"CURRENT_USER"));
+  EXPLICIT_ACCESS new_access = {
+      permission,
+      DENY_ACCESS,
+      0,
+      {nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_NAME, TRUSTEE_IS_USER,
+       current_user.get()}};
+
+  PACL new_dacl;
+  if (SetEntriesInAcl(1, &new_access, old_dacl, &new_dacl) != ERROR_SUCCESS) {
+    LocalFree(security_descriptor);
+    return false;
+  }
+
+  DWORD rc = SetNamedSecurityInfo(path_ptr.get(), SE_FILE_OBJECT,
+                                  DACL_SECURITY_INFORMATION, nullptr, nullptr,
+                                  new_dacl, nullptr);
+  LocalFree(security_descriptor);
+  LocalFree(new_dacl);
+
+  return rc == ERROR_SUCCESS;
 }
 
 // Checks if the volume supports Alternate Data Streams. This is required for
