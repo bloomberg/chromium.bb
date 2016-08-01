@@ -42,30 +42,25 @@ class GnomeKeyringLoader {
  protected:
   static bool LoadGnomeKeyring();
 
-// Call a given parameter with the name of each function we use from GNOME
-// Keyring. Make sure to adjust the unit test if you change these.
-// The list of functions is divided into those we plan to mock in the unittest,
-// and those which we use without mocking in the test.
-#define GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(F)      \
-  F(is_available)                                  \
-  F(store_password)                                \
-  F(delete_password)                               \
-  F(find_items)                                    \
-  F(result_to_message)
-#define GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(F)  \
-  F(attribute_list_free)                           \
-  F(attribute_list_new)                            \
-  F(attribute_list_append_string)                  \
-  F(attribute_list_append_uint32)
-#define GNOME_KEYRING_FOR_EACH_FUNC(F)             \
-  GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(F)        \
-  GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(F)
-
-// Declare the actual function pointers that we'll use in client code.
-#define GNOME_KEYRING_DECLARE_POINTER(name) \
-    static decltype(&::gnome_keyring_##name) gnome_keyring_##name;
-  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DECLARE_POINTER)
-#undef GNOME_KEYRING_DECLARE_POINTER
+  // Declare the actual function pointers that we'll use in client code.
+  static decltype(&::gnome_keyring_is_available) gnome_keyring_is_available_ptr;
+  static decltype(
+      &::gnome_keyring_store_password) gnome_keyring_store_password_ptr;
+  static decltype(
+      &::gnome_keyring_delete_password) gnome_keyring_delete_password_ptr;
+  static decltype(&::gnome_keyring_find_items) gnome_keyring_find_items_ptr;
+  static decltype(
+      &::gnome_keyring_result_to_message) gnome_keyring_result_to_message_ptr;
+  static decltype(&::gnome_keyring_attribute_list_free)
+      gnome_keyring_attribute_list_free_ptr;
+  static decltype(
+      &::gnome_keyring_attribute_list_new) gnome_keyring_attribute_list_new_ptr;
+  static decltype(&::gnome_keyring_attribute_list_append_string)
+      gnome_keyring_attribute_list_append_string_ptr;
+  static decltype(&::gnome_keyring_attribute_list_append_uint32)
+      gnome_keyring_attribute_list_append_uint32_ptr;
+  // We also use gnome_keyring_attribute_list_index(), which is a macro and
+  // can't be referenced.
 
   // Set to true if LoadGnomeKeyring() has already succeeded.
   static bool keyring_loaded;

@@ -278,15 +278,20 @@ const gchar* mock_gnome_keyring_result_to_message(GnomeKeyringResult res) {
 class MockGnomeKeyringLoader : public GnomeKeyringLoader {
  public:
   static bool LoadMockGnomeKeyring() {
-#define GNOME_KEYRING_ASSIGN_POINTER(name) \
-  gnome_keyring_##name = &mock_gnome_keyring_##name;
-    GNOME_KEYRING_FOR_EACH_MOCKED_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
-#undef GNOME_KEYRING_ASSIGN_POINTER
-
-#define GNOME_KEYRING_ASSIGN_POINTER(name) \
-  gnome_keyring_##name = &::gnome_keyring_##name;
-    GNOME_KEYRING_FOR_EACH_NON_MOCKED_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
-#undef GNOME_KEYRING_ASSIGN_POINTER
+    // Mocked methods
+    gnome_keyring_is_available_ptr = &mock_gnome_keyring_is_available;
+    gnome_keyring_store_password_ptr = &mock_gnome_keyring_store_password;
+    gnome_keyring_delete_password_ptr = &mock_gnome_keyring_delete_password;
+    gnome_keyring_find_items_ptr = &mock_gnome_keyring_find_items;
+    gnome_keyring_result_to_message_ptr = &mock_gnome_keyring_result_to_message;
+    // Non-mocked methods
+    gnome_keyring_attribute_list_free_ptr =
+        &::gnome_keyring_attribute_list_free;
+    gnome_keyring_attribute_list_new_ptr = &::gnome_keyring_attribute_list_new;
+    gnome_keyring_attribute_list_append_string_ptr =
+        &::gnome_keyring_attribute_list_append_string;
+    gnome_keyring_attribute_list_append_uint32_ptr =
+        &::gnome_keyring_attribute_list_append_uint32;
 
     keyring_loaded = true;
     // Reset the state of the mock library.

@@ -42,20 +42,47 @@ namespace {
 const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
 }
 
-#define GNOME_KEYRING_DEFINE_POINTER(name) \
-  typeof(&::gnome_keyring_##name) GnomeKeyringLoader::gnome_keyring_##name;
-GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DEFINE_POINTER)
-#undef GNOME_KEYRING_DEFINE_POINTER
+decltype(&::gnome_keyring_is_available)
+    GnomeKeyringLoader::gnome_keyring_is_available_ptr;
+decltype(&::gnome_keyring_store_password)
+    GnomeKeyringLoader::gnome_keyring_store_password_ptr;
+decltype(&::gnome_keyring_delete_password)
+    GnomeKeyringLoader::gnome_keyring_delete_password_ptr;
+decltype(&::gnome_keyring_find_items)
+    GnomeKeyringLoader::gnome_keyring_find_items_ptr;
+decltype(&::gnome_keyring_result_to_message)
+    GnomeKeyringLoader::gnome_keyring_result_to_message_ptr;
+decltype(&::gnome_keyring_attribute_list_free)
+    GnomeKeyringLoader::gnome_keyring_attribute_list_free_ptr;
+decltype(&::gnome_keyring_attribute_list_new)
+    GnomeKeyringLoader::gnome_keyring_attribute_list_new_ptr;
+decltype(&::gnome_keyring_attribute_list_append_string)
+    GnomeKeyringLoader::gnome_keyring_attribute_list_append_string_ptr;
+decltype(&::gnome_keyring_attribute_list_append_uint32)
+    GnomeKeyringLoader::gnome_keyring_attribute_list_append_uint32_ptr;
 
 bool GnomeKeyringLoader::keyring_loaded = false;
 
-#define GNOME_KEYRING_FUNCTION_INFO(name) \
-  {"gnome_keyring_"#name, reinterpret_cast<void**>(&gnome_keyring_##name)},
 const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
-  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_FUNCTION_INFO)
-  {nullptr, nullptr}
-};
-#undef GNOME_KEYRING_FUNCTION_INFO
+    {"gnome_keyring_is_available",
+     reinterpret_cast<void**>(&gnome_keyring_is_available_ptr)},
+    {"gnome_keyring_store_password",
+     reinterpret_cast<void**>(&gnome_keyring_store_password_ptr)},
+    {"gnome_keyring_delete_password",
+     reinterpret_cast<void**>(&gnome_keyring_delete_password_ptr)},
+    {"gnome_keyring_find_items",
+     reinterpret_cast<void**>(&gnome_keyring_find_items_ptr)},
+    {"gnome_keyring_result_to_message",
+     reinterpret_cast<void**>(&gnome_keyring_result_to_message_ptr)},
+    {"gnome_keyring_attribute_list_free",
+     reinterpret_cast<void**>(&gnome_keyring_attribute_list_free_ptr)},
+    {"gnome_keyring_attribute_list_new",
+     reinterpret_cast<void**>(&gnome_keyring_attribute_list_new_ptr)},
+    {"gnome_keyring_attribute_list_append_string",
+     reinterpret_cast<void**>(&gnome_keyring_attribute_list_append_string_ptr)},
+    {"gnome_keyring_attribute_list_append_uint32",
+     reinterpret_cast<void**>(
+         &gnome_keyring_attribute_list_append_uint32_ptr)}};
 
 /* Load the library and initialize the function pointers. */
 bool GnomeKeyringLoader::LoadGnomeKeyring() {
@@ -71,7 +98,7 @@ bool GnomeKeyringLoader::LoadGnomeKeyring() {
     return false;
   }
 
-  for (size_t i = 0; functions[i].name; ++i) {
+  for (size_t i = 0; i < arraysize(functions); ++i) {
     dlerror();
     *functions[i].pointer = dlsym(handle, functions[i].name);
     const char* error = dlerror();
@@ -289,7 +316,7 @@ class GKRMethod : public GnomeKeyringLoader {
  private:
   struct GnomeKeyringAttributeListFreeDeleter {
     inline void operator()(void* list) const {
-      gnome_keyring_attribute_list_free(
+      gnome_keyring_attribute_list_free_ptr(
           static_cast<GnomeKeyringAttributeList*>(list));
     }
   };
@@ -342,7 +369,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   std::string form_data;
   SerializeFormDataToBase64String(form.form_data, &form_data);
   // clang-format off
-  gnome_keyring_store_password(
+  gnome_keyring_store_password_ptr(
       &kGnomeSchema,
       nullptr,                     // Default keyring.
       form.origin.spec().c_str(),  // Display name.
@@ -383,27 +410,26 @@ void GKRMethod::LoginSearch(const PasswordForm& form,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords to update.
-  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new_ptr());
   AppendString(&attrs, "origin_url", form.origin.spec());
   AppendString(&attrs, "username_element", UTF16ToUTF8(form.username_element));
   AppendString(&attrs, "username_value", UTF16ToUTF8(form.username_value));
   AppendString(&attrs, "password_element", UTF16ToUTF8(form.password_element));
   AppendString(&attrs, "signon_realm", form.signon_realm);
   AppendString(&attrs, "application", app_string);
-  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
-                           attrs.get(),
-                           OnOperationGetList,
-                           /*data=*/this,
-                           /*destroy_data=*/nullptr);
+  gnome_keyring_find_items_ptr(GNOME_KEYRING_ITEM_GENERIC_SECRET, attrs.get(),
+                               OnOperationGetList,
+                               /*data=*/this,
+                               /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We find forms using the same fields as LoginDatabase::RemoveLogin().
-  gnome_keyring_delete_password(
+  gnome_keyring_delete_password_ptr(
       &kGnomeSchema,
       OnOperationDone,
-      this,  // data
+      this,     // data
       nullptr,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
       "username_element", UTF16ToUTF8(form.username_element).c_str(),
@@ -419,7 +445,7 @@ void GKRMethod::GetLogins(const PasswordStore::FormDigest& form,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(new PasswordStore::FormDigest(form));
   // Search GNOME Keyring for matching passwords.
-  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new_ptr());
   if (!password_manager::ShouldPSLDomainMatchingApply(
           password_manager::GetRegistryControlledDomain(
               GURL(form.signon_realm))) &&
@@ -428,11 +454,10 @@ void GKRMethod::GetLogins(const PasswordStore::FormDigest& form,
     AppendString(&attrs, "signon_realm", form.signon_realm);
   }
   AppendString(&attrs, "application", app_string);
-  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
-                           attrs.get(),
-                           OnOperationGetList,
-                           /*data=*/this,
-                           /*destroy_data=*/nullptr);
+  gnome_keyring_find_items_ptr(GNOME_KEYRING_ITEM_GENERIC_SECRET, attrs.get(),
+                               OnOperationGetList,
+                               /*data=*/this,
+                               /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
@@ -440,14 +465,13 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords.
-  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new_ptr());
   AppendUint32(&attrs, "blacklisted_by_user", blacklisted_by_user);
   AppendString(&attrs, "application", app_string);
-  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
-                           attrs.get(),
-                           OnOperationGetList,
-                           /*data=*/this,
-                           /*destroy_data=*/nullptr);
+  gnome_keyring_find_items_ptr(GNOME_KEYRING_ITEM_GENERIC_SECRET, attrs.get(),
+                               OnOperationGetList,
+                               /*data=*/this,
+                               /*destroy_data=*/nullptr);
 }
 
 void GKRMethod::GetAllLogins(const char* app_string) {
@@ -455,13 +479,12 @@ void GKRMethod::GetAllLogins(const char* app_string) {
   lookup_form_.reset(nullptr);
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
-  ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
+  ScopedAttributeList attrs(gnome_keyring_attribute_list_new_ptr());
   AppendString(&attrs, "application", app_string);
-  gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
-                           attrs.get(),
-                           OnOperationGetList,
-                           /*data=*/this,
-                           /*destroy_data=*/nullptr);
+  gnome_keyring_find_items_ptr(GNOME_KEYRING_ITEM_GENERIC_SECRET, attrs.get(),
+                               OnOperationGetList,
+                               /*data=*/this,
+                               /*destroy_data=*/nullptr);
 }
 
 GnomeKeyringResult GKRMethod::WaitResult() {
@@ -481,7 +504,7 @@ GnomeKeyringResult GKRMethod::WaitResult(ScopedVector<PasswordForm>* forms) {
 void GKRMethod::AppendString(GKRMethod::ScopedAttributeList* list,
                              const char* name,
                              const char* value) {
-  gnome_keyring_attribute_list_append_string(list->get(), name, value);
+  gnome_keyring_attribute_list_append_string_ptr(list->get(), name, value);
 }
 
 // static
@@ -495,7 +518,7 @@ void GKRMethod::AppendString(GKRMethod::ScopedAttributeList* list,
 void GKRMethod::AppendUint32(GKRMethod::ScopedAttributeList* list,
                              const char* name,
                              guint32 value) {
-  gnome_keyring_attribute_list_append_uint32(list->get(), name, value);
+  gnome_keyring_attribute_list_append_uint32_ptr(list->get(), name, value);
 }
 
 // static
@@ -537,7 +560,7 @@ NativeBackendGnome::~NativeBackendGnome() {
 }
 
 bool NativeBackendGnome::Init() {
-  return LoadGnomeKeyring() && gnome_keyring_is_available();
+  return LoadGnomeKeyring() && gnome_keyring_is_available_ptr();
 }
 
 bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
@@ -550,7 +573,7 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring save failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
   return true;
@@ -574,7 +597,7 @@ password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
   if (result != GNOME_KEYRING_RESULT_OK &&
       result != GNOME_KEYRING_RESULT_NO_MATCH) {
     LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return password_manager::PasswordStoreChangeList();
   }
   password_manager::PasswordStoreChangeList changes;
@@ -620,7 +643,7 @@ bool NativeBackendGnome::UpdateLogin(
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
   if (forms.size() == 1 && *forms.front() == form)
@@ -660,7 +683,7 @@ bool NativeBackendGnome::RemoveLogin(
 
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
   changes->push_back(password_manager::PasswordStoreChange(
@@ -714,7 +737,7 @@ bool NativeBackendGnome::GetLogins(const PasswordStore::FormDigest& form,
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
   return true;
@@ -745,7 +768,7 @@ bool NativeBackendGnome::GetLoginsList(bool autofillable,
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
 
@@ -779,7 +802,7 @@ bool NativeBackendGnome::GetAllLogins(ScopedVector<PasswordForm>* forms) {
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+               << gnome_keyring_result_to_message_ptr(result);
     return false;
   }
   return true;
