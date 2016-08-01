@@ -55,7 +55,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     sqlite3_progress_handler(db, 0, NULL, NULL);
 
   // Remove least significant bit to make further usage of selector independent.
-  selector <<= 1;
+  selector >>= 1;
 
   sqlite3_stmt* statement = NULL;
   int result = sqlite3_prepare_v2(db, reinterpret_cast<const char*>(data + 1),
