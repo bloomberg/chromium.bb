@@ -337,6 +337,11 @@ TEST_F(ScreenWinTestSingleDisplay1x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestSingleDisplay1x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(31, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(42, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestSingleDisplay1x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.0, ScreenWin::GetScaleFactorForHWND(GetFakeHwnd()));
 }
@@ -499,6 +504,11 @@ TEST_F(ScreenWinTestSingleDisplay1_25x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestSingleDisplay1_25x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(25, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(34, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.25, ScreenWin::GetScaleFactorForHWND(GetFakeHwnd()));
 }
@@ -650,6 +660,11 @@ TEST_F(ScreenWinTestSingleDisplay1_5x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestSingleDisplay1_5x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(28, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.5, ScreenWin::GetScaleFactorForHWND(GetFakeHwnd()));
 }
@@ -799,6 +814,11 @@ TEST_F(ScreenWinTestSingleDisplay2x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(hwnd, 42));
   EXPECT_EQ(31, ScreenWin::GetSystemMetricsForHwnd(nullptr, 31));
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
+}
+
+TEST_F(ScreenWinTestSingleDisplay2x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(16, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(42));
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetScaleFactorForHWND) {
@@ -1014,6 +1034,11 @@ TEST_F(ScreenWinTestTwoDisplays1x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(right_hwnd, 42));
   EXPECT_EQ(31, ScreenWin::GetSystemMetricsForHwnd(nullptr, 31));
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
+}
+
+TEST_F(ScreenWinTestTwoDisplays1x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(31, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(42, ScreenWin::GetSystemMetricsInDIP(42));
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetScaleFactorForHWND) {
@@ -1278,6 +1303,11 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(right_hwnd, 42));
   EXPECT_EQ(31, ScreenWin::GetSystemMetricsForHwnd(nullptr, 31));
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
+}
+
+TEST_F(ScreenWinTestTwoDisplays2x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(16, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(42));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetScaleFactorForHWND) {
@@ -1650,6 +1680,11 @@ TEST_F(ScreenWinTestManyDisplays1x, GetSystemMetricsForHwnd) {
   }
   EXPECT_EQ(31, ScreenWin::GetSystemMetricsForHwnd(nullptr, 31));
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
+}
+
+TEST_F(ScreenWinTestManyDisplays1x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(31, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(42, ScreenWin::GetSystemMetricsInDIP(42));
 }
 
 TEST_F(ScreenWinTestManyDisplays1x, GetScaleFactorForHWND) {
@@ -2085,6 +2120,11 @@ TEST_F(ScreenWinTestManyDisplays2x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestManyDisplays2x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(16, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestManyDisplays2x, GetScaleFactorForHWND) {
   for (size_t i = 0; i < 5u; ++i) {
     SCOPED_TRACE(base::StringPrintf("i=%zu", i));
@@ -2382,6 +2422,11 @@ TEST_F(ScreenWinTestTwoDisplays1x2x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestTwoDisplays1x2x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(31, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(42, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestTwoDisplays1x2x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.0, ScreenWin::GetScaleFactorForHWND(GetLeftFakeHwnd()));
   EXPECT_EQ(2.0, ScreenWin::GetScaleFactorForHWND(GetRightFakeHwnd()));
@@ -2654,6 +2699,11 @@ TEST_F(ScreenWinTestTwoDisplays1_5x1x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestTwoDisplays1_5x1x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(28, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestTwoDisplays1_5x1x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.5, ScreenWin::GetScaleFactorForHWND(GetLeftFakeHwnd()));
   EXPECT_EQ(1.0, ScreenWin::GetScaleFactorForHWND(GetRightFakeHwnd()));
@@ -2920,6 +2970,11 @@ TEST_F(ScreenWinTestTwoDisplays2x1x, GetSystemMetricsForHwnd) {
   EXPECT_EQ(21, ScreenWin::GetSystemMetricsForHwnd(right_hwnd, 42));
   EXPECT_EQ(31, ScreenWin::GetSystemMetricsForHwnd(nullptr, 31));
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
+}
+
+TEST_F(ScreenWinTestTwoDisplays2x1x, GetSystemMetricsInDIP) {
+  EXPECT_EQ(16, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(42));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1x, GetScaleFactorForHWND) {
@@ -3195,6 +3250,11 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetSystemMetricsForHwnd) {
   EXPECT_EQ(42, ScreenWin::GetSystemMetricsForHwnd(nullptr, 42));
 }
 
+TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetSystemMetricsInDIP) {
+  EXPECT_EQ(16, ScreenWin::GetSystemMetricsInDIP(31));
+  EXPECT_EQ(21, ScreenWin::GetSystemMetricsInDIP(42));
+}
+
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetScaleFactorForHWND) {
   EXPECT_EQ(2.0, ScreenWin::GetScaleFactorForHWND(GetLeftFakeHwnd()));
   EXPECT_EQ(2.0, ScreenWin::GetScaleFactorForHWND(GetRightFakeHwnd()));
@@ -3374,6 +3434,12 @@ TEST_F(ScreenWinUninitializedForced1x, GetSystemMetricsForHwnd) {
   ScreenWin::GetSystemMetricsForHwnd(nullptr, SM_CXSIZEFRAME);
 }
 
+TEST_F(ScreenWinUninitializedForced1x, GetSystemMetricsInDIP) {
+  // GetSystemMetricsInDIP falls back to the system's GetSystemMetrics, so this
+  // test is to make sure we don't crash.
+  ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+}
+
 TEST_F(ScreenWinUninitializedForced1x, GetScaleFactorForHWND) {
   EXPECT_EQ(1.0, ScreenWin::GetScaleFactorForHWND(nullptr));
 }
@@ -3478,6 +3544,12 @@ TEST_F(ScreenWinUninitializedForced2x, GetSystemMetricsForHwnd) {
   // GetSystemMetricsForHwnd falls back to the system's GetSystemMetrics, so
   // this test is to make sure we don't crash.
   ScreenWin::GetSystemMetricsForHwnd(nullptr, SM_CXSIZEFRAME);
+}
+
+TEST_F(ScreenWinUninitializedForced2x, GetSystemMetricsInDIP) {
+  // GetSystemMetricsForHwnd falls back to the system's GetSystemMetrics, so
+  // this test is to make sure we don't crash.
+  ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
 TEST_F(ScreenWinUninitializedForced2x, GetScaleFactorForHWND) {

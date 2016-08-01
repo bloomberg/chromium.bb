@@ -90,7 +90,14 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   static gfx::Size DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size);
 
   // Returns the result of GetSystemMetrics for |metric| scaled to |hwnd|'s DPI.
+  // Use this function if you're already working with screen pixels, as this
+  // helps reduce any cascading rounding errors from DIP to the |hwnd|'s DPI.
   static int GetSystemMetricsForHwnd(HWND hwnd, int metric);
+
+  // Returns the result of GetSystemMetrics for |metric| in DIP.
+  // Use this function if you need to work in DIP and can tolerate cascading
+  // rounding errors towards screen pixels.
+  static int GetSystemMetricsInDIP(int metric);
 
   // Returns |hwnd|'s scale factor.
   static float GetScaleFactorForHWND(HWND hwnd);

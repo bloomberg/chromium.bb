@@ -317,6 +317,19 @@ int ScreenWin::GetSystemMetricsForHwnd(HWND hwnd, int metric) {
 }
 
 // static
+int ScreenWin::GetSystemMetricsInDIP(int metric) {
+  if (!g_screen_win_instance)
+    return ::GetSystemMetrics(metric);
+
+  // GetSystemMetrics returns screen values based off of the primary monitor's
+  // DPI.
+  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
+  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
+  return static_cast<int>(std::round(
+      system_metrics_result / primary_display.device_scale_factor()));
+}
+
+// static
 float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
   if (!g_screen_win_instance)
     return ScreenWinDisplay().display().device_scale_factor();
