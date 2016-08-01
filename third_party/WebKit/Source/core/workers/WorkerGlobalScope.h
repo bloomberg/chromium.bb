@@ -155,9 +155,6 @@ private:
     // SecurityContext
     void didUpdateSecurityOrigin() final {}
 
-    void clearScript();
-    void clearInspector();
-
     const KURL m_url;
     const String m_userAgent;
     V8CacheOptions m_v8CacheOptions;

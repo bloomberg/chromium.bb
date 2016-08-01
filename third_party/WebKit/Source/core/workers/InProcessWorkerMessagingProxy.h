@@ -91,7 +91,6 @@ protected:
 
 private:
     void workerObjectDestroyedInternal();
-    void terminateInternally();
 
     // WorkerLoaderProxyProvider
     // These methods are called on different threads to schedule loading

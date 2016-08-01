@@ -128,8 +128,12 @@ void WorkerGlobalScope::dispose()
     }
     removeAllEventListeners();
 
-    clearScript();
-    clearInspector();
+    m_scriptController->dispose();
+    m_scriptController.clear();
+    if (m_workerInspectorController) {
+        m_workerInspectorController->dispose();
+        m_workerInspectorController.clear();
+    }
     m_eventQueue->close();
     m_thread = nullptr;
 }
@@ -348,21 +352,6 @@ void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
 KURL WorkerGlobalScope::virtualCompleteURL(const String& url) const
 {
     return completeURL(url);
-}
-
-void WorkerGlobalScope::clearScript()
-{
-    DCHECK(m_scriptController);
-    m_scriptController->dispose();
-    m_scriptController.clear();
-}
-
-void WorkerGlobalScope::clearInspector()
-{
-    if (m_workerInspectorController) {
-        m_workerInspectorController->dispose();
-        m_workerInspectorController.clear();
-    }
 }
 
 DEFINE_TRACE(WorkerGlobalScope)

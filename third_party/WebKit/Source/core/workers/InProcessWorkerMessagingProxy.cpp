@@ -245,7 +245,7 @@ void InProcessWorkerMessagingProxy::workerThreadTerminated()
     // object may still exist, and it assumes that the proxy exists, too.
     m_askedToTerminate = true;
     m_workerThread = nullptr;
-    terminateInternally();
+    m_workerInspectorProxy->workerThreadTerminated();
     if (m_mayBeDestroyed)
         delete this;
 }
@@ -260,7 +260,7 @@ void InProcessWorkerMessagingProxy::terminateWorkerGlobalScope()
     if (m_workerThread)
         m_workerThread->terminate();
 
-    terminateInternally();
+    m_workerInspectorProxy->workerThreadTerminated();
 }
 
 void InProcessWorkerMessagingProxy::postMessageToPageInspector(const String& message)
@@ -290,12 +290,6 @@ bool InProcessWorkerMessagingProxy::hasPendingActivity() const
 {
     DCHECK(isParentContextThread());
     return (m_unconfirmedMessageCount || m_workerThreadHadPendingActivity) && !m_askedToTerminate;
-}
-
-void InProcessWorkerMessagingProxy::terminateInternally()
-{
-    DCHECK(isParentContextThread());
-    m_workerInspectorProxy->workerThreadTerminated();
 }
 
 bool InProcessWorkerMessagingProxy::isParentContextThread() const
