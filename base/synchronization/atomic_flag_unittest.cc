@@ -23,9 +23,18 @@ void ExpectSetFlagDeath(AtomicFlag* flag) {
   EXPECT_DCHECK_DEATH(flag->Set(), "");
 }
 
-void BusyWaitUntilFlagIsSet(AtomicFlag* flag) {
-  while (!flag->IsSet())
+// Busy waits (to explicitly avoid using synchronization constructs that would
+// defeat the purpose of testing atomics) until |tested_flag| is set and then
+// verifies that non-atomic |*expected_after_flag| is true and sets |*done_flag|
+// before returning if it's non-null.
+void BusyWaitUntilFlagIsSet(AtomicFlag* tested_flag, bool* expected_after_flag,
+                            AtomicFlag* done_flag) {
+  while (!tested_flag->IsSet())
     PlatformThread::YieldCurrentThread();
+
+  EXPECT_TRUE(*expected_after_flag);
+  if (done_flag)
+    done_flag->Set();
 }
 
 }  // namespace
@@ -47,32 +56,75 @@ TEST(AtomicFlagTest, DoubleSetTest) {
 }
 
 TEST(AtomicFlagTest, ReadFromDifferentThread) {
-  AtomicFlag flag;
+  // |tested_flag| is the one being tested below.
+  AtomicFlag tested_flag;
+  // |expected_after_flag| is used to confirm that sequential consistency is
+  // obtained around |tested_flag|.
+  bool expected_after_flag = false;
+  // |reset_flag| is used to confirm the test flows as intended without using
+  // synchronization constructs which would defeat the purpose of exercising
+  // atomics.
+  AtomicFlag reset_flag;
 
   Thread thread("AtomicFlagTest.ReadFromDifferentThread");
   ASSERT_TRUE(thread.Start());
-  thread.task_runner()->PostTask(FROM_HERE,
-                                 Bind(&BusyWaitUntilFlagIsSet, &flag));
+  thread.task_runner()->PostTask(
+      FROM_HERE,
+      Bind(&BusyWaitUntilFlagIsSet, &tested_flag, &expected_after_flag,
+           &reset_flag));
 
   // To verify that IsSet() fetches the flag's value from memory every time it
   // is called (not just the first time that it is called on a thread), sleep
   // before setting the flag.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(25));
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
 
-  flag.Set();
+  // |expected_after_flag| is used to verify that all memory operations
+  // performed before |tested_flag| is Set() are visible to threads that can see
+  // IsSet().
+  expected_after_flag = true;
+  tested_flag.Set();
+
+  // Sleep again to give the busy loop time to observe the flag and verify
+  // expectations.
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+
+  // Use |reset_flag| to confirm that the above completed (which the rest of
+  // this test assumes).
+  ASSERT_TRUE(reset_flag.IsSet());
+
+  tested_flag.UnsafeResetForTesting();
+  EXPECT_FALSE(tested_flag.IsSet());
+  expected_after_flag = false;
+
+  // Perform the same test again after the controlled UnsafeResetForTesting(),
+  // |thread| is guaranteed to be synchronized past the
+  // |UnsafeResetForTesting()| call when the task runs per the implicit
+  // synchronization in the post task mechanism.
+  thread.task_runner()->PostTask(
+      FROM_HERE,
+      Bind(&BusyWaitUntilFlagIsSet, &tested_flag, &expected_after_flag,
+           nullptr));
+
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+
+  expected_after_flag = true;
+  tested_flag.Set();
 
   // The |thread|'s destructor will block until the posted task completes, so
   // the test will time out if it fails to see the flag be set.
 }
 
-TEST(AtomicFlagTest, SetOnDifferentThreadDeathTest) {
-  // Checks that Set() can't be called from any other thread. AtomicFlag should
-  // die on a DCHECK if Set() is called from other thread.
+TEST(AtomicFlagTest, SetOnDifferentSequenceDeathTest) {
+  // Checks that Set() can't be called from another sequence after being called
+  // on this one. AtomicFlag should die on a DCHECK if Set() is called again
+  // from another sequence.
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   Thread t("AtomicFlagTest.SetOnDifferentThreadDeathTest");
   ASSERT_TRUE(t.Start());
+  EXPECT_TRUE(t.WaitUntilThreadStarted());
 
   AtomicFlag flag;
+  flag.Set();
   t.task_runner()->PostTask(FROM_HERE, Bind(&ExpectSetFlagDeath, &flag));
 }
 

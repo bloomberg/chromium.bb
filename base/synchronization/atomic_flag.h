@@ -8,7 +8,7 @@
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 
 namespace base {
 
@@ -20,10 +20,12 @@ class BASE_EXPORT AtomicFlag {
   AtomicFlag();
   ~AtomicFlag() = default;
 
-  // Set the flag. May only be called on the thread which created the object.
+  // Set the flag. Must always be called from the same sequence.
   void Set();
 
-  // Returns true iff the flag was set.
+  // Returns true iff the flag was set. If this returns true, the current thread
+  // is guaranteed to be synchronized with all memory operations on the sequence
+  // which invoked Set() up until at least the first call to Set() on it.
   bool IsSet() const;
 
   // Resets the flag. Be careful when using this: callers might not expect
@@ -32,7 +34,7 @@ class BASE_EXPORT AtomicFlag {
 
  private:
   base::subtle::Atomic32 flag_ = 0;
-  ThreadChecker thread_checker_;
+  SequenceChecker set_sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AtomicFlag);
 };
