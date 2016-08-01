@@ -49,7 +49,7 @@ class FetcherPool {
     DCHECK(element) << "The element cannot be null.";
     DCHECK(elements_.find(element.get()) == elements_.end())
         << "The pool already contains the given element.";
-    elements_[element.get()].reset(element.release());
+    elements_[element.get()] = std::move(element);
   }
 
   // Deletes the given |element| from the pool.
