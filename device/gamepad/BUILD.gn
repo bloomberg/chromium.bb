@@ -13,6 +13,8 @@ component("gamepad") {
   output_name = "device_gamepad"
 
   sources = [
+    "android/gamepad_jni_registrar.cc",
+    "android/gamepad_jni_registrar.h",
     "gamepad_consumer.cc",
     "gamepad_consumer.h",
     "gamepad_data_fetcher.cc",
