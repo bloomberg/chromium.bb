@@ -1919,8 +1919,12 @@ void HTMLSelectElement::showPopup()
         return;
     if (!layoutObject() || !layoutObject()->isMenuList())
         return;
+    // Disable visibility check on Android.  elementRectRelativeToViewport()
+    // doesn't work well on Android WebView.  crbug.com/632561
+#if !OS(ANDROID)
     if (elementRectRelativeToViewport().isEmpty())
         return;
+#endif
 
     if (!m_popup)
         m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), *this);
