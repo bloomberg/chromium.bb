@@ -862,7 +862,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   def GetLatestAndroidVersion(self):
     """Returns the version of Android to uprev."""
     return cros_mark_android_as_stable.GetLatestBuild(
-        constants.ANDROID_BUCKET_URL, constants.ANDROID_BUILD_BRANCH)[0]
+        constants.ANDROID_BUCKET_URL, constants.ANDROID_BUILD_BRANCH,
+        constants.ANDROID_BUILD_TARGETS)[0]
 
   def GetLatestChromeVersion(self):
     """Returns the version of Chrome to uprev."""
