@@ -16,6 +16,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -788,10 +789,11 @@ void NTPSnippetsService::NotifyNewSuggestions() {
         MakeUniqueID(provided_category_, snippet->id()),
         snippet->best_source().url);
     suggestion.set_amp_url(snippet->best_source().amp_url);
-    suggestion.set_title(snippet->title());
-    suggestion.set_snippet_text(snippet->snippet());
+    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
+    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
     suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(snippet->best_source().publisher_name);
+    suggestion.set_publisher_name(
+        base::UTF8ToUTF16(snippet->best_source().publisher_name));
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }

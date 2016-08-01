@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 using offline_pages::MultipleOfflinePageItemResult;
 using offline_pages::OfflinePageModel;
@@ -119,10 +120,10 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     // TODO(pke): Sort my most recently visited and only keep the top one of
     // multiple entries for the same URL.
     // TODO(pke): Get more reasonable data from the OfflinePageModel here.
-    suggestion.set_title(item.url.spec());
-    suggestion.set_snippet_text(std::string());
+    suggestion.set_title(base::UTF8ToUTF16(item.url.spec()));
+    suggestion.set_snippet_text(base::string16());
     suggestion.set_publish_date(item.creation_time);
-    suggestion.set_publisher_name(item.url.host());
+    suggestion.set_publisher_name(base::UTF8ToUTF16(item.url.host()));
     suggestions.emplace_back(std::move(suggestion));
     if (suggestions.size() == kMaxSuggestionsCount)
       break;

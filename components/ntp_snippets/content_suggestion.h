@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -41,12 +42,12 @@ class ContentSuggestion {
   void set_amp_url(const GURL& amp_url) { amp_url_ = amp_url; }
 
   // Title of the suggestion.
-  const std::string& title() const { return title_; }
-  void set_title(const std::string& title) { title_ = title; }
+  const base::string16& title() const { return title_; }
+  void set_title(const base::string16& title) { title_ = title; }
 
   // Summary or relevant textual extract from the content.
-  const std::string& snippet_text() const { return snippet_text_; }
-  void set_snippet_text(const std::string& snippet_text) {
+  const base::string16& snippet_text() const { return snippet_text_; }
+  void set_snippet_text(const base::string16& snippet_text) {
     snippet_text_ = snippet_text;
   }
 
@@ -57,8 +58,8 @@ class ContentSuggestion {
   }
 
   // The name of the source/publisher of this suggestion.
-  const std::string& publisher_name() const { return publisher_name_; }
-  void set_publisher_name(const std::string& publisher_name) {
+  const base::string16& publisher_name() const { return publisher_name_; }
+  void set_publisher_name(const base::string16& publisher_name) {
     publisher_name_ = publisher_name;
   }
 
@@ -74,11 +75,11 @@ class ContentSuggestion {
   std::string id_;
   GURL url_;
   GURL amp_url_;
-  std::string title_;
-  std::string snippet_text_;
+  base::string16 title_;
+  base::string16 snippet_text_;
   GURL salient_image_url_;
   base::Time publish_date_;
-  std::string publisher_name_;
+  base::string16 publisher_name_;
   float score_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);

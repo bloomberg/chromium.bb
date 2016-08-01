@@ -140,16 +140,16 @@ void NTPSnippetsBridge::OnNewSuggestions() {
     return;
 
   std::vector<std::string> ids;
-  std::vector<std::string> titles;
+  std::vector<base::string16> titles;
   // URL for the article. This will also be used to find the favicon for the
   // article.
   std::vector<std::string> urls;
   // URL for the AMP version of the article if it exists. This will be used as
   // the URL to direct the user to on tap.
   std::vector<std::string> amp_urls;
-  std::vector<std::string> snippets;
+  std::vector<base::string16> snippet_texts;
   std::vector<int64_t> timestamps;
-  std::vector<std::string> publishers;
+  std::vector<base::string16> publisher_names;
   std::vector<float> scores;
 
   // Show all suggestions from all categories, even though we currently display
@@ -169,9 +169,9 @@ void NTPSnippetsBridge::OnNewSuggestions() {
       // HOST_RESTRICT parameters, so this is preferred.
       urls.push_back(suggestion.url().spec());
       amp_urls.push_back(suggestion.amp_url().spec());
-      snippets.push_back(suggestion.snippet_text());
+      snippet_texts.push_back(suggestion.snippet_text());
       timestamps.push_back(suggestion.publish_date().ToJavaTime());
-      publishers.push_back(suggestion.publisher_name());
+      publisher_names.push_back(suggestion.publisher_name());
       scores.push_back(suggestion.score());
     }
   }
@@ -182,9 +182,9 @@ void NTPSnippetsBridge::OnNewSuggestions() {
       ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
       ToJavaArrayOfStrings(env, amp_urls).obj(),
-      ToJavaArrayOfStrings(env, snippets).obj(),
+      ToJavaArrayOfStrings(env, snippet_texts).obj(),
       ToJavaLongArray(env, timestamps).obj(),
-      ToJavaArrayOfStrings(env, publishers).obj(),
+      ToJavaArrayOfStrings(env, publisher_names).obj(),
       ToJavaFloatArray(env, scores).obj());
 }
 
