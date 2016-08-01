@@ -179,7 +179,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
 }
 
 MojoResult WrapAttachment(MessageAttachment* attachment,
-                          std::vector<mojom::SerializedHandlePtr>* handles) {
+                          mojo::Array<mojom::SerializedHandlePtr>* handles) {
   mojom::SerializedHandlePtr serialized_handle;
   MojoResult wrap_result = WrapAttachmentImpl(attachment, &serialized_handle);
   if (wrap_result != MOJO_RESULT_OK) {
@@ -409,46 +409,38 @@ base::ScopedFD ChannelMojo::TakeClientFileDescriptor() {
 // static
 MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
     Message* message,
-    base::Optional<std::vector<mojom::SerializedHandlePtr>>* handles) {
-  DCHECK(!*handles);
-
-  MojoResult result = MOJO_RESULT_OK;
-  if (!message->HasAttachments())
-    return result;
-
-  std::vector<mojom::SerializedHandlePtr> output_handles;
-  MessageAttachmentSet* set = message->attachment_set();
-
-  for (unsigned i = 0;
-       result == MOJO_RESULT_OK && i < set->num_non_brokerable_attachments();
-       ++i) {
-    result = WrapAttachment(set->GetNonBrokerableAttachmentAt(i).get(),
-                            &output_handles);
+    mojo::Array<mojom::SerializedHandlePtr>* handles) {
+  if (message->HasAttachments()) {
+    MessageAttachmentSet* set = message->attachment_set();
+    for (unsigned i = 0; i < set->num_non_brokerable_attachments(); ++i) {
+      MojoResult result = WrapAttachment(
+              set->GetNonBrokerableAttachmentAt(i).get(), handles);
+      if (result != MOJO_RESULT_OK) {
+        set->CommitAllDescriptors();
+        return result;
+      }
+    }
+    for (unsigned i = 0; i < set->num_brokerable_attachments(); ++i) {
+      MojoResult result =
+          WrapAttachment(set->GetBrokerableAttachmentAt(i).get(), handles);
+      if (result != MOJO_RESULT_OK) {
+        set->CommitAllDescriptors();
+        return result;
+      }
+    }
+    set->CommitAllDescriptors();
   }
-  for (unsigned i = 0;
-       result == MOJO_RESULT_OK && i < set->num_brokerable_attachments(); ++i) {
-    result = WrapAttachment(set->GetBrokerableAttachmentAt(i).get(),
-                            &output_handles);
-  }
-
-  set->CommitAllDescriptors();
-
-  if (!output_handles.empty())
-    *handles = std::move(output_handles);
-
-  return result;
+  return MOJO_RESULT_OK;
 }
 
 // static
 MojoResult ChannelMojo::WriteToMessageAttachmentSet(
-    base::Optional<std::vector<mojom::SerializedHandlePtr>> handle_buffer,
+    mojo::Array<mojom::SerializedHandlePtr> handle_buffer,
     Message* message) {
-  if (!handle_buffer)
-    return MOJO_RESULT_OK;
-  for (size_t i = 0; i < handle_buffer->size(); ++i) {
+  for (size_t i = 0; i < handle_buffer.size(); ++i) {
     scoped_refptr<MessageAttachment> unwrapped_attachment;
-    MojoResult unwrap_result =
-        UnwrapAttachment(std::move((*handle_buffer)[i]), &unwrapped_attachment);
+    MojoResult unwrap_result = UnwrapAttachment(std::move(handle_buffer[i]),
+                                                    &unwrapped_attachment);
     if (unwrap_result != MOJO_RESULT_OK) {
       LOG(WARNING) << "Pipe failed to unwrap handles. Closing: "
                    << unwrap_result;

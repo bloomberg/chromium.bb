@@ -624,7 +624,7 @@ class ListenerWithSimpleAssociatedInterface
 
  private:
   // IPC::mojom::SimpleTestDriver:
-  void ExpectString(const std::string& str) override {
+  void ExpectString(const mojo::String& str) override {
     next_expected_string_ = str;
   }
 
@@ -801,7 +801,7 @@ class ListenerWithSimpleProxyAssociatedInterface
 
  private:
   // IPC::mojom::SimpleTestDriver:
-  void ExpectString(const std::string& str) override {
+  void ExpectString(const mojo::String& str) override {
     next_expected_string_ = str;
   }
 

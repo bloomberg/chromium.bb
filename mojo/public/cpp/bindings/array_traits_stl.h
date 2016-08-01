@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
 
 namespace mojo {
@@ -43,23 +42,16 @@ struct ArrayTraits<std::vector<T>> {
     return input[index];
   }
 
-  static inline bool Resize(std::vector<T>& input, size_t size) {
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-    // This is a hack to make compilers for Mac and Android happy. They
-    // currently don't allow resizing types like
-    // std::vector<std::vector<MoveOnlyType>>.
-    // Because the deserialization code doesn't care about the original contents
-    // of |input|, we discard them directly.
-    //
-    // The "inline" keyword of this method matters. Without it, we have observed
-    // significant perf regression with some tests on Mac. crbug.com/631415
+  static bool Resize(std::vector<T>& input, size_t size) {
     if (input.size() != size) {
+      // This is a hack to make compilers for Mac and Android happy. They
+      // currently don't allow resizing types like
+      // std::vector<std::vector<MoveOnlyType>>.
+      // Because the deserialization code doesn't care about the original
+      // contents of |input|, we discard them directly.
       std::vector<T> temp(size);
       input.swap(temp);
     }
-#else
-    input.resize(size);
-#endif
 
     return true;
   }
