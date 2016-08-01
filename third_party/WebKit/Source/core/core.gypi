@@ -541,6 +541,8 @@
             'layout/api/LineLayoutText.h',
             'layout/api/LineLayoutTextCombine.h',
             'layout/api/SelectionState.h',
+            'layout/ng/NGConstraintSpace.cpp',
+            'layout/ng/NGConstraintSpace.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',
             'layout/BidiRunForLine.h',
