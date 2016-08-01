@@ -1271,6 +1271,7 @@ files-toast {
 .thumbnail-view {
   display: block;
   height: 100%;
+  outline: none;
   overflow-y: scroll;
 }
 
