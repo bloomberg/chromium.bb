@@ -26,15 +26,23 @@ static struct TargetCamera {
 
 namespace content {
 
+#if defined(OS_WIN)
+// This test is flaky on WebRTC Windows bots: https://crbug.com/633242.
+#define MAYBE_WebRtcImageCaptureBrowserTest \
+  DISABLED_WebRtcImageCaptureBrowserTest
+#else
+#define MAYBE_WebRtcImageCaptureBrowserTest WebRtcImageCaptureBrowserTest
+#endif
+
 // This class is the content_browsertests for Image Capture API, which allows
 // for capturing still images out of a MediaStreamTrack. Is a
 // WebRtcWebcamBrowserTest to be able to use a physical camera.
-class WebRtcImageCaptureBrowserTest
+class MAYBE_WebRtcImageCaptureBrowserTest
     : public WebRtcWebcamBrowserTest,
       public testing::WithParamInterface<struct TargetCamera> {
  public:
-  WebRtcImageCaptureBrowserTest() = default;
-  ~WebRtcImageCaptureBrowserTest() override = default;
+  MAYBE_WebRtcImageCaptureBrowserTest() = default;
+  ~MAYBE_WebRtcImageCaptureBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcWebcamBrowserTest::SetUpCommandLine(command_line);
@@ -60,10 +68,10 @@ class WebRtcImageCaptureBrowserTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebRtcImageCaptureBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_WebRtcImageCaptureBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcImageCaptureBrowserTest,
                        CreateAndGetCapabilities) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
@@ -78,7 +86,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        WebRtcImageCaptureBrowserTest,
+                        MAYBE_WebRtcImageCaptureBrowserTest,
                         testing::ValuesIn(kTestParameters));
 
 }  // namespace content
