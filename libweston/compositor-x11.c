@@ -127,6 +127,18 @@ struct window_delete_data {
 
 struct gl_renderer_interface *gl_renderer;
 
+static inline struct x11_output *
+to_x11_output(struct weston_output *base)
+{
+	return container_of(base, struct x11_output, base);
+}
+
+static inline struct x11_backend *
+to_x11_backend(struct weston_compositor *base)
+{
+	return container_of(base->backend, struct x11_backend, base);
+}
+
 static xcb_screen_t *
 x11_compositor_get_default_screen(struct x11_backend *b)
 {
@@ -375,7 +387,7 @@ static int
 x11_output_repaint_gl(struct weston_output *output_base,
 		      pixman_region32_t *damage)
 {
-	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_output *output = to_x11_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
 
 	ec->renderer->repaint_output(output_base, damage);
@@ -390,9 +402,9 @@ x11_output_repaint_gl(struct weston_output *output_base,
 static void
 set_clip_for_output(struct weston_output *output_base, pixman_region32_t *region)
 {
-	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_output *output = to_x11_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
-	struct x11_backend *b = (struct x11_backend *)ec->backend;
+	struct x11_backend *b = to_x11_backend(ec);
 	pixman_region32_t transformed_region;
 	pixman_box32_t *rects;
 	xcb_rectangle_t *output_rects;
@@ -443,9 +455,9 @@ static int
 x11_output_repaint_shm(struct weston_output *output_base,
 		       pixman_region32_t *damage)
 {
-	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_output *output = to_x11_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
-	struct x11_backend *b = (struct x11_backend *)ec->backend;
+	struct x11_backend *b = to_x11_backend(ec);
 	xcb_void_cookie_t cookie;
 	xcb_generic_error_t *err;
 
@@ -506,9 +518,9 @@ x11_output_deinit_shm(struct x11_backend *b, struct x11_output *output)
 static void
 x11_output_destroy(struct weston_output *output_base)
 {
-	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_output *output = to_x11_output(output_base);
 	struct x11_backend *backend =
-		(struct x11_backend *)output->base.compositor->backend;
+		to_x11_backend(output->base.compositor);
 
 	wl_event_source_remove(output->finish_frame_timer);
 
@@ -1547,7 +1559,7 @@ x11_restore(struct weston_compositor *ec)
 static void
 x11_destroy(struct weston_compositor *ec)
 {
-	struct x11_backend *backend = (struct x11_backend *)ec->backend;
+	struct x11_backend *backend = to_x11_backend(ec);
 
 	wl_event_source_remove(backend->xcb_source);
 	x11_input_destroy(backend);
