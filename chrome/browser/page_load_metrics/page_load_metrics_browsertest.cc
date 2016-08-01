@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/simple.svg"));
+                               embedded_test_server()->GetURL("/circle.svg"));
   NavigateToUntrackedUrl();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
