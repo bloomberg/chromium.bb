@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -650,17 +651,14 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_EQ(0, saturated_cast<int>(not_a_number));
 }
 
-#if GTEST_HAS_DEATH_TEST
-
 TEST(SafeNumerics, SaturatedCastChecks) {
   float not_a_number = std::numeric_limits<float>::infinity() -
                        std::numeric_limits<float>::infinity();
   EXPECT_TRUE(std::isnan(not_a_number));
-  EXPECT_DEATH((saturated_cast<int, base::SaturatedCastNaNBehaviorCheck>(
-      not_a_number)), "");
+  EXPECT_DCHECK_DEATH(
+      (saturated_cast<int, base::SaturatedCastNaNBehaviorCheck>(not_a_number)),
+      "");
 }
-
-#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(SafeNumerics, IsValueInRangeForNumericType) {
   EXPECT_TRUE(IsValueInRangeForNumericType<uint32_t>(0));

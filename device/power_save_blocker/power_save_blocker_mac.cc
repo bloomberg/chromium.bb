@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -24,7 +25,7 @@ namespace {
 // .
 struct PowerSaveBlockerLazyInstanceTraits {
   static const bool kRegisterOnExit = false;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   static const bool kAllowedToAccessOnNonjoinableThread = true;
 #endif
 

@@ -12,14 +12,6 @@
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Duplicated from base/threading/thread_checker.h so that we can be
-// good citizens there and undef the macro.
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-#define ENABLE_THREAD_CHECKER 1
-#else
-#define ENABLE_THREAD_CHECKER 0
-#endif
-
 namespace base {
 
 namespace {
@@ -131,7 +123,7 @@ void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
   call_on_thread.Join();
 }
 
-#if ENABLE_THREAD_CHECKER
+#if DCHECK_IS_ON()
 TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DCHECK_DEATH({ ThreadCheckerClass::MethodOnDifferentThreadImpl(); },
                       "");
@@ -140,7 +132,7 @@ TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
 TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
   ThreadCheckerClass::MethodOnDifferentThreadImpl();
 }
-#endif  // ENABLE_THREAD_CHECKER
+#endif  // DCHECK_IS_ON()
 
 void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
   std::unique_ptr<ThreadCheckerClass> thread_checker_class(
@@ -159,7 +151,7 @@ void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
   thread_checker_class->DoStuff();
 }
 
-#if ENABLE_THREAD_CHECKER
+#if DCHECK_IS_ON()
 TEST(ThreadCheckerDeathTest, DetachFromThreadInDebug) {
   ASSERT_DCHECK_DEATH(
       { ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl(); }, "");
@@ -168,9 +160,6 @@ TEST(ThreadCheckerDeathTest, DetachFromThreadInDebug) {
 TEST(ThreadCheckerTest, DetachFromThreadInRelease) {
   ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
 }
-#endif  // ENABLE_THREAD_CHECKER
-
-// Just in case we ever get lumped together with other compilation units.
-#undef ENABLE_THREAD_CHECKER
+#endif  // DCHECK_IS_ON()
 
 }  // namespace base

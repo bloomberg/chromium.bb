@@ -38,7 +38,7 @@ struct BuildInfoSingletonTraits {
   }
 
   static const bool kRegisterAtExit = false;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   static const bool kAllowedToAccessOnNonjoinableThread = true;
 #endif
 };

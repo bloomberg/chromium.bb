@@ -344,21 +344,13 @@ class CancelableTaskTrackerDeathTest : public CancelableTaskTrackerTest {
   }
 };
 
-// Duplicated from base/threading/thread_checker.h so that we can be
-// good citizens there and undef the macro.
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-#define ENABLE_THREAD_CHECKER 1
-#else
-#define ENABLE_THREAD_CHECKER 0
-#endif
-
 // Runs |fn| with |task_tracker|, expecting it to crash in debug mode.
 void MaybeRunDeadlyTaskTrackerMemberFunction(
     CancelableTaskTracker* task_tracker,
     const Callback<void(CancelableTaskTracker*)>& fn) {
 // CancelableTask uses DCHECKs with its ThreadChecker (itself only
 // enabled in debug mode).
-#if ENABLE_THREAD_CHECKER
+#if DCHECK_IS_ON()
   EXPECT_DEATH_IF_SUPPORTED(fn.Run(task_tracker), "");
 #endif
 }

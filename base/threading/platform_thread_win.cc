@@ -251,7 +251,7 @@ void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
   }
   DCHECK_NE(desired_priority, THREAD_PRIORITY_ERROR_RETURN);
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+#if DCHECK_IS_ON()
   const BOOL success =
 #endif
       ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),

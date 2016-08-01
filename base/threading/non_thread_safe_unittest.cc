@@ -12,14 +12,6 @@
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Duplicated from base/threading/non_thread_safe.h so that we can be
-// good citizens there and undef the macro.
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON))
-#define ENABLE_NON_THREAD_SAFE 1
-#else
-#define ENABLE_NON_THREAD_SAFE 0
-#endif
-
 namespace base {
 
 namespace {
@@ -119,7 +111,7 @@ void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
   call_on_thread.Join();
 }
 
-#if ENABLE_NON_THREAD_SAFE
+#if DCHECK_IS_ON()
 TEST(NonThreadSafeDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DCHECK_DEATH({ NonThreadSafeClass::MethodOnDifferentThreadImpl(); },
                       "");
@@ -128,7 +120,7 @@ TEST(NonThreadSafeDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
 TEST(NonThreadSafeTest, MethodAllowedOnDifferentThreadInRelease) {
   NonThreadSafeClass::MethodOnDifferentThreadImpl();
 }
-#endif  // ENABLE_NON_THREAD_SAFE
+#endif  // DCHECK_IS_ON()
 
 void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
   std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
@@ -143,7 +135,7 @@ void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
   delete_on_thread.Join();
 }
 
-#if ENABLE_NON_THREAD_SAFE
+#if DCHECK_IS_ON()
 TEST(NonThreadSafeDeathTest, DestructorNotAllowedOnDifferentThreadInDebug) {
   ASSERT_DCHECK_DEATH(
       { NonThreadSafeClass::DestructorOnDifferentThreadImpl(); }, "");
@@ -152,9 +144,6 @@ TEST(NonThreadSafeDeathTest, DestructorNotAllowedOnDifferentThreadInDebug) {
 TEST(NonThreadSafeTest, DestructorAllowedOnDifferentThreadInRelease) {
   NonThreadSafeClass::DestructorOnDifferentThreadImpl();
 }
-#endif  // ENABLE_NON_THREAD_SAFE
-
-// Just in case we ever get lumped together with other compilation units.
-#undef ENABLE_NON_THREAD_SAFE
+#endif  // DCHECK_IS_ON()
 
 }  // namespace base

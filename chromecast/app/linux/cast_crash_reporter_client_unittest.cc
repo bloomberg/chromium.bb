@@ -123,7 +123,7 @@ class CastCrashReporterClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClientTest);
 };
 
-#if ENABLE_THREAD_RESTRICTIONS
+#if DCHECK_IS_ON()
 // This test shall only be run when thread restricitons are enabled. Otherwise,
 // the thread will not actually be IO-restricted, and the final ASSERT will
 // fail.
@@ -137,7 +137,7 @@ TEST_F(CastCrashReporterClientTest, EndToEndTestOnIORestrictedThread) {
   // Note that SetIOAllowed returns the previous value.
   ASSERT_FALSE(base::ThreadRestrictions::SetIOAllowed(true));
 }
-#endif  // ENABLE_THREAD_RESTRICTIONS
+#endif  // DCHECK_IS_ON()
 
 TEST_F(CastCrashReporterClientTest, EndToEndTestOnNonIORestrictedThread) {
   // Handle a crash on a non-IO restricted thread.

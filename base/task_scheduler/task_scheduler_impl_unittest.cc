@@ -40,7 +40,7 @@ struct TraitsExecutionModePair {
   ExecutionMode execution_mode;
 };
 
-#if ENABLE_THREAD_RESTRICTIONS
+#if DCHECK_IS_ON()
 // Returns whether I/O calls are allowed on the current thread.
 bool GetIOAllowed() {
   const bool previous_value = ThreadRestrictions::SetIOAllowed(true);
@@ -58,9 +58,9 @@ void VerifyTaskEnvironement(const TaskTraits& traits) {
                 : ThreadPriority::NORMAL,
             PlatformThread::GetCurrentThreadPriority());
 
-#if ENABLE_THREAD_RESTRICTIONS
+#if DCHECK_IS_ON()
   // The #if above is required because GetIOAllowed() always returns true when
-  // !ENABLE_THREAD_RESTRICTIONS, even when |traits| don't allow file I/O.
+  // !DCHECK_IS_ON(), even when |traits| don't allow file I/O.
   EXPECT_EQ(traits.with_file_io(), GetIOAllowed());
 #endif
 

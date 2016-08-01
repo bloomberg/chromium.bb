@@ -352,9 +352,6 @@ void ExpectIORestriction(IORestriction io_restriction, WaitableEvent* event) {
   if (io_restriction == IORestriction::ALLOWED) {
     ThreadRestrictions::AssertIOAllowed();
   } else {
-    static_assert(
-        ENABLE_THREAD_RESTRICTIONS == DCHECK_IS_ON(),
-        "ENABLE_THREAD_RESTRICTIONS and DCHECK_IS_ON() have diverged.");
     EXPECT_DCHECK_DEATH({ ThreadRestrictions::AssertIOAllowed(); }, "");
   }
 

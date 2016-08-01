@@ -8,16 +8,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_checker_impl.h"
 
-// Apart from debug builds, we also enable the thread checker in
-// builds with DCHECK_ALWAYS_ON so that trybots and waterfall bots
-// with this define will get the same level of thread checking as
-// debug bots.
-#if DCHECK_IS_ON()
-#define ENABLE_THREAD_CHECKER 1
-#else
-#define ENABLE_THREAD_CHECKER 0
-#endif
-
 namespace base {
 
 // Do nothing implementation, for use in release mode.
@@ -64,15 +54,13 @@ class ThreadCheckerDoNothing {
 // }
 //
 // In Release mode, CalledOnValidThread will always return true.
-#if ENABLE_THREAD_CHECKER
+#if DCHECK_IS_ON()
 class ThreadChecker : public ThreadCheckerImpl {
 };
 #else
 class ThreadChecker : public ThreadCheckerDoNothing {
 };
-#endif  // ENABLE_THREAD_CHECKER
-
-#undef ENABLE_THREAD_CHECKER
+#endif  // DCHECK_IS_ON()
 
 }  // namespace base
 

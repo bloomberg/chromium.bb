@@ -7,6 +7,7 @@
 #include "base/android/application_status_listener.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 
 namespace {
@@ -40,7 +41,7 @@ void OnApplicationStateChange(
 
 struct LeakyApplicationStatusListenerTraits {
   static const bool kRegisterOnExit = false;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   static const bool kAllowedToAccessOnNonjoinableThread = true;
 #endif
 

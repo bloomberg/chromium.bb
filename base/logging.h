@@ -611,12 +611,6 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define CHECK_GT(val1, val2) CHECK_OP(GT, > , val1, val2)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define ENABLE_DLOG 0
-#else
-#define ENABLE_DLOG 1
-#endif
-
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 #define DCHECK_IS_ON() 0
 #else
 #define DCHECK_IS_ON() 1
@@ -624,7 +618,7 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 
 // Definitions for DLOG et al.
 
-#if ENABLE_DLOG
+#if DCHECK_IS_ON()
 
 #define DLOG_IS_ON(severity) LOG_IS_ON(severity)
 #define DLOG_IF(severity, condition) LOG_IF(severity, condition)
@@ -633,12 +627,11 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define DVLOG_IF(verboselevel, condition) VLOG_IF(verboselevel, condition)
 #define DVPLOG_IF(verboselevel, condition) VPLOG_IF(verboselevel, condition)
 
-#else  // ENABLE_DLOG
+#else  // DCHECK_IS_ON()
 
-// If ENABLE_DLOG is off, we want to avoid emitting any references to
-// |condition| (which may reference a variable defined only if NDEBUG
-// is not defined).  Contrast this with DCHECK et al., which has
-// different behavior.
+// If !DCHECK_IS_ON(), we want to avoid emitting any references to |condition|
+// (which may reference a variable defined only if DCHECK_IS_ON()).
+// Contrast this with DCHECK et al., which has different behavior.
 
 #define DLOG_IS_ON(severity) false
 #define DLOG_IF(severity, condition) EAT_STREAM_PARAMETERS
@@ -647,19 +640,14 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define DVLOG_IF(verboselevel, condition) EAT_STREAM_PARAMETERS
 #define DVPLOG_IF(verboselevel, condition) EAT_STREAM_PARAMETERS
 
-#endif  // ENABLE_DLOG
+#endif  // DCHECK_IS_ON()
 
-// DEBUG_MODE is for uses like
+// DEBUG_MODE is for runtime uses like
 //   if (DEBUG_MODE) foo.CheckThatFoo();
-// instead of
-//   #ifndef NDEBUG
-//     foo.CheckThatFoo();
-//   #endif
+// We tie its state to DCHECK_IS_ON().
 //
-// We tie its state to ENABLE_DLOG.
-enum { DEBUG_MODE = ENABLE_DLOG };
-
-#undef ENABLE_DLOG
+// For compile-time checks, #if DCHECK_IS_ON() can be used.
+enum { DEBUG_MODE = DCHECK_IS_ON() };
 
 #define DLOG(severity)                                          \
   LAZY_STREAM(LOG_STREAM(severity), DLOG_IS_ON(severity))
