@@ -946,12 +946,16 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingRegionOutOfBounds() throws Throwable {
-        focusElement("textarea");
+        focusElementAndWaitForStateUpdate("textarea");
         setComposingText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, 0, 5);
 
         setComposingRegion(0, 0);
+        waitAndVerifyUpdateSelection(1, 5, 5, -1, -1);
         setComposingRegion(0, 9);
-        setComposingRegion(9, 0);
+        waitAndVerifyUpdateSelection(2, 5, 5, 0, 5);
+        setComposingRegion(9, 1);
+        waitAndVerifyUpdateSelection(3, 5, 5, 1, 5);
     }
 
     @SmallTest

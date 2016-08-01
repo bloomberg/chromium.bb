@@ -646,7 +646,11 @@ public class ImeAdapter {
      */
     boolean setComposingRegion(int start, int end) {
         if (mNativeImeAdapterAndroid == 0) return false;
-        nativeSetComposingRegion(mNativeImeAdapterAndroid, start, end);
+        if (start <= end) {
+            nativeSetComposingRegion(mNativeImeAdapterAndroid, start, end);
+        } else {
+            nativeSetComposingRegion(mNativeImeAdapterAndroid, end, start);
+        }
         return true;
     }
 
