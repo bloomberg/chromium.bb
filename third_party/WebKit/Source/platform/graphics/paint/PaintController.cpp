@@ -155,6 +155,13 @@ void PaintController::removeLastDisplayItem()
         m_newPaintChunks.decrementDisplayItemIndex();
 }
 
+const DisplayItem* PaintController::lastDisplayItem(unsigned offset)
+{
+    if (offset < m_newDisplayItemList.size())
+        return &m_newDisplayItemList[m_newDisplayItemList.size() - offset - 1];
+    return nullptr;
+}
+
 void PaintController::processNewItem(DisplayItem& displayItem)
 {
     DCHECK(!m_constructionDisabled);
@@ -541,11 +548,6 @@ void PaintController::checkUnderInvalidation()
     const DisplayItem& newItem = m_newDisplayItemList.last();
     size_t oldItemIndex = m_underInvalidationCheckingBegin + m_skippedProbableUnderInvalidationCount;
     const DisplayItem* oldItem = oldItemIndex < m_currentPaintArtifact.getDisplayItemList().size() ? &m_currentPaintArtifact.getDisplayItemList()[oldItemIndex] : nullptr;
-
-    if (newItem.isCacheable() && !clientCacheIsValid(newItem.client())) {
-        showUnderInvalidationError("under-invalidation of PaintLayer: invalidated in cached subsequence", newItem, oldItem);
-        NOTREACHED();
-    }
 
     bool oldAndNewEqual = oldItem && newItem.equals(*oldItem);
     if (!oldAndNewEqual) {

@@ -7,7 +7,9 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 
 namespace blink {
 
@@ -30,7 +32,43 @@ void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, con
 
 void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClient& client)
 {
-    graphicsContext.getPaintController().endItem<EndCompositingDisplayItem>(client);
+    // If the end of the current display list is of the form [BeginCompositingDisplayItem] [DrawingDisplayItem],
+    // then fold the BeginCompositingDisplayItem into a new DrawingDisplayItem that replaces them both. This allows
+    // Skia to optimize for the case when the BeginCompositingDisplayItem represents a simple opacity/color that can be merged into
+    // the opacity/color of the drawing. See crbug.com/628831 for more details.
+    PaintController& paintController = graphicsContext.getPaintController();
+    const DisplayItem* lastDisplayItem = paintController.lastDisplayItem(0);
+    const DisplayItem* secondToLastDisplayItem = paintController.lastDisplayItem(1);
+    if (lastDisplayItem && secondToLastDisplayItem && lastDisplayItem->drawsContent() && secondToLastDisplayItem->getType() == DisplayItem::BeginCompositing) {
+        FloatRect cullRect(((DrawingDisplayItem*)lastDisplayItem)->picture()->cullRect());
+        const DisplayItemClient& displayItemClient = lastDisplayItem->client();
+        DisplayItem::Type displayItemType = lastDisplayItem->getType();
+
+        // Re-record the last two DisplayItems into a new SkPicture.
+        SkPictureBuilder pictureBuilder(cullRect, nullptr, &graphicsContext);
+        {
+            DrawingRecorder newRecorder(pictureBuilder.context(), displayItemClient, displayItemType, cullRect);
+            DCHECK(!DrawingRecorder::useCachedDrawingIfPossible(pictureBuilder.context(), displayItemClient, displayItemType));
+
+            secondToLastDisplayItem->replay(pictureBuilder.context());
+            lastDisplayItem->replay(pictureBuilder.context());
+            EndCompositingDisplayItem(client).replay(pictureBuilder.context());
+        }
+
+        paintController.removeLastDisplayItem(); // Remove the DrawingDisplayItem.
+        paintController.removeLastDisplayItem(); // Remove the BeginCompositingDisplayItem.
+
+        // The new item cannot be cached, because it is a mutation of the DisplayItem the client thought it was painting.
+        paintController.beginSkippingCache();
+        {
+            // Replay the new SKPicture into a new DrawingDisplayItem in the original DisplayItemList.
+            DrawingRecorder newRecorder(graphicsContext, displayItemClient, displayItemType, cullRect);
+            pictureBuilder.endRecording()->playback(graphicsContext.canvas());
+        }
+        paintController.endSkippingCache();
+    } else {
+        graphicsContext.getPaintController().endItem<EndCompositingDisplayItem>(client);
+    }
 }
 
 } // namespace blink

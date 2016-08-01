@@ -9,6 +9,7 @@
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
@@ -1342,13 +1343,43 @@ protected:
         // Leave container not invalidated.
         {
             EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
-            SubsequenceRecorder r(context, content);
+            SubsequenceRecorder r(context, container);
             drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
         }
         getPaintController().commitNewDisplayItems();
+
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        DisplayItemClient::endShouldKeepAliveAllClients();
+#endif
     }
 
-    // TODO(wangxianzhu): Add under-invalidation checking test in case of compositing item folding.
+    void testFoldCompositingDrawingInSubsequence()
+    {
+        FakeDisplayItemClient container("container");
+        FakeDisplayItemClient content("content");
+        GraphicsContext context(getPaintController());
+
+        {
+            SubsequenceRecorder subsequence(context, container);
+            CompositingRecorder compositing(context, content, SkXfermode::kSrc_Mode, 0.5);
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+        EXPECT_EQ(3u, getPaintController().paintArtifact().getDisplayItemList().size());
+
+        {
+            EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+            SubsequenceRecorder subsequence(context, container);
+            CompositingRecorder compositing(context, content, SkXfermode::kSrc_Mode, 0.5);
+            drawRect(context, content, backgroundDrawingType, FloatRect(100, 100, 300, 300));
+        }
+        getPaintController().commitNewDisplayItems();
+        EXPECT_EQ(3u, getPaintController().paintArtifact().getDisplayItemList().size());
+
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        DisplayItemClient::endShouldKeepAliveAllClients();
+#endif
+    }
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing)
@@ -1397,7 +1428,14 @@ TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence)
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence)
 {
-    EXPECT_DEATH(testInvalidationInSubsequence(), "\"\\(In cached subsequence of container\\)\" under-invalidation of PaintLayer: invalidated in cached subsequence");
+    // We allow invalidated display item clients as long as they would produce the same display items.
+    // The cases of changed display items are tested by other test cases.
+    testInvalidationInSubsequence();
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, FoldCompositingDrawingInSubsequence)
+{
+    testFoldCompositingDrawingInSubsequence();
 }
 
 #endif // DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
