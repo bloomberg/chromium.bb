@@ -94,6 +94,9 @@ if (is_android) {
 
   # GYP version: WebKit/public/blink_headers.gyp:blink_headers_java
   android_library("blink_headers_java") {
+    deps = [
+      "//third_party/android_tools:android_support_annotations_java",
+    ]
     srcjar_deps = [ ":blink_headers_java_enums_srcjar" ]
   }
 }

@@ -250,6 +250,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//device/gamepad:java",
+      "//third_party/android_tools:android_support_annotations_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]
   }

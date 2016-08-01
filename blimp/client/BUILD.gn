@@ -365,6 +365,7 @@ if (is_android) {
       "//base:base_java",
       "//blimp/client/core:core_java",
       "//blimp/client/public:public_headers_java",
+      "//third_party/android_tools:android_support_annotations_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.

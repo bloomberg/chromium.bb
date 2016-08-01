@@ -51,6 +51,7 @@ java_cpp_enum("media_java_enums_srcjar") {
 android_library("capture_java") {
   deps = [
     "//base:base_java",
+    "//third_party/android_tools:android_support_annotations_java",
   ]
 
   srcjar_deps = [ ":media_java_enums_srcjar" ]

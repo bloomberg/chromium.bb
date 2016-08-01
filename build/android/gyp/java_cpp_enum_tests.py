@@ -40,7 +40,17 @@ class TestPreprocess(unittest.TestCase):
 
 package some.package;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 public class ClassName {
+  @IntDef({
+      E1, E2
+  })
+  @Retention(RetentionPolicy.SOURCE)
+  public @interface ClassNameEnum {}
   public static final int E1 = 1;
   public static final int E2 = 2 << 2;
 }

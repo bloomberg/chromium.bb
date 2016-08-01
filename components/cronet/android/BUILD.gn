@@ -57,6 +57,9 @@ java_cpp_enum("url_request_error_java") {
 # This target is a jar file containing classes that Cronet's javadocs
 # may reference but are not included in the javadocs themselves.
 android_library("cronet_javadoc_classpath") {
+  deps = [
+    "//third_party/android_tools:android_support_annotations_java",
+  ]
   srcjar_deps = [ ":url_request_error_java" ]
 }
 

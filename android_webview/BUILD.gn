@@ -686,6 +686,7 @@ android_library("android_webview_java") {
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//net/android:net_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//ui/android:ui_java",
   ]
 

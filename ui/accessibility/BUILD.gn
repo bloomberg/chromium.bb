@@ -112,7 +112,9 @@ component("accessibility") {
 
 if (is_android) {
   android_library("ui_accessibility_java") {
-    deps = []
+    deps = [
+      "//third_party/android_tools:android_support_annotations_java",
+    ]
     srcjar_deps = [ ":ax_enumerations_srcjar" ]
   }
 
