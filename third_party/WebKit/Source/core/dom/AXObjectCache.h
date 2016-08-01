@@ -124,7 +124,7 @@ public:
     virtual void handleLayoutComplete(Document*) = 0;
     virtual void handleClicked(Node*) = 0;
 
-    virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
+    virtual void setCanvasObjectBounds(HTMLCanvasElement*, Element*, const LayoutRect&) = 0;
 
     virtual void inlineTextBoxesUpdated(LineLayoutItem) = 0;
 

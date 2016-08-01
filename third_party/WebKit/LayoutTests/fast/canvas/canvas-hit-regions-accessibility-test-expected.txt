@@ -1,4 +1,4 @@
-Just one button tests.
+ Just one button tests.
 PASS axbutton1.x is 8
 PASS axbutton1.y is 8
 PASS axbutton1.width is 200

@@ -838,7 +838,11 @@ public:
     // Location and click point in frame-relative coordinates. DEPRECATED, to be
     // replaced by getRelativeBounds.
     virtual LayoutRect elementRect() const { return m_explicitElementRect; }
-    void setElementRect(LayoutRect r) { m_explicitElementRect = r; }
+    void setElementRect(LayoutRect r, AXObject* container)
+    {
+        m_explicitElementRect = r;
+        m_explicitContainerID = container->axObjectID();
+    }
     virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
 
@@ -854,7 +858,7 @@ public:
     // not null, walk up to its container and offset by the container's offset from
     // origin, the container's scroll position if any, and apply the container's transform.
     // Do this until you reach the root of the tree.
-    virtual void getRelativeBounds(AXObject** container, FloatRect& boundsInContainer, SkMatrix44& containerTransform) const;
+    virtual void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const;
 
     // Hit testing.
     // Called on the root AX object to return the deepest available element.
@@ -965,6 +969,7 @@ protected:
     AccessibilityRole m_role;
     AXObjectInclusion m_lastKnownIsIgnoredValue;
     LayoutRect m_explicitElementRect;
+    AXID m_explicitContainerID;
 
     // Used only inside textAlternative():
     static String collapseWhitespace(const String&);

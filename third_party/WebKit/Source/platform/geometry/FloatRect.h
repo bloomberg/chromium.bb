@@ -224,7 +224,7 @@ inline FloatRect unionRect(const FloatRect& a, const FloatRect& b)
     return c;
 }
 
-FloatRect unionRect(const Vector<FloatRect>&);
+PLATFORM_EXPORT FloatRect unionRect(const Vector<FloatRect>&);
 
 inline FloatRect& operator+=(FloatRect& a, const FloatRect& b)
 {

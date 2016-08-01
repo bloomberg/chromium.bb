@@ -199,8 +199,13 @@ AXLayoutObject::~AXLayoutObject()
 
 LayoutRect AXLayoutObject::elementRect() const
 {
-    if (!m_explicitElementRect.isEmpty())
-        return m_explicitElementRect;
+    if (!m_explicitElementRect.isEmpty()) {
+        LayoutRect bounds = m_explicitElementRect;
+        AXObject* canvas = axObjectCache().objectFromAXID(m_explicitContainerID);
+        if (canvas)
+            bounds.moveBy(canvas->elementRect().location());
+        return bounds;
+    }
 
     // FIXME(dmazzoni): use relative bounds instead since this is a bottleneck.
     // http://crbug.com/618120
@@ -252,8 +257,25 @@ void AXLayoutObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBo
     outBoundsInContainer = FloatRect();
     outContainerTransform.setIdentity();
 
+    // First check if it has explicit bounds, for example if this element is tied to a
+    // canvas path. When explicit coordinates are provided, the ID of the explicit container
+    // element that the coordinates are relative to must be provided too.
+    if (!m_explicitElementRect.isEmpty()) {
+        *outContainer = axObjectCache().objectFromAXID(m_explicitContainerID);
+        if (*outContainer) {
+            outBoundsInContainer = FloatRect(m_explicitElementRect);
+            return;
+        }
+    }
+
     if (!m_layoutObject)
         return;
+
+    if (isWebArea()) {
+        if (m_layoutObject->frame()->view())
+            outBoundsInContainer.setSize(FloatSize(m_layoutObject->frame()->view()->contentsSize()));
+        return;
+    }
 
     // First compute the container. The container must be an ancestor in the accessibility tree, and
     // its LayoutObject must be an ancestor in the layout tree. Get the first such ancestor that's
@@ -278,9 +300,14 @@ void AXLayoutObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBo
     // a rect at point (0, 0) with the width and height of the LayoutObject.
     LayoutRect localBounds;
     if (m_layoutObject->isText()) {
-        localBounds = toLayoutText(m_layoutObject)->linesBoundingBox();
+        Vector<FloatQuad> quads;
+        toLayoutText(m_layoutObject)->quads(quads, LayoutText::ClipToEllipsis, LayoutText::LocalQuads);
+        for (const FloatQuad& quad : quads)
+            localBounds.unite(LayoutRect(quad.boundingBox()));
     } else if (m_layoutObject->isLayoutInline()) {
-        localBounds = toLayoutInline(m_layoutObject)->linesBoundingBox();
+        Vector<LayoutRect> rects;
+        toLayoutInline(m_layoutObject)->addOutlineRects(rects, LayoutPoint(), LayoutObject::IncludeBlockVisualOverflow);
+        localBounds = unionRect(rects);
     } else if (m_layoutObject->isBox()) {
         localBounds = LayoutRect(LayoutPoint(), toLayoutBox(m_layoutObject)->size());
     } else if (m_layoutObject->isSVG()) {
@@ -293,7 +320,7 @@ void AXLayoutObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBo
     // If the container has a scroll offset, subtract that out because we want our
     // bounds to be relative to the *unscrolled* position of the container object.
     ScrollableArea* scrollableArea = container->getScrollableAreaIfScrollable();
-    if (scrollableArea) {
+    if (scrollableArea && !container->isWebArea()) {
         IntPoint scrollPosition = scrollableArea->scrollPosition();
         outBoundsInContainer.move(FloatSize(scrollPosition.x(), scrollPosition.y()));
     }
@@ -2559,7 +2586,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     LayoutRect result;
     if (obj->isText()) {
         Vector<FloatQuad> quads;
-        toLayoutText(obj)->absoluteQuads(quads, LayoutText::ClipToEllipsis);
+        toLayoutText(obj)->quads(quads, LayoutText::ClipToEllipsis, LayoutText::AbsoluteQuads);
         result = LayoutRect(boundingBoxForQuads(obj, quads));
     } else if (isWebArea() || obj->isSVGRoot()) {
         result = LayoutRect(obj->absoluteBoundingBoxRect());

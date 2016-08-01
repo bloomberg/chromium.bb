@@ -47,8 +47,8 @@ if (window.testRunner && window.accessibilityController) {
     var face = container.childAtIndex(0);
     debug('Face role: ' + face.role);
     debug('Face label: ' + face.name);
-    debug('FaceX: ' + (pageX(face) - x));
-    debug('FaceY: ' + Math.abs(pageY(face) - y));
+    debug('FaceX: ' + Math.floor(pageX(face) - x));
+    debug('FaceY: ' + Math.floor(Math.abs(pageY(face) - y)));
     debug('<br>');
 
     var eye = container.childAtIndex(1);
@@ -68,7 +68,7 @@ if (window.testRunner && window.accessibilityController) {
     var mouth = container.childAtIndex(4);
     debug('Mouth role: ' + mouth.role);
     debug('Mouth label: ' + mouth.name);
-    debug('MouthX: ' + (pageX(mouth) - x));
+    debug('MouthX: ' + Math.floor(pageX(mouth) - x));
     debug('MouthY: ' + Math.floor(Math.abs(pageY(mouth) - y)));
     debug('<br>');
 
@@ -91,4 +91,3 @@ if (window.testRunner && window.accessibilityController) {
 
 </body>
 </html>
-

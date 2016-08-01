@@ -1765,8 +1765,13 @@ bool AXNodeObject::nameFromLabelElement() const
 LayoutRect AXNodeObject::elementRect() const
 {
     // First check if it has a custom rect, for example if this element is tied to a canvas path.
-    if (!m_explicitElementRect.isEmpty())
-        return m_explicitElementRect;
+    if (!m_explicitElementRect.isEmpty()) {
+        LayoutRect bounds = m_explicitElementRect;
+        AXObject* canvas = axObjectCache().objectFromAXID(m_explicitContainerID);
+        if (canvas)
+            bounds.moveBy(canvas->elementRect().location());
+        return bounds;
+    }
 
     // FIXME: If there are a lot of elements in the canvas, it will be inefficient.
     // We can avoid the inefficient calculations by using AXComputedObjectAttributeCache.
@@ -1804,6 +1809,60 @@ LayoutRect AXNodeObject::elementRect() const
     }
 
     return boundingBox;
+}
+
+void AXNodeObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
+{
+    *outContainer = nullptr;
+    outBoundsInContainer = FloatRect();
+    outContainerTransform.setIdentity();
+
+    // First check if it has explicit bounds, for example if this element is tied to a
+    // canvas path. When explicit coordinates are provided, the ID of the explicit container
+    // element that the coordinates are relative to must be provided too.
+    if (!m_explicitElementRect.isEmpty()) {
+        *outContainer = axObjectCache().objectFromAXID(m_explicitContainerID);
+        if (*outContainer) {
+            outBoundsInContainer = FloatRect(m_explicitElementRect);
+            return;
+        }
+    }
+
+    // If it's in a canvas but doesn't have an explicit rect, get the bounding rect of its children.
+    if (getNode()->parentElement()->isInCanvasSubtree()) {
+        Vector<FloatRect> rects;
+        for (Node& child : NodeTraversal::childrenOf(*getNode())) {
+            if (child.isHTMLElement()) {
+                if (AXObject* obj = axObjectCache().get(&child)) {
+                    AXObject* container;
+                    FloatRect bounds;
+                    obj->getRelativeBounds(&container, bounds, outContainerTransform);
+                    if (container) {
+                        *outContainer = container;
+                        rects.append(bounds);
+                    }
+                }
+            }
+        }
+
+        if (*outContainer) {
+            outBoundsInContainer = unionRect(rects);
+            return;
+        }
+    }
+
+    // If this object doesn't have an explicit element rect or computable from its children,
+    // for now, let's return the position of the ancestor that does have a position,
+    // and make it the width of that parent, and about the height of a line of text, so that
+    // it's clear the object is a child of the parent.
+    for (AXObject* positionProvider = parentObject(); positionProvider; positionProvider = positionProvider->parentObject()) {
+        if (positionProvider->isAXLayoutObject()) {
+            positionProvider->getRelativeBounds(outContainer, outBoundsInContainer, outContainerTransform);
+            if (*outContainer)
+                outBoundsInContainer.setSize(FloatSize(outBoundsInContainer.width(), std::min(10.0f, outBoundsInContainer.height())));
+            break;
+        }
+    }
 }
 
 static Node* getParentNodeForComputeParent(Node* node)

@@ -351,7 +351,9 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     end += name.length();
     if (characterIndex < start || characterIndex >= end)
       continue;
-    blink::WebRect inline_text_box_rect = inline_text_box.boundingBoxRect();
+
+    blink::WebFloatRect inline_text_box_rect = BoundsForObject(inline_text_box);
+
     int localIndex = characterIndex - start;
     blink::WebVector<int> character_offsets;
     inline_text_box.characterOffsets(character_offsets);
@@ -736,22 +738,22 @@ std::string WebAXObjectProxy::Language() {
 
 int WebAXObjectProxy::X() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.boundingBoxRect().x;
+  return BoundsForObject(accessibility_object_).x;
 }
 
 int WebAXObjectProxy::Y() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.boundingBoxRect().y;
+  return BoundsForObject(accessibility_object_).y;
 }
 
 int WebAXObjectProxy::Width() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.boundingBoxRect().width;
+  return BoundsForObject(accessibility_object_).width;
 }
 
 int WebAXObjectProxy::Height() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.boundingBoxRect().height;
+  return BoundsForObject(accessibility_object_).height;
 }
 
 int WebAXObjectProxy::IntValue() {
@@ -1396,18 +1398,22 @@ int WebAXObjectProxy::ScrollY() {
 }
 
 float WebAXObjectProxy::BoundsX() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   return BoundsForObject(accessibility_object_).x;
 }
 
 float WebAXObjectProxy::BoundsY() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   return BoundsForObject(accessibility_object_).y;
 }
 
 float WebAXObjectProxy::BoundsWidth() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   return BoundsForObject(accessibility_object_).width;
 }
 
 float WebAXObjectProxy::BoundsHeight() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   return BoundsForObject(accessibility_object_).height;
 }
 

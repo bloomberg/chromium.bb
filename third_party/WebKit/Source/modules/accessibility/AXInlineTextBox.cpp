@@ -65,7 +65,20 @@ LayoutRect AXInlineTextBox::elementRect() const
     if (!m_inlineTextBox)
         return LayoutRect();
 
-    return m_inlineTextBox->bounds();
+    return m_inlineTextBox->absoluteBounds();
+}
+
+void AXInlineTextBox::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
+{
+    *outContainer = nullptr;
+    outBoundsInContainer = FloatRect();
+    outContainerTransform.setIdentity();
+
+    if (!m_inlineTextBox)
+        return;
+
+    *outContainer = parentObject();
+    outBoundsInContainer = FloatRect(m_inlineTextBox->localBounds());
 }
 
 bool AXInlineTextBox::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const

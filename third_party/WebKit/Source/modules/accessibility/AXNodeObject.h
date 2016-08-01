@@ -166,8 +166,9 @@ protected:
     String placeholder(AXNameFrom, AXDescriptionFrom) const override;
     bool nameFromLabelElement() const override;
 
-    // Location and click point in frame-relative coordinates.
+    // Location
     LayoutRect elementRect() const override;
+    void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
 
     // High-level accessibility tree access.
     AXObject* computeParent() const override;

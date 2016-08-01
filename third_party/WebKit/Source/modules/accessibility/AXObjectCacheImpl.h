@@ -91,7 +91,7 @@ public:
     void handleLayoutComplete(Document*) override;
     void handleClicked(Node*) override;
 
-    void setCanvasObjectBounds(Element*, const LayoutRect&) override;
+    void setCanvasObjectBounds(HTMLCanvasElement*, Element*, const LayoutRect&) override;
 
     void inlineTextBoxesUpdated(LineLayoutItem) override;
 

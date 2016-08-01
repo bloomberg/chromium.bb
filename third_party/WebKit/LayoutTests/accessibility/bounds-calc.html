@@ -66,9 +66,9 @@ function assertDOMRectSameAsAXRect(id) {
     var epsilon = 1;
 
     assert_approx_equals(axObject.boundsX, bounds.left, epsilon, id + " left");
-    assert_approx_equals(axObject.boundsY, bounds.top, epsilon, id + " left");
-    assert_approx_equals(axObject.boundsWidth, bounds.width, epsilon, id + " left");
-    assert_approx_equals(axObject.boundsHeight, bounds.height, epsilon, id + " left");
+    assert_approx_equals(axObject.boundsY, bounds.top, epsilon, id + " top");
+    assert_approx_equals(axObject.boundsWidth, bounds.width, epsilon, id + " width");
+    assert_approx_equals(axObject.boundsHeight, bounds.height, epsilon, id + " height");
 }
 
 function assertStaticTextChildDOMRectSameAsAXRect(id) {
@@ -242,6 +242,23 @@ test(function(t) {
     assertOffsetContainerIs("div6d", "container6a", false);
     assertOffsetContainerIs("div6d", "container6b", false);
 }, "Container must be an ancestor in both the AX tree and layout tree.");
+</script>
+
+<div id="container7" class="container" role="group"
+     style="position: absolute; left: 600px; top: 20px; border: 3px solid #eee; margin: 5px; padding: 7px;">
+    <span id="span7" role="group">
+      Before
+      <div style="width: 100px; height: 100px;">Block</div>
+      After
+    </span>
+</div>
+
+<script>
+test(function(t) {
+    assertHasTransform("container7", false);
+    assertHasTransform("span7", false);
+    assertDOMRectSameAsAXRect("span7");
+}, "Test spans inside of absolute-positioned container");
 </script>
 
 <script>

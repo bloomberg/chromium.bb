@@ -103,7 +103,8 @@ public:
     void absoluteQuadsForRange(Vector<FloatQuad>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false);
 
     enum ClippingOption { NoClipping, ClipToEllipsis };
-    void absoluteQuads(Vector<FloatQuad>&, ClippingOption = NoClipping) const;
+    enum LocalOrAbsoluteOption { LocalQuads, AbsoluteQuads };
+    void quads(Vector<FloatQuad>&, ClippingOption = NoClipping, LocalOrAbsoluteOption = AbsoluteQuads) const;
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 

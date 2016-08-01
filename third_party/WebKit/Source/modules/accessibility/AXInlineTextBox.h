@@ -53,6 +53,7 @@ public:
     void textCharacterOffsets(Vector<int>&) const override;
     void wordBoundaries(Vector<AXRange>&) const override;
     LayoutRect elementRect() const override;
+    void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
     AXObject* computeParent() const override;
     AccessibilityTextDirection textDirection() const override;
     AXObject* nextOnLine() const override;

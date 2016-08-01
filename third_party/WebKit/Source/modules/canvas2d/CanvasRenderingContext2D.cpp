@@ -988,12 +988,12 @@ void CanvasRenderingContext2D::updateElementAccessibility(const Path& path, Elem
     Path transformedPath = path;
     transformedPath.transform(state().transform());
 
-    // Offset by the canvas rect, taking border and padding into account.
-    IntRect canvasRect = renderer->absoluteBoundingBoxRect();
-    canvasRect.move(lbmo->borderLeft() + lbmo->paddingLeft(), lbmo->borderTop() + lbmo->paddingTop());
+    // Add border and padding to the bounding rect.
     LayoutRect elementRect = enclosingLayoutRect(transformedPath.boundingRect());
-    elementRect.moveBy(canvasRect.location());
-    axObjectCache->setCanvasObjectBounds(element, elementRect);
+    elementRect.move(lbmo->borderLeft() + lbmo->paddingLeft(), lbmo->borderTop() + lbmo->paddingTop());
+
+    // Update the accessible object.
+    axObjectCache->setCanvasObjectBounds(canvas(), element, elementRect);
 }
 
 void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, ExceptionState& exceptionState)
