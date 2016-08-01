@@ -39,6 +39,14 @@ Polymer({
       value: false
     },
 
+    /**
+     * Whether or not the keyboard's submit button should be shown.
+     */
+    enableSubmitButton: {
+      type: Boolean,
+      value: false
+    },
+
     /** The value stored in the keyboard's input element. */
     value: {
       type: String,
@@ -121,34 +129,38 @@ Polymer({
   /**
    * Changes the color of the submit button if PIN is ready.
    * @param {string} value
+   * @private
    */
-  computeSubmitClass_: function(value) {
+  getSubmitClass_: function(value) {
     return value.length > 0 ? 'ready-background' : '';
   },
 
   /**
    * Computes whether the input type for the pin input should be password or
    * numerical.
+   * @param {boolean} enablePassword
    * @private
    */
-  computeInputType_: function(enablePassword) {
+  getInputType_: function(enablePassword) {
     return enablePassword ? 'password' : 'number';
   },
 
   /**
    * Computes the value of the pin input placeholder.
+   * @param {boolean} enablePassword
    * @private
    */
-  computeInputPlaceholder_: function(enablePassword) {
+  getInputPlaceholder_: function(enablePassword) {
     return enablePassword ? this.i18n('pinKeyboardPlaceholderPinPassword') :
                             this.i18n('pinKeyboardPlaceholderPin');
   },
 
   /**
    * Computes the direction of the pin input.
+   * @param {string} password
    * @private
    */
-  computeInputClass_: function(password) {
+  getInputClass_: function(password) {
     // +password will convert a string to a number or to NaN if that's not
     // possible. Number.isInteger will verify the value is not a NaN and that it
     // does not contain decimals.
@@ -159,5 +171,14 @@ Polymer({
     // (just numbers), if the document direction is rtl.
     var enableRtl = (document.dir == 'rtl') && !Number.isInteger(+password);
     return enableRtl ? 'input-non-pin' : '';
+  },
+
+  /**
+   * Computes if the submit button is visible.
+   * @param {boolean} submitEnabled
+   * @private
+   */
+  getSubmitHiddenClass_: function(submitEnabled) {
+    return submitEnabled ? '' : 'submit-button-hidden';
   }
 });

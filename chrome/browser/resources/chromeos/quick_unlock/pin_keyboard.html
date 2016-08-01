@@ -55,6 +55,10 @@
         position: relative;
       }
 
+      .digit-button.submit-button.submit-button-hidden {
+        display: none;
+      }
+
       .digit-button .icon-container {
         background: var(--paper-grey-400);
         border-radius: 100px;
@@ -114,6 +118,13 @@
         width: 180px;
       }
 
+      #pin-input.submit-button-hidden {
+        border-bottom: 2px;
+        border-bottom-style: solid;
+        text-align: center;
+        width: 230px;
+      }
+
       #pin-input[type=number]::-webkit-inner-spin-button,
       #pin-input[type=number]::-webkit-outer-spin-button {
         -webkit-appearance: none;
@@ -130,14 +141,16 @@
     <div id="root">
       <div id="container-constrained-width">
         <div class="row horizontal-center">
-          <input id="pin-input" type="[[computeInputType_(enablePassword)]]"
-                 class$="[[computeInputClass_(value)]]"
-                 placeholder="[[computeInputPlaceholder_(enablePassword)]]"
+          <input id="pin-input" type="[[getInputType_(enablePassword)]]"
+                 class$="[[getInputClass_(value)]]
+                         [[getSubmitHiddenClass_(enableSubmitButton)]]"
+                 placeholder="[[getInputPlaceholder_(enablePassword)]]"
                  value="{{value::input}}"
                  on-keydown="onInputKeyDown_"></input>
-          <paper-button class="digit-button first-row submit-button"
+          <paper-button class$="digit-button first-row submit-button
+                                [[getSubmitHiddenClass_(enableSubmitButton)]]"
                         on-tap="firePinSubmitEvent_">
-            <div class$="icon-container [[computeSubmitClass_(value)]]">
+            <div class$="icon-container [[getSubmitClass_(value)]]">
                 <iron-icon class="icon" icon="icons:forward"><iron-icon>
             </div>
           </paper-button>
