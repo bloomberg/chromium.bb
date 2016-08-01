@@ -40,9 +40,6 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   bool StampSuperMac() override;
 
  private:
-  bool GetSplitMacs(const std::string& path,
-                    std::map<std::string, std::string>* split_macs) const;
-
   PrefHashStoreImpl* outer_;
   std::unique_ptr<HashStoreContents> contents_;
 
@@ -101,11 +98,8 @@ PrefHashStoreTransaction::ValueState
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
     const std::string& path,
     const base::Value* initial_value) const {
-  const base::DictionaryValue* hashes_dict = contents_->GetContents();
-
   std::string last_hash;
-  if (hashes_dict)
-    hashes_dict->GetString(path, &last_hash);
+  contents_->GetMac(path, &last_hash);
 
   if (last_hash.empty()) {
     // In the absence of a hash for this pref, always trust a NULL value, but
@@ -138,7 +132,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreHash(
     const base::Value* new_value) {
   const std::string mac =
       outer_->pref_hash_calculator_.Calculate(path, new_value);
-  (*contents_->GetMutableContents())->SetString(path, mac);
+  contents_->SetMac(path, mac);
   super_mac_dirty_ = true;
 }
 
@@ -150,7 +144,7 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
   DCHECK(invalid_keys && invalid_keys->empty());
 
   std::map<std::string, std::string> split_macs;
-  const bool has_hashes = GetSplitMacs(path, &split_macs);
+  const bool has_hashes = contents_->GetSplitMacs(path, &split_macs);
 
   // Treat NULL and empty the same; otherwise we would need to store a hash for
   // the entire dictionary (or some other special beacon) to differentiate these
@@ -210,9 +204,7 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
     const std::string& path,
     const base::DictionaryValue* split_value) {
-  std::unique_ptr<HashStoreContents::MutableDictionary> mutable_dictionary =
-      contents_->GetMutableContents();
-  (*mutable_dictionary)->Remove(path, NULL);
+  contents_->RemoveEntry(path);
 
   if (split_value) {
     std::string keyed_path(path);
@@ -223,40 +215,20 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
       // Keep the common part from the old |keyed_path| and replace the key to
       // get the new |keyed_path|.
       keyed_path.replace(common_part_length, std::string::npos, it.key());
-      (*mutable_dictionary)
-          ->SetString(keyed_path, outer_->pref_hash_calculator_.Calculate(
-                                      keyed_path, &it.value()));
+      contents_->SetSplitMac(
+          path, it.key(),
+          outer_->pref_hash_calculator_.Calculate(keyed_path, &it.value()));
     }
   }
   super_mac_dirty_ = true;
 }
 
-bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::GetSplitMacs(
-    const std::string& key,
-    std::map<std::string, std::string>* split_macs) const {
-  DCHECK(split_macs);
-  DCHECK(split_macs->empty());
-
-  const base::DictionaryValue* hashes_dict = contents_->GetContents();
-  const base::DictionaryValue* split_mac_dictionary = NULL;
-  if (!hashes_dict || !hashes_dict->GetDictionary(key, &split_mac_dictionary))
-    return false;
-  for (base::DictionaryValue::Iterator it(*split_mac_dictionary); !it.IsAtEnd();
-       it.Advance()) {
-    std::string mac_string;
-    if (!it.value().GetAsString(&mac_string)) {
-      NOTREACHED();
-      continue;
-    }
-    split_macs->insert(make_pair(it.key(), mac_string));
-  }
-  return true;
-}
-
 bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::HasHash(
     const std::string& path) const {
-  const base::DictionaryValue* hashes_dict = contents_->GetContents();
-  return hashes_dict && hashes_dict->Get(path, NULL);
+  std::string out_value;
+  std::map<std::string, std::string> out_values;
+  return contents_->GetMac(path, &out_value) ||
+         contents_->GetSplitMacs(path, &out_values);
 }
 
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ImportHash(
@@ -264,7 +236,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ImportHash(
     const base::Value* hash) {
   DCHECK(hash);
 
-  (*contents_->GetMutableContents())->Set(path, hash->DeepCopy());
+  contents_->ImportEntry(path, hash);
 
   if (super_mac_valid_)
     super_mac_dirty_ = true;
@@ -272,8 +244,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ImportHash(
 
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ClearHash(
     const std::string& path) {
-  if ((*contents_->GetMutableContents())->RemovePath(path, NULL) &&
-      super_mac_valid_) {
+  if (contents_->RemoveEntry(path) && super_mac_valid_) {
     super_mac_dirty_ = true;
   }
 }

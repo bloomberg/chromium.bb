@@ -12,41 +12,9 @@
 #include "components/prefs/persistent_pref_store.h"
 
 namespace {
-
 const char kPreferenceMACs[] = "protection.macs";
 const char kSuperMACPref[] = "protection.super_mac";
-
-class MutablePreferenceMacDictionary
-    : public HashStoreContents::MutableDictionary {
- public:
-  explicit MutablePreferenceMacDictionary(base::DictionaryValue* storage);
-
-  // MutableDictionary implementation
-  base::DictionaryValue* operator->() override;
-
- private:
-  base::DictionaryValue* storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(MutablePreferenceMacDictionary);
-};
-
-MutablePreferenceMacDictionary::MutablePreferenceMacDictionary(
-    base::DictionaryValue* storage)
-    : storage_(storage) {
 }
-
-base::DictionaryValue* MutablePreferenceMacDictionary::operator->() {
-  base::DictionaryValue* mac_dictionary = NULL;
-
-  if (!storage_->GetDictionary(kPreferenceMACs, &mac_dictionary)) {
-    mac_dictionary = new base::DictionaryValue;
-    storage_->Set(kPreferenceMACs, mac_dictionary);
-  }
-
-  return mac_dictionary;
-}
-
-}  // namespace
 
 DictionaryHashStoreContents::DictionaryHashStoreContents(
     base::DictionaryValue* storage)
@@ -64,20 +32,62 @@ void DictionaryHashStoreContents::Reset() {
   storage_->Remove(kPreferenceMACs, NULL);
 }
 
-bool DictionaryHashStoreContents::IsInitialized() const {
-  return storage_->GetDictionary(kPreferenceMACs, NULL);
+bool DictionaryHashStoreContents::GetMac(const std::string& path,
+                                         std::string* out_value) {
+  const base::DictionaryValue* macs_dict = GetContents();
+  if (macs_dict)
+    return macs_dict->GetString(path, out_value);
+
+  return false;
 }
 
-const base::DictionaryValue* DictionaryHashStoreContents::GetContents() const {
-  const base::DictionaryValue* mac_dictionary = NULL;
-  storage_->GetDictionary(kPreferenceMACs, &mac_dictionary);
-  return mac_dictionary;
+bool DictionaryHashStoreContents::GetSplitMacs(
+    const std::string& path,
+    std::map<std::string, std::string>* split_macs) {
+  DCHECK(split_macs);
+  DCHECK(split_macs->empty());
+
+  const base::DictionaryValue* macs_dict = GetContents();
+  const base::DictionaryValue* split_macs_dict = NULL;
+  if (!macs_dict || !macs_dict->GetDictionary(path, &split_macs_dict))
+    return false;
+  for (base::DictionaryValue::Iterator it(*split_macs_dict); !it.IsAtEnd();
+       it.Advance()) {
+    std::string mac_string;
+    if (!it.value().GetAsString(&mac_string)) {
+      NOTREACHED();
+      continue;
+    }
+    split_macs->insert(make_pair(it.key(), mac_string));
+  }
+  return true;
 }
 
-std::unique_ptr<HashStoreContents::MutableDictionary>
-DictionaryHashStoreContents::GetMutableContents() {
-  return std::unique_ptr<MutableDictionary>(
-      new MutablePreferenceMacDictionary(storage_));
+void DictionaryHashStoreContents::SetMac(const std::string& path,
+                                         const std::string& value) {
+  base::DictionaryValue* macs_dict = GetMutableContents(true);
+  macs_dict->SetString(path, value);
+}
+
+void DictionaryHashStoreContents::SetSplitMac(const std::string& path,
+                                              const std::string& split_path,
+                                              const std::string& value) {
+  // DictionaryValue handles a '.' delimiter.
+  SetMac(path + '.' + split_path, value);
+}
+
+void DictionaryHashStoreContents::ImportEntry(const std::string& path,
+                                              const base::Value* in_value) {
+  base::DictionaryValue* macs_dict = GetMutableContents(true);
+  macs_dict->Set(path, in_value->DeepCopy());
+}
+
+bool DictionaryHashStoreContents::RemoveEntry(const std::string& path) {
+  base::DictionaryValue* macs_dict = GetMutableContents(false);
+  if (macs_dict)
+    return macs_dict->RemovePath(path, NULL);
+
+  return false;
 }
 
 std::string DictionaryHashStoreContents::GetSuperMac() const {
@@ -88,4 +98,21 @@ std::string DictionaryHashStoreContents::GetSuperMac() const {
 
 void DictionaryHashStoreContents::SetSuperMac(const std::string& super_mac) {
   storage_->SetString(kSuperMACPref, super_mac);
+}
+
+const base::DictionaryValue* DictionaryHashStoreContents::GetContents() const {
+  const base::DictionaryValue* macs_dict = NULL;
+  storage_->GetDictionary(kPreferenceMACs, &macs_dict);
+  return macs_dict;
+}
+
+base::DictionaryValue* DictionaryHashStoreContents::GetMutableContents(
+    bool create_if_null) {
+  base::DictionaryValue* macs_dict = NULL;
+  storage_->GetDictionary(kPreferenceMACs, &macs_dict);
+  if (!macs_dict && create_if_null) {
+    macs_dict = new base::DictionaryValue;
+    storage_->Set(kPreferenceMACs, macs_dict);
+  }
+  return macs_dict;
 }

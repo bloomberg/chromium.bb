@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_DICTIONARY_HASH_STORE_CONTENTS_H_
 #define COMPONENTS_USER_PREFS_TRACKED_DICTIONARY_HASH_STORE_CONTENTS_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/user_prefs/tracked/hash_store_contents.h"
 
 namespace base {
 class DictionaryValue;
+class Value;
 }  // namespace base
 
 namespace user_prefs {
@@ -32,14 +32,26 @@ class DictionaryHashStoreContents : public HashStoreContents {
 
   // HashStoreContents implementation
   void Reset() override;
-  bool IsInitialized() const override;
+  bool GetMac(const std::string& path, std::string* out_value) override;
+  bool GetSplitMacs(const std::string& path,
+                    std::map<std::string, std::string>* split_macs) override;
+  void SetMac(const std::string& path, const std::string& value) override;
+  void SetSplitMac(const std::string& path,
+                   const std::string& split_path,
+                   const std::string& value) override;
+  void ImportEntry(const std::string& path,
+                   const base::Value* in_value) override;
+  bool RemoveEntry(const std::string& path) override;
   const base::DictionaryValue* GetContents() const override;
-  std::unique_ptr<MutableDictionary> GetMutableContents() override;
   std::string GetSuperMac() const override;
   void SetSuperMac(const std::string& super_mac) override;
 
  private:
   base::DictionaryValue* storage_;
+
+  // Helper function to get a mutable version of the macs from |storage_|,
+  // creating it if needed and |create_if_null| is true.
+  base::DictionaryValue* GetMutableContents(bool create_if_null);
 
   DISALLOW_COPY_AND_ASSIGN(DictionaryHashStoreContents);
 };

@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_HASH_STORE_CONTENTS_H_
 #define COMPONENTS_USER_PREFS_TRACKED_HASH_STORE_CONTENTS_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
-
 namespace base {
 class DictionaryValue;
+class Value;
 }  // namespace base
 
 // Provides access to the contents of a preference hash store. The store
@@ -19,38 +20,51 @@ class DictionaryValue;
 // MACs.
 // Version: a client-defined version number for the format of Contents.
 // Super MAC: a MAC that authenticates the entirety of Contents.
-// Legacy hash stores may have an ID that was incorporated into MAC
-// calculations. The ID, if any, is available via |hash_store_id()|.
 class HashStoreContents {
  public:
-  // Used to modify a DictionaryValue stored in the preference hash store. The
-  // MutableDictionary should be destroyed when modifications are complete in
-  // order to allow them to be committed to the underlying storage.
-  class MutableDictionary {
-   public:
-    virtual ~MutableDictionary() {}
-    // Returns the DictionaryValue, which will be created if it does not already
-    // exist.
-    virtual base::DictionaryValue* operator->() = 0;
-  };
-
   virtual ~HashStoreContents() {}
 
   // Discards all data related to this hash store.
   virtual void Reset() = 0;
 
-  // Indicates whether any data is currently stored for this hash store.
-  virtual bool IsInitialized() const = 0;
+  // Outputs the MAC validating the preference at path. Returns true if a MAC
+  // was successfully read and false otherwise.
+  virtual bool GetMac(const std::string& path, std::string* out_value) = 0;
 
-  // Retrieves the contents of this hash store. May return NULL if the hash
-  // store has not been initialized.
+  // Outputs the MACS validating the split preference at path. Returns true if
+  // MACS were successfully read and false otherwise.
+  virtual bool GetSplitMacs(const std::string& path,
+                            std::map<std::string, std::string>* out_value) = 0;
+
+  // Set the MAC validating the preference at path.
+  virtual void SetMac(const std::string& path, const std::string& value) = 0;
+
+  // Set the MAC validating the split preference at path and split_path.
+  // For example, |path| is 'extension' and |split_path| is some extenson id.
+  virtual void SetSplitMac(const std::string& path,
+                           const std::string& split_path,
+                           const std::string& value) = 0;
+
+  // Sets the MAC for the preference at |path|.
+  // If |path| is a split preference |in_value| must be a DictionaryValue whose
+  // keys are keys in the split preference and whose values are MACs of the
+  // corresponding values in the split preference.
+  // If |path| is an atomic preference |in_value| must be a StringValue
+  // containing a MAC of the preference value.
+  virtual void ImportEntry(const std::string& path,
+                           const base::Value* in_value) = 0;
+
+  // Removes the MAC (for atomic preferences) or MACs (for split preferences)
+  // at |path|. Returns true if there was an entry at |path| which was
+  // successfully removed.
+  virtual bool RemoveEntry(const std::string& path) = 0;
+
+  // Only needed if this store supports super MACs.
   virtual const base::DictionaryValue* GetContents() const = 0;
 
-  // Provides mutable access to the contents of this hash store.
-  virtual std::unique_ptr<MutableDictionary> GetMutableContents() = 0;
-
   // Retrieves the super MAC value previously stored by SetSuperMac. May be
-  // empty if no super MAC has been stored.
+  // empty if no super MAC has been stored or if this store does not support
+  // super MACs.
   virtual std::string GetSuperMac() const = 0;
 
   // Stores a super MAC value for this hash store.

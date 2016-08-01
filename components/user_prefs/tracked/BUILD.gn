@@ -23,6 +23,8 @@ static_library("user_prefs_tracked") {
     "pref_hash_store_transaction.h",
     "pref_names.cc",
     "pref_names.h",
+    "registry_hash_store_contents_win.cc",
+    "registry_hash_store_contents_win.h",
     "segregated_pref_store.cc",
     "segregated_pref_store.h",
     "tracked_atomic_preference.cc",
@@ -74,6 +76,7 @@ source_set("unit_tests") {
     "pref_hash_calculator_unittest.cc",
     "pref_hash_filter_unittest.cc",
     "pref_hash_store_impl_unittest.cc",
+    "registry_hash_store_contents_win_unittest.cc",
     "segregated_pref_store_unittest.cc",
     "tracked_preferences_migration_unittest.cc",
   ]
@@ -82,6 +85,7 @@ source_set("unit_tests") {
     ":user_prefs_tracked",
     ":user_prefs_tracked_test_support",
     "//base:base",
+    "//base/test:test_support",
     "//components/prefs:test_support",
     "//testing/gtest",
   ]

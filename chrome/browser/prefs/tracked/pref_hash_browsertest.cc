@@ -535,9 +535,9 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
   void AttackPreferencesOnDisk(
       base::DictionaryValue* unprotected_preferences,
       base::DictionaryValue* protected_preferences) override {
-    EXPECT_TRUE(unprotected_preferences->Remove("protection.macs", NULL));
+    unprotected_preferences->Remove("protection.macs", NULL);
     if (protected_preferences)
-      EXPECT_TRUE(protected_preferences->Remove("protection.macs", NULL));
+      protected_preferences->Remove("protection.macs", NULL);
   }
 
   void VerifyReactionToPrefAttack() override {

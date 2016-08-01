@@ -608,6 +608,7 @@
       'user_prefs/tracked/pref_hash_calculator_unittest.cc',
       'user_prefs/tracked/pref_hash_filter_unittest.cc',
       'user_prefs/tracked/pref_hash_store_impl_unittest.cc',
+      'user_prefs/tracked/registry_hash_store_contents_win_unittest.cc',
       'user_prefs/tracked/segregated_pref_store_unittest.cc',
       'user_prefs/tracked/tracked_preferences_migration_unittest.cc',
     ],
