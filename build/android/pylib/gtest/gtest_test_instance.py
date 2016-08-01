@@ -42,6 +42,7 @@ _DEFAULT_ISOLATE_FILE_PATHS = {
     'midi_unittests': 'media/midi/midi_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
     'sql_unittests': 'sql/sql_unittests.isolate',
+    'sync_unit_tests': 'components/sync/sync_unit_tests.isolate',
     'ui_base_unittests': 'ui/base/ui_base_tests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
     'webkit_unit_tests':
