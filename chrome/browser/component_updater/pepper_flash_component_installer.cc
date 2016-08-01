@@ -267,9 +267,12 @@ FlashComponentInstallerTraits::GetInstallerAttributes() const {
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Component updated flash supersedes bundled flash therefore if that one
-  // is disabled then this one should never install.
+  // is disabled then this one should never install. Similarly, if there is a
+  // command-line specified Flash to use, do not replace it with a component
+  // version of Flash.
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
+  if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash)
+      || cmd_line->HasSwitch(switches::kPpapiFlashPath))
     return;
   std::unique_ptr<ComponentInstallerTraits> traits(
       new FlashComponentInstallerTraits);
