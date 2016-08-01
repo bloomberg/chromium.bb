@@ -464,7 +464,13 @@ public class PopupTouchHandleDrawable extends View {
         mTemporarilyHiddenExpireTime = 0;
         setTemporarilyHidden(false);
         mAlpha = 1.0f;
-        if (mContainer.isShowing()) mContainer.dismiss();
+        if (mContainer.isShowing()) {
+            try {
+                mContainer.dismiss();
+            } catch (IllegalArgumentException e) {
+                // Intentionally swallowed due to bad Android implemention. See crbug.com/633224.
+            }
+        }
         mParentPositionObserver.clearListener();
     }
 
