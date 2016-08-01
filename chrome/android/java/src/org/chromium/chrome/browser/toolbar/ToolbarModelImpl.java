@@ -31,6 +31,16 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     private boolean mIsUsingBrandColor;
 
     /**
+     * Default constructor for this class.
+     */
+    public ToolbarModelImpl() {
+        super();
+        mPrimaryColor = ApiCompatibilityUtils.getColor(
+                ContextUtils.getApplicationContext().getResources(),
+                R.color.default_primary_color);
+    }
+
+    /**
      * Handle any initialization that must occur after native has been initialized.
      */
     public void initializeWithNative() {
