@@ -64,7 +64,8 @@ bool CanUnregisterServiceWorker(const GURL& document_url,
                                 const GURL& pattern) {
   DCHECK(document_url.is_valid());
   DCHECK(pattern.is_valid());
-  return document_url.GetOrigin() == pattern.GetOrigin() &&
+  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(document_url,
+                                                                   pattern) &&
          OriginCanAccessServiceWorkers(document_url) &&
          OriginCanAccessServiceWorkers(pattern);
 }
@@ -74,14 +75,16 @@ bool CanUpdateServiceWorker(const GURL& document_url, const GURL& pattern) {
   DCHECK(pattern.is_valid());
   DCHECK(OriginCanAccessServiceWorkers(document_url));
   DCHECK(OriginCanAccessServiceWorkers(pattern));
-  return document_url.GetOrigin() == pattern.GetOrigin();
+  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(document_url,
+                                                                   pattern);
 }
 
 bool CanGetRegistration(const GURL& document_url,
                         const GURL& given_document_url) {
   DCHECK(document_url.is_valid());
   DCHECK(given_document_url.is_valid());
-  return document_url.GetOrigin() == given_document_url.GetOrigin() &&
+  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(
+             document_url, given_document_url) &&
          OriginCanAccessServiceWorkers(document_url) &&
          OriginCanAccessServiceWorkers(given_document_url);
 }

@@ -1917,4 +1917,81 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesAggressiveTest,
   CheckStrategyIsAggressive();
 }
 
+// ServiceWorkerDisableWebSecurityTests check the behavior when the web security
+// is disabled. If '--disable-web-security' flag is set, we don't check the
+// origin equality in Blink. So the Service Worker related APIs should succeed
+// even if it is thouching other origin Service Workers.
+class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
+ public:
+  ServiceWorkerDisableWebSecurityTest() {}
+  ~ServiceWorkerDisableWebSecurityTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+  }
+
+  void SetUpOnMainThread() override {
+    cross_origin_server_.ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(cross_origin_server_.Start());
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+  }
+
+  void RegisterServiceWorkerOnCrossOriginServer(const std::string& scope,
+                                                const std::string& script) {
+    scoped_refptr<WorkerActivatedObserver> observer =
+        new WorkerActivatedObserver(wrapper());
+    observer->Init();
+    public_context()->RegisterServiceWorker(
+        cross_origin_server_.GetURL(scope), cross_origin_server_.GetURL(script),
+        base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+    observer->Wait();
+  }
+
+  void RunTestWithCrossOriginURL(const std::string& test_page,
+                                 const std::string& cross_origin_url) {
+    const base::string16 title = base::ASCIIToUTF16("PASS");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(),
+                  embedded_test_server()->GetURL(
+                      test_page + "?" +
+                      cross_origin_server_.GetURL(cross_origin_url).spec()));
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+
+ private:
+  net::EmbeddedTestServer cross_origin_server_;
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDisableWebSecurityTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest,
+                       GetRegistrationNoCrash) {
+  const char kPageUrl[] =
+      "/service_worker/disable_web_security_get_registration.html";
+  const char kScopeUrl[] = "/service_worker/";
+  RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest, RegisterNoCrash) {
+  const char kPageUrl[] = "/service_worker/disable_web_security_register.html";
+  const char kScopeUrl[] = "/service_worker/";
+  RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest, UnregisterNoCrash) {
+  const char kPageUrl[] =
+      "/service_worker/disable_web_security_unregister.html";
+  const char kScopeUrl[] = "/service_worker/scope/";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
+  RegisterServiceWorkerOnCrossOriginServer(kScopeUrl, kWorkerUrl);
+  RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest, UpdateNoCrash) {
+  const char kPageUrl[] = "/service_worker/disable_web_security_update.html";
+  const char kScopeUrl[] = "/service_worker/scope/";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
+  RegisterServiceWorkerOnCrossOriginServer(kScopeUrl, kWorkerUrl);
+  RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
+}
+
 }  // namespace content

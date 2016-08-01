@@ -5,10 +5,12 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -43,6 +45,21 @@ class ServiceWorkerUtils {
   static bool CanRegisterServiceWorker(const GURL& context_url,
                                        const GURL& pattern,
                                        const GURL& script_url);
+
+  // Returns true when '--disable-web-security' flag is set. Otherwise returns
+  // whether the all origins of |urls| are same as the origin of |url|.
+  template <typename... Args>
+  static bool PassOriginEqualitySecurityCheck(const GURL& url,
+                                              const Args&... urls) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableWebSecurity))
+      return true;
+    for (const GURL& u : {urls...}) {
+      if (url.GetOrigin() != u.GetOrigin())
+        return false;
+    }
+    return true;
+  }
 
   // PlzNavigate
   // Returns true if the |provider_id| was assigned by the browser process.
