@@ -11,8 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/downloads/download_ui_adapter.h"
 
 namespace content {
 class BrowserContext;
@@ -25,12 +24,12 @@ namespace android {
  * Bridge between C++ and Java for exposing native implementation of offline
  * pages model in managed code.
  */
-class OfflinePageDownloadBridge {
+class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
  public:
   OfflinePageDownloadBridge(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
-                            content::BrowserContext* browser_context);
-  ~OfflinePageDownloadBridge();
+                            DownloadUIAdapter* download_ui_adapter);
+  ~OfflinePageDownloadBridge() override;
 
   static bool Register(JNIEnv* env);
 
@@ -45,13 +44,17 @@ class OfflinePageDownloadBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
-  void OnOfflinePageDownloadBridgeLoaded();
-  void OnOfflinePageDownloadItemAdded(const OfflinePageItem& item);
-  void OnOfflinePageDownloadItemDeleted(const std::string& guid);
-  void OnOfflinePageDownloadItemUpdated(const OfflinePageItem& item);
+  // DownloadUIAdapter::Observer implementation.
+  void ItemsLoaded() override;
+  void ItemAdded(const DownloadUIItem& item) override;
+  void ItemUpdated(const DownloadUIItem& item) override;
+  void ItemDeleted(const std::string& guid) override;
 
  private:
   JavaObjectWeakGlobalRef weak_java_ref_;
+
+  // Not owned.
+  DownloadUIAdapter* download_ui_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageDownloadBridge);
 };

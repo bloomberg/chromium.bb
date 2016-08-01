@@ -15,6 +15,10 @@
 
 namespace offline_pages {
 
+namespace {
+const char kDownloadUIAdapterKey[] = "download-ui-adapter";
+}
+
 DownloadUIAdapter::DownloadUIAdapter(OfflinePageModel* model)
     : model_(model),
       is_loaded_(false),
@@ -22,6 +26,18 @@ DownloadUIAdapter::DownloadUIAdapter(OfflinePageModel* model)
 }
 
 DownloadUIAdapter::~DownloadUIAdapter() { }
+
+// static
+DownloadUIAdapter* DownloadUIAdapter::FromOfflinePageModel(
+    OfflinePageModel* offline_page_model) {
+  DownloadUIAdapter* adapter = static_cast<DownloadUIAdapter*>(
+      offline_page_model->GetUserData(kDownloadUIAdapterKey));
+  if (!adapter) {
+    adapter = new DownloadUIAdapter(offline_page_model);
+    offline_page_model->SetUserData(kDownloadUIAdapterKey, adapter);
+  }
+  return adapter;
+}
 
 void DownloadUIAdapter::AddObserver(Observer* observer) {
   DCHECK(observer);

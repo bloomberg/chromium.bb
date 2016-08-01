@@ -7,10 +7,11 @@
 #include <vector>
 
 #include "base/android/jni_string.h"
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/offline_pages/offline_page_item.h"
-#include "content/public/browser/browser_context.h"
+#include "components/offline_pages/downloads/download_ui_item.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
 
@@ -25,36 +26,38 @@ namespace android {
 
 namespace {
 
-void ToJavaOfflinePageDownloadItemList(
-    JNIEnv* env,
-    jobject j_result_obj,
-    const std::vector<OfflinePageItem>& offline_pages) {
-  for (const OfflinePageItem& offline_page : offline_pages) {
+void ToJavaOfflinePageDownloadItemList(JNIEnv* env,
+                                       jobject j_result_obj,
+                                       const DownloadUIItemsMap& items_map) {
+  for (const auto& guid_item_pair : items_map) {
+    const DownloadUIItem& item = *(guid_item_pair.second.get());
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
-        env, j_result_obj,
-        ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
-        ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
-        ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-        offline_page.creation_time.ToJavaTime(), offline_page.file_size);
+        env, j_result_obj, ConvertUTF8ToJavaString(env, item.guid).obj(),
+        ConvertUTF8ToJavaString(env, item.url.spec()).obj(),
+        ConvertUTF8ToJavaString(env, item.target_path.value()).obj(),
+        item.start_time.ToJavaTime(), item.total_bytes);
   }
 }
 
 ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
     JNIEnv* env,
-    const OfflinePageItem& offline_page) {
+    const DownloadUIItem& item) {
   return Java_OfflinePageDownloadBridge_createDownloadItem(
-      env, ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-      offline_page.creation_time.ToJavaTime(), offline_page.file_size);
+      env, ConvertUTF8ToJavaString(env, item.guid).obj(),
+      ConvertUTF8ToJavaString(env, item.url.spec()).obj(),
+      ConvertUTF8ToJavaString(env, item.target_path.value()).obj(),
+      item.start_time.ToJavaTime(), item.total_bytes);
 }
-
 }  // namespace
 
 OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    content::BrowserContext* browser_context) {}
+    DownloadUIAdapter* download_ui_adapter)
+    : download_ui_adapter_(download_ui_adapter) {
+  DCHECK(download_ui_adapter_);
+  download_ui_adapter_->AddObserver(this);
+}
 
 OfflinePageDownloadBridge::~OfflinePageDownloadBridge() {}
 
@@ -65,6 +68,7 @@ bool OfflinePageDownloadBridge::Register(JNIEnv* env) {
 
 void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
                                         const JavaParamRef<jobject>&) {
+  download_ui_adapter_->RemoveObserver(this);
   delete this;
 }
 
@@ -74,21 +78,20 @@ void OfflinePageDownloadBridge::GetAllItems(
     const JavaParamRef<jobject>& j_result_obj) {
   DCHECK(j_result_obj);
 
-  // Get the cached list of offline pages/download items here, and populate
-  // result object.
-  std::vector<OfflinePageItem> offline_pages;
-  ToJavaOfflinePageDownloadItemList(env, j_result_obj, offline_pages);
+  const DownloadUIItemsMap& items_map = download_ui_adapter_->GetAllItems();
+  ToJavaOfflinePageDownloadItemList(env, j_result_obj, items_map);
 }
 
 ScopedJavaLocalRef<jobject> OfflinePageDownloadBridge::GetItemByGuid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_guid) {
-  OfflinePageItem offline_page;
-  return ToJavaOfflinePageDownloadItem(env, offline_page);
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  const DownloadUIItem* item = download_ui_adapter_->GetItem(guid);
+  return ToJavaOfflinePageDownloadItem(env, *item);
 }
 
-void OfflinePageDownloadBridge::OnOfflinePageDownloadBridgeLoaded() {
+void OfflinePageDownloadBridge::ItemsLoaded() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -96,8 +99,7 @@ void OfflinePageDownloadBridge::OnOfflinePageDownloadBridgeLoaded() {
   Java_OfflinePageDownloadBridge_downloadItemsLoaded(env, obj.obj());
 }
 
-void OfflinePageDownloadBridge::OnOfflinePageDownloadItemAdded(
-    const OfflinePageItem& item) {
+void OfflinePageDownloadBridge::ItemAdded(const DownloadUIItem& item) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -106,8 +108,7 @@ void OfflinePageDownloadBridge::OnOfflinePageDownloadItemAdded(
       env, obj.obj(), ToJavaOfflinePageDownloadItem(env, item).obj());
 }
 
-void OfflinePageDownloadBridge::OnOfflinePageDownloadItemDeleted(
-    const std::string& guid) {
+void OfflinePageDownloadBridge::ItemDeleted(const std::string& guid) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -116,8 +117,7 @@ void OfflinePageDownloadBridge::OnOfflinePageDownloadItemDeleted(
       env, obj.obj(), ConvertUTF8ToJavaString(env, guid).obj());
 }
 
-void OfflinePageDownloadBridge::OnOfflinePageDownloadItemUpdated(
-    const OfflinePageItem& item) {
+void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -129,8 +129,15 @@ void OfflinePageDownloadBridge::OnOfflinePageDownloadItemUpdated(
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jobject>& j_profile) {
-  return reinterpret_cast<jlong>(new OfflinePageDownloadBridge(
-      env, obj, ProfileAndroid::FromProfileAndroid(j_profile)));
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(profile);
+
+  DownloadUIAdapter* adapter =
+      DownloadUIAdapter::FromOfflinePageModel(offline_page_model);
+
+  return reinterpret_cast<jlong>(
+      new OfflinePageDownloadBridge(env, obj, adapter));
 }
 
 }  // namespace android

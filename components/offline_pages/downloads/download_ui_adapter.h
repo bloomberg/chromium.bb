@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_types.h"
@@ -26,7 +27,8 @@ typedef
 // UI components if needed. It manages the cache of DownloadUIItems, so after
 // initial load the UI components can synchronously pull the whoel list or any
 // item by its guid.
-class DownloadUIAdapter : public OfflinePageModel::Observer {
+class DownloadUIAdapter : public OfflinePageModel::Observer,
+                          public base::SupportsUserData::Data {
  public:
   // Observer, normally implemented by UI or a Bridge.
   class Observer {
@@ -53,6 +55,9 @@ class DownloadUIAdapter : public OfflinePageModel::Observer {
 
   explicit DownloadUIAdapter(OfflinePageModel* model);
   ~DownloadUIAdapter() override;
+
+  static DownloadUIAdapter* FromOfflinePageModel(
+      OfflinePageModel* offline_page_model);
 
   // This adapter is potentially shared by UI elements, each of which adds
   // itself as an observer.
