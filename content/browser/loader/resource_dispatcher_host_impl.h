@@ -33,7 +33,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
@@ -59,7 +58,6 @@ namespace content {
 class AppCacheService;
 class AsyncRevalidationManager;
 class CertStore;
-class FrameTree;
 class LoaderDelegate;
 class NavigationURLLoaderImplCore;
 class RenderFrameHostImpl;
@@ -75,22 +73,6 @@ struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
-
-// This class is responsible for notifying the IO thread (specifically, the
-// ResourceDispatcherHostImpl) of frame events. It has an interace for callers
-// to use and also sends notifications on WebContentsObserver events. All
-// methods (static or class) will be called from the UI thread and post to the
-// IO thread.
-// TODO(csharrison): Add methods tracking visibility and audio changes, to
-// propogate to the ResourceScheduler.
-class LoaderIOThreadNotifier : public WebContentsObserver {
- public:
-  explicit LoaderIOThreadNotifier(WebContents* web_contents);
-  ~LoaderIOThreadNotifier() override;
-
-  // content::WebContentsObserver:
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-};
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
@@ -308,8 +290,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // transferred. The LoaderDelegate should be interacted with on the IO thread.
   void SetLoaderDelegate(LoaderDelegate* loader_delegate);
 
+  void OnRenderFrameDeleted(const GlobalFrameRoutingId& global_routing_id);
+
  private:
-  friend class LoaderIOThreadNotifier;
   friend class ResourceDispatcherHostTest;
 
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -359,8 +342,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
-
-  void OnRenderFrameDeleted(const GlobalFrameRoutingId& global_routing_id);
 
   // Helper function for regular and download requests.
   void BeginRequestInternal(std::unique_ptr<net::URLRequest> request,

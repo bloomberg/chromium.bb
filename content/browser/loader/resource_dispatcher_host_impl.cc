@@ -493,19 +493,6 @@ void NotifyForEachFrameFromUI(
 
 }  // namespace
 
-LoaderIOThreadNotifier::LoaderIOThreadNotifier(WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
-
-LoaderIOThreadNotifier::~LoaderIOThreadNotifier() {}
-
-void LoaderIOThreadNotifier::RenderFrameDeleted(
-    RenderFrameHost* render_frame_host) {
-  NotifyForRouteFromUI(
-      static_cast<RenderFrameHostImpl*>(render_frame_host)
-          ->GetGlobalFrameRoutingId(),
-      base::Bind(&ResourceDispatcherHostImpl::OnRenderFrameDeleted));
-}
-
 // static
 ResourceDispatcherHost* ResourceDispatcherHost::Get() {
   return g_resource_dispatcher_host;
@@ -1826,11 +1813,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false);                                  // initiated_in_secure_context
 }
 
-void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
-    const GlobalFrameRoutingId& global_routing_id) {
-  CancelRequestsForRoute(global_routing_id);
-}
-
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
                                                          int route_id) {
   scheduler_->OnClientCreated(child_id, route_id);
@@ -2292,6 +2274,11 @@ void ResourceDispatcherHostImpl::EnableStaleWhileRevalidateForTesting() {
 void ResourceDispatcherHostImpl::SetLoaderDelegate(
     LoaderDelegate* loader_delegate) {
   loader_delegate_ = loader_delegate;
+}
+
+void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
+    const GlobalFrameRoutingId& global_routing_id) {
+  CancelRequestsForRoute(global_routing_id);
 }
 
 // static

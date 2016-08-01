@@ -927,6 +927,8 @@
       'browser/loader/layered_resource_handler.cc',
       'browser/loader/layered_resource_handler.h',
       'browser/loader/loader_delegate.h',
+      'browser/loader/loader_io_thread_notifier.cc',
+      'browser/loader/loader_io_thread_notifier.h',
       'browser/loader/mime_type_resource_handler.cc',
       'browser/loader/mime_type_resource_handler.h',
       'browser/loader/navigation_resource_handler.cc',
