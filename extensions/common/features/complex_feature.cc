@@ -6,11 +6,9 @@
 
 namespace extensions {
 
-ComplexFeature::ComplexFeature(std::vector<Feature*>* features) {
+ComplexFeature::ComplexFeature(std::unique_ptr<FeatureList> features) {
   DCHECK_GT(features->size(), 0UL);
-  for (Feature* f : *features)
-    features_.push_back(std::unique_ptr<Feature>(f));
-  features->clear();
+  features_.swap(*features);
   no_parent_ = features_[0]->no_parent();
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)

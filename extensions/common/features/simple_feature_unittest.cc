@@ -881,10 +881,11 @@ TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
     feature2->channel_.reset(
         new version_info::Channel(version_info::Channel::BETA));
     feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
-    std::vector<Feature*> list;
-    list.push_back(feature1.release());
-    list.push_back(feature2.release());
-    complex_feature.reset(new ComplexFeature(&list));
+    std::unique_ptr<ComplexFeature::FeatureList> list(
+        new ComplexFeature::FeatureList());
+    list->push_back(std::move(feature1));
+    list->push_back(std::move(feature2));
+    complex_feature.reset(new ComplexFeature(std::move(list)));
   }
 
   Feature* feature = static_cast<Feature*>(complex_feature.get());
@@ -935,10 +936,11 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
     feature2->channel_.reset(
         new version_info::Channel(version_info::Channel::STABLE));
     feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
-    std::vector<Feature*> list;
-    list.push_back(feature1.release());
-    list.push_back(feature2.release());
-    complex_feature.reset(new ComplexFeature(&list));
+    std::unique_ptr<ComplexFeature::FeatureList> list(
+        new ComplexFeature::FeatureList());
+    list->push_back(std::move(feature1));
+    list->push_back(std::move(feature2));
+    complex_feature.reset(new ComplexFeature(std::move(list)));
   }
 
   Feature* feature = static_cast<Feature*>(complex_feature.get());

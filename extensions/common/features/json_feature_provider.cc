@@ -116,7 +116,8 @@ JSONFeatureProvider::JSONFeatureProvider(const base::DictionaryValue& root,
           static_cast<const base::ListValue*>(&iter.value());
       CHECK_GT(list->GetSize(), 0UL);
 
-      std::vector<Feature*> features;
+      std::unique_ptr<ComplexFeature::FeatureList> features(
+          new ComplexFeature::FeatureList());
 
       // Parse and add all SimpleFeatures from the list.
       for (const auto& entry : *list) {
@@ -130,13 +131,14 @@ JSONFeatureProvider::JSONFeatureProvider(const base::DictionaryValue& root,
         if (!ParseFeature(dict, iter.key(), feature.get()))
           continue;
 
-        features.push_back(feature.release());
+        features->push_back(std::move(feature));
       }
 
-      std::unique_ptr<ComplexFeature> feature(new ComplexFeature(&features));
+      std::unique_ptr<ComplexFeature> feature(
+          new ComplexFeature(std::move(features)));
       feature->set_name(iter.key());
 
-      AddFeature(iter.key(), feature.release());
+      AddFeature(iter.key(), std::move(feature));
     } else {
       LOG(ERROR) << iter.key() << ": Feature description must be dictionary or"
                  << " list of dictionaries.";

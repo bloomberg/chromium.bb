@@ -23,8 +23,9 @@ namespace extensions {
 // available, but not if only some combination of Features is available.
 class ComplexFeature : public Feature {
  public:
-  // Takes ownership of Feature*s contained in |features|.
-  explicit ComplexFeature(std::vector<Feature*>* features);
+  using FeatureList = std::vector<std::unique_ptr<Feature>>;
+
+  explicit ComplexFeature(std::unique_ptr<FeatureList> features);
   ~ComplexFeature() override;
 
   // extensions::Feature:
@@ -49,7 +50,6 @@ class ComplexFeature : public Feature {
  private:
   FRIEND_TEST_ALL_PREFIXES(FeaturesGenerationTest, FeaturesTest);
 
-  using FeatureList = std::vector<std::unique_ptr<Feature>>;
   FeatureList features_;
 
   DISALLOW_COPY_AND_ASSIGN(ComplexFeature);
