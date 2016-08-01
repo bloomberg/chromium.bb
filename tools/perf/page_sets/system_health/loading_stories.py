@@ -122,7 +122,7 @@ class LoadCnnStory(_LoadingStory):
   URL = 'http://edition.cnn.com'
 
 
-class LoadFacebookStory(_LoadingStory):
+class LoadFlipboardStory(_LoadingStory):
   NAME = 'load:news:flipboard'
   URL = 'https://flipboard.com/explore'
 
