@@ -6206,6 +6206,29 @@ TEST_F(SpdyNetworkTransactionTest, LargeResponseHeader) {
   ASSERT_TRUE(out.response_info.headers->HasHeaderValue(kKey, kValue));
 }
 
+// End of line delimiter is forbidden according to RFC 7230 Section 3.2.
+TEST_F(SpdyNetworkTransactionTest, CRLFInHeaderValue) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(rst, 2)};
+
+  const char* response_headers[] = {"folded", "foo\r\nbar"};
+  SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(response_headers, 1, 1));
+  MockRead reads[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), nullptr);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+
+  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+}
+
 class SpdyNetworkTransactionTLSUsageCheckTest
     : public SpdyNetworkTransactionTest {
  protected:

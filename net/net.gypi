@@ -1778,6 +1778,7 @@
       'spdy/bidirectional_stream_spdy_impl_unittest.cc',
       'spdy/buffered_spdy_framer_unittest.cc',
       'spdy/fuzzing/hpack_fuzz_util_test.cc',
+      'spdy/header_coalescer_test.cc',
       'spdy/hpack/hpack_decoder_test.cc',
       'spdy/hpack/hpack_encoder_test.cc',
       'spdy/hpack/hpack_entry_test.cc',
