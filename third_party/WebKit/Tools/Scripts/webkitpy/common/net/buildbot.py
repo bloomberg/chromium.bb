@@ -41,7 +41,7 @@ RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives
 _log = get_logger(__file__)
 
 
-class Build(collections.namedtuple('TryJob', ('builder_name', 'build_number'))):
+class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
     """Represents a combination of builder and build number.
 
     If build number is None, this represents the latest build
