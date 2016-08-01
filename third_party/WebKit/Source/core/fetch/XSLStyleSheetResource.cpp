@@ -77,7 +77,7 @@ void XSLStyleSheetResource::didAddClient(ResourceClient* c)
     ASSERT(StyleSheetResourceClient::isExpectedType(c));
     Resource::didAddClient(c);
     if (!isLoading())
-        static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), response().url(), m_sheet);
+        static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
 }
 
 void XSLStyleSheetResource::checkNotify()
@@ -87,7 +87,7 @@ void XSLStyleSheetResource::checkNotify()
 
     ResourceClientWalker<StyleSheetResourceClient> w(clients());
     while (StyleSheetResourceClient* c = w.next())
-        c->setXSLStyleSheet(m_resourceRequest.url(), response().url(), m_sheet);
+        c->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
 }
 
 } // namespace blink

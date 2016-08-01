@@ -39,6 +39,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -294,8 +295,7 @@ void Resource::ResourceCallback::runTask()
 }
 
 Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
-    : m_resourceRequest(request)
-    , m_loadFinishTime(0)
+    : m_loadFinishTime(0)
     , m_identifier(0)
     , m_encodedSize(0)
     , m_decodedSize(0)
@@ -312,6 +312,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_options(options)
     , m_responseTimestamp(currentTime())
     , m_cancelTimer(this, &Resource::cancelTimerFired)
+    , m_resourceRequest(request)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
@@ -898,6 +899,16 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
 String Resource::getMemoryDumpName() const
 {
     return String::format("web_cache/%s_resources/%ld", resourceTypeToString(getType(), options().initiatorInfo), m_identifier);
+}
+
+void Resource::setCachePolicyBypassingCache()
+{
+    m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
+}
+
+void Resource::setLoFiStateOff()
+{
+    m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
 }
 
 void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)

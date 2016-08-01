@@ -402,8 +402,8 @@ void ImageResource::updateImage(bool allDataReceived)
     if (!m_image || m_image->isNull()) {
         if (!errorOccurred())
             setStatus(DecodeError);
-        if (!allDataReceived && m_loader)
-            m_loader->didFinishLoading(nullptr, monotonicallyIncreasingTime(), encodedSize());
+        if (!allDataReceived && loader())
+            loader()->didFinishLoading(nullptr, monotonicallyIncreasingTime(), encodedSize());
         clear();
         memoryCache()->remove(this);
     }
@@ -538,14 +538,14 @@ void ImageResource::updateImageAnimationPolicy()
 
 void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
 {
-    if (m_resourceRequest.loFiState() != WebURLRequest::LoFiOn)
+    if (resourceRequest().loFiState() != WebURLRequest::LoFiOn)
         return;
     if (isLoaded() && !response().httpHeaderField("chrome-proxy").contains("q=low"))
         return;
-    m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
-    m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
+    setCachePolicyBypassingCache();
+    setLoFiStateOff();
     if (isLoading())
-        m_loader->cancel();
+        loader()->cancel();
     clear();
     notifyObservers();
 
@@ -578,8 +578,8 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
         if (!errorOccurred())
             setStatus(Cached);
         checkNotify();
-        if (m_loader)
-            m_loader->didFinishLoadingFirstPartInMultipart();
+        if (loader())
+            loader()->didFinishLoadingFirstPartInMultipart();
     }
 }
 
