@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.Manifest;
-import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -28,14 +27,11 @@ public class LocationSettings {
 
     private static LocationSettings sInstance;
 
-    protected final Context mContext;
-
     /**
      * Don't use this; use getInstance() instead. This should be used only by the Application inside
      * of createLocationSettings().
      */
-    protected LocationSettings(Context context) {
-        mContext = context;
+    protected LocationSettings() {
     }
 
     /**
@@ -58,12 +54,11 @@ public class LocationSettings {
         if (cvc == null) return false;
         WindowAndroid windowAndroid = cvc.getWindowAndroid();
         if (windowAndroid == null) return false;
-        Context context = windowAndroid.getApplicationContext();
 
         LocationUtils locationUtils = LocationUtils.getInstance();
-        if (!locationUtils.isSystemLocationSettingEnabled(context)) return false;
+        if (!locationUtils.isSystemLocationSettingEnabled()) return false;
 
-        return locationUtils.hasAndroidLocationPermission(context)
+        return locationUtils.hasAndroidLocationPermission()
                 || windowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
@@ -72,7 +67,7 @@ public class LocationSettings {
      */
     public boolean areAllLocationSettingsEnabled() {
         return isChromeLocationSettingEnabled()
-                && LocationUtils.getInstance().isSystemLocationSettingEnabled(mContext);
+                && LocationUtils.getInstance().isSystemLocationSettingEnabled();
     }
 
     /**

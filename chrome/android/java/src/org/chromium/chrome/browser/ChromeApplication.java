@@ -521,7 +521,7 @@ public class ChromeApplication extends ContentApplication {
         // Using an anonymous subclass as the constructor is protected.
         // This is done to deter instantiation of LocationSettings elsewhere without using the
         // getInstance() helper method.
-        return new LocationSettings(this){};
+        return new LocationSettings(){};
     }
 
     /**

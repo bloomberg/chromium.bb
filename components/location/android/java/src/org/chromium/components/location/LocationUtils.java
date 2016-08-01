@@ -13,6 +13,7 @@ import android.os.Process;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -46,7 +47,8 @@ public class LocationUtils {
         return sInstance;
     }
 
-    private boolean hasPermission(Context context, String name) {
+    private boolean hasPermission(String name) {
+        Context context = ContextUtils.getApplicationContext();
         return context.checkPermission(name, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }
@@ -57,16 +59,17 @@ public class LocationUtils {
      * Check both hasAndroidLocationPermission() and isSystemLocationSettingEnabled() to determine
      * if Chromium's location requests will return results.
      */
-    public boolean hasAndroidLocationPermission(Context context) {
-        return hasPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                || hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+    public boolean hasAndroidLocationPermission() {
+        return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     /**
      * Returns whether location services are enabled system-wide, i.e. whether any application is
      * able to access location.
      */
-    public boolean isSystemLocationSettingEnabled(Context context) {
+    public boolean isSystemLocationSettingEnabled() {
+        Context context = ContextUtils.getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             return Settings.Secure.getInt(context.getContentResolver(),
                            Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF)
@@ -75,6 +78,11 @@ public class LocationUtils {
             return !TextUtils.isEmpty(Settings.Secure.getString(
                     context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED));
         }
+    }
+
+    // TODO(cco3): Remove when no longer needed downstream.
+    public boolean isSystemLocationSettingEnabled(Context context) {
+        return isSystemLocationSettingEnabled();
     }
 
     /**

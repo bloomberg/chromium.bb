@@ -209,13 +209,9 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
      * are on.
      */
     private boolean canScan() {
-        Context context = mAdapter.getContext();
-
-        boolean havePermission = LocationUtils.getInstance().hasAndroidLocationPermission(context);
-        boolean locationServicesOn =
-                LocationUtils.getInstance().isSystemLocationSettingEnabled(context);
-
-        return havePermission && locationServicesOn;
+        LocationUtils locationUtils = LocationUtils.getInstance();
+        return locationUtils.hasAndroidLocationPermission()
+                && locationUtils.isSystemLocationSettingEnabled();
     }
 
     private void registerBroadcastReceiver() {

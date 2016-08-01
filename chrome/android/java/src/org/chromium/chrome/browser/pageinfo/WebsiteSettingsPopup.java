@@ -634,7 +634,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             // permission_intent_override or permission_type.
             LocationUtils locationUtils = LocationUtils.getInstance();
             if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
-                    && !locationUtils.isSystemLocationSettingEnabled(mContext)) {
+                    && !locationUtils.isSystemLocationSettingEnabled()) {
                 warningTextResource = R.string.page_info_android_location_blocked;
                 permissionRow.setTag(R.id.permission_intent_override,
                         locationUtils.getSystemLocationSettingsIntent());

@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -28,8 +27,7 @@ public class LocationCategory extends SiteSettingsCategory {
 
     @Override
     protected boolean enabledGlobally() {
-        return LocationUtils.getInstance().isSystemLocationSettingEnabled(
-                ContextUtils.getApplicationContext());
+        return LocationUtils.getInstance().isSystemLocationSettingEnabled();
     }
 
     @Override

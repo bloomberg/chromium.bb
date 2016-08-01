@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util.browser;
 
-import android.content.Context;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.location.LocationUtils;
 
@@ -26,7 +24,7 @@ public class LocationSettingsTestUtil {
                     public LocationUtils create() {
                         return new LocationUtils() {
                             @Override
-                            public boolean isSystemLocationSettingEnabled(Context context) {
+                            public boolean isSystemLocationSettingEnabled() {
                                 return enabled;
                             }
                         };

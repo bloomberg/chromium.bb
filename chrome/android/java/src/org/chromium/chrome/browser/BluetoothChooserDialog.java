@@ -200,10 +200,9 @@ public class BluetoothChooserDialog
 
     // Returns true if Location Services is on and Chrome has permission to see the user's location.
     private boolean checkLocationServicesAndPermission() {
-        final boolean havePermission =
-                LocationUtils.getInstance().hasAndroidLocationPermission(mActivity);
+        final boolean havePermission = LocationUtils.getInstance().hasAndroidLocationPermission();
         final boolean locationServicesOn =
-                LocationUtils.getInstance().isSystemLocationSettingEnabled(mActivity);
+                LocationUtils.getInstance().isSystemLocationSettingEnabled();
 
         if (!havePermission
                 && !mWindowAndroid.canRequestPermission(
@@ -323,8 +322,7 @@ public class BluetoothChooserDialog
     @CalledByNative
     private static BluetoothChooserDialog create(WindowAndroid windowAndroid, String origin,
             int securityLevel, long nativeBluetoothChooserDialogPtr) {
-        if (!LocationUtils.getInstance().hasAndroidLocationPermission(
-                    windowAndroid.getActivity().get())
+        if (!LocationUtils.getInstance().hasAndroidLocationPermission()
                 && !windowAndroid.canRequestPermission(
                            Manifest.permission.ACCESS_COARSE_LOCATION)) {
             // If we can't even ask for enough permission to scan for Bluetooth devices, don't open

@@ -102,8 +102,8 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         boolean isDataConnectionActive = Utils.isDataConnectionActive(mContext);
         int bluetoothStatus = Utils.getBluetoothEnabledStatus(mContext);
         LocationUtils locationUtils = LocationUtils.getInstance();
-        boolean isLocationServicesEnabled = locationUtils.isSystemLocationSettingEnabled(mContext);
-        boolean isLocationPermissionGranted = locationUtils.hasAndroidLocationPermission(mContext);
+        boolean isLocationServicesEnabled = locationUtils.isSystemLocationSettingEnabled();
+        boolean isLocationPermissionGranted = locationUtils.hasAndroidLocationPermission();
         boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled();
         boolean isOnboarding = PhysicalWeb.isOnboarding();
 

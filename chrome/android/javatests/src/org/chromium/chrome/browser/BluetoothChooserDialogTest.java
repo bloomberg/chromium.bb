@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
@@ -393,14 +392,14 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         public boolean mLocationGranted = false;
 
         @Override
-        public boolean hasAndroidLocationPermission(Context context) {
+        public boolean hasAndroidLocationPermission() {
             return mLocationGranted;
         }
 
         public boolean mSystemLocationSettingsEnabled = true;
 
         @Override
-        public boolean isSystemLocationSettingEnabled(Context context) {
+        public boolean isSystemLocationSettingEnabled() {
             return mSystemLocationSettingsEnabled;
         }
     }

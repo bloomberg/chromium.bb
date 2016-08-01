@@ -54,12 +54,12 @@ class Fakes {
             public LocationUtils create() {
                 return new LocationUtils() {
                     @Override
-                    public boolean hasAndroidLocationPermission(Context context) {
+                    public boolean hasAndroidLocationPermission() {
                         return hasPermission;
                     }
 
                     @Override
-                    public boolean isSystemLocationSettingEnabled(Context context) {
+                    public boolean isSystemLocationSettingEnabled() {
                         return isEnabled;
                     }
                 };

@@ -229,9 +229,9 @@ public class PhysicalWebUma {
     public static void recordPhysicalWebState(Context context, String actionName) {
         LocationUtils locationUtils = LocationUtils.getInstance();
         handleEnum(context, createStateString(LOCATION_SERVICES, actionName),
-                locationUtils.isSystemLocationSettingEnabled(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+                locationUtils.isSystemLocationSettingEnabled() ? 1 : 0, BOOLEAN_BOUNDARY);
         handleEnum(context, createStateString(LOCATION_PERMISSION, actionName),
-                locationUtils.hasAndroidLocationPermission(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+                locationUtils.hasAndroidLocationPermission() ? 1 : 0, BOOLEAN_BOUNDARY);
         handleEnum(context, createStateString(BLUETOOTH, actionName),
                 Utils.getBluetoothEnabledStatus(context), TRISTATE_BOUNDARY);
         handleEnum(context, createStateString(DATA_CONNECTION, actionName),

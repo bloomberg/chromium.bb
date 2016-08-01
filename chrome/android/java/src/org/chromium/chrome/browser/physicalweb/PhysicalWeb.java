@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 
@@ -60,9 +59,8 @@ public class PhysicalWeb {
     public static void startPhysicalWeb() {
         // Only subscribe to Nearby if we have the location permission.
         LocationUtils locationUtils = LocationUtils.getInstance();
-        Context context = ContextUtils.getApplicationContext();
-        if (locationUtils.hasAndroidLocationPermission(context)
-                && locationUtils.isSystemLocationSettingEnabled(context)) {
+        if (locationUtils.hasAndroidLocationPermission()
+                && locationUtils.isSystemLocationSettingEnabled()) {
             new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE, new Runnable() {
                 @Override
                 public void run() {

@@ -205,7 +205,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         if (selected) {
             ForegroundColorSpan linkSpan = new ForegroundColorSpan(
                     ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
-            if (LocationUtils.getInstance().isSystemLocationSettingEnabled(mContext)) {
+            if (LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
                 String message = mContext.getString(
                         locationEnabled(position, true)
                         ? R.string.search_engine_location_allowed
@@ -271,7 +271,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     }
 
     private void onLocationLinkClicked() {
-        if (!LocationUtils.getInstance().isSystemLocationSettingEnabled(mContext)) {
+        if (!LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
             Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
