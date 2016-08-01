@@ -5,6 +5,7 @@
 #include "chrome/browser/net/predictor_tab_helper.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -53,10 +54,22 @@ void PredictorTabHelper::DidStartNavigationToPendingEntry(
   predicted_from_pending_entry_ = true;
 }
 
+void PredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  Predictor* predictor = profile->GetNetworkPredictor();
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return;
+#endif
+  if (predictor)
+    predictor->SaveStateForNextStartup();
+}
+
 void PredictorTabHelper::PreconnectUrl(const GURL& url) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  chrome_browser_net::Predictor* predictor = profile->GetNetworkPredictor();
+  Predictor* predictor(profile->GetNetworkPredictor());
   if (predictor && url.SchemeIsHTTPOrHTTPS())
     predictor->PreconnectUrlAndSubresources(url, GURL());
 }

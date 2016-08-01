@@ -47,7 +47,6 @@ class ProfileIOData;
 
 namespace base {
 class ListValue;
-class WaitableEvent;
 }
 
 namespace net {
@@ -172,9 +171,15 @@ class Predictor {
 
   virtual void ShutdownOnUIThread();
 
+  void UpdatePrefsOnUIThread(std::unique_ptr<base::ListValue> startup_list,
+                             std::unique_ptr<base::ListValue> referral_list);
+
   // ------------- End UI thread methods.
 
   // ------------- Start IO thread methods.
+
+  void WriteDnsPrefetchState(base::ListValue* startup_list,
+                             base::ListValue* referral_list);
 
   // Cancel pending requests and prevent new ones from being made.
   void Shutdown();
@@ -238,13 +243,8 @@ class Predictor {
   void DnsPrefetchMotivatedList(const std::vector<GURL>& urls,
                                 UrlInfo::ResolutionMotivation motivation);
 
-  // May be called from either the IO or UI thread and will PostTask
-  // to the IO thread if necessary.
+  // Called from the UI thread in response to the load event.
   void SaveStateForNextStartup();
-
-  void SaveDnsPrefetchStateForNextStartup(base::ListValue* startup_list,
-                                          base::ListValue* referral_list,
-                                          base::WaitableEvent* completion);
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
@@ -540,7 +540,17 @@ class Predictor {
 
   std::unique_ptr<TimedCache> timed_cache_;
 
-  std::unique_ptr<base::WeakPtrFactory<Predictor>> weak_factory_;
+  // TODO(csharrison): It is not great that two weak pointer factories are
+  // needed in this class. Let's split it into two classes that live on each
+  // thread.
+  //
+  // Weak factory for weak pointers that should be dereferenced on the IO
+  // thread.
+  std::unique_ptr<base::WeakPtrFactory<Predictor>> io_weak_factory_;
+
+  // Weak factory for weak pointers that should be dereferenced on the UI
+  // thread.
+  std::unique_ptr<base::WeakPtrFactory<Predictor>> ui_weak_factory_;
 
   // Protects |preconnect_enabled_|.
   mutable base::Lock preconnect_enabled_lock_;

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/location.h"
@@ -22,7 +23,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -111,7 +111,8 @@ Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
       referrers_(kMaxReferrers),
       observer_(nullptr),
       timed_cache_(new TimedCache(base::TimeDelta::FromSeconds(
-          kMaxUnusedSocketLifetimeSecondsWithoutAGet))) {
+          kMaxUnusedSocketLifetimeSecondsWithoutAGet))),
+      ui_weak_factory_(new base::WeakPtrFactory<Predictor>(this)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -131,8 +132,10 @@ Predictor* Predictor::CreatePredictor(bool preconnect_enabled,
 
 void Predictor::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kDnsPrefetchingStartupList);
-  registry->RegisterListPref(prefs::kDnsPrefetchingHostReferralList);
+  registry->RegisterListPref(prefs::kDnsPrefetchingStartupList,
+                             PrefRegistry::LOSSY_PREF);
+  registry->RegisterListPref(prefs::kDnsPrefetchingHostReferralList,
+                             PrefRegistry::LOSSY_PREF);
 }
 
 // --------------------- Start UI methods. ------------------------------------
@@ -310,9 +313,9 @@ std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
 
 void Predictor::DiscardAllResultsAndClearPrefsOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&Predictor::DiscardAllResults, weak_factory_->GetWeakPtr()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&Predictor::DiscardAllResults,
+                                     io_weak_factory_->GetWeakPtr()));
   ClearPrefsOnUIThread();
 }
 
@@ -334,6 +337,7 @@ void Predictor::set_max_parallel_resolves(size_t max_parallel_resolves) {
 
 void Predictor::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui_weak_factory_->InvalidateWeakPtrs();
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -535,7 +539,7 @@ void Predictor::GetHtmlInfo(std::string* output) {
 // backwards here so that adding items in order "Just Works" when deserializing.
 void Predictor::SerializeReferrers(base::ListValue* referral_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  referral_list->Clear();
+  DCHECK(referral_list->empty());
   referral_list->AppendInteger(kPredictorReferrerVersion);
   for (Referrers::const_reverse_iterator it = referrers_.rbegin();
        it != referrers_.rend(); ++it) {
@@ -604,11 +608,8 @@ void Predictor::FinalizeInitializationOnIOThread(
   proxy_service_ = context->proxy_service();
 
   // base::WeakPtrFactory instances need to be created and destroyed
-  // on the same thread. The predictor lives on the IO thread and will die
-  // from there so now that we're on the IO thread we need to properly
-  // initialize the base::WeakPtrFactory.
-  // TODO(groby): Check if WeakPtrFactory has the same constraint.
-  weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
+  // on the same thread. Initialize the IO thread weak factory now.
+  io_weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
 
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
@@ -676,68 +677,47 @@ void Predictor::DnsPrefetchMotivatedList(
 // Functions to handle saving of hostnames from one session to the next, to
 // expedite startup times.
 
-static void SaveDnsPrefetchStateForNextStartupOnIOThread(
-    base::ListValue* startup_list,
-    base::ListValue* referral_list,
-    base::WaitableEvent* completion,
-    Predictor* predictor) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (nullptr == predictor) {
-    completion->Signal();
-    return;
-  }
-  predictor->SaveDnsPrefetchStateForNextStartup(startup_list, referral_list,
-                                                completion);
-}
-
 void Predictor::SaveStateForNextStartup() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!predictor_enabled_)
     return;
   if (!CanPreresolveAndPreconnect())
     return;
 
-  base::WaitableEvent completion(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  std::unique_ptr<base::ListValue> startup_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> referral_list(new base::ListValue);
 
-  ListPrefUpdate update_startup_list(user_prefs_,
-                                     prefs::kDnsPrefetchingStartupList);
-  ListPrefUpdate update_referral_list(user_prefs_,
-                                      prefs::kDnsPrefetchingHostReferralList);
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    SaveDnsPrefetchStateForNextStartupOnIOThread(update_startup_list.Get(),
-                                                 update_referral_list.Get(),
-                                                 &completion, this);
-  } else {
-    bool posted = BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SaveDnsPrefetchStateForNextStartupOnIOThread,
-                   update_startup_list.Get(), update_referral_list.Get(),
-                   &completion, this));
+  // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
+  // will be passed to the reply task.
+  base::ListValue* startup_list_raw = startup_list.get();
+  base::ListValue* referral_list_raw = referral_list.get();
 
-    // TODO(jar): Synchronous waiting for the IO thread is a potential source
-    // to deadlocks and should be investigated. See http://crbug.com/78451.
-    DCHECK(posted);
-    if (posted) {
-      // http://crbug.com/124954
-      base::ThreadRestrictions::ScopedAllowWait allow_wait;
-      completion.Wait();
-    }
-  }
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Predictor::WriteDnsPrefetchState,
+                 io_weak_factory_->GetWeakPtr(), startup_list_raw,
+                 referral_list_raw),
+      base::Bind(&Predictor::UpdatePrefsOnUIThread,
+                 ui_weak_factory_->GetWeakPtr(),
+                 base::Passed(std::move(startup_list)),
+                 base::Passed(std::move(referral_list))));
 }
 
-void Predictor::SaveDnsPrefetchStateForNextStartup(
-    base::ListValue* startup_list,
-    base::ListValue* referral_list,
-    base::WaitableEvent* completion) {
+void Predictor::UpdatePrefsOnUIThread(
+    std::unique_ptr<base::ListValue> startup_list,
+    std::unique_ptr<base::ListValue> referral_list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  user_prefs_->Set(prefs::kDnsPrefetchingStartupList, *startup_list);
+  user_prefs_->Set(prefs::kDnsPrefetchingHostReferralList, *referral_list);
+}
+
+void Predictor::WriteDnsPrefetchState(base::ListValue* startup_list,
+                                      base::ListValue* referral_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (initial_observer_.get())
     initial_observer_->GetInitialDnsResolutionList(startup_list);
 
   SerializeReferrers(referral_list);
-
-  completion->Signal();
 }
 
 void Predictor::PreconnectUrl(const GURL& url,
@@ -1032,7 +1012,7 @@ void Predictor::StartSomeQueuedResolutions() {
     int status =
         content::PreresolveUrl(profile_io_data_->GetResourceContext(), url,
                                base::Bind(&Predictor::OnLookupFinished,
-                                          weak_factory_->GetWeakPtr(), url));
+                                          io_weak_factory_->GetWeakPtr(), url));
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
       num_pending_lookups_++;
@@ -1155,7 +1135,7 @@ void Predictor::InitialObserver::GetInitialDnsResolutionList(
     base::ListValue* startup_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(startup_list);
-  startup_list->Clear();
+  DCHECK(startup_list->empty());
   DCHECK_EQ(0u, startup_list->GetSize());
   startup_list->AppendInteger(kPredictorStartupFormatVersion);
   for (FirstNavigations::iterator it = first_navigations_.begin();

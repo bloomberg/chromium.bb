@@ -1359,6 +1359,9 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
   PrepareFrameSubresources(referring_url_);
   PrepareFrameSubresources(referring_url_);
   PrepareFrameSubresources(referring_url_);
+
+  // The onload event is required to persist prefs.
+  ui_test_utils::NavigateToURL(browser(), referring_url_);
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
@@ -1377,6 +1380,9 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PRE_ClearData) {
   // The target url will have a expected connection count of 2 after this call.
   InstallPredictorObserver(referring_url_, target_url_);
   LearnFromNavigation(referring_url_, target_url_);
+
+  // The onload event is required to persist prefs.
+  ui_test_utils::NavigateToURL(browser(), referring_url_);
 }
 
 // Ensure predictive data is cleared when the history is cleared.

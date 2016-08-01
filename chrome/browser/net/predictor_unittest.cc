@@ -153,7 +153,7 @@ TEST_F(PredictorTest, StartupShutdownTest) {
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
   Predictor predictor(true, true);
 
-  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(new base::ListValue);
   predictor.SerializeReferrers(referral_list.get());
   EXPECT_EQ(1U, referral_list->GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
@@ -385,10 +385,12 @@ TEST_F(PredictorTest, DiscardPredictorResults) {
   GURL host_2("http://test_2");
   predictor.LearnFromNavigation(host_1, host_2);
 
+  referral_list.Clear();
   predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(2U, referral_list.GetSize());
 
   predictor.DiscardAllResults();
+  referral_list.Clear();
   predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());
 

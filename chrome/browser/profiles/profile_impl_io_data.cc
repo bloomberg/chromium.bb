@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -119,12 +118,6 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->predictor_ != NULL) {
     // io_data_->predictor_ might be NULL if Init() was never called
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
-    bool save_prefs = true;
-#if defined(OS_CHROMEOS)
-    save_prefs = !chromeos::ProfileHelper::IsSigninProfile(profile_);
-#endif
-    if (save_prefs)
-      io_data_->predictor_->SaveStateForNextStartup();
     io_data_->predictor_->ShutdownOnUIThread();
   }
 
