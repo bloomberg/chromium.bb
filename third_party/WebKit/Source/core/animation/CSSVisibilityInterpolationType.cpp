@@ -95,7 +95,7 @@ private:
         return m_visibility == environment.state().parentStyle()->visibility();
     }
 
-    const double m_visibility;
+    const EVisibility m_visibility;
 };
 
 InterpolationValue CSSVisibilityInterpolationType::createVisibilityValue(EVisibility visibility) const
