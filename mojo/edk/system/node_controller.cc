@@ -1096,7 +1096,7 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
   if (!channel_handle.is_valid()) {
     node_->LostConnectionToNode(name);
 
-    DLOG(ERROR) << "Could not be introduced to peer " << name;
+    DVLOG(0) << "Could not be introduced to peer " << name;
     base::AutoLock lock(peers_lock_);
     pending_peer_messages_.erase(name);
     return;
