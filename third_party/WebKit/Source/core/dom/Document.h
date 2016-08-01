@@ -1007,9 +1007,8 @@ public:
     Document* templateDocumentHost() { return m_templateDocumentHost; }
 
     // TODO(thestig): Rename these and related functions, since we can call them
-    // for labels and input fields outside of forms as well.
+    // for controls outside of forms as well.
     void didAssociateFormControl(Element*);
-    void removeFormAssociation(Element*);
 
     void addConsoleMessage(ConsoleMessage*) final;
 

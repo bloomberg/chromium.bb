@@ -228,21 +228,4 @@ void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)
         HTMLElement::accessKeyAction(sendMouseEvents);
 }
 
-Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
-{
-    InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
-
-    // Trigger for elements outside of forms.
-    if (!formOwner() && insertionPoint->isConnected())
-        document().didAssociateFormControl(this);
-
-    return result;
-}
-
-void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
-{
-    HTMLElement::removedFrom(insertionPoint);
-    document().removeFormAssociation(this);
-}
-
 } // namespace blink

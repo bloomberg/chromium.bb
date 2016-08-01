@@ -47,9 +47,6 @@ private:
     bool isInteractiveContent() const override;
     void accessKeyAction(bool sendMouseEvents) override;
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
-
     // Overridden to update the hover/active state of the corresponding control.
     void setActive(bool = true) override;
     void setHovered(bool = true) override;

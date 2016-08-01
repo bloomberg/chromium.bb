@@ -285,7 +285,6 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
     setNeedsWillValidateCheck();
     HTMLElement::removedFrom(insertionPoint);
     FormAssociatedElement::removedFrom(insertionPoint);
-    document().removeFormAssociation(this);
 }
 
 void HTMLFormControlElement::willChangeForm()

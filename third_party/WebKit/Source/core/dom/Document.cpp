@@ -5747,10 +5747,6 @@ void Document::didAssociateFormControl(Element* element)
         m_didAssociateFormControlsTimer.startOneShot(0.3, BLINK_FROM_HERE);
 }
 
-void Document::removeFormAssociation(Element* element)
-{
-}
-
 void Document::didAssociateFormControlsTimerFired(TimerBase* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_didAssociateFormControlsTimer);
