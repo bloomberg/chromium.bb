@@ -136,6 +136,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void set_pending_commit(bool pending) { pending_commit_ = pending; }
   bool pending_commit() const { return pending_commit_; }
 
+  // Creates a WebBluetooth Service with a dummy InterfaceRequest.
+  WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();
+
  private:
   void SendNavigateWithParameters(int page_id,
                                   int nav_entry_id,

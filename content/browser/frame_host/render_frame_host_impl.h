@@ -807,8 +807,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
                                     bad_message::BadMessageReason reason);
 
-  // Creates a Web Bluetooth Service owned by the frame.
-  void CreateWebBluetoothService(
+  // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
+  // to it.
+  WebBluetoothServiceImpl* CreateWebBluetoothService(
       mojo::InterfaceRequest<blink::mojom::WebBluetoothService> request);
 
   // Deletes the Web Bluetooth Service owned by the frame.

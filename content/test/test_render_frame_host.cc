@@ -21,8 +21,10 @@
 #include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/base/page_transition_types.h"
@@ -426,6 +428,14 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
+}
+
+WebBluetoothServiceImpl*
+TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
+  WebBluetoothServiceImpl* service =
+      RenderFrameHostImpl::CreateWebBluetoothService(
+          blink::mojom::WebBluetoothServiceRequest());
+  return service;
 }
 
 int32_t TestRenderFrameHost::ComputeNextPageID() {

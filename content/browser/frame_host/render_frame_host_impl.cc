@@ -2104,9 +2104,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #endif
 
   if (enable_web_bluetooth) {
-    GetInterfaceRegistry()->AddInterface(
-        base::Bind(&RenderFrameHostImpl::CreateWebBluetoothService,
-                   base::Unretained(this)));
+    GetInterfaceRegistry()->AddInterface(base::Bind(
+        base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
+        base::Unretained(this)));
   }
 
 #if defined(MOJO_SHELL_CLIENT)
@@ -3018,7 +3018,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
-void RenderFrameHostImpl::CreateWebBluetoothService(
+WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
     blink::mojom::WebBluetoothServiceRequest request) {
   DCHECK(!web_bluetooth_service_);
   web_bluetooth_service_.reset(
@@ -3028,6 +3028,7 @@ void RenderFrameHostImpl::CreateWebBluetoothService(
   // handler after it's destroyed so it can't run after the RFHI is destroyed.
   web_bluetooth_service_->SetClientConnectionErrorHandler(base::Bind(
       &RenderFrameHostImpl::DeleteWebBluetoothService, base::Unretained(this)));
+  return web_bluetooth_service_.get();
 }
 
 void RenderFrameHostImpl::DeleteWebBluetoothService() {

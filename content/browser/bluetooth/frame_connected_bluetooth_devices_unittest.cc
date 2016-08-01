@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -37,6 +38,8 @@ constexpr char kDeviceId1[] = "1";
 constexpr char kDeviceAddress1[] = "1";
 constexpr char kDeviceName1[] = "Device1";
 
+}  // namespace
+
 class FrameConnectedBluetoothDevicesTest
     : public RenderViewHostImplTestHarness {
  public:
@@ -65,13 +68,27 @@ class FrameConnectedBluetoothDevicesTest
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    map0_.reset(new FrameConnectedBluetoothDevices(contents()->GetMainFrame()));
-    map1_.reset(new FrameConnectedBluetoothDevices(contents()->GetMainFrame()));
+
+    // Create subframe to simulate two maps on the same WebContents.
+    contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
+    TestRenderFrameHost* subframe =
+        contents()->GetMainFrame()->AppendChild("bluetooth_frame");
+    subframe->InitializeRenderFrameIfNeeded();
+
+    // Simulate two frames each connected to a bluetooth service.
+    service0_ =
+        contents()->GetMainFrame()->CreateWebBluetoothServiceForTesting();
+    map0_ = service0_->connected_devices_.get();
+
+    service1_ = subframe->CreateWebBluetoothServiceForTesting();
+    map1_ = service1_->connected_devices_.get();
   }
 
   void TearDown() override {
-    map1_.reset();
-    map0_.reset();
+    map1_ = nullptr;
+    service1_ = nullptr;
+    map0_ = nullptr;
+    service0_ = nullptr;
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -81,17 +98,28 @@ class FrameConnectedBluetoothDevicesTest
         new NiceMockBluetoothGattConnection(adapter_.get(), address));
   }
 
+  void ResetService0() {
+    service0_->ClearState();
+    map0_ = nullptr;
+  }
+
+  void ResetService1() {
+    service1_->ClearState();
+    map1_ = nullptr;
+  }
+
  protected:
-  std::unique_ptr<FrameConnectedBluetoothDevices> map0_;
-  std::unique_ptr<FrameConnectedBluetoothDevices> map1_;
+  FrameConnectedBluetoothDevices* map0_;
+  WebBluetoothServiceImpl* service0_;
+
+  FrameConnectedBluetoothDevices* map1_;
+  WebBluetoothServiceImpl* service1_;
 
  private:
   scoped_refptr<NiceMockBluetoothAdapter> adapter_;
   NiceMockBluetoothDevice device0_;
   NiceMockBluetoothDevice device1_;
 };
-
-}  // namespace
 
 TEST_F(FrameConnectedBluetoothDevicesTest, Insert_Once) {
   map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
@@ -330,7 +358,7 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleDevices) {
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
 
-  map0_.reset();
+  ResetService0();
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
@@ -344,12 +372,12 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleMaps) {
 
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
 
-  map0_.reset();
+  ResetService0();
 
   // WebContents should still be connected because of map1_.
   EXPECT_TRUE(contents()->IsConnectedToBluetoothDevice());
 
-  map1_.reset();
+  ResetService1();
 
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
@@ -359,9 +387,8 @@ TEST_F(FrameConnectedBluetoothDevicesTest,
   // Tests that we don't crash when FrameConnectedBluetoothDevices contains
   // at least one device, and it is destroyed while WebContentsImpl is being
   // destroyed.
-
-  // TODO(ortuno): Write test.
-  // http://crbug.com/615319
+  map0_->Insert(kDeviceId0, GetConnection(kDeviceAddress0));
+  DeleteContents();
 }
 
 }  // namespace content
