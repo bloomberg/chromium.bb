@@ -55,6 +55,18 @@ struct headless_output {
 	pixman_image_t *image;
 };
 
+static inline struct headless_output *
+to_headless_output(struct weston_output *base)
+{
+	return container_of(base, struct headless_output, base);
+}
+
+static inline struct headless_backend *
+to_headless_backend(struct weston_compositor *base)
+{
+	return container_of(base->backend, struct headless_backend, base);
+}
+
 static void
 headless_output_start_repaint_loop(struct weston_output *output)
 {
@@ -80,7 +92,7 @@ static int
 headless_output_repaint(struct weston_output *output_base,
 		       pixman_region32_t *damage)
 {
-	struct headless_output *output = (struct headless_output *) output_base;
+	struct headless_output *output = to_headless_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
 
 	ec->renderer->repaint_output(&output->base, damage);
@@ -96,9 +108,9 @@ headless_output_repaint(struct weston_output *output_base,
 static void
 headless_output_destroy(struct weston_output *output_base)
 {
-	struct headless_output *output = (struct headless_output *) output_base;
+	struct headless_output *output = to_headless_output(output_base);
 	struct headless_backend *b =
-			(struct headless_backend *) output->base.compositor->backend;
+			to_headless_backend(output->base.compositor);
 
 	wl_event_source_remove(output->finish_frame_timer);
 
@@ -185,7 +197,7 @@ headless_restore(struct weston_compositor *ec)
 static void
 headless_destroy(struct weston_compositor *ec)
 {
-	struct headless_backend *b = (struct headless_backend *) ec->backend;
+	struct headless_backend *b = to_headless_backend(ec);
 
 	weston_compositor_shutdown(ec);
 
