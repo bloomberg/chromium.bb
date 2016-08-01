@@ -393,6 +393,53 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   service.log_manager_.FinishCurrentLog();
 }
 
+TEST_F(MetricsServiceTest, RegisterSyntheticMultiGroupFieldTrial) {
+  TestMetricsServiceClient client;
+  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
+
+  // Register a synthetic trial TestTrial1 with groups A and B.
+  uint32_t trial_name_hash = HashName("TestTrial1");
+  std::vector<uint32_t> group_name_hashes = {HashName("A"), HashName("B")};
+  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
+                                                group_name_hashes);
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
+
+  service.log_manager_.BeginLoggingWithLog(std::unique_ptr<MetricsLog>(
+      new MetricsLog("clientID", 1, MetricsLog::INITIAL_STABILITY_LOG, &client,
+                     GetLocalState())));
+
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
+                                           &synthetic_trials);
+  EXPECT_EQ(2U, synthetic_trials.size());
+  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "A"));
+  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "B"));
+
+  // Change the group for the trial to a single group.
+  group_name_hashes = {HashName("X")};
+  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
+                                                group_name_hashes);
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
+
+  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
+                                           &synthetic_trials);
+  EXPECT_EQ(1U, synthetic_trials.size());
+  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "X"));
+
+  // Register a trial with no groups, which should effectively remove the trial.
+  group_name_hashes.clear();
+  service.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
+                                                group_name_hashes);
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
+
+  service.GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(),
+                                           &synthetic_trials);
+  service.log_manager_.FinishCurrentLog();
+}
+
 TEST_F(MetricsServiceTest,
        MetricsProviderOnRecordingDisabledCalledOnInitialStop) {
   TestMetricsServiceClient client;

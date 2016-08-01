@@ -1080,6 +1080,33 @@ void MetricsService::RegisterSyntheticFieldTrial(
   NotifySyntheticTrialObservers();
 }
 
+void MetricsService::RegisterSyntheticMultiGroupFieldTrial(
+    uint32_t trial_name_hash,
+    const std::vector<uint32_t>& group_name_hashes) {
+  auto has_same_trial_name =
+      [trial_name_hash](const variations::SyntheticTrialGroup& x) {
+        return x.id.name == trial_name_hash;
+      };
+  synthetic_trial_groups_.erase(
+      std::remove_if(synthetic_trial_groups_.begin(),
+                     synthetic_trial_groups_.end(), has_same_trial_name),
+      synthetic_trial_groups_.end());
+
+  if (group_name_hashes.empty())
+    return;
+
+  variations::SyntheticTrialGroup trial_group(trial_name_hash,
+                                              group_name_hashes[0]);
+  trial_group.start_time = base::TimeTicks::Now();
+  for (uint32_t group_name_hash : group_name_hashes) {
+    // Note: Adding the trial group will copy it, so this re-uses the same
+    // |trial_group| struct for convenience (e.g. so start_time's all match).
+    trial_group.id.group = group_name_hash;
+    synthetic_trial_groups_.push_back(trial_group);
+  }
+  NotifySyntheticTrialObservers();
+}
+
 void MetricsService::GetCurrentSyntheticFieldTrialsForTesting(
     std::vector<variations::ActiveGroupId>* synthetic_trials) {
   GetSyntheticFieldTrialsOlderThan(base::TimeTicks::Now(), synthetic_trials);

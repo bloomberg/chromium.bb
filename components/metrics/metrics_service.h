@@ -262,8 +262,17 @@ class MetricsService : public base::HistogramFlattener {
   // registered at a time for a given trial_name. Only the last group name that
   // is registered for a given trial name will be recorded. The values passed
   // in must not correspond to any real field trial in the code.
+  // Note: Should not be used to replace trials that were registered with
+  // RegisterMultiGroupSyntheticFieldTrial().
   void RegisterSyntheticFieldTrial(
       const variations::SyntheticTrialGroup& trial_group);
+
+  // Similar to RegisterSyntheticFieldTrial(), but registers a synthetic trial
+  // that has multiple active groups for a given trial name hash. Any previous
+  // groups registered for |trial_name_hash| will be replaced.
+  void RegisterSyntheticMultiGroupFieldTrial(
+      uint32_t trial_name_hash,
+      const std::vector<uint32_t>& group_name_hashes);
 
   // Calls into the client to initialize some system profile metrics.
   void StartInitTask();
@@ -485,6 +494,8 @@ class MetricsService : public base::HistogramFlattener {
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
+                           RegisterSyntheticMultiGroupFieldTrial);
 
   // Pointer used for obtaining data use pref updater callback on above layers.
   std::unique_ptr<DataUseTracker> data_use_tracker_;

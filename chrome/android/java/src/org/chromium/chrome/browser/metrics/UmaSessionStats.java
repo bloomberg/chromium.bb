@@ -201,8 +201,8 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
         updateMetricsServiceState();
     }
 
-    public static void registerExternalExperiment(int studyId, int experimentId) {
-        nativeRegisterExternalExperiment(studyId, experimentId);
+    public static void registerExternalExperiment(String studyName, int[] experimentIds) {
+        nativeRegisterExternalExperiment(studyName, experimentIds);
     }
 
     public static void registerSyntheticFieldTrial(String trialName, String groupName) {
@@ -214,8 +214,8 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
     private native void nativeUmaResumeSession(long nativeUmaSessionStats);
     private native void nativeUmaEndSession(long nativeUmaSessionStats);
     private static native void nativeLogRendererCrash();
-    private static native void nativeRegisterExternalExperiment(int studyId,
-                                                                int experimentId);
+    private static native void nativeRegisterExternalExperiment(
+            String studyName, int[] experimentIds);
     private static native void nativeRegisterSyntheticFieldTrial(
             String trialName, String groupName);
     private static native void nativeRecordMultiWindowSession(int areaPercent, int instanceCount);

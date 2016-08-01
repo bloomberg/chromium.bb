@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -73,19 +74,19 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
 }
 
 // static
-void UmaSessionStats::RegisterSyntheticFieldTrialWithNameHash(
-    uint32_t trial_name_hash,
-    const std::string& group_name) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
-      trial_name_hash, group_name);
-}
-
-// static
 void UmaSessionStats::RegisterSyntheticFieldTrial(
     const std::string& trial_name,
     const std::string& group_name) {
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
                                                             group_name);
+}
+
+// static
+void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
+    const std::string& trial_name,
+    const std::vector<uint32_t>& group_name_hashes) {
+  ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
+      trial_name, group_name_hashes);
 }
 
 // Starts/stops the MetricsService when permissions have changed.
@@ -126,21 +127,30 @@ static void LogRendererCrash(JNIEnv*, const JavaParamRef<jclass>&) {
   pref->SetInteger(metrics::prefs::kStabilityRendererCrashCount, value + 1);
 }
 
-static void RegisterExternalExperiment(JNIEnv* env,
-                                       const JavaParamRef<jclass>& clazz,
-                                       jint study_id,
-                                       jint experiment_id) {
-  const std::string group_name_utf8 = base::IntToString(experiment_id);
+static void RegisterExternalExperiment(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jtrial_name,
+    const JavaParamRef<jintArray>& jexperiment_ids) {
+  const std::string trial_name_utf8(ConvertJavaStringToUTF8(env, jtrial_name));
+  std::vector<int> experiment_ids;
+  base::android::JavaIntArrayToIntVector(env, jexperiment_ids, &experiment_ids);
+
+  std::vector<uint32_t> group_name_hashes;
+  group_name_hashes.reserve(experiment_ids.size());
 
   variations::ActiveGroupId active_group;
-  active_group.name = static_cast<uint32_t>(study_id);
-  active_group.group = metrics::HashName(group_name_utf8);
-  variations::AssociateGoogleVariationIDForceHashes(
-      variations::GOOGLE_WEB_PROPERTIES, active_group,
-      static_cast<variations::VariationID>(experiment_id));
+  active_group.name = metrics::HashName(trial_name_utf8);
+  for (int experiment_id : experiment_ids) {
+    active_group.group = metrics::HashName(base::IntToString(experiment_id));
+    variations::AssociateGoogleVariationIDForceHashes(
+        variations::GOOGLE_WEB_PROPERTIES, active_group,
+        static_cast<variations::VariationID>(experiment_id));
+    group_name_hashes.push_back(active_group.group);
+  }
 
-  UmaSessionStats::RegisterSyntheticFieldTrialWithNameHash(
-      static_cast<uint32_t>(study_id), group_name_utf8);
+  UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(trial_name_utf8,
+                                                         group_name_hashes);
 }
 
 static void RegisterSyntheticFieldTrial(

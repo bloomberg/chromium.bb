@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -27,13 +28,12 @@ class UmaSessionStats {
   void UmaEndSession(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
-  static void RegisterSyntheticFieldTrialWithNameHash(
-      uint32_t trial_name_hash,
-      const std::string& group_name);
+  static void RegisterSyntheticFieldTrial(const std::string& trial_name,
+                                          const std::string& group_name);
 
-  static void RegisterSyntheticFieldTrial(
+  static void RegisterSyntheticMultiGroupFieldTrial(
       const std::string& trial_name,
-      const std::string& group_name);
+      const std::vector<uint32_t>& group_name_hashes);
 
  private:
   ~UmaSessionStats();
