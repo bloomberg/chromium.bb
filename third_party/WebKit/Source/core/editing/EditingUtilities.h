@@ -245,7 +245,6 @@ CORE_EXPORT bool isEditablePosition(const Position&);
 bool isEditablePosition(const PositionInFlatTree&);
 bool isRichlyEditablePosition(const Position&);
 bool lineBreakExistsAtPosition(const Position&);
-bool isAtUnsplittableElement(const Position&);
 
 // miscellaneous functions on Position
 
@@ -320,7 +319,6 @@ HTMLSpanElement* createTabSpanElement(Document&, const String& tabText);
 Element* rootEditableElementOf(const Position&, EditableType = ContentIsEditable);
 Element* rootEditableElementOf(const PositionInFlatTree&);
 Element* rootEditableElementOf(const VisiblePosition&);
-Element* unsplittableElementForPosition(const Position&);
 
 // Boolean functions on Element
 

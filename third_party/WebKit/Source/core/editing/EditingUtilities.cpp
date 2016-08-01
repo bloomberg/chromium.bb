@@ -402,13 +402,6 @@ bool isEditablePosition(const PositionInFlatTree& p)
     return isEditablePosition(toPositionInDOMTree(p));
 }
 
-bool isAtUnsplittableElement(const Position& pos)
-{
-    Node* node = pos.anchorNode();
-    return (node == rootEditableElementOf(pos) || node == enclosingNodeOfType(pos, &isTableCell));
-}
-
-
 bool isRichlyEditablePosition(const Position& p)
 {
     Node* node = p.anchorNode();
@@ -443,20 +436,6 @@ Element* rootEditableElementOf(const VisiblePosition& visiblePosition)
 {
     Node* anchorNode = visiblePosition.deepEquivalent().anchorNode();
     return anchorNode ? rootEditableElement(*anchorNode) : nullptr;
-}
-
-// Finds the enclosing element until which the tree can be split.
-// When a user hits ENTER, they won't expect this element to be split into two.
-// You may pass it as the second argument of splitTreeToNode.
-Element* unsplittableElementForPosition(const Position& p)
-{
-    // Since enclosingNodeOfType won't search beyond the highest root editable node,
-    // this code works even if the closest table cell was outside of the root editable node.
-    Element* enclosingCell = toElement(enclosingNodeOfType(p, &isTableCell));
-    if (enclosingCell)
-        return enclosingCell;
-
-    return rootEditableElementOf(p);
 }
 
 template <typename Strategy>

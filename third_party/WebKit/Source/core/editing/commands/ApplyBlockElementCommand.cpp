@@ -106,6 +106,12 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     }
 }
 
+static bool isAtUnsplittableElement(const Position& pos)
+{
+    Node* node = pos.anchorNode();
+    return node == rootEditableElementOf(pos) || node == enclosingNodeOfType(pos, &isTableCell);
+}
+
 void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState* editingState)
 {
     // Special case empty unsplittable elements because there's nothing to split

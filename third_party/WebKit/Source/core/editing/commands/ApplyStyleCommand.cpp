@@ -1089,6 +1089,20 @@ bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style, HTMLElement* element
     return true;
 }
 
+// Finds the enclosing element until which the tree can be split.
+// When a user hits ENTER, they won't expect this element to be split into two.
+// You may pass it as the second argument of splitTreeToNode.
+static Element* unsplittableElementForPosition(const Position& p)
+{
+    // Since enclosingNodeOfType won't search beyond the highest root editable node,
+    // this code works even if the closest table cell was outside of the root editable node.
+    Element* enclosingCell = toElement(enclosingNodeOfType(p, &isTableCell));
+    if (enclosingCell)
+        return enclosingCell;
+
+    return rootEditableElementOf(p);
+}
+
 HTMLElement* ApplyStyleCommand::highestAncestorWithConflictingInlineStyle(EditingStyle* style, Node* node)
 {
     if (!node)
