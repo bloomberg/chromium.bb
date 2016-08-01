@@ -257,12 +257,24 @@ cr.define('settings', function() {
   r.DETAILED_BUILD_INFO.section = 'about';
 </if>
 
-  /**
-   * Use this function (and only this function) to navigate within Settings.
-   * This function is set by settings-router once it is created.
-   * @type {?function(!settings.Route):void}
-   */
-  var navigateTo = null;
+  var routeObservers_ = new Set();
+
+  /** @polymerBehavior */
+  var RouteObserverBehavior = {
+    /** @override */
+    attached: function() {
+      assert(!routeObservers_.has(this));
+      routeObservers_.add(this);
+    },
+
+    /** @override */
+    detached: function() {
+      assert(routeObservers_.delete(this));
+    },
+
+    /** @abstract */
+    currentRouteChanged: assertNotReached,
+  };
 
   /**
    * Returns the matching canonical route, or null if none matches.
@@ -276,15 +288,52 @@ cr.define('settings', function() {
       return Route[key].path == path;
     });
 
-    if (!matchingKey)
-      return null;
-
-    return Route[matchingKey];
+    return Route[matchingKey] || null;
   };
+
+  /**
+   * The current active route. This may only be updated via the global
+   * function settings.navigateTo.
+   * @private {!settings.Route}
+   */
+  var currentRoute_ = getRouteForPath(window.location.pathname) || Route.BASIC;
+
+  /**
+   * Helper function to set the current route and notify all observers.
+   * @param {!settings.Route} route
+   */
+  var setCurrentRoute = function(route) {
+    currentRoute_ = route;
+    for (var observer of routeObservers_)
+      observer.currentRouteChanged();
+  };
+
+  /** @return {!settings.Route} */
+  var getCurrentRoute = function() { return currentRoute_; };
+
+  /**
+   * Navigates to a canonical route and pushes a new history entry.
+   * @param {!settings.Route} route
+   * @private
+   */
+  var navigateTo = function(route) {
+    if (assert(route) == currentRoute_)
+      return;
+
+    window.history.pushState(undefined, document.title, route.path);
+    setCurrentRoute(route);
+  };
+
+  window.addEventListener('popstate', function(event) {
+    // On pop state, do not push the state onto the window.history again.
+    setCurrentRoute(getRouteForPath(window.location.pathname) || Route.BASIC);
+  });
 
   return {
     Route: Route,
-    navigateTo: navigateTo,
+    RouteObserverBehavior: RouteObserverBehavior,
     getRouteForPath: getRouteForPath,
+    getCurrentRoute: getCurrentRoute,
+    navigateTo: navigateTo,
   };
 });
