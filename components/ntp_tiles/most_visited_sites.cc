@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -149,7 +148,6 @@ MostVisitedSites::Suggestion&
 MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
 MostVisitedSites::MostVisitedSites(
-    scoped_refptr<base::SequencedWorkerPool> blocking_pool,
     PrefService* prefs,
     scoped_refptr<history::TopSites> top_sites,
     SuggestionsService* suggestions,
@@ -162,13 +160,11 @@ MostVisitedSites::MostVisitedSites(
       supervisor_(supervisor),
       observer_(nullptr),
       num_sites_(0),
-      received_most_visited_sites_(false),
-      received_popular_sites_(false),
+      waiting_for_most_visited_sites_(true),
+      waiting_for_popular_sites_(true),
       recorded_uma_(false),
-      scoped_observer_(this),
+      top_sites_observer_(this),
       mv_source_(SUGGESTIONS_SERVICE),
-      blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
   DCHECK(suggestions_service_);
   supervisor_->SetObserver(this);
@@ -197,7 +193,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
         false, base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                           base::Unretained(this)));
   } else {
-    received_popular_sites_ = true;
+    waiting_for_popular_sites_ = false;
   }
 
   if (top_sites_) {
@@ -207,7 +203,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
 
     // Register as TopSitesObserver so that we can update ourselves when the
     // TopSites changes.
-    scoped_observer_.Add(top_sites_.get());
+    top_sites_observer_.Add(top_sites_.get());
   }
 
   suggestions_subscription_ = suggestions_service_->AddCallback(
@@ -341,7 +337,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     suggestions.push_back(std::move(suggestion));
   }
 
-  received_most_visited_sites_ = true;
+  waiting_for_most_visited_sites_ = false;
   mv_source_ = TOP_SITES;
   SaveNewSuggestions(std::move(suggestions));
   NotifyMostVisitedURLsObserver();
@@ -375,7 +371,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     suggestions.push_back(std::move(suggestion));
   }
 
-  received_most_visited_sites_ = true;
+  waiting_for_most_visited_sites_ = false;
   mv_source_ = SUGGESTIONS_SERVICE;
   SaveNewSuggestions(std::move(suggestions));
   NotifyMostVisitedURLsObserver();
@@ -512,7 +508,7 @@ MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {
-  if (received_most_visited_sites_ && received_popular_sites_ &&
+  if (!waiting_for_most_visited_sites_ && !waiting_for_popular_sites_ &&
       !recorded_uma_) {
     RecordImpressionUMAMetrics();
     recorded_uma_ = true;
@@ -525,7 +521,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {
-  received_popular_sites_ = true;
+  waiting_for_popular_sites_ = false;
 
   if (!success) {
     LOG(WARNING) << "Download of popular sites failed";

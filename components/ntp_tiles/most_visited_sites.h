@@ -31,10 +31,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace variations {
-class VariationsService;
-}
-
 namespace ntp_tiles {
 
 // Shim interface for SupervisedUserService.
@@ -149,8 +145,7 @@ class MostVisitedSites : public history::TopSitesObserver,
     DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
-  MostVisitedSites(scoped_refptr<base::SequencedWorkerPool> blocking_pool,
-                   PrefService* prefs,
+  MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
                    PopularSites* popular_sites,
@@ -243,15 +238,15 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The maximum number of most visited sites to return.
   int num_sites_;
 
-  // Whether we have received an initial set of most visited sites (from either
-  // TopSites or the SuggestionsService).
-  bool received_most_visited_sites_;
+  // True if we are still waiting for an initial set of most visited sites (from
+  // either TopSites or the SuggestionsService).
+  bool waiting_for_most_visited_sites_;
 
-  // Whether we have received the set of popular sites. Immediately set to true
-  // if popular sites are disabled.
-  bool received_popular_sites_;
+  // True if we are still waiting for the set of popular sites. Immediately set
+  // to false if popular sites are disabled, or are not required.
+  bool waiting_for_popular_sites_;
 
-  // Whether we have recorded one-shot UMA metrics such as impressions. They are
+  // True if we have recorded one-shot UMA metrics such as impressions. They are
   // recorded once both the previous flags are true.
   bool recorded_uma_;
 
@@ -259,14 +254,14 @@ class MostVisitedSites : public history::TopSitesObserver,
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>
       suggestions_subscription_;
 
-  ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
+  ScopedObserver<history::TopSites, history::TopSitesObserver>
+      top_sites_observer_;
 
+  // The main source of personal suggestions - either TOP_SITES or
+  // SUGGESTIONS_SEVICE.
   MostVisitedSource mv_source_;
 
   SuggestionsVector current_suggestions_;
-
-  base::ThreadChecker thread_checker_;
-  scoped_refptr<base::TaskRunner> blocking_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;
