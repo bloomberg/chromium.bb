@@ -128,6 +128,19 @@ _OS_NEGATIVE_FILTER['mac'] = [
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1149
     'ChromeDriverTests.testShouldAllowTheUserToSwitchToAnIFrameAndRemainFocusedOnIt',
 ]
+
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['linux_53'] = [
+    # Flaky on Linux32 against v53:
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1418
+    'ClickTest.testShouldOnlyFollowHrefOnce',
+    'JavascriptEnabledDriverTest.testShouldFireOnChangeEventWhenSettingAnElementsValue',
+    'WindowSwitchingTest.testCanCloseWindowWhenMultipleWindowsAreOpen',
+    'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
+    'WindowSwitchingTest.testCanCloseWindowAndSwitchBackToMainWindow',
+    'XPathElementFindingTest.testShouldFindElementsByXPath',
+]
+
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
@@ -246,6 +259,12 @@ def _GetRevisionNegativeFilter(chrome_version):
     return _REVISION_NEGATIVE_FILTER[chrome_version]
   return _REVISION_NEGATIVE_FILTER['HEAD']
 
+def _GetSpecificOsRevisionNegativeFilter(operating_system, chrome_version):
+  os_version = operating_system + "_" + chrome_version
+  if os_version in _SPECIFIC_OS_REVISION_NEGATIVE_FILTER:
+    return _SPECIFIC_OS_REVISION_NEGATIVE_FILTER[os_version]
+  return []
+
 
 def GetDisabledTestMatchers(operating_system, chrome_version):
   """Returns the list of disabled test matchers for the specific configuration.
@@ -259,7 +278,9 @@ def GetDisabledTestMatchers(operating_system, chrome_version):
     List of disabled test matchers, which may contain '*' wildcards.
   """
   return (_OS_NEGATIVE_FILTER[operating_system] +
-          _GetRevisionNegativeFilter(chrome_version))[:]
+          _GetRevisionNegativeFilter(chrome_version) +
+          _GetSpecificOsRevisionNegativeFilter(operating_system,
+                                               chrome_version))[:]
 
 
 def ApplyJavaTestFilter(operating_system, chrome_version, tests):
@@ -275,7 +296,9 @@ def ApplyJavaTestFilter(operating_system, chrome_version, tests):
     Set of passed test names.
   """
   filters = (_OS_NEGATIVE_FILTER[operating_system] +
-             _GetRevisionNegativeFilter(chrome_version))
+             _GetRevisionNegativeFilter(chrome_version) +
+             _GetSpecificOsRevisionNegativeFilter(operating_system,
+                                                  chrome_version))
   passed = set(tests)
   for f in filters:
     passed.difference_update(set(t for t in tests if fnmatch.fnmatch(t, f)))
