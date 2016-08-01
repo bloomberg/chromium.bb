@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
-#include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -48,6 +47,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
+  source->AddLocalizedString(
+      "deleteWarning", IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO);
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
@@ -84,8 +85,6 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_MD_HISTORY_SIGN_IN_PROMO_DESC);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
-  source->AddString("deleteWarning",
-                    HistoryUI::GetDeleteWarningString(profile));
   source->AddString(
       "sidebarFooter",
       l10n_util::GetStringFUTF16(
