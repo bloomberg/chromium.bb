@@ -32,6 +32,7 @@ from chromite.lib import graphite
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import metrics
+from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 from chromite.lib import retry_stats
@@ -528,8 +529,8 @@ class ReportStage(generic_stages.BuilderStage,
       tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
                                   extra_fields=extra_fields)
 
-  def _GenerateArchiveLinks(self, builder_run):
-    """Generate links to the artifacts at remote archive location.
+  def _UploadArchiveIndex(self, builder_run):
+    """Upload an HTML index for the artifacts at remote archive location.
 
     If there are no artifacts in the archive then do nothing.
 
@@ -537,10 +538,10 @@ class ReportStage(generic_stages.BuilderStage,
       builder_run: BuilderRun object for this run.
 
     Returns:
-      If files have been uploaded then a dict is returned where each value
-        is the same (the URL for the generated HTML index) and the keys are
-        the boards it applies to, including None if applicable.  If no files
-        have been uploaded then this returns None.
+      If an index file is uploaded then a dict is returned where each value
+        is the same (the URL for the uploaded HTML index) and the keys are
+        the boards it applies to, including None if applicable.  If no index
+        file is uploaded then this returns None.
     """
     archive = builder_run.GetArchive()
     archive_path = archive.archive_path
@@ -561,6 +562,27 @@ class ReportStage(generic_stages.BuilderStage,
       logging.info('No archived artifacts found for %s run (%s)',
                    builder_run.config.name, board_names)
     else:
+      # Prepare html head.
+      head_data = {
+          'board': board_names,
+          'config': config.name,
+          'version': builder_run.GetVersion(),
+      }
+      head = self._HTML_HEAD % head_data
+
+      files = osutils.ReadFile(uploaded).splitlines() + [
+          '.|Google Storage Index',
+          '..|',
+      ]
+      index = os.path.join(archive_path, 'index.html')
+      # TODO (sbasi) crbug.com/362776: Rework the way we do uploading to
+      # multiple buckets. Currently this can only be done in the Archive Stage
+      # therefore index.html will only end up in the normal Chrome OS bucket.
+      commands.GenerateHtmlIndex(index, files, url_base=archive.download_url,
+                                 head=head)
+      commands.UploadArchivedFile(
+          archive_path, [archive.upload_url], os.path.basename(index),
+          debug=self._run.debug, acl=self.acl)
       return dict((b, archive.download_url) for b in boards)
 
   def _UploadBuildStagesTimeline(self, builder_run, build_id, db):
@@ -572,7 +594,10 @@ class ReportStage(generic_stages.BuilderStage,
       db: CIDBConnection instance.
 
     Returns:
-      The URL of the timeline is returned.
+      If an index file is uploaded then a dict is returned where each value
+        is the same (the URL for the uploaded HTML index) and the keys are
+        the boards it applies to, including None if applicable.  If no index
+        file is uploaded then this returns None.
     """
     archive = builder_run.GetArchive()
     archive_path = archive.archive_path
@@ -692,7 +717,7 @@ class ReportStage(generic_stages.BuilderStage,
       db: CIDBConnection instance.
 
     Returns:
-      A dictionary with the aggregated _GenerateArchiveLinks results.
+      A dictionary with the aggregated _UploadArchiveIndex results.
     """
     # Make sure local archive directory is prepared, if it was not already.
     if not os.path.exists(self.archive_path):
@@ -725,7 +750,7 @@ class ReportStage(generic_stages.BuilderStage,
       # share that archive, but in practice it is usually one board.  A
       # run/config without a board will also usually not have artifacts to
       # archive, but that restriction is not assumed here.
-      run_archive_urls = self._GenerateArchiveLinks(builder_run)
+      run_archive_urls = self._UploadArchiveIndex(builder_run)
       if run_archive_urls:
         archive_urls.update(run_archive_urls)
         # Check if the builder_run is tied to any boards and if so get all
