@@ -67,9 +67,10 @@ DeviceContextMenuController.prototype.initialize = function() {
   this.expandItem_ = this.appendMenuItem_('expandSessionMenuItemText');
   this.expandItem_.addEventListener('activate',
                                     this.onCollapseOrExpand_.bind(this));
-  this.openAllItem_ = this.appendMenuItem_('restoreSessionMenuItemText');
-  this.openAllItem_.addEventListener('activate',
-                                     this.onOpenAll_.bind(this));
+  var openAllItem = this.appendMenuItem_('restoreSessionMenuItemText');
+  openAllItem.addEventListener('activate', this.onOpenAll_.bind(this));
+  var deleteItem = this.appendMenuItem_('deleteSessionMenuItemText');
+  deleteItem.addEventListener('activate', this.onDeleteSession_.bind(this));
 };
 
 /**
@@ -124,6 +125,16 @@ DeviceContextMenuController.prototype.onCollapseOrExpand_ = function(e) {
 DeviceContextMenuController.prototype.onOpenAll_ = function(e) {
   chrome.send('openForeignSession', [this.session_.tag]);
   recordUmaEvent_(HISTOGRAM_EVENT.OPEN_ALL);
+};
+
+/**
+ * Handler for the 'Hide for now' menu item.
+ * @param {Event} e The activation event.
+ * @private
+ */
+DeviceContextMenuController.prototype.onDeleteSession_ = function(e) {
+  chrome.send('deleteForeignSession', [this.session_.tag]);
+  recordUmaEvent_(HISTOGRAM_EVENT.HIDE_FOR_NOW);
 };
 
 /**
