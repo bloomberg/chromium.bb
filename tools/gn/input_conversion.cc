@@ -140,7 +140,7 @@ Value DoConvertInputToValue(const Settings* settings,
     return ParseValueOrScope(settings, input, PARSE_SCOPE, origin, err);
 
   *err = Err(original_input_conversion, "Not a valid input_conversion.",
-             "Have you considered a career in retail?");
+             "Run gn help input_conversion to see your options.");
   return Value();
 }
 
