@@ -27,10 +27,12 @@
 #include "base/threading/thread.h"
 
 namespace base {
+
+class SchedulerWorkerPoolParams;
+
 namespace internal {
 
 class SchedulerServiceThread;
-class SchedulerWorkerPoolParams;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {

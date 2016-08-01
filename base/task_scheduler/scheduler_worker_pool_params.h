@@ -14,8 +14,6 @@ namespace base {
 
 class TimeDelta;
 
-namespace internal {
-
 class BASE_EXPORT SchedulerWorkerPoolParams final {
  public:
   enum class IORestriction {
@@ -66,7 +64,6 @@ class BASE_EXPORT SchedulerWorkerPoolParams final {
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolParams);
 };
 
-}  // namespace internal
 }  // namespace base
 
 #endif  // BASE_TASK_SCHEDULER_SCHEDULER_WORKER_POOL_PARAMS_H_

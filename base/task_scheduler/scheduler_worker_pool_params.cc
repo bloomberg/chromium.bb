@@ -7,7 +7,6 @@
 #include "base/time/time.h"
 
 namespace base {
-namespace internal {
 
 SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
     const std::string& name,
@@ -27,5 +26,4 @@ SchedulerWorkerPoolParams::SchedulerWorkerPoolParams(
 SchedulerWorkerPoolParams& SchedulerWorkerPoolParams::operator=(
     SchedulerWorkerPoolParams&& other) = default;
 
-}  // namespace internal
 }  // namespace base
