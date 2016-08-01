@@ -259,17 +259,23 @@ class AVDATimerManager {
     return construction_thread_.task_runner();
   }
 
-  // Called on the main thread when codec autodetection starts.  There may be
-  // several calls to this before any call to OnAsyncCodecAutodetectionComplete.
-  void OnAsyncCodecAutodetectionStarted() {
+  // Called on the main thread when the construction thread will be doing work
+  // that can potentially hang (e.g., autodetection).  There may be several
+  // calls to this before any call to DoneUsingConstructionThread.
+  // Note that this should only be called from the main thread, else it's a race
+  // with IsCodecAutodetectionProbablySafe.
+  void StartUsingConstructionThread() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     base::AutoLock auto_lock(autodetection_info_.lock_);
     ++autodetection_info_.outstanding_;
   }
 
-  // Called on any thread when a codec is constructed with autodetection.  This
-  // assumes that requests are ordered, so please don't mix sync and async codec
-  // construction here.  This may be called on any thread.
-  void OnAsyncCodecAutodetectionComplete() {
+  // Called on any thread after the potentially dangerous construction thread
+  // work completes safely.  May be called on any thread, including the
+  // construction thread.
+  // This assumes that requests are ordered, so please don't mix sync and async
+  // codec construction here.
+  void DoneUsingConstructionThread() {
     base::AutoLock auto_lock_l(autodetection_info_.lock_);
     DCHECK_GT(autodetection_info_.outstanding_, 0);
     --autodetection_info_.outstanding_;
@@ -392,7 +398,7 @@ class AVDATimerManager {
     // Lock that protects other members of this struct.
     base::Lock lock_;
 
-    // Number of currently pending autodetection requests.
+    // Number of currently pending work items of the construction thread.
     int outstanding_ = 0;
   } autodetection_info_;
 
@@ -1101,7 +1107,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
   codec_config_->notify_completion_ = codec_config_->allow_autodetection_;
   if (codec_config_->allow_autodetection_)
-    g_avda_timer.Pointer()->OnAsyncCodecAutodetectionStarted();
+    g_avda_timer.Pointer()->StartUsingConstructionThread();
 
   // If we're not trying autodetection, then use the main thread.  The original
   // might be blocked.
@@ -1160,7 +1166,7 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
   // If we successfully completed after an autodetect, then let the other
   // instances know that we didn't get stuck.
   if (codec_config->notify_completion_)
-    g_avda_timer.Pointer()->OnAsyncCodecAutodetectionComplete();
+    g_avda_timer.Pointer()->DoneUsingConstructionThread();
 
   return codec;
 }
@@ -1674,8 +1680,13 @@ void AndroidVideoDecodeAccelerator::ReleaseMediaCodec() {
   if (!codec_config_->allow_autodetection_) {
     media_codec_.reset();
   } else {
-    g_avda_timer.Pointer()->ConstructionTaskRunner()->DeleteSoon(
-        FROM_HERE, media_codec_.release());
+    g_avda_timer.Pointer()->StartUsingConstructionThread();
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        g_avda_timer.Pointer()->ConstructionTaskRunner();
+    task_runner->DeleteSoon(FROM_HERE, media_codec_.release());
+    task_runner->PostTask(
+        FROM_HERE, base::Bind(&AVDATimerManager::DoneUsingConstructionThread,
+                              base::Unretained(g_avda_timer.Pointer())));
   }
 }
 
