@@ -492,7 +492,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                             }
                         });
                 mGeolocationPermissions =
-                        new GeolocationPermissionsAdapter(awGelocationPermissions);
+                        new GeolocationPermissionsAdapter(this, awGelocationPermissions);
             }
         }
         return mGeolocationPermissions;
@@ -532,7 +532,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                                 return AwQuotaManagerBridge.getInstance();
                             }
                         });
-                mWebStorage = new WebStorageAdapter(awQuotaManager);
+                mWebStorage = new WebStorageAdapter(this, awQuotaManager);
             }
         }
         return mWebStorage;

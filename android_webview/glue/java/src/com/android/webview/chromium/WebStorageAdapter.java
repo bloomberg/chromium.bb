@@ -8,6 +8,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 
 import org.chromium.android_webview.AwQuotaManagerBridge;
+import org.chromium.base.ThreadUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,37 +19,74 @@ import java.util.Map;
  */
 @SuppressWarnings("deprecation")
 final class WebStorageAdapter extends WebStorage {
+    private final WebViewChromiumFactoryProvider mFactory;
     private final AwQuotaManagerBridge mQuotaManagerBridge;
-    WebStorageAdapter(AwQuotaManagerBridge quotaManagerBridge) {
+
+    WebStorageAdapter(
+            WebViewChromiumFactoryProvider factory, AwQuotaManagerBridge quotaManagerBridge) {
+        mFactory = factory;
         mQuotaManagerBridge = quotaManagerBridge;
     }
 
     @Override
     public void getOrigins(final ValueCallback<Map> callback) {
-        mQuotaManagerBridge.getOrigins(new ValueCallback<AwQuotaManagerBridge.Origins>() {
-            @Override
-            public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
-                Map<String, Origin> originsMap = new HashMap<String, Origin>();
-                for (int i = 0; i < origins.mOrigins.length; ++i) {
-                    Origin origin = new Origin(origins.mOrigins[i], origins.mQuotas[i],
-                            origins.mUsages[i]) {
-                        // Intentionally empty to work around cross-package protected visibility
-                        // of Origin constructor.
-                    };
-                    originsMap.put(origins.mOrigins[i], origin);
+        final ValueCallback<AwQuotaManagerBridge.Origins> awOriginsCallback =
+                new ValueCallback<AwQuotaManagerBridge.Origins>() {
+                    @Override
+                    public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
+                        Map<String, Origin> originsMap = new HashMap<String, Origin>();
+                        for (int i = 0; i < origins.mOrigins.length; ++i) {
+                            Origin origin = new Origin(
+                                    origins.mOrigins[i], origins.mQuotas[i], origins.mUsages[i]) {
+                                // Intentionally empty to work around cross-package protected
+                                // visibility
+                                // of Origin constructor.
+                            };
+                            originsMap.put(origins.mOrigins[i], origin);
+                        }
+                        callback.onReceiveValue(originsMap);
+                    }
+                };
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mQuotaManagerBridge.getOrigins(awOriginsCallback);
                 }
-                callback.onReceiveValue(originsMap);
-            }
-        });
+
+            });
+            return;
+        }
+        mQuotaManagerBridge.getOrigins(awOriginsCallback);
     }
 
     @Override
-    public void getUsageForOrigin(String origin, ValueCallback<Long> callback) {
+    public void getUsageForOrigin(final String origin, final ValueCallback<Long> callback) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mQuotaManagerBridge.getUsageForOrigin(origin, callback);
+                }
+
+            });
+            return;
+        }
         mQuotaManagerBridge.getUsageForOrigin(origin, callback);
     }
 
     @Override
-    public void getQuotaForOrigin(String origin, ValueCallback<Long> callback) {
+    public void getQuotaForOrigin(final String origin, final ValueCallback<Long> callback) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mQuotaManagerBridge.getQuotaForOrigin(origin, callback);
+                }
+
+            });
+            return;
+        }
         mQuotaManagerBridge.getQuotaForOrigin(origin, callback);
     }
 
@@ -58,12 +96,38 @@ final class WebStorageAdapter extends WebStorage {
     }
 
     @Override
-    public void deleteOrigin(String origin) {
+    public void deleteOrigin(final String origin) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mQuotaManagerBridge.deleteOrigin(origin);
+                }
+
+            });
+            return;
+        }
         mQuotaManagerBridge.deleteOrigin(origin);
     }
 
     @Override
     public void deleteAllData() {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mQuotaManagerBridge.deleteAllData();
+                }
+
+            });
+            return;
+        }
         mQuotaManagerBridge.deleteAllData();
+    }
+
+    private static boolean checkNeedsPost() {
+        // Init is guaranteed to have happened if a WebStorageAdapter is created, so do not
+        // need to check WebViewChromiumFactoryProvider.hasStarted.
+        return !ThreadUtils.runningOnUiThread();
     }
 }

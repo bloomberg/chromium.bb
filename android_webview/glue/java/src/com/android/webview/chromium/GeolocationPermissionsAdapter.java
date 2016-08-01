@@ -8,6 +8,7 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwGeolocationPermissions;
+import org.chromium.base.ThreadUtils;
 
 import java.util.Set;
 
@@ -16,34 +17,93 @@ import java.util.Set;
  * chromium internal implementation.
  */
 final class GeolocationPermissionsAdapter extends GeolocationPermissions {
-    private AwGeolocationPermissions mChromeGeolocationPermissions;
+    private final WebViewChromiumFactoryProvider mFactory;
+    private final AwGeolocationPermissions mChromeGeolocationPermissions;
 
-    public GeolocationPermissionsAdapter(AwGeolocationPermissions chromeGeolocationPermissions) {
+    public GeolocationPermissionsAdapter(WebViewChromiumFactoryProvider factory,
+            AwGeolocationPermissions chromeGeolocationPermissions) {
+        mFactory = factory;
         mChromeGeolocationPermissions = chromeGeolocationPermissions;
     }
 
     @Override
-    public void allow(String origin) {
+    public void allow(final String origin) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mChromeGeolocationPermissions.allow(origin);
+                }
+
+            });
+            return;
+        }
         mChromeGeolocationPermissions.allow(origin);
     }
 
     @Override
-    public void clear(String origin) {
+    public void clear(final String origin) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mChromeGeolocationPermissions.clear(origin);
+                }
+
+            });
+            return;
+        }
         mChromeGeolocationPermissions.clear(origin);
     }
 
     @Override
     public void clearAll() {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mChromeGeolocationPermissions.clearAll();
+                }
+
+            });
+            return;
+        }
         mChromeGeolocationPermissions.clearAll();
     }
 
     @Override
-    public void getAllowed(String origin, ValueCallback<Boolean> callback) {
+    public void getAllowed(final String origin, final ValueCallback<Boolean> callback) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mChromeGeolocationPermissions.getAllowed(origin, callback);
+                }
+
+            });
+            return;
+        }
         mChromeGeolocationPermissions.getAllowed(origin, callback);
     }
 
     @Override
-    public void getOrigins(ValueCallback<Set<String>> callback) {
+    public void getOrigins(final ValueCallback<Set<String>> callback) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mChromeGeolocationPermissions.getOrigins(callback);
+                }
+
+            });
+            return;
+        }
         mChromeGeolocationPermissions.getOrigins(callback);
+    }
+
+    private static boolean checkNeedsPost() {
+        // Init is guaranteed to have happened if a GeolocationPermissionsAdapter is created, so do
+        // not need to check WebViewChromiumFactoryProvider.hasStarted.
+        return !ThreadUtils.runningOnUiThread();
     }
 }
