@@ -416,6 +416,15 @@ public class ImeAdapter {
     /**
      * Call this when view is detached from window
      */
+    public void onViewAttachedToWindow() {
+        if (mInputConnectionFactory != null) {
+            mInputConnectionFactory.onViewAttachedToWindow();
+        }
+    }
+
+    /**
+     * Call this when view is detached from window
+     */
     public void onViewDetachedFromWindow() {
         if (mInputConnectionFactory != null) {
             mInputConnectionFactory.onViewDetachedFromWindow();

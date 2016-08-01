@@ -1694,6 +1694,11 @@ public class ImeTest extends ContentShellTestBase {
         }
 
         @Override
+        public void onViewAttachedToWindow() {
+            mFactory.onViewAttachedToWindow();
+        }
+
+        @Override
         public void onViewDetachedFromWindow() {
             mFactory.onViewDetachedFromWindow();
         }

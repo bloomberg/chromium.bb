@@ -89,6 +89,9 @@ public class ReplicaInputConnection
         public void onViewFocusChanged(boolean gainFocus) {}
 
         @Override
+        public void onViewAttachedToWindow() {}
+
+        @Override
         public void onViewDetachedFromWindow() {}
     }
 

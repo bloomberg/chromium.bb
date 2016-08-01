@@ -217,17 +217,26 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     public void onWindowFocusChanged(boolean gainFocus) {
         if (DEBUG_LOGS) Log.d(TAG, "onWindowFocusChanged: " + gainFocus);
         if (!gainFocus && mCheckInvalidator != null) mCheckInvalidator.invalidate();
+        if (mProxyView != null) mProxyView.onOriginalViewWindowFocusChanged(gainFocus);
     }
 
     @Override
     public void onViewFocusChanged(boolean gainFocus) {
         if (DEBUG_LOGS) Log.d(TAG, "onViewFocusChanged: " + gainFocus);
         if (!gainFocus && mCheckInvalidator != null) mCheckInvalidator.invalidate();
+        if (mProxyView != null) mProxyView.onOriginalViewFocusChanged(gainFocus);
+    }
+
+    @Override
+    public void onViewAttachedToWindow() {
+        if (DEBUG_LOGS) Log.d(TAG, "onViewAttachedToWindow");
+        if (mProxyView != null) mProxyView.onOriginalViewAttachedToWindow();
     }
 
     @Override
     public void onViewDetachedFromWindow() {
         if (DEBUG_LOGS) Log.d(TAG, "onViewDetachedFromWindow");
         if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
+        if (mProxyView != null) mProxyView.onOriginalViewDetachedFromWindow();
     }
 }
