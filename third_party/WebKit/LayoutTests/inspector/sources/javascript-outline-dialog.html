@@ -1,0 +1,52 @@
+<html>
+<head>
+
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./resources/javascript-outline-dialog.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.showScriptSource("javascript-outline-dialog.js", onSourceShown);
+    function onSourceShown(sourceFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.JavaScriptOutlineDialog.prototype, "refresh", onDialogFulfilled);
+        WebInspector.panels.sources._sourcesView._showOutlineDialog();
+    }
+
+    function onDialogFulfilled()
+    {
+        dumpScores("te");
+        dumpScores("test");
+        dumpScores("test(");
+        dumpScores("test(arg");
+        InspectorTest.completeTest();
+    }
+
+    function dumpScores(query)
+    {
+        InspectorTest.addResult(`Scores for query="${query}"`);
+        var dialog = WebInspector.JavaScriptOutlineDialog._instanceForTests;
+        var keys = [];
+        for (var i = 0; i < dialog.itemCount(); ++i) {
+            keys.push({
+                key: dialog.itemKeyAt(i),
+                score: dialog.itemScoreAt(i, query)
+            });
+        }
+        keys.sort((a,b) => b.score - a.score);
+        InspectorTest.addResult(keys.map(a => a.key + " " + a.score).join("\n"));
+        InspectorTest.addResult("");
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify JavaScriptOutlineDialog scoring.</p>
+</body>
+</html>
