@@ -65,6 +65,10 @@
 
 #define WINDOW_TITLE "Weston Compositor"
 
+struct wet_compositor {
+	struct weston_config *config;
+};
+
 static FILE *weston_logfile = NULL;
 
 static int cached_tm_mday = -1;
@@ -414,10 +418,18 @@ log_uname(void)
 						usys.version, usys.machine);
 }
 
-WL_EXPORT struct weston_config *
-wet_get_config(struct weston_compositor *compositor)
+static struct wet_compositor *
+to_wet_compositor(struct weston_compositor *compositor)
 {
 	return weston_compositor_get_user_data(compositor);
+}
+
+WL_EXPORT struct weston_config *
+wet_get_config(struct weston_compositor *ec)
+{
+	struct wet_compositor *compositor = to_wet_compositor(ec);
+
+	return compositor->config;
 }
 
 static const char xdg_error_message[] =
@@ -1581,6 +1593,7 @@ int main(int argc, char *argv[])
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
 	struct weston_seat *seat;
+	struct wet_compositor user_data;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
@@ -1644,6 +1657,7 @@ int main(int argc, char *argv[])
 
 	if (load_configuration(&config, noconfig, config_file) < 0)
 		goto out_signals;
+	user_data.config = config;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
 
@@ -1654,7 +1668,7 @@ int main(int argc, char *argv[])
 			backend = weston_choose_default_backend();
 	}
 
-	ec = weston_compositor_create(display, config);
+	ec = weston_compositor_create(display, &user_data);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		goto out;
