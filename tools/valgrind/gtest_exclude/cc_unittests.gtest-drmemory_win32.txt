@@ -21,9 +21,6 @@ PixelResourceTest*
 # https://crbug.com/486619
 LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame.RunSingleThread*
 
-# https://crbug.com/523689
-ImageBackgroundFilter.BackgroundFilterRotated_GL
-
 # https://crbug.com/537621
 LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime.RunMultiThread_DelegatingRenderer
 LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime.RunMultiThread_DirectRenderer
