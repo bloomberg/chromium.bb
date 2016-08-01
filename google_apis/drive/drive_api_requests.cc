@@ -1363,11 +1363,18 @@ std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
 
 void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
   // Return the detailed raw HTTP code if the error code is abstracted
-  // DRIVE_OTHER_ERROR.
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kUMADriveBatchUploadResponseCode,
-                              GetErrorCode() != DRIVE_OTHER_ERROR
-                                  ? GetErrorCode()
-                                  : source->GetResponseCode());
+  // DRIVE_OTHER_ERROR. If HTTP connection is failed and the status code is -1,
+  // return network status error.
+  int histogram_error = 0;
+  if (GetErrorCode() != DRIVE_OTHER_ERROR) {
+    histogram_error = GetErrorCode();
+  } else if (source->GetResponseCode() != -1) {
+    histogram_error = source->GetResponseCode();
+  } else {
+    histogram_error = source->GetStatus().error();
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kUMADriveBatchUploadResponseCode, histogram_error);
 
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
     RunCallbackOnPrematureFailure(GetErrorCode());
