@@ -35,7 +35,7 @@ BluetoothChooserController::BluetoothChooserController(
                         IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
       event_handler_(event_handler),
       no_devices_text_(l10n_util::GetStringUTF16(
-          IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT)) {}
+          IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT)) {}
 
 BluetoothChooserController::~BluetoothChooserController() {}
 
@@ -113,8 +113,8 @@ void BluetoothChooserController::OnAdapterPresenceChanged(
       }
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_ON:
-      no_devices_text_ =
-          l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
+      no_devices_text_ = l10n_util::GetStringUTF16(
+          IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
       status_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
       if (view()) {
