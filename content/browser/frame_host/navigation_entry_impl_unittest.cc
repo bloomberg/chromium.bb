@@ -67,12 +67,26 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   entry1_->SetURL(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_->GetURL());
   EXPECT_EQ(GURL("http://www.google.com"), entry1_->GetVirtualURL());
-  EXPECT_EQ(ASCIIToUTF16("www.google.com"),
+  EXPECT_EQ(ASCIIToUTF16("www.google.com"), entry1_->GetTitleForDisplay());
+
+  // Setting URL with RTL characters causes it to be wrapped in an LTR
+  // embedding.
+  entry1_->SetURL(GURL("http://www.xn--rgba6eo.com"));
+  EXPECT_EQ(base::WideToUTF16(L"\x202a"
+                              L"www.\x062c\x0648\x062c\x0644"
+                              L".com\x202c"),
             entry1_->GetTitleForDisplay());
 
   // file:/// URLs should only show the filename.
   entry1_->SetURL(GURL("file:///foo/bar baz.txt"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt"), entry1_->GetTitleForDisplay());
+
+  // file:/// URLs should *not* be wrapped in an LTR embedding.
+  entry1_->SetURL(GURL("file:///foo/%D8%A7%D8%A8 %D8%AC%D8%AF.txt"));
+  EXPECT_EQ(base::WideToUTF16(L"\x0627\x0628"
+                              L" \x062c\x062f"
+                              L".txt"),
+            entry1_->GetTitleForDisplay());
 
   // For file:/// URLs, make sure that slashes after the filename are ignored.
   // Regression test for https://crbug.com/503003.

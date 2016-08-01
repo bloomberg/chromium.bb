@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -418,6 +419,12 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() const {
     base::string16::size_type slashpos = title.rfind('/', lastpos);
     if (slashpos != base::string16::npos)
       title = title.substr(slashpos + 1);
+  } else if (base::i18n::StringContainsStrongRTLChars(title)) {
+    // Wrap the URL in an LTR embedding for proper handling of RTL characters.
+    // (RFC 3987 Section 4.1 states that "Bidirectional IRIs MUST be rendered in
+    // the same way as they would be if they were in a left-to-right
+    // embedding".)
+    base::i18n::WrapStringWithLTRFormatting(&title);
   }
 
   gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
