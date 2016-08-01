@@ -531,7 +531,7 @@ void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
 
   GURL requestor_url = params->requestor;
   sb_service->download_protection_service()->CheckPPAPIDownloadRequest(
-      requestor_url, default_file_path, alternate_extensions,
+      requestor_url, default_file_path, alternate_extensions, profile_,
       base::Bind(&InterpretSafeBrowsingVerdict,
                  base::Bind(&FileSelectHelper::ProceedWithSafeBrowsingVerdict,
                             this, default_file_path, base::Passed(&params))));

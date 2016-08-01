@@ -73,9 +73,23 @@
 using content::BrowserThread;
 
 namespace {
-static const int64_t kDownloadRequestTimeoutMs = 7000;
+
+const int64_t kDownloadRequestTimeoutMs = 7000;
 // We sample 1% of whitelisted downloads to still send out download pings.
-static const double kWhitelistDownloadSampleRate = 0.01;
+const double kWhitelistDownloadSampleRate = 0.01;
+
+enum WhitelistType {
+  NO_WHITELIST_MATCH,
+  URL_WHITELIST,
+  SIGNATURE_WHITELIST,
+  WHITELIST_TYPE_MAX
+};
+
+void RecordCountOfWhitelistedDownload(WhitelistType type) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckWhitelistResult", type,
+                            WHITELIST_TYPE_MAX);
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -760,20 +774,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 #endif  // defined(OS_MACOSX)
 
-  enum WhitelistType {
-    NO_WHITELIST_MATCH,
-    URL_WHITELIST,
-    SIGNATURE_WHITELIST,
-    WHITELIST_TYPE_MAX
-  };
-
-  static void RecordCountOfWhitelistedDownload(WhitelistType type) {
-    UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckWhitelistResult",
-                              type,
-                              WHITELIST_TYPE_MAX);
-  }
-
-  virtual bool ShouldSampleWhitelistedDownload() {
+  bool ShouldSampleWhitelistedDownload() {
     // We currently sample 1% whitelisted downloads from users who opted
     // in extended reporting and are not in incognito mode.
     return service_ && is_extended_reporting_ && !is_incognito_ &&
@@ -921,13 +922,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
 
     ClientDownloadRequest request;
-    if (is_extended_reporting_) {
-      request.mutable_population()->set_user_population(
-          ChromeUserPopulation::EXTENDED_REPORTING);
-    } else {
-      request.mutable_population()->set_user_population(
-          ChromeUserPopulation::SAFE_BROWSING);
-    }
+    auto population = is_extended_reporting_
+        ? ChromeUserPopulation::EXTENDED_REPORTING
+        : ChromeUserPopulation::SAFE_BROWSING;
+    request.mutable_population()->set_user_population(population);
 
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
     request.mutable_digests()->set_sha256(item_->GetHash());
@@ -1200,6 +1198,7 @@ class DownloadProtectionService::PPAPIDownloadRequest
       const GURL& requestor_url,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
+      Profile* profile,
       const CheckDownloadCallback& callback,
       DownloadProtectionService* service,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager)
@@ -1212,7 +1211,11 @@ class DownloadProtectionService::PPAPIDownloadRequest
         start_time_(base::TimeTicks::Now()),
         supported_path_(
             GetSupportedFilePath(default_file_path, alternate_extensions)),
-        weakptr_factory_(this) {}
+        weakptr_factory_(this) {
+    DCHECK(profile);
+    is_extended_reporting_ = profile->GetPrefs()->GetBoolean(
+        prefs::kSafeBrowsingExtendedReportingEnabled);
+  }
 
   ~PPAPIDownloadRequest() override {
     if (fetcher_ && !callback_.is_null())
@@ -1282,6 +1285,7 @@ class DownloadProtectionService::PPAPIDownloadRequest
   void WhitelistCheckComplete(bool was_on_whitelist) {
     DVLOG(2) << __func__ << " was_on_whitelist:" << was_on_whitelist;
     if (was_on_whitelist) {
+      RecordCountOfWhitelistedDownload(URL_WHITELIST);
       // TODO(asanka): Should sample whitelisted downloads based on
       // service_->whitelist_sample_rate(). http://crbug.com/610924
       Finish(RequestOutcome::WHITELIST_HIT, SAFE);
@@ -1298,6 +1302,10 @@ class DownloadProtectionService::PPAPIDownloadRequest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     ClientDownloadRequest request;
+    auto population = is_extended_reporting_
+        ? ChromeUserPopulation::EXTENDED_REPORTING
+        : ChromeUserPopulation::SAFE_BROWSING;
+    request.mutable_population()->set_user_population(population);
     request.set_download_type(ClientDownloadRequest::PPAPI_SAVE_REQUEST);
     ClientDownloadRequest::Resource* resource = request.add_resources();
     resource->set_type(ClientDownloadRequest::PPAPI_DOCUMENT);
@@ -1324,6 +1332,9 @@ class DownloadProtectionService::PPAPIDownloadRequest
       Finish(RequestOutcome::REQUEST_MALFORMED, UNKNOWN);
       return;
     }
+
+    service_->ppapi_download_request_callbacks_.Notify(&request);
+    DVLOG(2) << "Sending a PPAPI download request for URL: " << request.url();
 
     fetcher_ = net::URLFetcher::Create(0, GetDownloadRequestUrl(),
                                        net::URLFetcher::POST, this);
@@ -1458,6 +1469,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
   // ping.
   const base::FilePath supported_path_;
 
+  bool is_extended_reporting_;
+
   base::WeakPtrFactory<PPAPIDownloadRequest> weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPAPIDownloadRequest);
@@ -1563,12 +1576,13 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
     const GURL& requestor_url,
     const base::FilePath& default_file_path,
     const std::vector<base::FilePath::StringType>& alternate_extensions,
+    Profile* profile,
     const CheckDownloadCallback& callback) {
   DVLOG(1) << __func__ << " url:" << requestor_url
            << " default_file_path:" << default_file_path.value();
   std::unique_ptr<PPAPIDownloadRequest> request(new PPAPIDownloadRequest(
-      requestor_url, default_file_path, alternate_extensions, callback, this,
-      database_manager_));
+      requestor_url, default_file_path, alternate_extensions, profile, callback,
+      this, database_manager_));
   PPAPIDownloadRequest* request_copy = request.get();
   auto insertion_result = ppapi_download_requests_.insert(
       std::make_pair(request_copy, std::move(request)));
@@ -1581,6 +1595,13 @@ DownloadProtectionService::RegisterClientDownloadRequestCallback(
     const ClientDownloadRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return client_download_request_callbacks_.Add(callback);
+}
+
+DownloadProtectionService::PPAPIDownloadRequestSubscription
+DownloadProtectionService::RegisterPPAPIDownloadRequestCallback(
+    const PPAPIDownloadRequestCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return ppapi_download_request_callbacks_.Add(callback);
 }
 
 void DownloadProtectionService::CancelPendingRequests() {

@@ -38,6 +38,8 @@ namespace net {
 class X509Certificate;
 }  // namespace net
 
+class Profile;
+
 namespace safe_browsing {
 class BinaryFeatureExtractor;
 class ClientDownloadRequest;
@@ -74,6 +76,19 @@ class DownloadProtectionService {
   // A subscription to a registered ClientDownloadRequest callback.
   typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
       ClientDownloadRequestSubscription;
+
+  // A type of callback run on the main thread when a PPAPI
+  // ClientDownloadRequest has been formed for a download.
+  typedef base::Callback<void(const ClientDownloadRequest*)>
+      PPAPIDownloadRequestCallback;
+
+  // A list of PPAPI ClientDownloadRequest callbacks.
+  typedef base::CallbackList<void(const ClientDownloadRequest*)>
+      PPAPIDownloadRequestCallbackList;
+
+  // A subscription to a registered PPAPI ClientDownloadRequest callback.
+  typedef std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>
+      PPAPIDownloadRequestSubscription;
 
   // Creates a download service.  The service is initially disabled.  You need
   // to call SetEnabled() to start it.  |sb_service| owns this object.
@@ -115,6 +130,7 @@ class DownloadProtectionService {
       const GURL& requestor_url,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
+      Profile* profile,
       const CheckDownloadCallback& callback);
 
   // Display more information to the user regarding the download specified by
@@ -146,6 +162,11 @@ class DownloadProtectionService {
   // been formed.
   ClientDownloadRequestSubscription RegisterClientDownloadRequestCallback(
       const ClientDownloadRequestCallback& callback);
+
+  // Registers a callback that will be run when a PPAPI ClientDownloadRequest
+  // has been formed.
+  PPAPIDownloadRequestSubscription RegisterPPAPIDownloadRequestCallback(
+      const PPAPIDownloadRequestCallback& callback);
 
   double whitelist_sample_rate() const {
     return whitelist_sample_rate_;
@@ -295,6 +316,10 @@ class DownloadProtectionService {
   // A list of callbacks to be run on the main thread when a
   // ClientDownloadRequest has been formed.
   ClientDownloadRequestCallbackList client_download_request_callbacks_;
+
+  // A list of callbacks to be run on the main thread when a
+  // PPAPIDownloadRequest has been formed.
+  PPAPIDownloadRequestCallbackList ppapi_download_request_callbacks_;
 
   // List of 8-byte hashes that are blacklisted manually by flag.
   // Normally empty.
