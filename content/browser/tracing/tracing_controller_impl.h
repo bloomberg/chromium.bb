@@ -59,6 +59,8 @@ class TracingControllerImpl
 
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
       scoped_refptr<TraceDataEndpoint> endpoint);
+  static scoped_refptr<TraceDataSink> CreateJSONSink(
+      scoped_refptr<TraceDataEndpoint> endpoint);
 
   static TracingControllerImpl* GetInstance();
 

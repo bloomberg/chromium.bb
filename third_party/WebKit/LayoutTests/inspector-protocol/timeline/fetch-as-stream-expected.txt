@@ -4,4 +4,5 @@ Error after legit close: undefined
 Error after illegal read: {"code":-32602,"message":"Missing or invalid 'Invalid stream handle' parameter"}
 Error after illegal close: {"code":-32602,"message":"Missing or invalid 'Invalid stream handle' parameter"}
 Event sanity test done
+Metadata: object, not null
 

@@ -92,39 +92,28 @@ class DevToolsTraceSinkProxy : public TracingController::TraceDataSink {
   base::WeakPtr<TracingHandler> tracing_handler_;
 };
 
-class DevToolsStreamTraceSink : public TracingController::TraceDataSink {
+class DevToolsStreamEndpoint : public TraceDataEndpoint {
  public:
-  explicit DevToolsStreamTraceSink(
+  explicit DevToolsStreamEndpoint(
       base::WeakPtr<TracingHandler> handler,
       const scoped_refptr<DevToolsIOContext::Stream>& stream)
-      : stream_(stream),
-        tracing_handler_(handler),
-        first_chunk_(true) {}
+      : stream_(stream), tracing_handler_(handler) {}
 
-  void AddTraceChunk(const std::string& chunk) override {
-    // FIXME: change interface to pass chunks as refcounted strings.
-    scoped_refptr<base::RefCountedString> ref_counted_chunk
-        = new base::RefCountedString();
-    std::string prefix = first_chunk_ ? "[" : ",";
-    ref_counted_chunk->data() = prefix + chunk;
-    first_chunk_ = false;
-    stream_->Append(ref_counted_chunk);
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
+    stream_->Append(std::move(chunk));
   }
 
-  void Close() override {
-    if (TracingHandler* h = tracing_handler_.get()) {
-      std::string suffix = "]";
-      stream_->Append(base::RefCountedString::TakeString(&suffix));
+  void ReceiveTraceFinalContents(
+      std::unique_ptr<const base::DictionaryValue> metadata) override {
+    if (TracingHandler* h = tracing_handler_.get())
       h->OnTraceToStreamComplete(stream_->handle());
-    }
   }
 
  private:
-  ~DevToolsStreamTraceSink() override {}
+  ~DevToolsStreamEndpoint() override {}
 
   scoped_refptr<DevToolsIOContext::Stream> stream_;
   base::WeakPtr<TracingHandler> tracing_handler_;
-  bool first_chunk_;
 };
 
 }  // namespace
@@ -229,14 +218,14 @@ Response TracingHandler::End(DevToolsCommandId command_id) {
   if (!did_initiate_recording_ && !IsStartupTracingActive())
     return Response::InternalError("Tracing is not started");
 
-  scoped_refptr<TracingController::TraceDataSink> proxy;
+  scoped_refptr<TracingController::TraceDataSink> sink;
   if (return_as_stream_) {
-    proxy = new DevToolsStreamTraceSink(
-        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream());
+    sink = TracingControllerImpl::CreateJSONSink(new DevToolsStreamEndpoint(
+        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream()));
   } else {
-    proxy = new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr());
+    sink = new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr());
   }
-  StopTracing(proxy);
+  StopTracing(sink);
   // If inspected target is a render process Tracing.end will be handled by
   // tracing agent in the renderer.
   return target_ == Renderer ? Response::FallThrough() : Response::OK();

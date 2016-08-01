@@ -28,7 +28,7 @@ class DevToolsIOContext {
         void(const scoped_refptr<base::RefCountedString>& data, int status)>;
 
     void Read(off_t position, size_t max_size, ReadCallback callback);
-    void Append(const scoped_refptr<base::RefCountedString>& data);
+    void Append(std::unique_ptr<std::string> data);
     const std::string& handle() const { return handle_; }
 
    private:
@@ -39,7 +39,7 @@ class DevToolsIOContext {
     friend class base::DeleteHelper<Stream>;
 
     void ReadOnFileThread(off_t pos, size_t max_size, ReadCallback callback);
-    void AppendOnFileThread(const scoped_refptr<base::RefCountedString>& data);
+    void AppendOnFileThread(std::unique_ptr<std::string> data);
     bool InitOnFileThreadIfNeeded();
 
     const std::string handle_;

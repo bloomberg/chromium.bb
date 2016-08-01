@@ -337,4 +337,10 @@ scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateCallbackEndpoint(
   return new StringTraceDataEndpoint(callback);
 }
 
+scoped_refptr<TracingController::TraceDataSink>
+TracingControllerImpl::CreateJSONSink(
+    scoped_refptr<TraceDataEndpoint> endpoint) {
+  return new JSONTraceDataSink(endpoint);
+}
+
 }  // namespace content

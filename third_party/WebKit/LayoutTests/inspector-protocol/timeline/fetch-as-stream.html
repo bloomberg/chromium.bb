@@ -62,7 +62,10 @@ function test()
         function onCloseAfterClose(response)
         {
             InspectorTest.log("Error after illegal close: " + JSON.stringify(response.error));
-            performEventsSanityCheck(JSON.parse(data1));
+            var trace = JSON.parse(data1);
+            performEventsSanityCheck(trace["traceEvents"]);
+InspectorTest.log("Metadata: " + typeof trace["metadata"] + (trace["metadata"] ? ", not null" : ""));
+            InspectorTest.completeTest();
         }
     }
 
@@ -96,7 +99,6 @@ function test()
         assertGreaterOrEqual(knownEvents["UpdateLayoutTree"], 1, "Too few UpdateLayoutTree events");
         assertGreaterOrEqual(knownEvents["Layout"], 1, "Too few Layout events");
         InspectorTest.log("Event sanity test done");
-        InspectorTest.completeTest();
     }
 }
 </script>
