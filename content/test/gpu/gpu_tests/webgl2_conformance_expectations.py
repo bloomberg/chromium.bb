@@ -54,7 +54,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
 
     # Win / NVidia
-    # La la la la la la la la la la ...
+    self.Flaky('deqp/functional/gles3/fbomultisample*',
+        ['win', 'nvidia'], bug=631317)
 
     # Win / AMD
     self.Fail('deqp/functional/gles3/texturespecification/' +
