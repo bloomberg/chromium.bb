@@ -20,7 +20,6 @@ Polymer({
     currentRoute: {
       type: Object,
       notify: true,
-      observer: 'currentRouteChanged_',
     },
 
     /**

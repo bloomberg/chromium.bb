@@ -151,7 +151,7 @@ Polymer({
     if (!topSection && this.showPages_.advanced)
       topSection = this.$$('settings-advanced-page').$$(query);
 
-    if (!topSection)
+    if (!topSection || !topSection.offsetParent)
       return 0;
 
     // Offset to the selected section (relative to the scrolling window).
