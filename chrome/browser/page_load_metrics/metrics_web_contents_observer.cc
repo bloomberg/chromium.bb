@@ -92,14 +92,6 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 
   // Verify proper ordering between the various timings.
 
-  if (!EventsInOrder(timing.response_start, timing.dom_loading)) {
-    // We sometimes get a zero response_start with a non-zero DOM loading. See
-    // crbug.com/590212.
-    DLOG(ERROR) << "Invalid response_start " << timing.response_start
-                << " for dom_loading " << timing.dom_loading;
-    return false;
-  }
-
   if (!EventsInOrder(timing.response_start, timing.parse_start)) {
     // We sometimes get a zero response_start with a non-zero parse start. See
     // crbug.com/590212.
@@ -135,9 +127,9 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
-  if (!EventsInOrder(timing.dom_loading,
+  if (!EventsInOrder(timing.parse_stop,
                      timing.dom_content_loaded_event_start)) {
-    NOTREACHED() << "Invalid dom_loading " << timing.dom_loading
+    NOTREACHED() << "Invalid parse_stop " << timing.parse_stop
                  << " for dom_content_loaded_event_start "
                  << timing.dom_content_loaded_event_start;
     return false;
@@ -151,8 +143,8 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
-  if (!EventsInOrder(timing.dom_loading, timing.first_layout)) {
-    NOTREACHED() << "Invalid dom_loading " << timing.dom_loading
+  if (!EventsInOrder(timing.parse_start, timing.first_layout)) {
+    NOTREACHED() << "Invalid parse_start " << timing.parse_start
                  << " for first_layout " << timing.first_layout;
     return false;
   }

@@ -70,24 +70,18 @@ void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
     inout_timing->dom_content_loaded_event_start =
         inout_timing->load_event_start;
   }
-  if (inout_timing->first_layout && !inout_timing->dom_loading) {
-    inout_timing->dom_loading = inout_timing->first_layout;
+  if (inout_timing->first_layout && !inout_timing->parse_start) {
+    inout_timing->parse_start = inout_timing->first_layout;
   }
   if (inout_timing->dom_content_loaded_event_start &&
-      !inout_timing->dom_loading) {
-    inout_timing->dom_loading = inout_timing->dom_content_loaded_event_start;
-  }
-  if (inout_timing->dom_loading && !inout_timing->parse_start) {
-    inout_timing->parse_start = inout_timing->dom_loading;
+      !inout_timing->parse_stop) {
+    inout_timing->parse_stop = inout_timing->dom_content_loaded_event_start;
   }
   if (inout_timing->parse_stop && !inout_timing->parse_start) {
     inout_timing->parse_start = inout_timing->parse_stop;
   }
   if (inout_timing->parse_start && !inout_timing->response_start) {
     inout_timing->response_start = inout_timing->parse_start;
-  }
-  if (inout_timing->dom_loading && !inout_timing->response_start) {
-    inout_timing->response_start = inout_timing->dom_loading;
   }
   if (inout_timing->parse_start) {
     if (!inout_timing->parse_blocked_on_script_load_duration)

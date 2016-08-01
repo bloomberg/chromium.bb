@@ -15,7 +15,6 @@ PageLoadTiming::~PageLoadTiming() {}
 bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
   return navigation_start == other.navigation_start &&
          response_start == other.response_start &&
-         dom_loading == other.dom_loading &&
          dom_content_loaded_event_start ==
              other.dom_content_loaded_event_start &&
          load_event_start == other.load_event_start &&
@@ -32,7 +31,7 @@ bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
 }
 
 bool PageLoadTiming::IsEmpty() const {
-  return navigation_start.is_null() && !response_start && !dom_loading &&
+  return navigation_start.is_null() && !response_start &&
          !dom_content_loaded_event_start && !load_event_start &&
          !first_layout && !first_paint && !first_text_paint &&
          !first_image_paint && !first_contentful_paint && !parse_start &&

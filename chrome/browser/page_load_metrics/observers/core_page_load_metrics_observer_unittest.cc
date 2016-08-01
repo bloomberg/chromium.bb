@@ -108,7 +108,6 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
 
 TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   base::TimeDelta response = base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta dom_loading = base::TimeDelta::FromMilliseconds(5);
   base::TimeDelta first_layout_1 = base::TimeDelta::FromMilliseconds(10);
   base::TimeDelta first_layout_2 = base::TimeDelta::FromMilliseconds(20);
   base::TimeDelta first_text_paint = base::TimeDelta::FromMilliseconds(30);
@@ -119,7 +118,6 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.response_start = response;
-  timing.dom_loading = dom_loading;
   timing.first_layout = first_layout_1;
   timing.first_text_paint = first_text_paint;
   timing.first_contentful_paint = first_contentful_paint;
@@ -255,11 +253,13 @@ TEST_F(CorePageLoadMetricsObserverTest,
 TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  // Set these events at 1 microsecond so they definitely occur before we
-  // background the tab later in the test.
-  timing.response_start = base::TimeDelta::FromMicroseconds(1);
-  timing.dom_loading = base::TimeDelta::FromMicroseconds(1);
   timing.dom_content_loaded_event_start = base::TimeDelta::FromMicroseconds(1);
+  PopulateRequiredTimingFields(&timing);
+
+  // Make sure first_text_paint hasn't been set (wasn't set by
+  // PopulateRequiredTimingFields), since we want to defer setting it until
+  // after backgrounding.
+  ASSERT_FALSE(timing.first_text_paint);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
@@ -267,7 +267,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   // Background the tab, then foreground it.
   web_contents()->WasHidden();
   web_contents()->WasShown();
-  timing.first_layout = base::TimeDelta::FromSeconds(3);
   timing.first_text_paint = base::TimeDelta::FromSeconds(4);
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
@@ -300,11 +299,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   }
 
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
-  histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramFirstLayout,
-                                      1);
-  histogram_tester().ExpectBucketCount(
-      internal::kBackgroundHistogramFirstLayout,
-      timing.first_layout.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramFirstTextPaint, 1);
   histogram_tester().ExpectBucketCount(
@@ -313,7 +307,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
 
   histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
 

@@ -124,8 +124,6 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   timing.navigation_start = base::Time::FromDoubleT(start);
   if (perf.responseStart() > 0.0)
     timing.response_start = ClampDelta(perf.responseStart(), start);
-  if (perf.domLoading() > 0.0)
-    timing.dom_loading = ClampDelta(perf.domLoading(), start);
   if (perf.domContentLoadedEventStart() > 0.0)
     timing.dom_content_loaded_event_start =
         ClampDelta(perf.domContentLoadedEventStart(), start);
