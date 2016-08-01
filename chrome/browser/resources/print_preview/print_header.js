@@ -163,16 +163,18 @@ cr.define('print_preview', function() {
           loadTimeData.getString('printPreviewSheetsLabelSingular');
       var pagesLabel = loadTimeData.getString('printPreviewPageLabelPlural');
 
-      var saveToPdf = this.destinationStore_.selectedDestination &&
-          this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
-      if (saveToPdf) {
+      var saveToPdfOrDrive = this.destinationStore_.selectedDestination &&
+          (this.destinationStore_.selectedDestination.id ==
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+           this.destinationStore_.selectedDestination.id ==
+              print_preview.Destination.GooglePromotedId.DOCS);
+      if (saveToPdfOrDrive) {
         summaryLabel = loadTimeData.getString('printPreviewPageLabelSingular');
       }
 
       var numPages = this.printTicketStore_.pageRange.getPageNumberSet().size;
       var numSheets = numPages;
-      if (!saveToPdf && this.printTicketStore_.duplex.getValue()) {
+      if (!saveToPdfOrDrive && this.printTicketStore_.duplex.getValue()) {
         numSheets = Math.ceil(numPages / 2);
       }
 
@@ -181,7 +183,7 @@ cr.define('print_preview', function() {
       numPages *= copies;
 
       if (numSheets > 1) {
-        summaryLabel = saveToPdf ? pagesLabel :
+        summaryLabel = saveToPdfOrDrive ? pagesLabel :
             loadTimeData.getString('printPreviewSheetsLabelPlural');
       }
 
