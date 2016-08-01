@@ -562,17 +562,20 @@ int TaskManagerTableModel::CompareValues(int row1,
 void TaskManagerTableModel::GetRowsGroupRange(int row_index,
                                               int* out_start,
                                               int* out_length) {
+  const base::ProcessId process_id =
+      observed_task_manager()->GetProcessId(tasks_[row_index]);
   int i = row_index;
-  for ( ; i >= 0; --i) {
-    if (IsTaskFirstInGroup(i))
-      break;
+  int limit = row_index + 1;
+  while (i > 0 &&
+         observed_task_manager()->GetProcessId(tasks_[i - 1]) == process_id) {
+    --i;
   }
-
-  CHECK_GE(i, 0);
-
+  while (limit < RowCount() &&
+         observed_task_manager()->GetProcessId(tasks_[limit]) == process_id) {
+    ++limit;
+  }
   *out_start = i;
-  *out_length = observed_task_manager()->GetNumberOfTasksOnSameProcess(
-      tasks_[row_index]);
+  *out_length = limit - i;
 }
 
 void TaskManagerTableModel::OnTaskAdded(TaskId id) {

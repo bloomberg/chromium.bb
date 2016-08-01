@@ -85,7 +85,9 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
     chrome::ShowTaskManager(browser());
-    model_ = task_management::TaskManagerTester::Create(base::Closure());
+    model_ = task_management::TaskManagerTester::Create(
+        base::Bind(&TaskManagerBrowserTest::TaskManagerTableModelSanityCheck,
+                   base::Unretained(this)));
   }
 
   void HideTaskManager() {
@@ -137,6 +139,20 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
  private:
+  void TaskManagerTableModelSanityCheck() {
+    // Ensure the groups are self-consistent.
+    for (int i = 0; i < model()->GetRowCount(); ++i) {
+      int start, length;
+      model()->GetRowsGroupRange(i, &start, &length);
+      for (int j = 0; j < length; ++j) {
+        int start2, length2;
+        model()->GetRowsGroupRange(start + j, &start2, &length2);
+        EXPECT_EQ(start, start2);
+        EXPECT_EQ(length, length2);
+      }
+    }
+  }
+
   std::unique_ptr<task_management::TaskManagerTester> model_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserTest);
 };

@@ -138,6 +138,10 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 
   void Kill(int row) override { model_->KillTask(row); }
 
+  void GetRowsGroupRange(int row, int* out_start, int* out_length) override {
+    return model_->GetRowsGroupRange(row, out_start, out_length);
+  }
+
  private:
   task_management::TaskManagerInterface* task_manager() {
     return model_->observed_task_manager();

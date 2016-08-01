@@ -51,6 +51,10 @@ class TaskManagerTester {
   // Kill the process of |row|.
   virtual void Kill(int row) = 0;
 
+  // Gets the start index and length of the group to which the task at
+  // |row_index| belongs.
+  virtual void GetRowsGroupRange(int row, int* out_start, int* out_length) = 0;
+
  private:
   // Always creates a tester for the non-legacy TaskManager.
   static std::unique_ptr<TaskManagerTester> CreateDefault(

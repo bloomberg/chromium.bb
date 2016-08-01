@@ -71,6 +71,13 @@ class LegacyTaskManagerTester : public task_management::TaskManagerTester,
 
   void Kill(int row) override { TaskManager::GetInstance()->KillProcess(row); }
 
+  void GetRowsGroupRange(int row, int* out_start, int* out_length) override {
+    TaskManagerModel::GroupRange group_range =
+        model_->GetGroupRangeForResource(row);
+    *out_start = group_range.first;
+    *out_length = group_range.second;
+  }
+
   // TaskManagerModelObserver:
   void OnModelChanged() override { OnResourceChange(); }
   void OnItemsChanged(int start, int length) override { OnResourceChange(); }
