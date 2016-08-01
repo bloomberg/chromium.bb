@@ -269,6 +269,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3392045790598181549">Menüeintrag "<ph name="NAME" />"</translation>
 <translation id="3406283310380167331">Formularliste anzeigen</translation>
 <translation id="3422338090358345848">Keyboard Explorer öffnen</translation>
+<translation id="3423495725743882470">Zeile: $1, Spalte: $2</translation>
 <translation id="3457000393508828486">Teilweise gedrückt</translation>
 <translation id="3462439746547587373">Schaltfläche "<ph name="NAME" />"</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5000760171916499057">Keine Formulare</translation>
 <translation id="5005670136041063723">Keine weiteren ähnlichen Elemente</translation>
 <translation id="501473567976723023">Januar</translation>
+<translation id="5040591161308540832">Tabelle: $1, $2 bis $3</translation>
 <translation id="5041394372352067729">Braillezeile an den Seitenanfang verschieben</translation>
 <translation id="5042770794184672516">Sprachlautstärke erhöhen</translation>
 <translation id="5050015258024679800">Vorherige Überschrift der Ebene 4</translation>
@@ -555,6 +557,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Vorherige Überschrift</translation>
 <translation id="6378565991815958969">$1 kopieren.</translation>
+<translation id="6385591741672306837">Spalte</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Kein vorheriges Optionsfeld</translation>
 <translation id="6414968628640960377">Vorheriges anderes Element</translation>
@@ -704,6 +707,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">Zeile</translation>
 <translation id="8186185314313222077">Vollbildmodus an oder aus</translation>
 <translation id="8199231515320852133">Überschriften der aktuellen Zelle ansagen</translation>
 <translation id="820417203470636242">Leere Zelle</translation>

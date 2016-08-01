@@ -40,6 +40,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1409879593029778104">No se ha descargado <ph name="FILE_NAME" /> porque este archivo ya existe.</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
 <translation id="1423209968422390786">El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome se esté actualizando. Vuelve a intentarlo dentro de unos minutos. Si el problema persiste, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
@@ -47,8 +48,10 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
+<translation id="1546112724822176246">¿No aparece tu dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
+<translation id="1571304935088121812">Copiar nombre de usuario</translation>
 <translation id="1612196535745283361">Chrome necesita acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
@@ -82,6 +85,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Cifrar todo con una contraseña de Google a partir del <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Tarjetas aceptadas</translation>
 <translation id="1966710179511230534">Actualiza tus datos de inicio de sesión.</translation>
 <translation id="1974060860693918893">Opciones avanzadas</translation>
 <translation id="1984321224716884559">Marcadores del canal para desarrolladores de Chrome</translation>
@@ -89,6 +93,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="2001120796168634316">Guardar para más tarde</translation>
 <translation id="200669432486043882">Sustituir archivo</translation>
+<translation id="2020525020270327736">Copiar sitio web</translation>
 <translation id="2038563949887743358">Activar opción para ver como ordenador</translation>
 <translation id="2073235970478114994">Cargar imágenes</translation>
 <translation id="2079545284768500474">Deshacer</translation>
@@ -213,6 +218,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="3386292677130313581">Preguntar antes de permitir que los sitios web detecten tu ubicación (recomendado)</translation>
 <translation id="3387650086002190359">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el sistema de archivos.</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
+<translation id="3431636764301398940">Guardar esta tarjeta en el dispositivo</translation>
 <translation id="3435896845095436175">Habilitar</translation>
 <translation id="3452612588551937789">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos.</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
@@ -227,10 +233,12 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para restringir la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3623048332793834136">Marcadores de Chrome Canary</translation>
+<translation id="3632295766818638029">Mostrar contraseña</translation>
 <translation id="363596933471559332">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está desactivada, se solicitará la verificación cada vez que se intente iniciar sesión en un sitio web.</translation>
 <translation id="3656115297268584622">Activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Los sitios web externos pueden guardar y leer datos de cookies</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
+<translation id="3706658020782046159">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
 <translation id="3716158070938632480">Hay páginas web cercanas</translation>
 <translation id="3732088672634061408">No se han podido recuperar los intereses.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
@@ -344,6 +352,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5107381076085091558">Se ha pausado la descarga.</translation>
 <translation id="5118713593561876160">Intereses</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
+<translation id="5131405117025179004">Editar cuenta guardada</translation>
 <translation id="5138299137310274655">Esta página está escrita en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Combinar pestañas y aplicaciones</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
@@ -408,6 +417,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5748802427693696783">Se ha cambiado a las pestañas estándares</translation>
 <translation id="5749068826913805084">Chrome necesita acceso de almacenamiento para descargar archivos.</translation>
+<translation id="57586589942790530">Número de tarjeta no válido</translation>
 <translation id="5763382633136178763">Pestañas de incógnito</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5771382037724542929">¿Quieres sustituir el archivo <ph name="FILE_NAME" /> de <ph name="DIRECTORY_NAME" />?</translation>
@@ -473,6 +483,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6482749332252372425">No se ha podido descargar <ph name="FILE_NAME" /> porque no hay suficiente espacio de almacenamiento.</translation>
 <translation id="6541922744811587456">Marcadores de Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selecciona una pestaña para compartir</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
 <translation id="6550675742724504774">Configuración</translation>
@@ -646,6 +657,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433057134996913067">Con esta opción, tu sesión se cerrará en la mayoría de sitios web.</translation>
+<translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8481940801237642152">Tu conexión a este sitio es privada, pero alguien en la red podría cambiar la apariencia de la página.</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no tienes contenido</translation>

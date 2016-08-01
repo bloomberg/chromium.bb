@@ -118,11 +118,6 @@
       ki van kapcsolva. Ekkor a felhasználó nem tudja bekapcsolni a funkciót.</translation>
 <translation id="1474273443907024088">A TLS False Start letiltása</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Megadja, hogy az eszközre vonatkozó házirendadatok lekérdezése az eszközkezelési szolgáltatástól hány ezredmásodpercenként történjen. 
-
-Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órás értéket. Ennél a házirendnél az érvényes érték 1 800 000 (30 perc) és 86 400 000 (1 nap) közötti. 
-
-Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz lesz igazítva. Ha a házirend konfigurálatlanul marad, akkor a(z) <ph name="PRODUCT_OS_NAME" /> az alapértelmezés szerinti 3 órás értéket használja.</translation>
 <translation id="1504431521196476721">Távoli tanúsítás</translation>
 <translation id="1509692106376861764">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve.</translation>
 <translation id="1522425503138261032">Engedélyezi a webhelyek számára a felhasználók fizikai helyének követését</translation>
@@ -316,9 +311,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
       A Bluetooth engedélyezését követően újra kell indítani az eszközt ahhoz, hogy a változtatások életbe lépjenek (a Bluetooth letiltása után nem szükséges újraindítani az eszközt).</translation>
 <translation id="2366415278352956652">Lehetővé teszi az átküldést</translation>
-<translation id="2371309782685318247">Megadja, hogy a rendszer hány ezredmásodpercenként kérdezze le a felhasználói házirendek adatait az eszközkezelési szolgáltatástól.
-
-Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órás értéket. Ennél a házirendnél az érvényes értékek 1 800 000 (30 perc) és 86 400 000 (1 nap) közöttiek. A rendszer minden olyan értéket, amely nem ebben a tartományban van, hozzáigazít a közelebbi határhoz. Ha a házirend beállítatlanul marad, akkor a(z) <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti 3 órás értéket használja.</translation>
 <translation id="2372547058085956601">A nyilvános munkamenet automatikus bejelentkezési késleltetése.
 
       Ha a |DeviceLocalAccountAutoLoginId| házirend nincs beállítva, akkor nincs semmilyen hatása. Máskülönben:
@@ -886,6 +878,15 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Felsorolja azokat a bővítményeket, amelyeket a kiállító módban lévő eszközök esetében automatikusan telepít a rendszer a bemutatófelhasználó részére. A bővítményeket a rendszer az eszközre menti, így azok offline módban, a telepítés után is telepíthetők.
 
       A listabejegyzések szótárának tartalmaznia kell a bővítményazonosítót az „extension-id” mezőben, valamint annak frissített URL-jét az „update-url” mezőben.</translation>
+<translation id="388237772682176890">Ez az irányelv megszűnt az M53-ban, valamint eltávolításra került az M54-ben, mivel a SPDY/3.1  támogatását megszüntettük.
+
+      Letiltja a SPDY protokoll használatát a(z) <ph name="PRODUCT_NAME" /> termékben.
+
+      Ha engedélyezi ezt az irányelvet, akkor a SPDY protokoll nem fog rendelkezésre állni a következőben: <ph name="PRODUCT_NAME" />.
+
+      Az irányelv letiltásával a SPDY használhatóvá válik.
+
+      Ha nem állítja be ezt az irányelvet, akkor a SPDY rendelkezésre áll.</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
 <translation id="3898060089412156345">Hangrögzítés engedélyezése vagy tiltása.
 
@@ -1078,6 +1079,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="467449052039111439">Nyisson meg egy URL-listát</translation>
 <translation id="4680961954980851756">Automatikus kitöltés engedélyezése</translation>
 <translation id="4723829699367336876">Engedélyezze a tűzfalon való átjárást a távoli ügyfelek felől</translation>
+<translation id="4725528134735324213">Az Android Backup Service engedélyezése</translation>
 <translation id="4733471537137819387">Az integrált HTTP-hitelesítéssel kapcsolatos szabályok.</translation>
 <translation id="4744190513568488164">Szerverek, amelyekre a <ph name="PRODUCT_NAME" /> delegálhat.
 
@@ -1163,6 +1165,15 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a szabály Igaz értékre van állítva, a(z) <ph name="PRODUCT_OS_NAME" /> megakadályozza, hogy az eszköz fejlesztői módban induljon el. A fejlesztői kapcsoló bekapcsolásakor a rendszer nem töltődik be, és hibát jelző képernyő jelenik meg.
 
       Ha a szabály nincs beállítva, illetve értéke Hamis, a fejlesztői mód elérhető marad az eszköz számára.</translation>
+<translation id="5203271367506489164">Ez az irányelv – a NetworkPredictionOptions miatt – megszűnt az M48-ban, majd eltávolításra került az M54-ben.
+
+      Engedélyezi a hálózati előrejelzést a(z) <ph name="PRODUCT_NAME" /> termékben, valamint megakadályozza a felhasználókat a beállítás módosításában.
+
+      Nemcsak a DNS-előtöltést, hanem az előzetes TCP- és SSL-kapcsolatokat és a weboldalak előzetes megjelenítését is vezérli. Az irányelv neve történeti okok miatt a DNS-előtöltésre utal.
+
+      A beállítás engedélyezése vagy letiltása esetén a felhasználók nem módosíthatják, és nem bírálhatják felül ezt a beállítást a(z) <ph name="PRODUCT_NAME" /> termékben.
+
+      Ha nem állítja be az irányelvet, akkor aktiválódik, de a felhasználók képesek lesznek módosítani.</translation>
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="5226033722357981948">Adja meg, hogy a bővítménykereső le legyen-e tiltva</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
@@ -1911,6 +1922,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Profilonként</translation>
 <translation id="7796141075993499320">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak bővítményeket. Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a "DefaultPluginsSetting" házirendből (ha az be van állítva), vagy egyéb esetben a felhasználó saját személyes beállításából.</translation>
+<translation id="7801886189430766248">Ha ezt az irányelvet igazra állítja, a rendszer feltölti az Android-alkalmazásadatokat az Android Backup-szerverekre, ahonnan újratelepítéskor letölti őket a megfelelő alkalmazás.
+
+      Ha ezt az irányelvet hamisra állítja, az Android Backup Service kikapcsolódik.
+
+      Ha ezt a beállítást konfigurálja, akkor a felhasználók nem tudják majd módosítani.
+
+      Ha ezt a beállítást nem konfigurálja, akkor a felhasználók be- és kikapcsolhatják az Android Backup Service-t az Android Beállítások alkalmazásában.</translation>
 <translation id="7818131573217430250">A nagy kontrasztú mód alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="7831595031698917016">Megadja a maximális késleltetést ezredmásodpercben, amely aközött telhet el, hogy az eszközkezelési szolgáltatástól beérkezik a házirend-érvénytelenítés és az új házirend lehívása megtörténik.
 

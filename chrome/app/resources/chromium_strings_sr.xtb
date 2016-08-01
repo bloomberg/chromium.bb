@@ -53,6 +53,7 @@
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>
 <translation id="2595977381794111014">Користите пречицу за <ph name="APPS_ICON_IMAGE" /> у Chromium траци са обележивачима да бисте наставили да приступате апликацијама.</translation>
+<translation id="2605472041568654097">Помозите да побољшамо Chromium тако што ћете послати извештај о актуелним подешавањима.</translation>
 <translation id="2636877269779209383">Chromium захтева приступ камери да би је делио са овим сајтом.</translation>
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
 <translation id="2685838254101182273">Chromium је престао да се ажурира и не подржава више ову верзију оперативног система.</translation>
@@ -60,6 +61,7 @@
 <translation id="2711502716910134313">Картица Chromium</translation>
 <translation id="2718390899429598676">Chromium ће шифровати податке ради додатне сигурности.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
+<translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2801146392936645542">Датотека <ph name="FILE_NAME" /> је злонамерна, па ју је Chromium блокирао.</translation>
 <translation id="2847479871509788944">Уклони из Chromium-а...</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
@@ -72,12 +74,14 @@
 <translation id="3103660991484857065">Програм за инсталацију није успео да декомпримује архиву. Преузмите Chromium поново.</translation>
 <translation id="3130323860337406239">Chromium користи микрофон.</translation>
 <translation id="313551035350905294">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са корисником <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом.</translation>
+<translation id="3155163173539279776">Поново покрени Chromium</translation>
 <translation id="3190315855212034486">Опа! Chromium је отказао. Желите ли да га одмах поново покренете?</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чита податке из директоријума са подацима нити да их уписује у њега:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Недостају шифре за Google API. Неке функције Chromium-а ће бити онемогућене.</translation>
+<translation id="3289635842886789612">Chromium је застарео.</translation>
 <translation id="3296368748942286671">Настави са покретањем апликација у позадини када се Chromium затвори</translation>
 <translation id="3312805357485578561">Chromium је открио необично понашање</translation>
 <translation id="331951419404882060">Chromium ОС не може да синхронизује податке због грешке при пријављивању.</translation>
@@ -96,14 +100,17 @@
 <translation id="3883381313049582448">Користите лозинку коју је Chromium генерисао</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
+<translation id="3994125055863078356">Chromium не може да постане подразумевани прегледач.</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="4077262827416206768">Затворите све Chromium прозоре и рестартујте Chromium да би ова промена ступила на снагу.</translation>
+<translation id="4182290826692170034">Chromium је подразумевани прегледач. Јупи!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Упозорење:<ph name="END_BOLD" /> Chromium не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
 <translation id="4246125976471362530">{SECONDS,plural, =1{Chromium ће се поново покренути за 1 секунду.}one{Chromium ће се поново покренути за # секунду.}few{Chromium ће се поново покренути за # секунде.}other{Chromium ће се поново покренути за # секунди.}}</translation>
+<translation id="4271805377592243930">Пронађите помоћ за Chromium</translation>
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
@@ -114,13 +121,16 @@
 <translation id="459535195905078186">Chromium апликације</translation>
 <translation id="4621240073146040695">Ажурирање је скоро готово! Поново покрените Chromium да бисте довршили ажурирање.</translation>
 <translation id="4677944499843243528">Изгледа да се профил користи у неком другом Chromium процесу (<ph name="PROCESS_ID" />) на неком другом рачунару (<ph name="HOST_NAME" />). Chromium је закључао профил да не би био оштећен. Ако сте сигурни да ниједан други процес не користи овај профил, можете да откључате профил и поново покренете Chromium.</translation>
+<translation id="469338717132742108">Пронађите помоћ за Chromium OS</translation>
 <translation id="4743926867934016338">Прихватам, претражи</translation>
 <translation id="4888717733111232871">Правило за долазни саобраћај за Chromium да би се омогућио mDNS саобраћај.</translation>
 <translation id="4943838377383847465">Chromium је у позадинском режиму.</translation>
 <translation id="4987820182225656817">Гости могу да користе Chromium а да не остављају никакве трагове.</translation>
 <translation id="4994636714258228724">Додајте себе у Chromium</translation>
 <translation id="5032989939245619637">Сачувај детаље у Chromium-у</translation>
+<translation id="5113946445248196174">Chromium не може да одреди ни да подеси подеразумевани прегледач.</translation>
 <translation id="5116586539350239523">Chromium ће безбедно складиштити личне податке да не бисте морали да их поново уносите.</translation>
+<translation id="5231355151045086930">Одјавите се из Chromium-а</translation>
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
@@ -140,6 +150,7 @@
 <translation id="5859963531214966875">Будуће верзије Chromium-а више неће подржавати овај Linux систем.</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
+<translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5906655207909574370">Ажурирање је скоро готово! Поново покрените уређај да бисте довршили ажурирање.</translation>
 <translation id="5942225298871134766">Chromium ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME" /> је додат у Chromium.</translation>
@@ -180,6 +191,7 @@
 <translation id="705851970750939768">Ажурирај Chromium</translation>
 <translation id="7064610482057367130">Није пронађена ниједна инсталација Chromium-а за ажурирање.</translation>
 <translation id="7066436765290594559">Chromium ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
+<translation id="707471633328071618">Google Payments (копирано у Chromium)</translation>
 <translation id="7090955637699162649">Chromium може да користи <ph name="BEGIN_LINK" />веб-услуге<ph name="END_LINK" /> да би побољшао искуство прегледања. Ако желите, можете да онемогућите ове услуге у било ком тренутку.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{То ће трајно избрисати $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}one{То ће трајно избрисати $1 ставку са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}few{То ће трајно избрисати $1 ставке са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}other{То ће трајно избрисати $1 ставки са овог уређаја. Да бисте вратили податке касније, пријавите се у Chromium као $2.}}</translation>
 <translation id="7138853919861947730">Chromium може да користи веб услуге да би побољшао доживљај прегледања.</translation>
@@ -191,6 +203,7 @@
 <translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
 <translation id="722928257909516027">Приказ Chromium менија</translation>
 <translation id="731644333568559921">Ажурирај &amp;Chromium ОС</translation>
+<translation id="731795002583552498">Ажурирање Chromium-а</translation>
 <translation id="7318036098707714271">Датотека подешавања је оштећена или неважећа.
 
 Chromium не може да врати подешавања.</translation>
@@ -220,6 +233,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7937630085815544518">Били сте пријављени на Chromium као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="795025003224538582">Не покрећи поново</translation>
 <translation id="7962572577636132072">Chromium се аутоматски ажурира, па увек имате најновију верзију.</translation>
+<translation id="7975919845073681630">Ово је секундарна инсталација Chromium-а па не можете да га подесите као подразумевани прегледач.</translation>
 <translation id="7979877361127045932">Сакриј у Chromium менију</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium захтева приступ дозволама да би их делио са овим сајтом.</translation>

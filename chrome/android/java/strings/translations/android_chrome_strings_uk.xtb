@@ -40,6 +40,7 @@
 <translation id="1409879593029778104">Файл <ph name="FILE_NAME" /> не завантажено, оскільки він уже є.</translation>
 <translation id="1416550906796893042">Версія додатка</translation>
 <translation id="1423209968422390786">Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Друк</translation>
 <translation id="1445680696957526815">Компоненти Chrome несумісні одне з одним. Веб-переглядач може оновлюватися, спробуйте через декілька хвилин. Якщо проблема не зникне, видаліть Chrome і встановіть його знову.</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
 <translation id="145097072038377568">Вимкнено в налаштуваннях Android</translation>
@@ -47,8 +48,10 @@
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1506061864768559482">Пошукова система</translation>
 <translation id="1513352483775369820">Закладки й історія веб-пошуку</translation>
+<translation id="1546112724822176246">Не бачите свого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Відкрити в іншому вікні</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
+<translation id="1571304935088121812">Копіювати ім’я користувача</translation>
 <translation id="1612196535745283361">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
@@ -82,6 +85,7 @@
 <translation id="194341124344773587">Увімкніть дозвіл для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1944384637046898011">Зашифрувати всі дані за допомогою пароля Google із <ph name="TIME" />.</translation>
+<translation id="1946821392246652573">Підтримувані типи карток</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1984321224716884559">Закладки з Chrome для розробників</translation>
@@ -89,6 +93,7 @@
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="2001120796168634316">Зберегти пов’язану сторінку</translation>
 <translation id="200669432486043882">Замінити файл</translation>
+<translation id="2020525020270327736">Копіювати URL-адресу сайту</translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2073235970478114994">Завантажити зображення</translation>
 <translation id="2079545284768500474">Скасувати</translation>
@@ -213,6 +218,7 @@
 <translation id="3386292677130313581">Запитувати, перш ніж дозволити сайтам визначати ваше місцезнаходження (рекомендується)</translation>
 <translation id="3387650086002190359">Файл <ph name="FILE_NAME" /> не завантажено через помилки файлової системи.</translation>
 <translation id="3414952576877147120">Розмір:</translation>
+<translation id="3431636764301398940">Зберегти цю картку на пристрої</translation>
 <translation id="3435896845095436175">Увімкнути</translation>
 <translation id="3452612588551937789">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="3485544713029068372">Smart Lock для паролів</translation>
@@ -227,10 +233,12 @@
 Щоб змінити пошуковий термін, натисніть і утримуйте його. Щоб уточнити пошуковий запит, пересуньте панель угору та торкніться вікна пошуку.</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3623048332793834136">Закладки з Chrome Canary</translation>
+<translation id="3632295766818638029">Показати пароль</translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу на сайтах.</translation>
 <translation id="3656115297268584622">Увімкніть службу локації в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
+<translation id="3706658020782046159">Виберіть адресу доставки, щоб переглянути способи доставки та вимоги.</translation>
 <translation id="3716158070938632480">Поруч є веб-сторінки</translation>
 <translation id="3732088672634061408">Не вдалось отримати дані про інтереси.</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
@@ -344,6 +352,7 @@
 <translation id="5107381076085091558">Завантаження призупинено.</translation>
 <translation id="5118713593561876160">Інтереси</translation>
 <translation id="5127805178023152808">Синхронізацію вимкнено</translation>
+<translation id="5131405117025179004">Редагування збережених облікових даних</translation>
 <translation id="5138299137310274655">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE" />. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Об’єднати вкладки та додатки</translation>
 <translation id="515227803646670480">Очистити збережені дані</translation>
@@ -408,6 +417,7 @@
 <translation id="572328651809341494">Останні вкладки</translation>
 <translation id="5748802427693696783">Ви перейшли на стандартні вкладки</translation>
 <translation id="5749068826913805084">Щоб завантажувати файли, Chrome потребує доступу до пам’яті.</translation>
+<translation id="57586589942790530">Недійсний номер картки</translation>
 <translation id="5763382633136178763">Анонімні вкладки</translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5771382037724542929">Замінити наявний файл "<ph name="FILE_NAME" />" у каталозі "<ph name="DIRECTORY_NAME" />"?</translation>
@@ -473,6 +483,7 @@
 <translation id="6477460825583319731">Недійсна електронна адреса</translation>
 <translation id="6482749332252372425">Не вдалося завантажити файл <ph name="FILE_NAME" />. Замало місця.</translation>
 <translation id="6541922744811587456">Закладки з Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="6545017243486555795">Видалити всі дані</translation>
 <translation id="6550675742724504774">Параметри</translation>
@@ -646,6 +657,7 @@
 <translation id="8413126021676339697">Показати повну історію</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
+<translation id="8447861592752582886">Скасувати доступ до пристрою</translation>
 <translation id="8481940801237642152">Ваше з’єднання з сайтом приватне, але хтось у мережі може змінювати вигляд сторінки.</translation>
 <translation id="8493948351860045254">Звільнити місце</translation>
 <translation id="8497726226069778601">Тут ще нічого немає…</translation>

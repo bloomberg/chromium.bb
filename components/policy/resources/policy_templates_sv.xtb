@@ -120,11 +120,6 @@
       enhetligt skrivbord. I så fall kan användaren inte aktivera funktionen.</translation>
 <translation id="1474273443907024088">Inaktivera falsk start i TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Policyn anger hur lång tid i millisekunder som enhetshanteringstjänsten tillfrågas efter information om enhetspolicy.
-
-      Om du ställer in policyn ersätts standardvärdet 3 timmar. Giltiga värden för policyn är mellan 1800000 (30 minuter) och 86400000 (1 dag). Om ett värde utanför intervallet anges ändras det till närmaste gräns.
-
-      Om du inte anger policyn används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME" /> och senare.</translation>
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
@@ -341,11 +336,6 @@
 
       När Bluetooth har aktiverats måste enheten startas om innan ändringarna tillämpas (du behöver inte starta om enheten när du inaktiverar Bluetooth).</translation>
 <translation id="2366415278352956652">Aktiverar cast</translation>
-<translation id="2371309782685318247">Policyn anger hur ofta i millisekunder som enhetshanteringstjänsten avfrågas efter användarpolicyinformation.
-
-      Om policyn anges ersätter den standardinställningen 3 timmar. Giltiga värden för policyn är från 1800000 (30 minuter) till 86400000 (1 dag). Värden utanför detta intervall ändras till närmaste gräns.
-
-      Om policyn inte anges används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2372547058085956601">Fördröjningen av den automatiska inloggningen till en offentlig session.
 
       Om policyn |DeviceLocalAccountAutoLoginId| inte har angetts har inte policyn någon effekt. I annat fall:
@@ -941,6 +931,15 @@
       Anger tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
 
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
+<translation id="388237772682176890">Den här principen har fasats ut i M53 och tagits bort från M54, eftersom stödet för SPDY/3.1 har tagits bort.
+
+      Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME" />.
+
+      Om den här principen är aktiverad är SPDY-protokollet inte tillgängligt i <ph name="PRODUCT_NAME" />.
+
+      Om den här principen inaktiveras kan SPDY användas.
+
+      Om den här principen inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
 <translation id="3898060089412156345">Tillåt eller neka ljudinspelning.
 
@@ -1160,6 +1159,7 @@
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
+<translation id="4725528134735324213">Aktivera säkerhetskopieringstjänsten för Android</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="4744190513568488164">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
 
@@ -1265,6 +1265,15 @@
       Om den här principen ges värdet Sant förhindrar <ph name="PRODUCT_OS_NAME" /> att enheten startas i utvecklarläge. Om utvecklarväxeln har aktiverats vägrar systemet att starta och en felskärm visas.
 
       Om principen inte anges eller om den ges värdet Falskt förblir utvecklarläget tillgängligt på enheten.</translation>
+<translation id="5203271367506489164">Den här principen har fasats ut i M48 och NetworkPredictionOptions används i stället. Principen har även tagits bort från M54.
+
+      Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Detta styr inte bara DNS-förhämtning utan också TCP- och SSL-föranslutning och förrendering av webbsidor. Principens namn refererar till DNS-förhämtning av historiska skäl.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME" />.
+
+      Om principen inte anges är funktionen aktiverad, men den kan ändras av användarna.</translation>
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -2072,6 +2081,13 @@
 <translation id="7796141075993499320">Policyn gör att du kan ange en lista med webbadressmönster som får köra plugin-program.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPluginsSetting om den har angetts eller från användarens personliga konfiguration om den inte har det.</translation>
+<translation id="7801886189430766248">När principen är inställd på sant laddas Android-appdata upp till Android-servrarna för säkerhetskopiering och återställs från dem när kompatibla appar återinstalleras.
+
+      När principen är inställd på falskt stängs säkerhetskopieringstjänsten för Android av.
+
+      Om inställningen konfigureras kan användarna inte ändra den själva.
+
+      Om inställningen inte konfigureras kan användare aktivera och inaktivera säkerhetskopieringstjänsten i appen Inställningar på Android.</translation>
 <translation id="7818131573217430250">Ange standardtillståndet för högkontrastläget på inloggningsskärmen</translation>
 <translation id="7831595031698917016">Anger den längsta fördröjningen i millisekunder mellan att en ogiltigförklaring av policyn tas emot och att den nya policyn hämtas från tjänsten för enhetshantering.
 

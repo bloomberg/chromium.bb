@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />，選單項目</translation>
 <translation id="3406283310380167331">顯示表單清單</translation>
 <translation id="3422338090358345848">開啟鍵盤語音回饋工具</translation>
+<translation id="3423495725743882470">第 $1 列，第 $2 欄</translation>
 <translation id="3457000393508828486">部分已按下</translation>
 <translation id="3462439746547587373"><ph name="NAME" />，按鈕</translation>
 <translation id="3473644018603298796">已選取 <ph name="COUNT" /> 項</translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">沒有表單。</translation>
 <translation id="5005670136041063723">已無類似元素。</translation>
 <translation id="501473567976723023">1 月</translation>
+<translation id="5040591161308540832">「$1」表格，含 $2 列 $3 欄</translation>
 <translation id="5041394372352067729">將點字顯示畫面移至頁面頂端</translation>
 <translation id="5042770794184672516">增加說話音量</translation>
 <translation id="5050015258024679800">上一個第 4 階標題</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">第 6 階</translation>
 <translation id="6368143427468974988">上一個標題</translation>
 <translation id="6378565991815958969">複製 $1。</translation>
+<translation id="6385591741672306837">欄</translation>
 <translation id="6387719785439924554">獨立元素</translation>
 <translation id="6411426777058107714">沒有上一個圓形按鈕。</translation>
 <translation id="6414968628640960377">上一個不同的元素。</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">不在表格內。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{底線}other{# 個底線}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">列</translation>
 <translation id="8186185314313222077">切換全螢幕</translation>
 <translation id="8199231515320852133">朗讀目前儲存格的標題</translation>
 <translation id="820417203470636242">空白儲存格。</translation>

@@ -269,6 +269,7 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="3392045790598181549"><ph name="NAME" />, meniu elementas</translation>
 <translation id="3406283310380167331">Rodyti formų sąrašą</translation>
 <translation id="3422338090358345848">Atidaryti klaviatūros naršyklę</translation>
+<translation id="3423495725743882470">$1 eilutė, $2 stulpelis</translation>
 <translation id="3457000393508828486">Iš dalies paspausta</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, mygtukas</translation>
 <translation id="3473644018603298796">pas. elem.: <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="5000760171916499057">Nėra formų.</translation>
 <translation id="5005670136041063723">Daugiau panašių elementų nėra.</translation>
 <translation id="501473567976723023">Sausis</translation>
+<translation id="5040591161308540832">$1 lentelė, $2 ir $3</translation>
 <translation id="5041394372352067729">Perkelti Brailio rašmenų pateiktį į puslapio viršų</translation>
 <translation id="5042770794184672516">Didinti kalbos garsumą</translation>
 <translation id="5050015258024679800">Ankstesnė 4 lygio antraštė</translation>
@@ -555,6 +557,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Ankstesnė antraštė</translation>
 <translation id="6378565991815958969">kopijuoti $1.</translation>
+<translation id="6385591741672306837">stulp.</translation>
 <translation id="6387719785439924554">šalia</translation>
 <translation id="6411426777058107714">Nėra ankstesnės akutės.</translation>
 <translation id="6414968628640960377">Ankstesnis kitoks elementas.</translation>
@@ -704,6 +707,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{apatinis brūkšnys}one{# apatinis brūkšnys}few{# apatiniai brūkšniai}many{# underscores}other{# apatinių brūkšnių}}</translation>
 <translation id="8179976553408161302">Įvesti</translation>
+<translation id="8184828902145951186">eil.</translation>
 <translation id="8186185314313222077">viso ekrano režimo perjungimas</translation>
 <translation id="8199231515320852133">Pranešti apie dabartinio langelio antraštes</translation>
 <translation id="820417203470636242">Tuščias langelis.</translation>

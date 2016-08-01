@@ -40,6 +40,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
 <translation id="1423209968422390786">O acesso à localização está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar a ser atualizado, tente novamente dentro de alguns minutos. Se o problema continuar, experimente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
 <translation id="145097072038377568">Desativada nas Definições do Android</translation>
@@ -47,8 +48,10 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
 <translation id="1513352483775369820">Marcadores e histórico da Web</translation>
+<translation id="1546112724822176246">Não vê o seu dispositivo? <ph name="BEGIN_LINK" />Obtenha ajuda<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
+<translation id="1571304935088121812">Copiar nome de utilizador</translation>
 <translation id="1612196535745283361">O Chrome precisa de acesso à localização para procurar dispositivos. O acesso à localização está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
@@ -82,6 +85,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Cartões aceites</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1984321224716884559">Marcadores do Chrome Dev</translation>
@@ -89,6 +93,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="2001120796168634316">Guardar pág. ligação p/ depois</translation>
 <translation id="200669432486043882">Substituir ficheiro</translation>
+<translation id="2020525020270327736">Copiar site</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
 <translation id="2073235970478114994">Carregar imagens</translation>
 <translation id="2079545284768500474">Anular</translation>
@@ -213,6 +218,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="3386292677130313581">Perguntar antes de permitir que os sites conheçam a sua localização (recomendado)</translation>
 <translation id="3387650086002190359">A transferência de <ph name="FILE_NAME" /> falhou devido a erros do sistema de ficheiros.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
+<translation id="3431636764301398940">Guardar este cartão neste dispositivo</translation>
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="3452612588551937789">Inicie sessão com a sua Conta Google para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
@@ -227,10 +233,12 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3623048332793834136">Marcadores do Chrome Canary</translation>
+<translation id="3632295766818638029">Desmascarar palavra-passe</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Os Websites de terceiros podem guardar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
+<translation id="3706658020782046159">Selecione uma morada para envio para verificar os métodos e os requisitos de envio.</translation>
 <translation id="3716158070938632480">Existem páginas Web próximas</translation>
 <translation id="3732088672634061408">Não foi possível obter os interesses.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -344,6 +352,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5107381076085091558">Transferência interrompida.</translation>
 <translation id="5118713593561876160">Interesses</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
+<translation id="5131405117025179004">Editar conta guardada</translation>
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Unir separadores e aplicações</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
@@ -408,6 +417,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
+<translation id="57586589942790530">Número de cartão inválido</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5771382037724542929">Pretende substituir o ficheiro <ph name="FILE_NAME" /> existente no diretório <ph name="DIRECTORY_NAME" />?</translation>
@@ -473,6 +483,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6477460825583319731">Endereço de email inválido</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
 <translation id="6541922744811587456">Marcadores do Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
 <translation id="6550675742724504774">Opções</translation>
@@ -646,6 +657,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
+<translation id="8447861592752582886">Revogar autorização do dispositivo</translation>
 <translation id="8481940801237642152">A sua ligação a este site é privada, mas alguém na rede pode estar a tentar alterar o aspeto da página.</translation>
 <translation id="8493948351860045254">Libertar espaço</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>

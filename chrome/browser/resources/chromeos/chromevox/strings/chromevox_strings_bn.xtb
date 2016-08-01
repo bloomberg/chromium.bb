@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, মেনু আইটেম</translation>
 <translation id="3406283310380167331">ফর্ম তালিকা দেখান</translation>
 <translation id="3422338090358345848">কীবোর্ড এক্সপ্লোরার খুলুন</translation>
+<translation id="3423495725743882470">সারি $1 কলাম $2</translation>
 <translation id="3457000393508828486">আংশিক টেপা</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, বোতাম</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">কোনো ফর্ম নেই৷</translation>
 <translation id="5005670136041063723">কোনো অনুরূপ উপাদান নেই৷</translation>
 <translation id="501473567976723023">জানুয়ারি</translation>
+<translation id="5040591161308540832">সারণী $1, $2 গুণ $3</translation>
 <translation id="5041394372352067729">পৃষ্ঠার উপরের দিকে ব্রেইল প্রদর্শন সরান</translation>
 <translation id="5042770794184672516">কথন ভলিউম বাড়ান</translation>
 <translation id="5050015258024679800">পূর্ববর্তী স্তর ৫ শিরোনাম</translation>
@@ -555,6 +557,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">পূর্ববর্তী শিরোনাম</translation>
 <translation id="6378565991815958969">$1 কপি করুন।</translation>
+<translation id="6385591741672306837">কলাম</translation>
 <translation id="6387719785439924554">একপাশে</translation>
 <translation id="6411426777058107714">কোনো পূর্ববর্তী রেডিও বোতাম নেই৷</translation>
 <translation id="6414968628640960377">পূর্ববর্তী পৃথক উপাদান৷</translation>
@@ -704,6 +707,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="8153880621934657047">সারণীর ভিতরে নয়৷</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{আন্ডারস্কোর}one{#টি আন্ডারস্কোর}other{#টি আন্ডারস্কোর}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">সারি</translation>
 <translation id="8186185314313222077">পূর্ণ স্ক্রীন টগল করুন</translation>
 <translation id="8199231515320852133">বর্তমান কক্ষের শিরোলেখ ঘোষণা করুন</translation>
 <translation id="820417203470636242">ফাঁকা কক্ষ৷</translation>

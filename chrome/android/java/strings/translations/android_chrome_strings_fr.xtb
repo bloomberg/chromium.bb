@@ -40,6 +40,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1409879593029778104">Le téléchargement du fichier "<ph name="FILE_NAME" />" a été bloqué, car le fichier existe déjà.</translation>
 <translation id="1416550906796893042">Version de l'application</translation>
 <translation id="1423209968422390786">L'accès aux données de localisation est <ph name="BEGIN_LINK" />désactivé pour cet appareil<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Imprimer</translation>
 <translation id="1445680696957526815">Les composants de Chrome ne sont pas compatibles entre eux. Une mise à jour de Chrome est peut-être en cours. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez désinstaller Chrome, puis le réinstaller.</translation>
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
 <translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
@@ -47,8 +48,10 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1506061864768559482">Moteur de recherche</translation>
 <translation id="1513352483775369820">Favoris et historique Web</translation>
+<translation id="1546112724822176246">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenez l'aide.<ph name="END_LINK" /></translation>
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
+<translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
@@ -82,6 +85,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Cartes acceptées</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984321224716884559">Favoris de la version en développement de Chrome</translation>
@@ -89,6 +93,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="2001120796168634316">Page liée à consulter plus tard</translation>
 <translation id="200669432486043882">Remplacer un fichier</translation>
+<translation id="2020525020270327736">Copier le site</translation>
 <translation id="2038563949887743358">Activer "Voir version ordinateur"</translation>
 <translation id="2073235970478114994">Charger les images</translation>
 <translation id="2079545284768500474">Annuler</translation>
@@ -213,6 +218,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à accéder à ma position (recommandé)</translation>
 <translation id="3387650086002190359">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'erreurs liées au système de fichiers.</translation>
 <translation id="3414952576877147120">Taille :</translation>
+<translation id="3431636764301398940">Enregistrer cette carte sur cet appareil</translation>
 <translation id="3435896845095436175">Activer</translation>
 <translation id="3452612588551937789">Connectez-vous à votre compte Google pour synchroniser vos favoris, vos mots de passe, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
@@ -227,10 +233,12 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3623048332793834136">Favoris de Chrome Canary</translation>
+<translation id="3632295766818638029">Annuler le masquage du mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3656115297268584622">Activez le service de localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Les sites tiers peuvent enregistrer et lire les données des cookies.</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
+<translation id="3706658020782046159">Sélectionnez une adresse de livraison pour consulter les modes d'expédition disponibles et les conditions applicables.</translation>
 <translation id="3716158070938632480">Pages Web à proximité</translation>
 <translation id="3732088672634061408">Impossible de récupérer les centres d'intérêt.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
@@ -344,6 +352,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5107381076085091558">Téléchargement suspendu.</translation>
 <translation id="5118713593561876160">Centres d'intérêt</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
+<translation id="5131405117025179004">Modifier un compte enregistré</translation>
 <translation id="5138299137310274655">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
 <translation id="5150703642582475397">Fusionner les onglets et les applications</translation>
 <translation id="515227803646670480">Effacer les données stockées</translation>
@@ -408,6 +417,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="572328651809341494">Onglets récents</translation>
 <translation id="5748802427693696783">Onglets standards sélectionnés</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
+<translation id="57586589942790530">Numéro de carte incorrect</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5771382037724542929">Voulez-vous vraiment remplacer le fichier <ph name="FILE_NAME" /> dans le répertoire "<ph name="DIRECTORY_NAME" />" ?</translation>
@@ -473,6 +483,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6477460825583319731">Adresse e-mail non valide</translation>
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
 <translation id="6541922744811587456">Favoris de Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
 <translation id="6545017243486555795">Supprimer toutes les données</translation>
 <translation id="6550675742724504774">Options</translation>
@@ -646,6 +657,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
+<translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>

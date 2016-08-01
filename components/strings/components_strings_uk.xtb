@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="1008557486741366299">Не зараз</translation>
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
 <translation id="1038842779957582377">Невідоме ім’я</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">Зв’яжіться із системним адміністратором.</translation>
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1753706481035618306">Номер сторінки</translation>
-<translation id="1761412452051366565">Щоб отримувати персоналізовані пропозиції від Google, увімкніть синхронізацію.</translation>
 <translation id="1763864636252898013">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Операційна система вашого пристрою не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Проведіть діагностику мережі Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Оновіть парольну фразу для синхронізації.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">Інтервал отримання:</translation>
 <translation id="3462200631372590220">Сховати додаткову інформацію</translation>
 <translation id="3479539252931486093">Не очікували? <ph name="BEGIN_LINK" />Повідомте нас<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">Не зараз</translation>
 <translation id="348000606199325318">Ідентифікатор аварійного завершення роботи <ph name="CRASH_LOCAL_ID" /> (ідентифікатор сервера: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Не вдалося зв’язатися з одним із ваших батьків. Повторіть спробу.</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">Видалити закладку</translation>
 <translation id="5431657950005405462">Файл не знайдено</translation>
 <translation id="5435775191620395718">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">Персоналізовані пропозиції вимкнено, оскільки ваші синхронізовані дані захищено парольною фразою.</translation>
 <translation id="5439770059721715174">Помилка перевірки схеми за адресою "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Сторінку хосту <ph name="HOST_NAME" /> не знайдено</translation>
 <translation id="5455374756549232013">Недійсна мітка часу правила</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">Правило не підтримується.</translation>
 <translation id="6895330447102777224">Дані картки підтверджено</translation>
 <translation id="6897140037006041989">Агент користувача</translation>
-<translation id="6903907808598579934">Увімкнути синхронізацію</translation>
 <translation id="6915804003454593391">Користувач:</translation>
 <translation id="6957887021205513506">Схоже, що сертифікат сервера підроблено.</translation>
 <translation id="6965382102122355670">ОК</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">Ця веб-сторінка має цикл перенаправлень</translation>
 <translation id="7275334191706090484">Закладки, якими керує адміністратор</translation>
 <translation id="7298195798382681320">Рекомендоване</translation>
-<translation id="7301833672208172928">Увімкнути синхронізацію історії</translation>
 <translation id="7334320624316649418">&amp;Повторити перевпорядкування</translation>
 <translation id="733923710415886693">Сертифікат сервера не надав інформацію про перевірку.</translation>
 <translation id="7353601530677266744">Командний рядок</translation>
@@ -640,7 +638,6 @@
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Адресу DNS&lt;/abbr&gt; хосту <ph name="HOST_NAME" /> не знайдено. Діагностика проблеми.</translation>
 <translation id="8741995161408053644">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
-<translation id="8790687370365610530">Щоб отримувати пропозиції персоналізованого вмісту від Google, увімкніть синхронізацію історії.</translation>
 <translation id="8798099450830957504">За умовчанням</translation>
 <translation id="8804164990146287819">Політика конфіденційності</translation>
 <translation id="8820817407110198400">Закладки</translation>

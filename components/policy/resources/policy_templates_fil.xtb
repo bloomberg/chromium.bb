@@ -120,11 +120,6 @@
       Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
 <translation id="1474273443907024088">I-disable ang TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng device.
-
-      Ino-override ng pagtatakda ng patakarang ito ang default na halaga na 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ididikit sa mga naaayong limitasyon ang anumang mga halagang wala sa sakop na ito.
-
-      Kapag hindi nakatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na halaga na 3 oras.</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
 <translation id="1509692106376861764">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29.</translation>
 <translation id="1522425503138261032">Payagan ang mga site na subaybayan ang aktwal na lokasyon ng mga user</translation>
@@ -333,12 +328,6 @@
 
       Pagkatapos i-enable ang Bluetooth, dapat i-reboot ang device upang malapat ang mga pagbabago (hindi na kailangang i-reboot ang device kapag idi-disable ang Bluetooth).</translation>
 <translation id="2366415278352956652">Ine-enable ang pag-cast</translation>
-<translation id="2371309782685318247">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng user.
-
-      Ino-override ng pagtatakda ng patakarang ito ang default na halaga na 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ididikit sa mga naaayong limitasyon ang anumang mga halagang wala sa sakop na ito.
-
-      Kapag hindi nakatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang default na halaga na 3 oras.
-</translation>
 <translation id="2372547058085956601">Delay ng awtomatikong pag-log in sa pampublikong session.
 
       Kung hindi nakatakda ang patakaran ng |DeviceLocalAccountAutoLoginId|, walang bisa ang patakarang ito. Kung hindi:
@@ -928,6 +917,15 @@
       Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa retail mode. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
 
       Ang bawat entry sa listahan ay naglalaman ng diksyunaryong dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ng URL ng update nito sa field na 'update-url.'</translation>
+<translation id="388237772682176890">Ang patakarang ito ay hindi na ginagamit sa M53 at inalis na sa M54, dahil inalis na ang suporta sa SPDY/3.1.
+
+      Dini-disable ang paggamit ng SPDY protocol sa <ph name="PRODUCT_NAME" />.
+
+      Kung na-enable ang patakarang ito, hindi magiging available ang SPDY protocol sa <ph name="PRODUCT_NAME" />.
+
+      Kapag itinakda sa naka-disable ang patakarang ito, papayagan ang paggamit ng SPDY.
+
+      Kung hindi itinakda ang patakarang ito, magiging available ang SPDY.</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
 <translation id="3898060089412156345">Pahintulutan o tanggihan ang pagkuha ng audio.
 
@@ -1147,6 +1145,7 @@
 <translation id="467449052039111439">Magbukas ng listahan ng mga URL</translation>
 <translation id="4680961954980851756">Paganahin ang AutoFill</translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
+<translation id="4725528134735324213">I-enable ang Android Backup Service</translation>
 <translation id="4733471537137819387">Mga patakarang kaugnay ng pinagsamang pagpapatotoo ng HTTP.</translation>
 <translation id="4744190513568488164">Ang mga server kung saan maaaring maglaan ang <ph name="PRODUCT_NAME" />.
 
@@ -1248,6 +1247,15 @@
       Kung itatakda sa True ang patakarang ito, pipigilan ng <ph name="PRODUCT_OS_NAME" /> ang device na ma-boot sa mode ng developer. Tatangging mag-boot ang system at magpapakita ito ng screen ng error kapag naka-on ang switch ng developer.
 
       Kung hindi nakatakda o nakatakda sa False ang patakarang ito, mananatiling available ang mode ng developer para sa device.</translation>
+<translation id="5203271367506489164">Ang patakarang ito ay hindi na ginagamit sa M48 alinsunod sa NetworkPredictionOptions, at inalis na sa M54.
+
+      Ine-enable ang paghula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na palitan ang setting na ito.
+
+      Hindi lang nito kinokontrol ang pag-prefetch ng DNS ngunit pati na rin ang paunang pagkonekta at pag-render ng TCP at SSL ng mga web page. Ang pangalan ng patakaran ay tumutukoy sa pag-prefetch ng DNS batay sa dati nang ginawa.
+
+      Kung na-enable o na-disable mo ang setting na ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
+
+      Kung hindi itinakda ang patakarang ito, mae-enable ito ngunit magagawa itong baguhin ng user.</translation>
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -2059,6 +2067,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7796141075993499320">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng mga plugin.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na global na halaga para sa lahat ng site mula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="7801886189430766248">Kapag nakatakda ang patakarang ito sa true, ia-upload ang data ng Android app sa mga server ng Android Backup at ire-restore mula sa mga ito kapag nagsagawa ng mga muling pag-install ng app para sa mga compatible na app.
+
+      Kapag nakatakda ang patakarang ito sa false, mag-o-off ang Android Backup Service.
+
+      Kung na-configure ang setting na ito, hindi magagawa ng mga user na baguhin ang mga ito nang sila lang.
+
+      Kung hindi na-configure ang setting na ito, magagawang i-on at i-off ng mga user ang Android Backup Service sa app na Mga Setting ng Android.</translation>
 <translation id="7818131573217430250">Itakda ang default na katayuan ng mode na may mataas na contrast sa screen sa pag-login</translation>
 <translation id="7831595031698917016">Tinutukoy ang maximum na pagkaantala sa mga millisecond sa pagitan ng pagtanggap ng pagtukoy na di-wasto ang patakaran at pagkuha ng bagong patakaran mula sa serbisyo sa pamamahala ng device.
 

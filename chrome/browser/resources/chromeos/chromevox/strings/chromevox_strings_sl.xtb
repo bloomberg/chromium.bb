@@ -269,6 +269,7 @@
 <translation id="3392045790598181549">Menijski element <ph name="NAME" /></translation>
 <translation id="3406283310380167331">Prikaz seznama obrazcev</translation>
 <translation id="3422338090358345848">Odpiranje raziskovalca tipkovnice</translation>
+<translation id="3423495725743882470">vrstica $1 stolpec $2</translation>
 <translation id="3457000393508828486">Delno pritisnjeno</translation>
 <translation id="3462439746547587373">Gumb <ph name="NAME" /></translation>
 <translation id="3473644018603298796">izb <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">Ni obrazcev.</translation>
 <translation id="5005670136041063723">Ni več podobnih elementov.</translation>
 <translation id="501473567976723023">januar</translation>
+<translation id="5040591161308540832">Tabela $1, $2 krat $3</translation>
 <translation id="5041394372352067729">Premik Braillove vrstice na vrh strani</translation>
 <translation id="5042770794184672516">Povečanje glasnosti govora</translation>
 <translation id="5050015258024679800">Prejšnji naslov na ravni 4</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">n6</translation>
 <translation id="6368143427468974988">Prejšnji naslov</translation>
 <translation id="6378565991815958969">kopiraj $1.</translation>
+<translation id="6385591741672306837">stol.</translation>
 <translation id="6387719785439924554">poleg</translation>
 <translation id="6411426777058107714">Ni prejšnjega izbirnega gumba.</translation>
 <translation id="6414968628640960377">Prejšnji drugačni element.</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">Zunaj tabele.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">vrstica</translation>
 <translation id="8186185314313222077">preklop celozaslonskega načina</translation>
 <translation id="8199231515320852133">Obvestilo o glavah trenutne celice</translation>
 <translation id="820417203470636242">Prazna celica.</translation>

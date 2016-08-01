@@ -59,6 +59,7 @@
 <translation id="2711502716910134313">Раздел в Chromium</translation>
 <translation id="2718390899429598676">За повишаване на сигурността Chromium ще шифрова данните ви.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
+<translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2801146392936645542">Файлът „<ph name="FILE_NAME" />“ е злонамерен и е блокиран от Chromium.</translation>
 <translation id="2847479871509788944">Премахване от Chromium...</translation>
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
@@ -71,6 +72,7 @@
 <translation id="3103660991484857065">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете отново Chromium.</translation>
 <translation id="3130323860337406239">Chromium използва микрофона ви.</translation>
 <translation id="313551035350905294">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но няма да сте в състояние да ги свържете с друг профил.</translation>
+<translation id="3155163173539279776">Рестартиране на Chromium</translation>
 <translation id="3190315855212034486">О, не! Chromium претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чете и записва в директорията си за данни: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -144,6 +146,7 @@
 <translation id="5859963531214966875">Бъдещите версии на Chromium вече няма да поддържат тази система Linux.</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
+<translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5906655207909574370">Актуализирането почти завърши! Остава само да рестартирате устройството си.</translation>
 <translation id="5942225298871134766">Chromium ще съхрани това при <ph name="SAVED_PASSWORD_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> е добавено към Chromium.</translation>

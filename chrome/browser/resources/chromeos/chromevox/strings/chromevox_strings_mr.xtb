@@ -268,6 +268,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, मेनू आयटम</translation>
 <translation id="3406283310380167331">फॉर्म सूची दर्शवा</translation>
 <translation id="3422338090358345848">कीबोर्ड एक्सप्लोरर उघडा</translation>
+<translation id="3423495725743882470">पंक्ती $1 स्तंभ $2</translation>
 <translation id="3457000393508828486">अंशत: दाबलेले</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, बटण</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -411,6 +412,7 @@
 <translation id="5000760171916499057">कोणतेही फॉर्म नाहीत.</translation>
 <translation id="5005670136041063723">आणखी सारखे घटक नाहीत.</translation>
 <translation id="501473567976723023">जानेवारी</translation>
+<translation id="5040591161308540832">सारणी $1, $3 नुसार $2</translation>
 <translation id="5041394372352067729">पृष्ठाच्या शीर्षस्थानी ब्रेल प्रदर्शन हलवा</translation>
 <translation id="5042770794184672516">बोलण्‍याचा आवाज वाढवा</translation>
 <translation id="5050015258024679800">मागील स्तर 4 शीर्षक</translation>
@@ -555,6 +557,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">मागील मथळा</translation>
 <translation id="6378565991815958969">$1 कॉपी करा.</translation>
+<translation id="6385591741672306837">स्तंभ</translation>
 <translation id="6387719785439924554">बाजूस</translation>
 <translation id="6411426777058107714">मागील रेडिओ बटण नाही.</translation>
 <translation id="6414968628640960377">मागील वेगळा घटक.</translation>
@@ -704,6 +707,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8153880621934657047">सारणीमध्ये नाही.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोअर}one{# अंडरस्कोअर}other{# अंडरस्कोअर}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">पंक्ती</translation>
 <translation id="8186185314313222077">पूर्ण स्क्रीन टॉगल करा</translation>
 <translation id="8199231515320852133">सध्‍याच्या सेलची शीर्षके घोषित करा</translation>
 <translation id="820417203470636242">रिक्त सेल.</translation>

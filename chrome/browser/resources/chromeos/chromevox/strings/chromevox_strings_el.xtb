@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, στοιχείο μενού</translation>
 <translation id="3406283310380167331">Εμφάνιση λίστας φορμών</translation>
 <translation id="3422338090358345848">Άνοιγμα της εξερεύνησης πληκτρολογίου</translation>
+<translation id="3423495725743882470">σειρά $1 στήλη $2</translation>
 <translation id="3457000393508828486">Έχει πατηθεί μερικώς</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, κουμπί</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">Δεν υπάρχουν φόρμες.</translation>
 <translation id="5005670136041063723">Δεν υπάρχουν παρόμοια στοιχεία.</translation>
 <translation id="501473567976723023">Ιανουάριος</translation>
+<translation id="5040591161308540832">Πίνακας $1, $2 από $3</translation>
 <translation id="5041394372352067729">Μετακίνηση της οθόνης μπράιγ στο επάνω μέρος της σελίδας</translation>
 <translation id="5042770794184672516">Αύξηση έντασης ομιλίας</translation>
 <translation id="5050015258024679800">Επικεφαλίδα προηγούμενου επιπέδου 4</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">κεφαλίδα 6</translation>
 <translation id="6368143427468974988">Προηγούμενη επικεφαλίδα</translation>
 <translation id="6378565991815958969">αντιγραφή $1.</translation>
+<translation id="6385591741672306837">στήλη</translation>
 <translation id="6387719785439924554">εκτός</translation>
 <translation id="6411426777058107714">Δεν υπάρχει προηγούμενο κουμπί επιλογής.</translation>
 <translation id="6414968628640960377">Προηγούμενο διαφορετικό στοιχείο.</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">Όχι μέσα στον πίνακα.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{σύμβολο υπογράμμισης}other{# σύμβολα υπογράμμισης}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">σειρά</translation>
 <translation id="8186185314313222077">εναλλαγή πλήρους οθόνης</translation>
 <translation id="8199231515320852133">Ανακοίνωση των κεφαλίδων του τρέχοντος κελιού</translation>
 <translation id="820417203470636242">Κενό κελί.</translation>

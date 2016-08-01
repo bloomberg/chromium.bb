@@ -40,6 +40,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1409879593029778104">Nedladdningen av <ph name="FILE_NAME" /> hindrades eftersom filen redan finns.</translation>
 <translation id="1416550906796893042">Appversion</translation>
 <translation id="1423209968422390786">Platsåtkomst har <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Chromes komponenter är inte inbördes kompatibla. Kanske håller Chrome på att uppgraderas. Försök igen om några minuter. Om problemet kvarstår testar du att avinstallera och sedan installera om Chrome.</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
 <translation id="145097072038377568">Inaktiverad i Android-inställningarna</translation>
@@ -47,8 +48,10 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
+<translation id="1546112724822176246">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
+<translation id="1571304935088121812">Kopiera användarnamn</translation>
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
@@ -90,6 +93,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="2001120796168634316">Spara den länkade sidan</translation>
 <translation id="200669432486043882">Ersätt fil</translation>
+<translation id="2020525020270327736">Kopiera webbplats</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2073235970478114994">Läs in bilder</translation>
 <translation id="2079545284768500474">Ångra</translation>
@@ -229,10 +233,12 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 Om du vill ändra söktermen trycker du länge för att välja. Om du vill förfina sökningen drar du panelen ända upp och trycker på sökrutan.</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3623048332793834136">Bokmärken i Chrome Canary</translation>
+<translation id="3632295766818638029">Visa lösenord</translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
+<translation id="3706658020782046159">Välj en leveransadress om du vill visa leveranssätt och krav.</translation>
 <translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3732088672634061408">Det gick inte att hämta intressen.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
@@ -346,6 +352,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5107381076085091558">Nedladdning pausad.</translation>
 <translation id="5118713593561876160">Intressen</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
+<translation id="5131405117025179004">Redigera sparat konto</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Sammanfoga flikar och appar</translation>
 <translation id="515227803646670480">Ta bort sparad data</translation>
@@ -476,6 +483,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6477460825583319731">Ogiltig e-postadress</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
 <translation id="6541922744811587456">Bokmärken i Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
 <translation id="6550675742724504774">Alternativ</translation>
@@ -649,6 +657,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
+<translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>

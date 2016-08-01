@@ -269,6 +269,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3392045790598181549">Menupunktet <ph name="NAME" /></translation>
 <translation id="3406283310380167331">Vis formularliste</translation>
 <translation id="3422338090358345848">Åbn tastaturudforsker</translation>
+<translation id="3423495725743882470">række $1 kolonne 2$</translation>
 <translation id="3457000393508828486">Delvist trykket ned</translation>
 <translation id="3462439746547587373">Knappen <ph name="NAME" /></translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5000760171916499057">Ingen formularer.</translation>
 <translation id="5005670136041063723">Ikke flere lignende elementer.</translation>
 <translation id="501473567976723023">Januar</translation>
+<translation id="5040591161308540832">Tabel $1, $2 gange $3</translation>
 <translation id="5041394372352067729">Flyt braille-visningen til toppen af siden</translation>
 <translation id="5042770794184672516">Skru op for talevolumen</translation>
 <translation id="5050015258024679800">Forrige niveau 4-overskrift</translation>
@@ -555,6 +557,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Forrige overskrift</translation>
 <translation id="6378565991815958969">kopier $1.</translation>
+<translation id="6385591741672306837">kol</translation>
 <translation id="6387719785439924554">tilsi</translation>
 <translation id="6411426777058107714">Ingen tidligere alternativknapper.</translation>
 <translation id="6414968628640960377">Forrige anderledes element.</translation>
@@ -704,6 +707,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">rk</translation>
 <translation id="8186185314313222077">slå fuld skærm til eller fra</translation>
 <translation id="8199231515320852133">Offentliggør overskrifterne for den aktuelle celle</translation>
 <translation id="820417203470636242">Tom celle.</translation>

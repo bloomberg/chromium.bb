@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, മെനു ഇനം</translation>
 <translation id="3406283310380167331">ഫോമുകളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
 <translation id="3422338090358345848">കീബോർഡ് എക്സ്പ്ലോറർ തുറക്കുക</translation>
+<translation id="3423495725743882470">വരി $1 കോളം $2</translation>
 <translation id="3457000393508828486">ഭാഗികമായി അമർത്തിയത്</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, ബട്ടൺ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">ഫോമുകൾ ഒന്നുമില്ല.</translation>
 <translation id="5005670136041063723">മറ്റ് സമാന ഘടകങ്ങൾ ഒന്നുമില്ല.</translation>
 <translation id="501473567976723023">ജനുവരി</translation>
+<translation id="5040591161308540832">പട്ടിക $1, $2/$3</translation>
 <translation id="5041394372352067729">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ പേജിന് മുകളിലേക്ക് നീക്കുക</translation>
 <translation id="5042770794184672516">സംഭാഷണ ശബ്ദം വർദ്ധിപ്പിക്കുക</translation>
 <translation id="5050015258024679800">മുൻ നില 4 ശീർഷകം</translation>
@@ -555,6 +557,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">മുൻ ശീർഷകം</translation>
 <translation id="6378565991815958969">$1 പകർത്തുക.</translation>
+<translation id="6385591741672306837">കോളം</translation>
 <translation id="6387719785439924554">അരികിൽ</translation>
 <translation id="6411426777058107714">മുൻ റേഡിയോ ബട്ടൺ ഒന്നുമില്ല.</translation>
 <translation id="6414968628640960377">വ്യത്യസ്‌തമായ മുൻ ഘടകം.</translation>
@@ -704,6 +707,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="8153880621934657047">പട്ടികയ്‌ക്കുള്ളിലല്ല.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{അടിവര}other{# അടിവരകൾ}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">വരി</translation>
 <translation id="8186185314313222077">പൂർണ്ണ സ്‌ക്രീൻ ടോഗിൾ ചെയ്യുക</translation>
 <translation id="8199231515320852133">നിലവിലുള്ള സെല്ലിന്റെ ശീർഷകങ്ങൾ അറിയിക്കുക</translation>
 <translation id="820417203470636242">ശൂന്യ സെൽ.</translation>

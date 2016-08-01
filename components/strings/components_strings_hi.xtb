@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1008557486741366299">अभी नहीं</translation>
 <translation id="1015730422737071372">अतिरिक्त विवरण प्रदान करें</translation>
 <translation id="1032854598605920125">घड़ी की दिशा में घुमाएं</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">सिस्टम व्यवस्थापक से संपर्क करने का प्रयास करें.</translation>
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1753706481035618306">पृष्‍ठ संख्‍या</translation>
-<translation id="1761412452051366565">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, समन्वयन चालू करें.</translation>
 <translation id="1763864636252898013">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके डिवाइस के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">कृपया अपना समन्‍वयन पासफ्रेज़ अपडेट करें.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">प्राप्ति अंतराल:</translation>
 <translation id="3462200631372590220">उन्नत को छिपाएं</translation>
 <translation id="3479539252931486093">क्या यह अनपेक्षित था? <ph name="BEGIN_LINK" />हमें बताएं<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="348000606199325318">क्रैश आईडी <ph name="CRASH_LOCAL_ID" /> (सर्वर आईडी: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">हम इस समय आपके अभिभावक तक नहीं पहुंच पा रहे हैं. कृपया पुन: प्रयास करें.</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">बुकमार्क निकालें</translation>
 <translation id="5431657950005405462">आपकी फ़ाइल नहीं मिली</translation>
 <translation id="5435775191620395718">इस डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">वैयक्तिकृत सामग्री सुझाव वर्तमान में अक्षम हैं, क्योंकि आपका समन्वयित डेटा किसी कस्टम पासफ़्रेज़ से रक्षित है.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" पर स्कीमा सत्यापन त्रुटि: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">यह <ph name="HOST_NAME" /> पृष्ठ प्राप्त नहीं किया जा सकता</translation>
 <translation id="5455374756549232013">खराब नीति टाइमस्टैम्प</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
-<translation id="6903907808598579934">समन्वयन चालू करें</translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6957887021205513506">सर्वर का प्रमाणपत्र फर्जी दिखाई देता है.</translation>
 <translation id="6965382102122355670">ठीक</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">इस वेबपृष्ठ में एक रीडायरेक्ट लूप है</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
 <translation id="7298195798382681320">सुझाए गए</translation>
-<translation id="7301833672208172928">इतिहास समन्वयन चालू करें</translation>
 <translation id="7334320624316649418">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="733923710415886693">प्रमाणपत्र पारदर्शिता के माध्यम से सर्वर के प्रमाणपत्र को प्रकट नहीं किया गया.</translation>
 <translation id="7353601530677266744">आदेश पंक्ति</translation>
@@ -638,7 +636,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> का &lt;abbr id="dnsDefinition"&gt;DNS पता&lt;/abbr&gt; प्राप्त नहीं किया जा सका. समस्या का निदान किया जा रहा है.</translation>
 <translation id="8741995161408053644">आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर ब्राउज़िंग इतिहास के अन्य प्रकार हो सकते हैं.</translation>
 <translation id="8790007591277257123">&amp;हटाना फिर से करें</translation>
-<translation id="8790687370365610530">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, इतिहास समन्वयन चालू करें.</translation>
 <translation id="8798099450830957504">सामान्य</translation>
 <translation id="8804164990146287819">निजता नीति</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>

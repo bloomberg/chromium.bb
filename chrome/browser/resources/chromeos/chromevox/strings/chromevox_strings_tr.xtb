@@ -269,6 +269,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="3392045790598181549"><ph name="NAME" />, menü öğesi</translation>
 <translation id="3406283310380167331">Form listesini göster</translation>
 <translation id="3422338090358345848">Klavye gezginini aç</translation>
+<translation id="3423495725743882470">$1. satır, $2. sütun</translation>
 <translation id="3457000393508828486">Kısmen basıldı</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, düğme</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="5000760171916499057">Form yok.</translation>
 <translation id="5005670136041063723">Başka benzer öğe yok.</translation>
 <translation id="501473567976723023">Ocak</translation>
+<translation id="5040591161308540832">Tablo $1, $2 x $3</translation>
 <translation id="5041394372352067729">Braille ekranını sayfanın üstüne taşı</translation>
 <translation id="5042770794184672516">Konuşma ses düzeyini artır</translation>
 <translation id="5050015258024679800">Önceki 4. düzey başlık</translation>
@@ -555,6 +557,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Önceki başlık</translation>
 <translation id="6378565991815958969">kopyala: $1.</translation>
+<translation id="6385591741672306837">sütun</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Önceki radyo düğmesi yok.</translation>
 <translation id="6414968628640960377">Önceki farklı öğe.</translation>
@@ -704,6 +707,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8153880621934657047">Tablonun içinde değil.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alt çizgi}other{# alt çizgi}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">satır</translation>
 <translation id="8186185314313222077">tam ekrana geç</translation>
 <translation id="8199231515320852133">Mevcut hücrenin üst bilgilerini söyle</translation>
 <translation id="820417203470636242">Boş hücre.</translation>

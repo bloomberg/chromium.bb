@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, ಮೆನು ಐಟಂ</translation>
 <translation id="3406283310380167331">ಫಾರ್ಮ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3422338090358345848">ಕೀಬೋರ್ಡ್ ಎಕ್ಸ್‌ಪ್ಲೋರರ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="3423495725743882470">ಸಾಲು $1 ಕಾಲಮ್ $2</translation>
 <translation id="3457000393508828486">ಭಾಗಶಃ ಒತ್ತಿದಾಗ</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, ಬಟನ್</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">ಯಾವುದೇ ಫಾರ್ಮ್‌ಗಳಿಲ್ಲ.</translation>
 <translation id="5005670136041063723">ಇನ್ಯಾವುದೇ ಒಂದೇ ರೀತಿಯ ಅಂಶಗಳಿಲ್ಲ</translation>
 <translation id="501473567976723023">ಜನವರಿ</translation>
+<translation id="5040591161308540832">ಕೋಷ್ಟಕ $1, $3 ರಿಂದ $2</translation>
 <translation id="5041394372352067729">ಬ್ರೈಲಿ ಪ್ರದರ್ಶನವನ್ನು ಪುಟದ ಮೇಲ್ಭಾಗಕ್ಕೆ ಸರಿಸು</translation>
 <translation id="5042770794184672516">ಧ್ವನಿಯ ವಾಲ್ಯೂಮ್ ಹೆಚ್ಚಿಸಿ</translation>
 <translation id="5050015258024679800">ಹಿಂದಿನ ಹಂತದ 4 ಶಿರೋನಾಮೆ</translation>
@@ -555,6 +557,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ಹಿಂದಿನ ಶಿರೋನಾಮೆ</translation>
 <translation id="6378565991815958969">$1 ನಕಲಿಸಿ.</translation>
+<translation id="6385591741672306837">ಕಾಲಮ್</translation>
 <translation id="6387719785439924554">ಪಕ್ಕದಲ್ಲಿ</translation>
 <translation id="6411426777058107714">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್ ಇಲ್ಲ.</translation>
 <translation id="6414968628640960377">ಹಿಂದಿನ ವಿಭಿನ್ನ ಅಂಶ.</translation>
@@ -704,6 +707,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8153880621934657047">ಕೋಷ್ಟಕದ ಒಳಗೆ ಇಲ್ಲ.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ಅಡಿಗೆರೆ}one{# ಅಡಿಗೆರೆಗಳು}other{# ಅಡಿಗೆರೆಗಳು}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">ಸಾಲು</translation>
 <translation id="8186185314313222077">ಪೂರ್ಣ ಪರದೆಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="8199231515320852133">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನ ಶಿರೋನಾಮೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="820417203470636242">ಕೋಶವನ್ನು ಖಾಲಿಗೊಳಿಸಿ.</translation>

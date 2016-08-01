@@ -40,6 +40,7 @@
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
 <translation id="1423209968422390786">الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">طباعة</translation>
 <translation id="1445680696957526815">‏مكونات Chrome غير متوافقة مع بعضها البعض. قد تتم ترقية Chrome؛ لذا يُرجى إعادة المحاولة بعد دقائق قليلة. وإذا استمرت المشكلة، فحاول إلغاء تثبيت Chrome وإعادة تثبيته.</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
@@ -47,8 +48,10 @@
 <translation id="1477626028522505441">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب مشكلات بالخادم.</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
+<translation id="1546112724822176246">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
+<translation id="1571304935088121812">نسخ اسم المستخدم</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
@@ -90,6 +93,7 @@
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="2001120796168634316">حفظ الصفحة المرتبطة لوقت لاحق</translation>
 <translation id="200669432486043882">استبدال ملف</translation>
+<translation id="2020525020270327736">نسخ الموقع</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2073235970478114994">تحميل الصور</translation>
 <translation id="2079545284768500474">تراجع</translation>
@@ -227,10 +231,12 @@
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="3616113530831147358">الصوت</translation>
 <translation id="3623048332793834136">‏الإشارات المرجعية لمتصفح Chrome Canary</translation>
+<translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">يمكن لمواقع الويب التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
+<translation id="3706658020782046159">اختر عنوان شحن للتحقّق من متطلبات وطرق الشحن.</translation>
 <translation id="3716158070938632480">صفحات الويب المجاورة</translation>
 <translation id="3732088672634061408">تعذَّر استرداد الاهتمامات.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
@@ -345,6 +351,7 @@
 <translation id="5107381076085091558">تم توقف التنزيل مؤقتًا.</translation>
 <translation id="5118713593561876160">الاهتمامات</translation>
 <translation id="5127805178023152808">المزامنة معطلة</translation>
+<translation id="5131405117025179004">تعديل حساب محفوظ</translation>
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" /> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="5150703642582475397">دمج علامات التبويب والتطبيقات</translation>
 <translation id="515227803646670480">محو البيانات المخزنة</translation>
@@ -475,6 +482,7 @@
 <translation id="6477460825583319731">عنوان البريد الإلكتروني غير صالح</translation>
 <translation id="6482749332252372425">أخفق تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
 <translation id="6541922744811587456">‏الإشارات المرجعية لمتصفح Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="6545017243486555795">مسح جميع البيانات</translation>
 <translation id="6550675742724504774">خيارات</translation>
@@ -648,6 +656,7 @@
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
+<translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>

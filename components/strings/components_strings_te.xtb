@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="1008557486741366299">ఇప్పుడు కాదు</translation>
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
 <translation id="1038842779957582377">తెలియని పేరు</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">సిస్టమ్ నిర్వాహకుడిని సంప్రదించి ప్రయత్నించండి.</translation>
 <translation id="17513872634828108">తెరిచిన ట్యాబ్‍లు</translation>
 <translation id="1753706481035618306">పేజీ సంఖ్య</translation>
-<translation id="1761412452051366565">Google సూచించే వ్యక్తిగతీకృత కంటెంట్‌ను పొందడానికి, సమకాలీకరణను ఆన్ చేయండి.</translation>
 <translation id="1763864636252898013">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ పరికర ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం ప్రయత్నించండి<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">దయచేసి మీ సమకాలీకరణ పాస్‌ఫ్రేజ్‌ను నవీకరించండి.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">విరామాన్ని పొందండి:</translation>
 <translation id="3462200631372590220">అధునాతనం దాచు</translation>
 <translation id="3479539252931486093">ఊహించని విధంగా ఇది సంభవించిందా? <ph name="BEGIN_LINK" />మాకు తెలియజేయండి<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="348000606199325318">క్రాష్ ID <ph name="CRASH_LOCAL_ID" /> (సర్వర్ ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">మేము ప్రస్తుతం మీ తల్లి/తండ్రిని సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3527085408025491307">ఫోల్డర్</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">బుక్‌మార్క్‌ని తీసివేయి</translation>
 <translation id="5431657950005405462">మీ ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5435775191620395718">ఈ పరికరం నుండి చరిత్రను చూపుతోంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">మీ సమకాలీకరించిన డేటా ఒక అనుకూల రహస్య పదబంధంతో సంరక్షించబడినందున వ్యక్తిగతీకృత కంటెంట్ సూచనలు ప్రస్తుతం నిలిపివేయబడ్డాయి.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"లో స్కీమా ప్రామాణీకరణ లోపం: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">ఈ <ph name="HOST_NAME" /> పేజీ కనుగొనబడలేదు</translation>
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">విధానం స్థాయికి మద్దతు లేదు.</translation>
 <translation id="6895330447102777224">మీ కార్డ్ నిర్ధారించబడింది</translation>
 <translation id="6897140037006041989">వినియోగదారు ప్రతినిధి</translation>
-<translation id="6903907808598579934">సమకాలీకరణను ఆన్ చేయి</translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
 <translation id="6957887021205513506">సర్వర్ ధృవీకరణ పత్రం చెల్లదు.</translation>
 <translation id="6965382102122355670">సరే</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">ఈ వెబ్‌పేజీ దారిమళ్ళించబడ్డ లూప్‌ని కలిగి ఉంది</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
-<translation id="7301833672208172928">చరిత్ర సమకాలీకరణను ఆన్ చేయి</translation>
 <translation id="7334320624316649418">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
 <translation id="733923710415886693">సర్వర్ ప్రమాణపత్రాన్ని ప్రమాణపత్రం పారదర్శకత ద్వారా బహిరంగపరచలేదు.</translation>
 <translation id="7353601530677266744">ఆదేశ పంక్తి</translation>
@@ -640,7 +638,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS చిరునామా&lt;/abbr&gt; కనుగొనబడలేదు. సమస్యను నిర్ధారిస్తోంది.</translation>
 <translation id="8741995161408053644">మీ Google ఖాతా <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో ఇతర బ్రౌజింగ్ చరిత్ర రూపాలను కలిగి ఉండవచ్చు.</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
-<translation id="8790687370365610530">Google సూచించే వ్యక్తిగతీకృత కంటెంట్‌ను పొందడానికి, చరిత్ర సమకాలీకరణను ఆన్ చేయండి.</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>

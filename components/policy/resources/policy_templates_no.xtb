@@ -120,11 +120,6 @@
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om enhetsretningslinjer.
-
-      Bruk av denne retningslinjen overstyrer standardverdien på 3 timer. Gyldige verdier for denne retningslinjen strekker seg fra 1 800 000 (30 minutter) til 86 400 000 (1 dag). Verdier som ikke er innenfor dette området, blir tilpasset dette verdiområdet.
-
-      Hvis du ikke spesifiserer en periode, bruker <ph name="PRODUCT_OS_NAME" /> standardverdien på 3 timer.</translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
@@ -328,11 +323,6 @@
 
       Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av.)</translation>
 <translation id="2366415278352956652">Slår på cast</translation>
-<translation id="2371309782685318247">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om brukeretningslinjer.
-
-      Bruk av denne retningslinjen overstyrer standardverdien på 3 timer. Gyldige verdier for denne retningslinjen strekker seg fra 1 800 000 (30 minutter) til 86 400 000 (1 dag). Verdier som ikke er innenfor dette området, blir tilpasset dette verdiområdet.
-
-      Hvis du ikke spesifiserer en periode, bruker <ph name="PRODUCT_NAME" /> standardverdien på 3 timer.</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
       Hvis |DeviceLocalAccountAutoLoginId|-innstillingen ikke er angitt, har dette ingen effekt. Ellers:
@@ -910,6 +900,15 @@
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
+<translation id="388237772682176890">Denne regelen ble avviklet i M53 og fjernet i M54, fordi støtten for SPDY/3.1 ble fjernet.
+
+      Slår av bruken av SPDY-protokollen i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen er slått på, er SPDY-protokollen utilgjengelig i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen er slått av, er det tillatt å bruke SPDY.
+
+      Hvis denne regelen ikke er spesifisert, er SPDY tilgjengelig.</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="3898060089412156345">Tillat eller nekt lydopptak.
 
@@ -1118,6 +1117,7 @@
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
+<translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
 <translation id="4744190513568488164">Tjenere <ph name="PRODUCT_NAME" /> kan delegere til.
 
@@ -1215,6 +1215,15 @@
       Hvis denne innstillingen er angitt som True, hindrer <ph name="PRODUCT_OS_NAME" /> enheten fra å starte opp i utviklermodus. Systemet nekter å starte opp og viser en feilmelding når utviklermodus er aktivert.
 
       Hvis innstillingen ikke er angitt, eller angitt som False, forblir utviklermodusen tilgjengelig for enheten.</translation>
+<translation id="5203271367506489164">Denne regelen ble avviklet i M48 til fordel for NetworkPredictionOptions og fjernet i M54.
+
+      Slår på nettverksforutsigelse i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
+
+      Dette kontrollerer ikke bare forhåndshenting av DNS, men også forhåndstilkobling til TCP og SSL og forhåndsgjengivelse av nettsider. Navnet på regelen viser til forhåndshenting av DNS av historiske grunner.
+
+      Hvis du slår denne innstillingen av eller på, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen ikke er spesifisert, er den slått på, men brukerne kan endre den.</translation>
 <translation id="5208240613060747912">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får vise varsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -2016,6 +2025,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7796141075993499320">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får kjøre programtillegg.
 
           Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjenDefaultPluginsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte innstillingen ikke er angitt.</translation>
+<translation id="7801886189430766248">Når denne regelen er satt til true (sann), lastes Android-appdata opp til Android Backup Service og gjenopprettes derfra når kompatible apper installeres på nytt.
+
+      Når denne regelen settes til false (usann), blir Android Backup Service slått av.
+
+      Hvis denne regelen er konfigurert, kan ikke brukerne endre den selv.
+
+      Hvis denne regelen ikke er konfigurert, kan brukerne slå Android Backup Service av og på i appen for Android-innstillinger.</translation>
 <translation id="7818131573217430250">Angi standard tilstand for høykontrastsmodus på påloggingssiden</translation>
 <translation id="7831595031698917016">Angir maksverdien for forsinkelse mellom mottak av en opphevet innstilling og henting av den nye innstillingen fra tjenesten for enhetsadministrasjon i milisekunder.
 

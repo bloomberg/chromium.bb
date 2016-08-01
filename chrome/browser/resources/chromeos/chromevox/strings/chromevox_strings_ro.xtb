@@ -269,6 +269,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3392045790598181549"><ph name="NAME" />, element din meniu</translation>
 <translation id="3406283310380167331">Afișați lista de formulare</translation>
 <translation id="3422338090358345848">Deschideți exploratorul comenzilor de la tastatură</translation>
+<translation id="3423495725743882470">rândul $1 coloana $2</translation>
 <translation id="3457000393508828486">Apăsat parțial</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, buton</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> selectate</translation>
@@ -412,6 +413,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5000760171916499057">Nu există formulare.</translation>
 <translation id="5005670136041063723">Nu mai există elemente similare.</translation>
 <translation id="501473567976723023">Ianuarie</translation>
+<translation id="5040591161308540832">Tabelul $1, $2 pe $3</translation>
 <translation id="5041394372352067729">Deplasează afișajul Braille în partea de sus a paginii</translation>
 <translation id="5042770794184672516">Creșteți volumul vocii</translation>
 <translation id="5050015258024679800">Titlul de nivel 4 anterior</translation>
@@ -555,6 +557,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="6364795331201459219">titlu 6</translation>
 <translation id="6368143427468974988">Titlul anterior</translation>
 <translation id="6378565991815958969">copiază $1.</translation>
+<translation id="6385591741672306837">coloană</translation>
 <translation id="6387719785439924554">separat</translation>
 <translation id="6411426777058107714">Nu există un buton radio anterior.</translation>
 <translation id="6414968628640960377">Elementul diferit anterior.</translation>
@@ -704,6 +707,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8153880621934657047">Nu vă aflați în interiorul tabelului.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{caracter de subliniere}few{# caractere de subliniere}other{# de caractere de subliniere}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">rând</translation>
 <translation id="8186185314313222077">activează/dezactivează ecranul complet</translation>
 <translation id="8199231515320852133">Anunță anteturile celulei curente</translation>
 <translation id="820417203470636242">Celulă goală.</translation>

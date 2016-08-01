@@ -40,6 +40,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> download prevented because file already exists.</translation>
 <translation id="1416550906796893042">Application version</translation>
 <translation id="1423209968422390786">Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Print</translation>
 <translation id="1445680696957526815">Chrome’s components are incompatible with one another. Chrome may be upgrading, please try again in a few minutes. If the problem continues, try uninstalling and re-installing Chrome.</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
@@ -47,8 +48,10 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
+<translation id="1546112724822176246">Not seeing your device? <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
+<translation id="1571304935088121812">Copy username</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
@@ -90,6 +93,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="2001120796168634316">Save linked page for later</translation>
 <translation id="200669432486043882">Replace file</translation>
+<translation id="2020525020270327736">Copy site</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
 <translation id="2073235970478114994">Load images</translation>
 <translation id="2079545284768500474">Undo</translation>
@@ -229,10 +233,12 @@ You are signing in with a managed account and giving its administrator control o
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3623048332793834136">Chrome Canary bookmarks</translation>
+<translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3656115297268584622">Turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
+<translation id="3706658020782046159">Select a delivery address to check delivery methods and requirements.</translation>
 <translation id="3716158070938632480">Web pages are nearby</translation>
 <translation id="3732088672634061408">Could not retrieve interests.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
@@ -346,6 +352,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5107381076085091558">Download paused.</translation>
 <translation id="5118713593561876160">Interests</translation>
 <translation id="5127805178023152808">Sync is off</translation>
+<translation id="5131405117025179004">Edit saved account</translation>
 <translation id="5138299137310274655">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Merge tabs and apps</translation>
 <translation id="515227803646670480">Clear stored data</translation>
@@ -476,6 +483,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6477460825583319731">Invalid email address</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
 <translation id="6541922744811587456">Chrome bookmarks</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6550675742724504774">Options</translation>
@@ -649,6 +657,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8413126021676339697">Show full history</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
+<translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>

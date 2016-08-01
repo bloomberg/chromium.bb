@@ -269,6 +269,7 @@
 <translation id="3392045790598181549">Пункт меню <ph name="NAME" /></translation>
 <translation id="3406283310380167331">Показать список форм</translation>
 <translation id="3422338090358345848">Перейти в режим обзора клавиш</translation>
+<translation id="3423495725743882470">строка $1, столбец $2</translation>
 <translation id="3457000393508828486">Частично нажато</translation>
 <translation id="3462439746547587373">Кнопка "<ph name="NAME" />"</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">Форм нет.</translation>
 <translation id="5005670136041063723">Похожих элементов больше нет.</translation>
 <translation id="501473567976723023">январь</translation>
+<translation id="5040591161308540832">Таблица $1, $2 и $3</translation>
 <translation id="5041394372352067729">Разместить дисплей Брайля вверху страницы</translation>
 <translation id="5042770794184672516">Увеличить громкость речи</translation>
 <translation id="5050015258024679800">Перейти к предыдущему заголовку четвертого уровня</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Перейти к предыдущему заголовку</translation>
 <translation id="6378565991815958969">копировать $1.</translation>
+<translation id="6385591741672306837">стлбц</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Предыдущего переключателя нет.</translation>
 <translation id="6414968628640960377">Перейти к предыдущему отличающемуся элементу</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{символ подчеркивания}one{# символ подчеркивания}few{# символа подчеркивания}many{# символов подчеркивания}other{# underscores}}</translation>
 <translation id="8179976553408161302">ВВОД</translation>
+<translation id="8184828902145951186">стрк</translation>
 <translation id="8186185314313222077">включить полноэкранный режим</translation>
 <translation id="8199231515320852133">Назвать заголовки текущей ячейки</translation>
 <translation id="820417203470636242">Пустая ячейка.</translation>

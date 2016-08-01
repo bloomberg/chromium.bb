@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1008557486741366299">Όχι τώρα</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
 <translation id="1038842779957582377">άγνωστο όνομα</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">Προσπαθήστε να επικοινωνήσετε με το διαχειριστή συστήματος.</translation>
 <translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1753706481035618306">Αριθμός σελίδας</translation>
-<translation id="1761412452051366565">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="1763864636252898013">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από το λειτουργικό σύστημα της συσκευής σας. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Δοκιμάστε να εκτελέσετε τον Διαγνωστικό έλεγχο δικτύου των Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ενημερώστε την κωδική φράση πρόσβασης συγχρονισμού.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">Διάστημα ανάκτησης:</translation>
 <translation id="3462200631372590220">Απόκρυψη σύνθετων</translation>
 <translation id="3479539252931486093">Δεν το περιμένατε; <ph name="BEGIN_LINK" />Ενημερώστε μας<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="348000606199325318">Αναγνωριστικό σφάλματος <ph name="CRASH_LOCAL_ID" /> (Αναγνωριστικό διακομιστή: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Δεν ήταν δυνατή η επικοινωνία με τον γονέα σας αυτήν τη στιγμή. Δοκιμάστε ξανά.</translation>
 <translation id="3527085408025491307">Φάκελος</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">Κατάργηση σελιδοδείκτη</translation>
 <translation id="5431657950005405462">Το αρχείο σας δεν βρέθηκε</translation>
 <translation id="5435775191620395718">Εμφάνιση ιστορικού από αυτήν τη συσκευή. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">Οι προτάσεις εξατομικευμένου περιεχομένου είναι επί του παρόντος απενεργοποιημένες, επειδή τα συγχρονισμένα δεδομένα σας προστατεύονται με μια προσαρμοσμένη φράση πρόσβασης.</translation>
 <translation id="5439770059721715174">Σφάλμα επαλήθευσης σχήματος σε "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Δεν είναι δυνατός ο εντοπισμός αυτής της σελίδας του κεντρικού υπολογιστή <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Εσφαλμένη χρονική σήμανση πολιτικής</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">Το επίπεδο πολιτικής δεν υποστηρίζεται.</translation>
 <translation id="6895330447102777224">Η κάρτα σας επιβεβαιώθηκε</translation>
 <translation id="6897140037006041989">Παράγοντας χρήστη</translation>
-<translation id="6903907808598579934">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="6915804003454593391">Χρήστης</translation>
 <translation id="6957887021205513506">Το πιστοποιητικό του διακομιστή φαίνεται να είναι πλαστό.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">Αυτή η ιστοσελίδα περιλαμβάνει βρόχο ανακατεύθυνσης</translation>
 <translation id="7275334191706090484">Διαχειριζόμενοι σελιδοδείκτες</translation>
 <translation id="7298195798382681320">Προτεινόμενες</translation>
-<translation id="7301833672208172928">Ενεργοποίηση συγχρονισμού ιστορικού</translation>
 <translation id="7334320624316649418">&amp;Επανάληψη αναδιάταξης</translation>
 <translation id="733923710415886693">Το πιστοποιητικό του διακομιστή δεν αποκαλύφθηκε μέσω της Διαφάνειας πιστοποιητικών.</translation>
 <translation id="7353601530677266744">Γραμμή εντολών</translation>
@@ -640,7 +638,6 @@
 <translation id="8740359287975076522">Δεν ήταν δυνατός ο εντοπισμός της &lt;abbr id="dnsDefinition"&gt;διεύθυνσης DNS&lt;/abbr&gt; του κεντρικού υπολογιστή <ph name="HOST_NAME" />. Γίνεται διάγνωση του προβλήματος.</translation>
 <translation id="8741995161408053644">Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
-<translation id="8790687370365610530">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, ενεργοποιήστε τον συγχρονισμό ιστορικού.</translation>
 <translation id="8798099450830957504">Προεπιλογή</translation>
 <translation id="8804164990146287819">Πολιτική Απορρήτου</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>

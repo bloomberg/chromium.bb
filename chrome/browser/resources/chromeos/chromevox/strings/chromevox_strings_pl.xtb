@@ -146,7 +146,7 @@
 <translation id="2723001399770238859">dźwięk</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">Zaznaczony</translation>
-<translation id="27527859628328957">Przejdź do następnego elementu, na którym można ustawić fokus</translation>
+<translation id="27527859628328957">Przejdź do następnego elementu, który można zaznaczyć</translation>
 <translation id="2770781857296573485">Otwórz poznawanie grup</translation>
 <translation id="2777845298774924149">Zamknięty</translation>
 <translation id="2800204403141299078">Nie ma więcej różnych elementów.</translation>
@@ -269,6 +269,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3392045790598181549"><ph name="NAME" />, element menu</translation>
 <translation id="3406283310380167331">Pokaż listę formularzy</translation>
 <translation id="3422338090358345848">Otwórz eksploratora klawiatury</translation>
+<translation id="3423495725743882470">wiersz $1, kolumna $2</translation>
 <translation id="3457000393508828486">Częściowo naciśnięte</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, przycisk</translation>
 <translation id="3473644018603298796">zaznaczono <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5000760171916499057">Brak formularzy.</translation>
 <translation id="5005670136041063723">Nie ma więcej podobnych elementów.</translation>
 <translation id="501473567976723023">styczeń</translation>
+<translation id="5040591161308540832">Tabela $1, $2 na $3</translation>
 <translation id="5041394372352067729">Przenieś wyświetlacz brajlowski na górę strony</translation>
 <translation id="5042770794184672516">Zwiększ głośność mowy</translation>
 <translation id="5050015258024679800">Poprzedni nagłówek poziomu 4</translation>
@@ -555,6 +557,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Poprzedni nagłówek</translation>
 <translation id="6378565991815958969">kopiuj $1.</translation>
+<translation id="6385591741672306837">kol.</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Brak poprzedniego przycisku radiowego.</translation>
 <translation id="6414968628640960377">Poprzedni różniący się element.</translation>
@@ -704,12 +707,13 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8153880621934657047">Poza tabelą.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podkreślenie}few{# znaki podkreślenia}many{# znaków podkreślenia}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">wiersz</translation>
 <translation id="8186185314313222077">przełącz pełny ekran</translation>
 <translation id="8199231515320852133">Przeczytaj nagłówki bieżącej komórki</translation>
 <translation id="820417203470636242">Pusta komórka.</translation>
 <translation id="8215202828671303819">Wybór wielokrotny</translation>
 <translation id="8224171046658870249">Przełączono na ChromeVox Next</translation>
-<translation id="8276439074553447000">Przejdź do poprzedniego elementu, na którym można ustawić fokus</translation>
+<translation id="8276439074553447000">Przejdź do poprzedniego elementu, który można zaznaczyć</translation>
 <translation id="8278417001922463147">Nie ma poprzedniego artykułu.</translation>
 <translation id="8283603667300770666">Następne pole formularza</translation>
 <translation id="831207808878314375">Definicja</translation>

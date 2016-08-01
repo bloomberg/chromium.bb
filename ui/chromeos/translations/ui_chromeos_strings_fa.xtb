@@ -44,7 +44,7 @@
 <translation id="5864471791310927901">‏بررسی DHCP انجام نشد</translation>
 <translation id="6232116551750539448">اتصال به <ph name="NAME" /> قطع شده است</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
-<translation id="6312403991423642364">خطای شبکه ناشناخته</translation>
+<translation id="6312403991423642364">خطای شبکه ناشناس</translation>
 <translation id="6490455614072479501">اتصال به «<ph name="NAME" />» انجام نشد: <ph name="DETAILS" />
         پیام سرور: <ph name="SERVER_MSG" /></translation>
 <translation id="6549021752953852991">هیچ شبکه سلولی در دسترس نیست</translation>

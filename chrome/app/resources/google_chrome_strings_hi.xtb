@@ -23,6 +23,7 @@
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1619887657840448962">Chrome को अधिक सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
+<translation id="1628000112320670027">Chrome में सहायता प्राप्त करें</translation>
 <translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1653828314016431939">ठीक - अब पुन: प्रारंभ करें</translation>
 <translation id="1682634494516646069">Google Chrome अपनी डेटा निर्देशिका को पढ़ और उस पर लिख नहीं सकता :\n\n<ph name="USER_DATA_DIRECTORY" /></translation>
@@ -43,6 +44,7 @@
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
 <translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>
+<translation id="2309047409763057870">यह Google Chrome का द्वितीयक इंस्टॉलेशन है और इसे आपका डिफ़ॉल्ट ब्राउज़र नहीं बनाया जा सकता.</translation>
 <translation id="2316129865977710310">जी रहने दें</translation>
 <translation id="2334084861041072223">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2346876346033403680">इस कंप्यूटर पर किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया था. यदि वह आपका खाता नहीं है, तो अपनी जानकारी अलग रखने के लिए आप एक नया Chrome उपयोगकर्ता बना सकते हैं.
@@ -63,9 +65,11 @@
 <translation id="2748463065602559597">आप एक सुरक्षि‍त Google Chrome पृष्‍ठ देख रहे हैं.</translation>
 <translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
+<translation id="2799223571221894425">पुन: लॉन्‍च करें</translation>
 <translation id="2847461019998147611">Google Chrome इस भाषा में दिखाएं</translation>
 <translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
 <translation id="2888126860611144412">क्रोम के बारे में</translation>
+<translation id="2900322993655997287">Google Chrome डिफ़ॉल्ट ब्राउज़र निर्धारित या सेट नहीं कर सकता.</translation>
 <translation id="2997147809295888909">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने कोई प्रमाणपत्र पारदर्शिता जानकारी प्रदान नहीं की है.</translation>
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
@@ -82,6 +86,7 @@
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
 <translation id="3311976847535831054">यह कंप्यूटर अब 32-बिट Google Chrome अपडेट प्राप्त नहीं करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
+<translation id="3395323229510056640">Chrome OS में सहायता प्राप्त करें</translation>
 <translation id="3396977131400919238">स्थापित करने के दौरान ऑपरेटिंग सिस्टम में त्रुटि आई. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="3398288718845740432">Chrome मेनू में छिपाएं</translation>
 <translation id="3451115285585441894">Chrome में जोड़ा जा रहा है...</translation>
@@ -137,7 +142,9 @@
 <translation id="5170938038195470297">आपकी प्रोफ़ाइल का उपयोग नहीं किया जा सकता क्‍योंकि यह Google Chrome के किसी नए वर्शन से है.
 
 कुछ विशेषताएं अनुपलब्‍ध हो सकती हैं. कृपया कोई भिन्‍न प्रोफ़ाइल निर्देशिका निर्दिष्ट करें या Chrome के किसी नए वर्शन का उपयोग करें.</translation>
+<translation id="5176234269072261959">वर्तमान सेटिंग की रिपोर्ट करके Chrome को बेहतर बनाने में सहायता करें.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तों<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="5243785881901838525">Google पेमेंट्स (Chrome पर कॉपी किया गया)</translation>
 <translation id="5251420635869119124">अतिथि कोई पदचिह्न छोड़े बिना Chrome का उपयोग कर सकते हैं.</translation>
 <translation id="5253588388888612165">यदि आप इस कंप्यूटर को <ph name="PROFILE_NAME" /> से साझा करते हैं, तो स्वयं को Chrome में अलग से जोड़ें. अन्यथा उनके Google खाते को डिस्कनेक्ट करें.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 1 सेकंड में पुन: प्रारंभ हो जाएगा.}one{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}other{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}}</translation>
@@ -158,6 +165,7 @@
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएगा. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}one{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}other{इससे इस डिवाइस से $1 आइटम स्थायी रूप से हट जाएंगे. बाद में अपना डेटा प्राप्त करने के लिए, Chrome में $2 के रूप में प्रवेश करें.}}</translation>
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
+<translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5906655207909574370">लगभग अप टू डेट हो गया है! अपडेट करना पूरा करने के लिए अपना डिवाइस पुन: प्रारंभ करें.</translation>
 <translation id="5931853610562009806">Mac पर, पासवर्ड आपके कीचेन पर सहेजे जा सकते हैं और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा ऐक्सेस या समन्‍वयित किया जा सकता है.</translation>
 <translation id="5940385492829620908">आपके वेब, बुकमार्क और अन्य Chrome सामग्री यहां मौजूद रहती है.</translation>
@@ -171,6 +179,7 @@
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
 <translation id="6236285698028833233">Google Chrome ने अपडेट करना रोक दिया है और अब वह आपके ऑपरेटिंग सिस्टम के इस वर्शन का समर्थन नहीं करता.</translation>
 <translation id="629218512217695915">Chrome द्वारा जनरेट किए गए पासवर्ड का उपयोग करें</translation>
+<translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368805772029492593">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपके डेटा को एन्‍क्रिप्‍ट करेगा.</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
 <translation id="6400076122676892962">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि अब Mac OS X 10.6, 10.7, और 10.8 समर्थित नहीं रहेंगे.</translation>
@@ -180,6 +189,7 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
+<translation id="6648058004052854464">Google Chrome डिफ़ॉल्ट ब्राउज़र नहीं बन सका.</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
 <translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
@@ -205,6 +215,7 @@
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
+<translation id="7393806081343982361">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र है. क्या बात है!</translation>
 <translation id="7398801000654795464">आप Chrome में <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश थे. पुन: प्रवेश करने के लिए कृपया उसी खाते का उपयोग करें.</translation>
 <translation id="7400722733683201933">Google Chrome के बारे में</translation>
 <translation id="7408085963519505752">Chrome OS शर्तें</translation>
@@ -254,11 +265,13 @@
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
 <translation id="8679801911857917785">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्ठ दिखाया जाए.</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
+<translation id="8793772303278047003">Chrome पुराना हो गया है.</translation>
 <translation id="8796108026289707191">आपको Google Chrome को अभी पुन: प्रारंभ करना चाहिए.</translation>
 <translation id="8823341990149967727">Chrome पुराना हो गया है</translation>
 <translation id="884296878221830158">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं या होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="8851136666856101339">मुख्य</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
+<translation id="8914504000324227558">Chrome को पुन: लॉन्‍च करें</translation>
 <translation id="9026991721384951619">Chrome OS आपका डेटा समन्वयित नहीं कर सका क्योंकि आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="9067395829937117663">Google Chrome के लिए Windows 7 या उसके बाद के वर्शन की आवश्यकता होती है.</translation>
 <translation id="9102715433345326100">यह फ़ाइल दुर्भावनापूर्ण है, और Chrome ने इसे अवरुद्ध कर दिया है.</translation>

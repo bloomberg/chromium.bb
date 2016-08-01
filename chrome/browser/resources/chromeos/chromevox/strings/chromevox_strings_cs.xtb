@@ -269,6 +269,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3392045790598181549"><ph name="NAME" />, položka nabídky</translation>
 <translation id="3406283310380167331">Zobrazit seznam formulářů</translation>
 <translation id="3422338090358345848">Otevřít průzkumníka klávesnice</translation>
+<translation id="3423495725743882470">řádek $1, sloupec $2</translation>
 <translation id="3457000393508828486">Částečně stisknuto</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, tlačítko</translation>
 <translation id="3473644018603298796">vybr <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5000760171916499057">Žádné formuláře.</translation>
 <translation id="5005670136041063723">Žádné další podobné prvky.</translation>
 <translation id="501473567976723023">Leden</translation>
+<translation id="5040591161308540832">Tabulka $1, $2 krát $3</translation>
 <translation id="5041394372352067729">Přesunout zobrazení Braillova písma na začátek stránky</translation>
 <translation id="5042770794184672516">Zvýšit hlasitost řeči</translation>
 <translation id="5050015258024679800">Předchozí nadpis 4. úrovně</translation>
@@ -555,6 +557,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="6364795331201459219">nadp 6</translation>
 <translation id="6368143427468974988">Předchozí záhlaví</translation>
 <translation id="6378565991815958969">kopírovat $1.</translation>
+<translation id="6385591741672306837">sloupec</translation>
 <translation id="6387719785439924554">stranou</translation>
 <translation id="6411426777058107714">Žádný předchozí přepínač.</translation>
 <translation id="6414968628640960377">Předchozí jiný prvek.</translation>
@@ -704,6 +707,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">řádek</translation>
 <translation id="8186185314313222077">přepnout zobrazení na celou obrazovku</translation>
 <translation id="8199231515320852133">Oznámit záhlaví aktuální buňky</translation>
 <translation id="820417203470636242">Prázdná buňka.</translation>

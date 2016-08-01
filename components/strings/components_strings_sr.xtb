@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1008557486741366299">Не сада</translation>
 <translation id="1015730422737071372">Наведите додатне детаље</translation>
 <translation id="1032854598605920125">Окрените у смеру казаљке на сату</translation>
 <translation id="1038842779957582377">непознато име</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">Покушајте да контактирате администратора система.</translation>
 <translation id="17513872634828108">Отворене картице</translation>
 <translation id="1753706481035618306">Број странице</translation>
-<translation id="1761412452051366565">Да бисте добијали персонализовани садржај који предлаже Google, укључите синхронизацију.</translation>
 <translation id="1763864636252898013">Овај сервер не може да докаже да је <ph name="DOMAIN" />; оперативни систем уређаја нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Покушајте да покренете Windows дијагностику мреже<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ажурирај приступну фразу за синхронизацију</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">Интервал учитавања:</translation>
 <translation id="3462200631372590220">Сакриј напредно</translation>
 <translation id="3479539252931486093">Да ли је ово било неочекивано? <ph name="BEGIN_LINK" />Обавестите нас<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">Не сада</translation>
 <translation id="348000606199325318">ИД отказивања <ph name="CRASH_LOCAL_ID" /> (ИД сервера: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Тренутно не можемо да контактирамо родитеља. Покушај поново.</translation>
 <translation id="3527085408025491307">Директоријум</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">Уклоните обележивач</translation>
 <translation id="5431657950005405462">Датотека није пронађена</translation>
 <translation id="5435775191620395718">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">Предлози за персонализовани садржај су тренутно онемогућени јер су синхронизовани подаци заштићени прилагођеном приступном фразом.</translation>
 <translation id="5439770059721715174">Грешка у валидацији шеме на „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Није могуће пронаћи ову страницу хоста <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Неисправна временска ознака смерница</translation>
@@ -485,7 +485,6 @@
 <translation id="6891596781022320156">Ниво смерница није подржан.</translation>
 <translation id="6895330447102777224">Картица је потврђена</translation>
 <translation id="6897140037006041989">Кориснички агент</translation>
-<translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6915804003454593391">Корисник:</translation>
 <translation id="6957887021205513506">Изгледа да је сертификат сервера фалсификован.</translation>
 <translation id="6965382102122355670">Потврди</translation>
@@ -518,7 +517,6 @@
 <translation id="7269802741830436641">Ова веб-страница има петљу за преусмеравање</translation>
 <translation id="7275334191706090484">Обележивачи којим се управља</translation>
 <translation id="7298195798382681320">Препоручено</translation>
-<translation id="7301833672208172928">Укључи синхронизацију историје</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>
 <translation id="7353601530677266744">Командна линија</translation>
@@ -639,7 +637,6 @@
 <translation id="8740359287975076522">Нисмо успели да пронађемо &lt;abbr id="dnsDefinition"&gt;DNS адресу&lt;/abbr&gt; хоста <ph name="HOST_NAME" />. Покушавамо да утврдимо у чему је проблем.</translation>
 <translation id="8741995161408053644">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Понови брисање</translation>
-<translation id="8790687370365610530">Да бисте добијали персонализовани садржај који предлаже Google, укључите синхронизацију историје.</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8804164990146287819">Политика приватности</translation>
 <translation id="8820817407110198400">Обележивачи</translation>

@@ -61,6 +61,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2711502716910134313">Chromium Tab</translation>
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
+<translation id="2799223571221894425">Relaunch</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> is malicious and Chromium has blocked it.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
@@ -73,6 +74,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3103660991484857065">The installer failed to uncompress archive. Please download Chromium again.</translation>
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>
 <translation id="313551035350905294">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
+<translation id="3155163173539279776">Relaunch Chromium</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
 <translation id="3256316712990552818">Copied to Chromium</translation>
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
@@ -148,6 +150,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5859963531214966875">Future versions of Chromium will no longer support this Linux system.</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
+<translation id="5895138241574237353">Restart</translation>
 <translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5942225298871134766">Chromium will store this with <ph name="SAVED_PASSWORD_LINK" /> and remember it the next time that you need it.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> has been added to Chromium.</translation>

@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, пункт меню</translation>
 <translation id="3406283310380167331">Показати список форм</translation>
 <translation id="3422338090358345848">Відкрити огляд клавіатури</translation>
+<translation id="3423495725743882470">рядок $1 стовпець $2</translation>
 <translation id="3457000393508828486">Частково натиснуто</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, кнопка</translation>
 <translation id="3473644018603298796">виділено: <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">Немає форм.</translation>
 <translation id="5005670136041063723">Немає інших схожих елементів.</translation>
 <translation id="501473567976723023">січень</translation>
+<translation id="5040591161308540832">Таблиця $1, $2 і $3</translation>
 <translation id="5041394372352067729">Перемістити брайлівський дисплей угору сторінки</translation>
 <translation id="5042770794184672516">Збільшити гучність мовлення</translation>
 <translation id="5050015258024679800">Попередній заголовок рівня 4</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">заголовок 6</translation>
 <translation id="6368143427468974988">Попередній заголовок</translation>
 <translation id="6378565991815958969">скопіювати $1.</translation>
+<translation id="6385591741672306837">стовп.</translation>
 <translation id="6387719785439924554">бічний колонтитул</translation>
 <translation id="6411426777058107714">Немає попереднього перемикача.</translation>
 <translation id="6414968628640960377">Попередній несхожий елемент.</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">Не всередині таблиці.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{підкреслення}one{# підкреслення}few{# підкреслення}many{# підкреслень}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">рядок</translation>
 <translation id="8186185314313222077">увімкнути або вимкнути повноекранний режим</translation>
 <translation id="8199231515320852133">Повідомити заголовки поточної клітинки</translation>
 <translation id="820417203470636242">Порожня клітинка.</translation>

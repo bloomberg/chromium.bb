@@ -114,11 +114,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       desativada. Nesse caso, não será possível ativar o recurso.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Especifica o período em milésimos de segundos durante o qual o serviço de gerenciamento de dispositivos deve ser consultado para a obtenção de informações sobre a política do dispositivo.
-
-      A configuração desta política substitui o valor padrão de 3 horas. Os valores válidos para esta política devem corresponder ao período entre 1.800.000 (30 minutos) e 86.400.000 (1 dia). Qualquer valor fora deste intervalo será ajustado dentro do limite mais próximo.
-
-      Deixar esta política sem definição fará o <ph name="PRODUCT_OS_NAME" /> utilizar o valor padrão de 3 horas.</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
@@ -311,11 +306,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Após a ativação do Bluetooth, o dispositivo deve ser reinicializado para que as alterações entrem em vigor (não há necessidade de reinicializar o dispositivo ao desativar o Bluetooth).</translation>
 <translation id="2366415278352956652">Permite a transmissão</translation>
-<translation id="2371309782685318247">Especifica o período em milésimos de segundos durante o qual o serviço de gerenciamento de dispositivos deve ser consultado para a obtenção de informações sobre a política do usuário.
-
-      A configuração desta política substitui o valor padrão de 3 horas. Os valores válidos para esta política devem corresponder ao período entre 1.800.000 (30 minutos) e 86.400.000 (1 dia). Qualquer valor fora deste intervalo será ajustado dentro do limite mais próximo.
-
-     Deixar esta política sem definição fará o <ph name="PRODUCT_NAME" /> utilizar o valor padrão de 3 horas.</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
       Se a política |DeviceLocalAccountAutoLoginId| não for definida, não terá efeito algum. Caso contrário:
@@ -877,6 +867,15 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Lista extensões que são instaladas automaticamente para o usuário Demo, para dispositivos em modo de varejo. Essas extensões são salvas no dispositivo e podem ser instaladas off-line, após a instalação.
 
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
+<translation id="388237772682176890">O uso dessa política foi suspenso no M53 e removido no M54, porque a compatibilidade com o SPDY/3.1 foi removida.
+
+      Desativa o uso do protocolo SPDY no <ph name="PRODUCT_NAME" />.
+
+      Se essa política estiver ativada, o protocolo SPDY não estará disponível no <ph name="PRODUCT_NAME" />.
+
+      A configuração dessa política como desativada permite o uso de SPDY.
+
+      Se essa política for deixada sem definição, o SPDY ficará disponível.</translation>
 <translation id="3891357445869647828">Ativar o JavaScript</translation>
 <translation id="3898060089412156345">Permitir ou negar a captura de áudio.
 
@@ -1069,6 +1068,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="467449052039111439">Abrir uma lista de URLs</translation>
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
 <translation id="4723829699367336876">Habilitar passagem de firewall a partir do cliente de acesso remoto</translation>
+<translation id="4725528134735324213">Ativar o Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas à autenticação integrada de HTTP.</translation>
 <translation id="4744190513568488164">Servidores que podem receber delegações do <ph name="PRODUCT_NAME" />.
 
@@ -1150,6 +1150,15 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política é definida como "True", o <ph name="PRODUCT_OS_NAME" /> evita que o dispositivo seja iniciado no modo de desenvolvedor. O sistema se recusa a ser iniciado e mostra uma tela de erro quando o modo de desenvolvedor é ativado.
 
       Se esta não política não é definida ou é definida como "False", o modo de desenvolvedor permanece disponível para o dispositivo.</translation>
+<translation id="5203271367506489164">O uso dessa política foi suspenso no M48 em favor de NetworkPredictionOptions e removido no M54.
+
+      Ativa as sugestões de rede no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
+
+      Controla não apenas a pré-busca de DNS, mas também a pré-conexão de SSL e a pré-renderização de páginas da Web. O nome da política se refere à pré-busca de DNS por razões históricas.
+
+      Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou modificá-la no <ph name="PRODUCT_NAME" />.
+
+      Se essa política não for definida, ela ficará ativada, mas o usuário poderá alterá-la.</translation>
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deve ser desativado</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
@@ -1889,6 +1898,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar plug-ins. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="7801886189430766248">Quando essa política é definida como true, é feito upload dos dados de apps do Android para os servidores do Android Backup. Esses dados são restaurados a partir desses servidores após reinstalações de apps compatíveis.
+
+      Quando essa política é definida como false, o Android Backup Service é desativado.
+
+      Se essa definição for configurada, os usuários não conseguirão alterá-la.
+
+      Se essa definição não for configurada, os usuários poderão ativar e desativar o Android Backup Service no app Config. do Android.</translation>
 <translation id="7818131573217430250">Definir o estado padrão do modo de alto contraste na tela de login</translation>
 <translation id="7831595031698917016">Especifica o atraso máximo, em milissegundos, entre o recebimento da invalidação de uma política e a busca pela nova política no serviço de gerenciamento de dispositivos.
 

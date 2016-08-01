@@ -269,6 +269,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3392045790598181549"><ph name="NAME" />, voce di menu</translation>
 <translation id="3406283310380167331">Mostra elenco moduli</translation>
 <translation id="3422338090358345848">Apri esplorazione tastiera</translation>
+<translation id="3423495725743882470">riga $1 colonna $2</translation>
 <translation id="3457000393508828486">Parzialmente premuto</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, pulsante</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> sel</translation>
@@ -412,6 +413,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5000760171916499057">Nessun modulo.</translation>
 <translation id="5005670136041063723">Nessun altro elemento simile.</translation>
 <translation id="501473567976723023">Gennaio</translation>
+<translation id="5040591161308540832">Tabella $1, $2 di $3</translation>
 <translation id="5041394372352067729">Sposta display braille a inizio pagina</translation>
 <translation id="5042770794184672516">Aumenta volume comandi vocali</translation>
 <translation id="5050015258024679800">Intestazione livello 4 precedente</translation>
@@ -555,6 +557,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Intestazione precedente</translation>
 <translation id="6378565991815958969">copia $1.</translation>
+<translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">di lato</translation>
 <translation id="6411426777058107714">Nessun pulsante di opzione precedente.</translation>
 <translation id="6414968628640960377">Elemento diverso precedente.</translation>
@@ -704,6 +707,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
 <translation id="8179976553408161302">Invio</translation>
+<translation id="8184828902145951186">riga</translation>
 <translation id="8186185314313222077">attiva/disattiva schermo intero</translation>
 <translation id="8199231515320852133">Pronuncia le intestazioni della cella corrente</translation>
 <translation id="820417203470636242">Cella vuota.</translation>

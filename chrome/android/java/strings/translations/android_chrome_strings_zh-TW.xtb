@@ -40,6 +40,7 @@
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> 檔案已存在，因此無法下載。</translation>
 <translation id="1416550906796893042">應用程式版本</translation>
 <translation id="1423209968422390786">這個裝置的<ph name="BEGIN_LINK" />位置資訊存取功能已關閉<ph name="END_LINK" />。</translation>
+<translation id="1430915738399379752">列印</translation>
 <translation id="1445680696957526815">出現元件互不相容的情況，這可能是因為 Chrome 目前正在進行升級，請稍候片刻再試。如果問題持續發生，請先將 Chrome 移除，然後重新安裝一次。</translation>
 <translation id="1446450296470737166">允許完整控制 MIDI 裝置</translation>
 <translation id="145097072038377568">已在 Android 設定中關閉</translation>
@@ -47,8 +48,10 @@
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁紀錄</translation>
+<translation id="1546112724822176246">找不到您的裝置嗎？建議您<ph name="BEGIN_LINK" />尋求協助<ph name="END_LINK" />。</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
+<translation id="1571304935088121812">複製使用者名稱</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
@@ -82,6 +85,7 @@
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1944384637046898011">使用截至 <ph name="TIME" />前設定的 Google 密碼為所有資料加密</translation>
+<translation id="1946821392246652573">接受的信用卡</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1984321224716884559">Chrome 開發版書籤</translation>
@@ -89,6 +93,7 @@
 <translation id="1994173015038366702">網站網址</translation>
 <translation id="2001120796168634316">儲存連結的網頁以供日後使用</translation>
 <translation id="200669432486043882">取代檔案</translation>
+<translation id="2020525020270327736">複製網站</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="2073235970478114994">載入圖片</translation>
 <translation id="2079545284768500474">復原</translation>
@@ -213,6 +218,7 @@
 <translation id="3386292677130313581">允許網站存取您的位置資訊前，必須先詢問您 (建議)</translation>
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3414952576877147120">空間大小：</translation>
+<translation id="3431636764301398940">將這張信用卡儲存到這個裝置</translation>
 <translation id="3435896845095436175">啟用</translation>
 <translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史紀錄、密碼和其他設定。</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
@@ -227,10 +233,12 @@
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3623048332793834136">Chrome Canary 版書籤</translation>
+<translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3656115297268584622">前往 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />開啟位置資訊設定。</translation>
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
+<translation id="3706658020782046159">選取運送地址即可查看運送方式和需求條件。</translation>
 <translation id="3716158070938632480">附近有裝置在播送網頁</translation>
 <translation id="3732088672634061408">無法擷取興趣資料。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
@@ -344,6 +352,7 @@
 <translation id="5107381076085091558">已暫停下載。</translation>
 <translation id="5118713593561876160">興趣喜好</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
+<translation id="5131405117025179004">編輯已儲存的帳戶</translation>
 <translation id="5138299137310274655">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="5150703642582475397">合併分頁與應用程式</translation>
 <translation id="515227803646670480">清除儲存的資料</translation>
@@ -408,6 +417,7 @@
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5748802427693696783">已切換成標準分頁</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
+<translation id="57586589942790530">無效的信用卡號碼</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME" />」目錄中現有的 <ph name="FILE_NAME" /> 嗎？</translation>
@@ -473,6 +483,7 @@
 <translation id="6477460825583319731">電子郵件地址無效</translation>
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="6541922744811587456">Chrome 書籤</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
 <translation id="6550675742724504774">選項</translation>
@@ -646,6 +657,7 @@
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
+<translation id="8447861592752582886">撤銷裝置權限</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>

@@ -40,6 +40,7 @@
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
 <translation id="1416550906796893042">Версия приложения</translation>
 <translation id="1423209968422390786">На этом устройстве <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
+<translation id="1430915738399379752">Печать</translation>
 <translation id="1445680696957526815">Компоненты Chrome несовместимы друг с другом. Возможно, выполняется обновление. Повторите попытку через несколько минут. Если проблема не исчезнет, переустановите браузер.</translation>
 <translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
 <translation id="145097072038377568">Отключено в настройках Android</translation>
@@ -47,8 +48,10 @@
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
+<translation id="1546112724822176246">Не можете найти свое устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="1549000191223877751">Перейти к другому окну</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
+<translation id="1571304935088121812">Копировать имя пользователя</translation>
 <translation id="1612196535745283361">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Включить<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
@@ -82,6 +85,7 @@
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
+<translation id="1946821392246652573">Поддерживаемые типы карт</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984321224716884559">Закладки Chrome для разработчиков</translation>
@@ -89,6 +93,7 @@
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2001120796168634316">Сохранить страницу офлайн</translation>
 <translation id="200669432486043882">Заменить файл</translation>
+<translation id="2020525020270327736">Копировать сайт</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="2073235970478114994">Загрузить изображения</translation>
 <translation id="2079545284768500474">Отмена</translation>
@@ -213,6 +218,7 @@
 <translation id="3386292677130313581">Запрашивать разрешение на доступ к данным о местоположении (рекомендуется)</translation>
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
 <translation id="3414952576877147120">Размер:</translation>
+<translation id="3431636764301398940">Сохранить карту на этом устройстве</translation>
 <translation id="3435896845095436175">Включить</translation>
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
@@ -227,10 +233,12 @@
 Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3623048332793834136">Закладки Chrome Canary</translation>
+<translation id="3632295766818638029">Показать пароль</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3656115297268584622">Включите определение местоположения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Сторонние веб-сайты могут сохранять и читать файлы cookie</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
+<translation id="3706658020782046159">Чтобы узнать способы доставки и требования, выберите адрес доставки.</translation>
 <translation id="3716158070938632480">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="3732088672634061408">Не удалось получить данные об интересах</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
@@ -344,6 +352,7 @@
 <translation id="5107381076085091558">Скачивание приостановлено.</translation>
 <translation id="5118713593561876160">Интересы</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
+<translation id="5131405117025179004">Изменить настройки аккаунта</translation>
 <translation id="5138299137310274655">Язык этой страницы – <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Вкладки в списке приложений</translation>
 <translation id="515227803646670480">Удаление данных</translation>
@@ -408,6 +417,7 @@
 <translation id="572328651809341494">Недавние вкладки</translation>
 <translation id="5748802427693696783">Переключено на обычные вкладки</translation>
 <translation id="5749068826913805084">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
+<translation id="57586589942790530">Неверный номер карты</translation>
 <translation id="5763382633136178763">Вкладки в режиме инкогнито</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Вы хотите заменить существующий файл "<ph name="FILE_NAME" />" в папке "<ph name="DIRECTORY_NAME" />"?</translation>
@@ -473,6 +483,7 @@
 <translation id="6477460825583319731">Неверный адрес электронной почты</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
 <translation id="6541922744811587456">Закладки Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6550675742724504774">Параметры</translation>
@@ -646,6 +657,7 @@
 <translation id="8413126021676339697">Показать всю историю</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
+<translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
 <translation id="8493948351860045254">Освободить место</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>

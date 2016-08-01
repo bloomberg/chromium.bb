@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1008557486741366299">Não agora</translation>
 <translation id="1015730422737071372">Forneça detalhes adicionais</translation>
 <translation id="1032854598605920125">Girar no sentido horário</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">Tente entrar em contato com o administrador do sistema.</translation>
 <translation id="17513872634828108">Guias abertas</translation>
 <translation id="1753706481035618306">Numero da página</translation>
-<translation id="1761412452051366565">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Rede do Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Favor atualizar sua senha de sincronização.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">Buscar intervalo:</translation>
 <translation id="3462200631372590220">Ocultar detalhes</translation>
 <translation id="3479539252931486093">Isso foi inesperado? <ph name="BEGIN_LINK" />Informe-nos<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">Não agora</translation>
 <translation id="348000606199325318">Código de falha <ph name="CRASH_LOCAL_ID" /> (código do servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
 <translation id="3527085408025491307">Pasta</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">Remover favorito</translation>
 <translation id="5431657950005405462">O arquivo não foi encontrado</translation>
 <translation id="5435775191620395718">Exibindo histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">As sugestões personalizadas de conteúdo estão desativadas no momento, pois seus dados sincronizados estão protegidos com uma senha personalizada.</translation>
 <translation id="5439770059721715174">Erro de validação de esquema em "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Não foi possível encontrar a página deste <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Carimbo de data e hora da política inválido</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="6895330447102777224">Seu cartão foi confirmado</translation>
 <translation id="6897140037006041989">Agente do usuário</translation>
-<translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6915804003454593391">Usuário:</translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser falsificado.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">Esta página da web tem um loop de redirecionamento</translation>
 <translation id="7275334191706090484">Favoritos gerenciados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
-<translation id="7301833672208172928">Ativar a sincronização de históricos</translation>
 <translation id="7334320624316649418">&amp;Refazer reordenar</translation>
 <translation id="733923710415886693">O certificado do servidor não foi divulgado por meio da Transparência dos certificados.</translation>
 <translation id="7353601530677266744">Linha de comando</translation>
@@ -640,7 +638,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Diagnosticando o problema.</translation>
 <translation id="8741995161408053644">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
-<translation id="8790687370365610530">Para ver conteúdo personalizado sugerido pelo Google, ative o histórico de sincronização.</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="8820817407110198400">Favoritos</translation>

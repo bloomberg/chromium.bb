@@ -39,7 +39,7 @@
       Si no es defineix aquesta política, s'utilitzarà el directori de memòria cau predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--disk-cache-dir".</translation>
 <translation id="1138294736309071213">Aquesta política només està activa en mode de venta.
 
-      Determina la durada abans no es mostri el protector de pantalla a la pantalla d'inici de sessió per als dispositius en mode de venta.
+      Determina la durada abans no es mostri l'estalvi de pantalla a la pantalla d'inici de sessió per als dispositius en mode de venta.
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
 <translation id="1151353063931113432">Permet les imatges en aquests llocs</translation>
@@ -118,11 +118,6 @@
       es desactivarà. En aquest cas, l'usuari no pot activar la funció.</translation>
 <translation id="1474273443907024088">Desactiva False Start de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Especifica el període en mil·lisegons durant el qual se sol·licita al servei de gestió de dispositius d'informació sobre les polítiques de dispositiu.
-
-      Si es defineix aquesta política, se substituirà el valor predeterminat de 3 hores. Els valors vàlids per a aquesta política es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 (un dia). Tots els valors que no es trobin dins d'aquest interval quedaran en els límits respectius.
-
-      Si no es defineix aquesta política, l'ús de <ph name="PRODUCT_OS_NAME" /> serà el valor predeterminat de tres hores.</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
@@ -312,11 +307,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
       Després d'activar el Bluetooth, cal reiniciar el dispositiu perquè s'apliquin els canvis (no cal fer-ho en desactivar el Bluetooth).</translation>
 <translation id="2366415278352956652">Activa l'emissió</translation>
-<translation id="2371309782685318247">Especifica el període en mil·lisegons en què es realitzen consultes al servei de gestió de dispositius sobre informació de la política de l'usuari.
-
-      Si es defineix aquesta política, se substituirà el valor predeterminat de tres hores. Els valors vàlids per a aquesta política es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 (un dia). Tots els valors que no es trobin dins d'aquest interval quedaran en els límits respectius.
-
-      Si no es defineix aquesta política, l'ús de <ph name="PRODUCT_NAME" /> serà el valor predeterminat de tres hores.</translation>
 <translation id="2372547058085956601">Retard d'inici de sessió automàtic de la sessió pública.
 
       Si no es defineix la política |DeviceLocalAccountAutoLoginId|, aquesta política no té cap efecte. En cas contrari:
@@ -473,7 +463,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
       Si no configureu aquesta política, els usuaris podran triar si volen fer servir la funció del servidor intermediari de compressió de dades.</translation>
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
-<translation id="2592091433672667839">La durada de la inactivitat abans no es mostri el protector de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
+<translation id="2592091433672667839">La durada de la inactivitat abans no es mostri l'estalvi de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
@@ -652,7 +642,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si aquesta política s'estableix en "false", l'optimització WPAD es desactiva i <ph name="PRODUCT_NAME" /> ha d'esperar més temps els servidors WPAD basats en DNS. Si la política no s'estableix o està activada, l'optimització WPAD s'activa.
 
       Tant si la política s'estableix com si no, els usuaris no poden canviar la configuració de l'optimització WPAD.</translation>
-<translation id="3072045631333522102">Protector de pantalla per utilitzar a la pantalla d'inici de sessió en mode de venta</translation>
+<translation id="3072045631333522102">Estalvi de pantalla per utilitzar a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="3096595567015595053">Llista dels connectors activats</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
@@ -885,6 +875,15 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
+<translation id="388237772682176890">Aquesta política es considera obsoleta a M53 i s'ha suprimit a M54, perquè el protocol SPDY/3.1 ja no s'admet.
+
+      Desactiva l'ús del protocol SPDY a <ph name="PRODUCT_NAME" />.
+
+      Si aquesta política està activada, el protocol SPDY no estarà disponible a <ph name="PRODUCT_NAME" />.
+
+      Si estableixes aquesta política com a desactivada, es permetrà l'ús d'SPDY.
+
+      Si la deixes sense establir, SPDY estarà disponible.</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
 <translation id="3898060089412156345">Permet o denega la captura d'àudio.
 
@@ -1078,6 +1077,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="467449052039111439">Obre una llista d'URL</translation>
 <translation id="4680961954980851756">Activa l'emplenament automàtic</translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
+<translation id="4725528134735324213">Activa Android Backup Service</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
 <translation id="4744190513568488164">Servidors en què <ph name="PRODUCT_NAME" /> pot delegar les credencials de l'usuari.
 
@@ -1163,6 +1163,15 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si aquesta política s'estableix com a verdadera, <ph name="PRODUCT_OS_NAME" /> impedirà que el dispositiu s'iniciï en mode de desenvolupador. El sistema no s'iniciarà i mostrarà una pantalla d'error quan l'opció de desenvolupador estigui activada.
 
       Si aquesta política no es defineix o s'estableix com a falsa, el mode de desenvolupador continuarà disponible al dispositiu.</translation>
+<translation id="5203271367506489164">Aquesta política es considera obsoleta a M48 per donar prioritat a NetworkPredictionOptions i s'ha suprimit a M54.
+
+      Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      No només controla la baixada prèvia de DNS, sinó també la connexió i la renderització prèvies de TCP i SSL de les pàgines web. El nom de la política fa referència a la baixada prèvia de DNS per qüestions relacionades amb l'historial.
+
+      Si actives o desactives aquesta opció de configuració, els usuaris no la podran canviar ni substituir a <ph name="PRODUCT_NAME" />.
+
+      Si aquesta política es deixa sense establir, l'opció s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="5208240613060747912">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="5226033722357981948">Indica si s'ha de desactivar el cercador de connectors</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
@@ -1909,6 +1918,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per perfil</translation>
 <translation id="7796141075993499320">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès executar connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPluginsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
+<translation id="7801886189430766248">Quan aquesta política s'estableix en "true", les dades de les aplicacions d'Android es pengen als servidors d'Android Backup per poder restaurar-les en tornar a instal·lar aplicacions compatibles.
+
+      Quan aquesta política s'estableix en "false", Android Backup Service es desactiva.
+
+      Si aquesta opció de configuració està definida, els usuaris no poden canviar-la.
+
+      Si no està definida, els usuaris poden activar i desactivar Android Backup Service a l'aplicació Configuració d'Android.</translation>
 <translation id="7818131573217430250">Estableix l'estat predeterminat del mode de contrast elevat a la pantalla d'inici de sessió</translation>
 <translation id="7831595031698917016">Especifica el retard màxim en mil·lisegons entre la recepció de la invalidació d'una política i l'obtenció de la política nova del servei de gestió del dispositiu.
 
@@ -1937,7 +1953,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si s'estableix en CopyCaCerts, tots els certificats de CA instal·lats amb fitxers ONC amb <ph name="WEB_TRUSTED_BIT" /> estan disponibles per a les aplicacions ARC.</translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
-      Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
+      Determina l'identificador de l'extensió que s'ha d'utilitzar com a estalvi de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
 <translation id="7914271217607102111">Permet o denega la captura de vídeo.

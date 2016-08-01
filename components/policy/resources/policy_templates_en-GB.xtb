@@ -120,11 +120,6 @@
       disabled. In this case, the user cannot enable the feature.</translation>
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Specifies the period in milliseconds at which the device management service is queried for device policy information.
-
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
-
-      Leaving this policy not set will make <ph name="PRODUCT_OS_NAME" /> use the default value of 3 hours.</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
@@ -337,11 +332,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).</translation>
 <translation id="2366415278352956652">Enables cast</translation>
-<translation id="2371309782685318247">Specifies the period in milliseconds at which the device management service is queried for user policy information.
-
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
-
-      Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 3 hours.</translation>
 <translation id="2372547058085956601">The public session auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
@@ -937,6 +927,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
+<translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
+
+      Disables use of the SPDY protocol in <ph name="PRODUCT_NAME" />.
+
+      If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME" />.
+
+      Setting this policy to disabled will allow the usage of SPDY.
+
+      If this policy is left unset, SPDY will be available.</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
 <translation id="3898060089412156345">Allow or deny audio capture.
 
@@ -1156,6 +1155,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="4680961954980851756">Enable AutoFill</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
+<translation id="4725528134735324213">Enable Android Backup Service</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
 
@@ -1261,6 +1261,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to True, <ph name="PRODUCT_OS_NAME" /> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
 
       If this policy is unset or set to False, developer mode will remain available for the device.</translation>
+<translation id="5203271367506489164">This policy is deprecated in M48 in favour of NetworkPredictionOptions, and removed in M54.
+
+      Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -2067,6 +2076,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7796141075993499320">Allows you to set a list of url patterns that specify sites which are allowed to run plug-ins.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPlug-insSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="7801886189430766248">When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
+
+      When this policy is set to false, Android Backup Service will be switched off.
+
+      If this setting is configured then users are not able change it themselves.
+
+      If this setting is not configured then users are able to turn Android Backup Service on and off in the Android Settings app.</translation>
 <translation id="7818131573217430250">Set the default state of high contrast mode on the login screen</translation>
 <translation id="7831595031698917016">Specifies the maximum delay in milliseconds between receiving a policy invalidation and fetching the new policy from the device management service.
 

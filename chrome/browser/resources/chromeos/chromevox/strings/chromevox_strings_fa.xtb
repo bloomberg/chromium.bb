@@ -269,6 +269,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />، مورد منو</translation>
 <translation id="3406283310380167331">نمایش فهرست فرم‌ها</translation>
 <translation id="3422338090358345848">باز کردن کاوشگر صفحه‌کلید</translation>
+<translation id="3423495725743882470">ردیف $1 ستون $2</translation>
 <translation id="3457000393508828486">فشردن مختصر</translation>
 <translation id="3462439746547587373"><ph name="NAME" />، دکمه</translation>
 <translation id="3473644018603298796">‏<ph name="COUNT" /> مورد انتخابی</translation>
@@ -412,6 +413,7 @@
 <translation id="5000760171916499057">فرمی موجود نیست.</translation>
 <translation id="5005670136041063723">هیچ عنصر مشابه دیگری نیست.</translation>
 <translation id="501473567976723023">ژانویه</translation>
+<translation id="5040591161308540832">جدول $1، $2 در $3</translation>
 <translation id="5041394372352067729">انتقال صفحه‌نمایش بریل به بالای صفحه</translation>
 <translation id="5042770794184672516">افزایش میزان صدای گفتار</translation>
 <translation id="5050015258024679800">عنوان قبلی سطح ۴</translation>
@@ -555,6 +557,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">عنوان قبلی</translation>
 <translation id="6378565991815958969">کپی $1.</translation>
+<translation id="6385591741672306837">ستون</translation>
 <translation id="6387719785439924554">جدا</translation>
 <translation id="6411426777058107714">دکمه رادیویی قبلی وجود ندارد.</translation>
 <translation id="6414968628640960377">عنصر متفاوت قبلی.</translation>
@@ -682,7 +685,7 @@
 <translation id="7870596830398826354">‏درخت ML ریاضی</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7894517696028036636">‏روشن و خاموش کردن ChromeVox کلاسیک.</translation>
-<translation id="7895896691902835279">پیوند ناشناخته</translation>
+<translation id="7895896691902835279">پیوند ناشناس</translation>
 <translation id="7927711904086083099">انتخاب نشده</translation>
 <translation id="7935627501098484003">کنترل زمان</translation>
 <translation id="7939428177581522200">به موارد انتخابی اضافه شد</translation>
@@ -704,6 +707,7 @@
 <translation id="8153880621934657047">خارج از جدول</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{زیرخط}one{# زیرخط}other{# زیرخط}}</translation>
 <translation id="8179976553408161302">ورود</translation>
+<translation id="8184828902145951186">ردیف</translation>
 <translation id="8186185314313222077">جابه‌جایی به حالت تمام صفحه</translation>
 <translation id="8199231515320852133">اعلان عناوین سلول کنونی</translation>
 <translation id="820417203470636242">سلول خالی است.</translation>

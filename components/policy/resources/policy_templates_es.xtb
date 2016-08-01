@@ -116,11 +116,6 @@ El usuario puede inhabilitar el escritorio unificado para pantallas individuales
 Si esta política está establecida en "false" o no está establecida, se inhabilitará el escritorio unificado. En este caso, el usuario no puede habilitar la función.</translation>
 <translation id="1474273443907024088">Inhabilitar el inicio falso de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Permite especificar el período en milisegundos durante el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
-
-      Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
-
-      Si no se establece esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de tres horas.</translation>
 <translation id="1504431521196476721">Confirmación remota</translation>
 <translation id="1509692106376861764">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
@@ -337,11 +332,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Una vez que se haya habilitado la conexión Bluetooth, se debe reiniciar el dispositivo para que se apliquen los cambios (no es necesario reiniciarlo al inhabilitar la conexión Bluetooth).</translation>
 <translation id="2366415278352956652">Habilitar el envío</translation>
-<translation id="2371309782685318247">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de usuarios al servicio de administración de dispositivos.
-
-      Si se establece esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1.800.000 (30 minutos) y 86.400.000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.
-
-      Si no se establece esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de tres horas.</translation>
 <translation id="2372547058085956601">Permite indicar el tiempo de espera para el inicio de sesión automático en sesiones públicas.
 
       Si no se establece la política |DeviceLocalAccountAutoLoginId|, esta política no tendrá ningún efecto. En caso contrario:
@@ -937,6 +927,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Permite mostrar las extensiones que están instaladas de forma automática en una sesión de demostración para dispositivos que se encuentren en modo comercial. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión una vez que se ha completado el proceso de instalación.
 
       Cada entrada de la lista contiene un diccionario, que debe incluir el ID de la extensión en el campo "extension-id" y una URL de actualización en el campo "update-url".</translation>
+<translation id="388237772682176890">Esta política está obsoleta en M53 y se ha quitado de M54, ya que se ha retirado la compatibilidad con SPDY/3.1.
+
+      Inhabilita el uso del protocolo SPDY en <ph name="PRODUCT_NAME" />.
+
+      Si se habilita esta política, el protocolo SPDY no estará disponible en <ph name="PRODUCT_NAME" />.
+
+      Si se inhabilita esta política, se podrá utilizar el protocolo SPDY.
+
+      Si esta política no se configura, el protocolo SPDY estará disponible.</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
 <translation id="3898060089412156345">Permite o prohíbe la captura de audio.
 
@@ -1151,6 +1150,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="467449052039111439">Abrir una lista de URLs</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
+<translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
 <translation id="4744190513568488164">Permite indicar los servidores en los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios.
 
@@ -1256,6 +1256,15 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> evitará que el dispositivo se inicie en modo de desarrollador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de desarrollador.
 
       Si no se establece esta política o se establece en False, el modo de desarrollador seguirá disponible para el dispositivo.</translation>
+<translation id="5203271367506489164">Esta política está obsoleta en M48 y cambia a NetworkPredictionOptions. También se ha retirado de M54.
+
+      Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      Permite controlar tanto la solicitud previa de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web. El nombre de esta política hace referencia a la solicitud previa de DNS por motivos históricos.
+
+      Si habilitas o inhabilitas esta opción, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+      Si esta política no se configura, la predicción de red se habilitará pero los usuarios podrán cambiarla.</translation>
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -2051,6 +2060,13 @@ Si se asigna el valor false a la política, no se proporcionará información so
 <translation id="7796141075993499320">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan ejecutar complementos.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPluginsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
+<translation id="7801886189430766248">Si a esta política se le asigna el valor true, los datos de las aplicaciones de Android se suben a los servidores de Android Backup y se restauran al volver a descargar aplicaciones compatibles.
+
+      Si a esta política se le asigna el valor false, Android Backup Service se desactiva.
+
+      Si se configura esta opción, los usuarios no pueden cambiarla.
+
+      Si no se configura esta opción, los usuarios pueden activar o desactivar Android Backup Service en la aplicación Ajustes de Android.</translation>
 <translation id="7818131573217430250">Establecer el estado predeterminado del modo de contraste alto en la pantalla de inicio de sesión</translation>
 <translation id="7831595031698917016">Especifica el retraso máximo en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política del servicio de administración del dispositivo.
 

@@ -23,6 +23,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
+<translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
 <translation id="163860049029591106">Chrome 操作系统使用入门</translation>
 <translation id="1653828314016431939">确定 - 立即重新启动</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY" /> 执行读写操作</translation>
@@ -43,6 +44,7 @@
 <translation id="2286950485307333924">现在您已登录到Chrome</translation>
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
+<translation id="2309047409763057870">这是 Google Chrome 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2334084861041072223">版权所有<ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2346876346033403680">之前有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 帐户登录 Chrome。如果这不是您的帐户，请新建一个 Chrome 用户来单独保存您的信息。
@@ -63,9 +65,11 @@
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
+<translation id="2799223571221894425">重新启动</translation>
 <translation id="2847461019998147611">以这种语言显示 Google Chrome</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
+<translation id="2900322993655997287">Google Chrome 无法确定或设置默认浏览器。</translation>
 <translation id="2997147809295888909">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器未提供任何 Certificate Transparency 信息。</translation>
 <translation id="3037838751736561277">Google Chrome处于后台运行模式。</translation>
 <translation id="3047079729301751317">取消与<ph name="USERNAME" />的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chrome数据。您的Google帐户中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK" />Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK" />管理这些数据。</translation>
@@ -82,6 +86,7 @@
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3311976847535831054">此计算机将不再接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
+<translation id="3395323229510056640">获取有关 Chrome 操作系统的帮助</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>
 <translation id="3398288718845740432">在 Chrome 菜单中隐藏</translation>
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
@@ -136,7 +141,9 @@
 <translation id="5132929315877954718">查找适用于Google Chrome的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="5148419164691878332">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORDS_LINK" />中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="5170938038195470297">您的个人资料来自新版 Google Chrome 浏览器，因此无法使用。某些功能可能无法使用。请指定其他个人资料目录，或使用新版 Chrome 浏览器。</translation>
+<translation id="5176234269072261959">报告当前设置，帮助我们改进 Chrome。</translation>
 <translation id="5204098752394657250">Google Chrome　<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="5243785881901838525">Google Payments（已同步到 Chrome）</translation>
 <translation id="5251420635869119124">访客使用Chrome不会留下任何痕迹。</translation>
 <translation id="5253588388888612165">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐户添加到Chrome，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 将在 1 秒后重新启动。}other{Google Chrome 将在 # 秒后重新启动。}}</translation>
@@ -157,6 +164,7 @@
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{这会将 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。}other{这会将 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。}}</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
+<translation id="5895138241574237353">重新启动</translation>
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5931853610562009806">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chrome 用户都能够访问或同步处理这些密码。</translation>
 <translation id="5940385492829620908">您的上网记录、书签和其他Chrome资料和数据都保存在此处。</translation>
@@ -170,6 +178,7 @@
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
 <translation id="6236285698028833233">Google Chrome 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="629218512217695915">使用由Chrome生成的密码</translation>
+<translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368805772029492593">为了提高安全性，Google Chrome 将对您的数据进行加密。</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
 <translation id="6400076122676892962">此计算机很快就不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 将不再受支持。</translation>
@@ -179,6 +188,7 @@
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
+<translation id="6648058004052854464">无法将 Google Chrome 设为默认浏览器。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
@@ -204,6 +214,7 @@
 <translation id="7242029209006116544">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">此计算机很快就不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 将不再受支持。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
+<translation id="7393806081343982361">太棒了！Google Chrome 已设为您的默认浏览器。</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐户再次登录。</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
@@ -253,11 +264,13 @@
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
+<translation id="8793772303278047003">Chrome 版本太旧。</translation>
 <translation id="8796108026289707191">您应立即重新启动 Google Chrome。</translation>
 <translation id="8823341990149967727">Chrome版本太旧</translation>
 <translation id="884296878221830158">它还能够控制您启动Chrome或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="8851136666856101339">主体内容</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
+<translation id="8914504000324227558">重启 Chrome</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="9067395829937117663">Google Chrome 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="9102715433345326100">这是恶意文件，Chrome 已将其拦截。</translation>

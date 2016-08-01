@@ -118,13 +118,6 @@
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Pozwala określić w milisekundach okres wysyłania do usługi zarządzania urządzeniem zapytań o zasady dotyczące urządzeń.
-
-      Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej, wynoszącej 3 godziny.
-
-      Akceptowane są wartości z zakresu od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu są zamieniane na odpowiednie wartości graniczne.
-
-      W przypadku nieskonfigurowania tej zasady <ph name="PRODUCT_OS_NAME" /> będzie używać wartości domyślnej wynoszącej 3 godziny.</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
@@ -310,11 +303,6 @@
 
       Aby zmiany zostały zastosowane, po włączeniu Bluetootha musisz ponownie uruchomić urządzenie (po wyłączeniu Bluetootha nie jest to konieczne).</translation>
 <translation id="2366415278352956652">Włącza przesyłanie</translation>
-<translation id="2371309782685318247">Pozwala określić w milisekundach okres wysyłania zapytań dotyczących zasad użytkownika do usługi zarządzania urządzeniem. 
-
-      Ustawienie tej zasady powoduje zastąpienie wartości domyślnej wynoszącej 3 godziny. Akceptowane są wartości z zakresu od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wszelkie wartości spoza tego zakresu są zmieniane na odpowiednie wartości graniczne.
-
-     W przypadku nieskonfigurowania tej zasady <ph name="PRODUCT_NAME" /> użyje wartości domyślnej wynoszącej 3 godziny.</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
       Jeśli zasada |DeviceLocalAccountAutoLoginId| nie jest ustawiona, ta zasada nie daje żadnych rezultatów. W przeciwnym razie:
@@ -885,6 +873,15 @@
       Zawiera listę rozszerzeń, które są automatycznie instalowane dla użytkownika demonstracyjnego w przypadku urządzeń działających w trybie sklepu. Rozszerzenia są zapisane na urządzeniu i można je zainstalować w trybie offline, po instalacji aplikacji.
 
        Każda pozycja listy zawiera słownik, w którym obowiązkowe pola „extension-id” i „update-url” muszą zawierać odpowiednio identyfikator rozszerzenia i adres URL aktualizacji.</translation>
+<translation id="388237772682176890">Ta zasada jest wycofywana w wersji M53 i usunięta w wersji M54 z powodu usunięcia obsługi SPDY/3.1.
+
+      Wyłącza protokół SPDY w <ph name="PRODUCT_NAME" />.
+
+      Jeśli zasada jest włączona, protokół SPDY jest niedostępny w <ph name="PRODUCT_NAME" />.
+
+      Jeśli jest wyłączona, można używać protokołu SPDY.
+
+      Jeśli jest nieskonfigurowana, protokół SPDY jest dostępny.</translation>
 <translation id="3891357445869647828">Włącz obsługę języka JavaScript</translation>
 <translation id="3898060089412156345">Zezwala (lub nie) na rejestrowanie dźwięku.
 
@@ -1080,6 +1077,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
+<translation id="4725528134735324213">Włącz Android Backup Service</translation>
 <translation id="4733471537137819387">Zasady dotyczące zintegrowanego uwierzytelniania HTTP.</translation>
 <translation id="4744190513568488164">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
 
@@ -1165,6 +1163,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Kiedy ta zasada jest włączona, <ph name="PRODUCT_OS_NAME" /> uniemożliwia urządzeniu uruchomienie się w trybie programisty. Gdy tryb przełączania programisty zostanie włączony, system zablokuje uruchomienie i wyświetli ekran błędu.
 
       Kiedy ta zasada jest wyłączona, tryb programisty jest normalnie dostępny na urządzeniu.</translation>
+<translation id="5203271367506489164">Ta zasada jest wycofywana w wersji M48 i usunięta w wersji M54. Zastępuje ją NetworkPredictionOptions.
+
+      Włącza przewidywanie działań sieciowych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Ta zasada steruje nie tylko wstępnym pobieraniem DNS, ale też wstępnym łączeniem przez TCP i SSL oraz wstępnym renderowaniem. Nazwa zasady wiąże się ze wstępnym pobieraniem DNS z przyczyn historycznych.
+
+      Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani nadpisać tego ustawienia w <ph name="PRODUCT_NAME" />.
+
+      Jeśli zasada pozostanie nieskonfigurowana, ustawienie zostanie włączone, ale użytkownicy będą mogli je zmienić.</translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5226033722357981948">Określ, czy funkcja znajdowania wtyczek ma być wyłączona</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
@@ -1903,6 +1910,13 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Według profilu</translation>
 <translation id="7796141075993499320">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być uruchamiane wtyczki. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPluginsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="7801886189430766248">Gdy ta zasada jest włączona, dane aplikacji na Androida są przesyłane na serwery usługi Android Backup i przywracane stamtąd po ponownym zainstalowaniu zgodnych aplikacji.
+
+      Wyłączenie tej zasady powoduje wyłączenie Android Backup Service.
+
+      Jeśli zasada jest skonfigurowana, użytkownicy nie mogą zmienić tego ustawienia.
+
+      Jeśli nie jest skonfigurowana, użytkownicy mogą włączać i wyłączać Android Backup Service w aplikacji Ustawienia na Androidzie.</translation>
 <translation id="7818131573217430250">Ustaw domyślny stan trybu wysokiego kontrastu na ekranie logowania</translation>
 <translation id="7831595031698917016">Określa maksymalne opóźnienie w milisekundach między otrzymaniem unieważnienia zasady a pobraniem nowej z usługi zarządzania urządzeniem.
 

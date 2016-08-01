@@ -120,11 +120,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       onemogočeno. V tem primeru uporabnik funkcije ne more omogočiti.</translation>
 <translation id="1474273443907024088">Onemogoči funkcijo »False Start« protokola TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Določa obdobje (v milisekundah), v katerem se izvaja poizvedba v storitvi upravljanja naprave za podatke pravilnika za napravo.
-
-      Nastavitev tega pravilnika preglasi privzeto vrednost 3 ur. Veljavne vrednosti za ta pravilnik so v obsegu od 1.800.000 (30 minut) do 8.6400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo prilagojene omejitvi.
-
-      Če ta pravilnik ni nastavljen, bo <ph name="PRODUCT_OS_NAME" /> uporabil privzeto vrednost 3 ur.</translation>
 <translation id="1504431521196476721">Potrditev na daljavo</translation>
 <translation id="1509692106376861764">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1522425503138261032">Dovoli mestom sledenje fizične lokacije uporabnika</translation>
@@ -337,11 +332,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Ko omogočite Bluetooth, je treba napravo znova zagnati, da bodo spremembe izvedene (če Bluetooth onemogočite, naprave ni treba znova zagnati).</translation>
 <translation id="2366415278352956652">Omogoča predvajanje</translation>
-<translation id="2371309782685318247">Določa obdobje (v milisekundah), v katerem se izvaja poizvedba v storitvi upravljanja naprave za podatke pravilnika za napravo.
-
-      Nastavitev tega pravilnika preglasi privzeto vrednost 3 ur. Veljavne vrednosti za ta pravilnik so v obsegu od 1.800.000 (30 minut) do 86.400.000 (1 dan). Vrednosti, ki niso v tem obsegu, bodo prilagojene omejitvi.
-
-      Če ta pravilnik ni nastavljen, bo <ph name="PRODUCT_NAME" /> uporabil privzeto vrednost 3 ur.</translation>
 <translation id="2372547058085956601">Zamik samodejne prijave v javno sejo.
 
       Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, se ne uporablja. V nasprotnem primeru:
@@ -937,6 +927,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
 
       Vsak vnos na seznamu vsebuje slovar, ki mora vključevati ID razširitve v polju »extension-id« in URL za posodobitev v polju »update-url«.</translation>
+<translation id="388237772682176890">Ta pravilnik je zastarel v različicoi M53 in je bil odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
+
+      Onemogoči uporabo protokola SPDY v brskalniku <ph name="PRODUCT_NAME" />.
+
+      Če je ta pravilnik omogočen, protokol SPDY v brskalniku <ph name="PRODUCT_NAME" /> ne bo na voljo.
+
+      Če je pravilnik onemogočen, bo uporaba protokola SPDY na voljo.
+
+      Če pravilnik ni nastavljen, bo protokol SPDY na voljo.</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
 <translation id="3898060089412156345">Omogočanje ali onemogočanje zajema zvoka.
 
@@ -1156,6 +1155,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
 <translation id="4680961954980851756">Omogoči samodejno izpolnjevanje</translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
+<translation id="4725528134735324213">Omogočanje storitve Android Backup Service</translation>
 <translation id="4733471537137819387">Pravilniki, povezani z integriranim preverjanjem pristnosti HTTP.</translation>
 <translation id="4744190513568488164">Strežniki, v katere lahko <ph name="PRODUCT_NAME" /> delegira.
 
@@ -1259,6 +1259,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik vklopljen, bo sistem <ph name="PRODUCT_OS_NAME" /> preprečil, da bi se naprava zagnala v načinu za razvijalce. Če je stikalo za razvijalce vklopljeno, sistem ne bo dovolil zagona in bo prikazal zaslon z napako.
 
       Če ta pravilnik ni nastavljen ali je izklopljen, bo način za razvijalce v napravi še naprej na voljo.</translation>
+<translation id="5203271367506489164">Ta pravilnik je zastarel v različici M48 v dobro pravilnika »NetworkPredictionOptions« in je bil odstranjen v različici M54.
+
+      Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS iz zgodovinskih razlogov.
+
+      Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
+
+      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -2068,6 +2077,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7796141075993499320">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko izvajajo vtičnike.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
+<translation id="7801886189430766248">Če je ta pravilnik omogočen, so podatki aplikacij za Android naloženi v strežnike storitve Android Backup Service in znova obnovljeni iz njih ob vnovični namestitvi združljivih aplikacij.
+
+      Če je ta pravilnik onemogočen, je storitev Android Backup Service izklopljena.
+
+      Če je ta nastavitev konfigurirana, je uporabniki ne morejo spremeniti sami.
+
+      Če ta nastavitev ni konfigurirana, uporabniki lahko vklopijo in izklopijo storitev Android Backup Service v aplikaciji za nastavitve v Androidu.</translation>
 <translation id="7818131573217430250">Nastavitev privzetega stanja visokokontrastnega načina na prijavnem zaslonu</translation>
 <translation id="7831595031698917016">Določa največjo zakasnitev v milisekundah med prejemom zavrnitve veljavnosti pravilnika in prenosom novega pravilnika iz storitve za upravljanje naprav
 

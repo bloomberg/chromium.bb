@@ -40,6 +40,7 @@
 <translation id="1409879593029778104">Изтеглянето на „<ph name="FILE_NAME" />“ е предотвратено, защото файлът вече съществува.</translation>
 <translation id="1416550906796893042">Версия на приложението</translation>
 <translation id="1423209968422390786">Достъпът до местоположението е <ph name="BEGIN_LINK" />изключен за това устройство<ph name="END_LINK" />.</translation>
+<translation id="1430915738399379752">Печат</translation>
 <translation id="1445680696957526815">Компонентите на Chrome не са съвместими един с друг. Възможно е браузърът да се надстройва. Моля, опитайте отново след няколко минути. Ако проблемът не се отстрани, пробвайте да деинсталирате и да инсталирате отново Chrome.</translation>
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
 <translation id="145097072038377568">Изключено от настройките на Android</translation>
@@ -47,8 +48,10 @@
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
+<translation id="1546112724822176246">Не виждате устройството си? <ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Преместв. в другия прозорец</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
+<translation id="1571304935088121812">Копиране на потребителското име</translation>
 <translation id="1612196535745283361">Chrome се нуждае от достъп до местоположението, за да сканира за устройства, но съответните услуги са <ph name="BEGIN_LINK" />изключени за това устройство<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
@@ -90,6 +93,7 @@
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="2001120796168634316">Свързана страница: Запазване</translation>
 <translation id="200669432486043882">Замяна на файла</translation>
+<translation id="2020525020270327736">Копиране на сайта</translation>
 <translation id="2038563949887743358">Включване на функцията за заявяване на настолни сайтове</translation>
 <translation id="2073235970478114994">Зареждане на изображенията</translation>
 <translation id="2079545284768500474">Отмяна</translation>
@@ -229,10 +233,12 @@
 За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3623048332793834136">Отметки от Chrome Canary</translation>
+<translation id="3632295766818638029">Показване на паролата</translation>
 <translation id="363596933471559332">Автоматично влизане в уебсайтове посредством съхранявани идентификационни данни. Когато функцията е изключена, ще трябва да потвърждавате всяко влизане в профил в уебсайт.</translation>
 <translation id="3656115297268584622">Включете местоположението от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Уебсайтовете на трети страни могат да запазват „бисквитки“ и да четат данни от такива</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
+<translation id="3706658020782046159">Изберете адрес за доставка, за да проверите начините и изискванията за доставяне.</translation>
 <translation id="3716158070938632480">В близост има уеб страници</translation>
 <translation id="3732088672634061408">Интересите не можаха да се извлекат.</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
@@ -346,6 +352,7 @@
 <translation id="5107381076085091558">Изтеглянето е на пауза.</translation>
 <translation id="5118713593561876160">Интереси</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
+<translation id="5131405117025179004">Редактиране на запазен профил</translation>
 <translation id="5138299137310274655">Тази страница е на <ph name="SOURCE_LANGUAGE" />. Да се преведе ли на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Обединяване на разделите и приложенията</translation>
 <translation id="515227803646670480">Изчистване на съхраняваните данни</translation>
@@ -476,6 +483,7 @@
 <translation id="6477460825583319731">Имейл адресът е невалиден</translation>
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
 <translation id="6541922744811587456">Отметки от Chrome</translation>
+<translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
 <translation id="6550675742724504774">Опции</translation>
@@ -649,6 +657,7 @@
 <translation id="8413126021676339697">Показване на пълната история</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
+<translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
 <translation id="8481940801237642152">Връзката ви с този сайт е частна, но някой в мрежата може да промени облика на страницата.</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>

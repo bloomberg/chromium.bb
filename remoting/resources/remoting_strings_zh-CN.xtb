@@ -235,6 +235,7 @@
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
+<translation id="6963936880795878952">与远程计算机的连接已被暂时阻止，因为有人试图使用无效的 PIN 码连接到该计算机。请稍后重试。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="6998989275928107238">指向</translation>

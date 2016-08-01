@@ -119,11 +119,6 @@
       va fi dezactivat. În acest caz, utilizatorul nu poate activa funcția.</translation>
 <translation id="1474273443907024088">Dezactivează optimizarea False Start pentru TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Această politică specifică intervalul, în milisecunde, la care serviciul de gestionare a dispozitivului este interogat pentru informații privind politica dispozitivului.
-
-      Setarea acestei politici modifică valoarea prestabilită de 3 ore. Valorile valide pentru această politică se află în intervalul 1800000 (30 de minute) - 86400000 (1 zi). Valorile care nu se găsesc în acest interval vor fi fixate la limita validă cea mai apropiată.
-
-      Dacă această politică nu este setată, <ph name="PRODUCT_OS_NAME" /> va utiliza valoarea prestabilită de 3 ore.</translation>
 <translation id="1504431521196476721">Atestare la distanță</translation>
 <translation id="1509692106376861764">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29.</translation>
 <translation id="1522425503138261032">Permite site-urilor să urmărească locația fizică a utilizatorilor</translation>
@@ -322,11 +317,6 @@
 
       După ce conexiunea Bluetooth este activată, dispozitivul trebuie repornit pentru ca modificările să aibă efect (nu este necesar să repornești dispozitivul când dezactivezi conexiunea Bluetooth).</translation>
 <translation id="2366415278352956652">Activează proiecția</translation>
-<translation id="2371309782685318247">Această politică specifică intervalul (în milisecunde) la care serviciului de gestionare a dispozitivelor i se solicită informații legate de politica privind utilizatorii.
-
-      Setarea acestei politici înlocuiește valoarea prestabilită de 3 ore. Valorile valide pentru această politică se află în intervalul 1800000 (30 de minute) - 86400000 (1 zi). Toate valorile care nu se încadrează în acest interval vor fi fixate la limita validă cea mai apropiată.
-
-      Dacă nu setați această politică, <ph name="PRODUCT_NAME" /> va utiliza valoarea prestabilită de 3 ore.</translation>
 <translation id="2372547058085956601">Stabilește intervalul de inactivitate până la conectarea automată la o sesiune publică.
 
       Dacă setarea politicii |DeviceLocalAccountAutoLoginId| este anulată, aceasta nu mai are efect. În caz contrar:
@@ -900,6 +890,15 @@
       Politica indică extensiile instalate automat pentru utilizatorul demonstrativ, pentru dispozitivele în modul Vânzare. Aceste extensii sunt salvate pe dispozitiv și pot fi instalate offline, după instalare.
 
       Fiecare intrare din listă conține un dicționar care trebuie să includă codul extensiei în câmpul „extension-id”, precum și adresa URL pentru actualizare în câmpul „update-url”.</translation>
+<translation id="388237772682176890">Politica nu mai este dezvoltată în M53 și a fost eliminată din M54, deoarece compatibilitatea cu SPDY/3.1 a fost eliminată.
+
+      Dezactivează folosirea protocolului SPDY în <ph name="PRODUCT_NAME" />.
+
+      Dacă această politică este activată, protocolul SPDY nu va fi disponibil în <ph name="PRODUCT_NAME" />.
+
+      Dezactivarea acestei politici va permite utilizarea protocolului SPDY.
+
+      Dacă această politică nu este configurată, SPDY va fi disponibil.</translation>
 <translation id="3891357445869647828">Activează JavaScript</translation>
 <translation id="3898060089412156345">Permite sau refuză capturarea conținutului audio.
 
@@ -1093,6 +1092,7 @@
 <translation id="467449052039111439">Deschide o listă de adrese URL</translation>
 <translation id="4680961954980851756">Activează completarea automată</translation>
 <translation id="4723829699367336876">Activează trecerea prin firewall de la clientul cu acces la distanță</translation>
+<translation id="4725528134735324213">Activează Android Backup Service</translation>
 <translation id="4733471537137819387">Politici referitoare la autentificarea integrată HTTP.</translation>
 <translation id="4744190513568488164">Servere spre care <ph name="PRODUCT_NAME" /> poate delega.
 
@@ -1182,6 +1182,15 @@
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite pornirea dispozitivului în modul pentru dezvoltatori. Sistemul va refuza pornirea și va afișa un ecran de eroare atunci când comutatorul modului pentru dezvoltatori este pornit.
 
       Dacă politica nu este configurată sau dacă este dezactivată, modul pentru dezvoltatori va fi în continuare disponibil pe dispozitiv.</translation>
+<translation id="5203271367506489164">Politica nu mai este dezvoltată în M48, în favoarea politicii NetworkPredictionOptions, și a fost eliminată din M54.
+
+      Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web. Numele acestei politici se referă la preluarea anticipată a datelor DNS din motive ce țin de istoric.
+
+      Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau ignora în <ph name="PRODUCT_NAME" />.
+
+      Dacă politica nu este configurată, aceasta va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5226033722357981948">Specifică dacă instrumentul de găsire de pluginuri ar trebui dezactivat</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
@@ -1931,6 +1940,13 @@ nu poate fi stabilit de utilizator din setările browserului.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="7796141075993499320">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula pluginuri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultPluginsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+<translation id="7801886189430766248">Dacă această politică este activată, datele aplicațiilor Android sunt încărcate pe serverele Android Backup Service și vor fi restabilite de pe acestea la reinstalarea aplicațiilor, pentru aplicațiile compatibile.
+
+      Când această politică este dezactivată, Android Backup Service va fi dezactivat.
+
+      Dacă această setare este configurată, utilizatorii nu o vor putea modifica.
+
+      Dacă această setare nu este configurată, utilizatorii pot activa și dezactiva Android Backup Service în aplicația Setări Android.</translation>
 <translation id="7818131573217430250">Setați modul de contrast ridicat pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="7831595031698917016">Specifică întârzierea maximă în milisecunde de la primirea unei invalidări a politicii și până la preluarea politicii noi de la serviciul de gestionare a dispozitivului.
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1008557486741366299">Nyní ne</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
 <translation id="1038842779957582377">neznámé jméno</translation>
@@ -68,7 +69,6 @@
 <translation id="1734878702283171397">Zkuste kontaktovat administrátora systému.</translation>
 <translation id="17513872634828108">Otevřené karty</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
-<translation id="1761412452051366565">Chcete-li od Googlu získat personalizované návrhy obsahu, zapněte synchronizaci.</translation>
 <translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě systému Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
@@ -226,6 +226,7 @@
 <translation id="3452404311384756672">Interval načtení:</translation>
 <translation id="3462200631372590220">Skrýt rozšířené</translation>
 <translation id="3479539252931486093">Nebylo toto očekáváno? <ph name="BEGIN_LINK" />Informujte nás<ph name="END_LINK" />.</translation>
+<translation id="3479552764303398839">Nyní ne</translation>
 <translation id="348000606199325318">ID selhání <ph name="CRASH_LOCAL_ID" /> (ID serveru: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="3527085408025491307">Složka</translation>
@@ -377,7 +378,6 @@
 <translation id="5430298929874300616">Odstranit záložku</translation>
 <translation id="5431657950005405462">Soubor nebyl nalezen</translation>
 <translation id="5435775191620395718">Zobrazuje se historie z tohoto zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
-<translation id="5437003064129843501">Personalizované návrhy obsahu jsou aktuálně vypnuty, protože jsou vaše synchronizovaná data chráněna vlastní heslovou frází.</translation>
 <translation id="5439770059721715174">Chyba validace schématu v místě <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Tuto stránku na webu <ph name="HOST_NAME" /> nelze najít</translation>
 <translation id="5455374756549232013">Chybné časové razítko zásady</translation>
@@ -479,7 +479,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="6895330447102777224">Vaše karta je ověřena</translation>
 <translation id="6897140037006041989">User agent</translation>
-<translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6915804003454593391">Uživatel:</translation>
 <translation id="6957887021205513506">Zdá se, že certifikát serveru je podvrh.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -512,7 +511,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7269802741830436641">Tato stránka obsahuje smyčku přesměrování</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
-<translation id="7301833672208172928">Zapnout synchronizaci historie</translation>
 <translation id="7334320624316649418">&amp;Opakovat změnu uspořádání</translation>
 <translation id="733923710415886693">Certifikát serveru nebyl zveřejněn prostřednictvím projektu Certificate Transparency.</translation>
 <translation id="7353601530677266744">Příkazový řádek</translation>
@@ -633,7 +631,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
 <translation id="8741995161408053644">Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další formy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
-<translation id="8790687370365610530">Chcete-li od Googlu dostávat personalizované návrhy obsahu, zapněte synchronizaci historie.</translation>
 <translation id="8798099450830957504">Výchozí</translation>
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="8820817407110198400">Záložky</translation>

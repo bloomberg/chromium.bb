@@ -269,6 +269,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3392045790598181549"><ph name="NAME" />, element de menú</translation>
 <translation id="3406283310380167331">Mostra la llista de formularis.</translation>
 <translation id="3422338090358345848">Obre l'explorador del teclat.</translation>
+<translation id="3423495725743882470">fila $1, columna $2</translation>
 <translation id="3457000393508828486">S'ha premut parcialment.</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, botó</translation>
 <translation id="3473644018603298796">control lliscant <ph name="COUNT" /></translation>
@@ -412,6 +413,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5000760171916499057">No hi ha cap formulari.</translation>
 <translation id="5005670136041063723">No hi ha més elements similars.</translation>
 <translation id="501473567976723023">Gener</translation>
+<translation id="5040591161308540832">Taula $1, $2 per $3</translation>
 <translation id="5041394372352067729">Mou la pantalla Braille a la part superior de la pàgina.</translation>
 <translation id="5042770794184672516">Augmenta el volum de la veu.</translation>
 <translation id="5050015258024679800">Capçalera del nivell 4 anterior</translation>
@@ -555,6 +557,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Capçalera anterior</translation>
 <translation id="6378565991815958969">copia $1.</translation>
+<translation id="6385591741672306837">columna</translation>
 <translation id="6387719785439924554">complement</translation>
 <translation id="6411426777058107714">No hi ha cap botó d'opció anterior.</translation>
 <translation id="6414968628640960377">Element diferent anterior.</translation>
@@ -704,6 +707,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
+<translation id="8184828902145951186">fila</translation>
 <translation id="8186185314313222077">activa la pantalla completa</translation>
 <translation id="8199231515320852133">Presenta les capçaleres de la cel·la actual.</translation>
 <translation id="820417203470636242">Cel·la buida</translation>

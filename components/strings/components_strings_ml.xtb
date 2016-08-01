@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1008557486741366299">ഇപ്പോഴല്ല</translation>
 <translation id="1015730422737071372">കൂടുതൽ വിശദാംശങ്ങൾ നൽകുക</translation>
 <translation id="1032854598605920125">ഘടികാരദിശയിൽ‌ തിരിക്കുക</translation>
 <translation id="1038842779957582377">അജ്ഞാത നാമം</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">സിസ്റ്റം അഡ്‌മിനെ ബന്ധപ്പെടാൻ ശ്രമിക്കുക.</translation>
 <translation id="17513872634828108">ഓപ്പൺ ടാബുകൾ</translation>
 <translation id="1753706481035618306">പേജ് നമ്പർ</translation>
-<translation id="1761412452051366565">Google നിർദ്ദേശിച്ച, വ്യക്തിപരമാക്കിയ ഉള്ളടക്കം സ്വന്തമാക്കാൻ, സമന്വയിപ്പിക്കുക ഓണാക്കുക.</translation>
 <translation id="1763864636252898013">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റിനെ നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഓപ്പറേറ്റിംഗ് സിസ്‌റ്റത്തിന് പരിചയമില്ല. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows നെറ്റ്‌വർക്ക് ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്‌തുനോക്കൂ<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രേസ് ദയവായി അപ്‌ഡേറ്റ് ചെയ്യുക.</translation>
@@ -230,6 +230,7 @@
 <translation id="3452404311384756672">ഇടവേള ലഭ്യമാക്കുക:</translation>
 <translation id="3462200631372590220">വിപുലമായവ മറയ്ക്കുക</translation>
 <translation id="3479539252931486093">ഇത് അപ്രതീക്ഷിതമായിരുന്നോ? <ph name="BEGIN_LINK" />ഞങ്ങളെ അറിയിക്കുക<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="348000606199325318">ക്രാഷ് ഐഡി, <ph name="CRASH_LOCAL_ID" /> (സെർവർ ഐഡി: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">ഇപ്പോൾ ഞങ്ങൾക്ക് നിങ്ങളുടെ രക്ഷകർത്താവിനെ ബന്ധപ്പെടാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
@@ -382,7 +383,6 @@
 <translation id="5430298929874300616">ബുക്ക്‌മാർക്ക് നീക്കംചെയ്യുക</translation>
 <translation id="5431657950005405462">നിങ്ങളുടെ ഫയൽ കണ്ടെത്തിയില്ല</translation>
 <translation id="5435775191620395718">ഈ ഉപകരണത്തിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">നിങ്ങളുടെ സമന്വയിപ്പിച്ച വിവരങ്ങളെ ഒരു ഇഷ്‌ടാനുസൃത പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് പരിരക്ഷിച്ചിരിക്കുന്നതിനാൽ, വ്യക്തിപരമാക്കിയ ഉള്ളടക്ക നിർദ്ദേശങ്ങൾ നിലവിൽ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുകയാണ്.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" എന്നതിൽ സ്‌കീമ മൂല്ല്യനിർണ്ണയ പിശക്: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">ഈ <ph name="HOST_NAME" /> പേജ് കണ്ടെത്താനായില്ല</translation>
 <translation id="5455374756549232013">മോശം നയ ടൈംസ്റ്റാമ്പ്</translation>
@@ -485,7 +485,6 @@
 <translation id="6891596781022320156">നയ നില പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="6895330447102777224">നിങ്ങളുടെ കാർഡ് സ്ഥിരീകരിച്ചു</translation>
 <translation id="6897140037006041989">ഉപയോക്തൃ ഏജന്‍റ്</translation>
-<translation id="6903907808598579934">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="6915804003454593391">ഉപയോക്താവ്:</translation>
 <translation id="6957887021205513506">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് വിശ്വസിക്കാൻ കൊള്ളാത്ത ഒന്നായി തോന്നുന്നു.</translation>
 <translation id="6965382102122355670">ശരി</translation>
@@ -518,7 +517,6 @@
 <translation id="7269802741830436641">ഈ വെബ്പേജിന് ഒരു റീഡയറക്ട് ലൂപ്പ് ഉണ്ട്</translation>
 <translation id="7275334191706090484">നിയന്ത്രിത ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
-<translation id="7301833672208172928">ചരിത്രം സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="7334320624316649418">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="733923710415886693">സർട്ടിഫിക്കറ്റ് സുതാര്യതയിലൂടെ സെർവറുടെ സർട്ടിഫിക്കറ്റ് വെളിപ്പെടുത്തിയിട്ടില്ല.</translation>
 <translation id="7353601530677266744">കമാന്‍റ് ലൈന്‍‌</translation>
@@ -639,7 +637,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ഹോസ്‌റ്റിന്റെ &lt;abbr id="dnsDefinition"&gt;DNS വിലാസം&lt;/abbr&gt; കണ്ടെത്താനായില്ല. പ്രശ്‌നം നിർണ്ണയിക്കുന്നു.</translation>
 <translation id="8741995161408053644">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="8790007591277257123">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
-<translation id="8790687370365610530">Google നിർദ്ദേശിച്ച, വ്യക്തിപരമാക്കിയ ഉള്ളടക്കം സ്വന്തമാക്കാൻ, ചരിത്രം സമന്വയിപ്പിക്കൽ ഓണാക്കുക.</translation>
 <translation id="8798099450830957504">സ്ഥിരസ്ഥിതി</translation>
 <translation id="8804164990146287819">സ്വകാര്യത നയം</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>

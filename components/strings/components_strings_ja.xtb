@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1008557486741366299">後で</translation>
 <translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1032854598605920125">時計回りに回転</translation>
 <translation id="1038842779957582377">不明な名前</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1753706481035618306">ページ番号</translation>
-<translation id="1761412452051366565">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、同期を有効にします。</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">同期パスフレーズを更新してください。</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">取得間隔:</translation>
 <translation id="3462200631372590220">詳細情報を表示しない</translation>
 <translation id="3479539252931486093">想定外の動作である場合は、<ph name="BEGIN_LINK" />問題を報告<ph name="END_LINK" />してください。</translation>
+<translation id="3479552764303398839">後で</translation>
 <translation id="348000606199325318">クラッシュ ID <ph name="CRASH_LOCAL_ID" />（サーバー ID: <ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">現在、保護者にたずねることができません。もう一度お試しください。</translation>
 <translation id="3527085408025491307">フォルダ</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5435775191620395718">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="5437003064129843501">同期データがカスタム パスフレーズで保護されているため、おすすめコンテンツの表示機能は現在無効になっています。</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">この <ph name="HOST_NAME" /> ページが見つかりません</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="6895330447102777224">カードを確認しました</translation>
 <translation id="6897140037006041989">ユーザー エージェント</translation>
-<translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="6957887021205513506">サーバーの証明書が偽造されたもののようです。</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">このウェブページにはリダイレクト ループが含まれています</translation>
 <translation id="7275334191706090484">管理対象のブックマーク</translation>
 <translation id="7298195798382681320">推奨</translation>
-<translation id="7301833672208172928">履歴の同期を有効にする</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
 <translation id="733923710415886693">サーバーの証明書は、証明書の透明性ポリシーを介して公開されていません。</translation>
 <translation id="7353601530677266744">コマンドライン</translation>
@@ -640,7 +638,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
 <translation id="8741995161408053644">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
-<translation id="8790687370365610530">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、履歴の同期を有効にします。</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8804164990146287819">プライバシー ポリシー</translation>
 <translation id="8820817407110198400">ブックマーク</translation>

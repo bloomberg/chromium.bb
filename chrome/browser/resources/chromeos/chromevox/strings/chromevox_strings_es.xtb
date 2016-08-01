@@ -269,6 +269,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3392045790598181549"><ph name="NAME" />, elemento de menú</translation>
 <translation id="3406283310380167331">Muestra la lista de formularios</translation>
 <translation id="3422338090358345848">Abre el explorador del teclado</translation>
+<translation id="3423495725743882470">fila $1, columna $2</translation>
 <translation id="3457000393508828486">Pulsado parcialmente</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, botón</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> slcd</translation>
@@ -412,6 +413,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5000760171916499057">No hay formularios.</translation>
 <translation id="5005670136041063723">No hay más elementos similares.</translation>
 <translation id="501473567976723023">Enero</translation>
+<translation id="5040591161308540832">Tabla $1, $2 por $3</translation>
 <translation id="5041394372352067729">Mueve la pantalla braille a la parte superior de la página</translation>
 <translation id="5042770794184672516">Aumenta el volumen de voz</translation>
 <translation id="5050015258024679800">Encabezado anterior de nivel 4</translation>
@@ -555,6 +557,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Encabezado anterior</translation>
 <translation id="6378565991815958969">copiar $1.</translation>
+<translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">etiqueta de contenido tangencial</translation>
 <translation id="6411426777058107714">No hay ningún botón de opción anterior.</translation>
 <translation id="6414968628640960377">Elemento anterior distinto</translation>
@@ -704,6 +707,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="8153880621934657047">No está dentro de la tabla.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{guión bajo}other{# guiones bajos}}</translation>
 <translation id="8179976553408161302">Intro</translation>
+<translation id="8184828902145951186">fila</translation>
 <translation id="8186185314313222077">activar pantalla completa</translation>
 <translation id="8199231515320852133">Indica los encabezados de la celda actual</translation>
 <translation id="820417203470636242">Celda vacía.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1008557486741366299">以后再说</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1038842779957582377">未知名称</translation>
@@ -69,7 +70,6 @@
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
-<translation id="1761412452051366565">要获取 Google 推荐的个性化内容，请开启同步功能。</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
@@ -228,6 +228,7 @@
 <translation id="3452404311384756672">抓取时间间隔：</translation>
 <translation id="3462200631372590220">隐藏详情</translation>
 <translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">以后再说</translation>
 <translation id="348000606199325318">崩溃 ID：<ph name="CRASH_LOCAL_ID" />（服务器 ID：<ph name="CRASH_ID" />）</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3527085408025491307">文件夹</translation>
@@ -379,7 +380,6 @@
 <translation id="5430298929874300616">移除书签</translation>
 <translation id="5431657950005405462">找不到您的文件</translation>
 <translation id="5435775191620395718">目前显示的是此设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
-<translation id="5437003064129843501">您的已同步数据受自定义密码保护，因此个性化内容推荐功能当前已停用。</translation>
 <translation id="5439770059721715174">“<ph name="ERROR_PATH" />”中存在模式验证错误：<ph name="ERROR" /></translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 的网页</translation>
 <translation id="5455374756549232013">策略时间戳无效</translation>
@@ -481,7 +481,6 @@
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
 <translation id="6897140037006041989">用户代理</translation>
-<translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -514,7 +513,6 @@
 <translation id="7269802741830436641">此网页包含重定向循环</translation>
 <translation id="7275334191706090484">受管理的书签</translation>
 <translation id="7298195798382681320">推荐</translation>
-<translation id="7301833672208172928">开启历史记录同步功能</translation>
 <translation id="7334320624316649418">恢复顺序调整(&amp;R)</translation>
 <translation id="733923710415886693">该服务器的证书未通过证书透明度政策进行披露。</translation>
 <translation id="7353601530677266744">命令行</translation>
@@ -635,7 +633,6 @@
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="8741995161408053644">您的 Google 帐户在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
-<translation id="8790687370365610530">要获取 Google 推荐的个性化内容，请开启历史记录同步功能。</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
 <translation id="8820817407110198400">书签</translation>

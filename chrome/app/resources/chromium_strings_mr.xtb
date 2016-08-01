@@ -52,6 +52,7 @@
 <translation id="2558641060352364164">ही साइट Chromium फ्रेम प्लगिन वापरत आहे जे लवकरच असमर्थित केले जाईल. कृपया ते विस्थापित करा आणि एका आधुनिक ब्राउझरवर श्रेणीसुधारित करा.</translation>
 <translation id="2572494885440352020">Chromium मदतनीस</translation>
 <translation id="2595977381794111014">आपल्या अॅप्समध्ये प्रवेश करणे सुरु ठेवण्यासाठी Chromium बुकमार्क बार मधील <ph name="APPS_ICON_IMAGE" /> शॉर्टकट वापरा.</translation>
+<translation id="2605472041568654097">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium ला आणखी चांगले बनविण्यात मदत करा.</translation>
 <translation id="2636877269779209383">Chromium ला या साइटसह सामायिक करण्‍यासाठी कॅमेर्‍यामध्ये प्रवेश करण्याची आवश्‍यकता असते.</translation>
 <translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली त्रुटी आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="2685838254101182273">Chromium ने अद्यतन करणे थांबविले आहे आणि हे आपल्या ऑपरेटिंग प्रणालीच्या या आवृत्तीचे यापुढे समर्थन करत नाही.</translation>
@@ -59,6 +60,7 @@
 <translation id="2711502716910134313">Chromium टॅब</translation>
 <translation id="2718390899429598676">अतिरिक्त सुरक्षिततेसाठी, Chromium आपला डेटा कूटबद्ध करेल.</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
+<translation id="2799223571221894425">पुन्हा लाँच करा</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> दुर्भावनापूर्ण आहे, आणि Chromium ने ती अवरोधित केली आहे.</translation>
 <translation id="2847479871509788944">Chromium मधून काढा...</translation>
 <translation id="2886012850691518054">पर्यायी: स्वयंचलितपणे वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chromium ला अधिक चांगले करण्यात मदत करा.</translation>
@@ -71,12 +73,14 @@
 <translation id="3103660991484857065">संग्रहण असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
 <translation id="3130323860337406239">Chromium आपला मायक्रोफोन वापरत आहे.</translation>
 <translation id="313551035350905294">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि त्याच्या प्रशासकास आपल्या Chromium प्रोफाईलवर नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमचे बद्ध राहतील. आपण Google खाती डॅशबोर्ड द्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसऱ्या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही.</translation>
+<translation id="3155163173539279776">Chromium पुन्हा लाँच करा</translation>
 <translation id="3190315855212034486">ओहो! Chromium क्रॅश झाले आहे. आता पुन्हा लाँच करायचे?</translation>
 <translation id="3256316712990552818">Chromium वर कॉपी केले</translation>
 <translation id="3258596308407688501">Chromium त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API की गहाळ आहेत. Chromium ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
+<translation id="3289635842886789612">Chromium कालबाह्य झाले आहे.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अनुप्रयोग चालवणे सुरू ठेवा</translation>
 <translation id="3312805357485578561">Chromium ला असामान्य वर्तन आढळले आहे</translation>
 <translation id="331951419404882060">साइन इन करण्यात त्रुटीमुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
@@ -95,14 +99,17 @@
 <translation id="3883381313049582448">Chromium द्वारे व्युत्पन्न केलेला संकेतशब्द वापरा</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
+<translation id="3994125055863078356">Chromium डीफॉल्ट ब्राउझर बनण्यात सक्षम नाही.</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
+<translation id="4182290826692170034">Chromium आपला डीफॉल्ट ब्राउझर आहे. हुर्रे!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />चेतावणी:<ph name="END_BOLD" /> आपला ब्राउझिंग इतिहास रेकॉर्ड करण्यापासून विस्तारांना Chromium प्रतिबंधित करू शकत नाही. गुप्त विंडोमध्ये हा विस्तार अक्षम करण्यासाठी, या पर्यायाची निवड रद्द करा.</translation>
 <translation id="421369550622382712">Chromium साठी उत्कृष्ट अॅप्स, गेम, विस्तार आणि थीम शोधा</translation>
 <translation id="4222580632002216401">आपण आता Chromium वर साइन इन केले आहे! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
 <translation id="4224199872375172890">Chromium अद्ययावत आहे.</translation>
 <translation id="4230135487732243613">या खात्यावर आपल्या Chromium डेटा चा दुवा साधायचा?</translation>
 <translation id="4246125976471362530">{SECONDS,plural, =1{Chromium 1 सेकंदात रीस्टार्ट होईल.}one{Chromium # सेकंदात रीस्टार्ट होईल.}other{Chromium # सेकंदांंमध्ये रीस्टार्ट होईल.}}</translation>
+<translation id="4271805377592243930">Chromium सह मदत मिळवा</translation>
 <translation id="4285930937574705105">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="4330585738697551178">हे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
 <translation id="4423735387467980091">Chromium सानुकूल करा आणि नियंत्रित करा</translation>
@@ -113,13 +120,16 @@
 <translation id="459535195905078186">Chromium Apps</translation>
 <translation id="4621240073146040695">अद्ययावत करणे जवळजवळ पूर्ण झाले! अद्यतनित करणे समाप्त करण्यासाठी Chromium रीलाँच करा.</translation>
 <translation id="4677944499843243528">प्रोफाईल दुसर्‍या संगणकावरील (<ph name="HOST_NAME" />) दुसर्‍या Chromium प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chromium ने प्रोफाईल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणतीही अन्य प्रक्रिया हे प्रोफाईल वापरत नसल्याची आपल्याला खात्री असल्यास, आपण प्रोफाईल अनलॉक करू शकता आणि Chromium रीलाँच करू शकता.</translation>
+<translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
 <translation id="4743926867934016338">स्‍वीकार करा आणि शोधा</translation>
 <translation id="4888717733111232871">mDNS रहदारीस अनुमती देण्यासाठी Chromium साठी अंतर्गामी नियम.</translation>
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>
 <translation id="4994636714258228724">आपल्या स्वतःस Chromium वर जोडा</translation>
 <translation id="5032989939245619637">Chromium मध्ये तपशील जतन करा</translation>
+<translation id="5113946445248196174">Chromium डीफॉल्ट ब्राउझर निर्धारित किंवा सेट करू शकत नाही.</translation>
 <translation id="5116586539350239523">Chromium आपले वैयक्तिक तपशील सुरक्षितपणे संचयित करेल जेणेकरून आपल्याला ते पुन्हा टाइप करण्याची आवश्यकता नसेल.</translation>
+<translation id="5231355151045086930">Chromium मधून साइन आउट करा</translation>
 <translation id="5358375970380395591">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
 <translation id="5427571867875391349">आपला डीफॉल्ट ब्राउझर म्हणून Chromium सेट करा</translation>
@@ -139,6 +149,7 @@
 <translation id="5859963531214966875">Chromium च्या भविष्यातील आवृत्त्या यापुढे या Linux सिस्टीमला समर्थन देणार नाहीत.</translation>
 <translation id="5862307444128926510">Chromium वर आपले स्‍वागत आहे</translation>
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी आपले डिव्हाइस रीस्टार्ट करा.</translation>
+<translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5906655207909574370">अद्ययावत करणे जवळजवळ पूर्ण झाले! अद्यतनित करणे समाप्त करण्यासाठी आपले डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5942225298871134766">Chromium हे <ph name="SAVED_PASSWORD_LINK" /> सह संचयित करेल आणि पुढच्या वेळी आपल्याला याची गरज असेल तेव्हा ते लक्षात ठेवेल.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> Chrome मध्‍ये जोडले गेले आहे.</translation>
@@ -179,6 +190,7 @@
 <translation id="705851970750939768">Chromium अद्यतनित करा</translation>
 <translation id="7064610482057367130">अद्यतनित करण्यासाठी Chromium ची कोणतीही स्थापना आढळली नाही.</translation>
 <translation id="7066436765290594559">Chromium OS आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन सांकेतिक वाक्यांश अद्यतनित करा.</translation>
+<translation id="707471633328071618">Google Payments (Chromium वर कॉपी केले)</translation>
 <translation id="7090955637699162649">आपला ब्राउझिंग अनुभव सुधारित करण्‍यासाठी Chromium आपल्‍या <ph name="BEGIN_LINK" />वेब सेवा<ph name="END_LINK" /> वापरू शकते. आपण कधीही या सेवा पर्यायीपणे अक्षम करू शकता.</translation>
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{हे या डिव्‍हाइस वरून $1 आयटम कायमचा हटवेल. आपला डेटा नंतर पुनर्प्राप्त करण्यासाठी, $2 म्हणून Chromium मध्ये साइन इन करा.}one{हे या डिव्‍हाइस वरून $1 आयटम कायमचा हटवेल. आपला डेटा नंतर पुनर्प्राप्त करण्यासाठी, $2 म्हणून Chromium मध्ये साइन इन करा.}other{हे या डिव्‍हाइस वरून $1 आयटम कायमचा हटवेल. आपला डेटा नंतर पुनर्प्राप्त करण्यासाठी, $2 म्हणून Chromium मध्ये साइन इन करा.}}</translation>
 <translation id="7138853919861947730">आपला ब्राउझिंग अनुभव सुधारण्यासाठी Chromium वेब सेवा वापरू शकते.</translation>
@@ -190,6 +202,7 @@
 <translation id="7223968959479464213">कार्य व्यवस्थापक- Chromium </translation>
 <translation id="722928257909516027">Chromium मेनू दर्शवा</translation>
 <translation id="731644333568559921">&amp;Chromium OS अद्यतनित करा</translation>
+<translation id="731795002583552498">Chromium अद्यतनित होत आहे</translation>
 <translation id="7318036098707714271">आपली प्राधान्ये फाइल दूषित किंवा अवैध आहे.
 
 Chromium आपली सेटिंग्ज पुनर्प्राप्त करण्‍यात अक्षम आहे.</translation>
@@ -218,6 +231,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="7937630085815544518">आपण <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chromium मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
 <translation id="795025003224538582">पुन्हा एकदा सुरु करु नका</translation>
 <translation id="7962572577636132072">Chromium स्वयंचलितपणे अद्यतनित होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
+<translation id="7975919845073681630">ही Chromium ची दुय्यम स्थापना असून त्यास आपला डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
 <translation id="7979877361127045932">Chromium मेनूमध्‍ये लपवा</translation>
 <translation id="8030318113982266900"><ph name="CHANNEL_NAME" /> चॅनेलवर आपले डिव्हाइस अद्यतनित करत आहे...</translation>
 <translation id="8033665941300843262">Chromium ला या साइटसह सामायिक करण्‍यासाठी परवानग्यांमध्ये प्रवेश करण्याची आवश्‍यकता असते.</translation>

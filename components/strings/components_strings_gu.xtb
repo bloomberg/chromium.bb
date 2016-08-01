@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1008557486741366299">હમણાં નહીં</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
 <translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1038842779957582377">અજ્ઞાત નામ</translation>
@@ -70,7 +71,6 @@
 <translation id="1734878702283171397">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="17513872634828108">ટેબ્સ ખોલો</translation>
 <translation id="1753706481035618306">પૃષ્ઠ નંબર</translation>
-<translation id="1761412452051366565">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ સામગ્રી મેળવવા માટે, સમન્વયન ચાલુ કરો.</translation>
 <translation id="1763864636252898013">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા ઉપકરણની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવવાનો પ્રયાસ કરો<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">કૃપા કરી તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
@@ -231,6 +231,7 @@
 <translation id="3452404311384756672">આનયન અંતરાલ:</translation>
 <translation id="3462200631372590220">વિગતવાર છુપાવો</translation>
 <translation id="3479539252931486093">શું આ અનપેક્ષિત હતું? <ph name="BEGIN_LINK" />અમને જણાવો<ph name="END_LINK" /></translation>
+<translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="348000606199325318">ક્રેશ ID <ph name="CRASH_LOCAL_ID" /> (સર્વર ID: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">અમે આ પળે તમારા વાલી સુધી પહોંચી શક્યાં નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
@@ -383,7 +384,6 @@
 <translation id="5430298929874300616">બુકમાર્ક દૂર કરો</translation>
 <translation id="5431657950005405462">તમારી ફાઇલ મળી ન હતી</translation>
 <translation id="5435775191620395718">આ ઉપકરણમાંથી ઇતિહાસ બતાવી રહ્યાં છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />.</translation>
-<translation id="5437003064129843501">વ્યક્તિગત કરેલ સામગ્રી સૂચનો વર્તમાનમાં અક્ષમ કરેલ છે, કારણ કે તમારો સમન્વયિત ડેટા કસ્ટમ પાસફ્રેઝ વડે સુરક્ષિત કરેલ છે.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" પર સ્કીમા માન્યતા ભૂલ: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">આ <ph name="HOST_NAME" /> પૃષ્ઠ શોધી શકાતું નથી</translation>
 <translation id="5455374756549232013">ખરાબ નીતિ સમયનોંધ</translation>
@@ -486,7 +486,6 @@
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="6895330447102777224">તમારા કાર્ડની પુષ્ટિ કરવામાં આવી છે</translation>
 <translation id="6897140037006041989">વપરાશકર્તા એજન્ટ</translation>
-<translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6915804003454593391">વપરાશકર્તા: </translation>
 <translation id="6957887021205513506">સર્વરનું પ્રમાણપત્ર બનાવટી હોય એવું લાગે છે.</translation>
 <translation id="6965382102122355670">ઓકે</translation>
@@ -519,7 +518,6 @@
 <translation id="7269802741830436641">આ વેબ પૃષ્ઠમાં એક રીડાયરેક્ટ લૂપ છે</translation>
 <translation id="7275334191706090484">સંચાલિત બુકમાર્ક્સ</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
-<translation id="7301833672208172928">ઇતિહાસ સમન્વયન ચાલુ કરો</translation>
 <translation id="7334320624316649418">&amp;પુનઃક્રમાંકિત કરવું ફરી કરો</translation>
 <translation id="733923710415886693">પ્રમાણપત્ર પારદર્શિતા દ્વારા સર્વરનું પ્રમાણપત્ર જાહેર કરવામાં આવ્યું ન હતું.</translation>
 <translation id="7353601530677266744">આદેશ પંક્તિ</translation>
@@ -640,7 +638,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
 <translation id="8741995161408053644">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો હોઇ શકે છે.</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
-<translation id="8790687370365610530">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ સામગ્રી મેળવવા માટે, ઇતિહાસ સમન્વયન ચાલુ કરો.</translation>
 <translation id="8798099450830957504">ડિફૉલ્ટ</translation>
 <translation id="8804164990146287819">ગોપનીયતા નીતિ</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>

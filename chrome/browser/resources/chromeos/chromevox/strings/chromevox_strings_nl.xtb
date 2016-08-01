@@ -269,6 +269,7 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="3392045790598181549"><ph name="NAME" /> , menu-item</translation>
 <translation id="3406283310380167331">Lijst met formulieren weergeven</translation>
 <translation id="3422338090358345848">Toetsenbordverkenner openen</translation>
+<translation id="3423495725743882470">rij $1 kolom $2</translation>
 <translation id="3457000393508828486">Gedeeltelijk ingedrukt</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, knop</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> gesel.</translation>
@@ -412,6 +413,7 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="5000760171916499057">Geen formulieren.</translation>
 <translation id="5005670136041063723">Niet meer vergelijkbare elementen.</translation>
 <translation id="501473567976723023">januari</translation>
+<translation id="5040591161308540832">Tabel $1, $2 bij $3</translation>
 <translation id="5041394372352067729">Brailleweergave naar bovenkant pagina verplaatsen</translation>
 <translation id="5042770794184672516">Spraakvolume verhogen</translation>
 <translation id="5050015258024679800">Vorige kop voor niveau 4</translation>
@@ -555,6 +557,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6364795331201459219">k6</translation>
 <translation id="6368143427468974988">Vorige kop</translation>
 <translation id="6378565991815958969">$1 kopiëren.</translation>
+<translation id="6385591741672306837">kol</translation>
 <translation id="6387719785439924554">terzijde</translation>
 <translation id="6411426777058107714">Geen vorig keuzerondje.</translation>
 <translation id="6414968628640960377">Vorig ander element.</translation>
@@ -704,6 +707,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="8153880621934657047">Niet in tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8184828902145951186">rij</translation>
 <translation id="8186185314313222077">volledig scherm in- of uitschakelen</translation>
 <translation id="8199231515320852133">De koppen van de huidige cel melden</translation>
 <translation id="820417203470636242">Lege cel.</translation>

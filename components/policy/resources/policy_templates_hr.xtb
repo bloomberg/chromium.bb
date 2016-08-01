@@ -118,11 +118,6 @@
       površina bit će onemogućena. U tom slučaju korisnik ne može omogućiti značajku.</translation>
 <translation id="1474273443907024088">Onemogući TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1492145937778428165">Određuje razdoblje u milisekundama u kojem se usluzi upravljanja uređajem postavlja upit za informacije o pravilima uređaja.
-
-      Postavljanjem tog pravila premošćuje se zadana vrijednost od 3 sata. Važeće vrijednosti za to pravilo sežu od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u tom rasponu bit će uklopljene u odgovarajuće granice.
-
-      Ako se to pravilo ne postavi, usluga <ph name="PRODUCT_OS_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
@@ -315,11 +310,6 @@
 
       Nakon omogućivanja Bluetootha uređaj se mora ponovo pokrenuti da bi promjene postale aktivne (uređaj se ne mora ponovo pokrenuti kada se Bluetooth onemogući).</translation>
 <translation id="2366415278352956652">Omogućuje emitiranje</translation>
-<translation id="2371309782685318247">Određuje razdoblje u milisekundama u kojem se usluzi upravljanja uređajem postavlja upit za informacije o korisničkim pravilima.
-
-      Postavljanjem tog pravila premošćuje se zadana vrijednost od 3 sata. Važeće vrijednosti za to pravilo sežu od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u tom rasponu bit će uklopljene u odgovarajuće granice.
-
-      Ako se to pravilo ne postavi, usluga <ph name="PRODUCT_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.</translation>
 <translation id="2372547058085956601">Odgoda automatske prijave u javnu sesiju.
 
       Ako nije postavljeno pravilo |DeviceLocalAccountAutoLoginId|, ovo se pravilo neće primjenjivati. U suprotnom:
@@ -883,6 +873,15 @@
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
+<translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
+
+      Onemogućuje upotrebu protokola SPDY za uslugu <ph name="PRODUCT_NAME" />.
+
+      Ako je to pravilo omogućeno, protokol SPDY neće biti dostupan na usluzi <ph name="PRODUCT_NAME" />.
+
+      Onemogućivanjem tog pravila dopustit će se upotreba protokola SPDY.
+
+      Ako se to pravilo ne postavi, SPDY će biti dostupan.</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
 <translation id="3898060089412156345">Omogućuje ili onemogućuje snimanje audiozapisa.
 
@@ -1076,6 +1075,7 @@
 <translation id="467449052039111439">Otvori popis URL-ova</translation>
 <translation id="4680961954980851756">Omogući Automatsko popunjavanje</translation>
 <translation id="4723829699367336876">Omogući prijelaz vatrozida iz klijenta za daljinski pristup</translation>
+<translation id="4725528134735324213">Omogući Androidovu uslugu sigurnosnog kopiranja</translation>
 <translation id="4733471537137819387">Pravila koja se odnose na integriranu HTTP autentifikaciju.</translation>
 <translation id="4744190513568488164">Poslužitelji koje <ph name="PRODUCT_NAME" /> može ovlastiti.
 
@@ -1165,6 +1165,15 @@
       Ako se to pravilo postavi na točno, <ph name="PRODUCT_OS_NAME" /> sprječava pokretanje uređaja u načinu rada razvojnog programera. Sustav će odbiti pokretanje i prikazati zaslon pogreške kada je način rada razvojnog programera uključen.
 
       Ako se to pravilo ne postavi ili se postavi na lažno, način rada razvojnog programera bit će dostupan za uređaj.</translation>
+<translation id="5203271367506489164">To je pravilo obustavljeno u verziji M48 i zamijenjeno pravilom NetworkPredictionOptions. Uklonjeno je u verziji M54.
+
+      Omogućuje predviđanje mreže na usluzi <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
+
+      Time se ne kontrolira samo prethodno dohvaćanje DNS-a, već i povezivanje s web-stranicama i njihovo generiranje unaprijed pomoću TCP-a i SSL-a. Naziv pravila navodi prethodno dohvaćanje DNS-a iz povijesnih razloga.
+
+      Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu promijeniti niti poništiti na usluzi <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, bit će omogućeno, ali će ga korisnik moći promijeniti.</translation>
 <translation id="5208240613060747912">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati obavijesti. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultNotificationsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="5226033722357981948">Odredi treba li onemogućiti alat za traženje dodataka</translation>
 <translation id="523505283826916779">Postavke pristupačnosti</translation>
@@ -1908,6 +1917,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Po profilu</translation>
 <translation id="7796141075993499320">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju pokretati dodatke. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPluginsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
+<translation id="7801886189430766248">Kada se to pravilo postavi na True, podaci Android aplikacija prenose se na Androidove poslužitelje za sigurnosne kopije i vraćaju s njih nakon ponovnog instaliranja kompatibilnih aplikacija.
+
+      Kad se to pravilo postavi na False, Androidova usluga za sigurnosno kopiranje bit će isključena.
+
+      Ako se ta postavka konfigurira, korisnici je ne mogu promijeniti.
+
+      Ako se ne konfigurira, korisnici mogu uključiti i isključiti Androidovu uslugu za sigurnosno kopiranje u Androidovoj aplikaciji Postavke.</translation>
 <translation id="7818131573217430250">Postavljanje zadanog stanja načina visokog kontrasta na zaslonu za prijavu</translation>
 <translation id="7831595031698917016">Određuje maksimalnu odgodu u milisekundama od primitka poništenja valjanosti pravila do dohvaćanja novog pravila s usluge upravljanja uređajem.
 

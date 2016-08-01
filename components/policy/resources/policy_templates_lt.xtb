@@ -120,11 +120,6 @@
       išjungtas. Tokiu atveju naudotojas negalės įgalinti funkcijos.</translation>
 <translation id="1474273443907024088">TLS klaidingo paleidimo išjungimas</translation>
 <translation id="1477934438414550161">1.2 versijos TLS</translation>
-<translation id="1492145937778428165">Nurodomas laikotarpis milisekundėmis, kuriuo įrenginio valdymo paslaugai pateikiama užklausa dėl įrenginio politikos informacijos.
-
-      Nustačius šią politiką panaikinama numatytoji 3 valandų vertė. Galiojančios šios politikos vertės patenka į diapazoną nuo 1 800 000 (30 min.) iki 86 400 000 (1 d.). Bet kokioms į šį diapazoną nepatenkančioms vertėms bus taikomi atitinkami apribojimai.
-
-      Nenustačius šios politikos „<ph name="PRODUCT_OS_NAME" />“ bus naudojama numatytoji 3 val. vertė.</translation>
 <translation id="1504431521196476721">Nuotolinis patvirtinimas</translation>
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
@@ -337,11 +332,6 @@
 
       Įgalinus „Bluetooth“, įrenginį reikia paleisti iš naujo, kad pakeitimai įsigaliotų (išjungus „Bluetooth“, įrenginio nereikia paleisti iš naujo).</translation>
 <translation id="2366415278352956652">Įgalinamas perdavimas</translation>
-<translation id="2371309782685318247">Nurodomas laikotarpis milisekundėmis, kuriuo įrenginio valdymo paslaugai pateikiama užklausa dėl naudotojo politikos informacijos.
-
-       Nustačius šią politiką panaikinama numatytoji 3 valandų vertė. Galiojančios šios politikos vertės patenka į diapazoną nuo 1 800 000 (30 min.) iki 86 400 000 (1 d.). Bet kokioms į šį diapazoną nepatenkančioms vertėms bus taikomi atitinkami apribojimai.
-
-      Nenustačius šios politikos „<ph name="PRODUCT_NAME" />“ bus naudojama numatytoji 3 val. vertė.</translation>
 <translation id="2372547058085956601">Viešos sesijos automatinio prisijungimo delsa.
 
       Jei nenustatyta |DeviceLocalAccountAutoLoginId| politika, ji negalioja. Kiti atvejai:
@@ -938,6 +928,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Nurodomi plėtiniai, kurie automatiškai įdiegiami demonstracinės versijos naudotojui (-ai) įrenginiuose mažmeninės prekybos režimu. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
 
       Kiekviename sąrašo įraše yra žodynas, į kurį turi būti įtrauktas plėtinio ID lauke „extension-id“ (plėtinio ID) ir naujinio URL lauke „update-url“ (naujinio URL).</translation>
+<translation id="388237772682176890">Ši politika nebenaudojama M53 ir pašalinta iš M54, nes nebeteikiamas SPDY/3.1 palaikymas.
+
+      Neleidžiama naudoti SPDY protokolo „<ph name="PRODUCT_NAME" />“.
+
+      Jei ši politika bus įgalinta, SPDY protokolas nebus pasiekiamas „<ph name="PRODUCT_NAME" />“.
+
+      Neleidus šios politikos, bus leidžiama naudoti SPDY.
+
+      Nenustačius šios politikos, SPDY bus pasiekiamas.</translation>
 <translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
 <translation id="3898060089412156345">Garso fiksavimo leidimas arba draudimas.
 
@@ -1157,6 +1156,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="467449052039111439">Atidaryti URL sąrašą</translation>
 <translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
+<translation id="4725528134735324213">„Android“ atsarginio kopijavimo paslaugos įgalinimas</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
 <translation id="4744190513568488164">Serveriai, į kuriuos „<ph name="PRODUCT_NAME" />“ gali pervesti.
 
@@ -1261,6 +1261,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei šios politikos nuostata nustatyta į „Taip“, „<ph name="PRODUCT_OS_NAME" />“ neleis paleisti įrenginio kūrėjo režimu. Sistema nebus paleista ir bus rodomas klaidos ekranas, įjungus kūrėjo jungiklį.
 
       Jei ši politika nenustatyta ar nustatyta „Ne“, kūrėjo režimas liks pasiekiamas įrenginiui.</translation>
+<translation id="5203271367506489164">Vietoje šios politikos M48 naudojama „NetworkPredictionOptions“ ir ji pašalinta iš M54.
+
+      Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama naudotojams keisti šio nustatymo.
+
+      Pagal šią politiką valdomas ne tik išankstinis DNS pateikimas, bet ir išankstinis TCP bei SSL ryšys ir tinklalapių pateikimas. Politikos pavadinime išankstinis DNS pateikimas įtrauktas atsižvelgiant į istoriją.
+
+      Jei įgalinate šį nustatymą arba jo neleidžiate, naudotojai negali jo pakeisti ar nepaisyti naudodami „<ph name="PRODUCT_NAME" />“.
+
+      Nenustačius šios politikos, šis nustatymas bus įgalintas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -2069,6 +2078,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7796141075993499320">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti papildinius, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis papildinių nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
+<translation id="7801886189430766248">Kai ši politika nustatyta kaip „true“, „Android“ programos duomenys įkeliami į „Android“ atsarginių kopijų serverius ir pakartotinai diegiant suderinamas programas yra atkuriami iš šių serverių.
+
+      Kai ši politika nustatyta kaip „false“, „Android“ atsarginių kopijų kūrimo paslauga bus išjungta.
+
+      Jei šis nustatymas sukonfigūruotas, naudotojai negali pakeisti jo patys.
+
+      Jei šis nustatymas nesukonfigūruotas, naudotojai „Android“ nustatymų programoje gali įjungti arba išjungti „Android“ atsarginių kopijų kūrimo paslaugą.</translation>
 <translation id="7818131573217430250">Nustatyti numatytąją didelio kontrasto režimo prisijungimo ekrane būklę</translation>
 <translation id="7831595031698917016">Nurodoma maksimali politikos atšaukimo ir naujos politikos gavimo iš įrenginio tvarkymo paslaugos delsa milisekundėmis.
 
