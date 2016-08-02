@@ -170,7 +170,7 @@ void RemoteFrame::createView()
 
     setView(RemoteFrameView::create(this));
 
-    if (ownerLayoutObject())
+    if (!ownerLayoutItem().isNull())
         deprecatedLocalOwner()->setWidget(m_view);
 }
 
