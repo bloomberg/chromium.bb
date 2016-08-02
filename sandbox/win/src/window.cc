@@ -46,10 +46,14 @@ ResultCode CreateAltWindowStation(HWINSTA* winsta) {
   if (!GetSecurityAttributes(current_winsta, &attributes))
     return SBOX_ERROR_CANNOT_QUERY_WINSTATION_SECURITY;
 
-  // Create the window station using NULL for the name to ask the os to
+  // Create the window station using nullptr for the name to ask the os to
   // generate it.
   *winsta = ::CreateWindowStationW(
-      NULL, 0, GENERIC_READ | WINSTA_CREATEDESKTOP, &attributes);
+      nullptr, 0, GENERIC_READ | WINSTA_CREATEDESKTOP, &attributes);
+  if (*winsta == nullptr && ::GetLastError() == ERROR_ACCESS_DENIED) {
+    *winsta = ::CreateWindowStationW(
+        nullptr, 0, WINSTA_READATTRIBUTES | WINSTA_CREATEDESKTOP, &attributes);
+  }
   LocalFree(attributes.lpSecurityDescriptor);
 
   if (*winsta)

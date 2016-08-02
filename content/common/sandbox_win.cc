@@ -371,6 +371,12 @@ sandbox::ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
   return sandbox::SBOX_ALL_OK;
 }
 
+void LogLaunchWarning(sandbox::ResultCode last_warning, DWORD last_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.WarningResultCode",
+                              last_warning);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Warning", last_error);
+}
+
 sandbox::ResultCode AddPolicyForSandboxedProcess(
     sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
@@ -410,8 +416,11 @@ sandbox::ResultCode AddPolicyForSandboxedProcess(
 
   result = policy->SetAlternateDesktop(true);
   if (result != sandbox::SBOX_ALL_OK) {
+    // We ignore the result of setting the alternate desktop, however log
+    // a launch warning.
+    LogLaunchWarning(result, ::GetLastError());
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
-    return result;
+    result = sandbox::SBOX_ALL_OK;
   }
 
   return result;
@@ -819,9 +828,7 @@ sandbox::ResultCode StartSandboxedProcess(
   }
 
   if (sandbox::SBOX_ALL_OK != last_warning) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.WarningResultCode",
-                                last_warning);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Warning", last_error);
+    LogLaunchWarning(last_warning, last_error);
   }
 
   delegate->PostSpawnTarget(target.process_handle());
