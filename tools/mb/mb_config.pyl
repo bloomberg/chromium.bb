@@ -236,7 +236,7 @@
       'Linux remote_run Builder': 'swarming_gn_release_bot',
       'Linux remote_run Tester': 'swarming_gn_release_bot',
       'Linux V8 API Stability': 'gn_release_bot',
-      'Mac deterministic': 'gn_release_bot',
+      'Mac deterministic': 'gn_release_bot_mac_strip',
       'Mojo ChromiumOS': 'swarming_chromeos_gn_release_bot',
       'Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
       'Site Isolation Linux': 'gn_release_trybot',
@@ -1260,6 +1260,10 @@
 
     'gn_release_bot_chrome_with_codecs': [
       'gn', 'release_bot', 'chrome_with_codecs',
+    ],
+
+    'gn_release_bot_mac_strip': [
+      'gn', 'release_bot', 'mac_strip',
     ],
 
     'gn_release_bot_minimal_symbols_x86': [
