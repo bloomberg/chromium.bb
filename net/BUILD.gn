@@ -195,7 +195,7 @@ component("net") {
       ]
     }
 
-    if (use_glib && use_gconf && !is_chromeos) {
+    if (use_gio) {
       deps += [ "//build/linux/libgio" ]
     }
 
@@ -977,7 +977,7 @@ if (!is_ios && !is_android) {
         "//build/win:default_exe_manifest",
       ]
 
-      if (is_desktop_linux && use_gconf && use_glib) {
+      if (is_desktop_linux && use_gconf && use_glib && use_gio) {
         configs += [
           "//build/config/linux/gconf",
           "//build/config/linux:glib",
