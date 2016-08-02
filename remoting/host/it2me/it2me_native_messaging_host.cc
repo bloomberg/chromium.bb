@@ -190,14 +190,14 @@ void It2MeNativeMessagingHost::ProcessConnect(
     return;
   }
 
-  if (!net::ParseHostAndPort(address, &xmpp_server_config_.host,
-                             &xmpp_server_config_.port)) {
+  if (!net::ParseHostAndPort(address, &xmpp_config.host,
+                             &xmpp_config.port)) {
     SendErrorAndExit(std::move(response),
                      "Invalid 'xmppServerAddress': " + address);
     return;
   }
 
-  if (!message.GetBoolean("xmppServerUseTls", &xmpp_server_config_.use_tls)) {
+  if (!message.GetBoolean("xmppServerUseTls", &xmpp_config.use_tls)) {
     SendErrorAndExit(std::move(response),
                      "'xmppServerUseTls' not found in request.");
     return;
