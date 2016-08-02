@@ -44,7 +44,8 @@ void ImeWarningBubbleTest::SetUpOnMainThread() {
   extension_ = ExtensionBrowserTest::LoadExtension(
       test_data_dir_.AppendASCII("input_ime"));
   callback_ =
-      base::Bind(&ImeWarningBubbleTest::OnPermissionBubbleFinished, this);
+      base::Bind(&ImeWarningBubbleTest::OnPermissionBubbleFinished,
+                 base::Unretained(this));
   browser()->window()->ShowImeWarningBubble(extension_, callback_);
   ime_warning_bubble_ = ImeWarningBubbleView::ime_warning_bubble_for_test_;
 }

@@ -72,12 +72,14 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 
   void RegisterCountingRequestHandler() {
     embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &AsyncRevalidationManagerBrowserTest::CountingRequestHandler, this));
+        &AsyncRevalidationManagerBrowserTest::CountingRequestHandler,
+        base::Unretained(this)));
   }
 
   void RegisterCookieRequestHandler() {
     embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &AsyncRevalidationManagerBrowserTest::CookieRequestHandler, this));
+        &AsyncRevalidationManagerBrowserTest::CookieRequestHandler,
+        base::Unretained(this)));
   }
 
  private:

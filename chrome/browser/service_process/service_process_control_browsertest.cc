@@ -46,10 +46,10 @@ class ServiceProcessControlBrowserTest
     // Launch the process asynchronously.
     ServiceProcessControl::GetInstance()->Launch(
         base::Bind(&ServiceProcessControlBrowserTest::ProcessControlLaunched,
-                   this),
+                   base::Unretained(this)),
         base::Bind(
             &ServiceProcessControlBrowserTest::ProcessControlLaunchFailed,
-            this));
+            base::Unretained(this)));
 
     // Then run the message loop to keep things running.
     content::RunMessageLoop();

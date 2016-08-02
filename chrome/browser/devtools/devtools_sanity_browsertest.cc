@@ -723,7 +723,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync, this), false);
+      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
+      base::Unretained(this)), false);
 }
 
 // Tests that BeforeUnload event gets called on docked devtools if
@@ -731,7 +732,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestDockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
+      &DevToolsBeforeUnloadTest::CloseInspectedTab,
+      base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on docked devtools if
@@ -739,14 +741,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestDockedDevToolsInspectedBrowserClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
+      &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
+      base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync, this), false);
+      &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
+      base::Unretained(this)), false);
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
@@ -754,7 +758,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
+      &DevToolsBeforeUnloadTest::CloseInspectedTab,
+      base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
@@ -762,7 +767,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedBrowserClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
-      &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
+      &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
+      base::Unretained(this)));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if

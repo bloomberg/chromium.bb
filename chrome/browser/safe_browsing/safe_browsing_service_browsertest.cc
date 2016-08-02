@@ -1588,7 +1588,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
   profile_manager->CreateProfileAsync(
       temp_profile_dir_.path(),
       base::Bind(&SafeBrowsingServiceShutdownTest::OnUnblockOnProfileCreation,
-                 this),
+                 base::Unretained(this)),
       base::string16(), std::string(), std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
@@ -1757,7 +1757,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
           sb_factory_->test_safe_browsing_service()->database_manager().get()));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate, this));
+      base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate,
+                 base::Unretained(this)));
   observer.Wait();
 }
 

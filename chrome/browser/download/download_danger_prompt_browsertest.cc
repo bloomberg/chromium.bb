@@ -156,7 +156,8 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
         &download_,
         browser()->tab_strip_model()->GetActiveWebContents(),
         from_download_api,
-        base::Bind(&DownloadDangerPromptTest::PromptCallback, this));
+        base::Bind(&DownloadDangerPromptTest::PromptCallback,
+                   base::Unretained(this)));
     content::RunAllPendingInMessageLoop();
   }
 

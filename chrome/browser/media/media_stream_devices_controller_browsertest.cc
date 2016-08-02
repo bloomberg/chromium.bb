@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowMic) {
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndAllowCam) {
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockMic) {
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, RequestAndBlockCam) {
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&controller);
 
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController mic_controller(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&mic_controller);
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController cam_controller(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&cam_controller);
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController cam_controller(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&cam_controller);
   EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
@@ -520,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController mic_controller(
       GetWebContents(), CreateRequest(example_audio_id(), std::string()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   NotifyTabSpecificContentSettings(&mic_controller);
   EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     MediaStreamDevicesController controller(
         GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
         base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                   this));
+                   base::Unretained(this)));
 
     // Check that the infobar is requesting the expected cam/mic values.
     ASSERT_EQ(test.ExpectMicInfobar(), controller.IsAskingForAudio());
@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(std::string(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
 
   ASSERT_FALSE(controller.IsAskingForAudio());
   ASSERT_FALSE(controller.IsAskingForVideo());
@@ -665,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   ASSERT_TRUE(controller.IsAskingForAudio());
   ASSERT_TRUE(controller.IsAskingForVideo());
 
@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller2(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   ASSERT_FALSE(controller2.IsAskingForAudio());
   ASSERT_FALSE(controller2.IsAskingForVideo());
 
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       CreateRequestWithType(example_audio_id(), std::string(),
                             content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
   ASSERT_FALSE(controller.IsAskingForAudio());
   ASSERT_FALSE(controller.IsAskingForVideo());
 }
@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   MediaStreamDevicesController controller(
       GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
+                 base::Unretained(this)));
 
   EXPECT_FALSE(controller.IsAllowedForAudio());
   EXPECT_FALSE(controller.IsAllowedForVideo());

@@ -39,7 +39,8 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     // before we get to the conditional below. Otherwise, we'll run a nested
     // message loop until the async callback.
     top_sites->GetMostVisitedURLs(
-        base::Bind(&TopSitesExtensionTest::OnTopSitesAvailable, this), false);
+        base::Bind(&TopSitesExtensionTest::OnTopSitesAvailable,
+                   base::Unretained(this)), false);
 
     if (!top_sites_inited_) {
       waiting_ = true;

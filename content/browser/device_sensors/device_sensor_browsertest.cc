@@ -187,7 +187,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread, this));
+        base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread,
+                   base::Unretained(this)));
     io_loop_finished_event_.Wait();
   }
 
@@ -209,7 +210,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
     dialog_manager->set_dialog_request_callback(
-        base::Bind(&DeviceSensorBrowserTest::DelayAndQuit, this, delay));
+        base::Bind(&DeviceSensorBrowserTest::DelayAndQuit,
+                   base::Unretained(this), delay));
     runner->Run();
   }
 

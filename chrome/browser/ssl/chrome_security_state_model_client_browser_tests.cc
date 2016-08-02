@@ -593,7 +593,8 @@ class PKPModelClientTest : public ChromeSecurityStateModelClientTest {
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PKPModelClientTest::SetUpOnIOThread, this));
+        base::Bind(&PKPModelClientTest::SetUpOnIOThread,
+                   base::Unretained(this)));
   }
 
   void SetUpOnIOThread() {

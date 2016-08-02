@@ -115,9 +115,11 @@ IN_PROC_BROWSER_TEST_F(ImageWriterPrivateApiTest, TestWriteFromFile) {
 
 #if !defined(OS_CHROMEOS)
   test_utils_.GetUtilityClient()->SetWriteCallback(base::Bind(
-      &ImageWriterPrivateApiTest::ImageWriterUtilityClientCall, this));
+      &ImageWriterPrivateApiTest::ImageWriterUtilityClientCall,
+      base::Unretained(this)));
   test_utils_.GetUtilityClient()->SetVerifyCallback(base::Bind(
-      &ImageWriterPrivateApiTest::ImageWriterUtilityClientCall, this));
+      &ImageWriterPrivateApiTest::ImageWriterUtilityClientCall,
+      base::Unretained(this)));
 #endif
 
   ASSERT_TRUE(RunPlatformAppTest("image_writer_private/write_from_file"))

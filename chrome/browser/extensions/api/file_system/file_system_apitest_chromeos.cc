@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
       profile(), extensions::api::file_system::OnVolumeListChanged::kEventName,
       kTestingExtensionId,
       base::Bind(&FileSystemApiTestForRequestFileSystem::MountFakeVolume,
-                 this));
+                 base::Unretained(this)));
 
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/on_volume_list_changed"))
       << message_;

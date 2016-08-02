@@ -41,7 +41,8 @@ class ProfileSigninConfirmationViewControllerTest
                                       backing:NSBackingStoreBuffered
                                         defer:NO]);
     base::Closure close = base::Bind(
-        &ProfileSigninConfirmationViewControllerTest::OnClose, this);
+        &ProfileSigninConfirmationViewControllerTest::OnClose,
+        base::Unretained(this));
     controller_.reset([[ProfileSigninConfirmationViewController alloc]
                         initWithBrowser:browser()
                                username:username()

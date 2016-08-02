@@ -208,7 +208,8 @@ void Me2MeBrowserTest::ConnectPinlessAndCleanupPairings(bool cleanup_all) {
   ConditionalTimeoutWaiter waiter(
       base::TimeDelta::FromSeconds(5),
       base::TimeDelta::FromMilliseconds(200),
-      base::Bind(&Me2MeBrowserTest::IsPairingSpinnerHidden, this));
+      base::Bind(&Me2MeBrowserTest::IsPairingSpinnerHidden,
+                 base::Unretained(this)));
   EXPECT_TRUE(waiter.Wait());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       "document.getElementById('delete-all-paired-clients').disabled"));

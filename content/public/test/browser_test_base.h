@@ -29,10 +29,6 @@ class BrowserTestBase : public testing::Test {
   BrowserTestBase();
   ~BrowserTestBase() override;
 
-  // We do this so we can be used in a Task.
-  void AddRef() {}
-  void Release() {}
-
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
   void SetUp() override;

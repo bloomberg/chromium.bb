@@ -560,7 +560,8 @@ void RemoteDesktopBrowserTest::ConnectToLocalHost(bool remember_pin) {
   ConditionalTimeoutWaiter waiter(
         base::TimeDelta::FromSeconds(5),
         base::TimeDelta::FromMilliseconds(500),
-        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
+        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady,
+                   base::Unretained(this)));
   EXPECT_TRUE(waiter.Wait());
 
   // Verify that the local host is online.
@@ -588,7 +589,8 @@ void RemoteDesktopBrowserTest::ConnectToRemoteHost(
   ConditionalTimeoutWaiter waiter(
         base::TimeDelta::FromSeconds(5),
         base::TimeDelta::FromMilliseconds(500),
-        base::Bind(&RemoteDesktopBrowserTest::IsHostListReady, this));
+        base::Bind(&RemoteDesktopBrowserTest::IsHostListReady,
+                   base::Unretained(this)));
   EXPECT_TRUE(waiter.Wait());
 
   std::string host_id = ExecuteScriptAndExtractString(
@@ -796,7 +798,8 @@ void RemoteDesktopBrowserTest::EnterPin(const std::string& pin,
   ConditionalTimeoutWaiter waiter(
       base::TimeDelta::FromSeconds(30),
       base::TimeDelta::FromSeconds(1),
-      base::Bind(&RemoteDesktopBrowserTest::IsPinFormVisible, this));
+      base::Bind(&RemoteDesktopBrowserTest::IsPinFormVisible,
+                 base::Unretained(this)));
   EXPECT_TRUE(waiter.Wait());
 
   ExecuteScript(
@@ -822,7 +825,8 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
   ConditionalTimeoutWaiter waiter(
       base::TimeDelta::FromSeconds(30),
       base::TimeDelta::FromSeconds(1),
-      base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected, this));
+      base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected,
+                 base::Unretained(this)));
   EXPECT_TRUE(waiter.Wait());
 
   // The client is not yet ready to take input when the session state becomes
@@ -933,7 +937,8 @@ void RemoteDesktopBrowserTest::DisableRemoteConnection() {
   ConditionalTimeoutWaiter hostReadyWaiter(
         base::TimeDelta::FromSeconds(5),
         base::TimeDelta::FromMilliseconds(500),
-        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
+        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady,
+                   base::Unretained(this)));
   EXPECT_TRUE(hostReadyWaiter.Wait());
 
   ClickOnControl("stop-daemon");
@@ -942,7 +947,8 @@ void RemoteDesktopBrowserTest::DisableRemoteConnection() {
           base::TimeDelta::FromSeconds(30),
           base::TimeDelta::FromMilliseconds(500),
           base::Bind(&RemoteDesktopBrowserTest::IsAppModeEqualTo,
-                     this, "remoting.AppMode.HOST_SETUP_DONE"));
+                     base::Unretained(this),
+                     "remoting.AppMode.HOST_SETUP_DONE"));
   EXPECT_TRUE(setupDoneWaiter.Wait());
 
   ClickOnControl("host-config-done-dismiss");
@@ -951,7 +957,8 @@ void RemoteDesktopBrowserTest::DisableRemoteConnection() {
           base::TimeDelta::FromSeconds(5),
           base::TimeDelta::FromMilliseconds(500),
           base::Bind(&RemoteDesktopBrowserTest::IsAppModeEqualTo,
-                     this, "remoting.AppMode.HOME"));
+                     base::Unretained(this),
+                     "remoting.AppMode.HOME"));
   EXPECT_TRUE(homeWaiter.Wait());
 }
 

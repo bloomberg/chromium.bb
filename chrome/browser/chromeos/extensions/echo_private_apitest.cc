@@ -44,8 +44,9 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
 
   void RunDefaultGetUserFunctionAndExpectResultEquals(bool expected_result) {
     scoped_refptr<EchoPrivateGetUserConsentFunction> function(
-        EchoPrivateGetUserConsentFunction::CreateForTest(base::Bind(
-            &ExtensionEchoPrivateApiTest::OnDialogShown, this)));
+        EchoPrivateGetUserConsentFunction::CreateForTest(
+            base::Bind(&ExtensionEchoPrivateApiTest::OnDialogShown,
+                       base::Unretained(this))));
     function->set_has_callback(true);
 
     std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(

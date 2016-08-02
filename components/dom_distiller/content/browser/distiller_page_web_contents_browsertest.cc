@@ -102,7 +102,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
         embedded_test_server()->GetURL(url),
         dom_distiller::proto::DomDistillerOptions(),
         base::Bind(&DistillerPageWebContentsTest::OnPageDistillationFinished,
-                   this, quit_closure));
+                   base::Unretained(this), quit_closure));
   }
 
   void OnPageDistillationFinished(

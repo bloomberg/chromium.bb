@@ -57,7 +57,7 @@ void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SSLClientCertificateSelectorTestBase::SetUpOnIOThread,
-                 this));
+                 base::Unretained(this)));
 
   io_loop_finished_event_.Wait();
 
@@ -72,7 +72,7 @@ void SSLClientCertificateSelectorTestBase::TearDownOnMainThread() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SSLClientCertificateSelectorTestBase::TearDownOnIOThread,
-                 this));
+                 base::Unretained(this)));
 
   io_loop_finished_event_.Wait();
 

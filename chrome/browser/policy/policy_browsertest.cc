@@ -3290,7 +3290,8 @@ class MediaStreamDevicesControllerBrowserTest
     // and microphone permissions at the same time.
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                   base::Unretained(this)));
     if (controller.IsAskingForAudio())
       controller.PermissionGranted();
 
@@ -3309,7 +3310,8 @@ class MediaStreamDevicesControllerBrowserTest
     // and microphone permissions at the same time.
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                   base::Unretained(this)));
     if (controller.IsAskingForVideo())
       controller.PermissionGranted();
 
@@ -3343,7 +3345,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                  base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
                  audio_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
-                 this));
+                 base::Unretained(this)));
 
   base::RunLoop().Run();
 }
@@ -3377,7 +3379,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             audio_devices),
         base::Bind(
             &MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
-            this));
+            base::Unretained(this)));
 
     base::RunLoop().Run();
   }
@@ -3400,7 +3402,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                  base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
                  video_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
-                 this));
+                 base::Unretained(this)));
 
   base::RunLoop().Run();
 }
@@ -3433,7 +3435,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             video_devices),
         base::Bind(
             &MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
-            this));
+            base::Unretained(this)));
 
     base::RunLoop().Run();
   }

@@ -294,7 +294,8 @@ void BrowserTestBase::SetUp() {
 
   base::Closure* ui_task =
       new base::Closure(
-          base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
+          base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop,
+                     base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   MainFunctionParams params(*command_line);

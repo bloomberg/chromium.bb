@@ -504,7 +504,8 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
         DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
     DCHECK(adb_bridge_);
     adb_bridge_->set_task_scheduler_for_test(base::Bind(
-        &AndroidUsbDiscoveryTest::ScheduleDeviceCountRequest, this));
+        &AndroidUsbDiscoveryTest::ScheduleDeviceCountRequest,
+        base::Unretained(this)));
 
     scoped_refptr<UsbDeviceProvider> provider =
         new UsbDeviceProvider(browser()->profile());

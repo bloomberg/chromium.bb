@@ -113,7 +113,8 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     base::RunLoop run_loop;
 
     shell()->web_contents()->GenerateMHTML(
-        params, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
+        params, base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
+                           base::Unretained(this),
                            run_loop.QuitClosure()));
 
     // Block until the MHTML is generated.

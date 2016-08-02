@@ -158,8 +158,9 @@ class BrowsingDataRemoverTransportSecurityStateBrowserTest
         BrowserThread::IO, FROM_HERE,
         base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
                        SetUpTransportSecurityState,
-                   this, base::RetainedRef(
-                             browser()->profile()->GetRequestContext())));
+                   base::Unretained(this),
+                   base::RetainedRef(
+                       browser()->profile()->GetRequestContext())));
   }
 
   void CheckTransportSecurityState(
@@ -273,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
                      CheckTransportSecurityState,
-                 this,
+                 base::Unretained(this),
                  base::RetainedRef(browser()->profile()->GetRequestContext()),
                  true /* should be cleared */),
       run_loop.QuitClosure());
@@ -289,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BrowsingDataRemoverTransportSecurityStateBrowserTest::
                      CheckTransportSecurityState,
-                 this,
+                 base::Unretained(this),
                  base::RetainedRef(browser()->profile()->GetRequestContext()),
                  false /* should not be cleared */),
       run_loop.QuitClosure());

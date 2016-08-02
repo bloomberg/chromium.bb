@@ -232,8 +232,8 @@ void PowerPolicyBrowserTestBase::StoreAndReloadUserPolicy() {
   // Reload user policy from session manager client and wait for the update to
   // take effect.
   RunClosureAndWaitForUserPolicyUpdate(
-      base::Bind(&PowerPolicyBrowserTestBase::ReloadUserPolicy, this,
-                 browser()->profile()),
+      base::Bind(&PowerPolicyBrowserTestBase::ReloadUserPolicy,
+                 base::Unretained(this), browser()->profile()),
       browser()->profile());
 }
 
@@ -246,7 +246,8 @@ void PowerPolicyBrowserTestBase::
   // policy from session manager client and wait for a change in the login
   // profile's policy to be observed.
   RunClosureAndWaitForUserPolicyUpdate(
-      base::Bind(&PowerPolicyBrowserTestBase::RefreshDevicePolicy, this),
+      base::Bind(&PowerPolicyBrowserTestBase::RefreshDevicePolicy,
+                 base::Unretained(this)),
       profile);
 }
 

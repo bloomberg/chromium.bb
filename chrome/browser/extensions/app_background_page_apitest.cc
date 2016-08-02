@@ -100,7 +100,8 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   void UnloadExtensionViaTask(const std::string& id) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&AppBackgroundPageApiTest::UnloadExtension, this, id));
+        base::Bind(&AppBackgroundPageApiTest::UnloadExtension,
+                   base::Unretained(this), id));
   }
 
  private:

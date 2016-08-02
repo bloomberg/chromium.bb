@@ -171,7 +171,8 @@ void PasswordDialogViewTest::SetupChooseCredentials(
     const GURL& origin) {
   client()->PromptUserToChooseCredentials(
       std::move(local_credentials), std::move(federated_credentials), origin,
-      base::Bind(&PasswordDialogViewTest::OnChooseCredential, this));
+      base::Bind(&PasswordDialogViewTest::OnChooseCredential,
+                 base::Unretained(this)));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             controller()->GetState());
 }
@@ -390,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   client->PromptUserToChooseCredentials(
       std::move(local_credentials), ScopedVector<autofill::PasswordForm>(),
       origin,
-      base::Bind(&PasswordDialogViewTest::OnChooseCredential, this));
+      base::Bind(&PasswordDialogViewTest::OnChooseCredential,
+                 base::Unretained(this)));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             controller()->GetState());
   EXPECT_TRUE(controller()->current_account_chooser());

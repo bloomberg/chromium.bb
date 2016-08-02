@@ -132,7 +132,8 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
       ui::GrabWindowSnapshotAndScaleAsync(
           window, bounds, bounds.size(),
           content::BrowserThread::GetBlockingPool(),
-          base::Bind(&AccessibilityHighlightManagerTest::GotSnapshot, this));
+          base::Bind(&AccessibilityHighlightManagerTest::GotSnapshot,
+                     base::Unretained(this)));
       base::RunLoop run_loop;
       run_loop_quitter_ = run_loop.QuitClosure();
       run_loop.Run();

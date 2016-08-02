@@ -39,7 +39,7 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(
             &PermissionReporterBrowserTest::AttachMockReportSenderOnIOThread,
-            this,
+            base::Unretained(this),
             make_scoped_refptr(g_browser_process->safe_browsing_service())),
         run_loop.QuitClosure());
     run_loop.Run();

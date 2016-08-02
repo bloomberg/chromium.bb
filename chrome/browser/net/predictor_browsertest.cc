@@ -634,7 +634,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::FloodResolveRequests, this, names));
+        base::Bind(&PredictorBrowserTest::FloodResolveRequests,
+                   base::Unretained(this), names));
   }
 
   void FloodResolveRequests(const std::vector<GURL>& names) {

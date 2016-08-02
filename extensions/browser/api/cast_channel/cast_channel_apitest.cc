@@ -169,9 +169,8 @@ class CastChannelAPITest : public ExtensionApiTest {
  protected:
   void CallOnMessage(const std::string& message) {
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&CastChannelAPITest::DoCallOnMessage, this,
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&CastChannelAPITest::DoCallOnMessage, base::Unretained(this),
                    GetApi(), mock_cast_socket_, message));
   }
 

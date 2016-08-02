@@ -76,8 +76,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     // contents to chrome://media-router.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction, this,
-                   app_menu_button));
+        base::Bind(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction,
+                   base::Unretained(this), app_menu_button));
     app_menu_button->ShowMenu(false);
 
     EXPECT_FALSE(app_menu_button->IsMenuShowing());

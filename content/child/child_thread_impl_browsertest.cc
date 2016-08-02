@@ -40,7 +40,8 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));
     PostTaskToInProcessRendererAndWait(
-        base::Bind(&ChildThreadImplBrowserTest::SetUpOnChildThread, this));
+        base::Bind(&ChildThreadImplBrowserTest::SetUpOnChildThread,
+                   base::Unretained(this)));
   }
 
   ChildGpuMemoryBufferManager* child_gpu_memory_buffer_manager() {

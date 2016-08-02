@@ -152,7 +152,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         base::Bind(&IndexedDBContext::GetOriginDiskUsage,
                    GetContext(),
                    GURL("file:///")),
-        base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage, this));
+        base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage,
+                   base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
     EXPECT_TRUE(helper->Run());
@@ -166,7 +167,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         GetContext()->TaskRunner(), FROM_HERE,
         base::Bind(&IndexedDBContextImpl::GetOriginBlobFileCount, GetContext(),
                    Origin(GURL("file:///"))),
-        base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount, this));
+        base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount,
+                   base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
     EXPECT_TRUE(helper->Run());

@@ -69,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
   EXPECT_FALSE(main_frame_screen_width == 0);
 
   shell()->web_contents()->ForEachFrame(
-      base::Bind(&RenderWidgetHostViewChildFrameTest::CheckScreenWidth, this));
+      base::Bind(&RenderWidgetHostViewChildFrameTest::CheckScreenWidth,
+                 base::Unretained(this)));
 }
 
 }  // namespace content
