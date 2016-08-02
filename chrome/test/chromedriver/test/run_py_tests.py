@@ -70,6 +70,8 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1431
     'ChromeDriverTest.testAutoReporting',
     'ChromeDriverTest.testConsoleLogSources',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1447
+    'ChromeDriverTest.testPendingConsoleLog',
 ]
 
 _OS_SPECIFIC_FILTER = {}
@@ -150,6 +152,8 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1431
         'ChromeDriverTest.testAutoReporting',
         'ChromeDriverTest.testConsoleLogSources',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1447
+        'ChromeDriverTest.testPendingConsoleLog',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
