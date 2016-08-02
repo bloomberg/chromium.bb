@@ -9,22 +9,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/display/window_tree_host_manager.h"
-#include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/wallpaper/wallpaper_layout.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
-
-typedef unsigned int SkColor;
-
-namespace aura {
-class Window;
-}
 
 namespace base {
 class SequencedWorkerPool;
@@ -36,29 +25,17 @@ class WallpaperResizer;
 
 namespace ash {
 
-const SkColor kLoginWallpaperColor = 0xFEFEFE;
-
 class DesktopBackgroundControllerObserver;
 
-// Updates background layer if necessary.
-class ASH_EXPORT DesktopBackgroundController
-    : public WindowTreeHostManager::Observer,
-      public ShellObserver {
+// Updates the desktop background wallpaper.
+class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
+                                               public ShellObserver {
  public:
-  class TestAPI;
-
-  enum BackgroundMode {
-    BACKGROUND_NONE,
-    BACKGROUND_IMAGE,
-  };
+  enum BackgroundMode { BACKGROUND_NONE, BACKGROUND_IMAGE };
 
   explicit DesktopBackgroundController(
       base::SequencedWorkerPool* blocking_pool);
   ~DesktopBackgroundController() override;
-
-  BackgroundMode desktop_background_mode() const {
-    return desktop_background_mode_;
-  }
 
   // Add/Remove observers.
   void AddObserver(DesktopBackgroundControllerObserver* observer);
@@ -93,7 +70,7 @@ class ASH_EXPORT DesktopBackgroundController
   // Returns true if the desktop moved.
   bool MoveDesktopToUnlockedContainer();
 
-  // WindowTreeHostManager::Observer:
+  // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
@@ -112,21 +89,15 @@ class ASH_EXPORT DesktopBackgroundController
                                 bool compare_layouts,
                                 wallpaper::WallpaperLayout layout) const;
 
+  void set_wallpaper_reload_delay_for_test(int value) {
+    wallpaper_reload_delay_ = value;
+  }
+
  private:
-  friend class DesktopBackgroundControllerTest;
-  //  friend class chromeos::WallpaperManagerBrowserTestDefaultWallpaper;
-  FRIEND_TEST_ALL_PREFIXES(DesktopBackgroundControllerTest, GetMaxDisplaySize);
+  // Creates a DesktopBackgroundWidgetController for |root_window|.
+  void InstallDesktopController(WmWindow* root_window);
 
-  // Creates view for all root windows, or notifies them to repaint if they
-  // already exist.
-  void SetDesktopBackgroundImageMode();
-
-  // Creates and adds component for current mode (either Widget or Layer) to
-  // |root_window|.
-  void InstallDesktopController(aura::Window* root_window);
-
-  // Creates and adds component for current mode (either Widget or Layer) to
-  // all root windows.
+  // Creates a DesktopBackgroundWidgetController for all root windows.
   void InstallDesktopControllerForAllWindows();
 
   // Moves all desktop components from one container to other across all root
@@ -136,27 +107,16 @@ class ASH_EXPORT DesktopBackgroundController
   // Returns id for background container for unlocked and locked states.
   int GetBackgroundContainerId(bool locked);
 
-  // Send notification that background animation finished.
-  void NotifyAnimationFinished();
-
   // Reload the wallpaper. |clear_cache| specifies whether to clear the
   // wallpaper cahce or not.
   void UpdateWallpaper(bool clear_cache);
 
-  void set_wallpaper_reload_delay_for_test(bool value) {
-    wallpaper_reload_delay_ = value;
-  }
-
-  // Can change at runtime.
   bool locked_;
 
   BackgroundMode desktop_background_mode_;
 
-  SkColor background_color_;
-
   base::ObserverList<DesktopBackgroundControllerObserver> observers_;
 
-  // The current wallpaper.
   std::unique_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
 
   gfx::Size current_max_display_size_;

@@ -32,7 +32,6 @@
 #include "ash/common/system/user/user_observer.h"
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/tray_display.h"

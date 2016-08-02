@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"

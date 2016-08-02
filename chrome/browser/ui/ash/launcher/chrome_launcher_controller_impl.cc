@@ -13,7 +13,6 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

@@ -57,7 +57,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_watcher.h"
-#include "ash/shell_factory.h"
 #include "ash/shell_init_params.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"

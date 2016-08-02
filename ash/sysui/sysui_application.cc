@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"

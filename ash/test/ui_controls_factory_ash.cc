@@ -5,7 +5,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/shell.h"
-#include "ash/shell_factory.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"

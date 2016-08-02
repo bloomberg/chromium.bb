@@ -9,13 +9,11 @@
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
-#include "ash/desktop_background/desktop_background_controller_test_api.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -43,7 +41,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 
-using wallpaper::WallpaperLayout;
 using wallpaper::WallpaperInfo;
 using wallpaper::WALLPAPER_LAYOUT_CENTER;
 using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
@@ -76,9 +73,8 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     controller_ = ash::Shell::GetInstance()->desktop_background_controller();
+    controller_->set_wallpaper_reload_delay_for_test(0);
     local_state_ = g_browser_process->local_state();
-    ash::DesktopBackgroundController::TestAPI(controller_)
-        .set_wallpaper_reload_delay_for_test(0);
     UpdateDisplay("800x600");
   }
 

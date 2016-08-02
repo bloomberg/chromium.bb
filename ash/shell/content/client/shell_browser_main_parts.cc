@@ -8,7 +8,6 @@
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/shell_delegate_impl.h"

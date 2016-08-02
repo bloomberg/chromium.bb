@@ -7,15 +7,13 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "ui/events/event.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
 class PreEventDispatchHandler;
+class WmWindow;
 
 class DesktopBackgroundView : public views::View,
                               public views::ContextMenuController {
@@ -38,6 +36,8 @@ class DesktopBackgroundView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };
+
+views::Widget* CreateDesktopBackground(WmWindow* root_window, int container_id);
 
 }  // namespace ash
 

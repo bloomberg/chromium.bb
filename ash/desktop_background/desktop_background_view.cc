@@ -4,47 +4,33 @@
 
 #include "ash/desktop_background/desktop_background_view.h"
 
-#include <limits>
-
-#include "ash/ash_export.h"
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/display/display_info.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/window_animations.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/compositor/layer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
-
-using wallpaper::WallpaperLayout;
-using wallpaper::WALLPAPER_LAYOUT_CENTER;
-using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
-using wallpaper::WALLPAPER_LAYOUT_STRETCH;
-using wallpaper::WALLPAPER_LAYOUT_TILE;
 
 namespace ash {
 namespace {
 
-// A view that controls the child view's layer so that the layer
-// always has the same size as the display's original, un-scaled size
-// in DIP. The layer then transformed to fit to the virtual screen
-// size when laid-out.
-// This is to avoid scaling the image at painting time, then scaling
-// it back to the screen size in the compositor.
+// A view that controls the child view's layer so that the layer always has the
+// same size as the display's original, un-scaled size in DIP. The layer is then
+// transformed to fit to the virtual screen size when laid-out. This is to avoid
+// scaling the image at painting time, then scaling it back to the screen size
+// in the compositor.
 class LayerControlView : public views::View {
  public:
   explicit LayerControlView(views::View* view) {
@@ -54,11 +40,9 @@ class LayerControlView : public views::View {
 
   // Overrides views::View.
   void Layout() override {
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            GetWidget()->GetNativeView());
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    DisplayInfo info = display_manager->GetDisplayInfo(display.id());
+    WmWindow* window = WmLookup::Get()->GetWindowForWidget(GetWidget());
+    display::Display display = window->GetDisplayNearestWindow();
+    DisplayInfo info = WmShell::Get()->GetDisplayInfo(display.id());
     float ui_scale = info.GetEffectiveUIScale();
     gfx::Size rounded_size =
         gfx::ScaleToFlooredSize(display.size(), 1.f / ui_scale);
@@ -133,11 +117,11 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   // Scale the image while maintaining the aspect ratio, cropping as
   // necessary to fill the background. Ideally the image should be larger
   // than the largest display supported, if not we will scale and center it if
-  // the layout is WALLPAPER_LAYOUT_CENTER_CROPPED.
+  // the layout is wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
   DesktopBackgroundController* controller =
       Shell::GetInstance()->desktop_background_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
-  WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
+  wallpaper::WallpaperLayout layout = controller->GetWallpaperLayout();
 
   // Wallpapers with png format could be partially transparent.
   // Fill the canvas with black background to make it opaque
@@ -147,7 +131,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   if (wallpaper.isNull())
     return;
 
-  if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
+  if (layout == wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
     double horizontal_ratio =
@@ -173,9 +157,9 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
         wallpaper, wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(), 0, 0,
         width(), height(), true);
-  } else if (wallpaper_layout == WALLPAPER_LAYOUT_TILE) {
+  } else if (layout == wallpaper::WALLPAPER_LAYOUT_TILE) {
     canvas->TileImageInt(wallpaper, 0, 0, width(), height());
-  } else if (wallpaper_layout == WALLPAPER_LAYOUT_STRETCH) {
+  } else if (layout == wallpaper::WALLPAPER_LAYOUT_STRETCH) {
     // This is generally not recommended as it may show artifacts.
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(), wallpaper.height(),
                          0, 0, width(), height(), true);
@@ -199,11 +183,12 @@ void DesktopBackgroundView::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  Shell::GetInstance()->ShowContextMenu(point, source_type);
+  WmShell::Get()->ShowContextMenu(point, source_type);
 }
 
-views::Widget* CreateDesktopBackground(aura::Window* root_window,
+views::Widget* CreateDesktopBackground(WmWindow* root_window,
                                        int container_id) {
+  aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
   DesktopBackgroundController* controller =
       Shell::GetInstance()->desktop_background_controller();
   UserWallpaperDelegate* wallpaper_delegate =
@@ -215,16 +200,17 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   params.name = "DesktopBackgroundView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = root_window->GetChildById(container_id);
+  params.parent = aura_root_window->GetChildById(container_id);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(
       new LayerControlView(new DesktopBackgroundView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
-  ::wm::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
-                                         animation_type);
+  WmWindow* desktop_window =
+      WmLookup::Get()->GetWindowForWidget(desktop_widget);
+  desktop_window->SetVisibilityAnimationType(animation_type);
 
   RootWindowController* root_window_controller =
-      GetRootWindowController(root_window);
+      GetRootWindowController(aura_root_window);
 
   // Enable wallpaper transition for the following cases:
   // 1. Initial(OOBE) wallpaper animation.
@@ -234,18 +220,15 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       root_window_controller->animating_wallpaper_controller() ||
       WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers()) {
-    ::wm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), ::wm::ANIMATE_SHOW);
+    desktop_window->SetVisibilityAnimationTransition(::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
     if (duration_override) {
-      ::wm::SetWindowVisibilityAnimationDuration(
-          desktop_widget->GetNativeView(),
+      desktop_window->SetVisibilityAnimationDuration(
           base::TimeDelta::FromMilliseconds(duration_override));
     }
   } else {
     // Disable animation if transition to login screen from an empty background.
-    ::wm::SetWindowVisibilityAnimationTransition(
-        desktop_widget->GetNativeView(), ::wm::ANIMATE_NONE);
+    desktop_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   }
 
   desktop_widget->SetBounds(params.parent->bounds());

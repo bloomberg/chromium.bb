@@ -15,7 +15,6 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
