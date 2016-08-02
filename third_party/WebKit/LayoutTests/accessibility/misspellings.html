@@ -36,69 +36,77 @@
 
             document.getElementById('editable').style.display = "none";;
             t.done();
-        }, 100);
+        }, 50);
     }, 'Misspellings should be reported in content editables.');
 
     async_test(function(t)
     {
-        document.designMode = 'on';
+        step_timeout(function() {
+            document.designMode = 'on';
+            // Trigger spell checking on originally static text.
+            window.getSelection().collapse(document.getElementById('paragraph'), 0);
 
-        step_timeout(function()
-        {
-            var axParagraph = accessibilityController.accessibleElementById('paragraph');
-            var axStaticText = axParagraph.childAtIndex(0);
+            step_timeout(function()
+            {
+                var axParagraph = accessibilityController.accessibleElementById('paragraph');
+                var axStaticText = axParagraph.childAtIndex(0);
 
-            assert_equals(axStaticText.misspellingsCount, 2);
-            assert_equals(axStaticText.misspellingAtIndex(0), 'adaasj');
-            assert_equals(axStaticText.misspellingAtIndex(1), 'sdklj');
+                assert_equals(axStaticText.misspellingsCount, 2);
+                assert_equals(axStaticText.misspellingAtIndex(0), 'adaasj');
+                assert_equals(axStaticText.misspellingAtIndex(1), 'sdklj');
 
-            document.designMode = 'off';
-            document.getElementById('paragraph').style.display = "none";;
-            t.done();
+                document.designMode = 'off';
+                document.getElementById('paragraph').style.display = "none";;
+                t.done();
+            }, 50);
         }, 100);
     }, 'Misspellings should be reported in static text when design mode is on.');
 
     async_test(function(t)
     {
-        document.getElementById('input').focus();
-        document.execCommand('InsertText', false, 'contentEditable ');
+        step_timeout(function() {
+            document.getElementById('input').focus();
+            document.execCommand('InsertText', false, 'contentEditable ');
 
-        step_timeout(function()
-        {
-            var axInput = accessibilityController.accessibleElementById('input');
-            // If input's shadow DOM changes, this logic might need to be modified.
-            assert_equals(axInput.childrenCount, 1);
-            var axDiv = axInput.childAtIndex(0);
-            assert_equals(axDiv.childrenCount, 1);
-            var axStaticText = axDiv.childAtIndex(0);
+            step_timeout(function()
+            {
+                var axInput = accessibilityController.accessibleElementById('input');
+                // If input's shadow DOM changes, this logic might need to be modified.
+                assert_equals(axInput.childrenCount, 1);
+                var axDiv = axInput.childAtIndex(0);
+                assert_equals(axDiv.childrenCount, 1);
+                var axStaticText = axDiv.childAtIndex(0);
 
-            assert_equals(axStaticText.misspellingsCount, 1);
-            assert_equals(axStaticText.misspellingAtIndex(0), 'contentEditable');
+                assert_equals(axStaticText.misspellingsCount, 1);
+                assert_equals(axStaticText.misspellingAtIndex(0), 'contentEditable');
 
-            document.getElementById('input').style.display = "none";;
-            t.done();
-        }, 100);
+                document.getElementById('input').style.display = "none";;
+                t.done();
+            }, 50);
+        }, 200);
     }, 'Misspellings should be reported in single-line text fields.');
 
     async_test(function(t)
     {
-        document.getElementById('textarea').focus();
-        document.execCommand('InsertText', false, 'contentEditable ');
+        step_timeout(function() {
+            document.getElementById('textarea').focus();
+            document.execCommand('InsertText', false, 'contentEditable ');
 
-        step_timeout(function()
-        {
-            var axTextarea = accessibilityController.accessibleElementById('textarea');
-            // If textarea's shadow DOM changes, this logic might need to be modified.
-            assert_equals(axTextarea.childrenCount, 1);
-            var axDiv = axTextarea.childAtIndex(0);
-            assert_equals(axDiv.childrenCount, 1);
-            var axStaticText = axDiv.childAtIndex(0);
+            step_timeout(function()
+            {
+                var axTextarea = accessibilityController.accessibleElementById('textarea');
+                // If textarea's shadow DOM changes, this logic might need to be modified.
+                assert_equals(axTextarea.childrenCount, 1);
+                var axDiv = axTextarea.childAtIndex(0);
+                assert_equals(axDiv.childrenCount, 1);
+                var axStaticText = axDiv.childAtIndex(0);
 
-            assert_equals(axStaticText.misspellingsCount, 1);
-            assert_equals(axStaticText.misspellingAtIndex(0), 'contentEditable');
+                assert_equals(axStaticText.misspellingsCount, 1);
+                assert_equals(axStaticText.misspellingAtIndex(0), 'contentEditable');
 
-            document.getElementById('textarea').style.display = "none";;
-            t.done();
-        }, 100);
+                document.getElementById('textarea').style.display = "none";;
+                t.done();
+            }, 50);
+        }, 300);
     }, 'Misspellings should be reported in textareas.');
 </script>
