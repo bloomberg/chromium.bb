@@ -55,7 +55,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
     gpu_preferences.enable_accelerated_vpx_decode = !!enable_vpx_decode;
   }
   gpu_preferences.enable_zero_copy_dxgi_video =
-      command_line->HasSwitch(switches::kEnableZeroCopyDxgiVideo);
+      !command_line->HasSwitch(switches::kDisableZeroCopyDxgiVideo);
   gpu_preferences.enable_nv12_dxgi_video =
       !command_line->HasSwitch(switches::kDisableNv12DxgiVideo);
 #endif

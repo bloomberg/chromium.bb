@@ -315,6 +315,9 @@ const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 // Disable rasterizer that writes directly to GPU memory associated with tiles.
 const char kDisableZeroCopy[]                = "disable-zero-copy";
 
+// Disable the video decoder from drawing directly to a texture.
+const char kDisableZeroCopyDxgiVideo[]      = "disable-zero-copy-dxgi-video";
+
 // Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when automating dom
@@ -530,9 +533,6 @@ const char kEnableWebVR[] = "enable-webvr";
 
 // Enable rasterizer that writes directly to GPU memory associated with tiles.
 const char kEnableZeroCopy[]                = "enable-zero-copy";
-
-// Enable the video decoder to draw directly to a texture.
-const char kEnableZeroCopyDxgiVideo[] = "enable-zero-copy-dxgi-video";
 
 // Explicitly allows additional ports using a comma-separated list of port
 // numbers.
