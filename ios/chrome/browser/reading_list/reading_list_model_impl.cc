@@ -129,11 +129,9 @@ void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   if (result == unread_.end()) {
     return;
   }
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListWillRemoveUnreadEntry(
-                        this, std::distance(unread_.begin(), result)));
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListWillAddReadEntry(this, entry));
+  FOR_EACH_OBSERVER(
+      ReadingListModelObserver, observers_,
+      ReadingListWillMoveEntry(this, std::distance(unread_.begin(), result)));
 
   read_.insert(read_.begin(), *result);
   unread_.erase(result);

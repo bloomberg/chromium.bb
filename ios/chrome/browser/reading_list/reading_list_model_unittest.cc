@@ -19,7 +19,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   void ClearCounts() {
     observer_loaded_ = observer_started_batch_update_ =
         observer_completed_batch_update_ = observer_deleted_ =
-            observer_remove_unread_ = observer_remove_read_ =
+            observer_remove_unread_ = observer_remove_read_ = observer_move_ =
                 observer_add_unread_ = observer_add_read_ =
                     observer_did_apply_ = 0;
   }
@@ -30,6 +30,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
                            int observer_deleted,
                            int observer_remove_unread,
                            int observer_remove_read,
+                           int observer_move,
                            int observer_add_unread,
                            int observer_add_read,
                            int observer_did_apply) {
@@ -40,6 +41,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
     ASSERT_EQ(observer_deleted, observer_deleted_);
     ASSERT_EQ(observer_remove_unread, observer_remove_unread_);
     ASSERT_EQ(observer_remove_read, observer_remove_read_);
+    ASSERT_EQ(observer_move, observer_move_);
     ASSERT_EQ(observer_add_unread, observer_add_unread_);
     ASSERT_EQ(observer_add_read, observer_add_read_);
     ASSERT_EQ(observer_did_apply, observer_did_apply_);
@@ -64,6 +66,10 @@ class ReadingListModelTest : public ReadingListModelObserver,
                                         size_t index) override {
     observer_remove_unread_ += 1;
   }
+  void ReadingListWillMoveEntry(const ReadingListModel* model,
+                                size_t index) override {
+    observer_move_ += 1;
+  }
   void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
                                       size_t index) override {
     observer_remove_read_ += 1;
@@ -87,6 +93,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   int observer_deleted_;
   int observer_remove_unread_;
   int observer_remove_read_;
+  int observer_move_;
   int observer_add_unread_;
   int observer_add_read_;
   int observer_did_apply_;
@@ -96,12 +103,12 @@ class ReadingListModelTest : public ReadingListModelObserver,
 
 TEST_F(ReadingListModelTest, EmptyLoaded) {
   EXPECT_TRUE(model_->loaded());
-  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_EQ(0ul, model_->unread_size());
   EXPECT_EQ(0ul, model_->read_size());
   model_->Shutdown();
   EXPECT_FALSE(model_->loaded());
-  AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 TEST_F(ReadingListModelTest, AddEntry) {
@@ -111,7 +118,7 @@ TEST_F(ReadingListModelTest, AddEntry) {
   EXPECT_EQ(GURL("http://example.com"), entry.url());
   EXPECT_EQ("sample", entry.title());
 
-  AssertObserverCount(0, 0, 0, 0, 0, 0, 1, 0, 1);
+  AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 0, 1);
   EXPECT_EQ(1ul, model_->unread_size());
   EXPECT_EQ(0ul, model_->read_size());
   EXPECT_TRUE(model_->HasUnseenEntries());
@@ -127,7 +134,7 @@ TEST_F(ReadingListModelTest, ReadEntry) {
 
   ClearCounts();
   model_->MarkReadByURL(GURL("http://example.com"));
-  AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 1);
+  AssertObserverCount(0, 0, 0, 0, 0, 0, 1, 0, 0, 1);
   EXPECT_EQ(0ul, model_->unread_size());
   EXPECT_EQ(1ul, model_->read_size());
   EXPECT_FALSE(model_->HasUnseenEntries());
@@ -139,11 +146,11 @@ TEST_F(ReadingListModelTest, ReadEntry) {
 
 TEST_F(ReadingListModelTest, BatchUpdates) {
   auto token = model_->BeginBatchUpdates();
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_TRUE(model_->IsPerformingBatchUpdates());
 
   delete token.release();
-  AssertObserverCount(1, 1, 1, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 1, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 }
 
@@ -153,28 +160,28 @@ TEST_F(ReadingListModelTest, BatchUpdatesReentrant) {
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 
   auto token = model_->BeginBatchUpdates();
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_TRUE(model_->IsPerformingBatchUpdates());
 
   auto second_token = model_->BeginBatchUpdates();
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_TRUE(model_->IsPerformingBatchUpdates());
 
   delete token.release();
-  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_TRUE(model_->IsPerformingBatchUpdates());
 
   delete second_token.release();
-  AssertObserverCount(1, 1, 1, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 1, 1, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 
   // Consequent updates send notifications.
   auto third_token = model_->BeginBatchUpdates();
-  AssertObserverCount(1, 2, 1, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 2, 1, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_TRUE(model_->IsPerformingBatchUpdates());
 
   delete third_token.release();
-  AssertObserverCount(1, 2, 2, 0, 0, 0, 0, 0, 0);
+  AssertObserverCount(1, 2, 2, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 }
 
