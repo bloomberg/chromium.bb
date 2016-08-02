@@ -222,7 +222,9 @@ void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
     ui::KeyEvent char_event(key_press_event->GetCharacter(),
                             key_press_event->key_code(),
                             key_press_event->flags());
-    DCHECK_EQ(key_press_event->GetCharacter(), char_event.GetCharacter());
+    // We don't check that GetCharacter() is equal because changing a key event
+    // with an accelerator to a character event can change the character, for
+    // example, from 'M' to '^M'.
     DCHECK_EQ(key_press_event->key_code(), char_event.key_code());
     DCHECK_EQ(key_press_event->flags(), char_event.flags());
     delegate_->OnEvent(char_event);
