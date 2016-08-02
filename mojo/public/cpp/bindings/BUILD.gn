@@ -34,7 +34,6 @@ static_library("bindings") {
     "lib/associated_group_controller.cc",
     "lib/associated_interface_ptr_state.h",
     "lib/binding_state.h",
-    "lib/bindings_internal.cc",
     "lib/bindings_internal.h",
     "lib/buffer.h",
     "lib/clone_equals_util.h",

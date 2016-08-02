@@ -74,10 +74,13 @@ class Map_Data;
 
 using String_Data = Array_Data<char>;
 
-size_t Align(size_t size);
-char* AlignPointer(char* ptr);
+inline size_t Align(size_t size) {
+  return (size + 7) & ~0x7;
+}
 
-bool IsAligned(const void* ptr);
+inline bool IsAligned(const void* ptr) {
+  return !(reinterpret_cast<uintptr_t>(ptr) & 0x7);
+}
 
 // Pointers are encoded as relative offsets. The offsets are relative to the
 // address of where the offset value is stored, such that the pointer may be
@@ -87,7 +90,19 @@ bool IsAligned(const void* ptr);
 //
 // A null pointer is encoded as an offset value of 0.
 //
-void EncodePointer(const void* ptr, uint64_t* offset);
+inline void EncodePointer(const void* ptr, uint64_t* offset) {
+  if (!ptr) {
+    *offset = 0;
+    return;
+  }
+
+  const char* p_obj = reinterpret_cast<const char*>(ptr);
+  const char* p_slot = reinterpret_cast<const char*>(offset);
+  DCHECK(p_obj > p_slot);
+
+  *offset = static_cast<uint64_t>(p_obj - p_slot);
+}
+
 // Note: This function doesn't validate the encoded pointer value.
 inline const void* DecodePointer(const uint64_t* offset) {
   if (!*offset)

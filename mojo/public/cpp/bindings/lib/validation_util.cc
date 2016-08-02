@@ -16,16 +16,6 @@
 namespace mojo {
 namespace internal {
 
-bool ValidateEncodedPointer(const uint64_t* offset) {
-  // - Make sure |*offset| is no more than 32-bits.
-  // - Cast |offset| to uintptr_t so overflow behavior is well defined across
-  //   32-bit and 64-bit systems.
-  return *offset <= std::numeric_limits<uint32_t>::max() &&
-         (reinterpret_cast<uintptr_t>(offset) +
-              static_cast<uint32_t>(*offset) >=
-          reinterpret_cast<uintptr_t>(offset));
-}
-
 bool ValidateStructHeaderAndClaimMemory(const void* data,
                                         ValidationContext* validation_context) {
   if (!IsAligned(data)) {

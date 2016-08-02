@@ -34,7 +34,6 @@
       'public/cpp/bindings/lib/associated_group_controller.cc',
       'public/cpp/bindings/lib/associated_interface_ptr_state.h',
       'public/cpp/bindings/lib/binding_state.h',
-      'public/cpp/bindings/lib/bindings_internal.cc',
       'public/cpp/bindings/lib/bindings_internal.h',
       'public/cpp/bindings/lib/buffer.h',
       'public/cpp/bindings/lib/clone_equals_util.h',
