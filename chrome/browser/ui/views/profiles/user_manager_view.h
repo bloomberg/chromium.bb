@@ -20,7 +20,7 @@ class ScopedKeepAlive;
 class UserManagerView;
 
 class ReauthDelegate : public views::DialogDelegateView,
-                       public UserManager::ReauthDialogObserver {
+                       public UserManager::BaseReauthDialogDelegate {
  public:
   ReauthDelegate(UserManagerView* parent,
                  views::WebView* web_view,
@@ -28,7 +28,7 @@ class ReauthDelegate : public views::DialogDelegateView,
                  signin_metrics::Reason reason);
   ~ReauthDelegate() override;
 
-  // UserManager::ReauthObserver:
+  // UserManager::BaseReauthDialogDelegate:
   void CloseReauthDialog() override;
 
  private:

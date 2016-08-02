@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace base {
 class FilePath;
@@ -69,24 +70,27 @@ class UserManager {
   static const int kReauthDialogHeight = 512;
   static const int kReauthDialogWidth =  448;
 
-  // This class observes the WebUI used in the UserManager to perform online
-  // reauthentication of locked profiles. It is concretely implemented in
-  // UserManagerMac and UserManagerView to specialize the closing of the UI's
-  // dialog widget.
-  class ReauthDialogObserver : public content::WebContentsObserver {
+  // Abstract base class for performing online reauthentication of profiles in
+  // the User Manager. It is concretely implemented in UserManagerMac and
+  // UserManagerView to specialize the closing of the UI's dialog widgets.
+  class BaseReauthDialogDelegate : public content::WebContentsDelegate {
    public:
-    ReauthDialogObserver(content::WebContents* web_contents,
-                         const std::string& email_address);
+    BaseReauthDialogDelegate();
+
+    // content::WebContentsDelegate:
+    bool HandleContextMenu(const content::ContextMenuParams& params) override;
+
+    // content::WebContentsDelegate:
+    void LoadingStateChanged(content::WebContents* source,
+                             bool to_different_document) override;
 
    private:
-    // content::WebContentsObserver:
-    void DidStopLoading() override;
-
     virtual void CloseReauthDialog() = 0;
 
-    const std::string email_address_;
+    // WebContents of the embedded WebView.
+    content::WebContents* guest_web_contents_;
 
-    DISALLOW_COPY_AND_ASSIGN(ReauthDialogObserver);
+    DISALLOW_COPY_AND_ASSIGN(BaseReauthDialogDelegate);
   };
 
  private:

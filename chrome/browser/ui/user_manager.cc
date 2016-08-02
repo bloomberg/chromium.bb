@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/user_manager.h"
 
-#include "chrome/browser/signin/signin_promo.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "google_apis/gaia/gaia_urls.h"
 
 namespace {
 
@@ -18,46 +16,31 @@ bool AddToSet(std::set<content::WebContents*>* content_set,
 
 }  // namespace
 
-UserManager::ReauthDialogObserver::ReauthDialogObserver(
-    content::WebContents* web_contents, const std::string& email_address)
-    : email_address_(email_address) {
-  // Observe navigations of the web contents so that the dialog can close itself
-  // when the sign in process is done.
-  Observe(web_contents);
+UserManager::BaseReauthDialogDelegate::BaseReauthDialogDelegate()
+    : guest_web_contents_(nullptr) {}
+
+bool UserManager::BaseReauthDialogDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Ignores context menu.
+  return true;
 }
 
-void UserManager::ReauthDialogObserver::DidStopLoading() {
-  // If the sign in process reaches the termination URL, close the dialog.
-  // Make sure to remove any parts of the URL that gaia might append during
-  // signin.
-  GURL url = web_contents()->GetURL();
-  url::Replacements<char> replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  if (url.ReplaceComponents(replacements) ==
-        GaiaUrls::GetInstance()->signin_completed_continue_url()) {
-    CloseReauthDialog();
+void UserManager::BaseReauthDialogDelegate::LoadingStateChanged(
+    content::WebContents* source, bool to_different_document) {
+  if (source->IsLoading() || guest_web_contents_)
     return;
-  }
 
-  // If still observing the top level web contents, try to find the embedded
-  // webview and observe it instead.  The webview may not be found in the
-  // initial page load since it loads asynchronously.
-  if (url.GetOrigin() !=
-      signin::GetReauthURLWithEmail(
-          signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-          signin_metrics::Reason::REASON_UNLOCK, email_address_)
-          .GetOrigin()) {
-    return;
-  }
-
+  // Try to find the embedded WebView and manage its WebContents. The WebView
+  // may not be found in the initial page load since it loads asynchronously.
   std::set<content::WebContents*> content_set;
   guest_view::GuestViewManager* manager =
       guest_view::GuestViewManager::FromBrowserContext(
-          web_contents()->GetBrowserContext());
+          source->GetBrowserContext());
   if (manager)
-    manager->ForEachGuest(web_contents(), base::Bind(&AddToSet, &content_set));
+    manager->ForEachGuest(source, base::Bind(&AddToSet, &content_set));
   DCHECK_LE(content_set.size(), 1U);
-  if (!content_set.empty())
-    Observe(*content_set.begin());
+  if (!content_set.empty()) {
+    guest_web_contents_ = *content_set.begin();
+    guest_web_contents_->SetDelegate(this);
+  }
 }

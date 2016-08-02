@@ -66,13 +66,13 @@ ReauthDelegate::ReauthDelegate(UserManagerView* parent,
                                views::WebView* web_view,
                                const std::string& email_address,
                                signin_metrics::Reason reason)
-    : UserManager::ReauthDialogObserver(web_view->GetWebContents(),
-                                        email_address),
-      parent_(parent),
+    : parent_(parent),
       web_view_(web_view),
       email_address_(email_address) {
   AddChildView(web_view_);
   SetLayoutManager(new views::FillLayout());
+
+  web_view->GetWebContents()->SetDelegate(this);
 
   // Load the re-auth URL, prepopulated with the user's email address.
   // Add the index of the profile to the URL so that the inline login page

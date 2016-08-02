@@ -141,23 +141,32 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
   }
 };
 
-class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
-                             public UserManagerWebContentsDelegate,
+class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
                              public ConstrainedWindowMacDelegate {
  public:
-  ReauthDialogDelegate(content::WebContents* web_contents,
-                       const std::string& email)
-      : UserManager::ReauthDialogObserver(web_contents, email) {}
+  ReauthDialogDelegate() {
+    hotKeysWebContentsDelegate_.reset(new UserManagerWebContentsDelegate());
+  }
 
-  // UserManager::ReauthDialogObserver:
+  // UserManager::BaseReauthDialogDelegate:
   void CloseReauthDialog() override {
     CloseInstanceReauthDialog();
+  }
+
+  // WebContentsDelegate::HandleKeyboardEvent:
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override {
+    hotKeysWebContentsDelegate_->HandleKeyboardEvent(source, event);
   }
 
   // ConstrainedWindowMacDelegate:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override {
     CloseReauthDialog();
   }
+
+private:
+  std::unique_ptr<UserManagerWebContentsDelegate> hotKeysWebContentsDelegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ReauthDialogDelegate);
 };
@@ -202,8 +211,7 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
     reauthWebContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
     window.get().contentView = reauthWebContents_->GetNativeView();
-    webContentsDelegate_.reset(
-       new ReauthDialogDelegate(reauthWebContents_.get(), emailAddress_));
+    webContentsDelegate_.reset(new ReauthDialogDelegate());
     reauthWebContents_->SetDelegate(webContentsDelegate_.get());
 
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
