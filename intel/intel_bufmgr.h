@@ -273,6 +273,9 @@ int drm_intel_get_reset_stats(drm_intel_context *ctx,
 int drm_intel_get_subslice_total(int fd, unsigned int *subslice_total);
 int drm_intel_get_eu_total(int fd, unsigned int *eu_total);
 
+int drm_intel_get_pooled_eu(int fd);
+int drm_intel_get_min_eu_in_pool(int fd);
+
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
  */

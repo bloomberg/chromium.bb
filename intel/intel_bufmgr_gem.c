@@ -3237,6 +3237,36 @@ drm_intel_get_eu_total(int fd, unsigned int *eu_total)
 	return 0;
 }
 
+int
+drm_intel_get_pooled_eu(int fd)
+{
+	drm_i915_getparam_t gp;
+	int ret = -1;
+
+	memclear(gp);
+	gp.param = I915_PARAM_HAS_POOLED_EU;
+	gp.value = &ret;
+	if (drmIoctl(fd, DRM_IOCTL_I915_GETPARAM, &gp))
+		return -errno;
+
+	return ret;
+}
+
+int
+drm_intel_get_min_eu_in_pool(int fd)
+{
+	drm_i915_getparam_t gp;
+	int ret = -1;
+
+	memclear(gp);
+	gp.param = I915_PARAM_MIN_EU_IN_POOL;
+	gp.value = &ret;
+	if (drmIoctl(fd, DRM_IOCTL_I915_GETPARAM, &gp))
+		return -errno;
+
+	return ret;
+}
+
 /**
  * Annotate the given bo for use in aub dumping.
  *
