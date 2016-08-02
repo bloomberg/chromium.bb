@@ -286,6 +286,9 @@ deps = {
   # Used for building libFuzzers (only supports Linux).
   'src/third_party/libFuzzer/src':
     Var('chromium_git') + '/chromium/llvm-project/llvm/lib/Fuzzer.git' + '@' +  Var('libfuzzer_revision'),
+
+  'src/third_party/visualmetrics/src':
+    Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
 }
 
 
