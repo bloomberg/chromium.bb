@@ -416,9 +416,17 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     int errorCode, String description, String failingUrl) {
                 NewTabPage ntp = mToolbarModel.getNewTabPageForCurrentTab();
                 if (ntp == null) return;
-                if (isProvisionalLoad && isMainFrame) {
+
+                // If the load failed due to a different navigation, there is no need to reset the
+                // the location bar animations.
+                boolean hasPendingNavigation = tab.getWebContents() != null
+                        && tab.getWebContents().getNavigationController() != null
+                        && tab.getWebContents().getNavigationController().getPendingEntry() != null;
+
+                if (isProvisionalLoad && isMainFrame && !hasPendingNavigation) {
                     ntp.setUrlFocusAnimationsDisabled(false);
                     mToolbar.onTabOrModelChanged();
+                    if (mToolbar.getProgressBar() != null) mToolbar.getProgressBar().finish(false);
                 }
             }
 
