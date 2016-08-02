@@ -83,7 +83,6 @@
         'aw_quota_manager_bridge_impl.cc',
         'aw_quota_manager_bridge_impl.h',
         'aw_resource.cc',
-        'aw_resource.h',
         'aw_settings.cc',
         'aw_settings.h',
         'aw_web_contents_delegate.cc',

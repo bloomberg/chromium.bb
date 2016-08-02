@@ -169,8 +169,4 @@ std::unique_ptr<SoftwareCanvasHolder> SoftwareCanvasHolder::Create(
   return holder;
 }
 
-bool RegisterJavaBrowserViewRendererHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

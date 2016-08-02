@@ -42,8 +42,6 @@ class AwWebResourceResponseImpl : public AwWebResourceResponse {
   DISALLOW_COPY_AND_ASSIGN(AwWebResourceResponseImpl);
 };
 
-bool RegisterAwWebResourceResponse(JNIEnv* env);
-
 } // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_NATIVE_INTERCEPTED_REQUEST_DATA_IMPL_H_

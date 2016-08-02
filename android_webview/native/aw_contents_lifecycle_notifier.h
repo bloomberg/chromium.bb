@@ -19,8 +19,6 @@ class AwContentsLifecycleNotifier {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AwContentsLifecycleNotifier);
 };
 
-bool RegisterAwContentsLifecycleNotifier(JNIEnv* env);
-
 }  // namespace android_webview
 
 #endif

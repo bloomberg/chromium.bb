@@ -536,8 +536,4 @@ void AwContentsIoThreadClientImpl::OnReceivedHttpError(
       jstringArray_response_header_values.obj());
 }
 
-bool RegisterAwContentsIoThreadClientImpl(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 } // namespace android_webview

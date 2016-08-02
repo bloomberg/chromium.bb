@@ -81,9 +81,6 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   DISALLOW_COPY_AND_ASSIGN(AwContentsIoThreadClientImpl);
 };
 
-// JNI registration method.
-bool RegisterAwContentsIoThreadClientImpl(JNIEnv* env);
-
 } // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_IO_THREAD_CLIENT_IMPL_H_

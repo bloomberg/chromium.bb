@@ -10,10 +10,6 @@ using base::android::AttachCurrentThread;
 
 namespace android_webview {
 
-bool RegisterAwContentsLifecycleNotifier(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // static
 void AwContentsLifecycleNotifier::OnWebViewCreated() {
   Java_AwContentsLifecycleNotifier_onWebViewCreated(AttachCurrentThread());

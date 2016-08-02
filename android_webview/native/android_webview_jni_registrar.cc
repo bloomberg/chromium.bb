@@ -7,10 +7,7 @@
 #include "android_webview/native/android_protocol_handler.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_contents.h"
-#include "android_webview/native/aw_contents_background_thread_client.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
-#include "android_webview/native/aw_contents_io_thread_client_impl.h"
-#include "android_webview/native/aw_contents_lifecycle_notifier.h"
 #include "android_webview/native/aw_contents_statics.h"
 #include "android_webview/native/aw_debug.h"
 #include "android_webview/native/aw_dev_tools_server.h"
@@ -22,13 +19,9 @@
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
-#include "android_webview/native/aw_resource.h"
 #include "android_webview/native/aw_settings.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
-#include "android_webview/native/aw_web_resource_response_impl.h"
 #include "android_webview/native/cookie_manager.h"
-#include "android_webview/native/input_stream_impl.h"
-#include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
@@ -41,10 +34,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AndroidProtocolHandler", RegisterAndroidProtocolHandler },
   { "AwAutofillClient", RegisterAwAutofillClient },
   { "AwContents", RegisterAwContents },
-  { "AwContentsBackgroundThreadClient",
-    RegisterAwContentsBackgroundThreadClient },
   { "AwContentsClientBridge", RegisterAwContentsClientBridge },
-  { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl },
   { "AwContentsStatics", RegisterAwContentsStatics },
   { "AwDebug", RegisterAwDebug },
   { "AwDevToolsServer", RegisterAwDevToolsServer },
@@ -56,14 +46,9 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwPdfExporter", RegisterAwPdfExporter },
   { "AwPermissionRequest", RegisterAwPermissionRequest },
   { "AwQuotaManagerBridge", RegisterAwQuotaManagerBridge },
-  { "AwResource", AwResource::RegisterAwResource },
   { "AwWebContentsDelegate", RegisterAwWebContentsDelegate },
   { "CookieManager", RegisterCookieManager },
-  { "AwWebResourceResponseImpl", RegisterAwWebResourceResponse },
-  { "InputStream", RegisterInputStream },
-  { "JavaBrowserViewRendererHelper", RegisterJavaBrowserViewRendererHelper },
   { "AwMessagePortService", RegisterAwMessagePortService },
-  { "AwContentsLifecycleNotifier", RegisterAwContentsLifecycleNotifier },
   { "AwGLFunctor", RegisterAwGLFunctor },
 };
 

@@ -24,8 +24,4 @@ AwContentsBackgroundThreadClient::shouldInterceptRequest(
       requestHeaderValues);
 }
 
-bool RegisterAwContentsBackgroundThreadClient(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android_webview

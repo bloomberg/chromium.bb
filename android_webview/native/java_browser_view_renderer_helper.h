@@ -33,8 +33,6 @@ class SoftwareCanvasHolder {
 
 void RasterHelperSetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
 
-bool RegisterJavaBrowserViewRendererHelper(JNIEnv* env);
-
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_NATIVE_JAVA_BROWSER_VIEW_RENDERER_HELPER_H_

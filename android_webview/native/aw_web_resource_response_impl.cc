@@ -98,8 +98,4 @@ bool AwWebResourceResponseImpl::GetResponseHeaders(
   return true;
 }
 
-bool RegisterAwWebResourceResponse(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 } // namespace android_webview

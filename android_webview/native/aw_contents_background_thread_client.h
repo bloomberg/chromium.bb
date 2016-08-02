@@ -22,9 +22,6 @@ class AwContentsBackgroundThreadClient {
       jobjectArray requestHeaderValues);
 };
 
-// JNI registration method.
-bool RegisterAwContentsBackgroundThreadClient(JNIEnv* env);
-
 }
 
 #endif  // ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_BACKGROUND_THREAD_CLIENT_H_

@@ -27,10 +27,6 @@ const int kExceptionThrownStatusCode = -2;
 
 }
 
-bool RegisterInputStream(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // Maximum number of bytes to be read in a single read.
 const int InputStreamImpl::kBufferSize = 4096;
 

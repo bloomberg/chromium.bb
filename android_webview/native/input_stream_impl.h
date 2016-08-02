@@ -50,8 +50,6 @@ class InputStreamImpl : public InputStream {
   DISALLOW_COPY_AND_ASSIGN(InputStreamImpl);
 };
 
-bool RegisterInputStream(JNIEnv* env);
-
 } // namespace android_webview
 
 #endif //  ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_H_
