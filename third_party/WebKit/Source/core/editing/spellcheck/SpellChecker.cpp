@@ -392,45 +392,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         return;
 
     // Check spelling of one word
-    bool result = markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
-
-    if (!result)
-        return;
-
-    // Check grammar of entire sentence
-    markBadGrammar(VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart)));
-}
-
-bool SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selection, bool checkSpelling)
-{
-    // This function is called with a selection already expanded to word boundaries.
-    // Might be nice to assert that here.
-
-    // This function is used only for as-you-type checking, so if that's off we do nothing. Note that
-    // grammar checking can only be on if spell checking is also on.
-    if (!isContinuousSpellCheckingEnabled())
-        return false;
-
-    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsOrBadGrammar");
-
-    const EphemeralRange range = selection.toNormalizedEphemeralRange();
-    if (range.isNull())
-        return false;
-
-    // If we're not in an editable node, bail.
-    Node* editableNode = range.startPosition().computeContainerNode();
-    if (!editableNode || !hasEditableStyle(*editableNode))
-        return false;
-
-    if (!isSpellCheckingEnabledFor(editableNode))
-        return false;
-
-    TextCheckingHelper checker(spellCheckerClient(), range.startPosition(), range.endPosition());
-    if (checkSpelling)
-        return checker.markAllMisspellings();
-
-    checker.markAllBadGrammar();
-    return false;
+    markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
 }
 
 bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
@@ -465,14 +427,32 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
     return false;
 }
 
-bool SpellChecker::markMisspellings(const VisibleSelection& selection)
+void SpellChecker::markMisspellings(const VisibleSelection& selection)
 {
-    return markMisspellingsOrBadGrammar(selection, true);
-}
+    // This function is called with a selection already expanded to word boundaries.
+    // TODO(xiaochengh): Might be nice to assert that here.
 
-void SpellChecker::markBadGrammar(const VisibleSelection& selection)
-{
-    markMisspellingsOrBadGrammar(selection, false);
+    // This function is used only for as-you-type checking, so if that's off we do nothing. Note that
+    // grammar checking can only be on if spell checking is also on.
+    if (!isContinuousSpellCheckingEnabled())
+        return;
+
+    TRACE_EVENT0("blink", "SpellChecker::markMisspellings");
+
+    const EphemeralRange& range = selection.toNormalizedEphemeralRange();
+    if (range.isNull())
+        return;
+
+    // If we're not in an editable node, bail.
+    Node* editableNode = range.startPosition().computeContainerNode();
+    if (!editableNode || !hasEditableStyle(*editableNode))
+        return;
+
+    if (!isSpellCheckingEnabledFor(editableNode))
+        return;
+
+    TextCheckingHelper checker(spellCheckerClient(), range.startPosition(), range.endPosition());
+    checker.markAllMisspellings();
 }
 
 void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
@@ -681,8 +661,6 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
     }
 
     markMisspellings(spellingSelection);
-    if (markGrammar)
-        markBadGrammar(grammarSelection);
 }
 
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)

@@ -101,9 +101,7 @@ private:
         return *m_frame;
     }
 
-    bool markMisspellings(const VisibleSelection&);
-    void markBadGrammar(const VisibleSelection&);
-    bool markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling);
+    void markMisspellings(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange);
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
