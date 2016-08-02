@@ -5,6 +5,7 @@
 import argparse
 import copy
 from datetime import datetime
+from functools import partial
 import os
 
 from code import Code
@@ -193,6 +194,42 @@ FEATURE_GRAMMAR = (
     },
   })
 
+FEATURE_CLASSES = ['APIFeature', 'BehaviorFeature',
+                   'ManifestFeature', 'PermissionFeature']
+
+def HasProperty(property_name, value):
+  return property_name in value
+
+def HasAtLeastOneProperty(property_names, value):
+  return any([HasProperty(name, value) for name in property_names])
+
+def DoesNotHaveProperty(property_name, value):
+  return property_name not in value
+
+VALIDATION = ({
+  'all': [
+    (partial(HasAtLeastOneProperty, ['channel', 'dependencies']),
+     'Features must specify either a channel or dependencies'),
+  ],
+  'APIFeature': [
+    (partial(HasProperty, 'contexts'),
+     'APIFeatures must specify at least one context')
+  ],
+  'ManifestFeature': [
+    (partial(HasProperty, 'extension_types'),
+     'ManifestFeatures must specify at least one extension type'),
+    (partial(DoesNotHaveProperty, 'contexts'),
+     'ManifestFeatures do not support contexts.'),
+  ],
+  'BehaviorFeature': [],
+  'PermissionFeature': [
+    (partial(HasProperty, 'extension_types'),
+     'PermissionFeatures must specify at least one extension type'),
+    (partial(DoesNotHaveProperty, 'contexts'),
+     'PermissionFeatures do not support contexts.'),
+  ],
+})
+
 # These keys are used to find the parents of different features, but are not
 # compiled into the features themselves.
 IGNORED_KEYS = ['default_parent']
@@ -227,16 +264,20 @@ class Feature(object):
       return unicode
     return t
 
-  def _AddError(self, key, error):
+  def _AddError(self, error):
     """Adds an error to the feature. If ENABLE_ASSERTIONS is active, this will
     also assert to stop the compilation process (since errors should never be
     found in production).
     """
-    error = 'Error parsing feature "%s" at key "%s": %s' % (
-                self.name, key, error)
     self.errors.append(error)
     if ENABLE_ASSERTIONS:
       assert False, error
+
+  def _AddKeyError(self, key, error):
+    """Adds an error relating to a particular key in the feature.
+    """
+    self._AddError('Error parsing feature "%s" at key "%s": %s' %
+                       (self.name, key, error))
 
   def _GetCheckedValue(self, key, expected_type, expected_values,
                        enum_map, value):
@@ -255,12 +296,12 @@ class Feature(object):
     """
     valid = True
     if expected_values and value not in expected_values:
-      self._AddError(key, 'Illegal value: "%s"' % value)
+      self._AddKeyError(key, 'Illegal value: "%s"' % value)
       valid = False
 
     t = self._GetType(value)
     if expected_type and t is not expected_type:
-      self._AddError(key, 'Illegal value: "%s"' % value)
+      self._AddKeyError(key, 'Illegal value: "%s"' % value)
       valid = False
 
     if not valid:
@@ -295,7 +336,7 @@ class Feature(object):
 
     value_type = self._GetType(v)
     if value_type not in grammar:
-      self._AddError(key, 'Illegal value: "%s"' % v)
+      self._AddKeyError(key, 'Illegal value: "%s"' % v)
       return
 
     expected = grammar[value_type]
@@ -350,9 +391,14 @@ class Feature(object):
     """Parses the feature from the given json value."""
     for key in parsed_json.keys():
       if key not in FEATURE_GRAMMAR:
-        self._AddError(key, 'Unrecognized key')
+        self._AddKeyError(key, 'Unrecognized key')
     for key, key_grammar in FEATURE_GRAMMAR.iteritems():
       self._ParseKey(key, parsed_json, key_grammar)
+
+  def Validate(self, feature_class):
+    for validator, error in (VALIDATION[feature_class] + VALIDATION['all']):
+      if not validator(self.feature_values):
+        self._AddError(error)
 
   def GetCode(self, feature_class):
     """Returns the Code object for generating this feature."""
@@ -439,6 +485,19 @@ class FeatureCompiler(object):
       assert feature_value['nocompile'], (
           'nocompile should only be true; otherwise omit this key.')
       return
+
+    def parse_and_validate(name, value, parent):
+      try:
+        feature = Feature(name)
+        if parent:
+          feature.SetParent(parent)
+        feature.Parse(value)
+        feature.Validate(self._feature_class)
+        return feature
+      except:
+        print('Failure to parse feature "%s"' % feature_name)
+        raise
+
     parent = self._FindParent(feature_name, feature_value)
     # Handle complex features, which are lists of simple features.
     if type(feature_value) is list:
@@ -446,27 +505,12 @@ class FeatureCompiler(object):
       # This doesn't handle nested complex features. I think that's probably for
       # the best.
       for v in feature_value:
-        try:
-          feature = Feature(feature_name)
-          if parent:
-            feature.SetParent(parent)
-          feature.Parse(v)
-          feature_list.append(feature)
-        except:
-          print('Failure to parse feature "%s"' % feature_name)
-          raise
+        feature_list.append(parse_and_validate(feature_name, v, parent))
       self._features[feature_name] = feature_list
       return
 
-    try:
-      feature = Feature(feature_name)
-      if parent:
-        feature.SetParent(parent)
-      feature.Parse(feature_value)
-      self._features[feature_name] = feature
-    except:
-      print('Failure to parse feature "%s"' % feature_name)
-      raise
+    self._features[feature_name] = parse_and_validate(
+                                       feature_name, feature_value, parent)
 
   def Compile(self):
     """Parses all features after loading the input files."""
@@ -550,6 +594,8 @@ if __name__ == '__main__':
   parser.add_argument('source_files', type=str, nargs='+',
                       help='The source features.json files')
   args = parser.parse_args()
+  if args.feature_class not in FEATURE_CLASSES:
+    raise NameError('Unknown feature class: %s' % args.feature_class)
   c = FeatureCompiler(args.chrome_root, args.source_files, args.feature_class,
                       args.provider_class, args.out_root,
                       args.out_base_filename)

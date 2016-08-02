@@ -4,6 +4,7 @@
 
 {
   "omega": {
+    "channel": "dev",
     "contexts": ["web_page"],
     "min_manifest_version": 2
   }

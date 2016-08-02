@@ -8,6 +8,8 @@
     "dependencies": ["permission:alpha"]
   },
   "beta": {
+    "channel": "dev",
+    "contexts": ["blessed_extension"],
     "extension_types": ["extension", "platform_app"],
     "whitelist": ["aaa", "bbb"],
     "blacklist": ["zzz", "yyy"],
@@ -27,6 +29,7 @@
     "platforms": ["linux"]
   },
   "gamma.unparented": {
+    "channel": "dev",
     "blacklist": ["ddd"],
     "contexts": ["unblessed_extension"],
     "noparent": true
@@ -41,6 +44,7 @@
     "noparent": true
   }],
   "delta": {
+    "channel": "dev",
     "contexts": ["blessed_extension", "webui"],
     "matches": ["*://example.com/*"]
   },

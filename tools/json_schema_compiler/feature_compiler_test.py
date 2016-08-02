@@ -77,5 +77,64 @@ class FeatureCompilerTest(unittest.TestCase):
     f = self._parseFeature({'noparent': False})
     self._hasError(f, 'Illegal value: "False"')
 
+  def testApiFeaturesNeedContexts(self):
+    f = self._parseFeature({'dependencies': 'alpha',
+                            'extension_types': ['extension'],
+                            'channel': 'trunk'})
+    f.Validate('APIFeature')
+    self._hasError(f, 'APIFeatures must specify at least one context')
+
+  def testManifestFeaturesNeedExtensionTypes(self):
+    f = self._parseFeature({'dependencies': 'alpha', 'channel': 'beta'})
+    f.Validate('ManifestFeature')
+    self._hasError(f,
+                   'ManifestFeatures must specify at least one extension type')
+
+  def testManifestFeaturesCantHaveContexts(self):
+    f = self._parseFeature({'dependencies': 'alpha',
+                            'channel': 'beta',
+                            'extension_types': ['extension'],
+                            'contexts': ['blessed_extension']})
+    f.Validate('ManifestFeature')
+    self._hasError(f, 'ManifestFeatures do not support contexts')
+
+  def testPermissionFeaturesNeedExtensionTypes(self):
+    f = self._parseFeature({'dependencies': 'alpha', 'channel': 'beta'})
+    f.Validate('PermissionFeature')
+    self._hasError(
+        f, 'PermissionFeatures must specify at least one extension type')
+
+  def testPermissionFeaturesCantHaveContexts(self):
+    f = self._parseFeature({'dependencies': 'alpha',
+                            'channel': 'beta',
+                            'extension_types': ['extension'],
+                            'contexts': ['blessed_extension']})
+    f.Validate('PermissionFeature')
+    self._hasError(f, 'PermissionFeatures do not support contexts')
+
+  def testAllPermissionsNeedChannelOrDependencies(self):
+    api_feature = self._parseFeature({'contexts': ['blessed_extension']})
+    api_feature.Validate('APIFeature')
+    self._hasError(
+        api_feature, 'Features must specify either a channel or dependencies')
+    permission_feature = self._parseFeature({'extension_types': ['extension']})
+    permission_feature.Validate('PermissionFeature')
+    self._hasError(permission_feature,
+                   'Features must specify either a channel or dependencies')
+    manifest_feature = self._parseFeature({'extension_types': ['extension']})
+    manifest_feature.Validate('ManifestFeature')
+    self._hasError(manifest_feature,
+                   'Features must specify either a channel or dependencies')
+    channel_feature = self._parseFeature({'contexts': ['blessed_extension'],
+                                          'channel': 'trunk'})
+    channel_feature.Validate('APIFeature')
+    self.assertFalse(channel_feature.errors)
+    dependency_feature = self._parseFeature(
+                             {'contexts': ['blessed_extension'],
+                              'dependencies': ['alpha']})
+    dependency_feature.Validate('APIFeature')
+    self.assertFalse(dependency_feature.errors)
+
+
 if __name__ == '__main__':
   unittest.main()

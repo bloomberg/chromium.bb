@@ -111,6 +111,9 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
   {
     APIFeature* feature = GetAPIFeature("beta");
     FeatureComparator comparator("beta");
+    comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
+    comparator.channel.reset(
+        new version_info::Channel(version_info::Channel::DEV));
     comparator.extension_types = {Manifest::TYPE_EXTENSION,
                                   Manifest::TYPE_PLATFORM_APP};
     comparator.whitelist = {"aaa", "bbb"};
@@ -146,6 +149,8 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     FeatureComparator comparator("gamma.unparented");
     comparator.blacklist = {"ddd"};
     comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
+    comparator.channel.reset(
+        new version_info::Channel(version_info::Channel::DEV));
     comparator.CompareFeature(feature);
   }
   {
@@ -165,6 +170,8 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     FeatureComparator comparator("delta");
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT,
                            Feature::WEBUI_CONTEXT};
+    comparator.channel.reset(
+        new version_info::Channel(version_info::Channel::DEV));
     comparator.matches.AddPattern(
         URLPattern(URLPattern::SCHEME_ALL, "*://example.com/*"));
     comparator.CompareFeature(feature);
@@ -174,6 +181,8 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     APIFeature* feature = GetAPIFeature("omega");
     FeatureComparator comparator("omega");
     comparator.contexts = {Feature::WEB_PAGE_CONTEXT};
+    comparator.channel.reset(
+        new version_info::Channel(version_info::Channel::DEV));
     comparator.min_manifest_version = 2;
     comparator.CompareFeature(feature);
   }
