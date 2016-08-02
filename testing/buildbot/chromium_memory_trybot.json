@@ -125,7 +125,6 @@
     },
     "skia_unittests",
     "sql_unittests",
-    "sync_unit_tests",
     "ui_base_unittests",
     {
       "swarming": {
