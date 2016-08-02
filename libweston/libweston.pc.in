@@ -7,5 +7,5 @@ Name: libweston API
 Description: Header files for libweston compositors development
 Version: @WESTON_VERSION@
 Requires.private: wayland-server pixman-1 xkbcommon
-Cflags: -I${includedir}/libweston-@LIBWESTON_ABI_VERSION@
-Libs: -L${libdir} -lweston-@LIBWESTON_ABI_VERSION@
+Cflags: -I${includedir}/libweston-@LIBWESTON_MAJOR@
+Libs: -L${libdir} -lweston-@LIBWESTON_MAJOR@
