@@ -257,8 +257,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ExpectRemoveObserver();
 
   PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, false);
-  ON_CALL(*device_, GetNameForDisplay())
-      .WillByDefault(Return(base::UTF8ToUTF16(kTestRemoteDeviceName)));
+  ON_CALL(*device_, GetName())
+      .WillByDefault(Return(std::string(kTestRemoteDeviceName)));
 
   connection_finder.ExpectCreateConnection();
   connection_finder.DeviceAdded(adapter_.get(), device_.get());
@@ -273,8 +273,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ExpectRemoveObserver();
 
   PrepareDevice(kOtherUUID, kTestRemoteDeviceBluetoothAddress, false);
-  ON_CALL(*device_, GetNameForDisplay())
-      .WillByDefault(Return(base::UTF8ToUTF16("Other name")));
+  ON_CALL(*device_, GetName()).WillByDefault(Return(std::string("Other name")));
 
   EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);
   connection_finder.DeviceAdded(adapter_.get(), device_.get());

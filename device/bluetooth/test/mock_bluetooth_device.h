@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -27,7 +28,7 @@ class MockBluetoothDevice : public BluetoothDevice {
  public:
   MockBluetoothDevice(MockBluetoothAdapter* adapter,
                       uint32_t bluetooth_class,
-                      const std::string& name,
+                      const char* name,
                       const std::string& address,
                       bool paired,
                       bool connected);
@@ -117,7 +118,7 @@ class MockBluetoothDevice : public BluetoothDevice {
 
  private:
   uint32_t bluetooth_class_;
-  std::string name_;
+  base::Optional<std::string> name_;
   std::string address_;
   BluetoothDevice::UUIDList uuids_;
   bool connected_;

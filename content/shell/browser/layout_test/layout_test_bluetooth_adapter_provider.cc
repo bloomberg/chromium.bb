@@ -708,7 +708,7 @@ LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
 std::unique_ptr<NiceMockBluetoothDevice>
 LayoutTestBluetoothAdapterProvider::GetBaseDevice(
     MockBluetoothAdapter* adapter,
-    const std::string& device_name,
+    const char* device_name,
     device::BluetoothDevice::UUIDList uuids,
     const std::string& address) {
   std::unique_ptr<NiceMockBluetoothDevice> device(new NiceMockBluetoothDevice(
@@ -764,7 +764,7 @@ LayoutTestBluetoothAdapterProvider::GetGlucoseDevice(
 std::unique_ptr<NiceMockBluetoothDevice>
 LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
     device::MockBluetoothAdapter* adapter,
-    const std::string& device_name,
+    const char* device_name,
     BluetoothDevice::UUIDList uuids,
     const std::string& address) {
   std::unique_ptr<NiceMockBluetoothDevice> device(
@@ -790,7 +790,7 @@ std::unique_ptr<NiceMockBluetoothDevice>
 LayoutTestBluetoothAdapterProvider::GetUnconnectableDevice(
     MockBluetoothAdapter* adapter,
     BluetoothDevice::ConnectErrorCode error_code,
-    const std::string& device_name) {
+    const char* device_name) {
   BluetoothDevice::UUIDList uuids;
   uuids.push_back(BluetoothUUID(errorUUID(error_code)));
 

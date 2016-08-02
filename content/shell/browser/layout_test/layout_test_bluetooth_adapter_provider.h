@@ -394,7 +394,7 @@ class LayoutTestBluetoothAdapterProvider {
   //      BluetoothDevice::ConnectErrorCode::ERROR_UNSUPPORTED_DEVICE.
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetBaseDevice(device::MockBluetoothAdapter* adapter,
-                const std::string& device_name = "Base Device",
+                const char* device_name = "Base Device",
                 device::BluetoothDevice::UUIDList uuids =
                     device::BluetoothDevice::UUIDList(),
                 const std::string& address = "00:00:00:00:00:00");
@@ -433,7 +433,7 @@ class LayoutTestBluetoothAdapterProvider {
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetConnectableDevice(
       device::MockBluetoothAdapter* adapter,
-      const std::string& device_name = "Connectable Device",
+      const char* device_name = "Connectable Device",
       device::BluetoothDevice::UUIDList = device::BluetoothDevice::UUIDList(),
       const std::string& address = "00:00:00:00:00:00");
 
@@ -447,10 +447,9 @@ class LayoutTestBluetoothAdapterProvider {
   //  - CreateGATTConnection:
   //      - Run error callback with error_type
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetUnconnectableDevice(
-      device::MockBluetoothAdapter* adapter,
-      device::BluetoothDevice::ConnectErrorCode error_code,
-      const std::string& device_name = "Unconnectable Device");
+  GetUnconnectableDevice(device::MockBluetoothAdapter* adapter,
+                         device::BluetoothDevice::ConnectErrorCode error_code,
+                         const char* device_name = "Unconnectable Device");
 
   // |HeartRateDevice|
   // Inherits from |ConnectableDevice|(adapter, "Heart Rate Device", uuids)
