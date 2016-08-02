@@ -625,6 +625,9 @@ void SVGAnimationElement::startedActiveInterval()
     } else if (animationMode == PathAnimation) {
         m_animationValid = calcMode == CalcModePaced || !fastHasAttribute(SVGNames::keyPointsAttr) || (m_keyTimes.size() > 1 && m_keyTimes.size() == m_keyPoints.size());
     }
+
+    if (m_animationValid && (isAdditive() || isAccumulated()))
+        UseCounter::count(&document(), UseCounter::SVGSMILAdditiveAnimation);
 }
 
 void SVGAnimationElement::updateAnimation(float percent, unsigned repeatCount, SVGSMILElement* resultElement)

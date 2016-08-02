@@ -1285,6 +1285,7 @@ public:
         SingleOriginInTimingAllowOrigin = 1481,
         MultipleOriginsInTimingAllowOrigin = 1482,
         StarInTimingAllowOrigin = 1483,
+        SVGSMILAdditiveAnimation = 1484,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
