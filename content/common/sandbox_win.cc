@@ -796,12 +796,10 @@ sandbox::ResultCode StartSandboxedProcess(
     }
   }
 
-#if !defined(OFFICIAL_BUILD)
   // If stdout/stderr point to a Windows console, these calls will
   // have no effect. These calls can fail with SBOX_ERROR_BAD_PARAMS.
   policy->SetStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
   policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
-#endif
 
   if (!delegate->PreSpawnTarget(policy))
     return sandbox::SBOX_ERROR_DELEGATE_PRE_SPAWN;
