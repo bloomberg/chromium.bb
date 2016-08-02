@@ -20,7 +20,6 @@ namespace media {
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
     : public VideoCaptureDeviceFactory {
  public:
-  static bool RegisterVideoCaptureDeviceFactory(JNIEnv* env);
   static base::android::ScopedJavaLocalRef<jobject> createVideoCaptureAndroid(
       int id,
       jlong nativeVideoCaptureDeviceAndroid);

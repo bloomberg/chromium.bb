@@ -60,9 +60,5 @@ std::string MidiDeviceAndroid::GetDeviceVersion() {
                      env->GetStringUTFLength(ret.obj()));
 }
 
-bool MidiDeviceAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace midi
 }  // namespace media

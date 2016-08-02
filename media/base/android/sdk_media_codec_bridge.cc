@@ -344,11 +344,6 @@ std::string SdkMediaCodecBridge::GetName() {
 }
 
 // static
-bool SdkMediaCodecBridge::RegisterSdkMediaCodecBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec& codec) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return nullptr;

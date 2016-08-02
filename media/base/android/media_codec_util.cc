@@ -194,11 +194,6 @@ bool MediaCodecUtil::IsHLSURL(const GURL& url) {
 }
 
 // static
-bool MediaCodecUtil::RegisterMediaCodecUtil(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 bool MediaCodecUtil::IsVp8DecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp8MimeType);
 }

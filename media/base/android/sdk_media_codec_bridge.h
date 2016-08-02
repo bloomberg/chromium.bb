@@ -69,8 +69,6 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                                           size_t* capacity) override;
   std::string GetName() override;
 
-  static bool RegisterSdkMediaCodecBridge(JNIEnv* env);
-
  protected:
   SdkMediaCodecBridge(const std::string& mime,
                       bool is_secure,

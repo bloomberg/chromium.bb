@@ -19,12 +19,6 @@ using base::android::ScopedJavaLocalRef;
 namespace media {
 
 // static
-bool VideoCaptureDeviceFactoryAndroid::RegisterVideoCaptureDeviceFactory(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 ScopedJavaLocalRef<jobject>
 VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
     int id,

@@ -19,11 +19,6 @@ PhotoCapabilities::PhotoCapabilities(
 
 PhotoCapabilities::~PhotoCapabilities() {}
 
-// static
-bool PhotoCapabilities::RegisterPhotoCapabilities(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 int PhotoCapabilities::getMinIso() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinIso(AttachCurrentThread(), object_.obj());

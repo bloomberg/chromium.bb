@@ -25,8 +25,6 @@ class MidiOutputPortAndroid final {
   void Close();
   void Send(const std::vector<uint8_t>& data);
 
-  static bool Register(JNIEnv* env);
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> raw_port_;
 };

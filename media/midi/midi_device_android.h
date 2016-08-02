@@ -38,8 +38,6 @@ class MidiDeviceAndroid final {
     return env->IsSameObject(raw_device_.obj(), raw_device);
   }
 
-  static bool Register(JNIEnv* env);
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> raw_device_;
   ScopedVector<MidiInputPortAndroid> input_ports_;

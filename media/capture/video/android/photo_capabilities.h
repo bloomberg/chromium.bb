@@ -17,8 +17,6 @@ class PhotoCapabilities {
   explicit PhotoCapabilities(base::android::ScopedJavaLocalRef<jobject> object);
   ~PhotoCapabilities();
 
-  static bool RegisterPhotoCapabilities(JNIEnv* env);
-
   int getMinIso() const;
   int getMaxIso() const;
   int getCurrentIso() const;

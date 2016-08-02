@@ -38,9 +38,5 @@ void MidiOutputPortAndroid::Send(const std::vector<uint8_t>& data) {
   Java_MidiOutputPortAndroid_send(env, raw_port_.obj(), data_to_pass.obj());
 }
 
-bool MidiOutputPortAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace midi
 }  // namespace media

@@ -75,8 +75,6 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Test whether the path of a URL ends with ".m3u8".
   static bool IsHLSPath(const GURL& url);
 
-  static bool RegisterMediaCodecUtil(JNIEnv* env);
-
   // Indicates if the vp8 decoder or encoder is available on this device.
   static bool IsVp8DecoderAvailable();
   static bool IsVp8EncoderAvailable();
