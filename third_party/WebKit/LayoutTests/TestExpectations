@@ -12,6 +12,27 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 
 # ====== Oilpan-only failures until here ======
 
+crbug.com/262679 accessibility/computed-role.html [ NeedsRebaseline ]
+crbug.com/262679 accessibility/legend.html [ NeedsRebaseline ]
+crbug.com/262679 fast/block/basic/fieldset-stretch-to-legend.html [ NeedsRebaseline ]
+crbug.com/262679 fast/borders/fieldsetBorderRadius.html [ NeedsRebaseline ]
+crbug.com/262679 fast/css/fieldset-display-row.html [ NeedsRebaseline ]
+crbug.com/262679 fast/css/invalidation/fieldset-disabled.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/006.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/007.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/fieldset/fieldset-align.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/fieldset/fieldset-legend-padding-unclipped-fieldset-border.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/fieldset/fieldset-with-float.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/fieldset/float-before-fieldset.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/fieldset/validation-in-fieldset.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/focus-selection-input.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/focus-selection-textarea.html [ NeedsRebaseline ]
+crbug.com/262679 fast/forms/validity-property.html [ NeedsRebaseline ]
+crbug.com/262679 fast/text/whitespace/normal-after-nowrap-breaking.html [ NeedsRebaseline ]
+crbug.com/262679 fast/writing-mode/fieldsets.html [ NeedsRebaseline ]
+crbug.com/262679 paint/masks/fieldset-mask.html [ NeedsRebaseline ]
+crbug.com/262679 svg/custom/inline-svg-in-xhtml.xml [ NeedsRebaseline ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 

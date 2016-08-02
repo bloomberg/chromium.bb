@@ -1143,9 +1143,6 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
     BlockChildrenLayoutInfo layoutInfo(this, beforeEdge, afterEdge);
     MarginInfo& marginInfo = layoutInfo.marginInfo();
 
-    // Fieldsets need to find their legend and position it inside the border of the object.
-    // The legend then gets skipped during normal layout. The same is true for ruby text.
-    // It doesn't get included in the normal layout process but is instead skipped.
     LayoutObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
     LayoutBox* next = firstChildBox();
@@ -1158,7 +1155,7 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
         child->setMayNeedPaintInvalidation();
 
         if (childToExclude == child)
-            continue; // Skip this child, since it will be positioned by the specialized subclass (fieldsets and ruby runs).
+            continue; // Skip this child, since it will be positioned by the specialized subclass (ruby runs).
 
         updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *child);
 
@@ -2397,7 +2394,7 @@ void LayoutBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild
     // that isn't sufficient for us, and can only cause trouble at this point.
     LayoutBox::addChild(newChild, beforeChild);
 
-    if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isLayoutBlock()) {
+    if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isLayoutBlock() && !parent()->createsAnonymousWrapper()) {
         toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
         // |this| may be dead now.
     }
@@ -3521,11 +3518,6 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const Compute
     // Ruby elements manage child insertion in a special way, and would mess up insertion of the
     // flow thread. The flow thread needs to be a direct child of the multicol block (|this|).
     if (isRuby())
-        return;
-
-    // Fieldsets look for a legend special child (layoutSpecialExcludedChild()). We currently only
-    // support one special child per layout object, and the flow thread would make for a second one.
-    if (isFieldset())
         return;
 
     // Form controls are replaced content, and are therefore not supposed to support multicol.

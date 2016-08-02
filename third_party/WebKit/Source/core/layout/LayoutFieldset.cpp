@@ -25,6 +25,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/paint/FieldsetPainter.h"
 
@@ -34,27 +35,79 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+void setInnerBlockPadding(bool isHorizontalWritingMode, const LayoutObject* innerBlock, const LayoutUnit& padding)
+{
+    if (isHorizontalWritingMode)
+        innerBlock->mutableStyleRef().setPaddingTop(Length(padding, Fixed));
+    else
+        innerBlock->mutableStyleRef().setPaddingLeft(Length(padding, Fixed));
+}
+
+void resetInnerBlockPadding(bool isHorizontalWritingMode, const LayoutObject* innerBlock)
+{
+    if (isHorizontalWritingMode)
+        innerBlock->mutableStyleRef().setPaddingTop(Length(0, Fixed));
+    else
+        innerBlock->mutableStyleRef().setPaddingLeft(Length(0, Fixed));
+}
+
+} // namespace
+
 LayoutFieldset::LayoutFieldset(Element* element)
-    : LayoutBlockFlow(element)
+    : LayoutFlexibleBox(element)
+    , m_innerBlock(nullptr)
 {
 }
 
-void LayoutFieldset::computePreferredLogicalWidths()
+int LayoutFieldset::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const
 {
-    LayoutBlockFlow::computePreferredLogicalWidths();
+    return LayoutBlock::baselinePosition(baseline, firstLine, direction, position);
+}
+
+void LayoutFieldset::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+{
+    if (m_innerBlock)
+        computeChildPreferredLogicalWidths(*m_innerBlock, minLogicalWidth, maxLogicalWidth);
+
     if (LayoutBox* legend = findInFlowLegend()) {
-        int legendMinWidth = legend->minPreferredLogicalWidth();
+        LayoutUnit minPreferredLegendLogicalWidth;
+        LayoutUnit maxPreferredLegendLogicalWidth;
+        computeChildPreferredLogicalWidths(*legend, minPreferredLegendLogicalWidth, maxPreferredLegendLogicalWidth);
+        LayoutUnit margin = marginIntrinsicLogicalWidthForChild(*legend);
+        minPreferredLegendLogicalWidth += margin;
+        maxPreferredLegendLogicalWidth += margin;
+        minLogicalWidth = std::max(minLogicalWidth, minPreferredLegendLogicalWidth);
+        maxLogicalWidth = std::max(maxLogicalWidth, maxPreferredLegendLogicalWidth);
+    }
+    maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
-        Length legendMarginLeft = legend->style()->marginLeft();
-        Length legendMarginRight = legend->style()->marginRight();
+    // Due to negative margins, it is possible that we calculated a negative intrinsic width. Make sure that we
+    // never return a negative width.
+    minLogicalWidth = std::max(LayoutUnit(), minLogicalWidth);
+    maxLogicalWidth = std::max(LayoutUnit(), maxLogicalWidth);
 
-        if (legendMarginLeft.isFixed())
-            legendMinWidth += legendMarginLeft.value();
+    LayoutUnit scrollbarWidth(scrollbarLogicalWidth());
+    maxLogicalWidth += scrollbarWidth;
+    minLogicalWidth += scrollbarWidth;
+}
 
-        if (legendMarginRight.isFixed())
-            legendMinWidth += legendMarginRight.value();
+void LayoutFieldset::setLogicalLeftForChild(LayoutBox& child, LayoutUnit logicalLeft)
+{
+    if (isHorizontalWritingMode()) {
+        child.setX(logicalLeft);
+    } else {
+        child.setY(logicalLeft);
+    }
+}
 
-        m_minPreferredLogicalWidth = max(m_minPreferredLogicalWidth, legendMinWidth + borderAndPaddingWidth());
+void LayoutFieldset::setLogicalTopForChild(LayoutBox& child, LayoutUnit logicalTop)
+{
+    if (isHorizontalWritingMode()) {
+        child.setY(logicalTop);
+    } else {
+        child.setX(logicalTop);
     }
 }
 
@@ -106,6 +159,7 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
 
         LayoutUnit legendLogicalTop;
         LayoutUnit collapsedLegendExtent;
+        LayoutUnit innerBlockPadding;
         // FIXME: We need to account for the legend's margin before too.
         if (fieldsetBorderBefore > legendLogicalHeight) {
             // The <legend> is smaller than the associated fieldset before border
@@ -114,10 +168,13 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
             // Firefox completely ignores the margins in this case which seems wrong.
             legendLogicalTop = (fieldsetBorderBefore - legendLogicalHeight) / 2;
             collapsedLegendExtent = max<LayoutUnit>(fieldsetBorderBefore, legendLogicalTop + legendLogicalHeight + marginAfterForChild(*legend));
+            innerBlockPadding = marginAfterForChild(*legend) ? marginAfterForChild(*legend) - legendLogicalTop : LayoutUnit();
         } else {
             collapsedLegendExtent = legendLogicalHeight + marginAfterForChild(*legend);
+            innerBlockPadding = legendLogicalHeight - borderAfter() + marginAfterForChild(*legend);
         }
 
+        setInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock, innerBlockPadding);
         setLogicalTopForChild(*legend, legendLogicalTop);
         setLogicalHeight(paddingBefore() + collapsedLegendExtent);
 
@@ -151,6 +208,73 @@ void LayoutFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, co
 void LayoutFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     FieldsetPainter(*this).paintMask(paintInfo, paintOffset);
+}
+
+void LayoutFieldset::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
+{
+    LayoutFlexibleBox::styleDidChange(diff, oldStyle);
+    adjustInnerStyle();
+}
+
+void LayoutFieldset::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
+{
+    if (!m_innerBlock)
+        createInnerBlock();
+
+    if (isHTMLLegendElement(newChild->node())) {
+        // Let legend block to be the 2nd for correct layout positioning.
+        newChild->mutableStyle()->setOrder(2);
+        LayoutFlexibleBox::addChild(newChild, m_innerBlock);
+    } else {
+        m_innerBlock->addChild(newChild, beforeChild);
+        if (AXObjectCache* cache = document().existingAXObjectCache())
+            cache->childrenChanged(this);
+    }
+}
+
+void LayoutFieldset::adjustInnerStyle()
+{
+    if (!m_innerBlock)
+        createInnerBlock();
+
+    ComputedStyle& innerStyle = m_innerBlock->mutableStyleRef();
+    innerStyle.setFlexShrink(1.0f);
+    innerStyle.setFlexGrow(1.0f);
+    // min-width: 0; is needed for correct shrinking.
+    innerStyle.setMinWidth(Length(0, Fixed));
+    innerStyle.setFlexDirection(style()->flexDirection());
+    innerStyle.setJustifyContent(style()->justifyContent());
+    innerStyle.setFlexWrap(style()->flexWrap());
+    innerStyle.setAlignItems(style()->alignItems());
+    innerStyle.setAlignContent(style()->alignContent());
+    // Let anonymous block to be the 1st for correct layout positioning.
+    innerStyle.setOrder(1);
+}
+
+void LayoutFieldset::createInnerBlock()
+{
+    if (m_innerBlock) {
+        DCHECK(firstChild() == m_innerBlock);
+        return;
+    }
+    m_innerBlock = createAnonymousBlock(style()->display());
+    LayoutFlexibleBox::addChild(m_innerBlock);
+}
+
+void LayoutFieldset::removeChild(LayoutObject* oldChild)
+{
+    if (isHTMLLegendElement(oldChild->node())) {
+        LayoutFlexibleBox::removeChild(oldChild);
+        if (m_innerBlock)
+            resetInnerBlockPadding(isHorizontalWritingMode(), m_innerBlock);
+    } else if (oldChild == m_innerBlock) {
+        LayoutFlexibleBox::removeChild(oldChild);
+        m_innerBlock = nullptr;
+    } else if (oldChild->parent() == this) {
+        LayoutFlexibleBox::removeChild(oldChild);
+    } else if (m_innerBlock) {
+        m_innerBlock->removeChild(oldChild);
+    }
 }
 
 } // namespace blink
