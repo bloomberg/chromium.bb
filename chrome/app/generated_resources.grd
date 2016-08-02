@@ -5505,6 +5505,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
+      <!-- Autofill credit card signin promo -->
+      <if expr="is_android">
+        <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME" desc="Title for the flag to enable autofill credit card signin promo">
+          Enable Autofill Credit Card Signin Promo
+        </message>
+        <message name="IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION" desc="Description for the flag to enable autofill credit card signin promo">
+          Enable showing the credit card signin promo inside the Autofill dropdown.
+        </message>
+      </if>
       <message name="IDS_FLAGS_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
         TCP Fast Open
       </message>
@@ -13276,7 +13285,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
         </message>
         <message name="IDS_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove non-owner user.">
-          All files and local data associated with this user will be permanently deleted once this user is removed. 
+          All files and local data associated with this user will be permanently deleted once this user is removed.
         </message>
         <if expr="not chromeos">
           <message name="IDS_USER_MANAGER_GO_GUEST_PROFILES_LOCKED_ERROR" desc="Error message displayed when trying to browser as guest while all profiles are locked.">
@@ -15070,7 +15079,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Show offline pages on the New Tab page
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable offline page suggestions on the New Tab page." translateable="false">
-        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that were captured offline during browsing (see #offlining-recent-pages) 
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that were captured offline during browsing (see #offlining-recent-pages)
       </message>
     </if>
 

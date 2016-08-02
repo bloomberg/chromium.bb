@@ -79,6 +79,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #else
 #include "ui/message_center/message_center_switches.h"
 #endif
@@ -2043,6 +2044,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-web-payments", IDS_FLAGS_ENABLE_WEB_PAYMENTS_NAME,
      IDS_FLAGS_ENABLE_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebPayments)},
+    {"enable-credit-card-signin-promo",
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME,
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardSigninPromo)},
 #endif  // defined(OS_ANDROID)
         // NOTE: Adding new command-line switches requires adding corresponding
         // entries to enum "LoginCustomFlags" in histograms.xml. See note in
