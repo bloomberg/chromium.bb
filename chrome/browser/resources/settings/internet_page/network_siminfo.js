@@ -69,7 +69,7 @@ Polymer({
   },
 
   pukRequiredChanged_: function() {
-    if (this.$.unlockPukDialog.opened) {
+    if (this.$.unlockPukDialog.open) {
       if (this.pukRequired)
         this.$.unlockPuk.focus();
       else
@@ -83,15 +83,15 @@ Polymer({
     // If the PUK was activated while attempting to enter or change a pin,
     // close the dialog and open the unlock PUK dialog.
     var showUnlockPuk = false;
-    if (this.$.enterPinDialog.opened) {
+    if (this.$.enterPinDialog.open) {
       this.$.enterPinDialog.close();
       showUnlockPuk = true;
     }
-    if (this.$.changePinDialog.opened) {
+    if (this.$.changePinDialog.open) {
       this.$.changePinDialog.close();
       showUnlockPuk = true;
     }
-    if (this.$.unlockPinDialog.opened) {
+    if (this.$.unlockPinDialog.open) {
       this.$.unlockPinDialog.close();
       showUnlockPuk = true;
     }
@@ -99,8 +99,7 @@ Polymer({
       return;
 
     this.error = ErrorType.NONE;
-    this.$.unlockPukDialog.open();
-    this.$.unlockPuk.focus();
+    this.$.unlockPukDialog.showModal();
   },
 
   /**
@@ -113,17 +112,8 @@ Polymer({
       return;
     this.sendSimLockEnabled_ = event.target.checked;
     this.error = ErrorType.NONE;
-    this.$.enterPinDialog.open();
-  },
-
-  /**
-   * Focuses the correct element when the dialog is opened.
-   * @param {Event} event
-   * @private
-   */
-  onEnterPinDialogOpened_: function(event) {
+    this.$.enterPinDialog.showModal();
     this.$.enterPin.value = '';
-    this.$.enterPin.focus();
   },
 
   /**
@@ -147,6 +137,7 @@ Polymer({
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
+        this.$.enterPin.$.input.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.enterPinDialog.close();
@@ -163,19 +154,10 @@ Polymer({
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
     this.error = ErrorType.NONE;
-    this.$.changePinDialog.open();
-  },
-
-  /**
-   * Focuses the correct element when the dialog is opened.
-   * @param {Event} event
-   * @private
-   */
-  onChangePinDialogOpened_: function(event) {
+    this.$.changePinDialog.showModal();
     this.$.changePinOld.value = '';
     this.$.changePinNew1.value = '';
     this.$.changePinNew2.value = '';
-    this.$.changePinOld.focus();
   },
 
   /**
@@ -200,6 +182,7 @@ Polymer({
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
+        this.$.changePinOld.$.input.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.changePinDialog.close();
@@ -214,17 +197,8 @@ Polymer({
    */
   onUnlockPinTap_: function(event) {
     this.error = ErrorType.NONE;
-    this.$.unlockPinDialog.open();
-  },
-
-  /**
-   * Focuses the correct element when the dialog is opened.
-   * @param {Event} event
-   * @private
-   */
-  onUnlockPinDialogOpened_: function(event) {
+    this.$.unlockPinDialog.showModal();
     this.$.unlockPin.value = '';
-    this.$.unlockPin.focus();
   },
 
   /**
@@ -243,6 +217,7 @@ Polymer({
     this.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
+        this.$.unlockPin.$.input.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.unlockPinDialog.close();
@@ -257,19 +232,10 @@ Polymer({
    */
   unlockPuk_: function(event) {
     this.error = ErrorType.NONE;
-    this.$.unlockPukDialog.open();
-  },
-
-  /**
-   * Focuses the correct element when the dialog is opened.
-   * @param {Event} event
-   * @private
-   */
-  onUnlockPukDialogOpened_: function(event) {
+    this.$.unlockPukDialog.showModal();
     this.$.unlockPuk.value = '';
     this.$.unlockPin1.value = '';
     this.$.unlockPin2.value = '';
-    this.$.unlockPuk.focus();
   },
 
   /**
@@ -292,6 +258,7 @@ Polymer({
     this.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PUK;
+        this.$.unlockPuk.$.input.select();
       } else {
         this.error = ErrorType.NONE;
         this.$.unlockPukDialog.close();
