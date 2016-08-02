@@ -743,6 +743,23 @@ Status ExecuteGetLog(Session* session,
   if (!params.GetString("type", &log_type)) {
     return Status(kUnknownError, "missing or invalid 'type'");
   }
+
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  base::ListValue args;
+  std::unique_ptr<base::Value> result;
+  status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                  "function(s) { return 1; }", args, &result);
+  if (status.IsError())
+    return status;
+
+  int response;
+  if (!result->GetAsInteger(&response) || response != 1)
+    return Status(kUnknownError, "unexpected response from browser");
+
   std::vector<WebDriverLog*> logs = session->GetAllLogs();
   for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
        log != logs.end();

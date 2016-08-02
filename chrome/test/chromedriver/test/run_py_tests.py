@@ -824,6 +824,22 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     else:
       self.assertEqual(2, len(logs))
 
+  def testPendingConsoleLog(self):
+    new_logs = [""]
+    def GetPendingLogs(driver):
+      new_logs[0] = driver.GetLog('browser')
+      return new_logs[0]
+
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/pending_console_log.html'))
+    logs = self._driver.GetLog('browser')
+    self.assertEqual('console-api', logs[0]['source'])
+    self.assertTrue('InitialError' in logs[0]['message'])
+
+    self.WaitForCondition(lambda: len(GetPendingLogs(self._driver)) > 0 , 11)
+    self.assertEqual('console-api', new_logs[0][0]['source'])
+    self.assertTrue('RepeatedError' in new_logs[0][0]['message'])
+
   def testAutoReporting(self):
     self.assertFalse(self._driver.IsAutoReporting())
     self._driver.SetAutoReporting(True)
