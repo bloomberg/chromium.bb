@@ -7,22 +7,60 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/test/test_views.h"
+#include "ui/views/test/widget_test.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
+enum ScrollBarOrientation { HORIZONTAL, VERTICAL };
+
 namespace views {
+namespace test {
+
+class ScrollViewTestApi {
+ public:
+  explicit ScrollViewTestApi(ScrollView* scroll_view)
+      : scroll_view_(scroll_view) {}
+
+  BaseScrollBar* GetBaseScrollBar(ScrollBarOrientation orientation) {
+    ScrollBar* scroll_bar = orientation == VERTICAL ? scroll_view_->vert_sb_
+                                                    : scroll_view_->horiz_sb_;
+    if (scroll_bar->GetClassName() == NativeScrollBar::kViewClassName) {
+      return static_cast<NativeScrollBarViews*>(
+          static_cast<NativeScrollBar*>(scroll_bar)->native_wrapper_);
+    }
+    return static_cast<BaseScrollBar*>(scroll_bar);
+  }
+
+  const base::Timer& GetScrollBarTimer(ScrollBarOrientation orientation) {
+    return GetBaseScrollBar(orientation)->repeater_.timer_for_testing();
+  }
+
+  BaseScrollBarThumb* GetScrollBarThumb(ScrollBarOrientation orientation) {
+    return GetBaseScrollBar(orientation)->thumb_;
+  }
+
+  View* corner_view() { return scroll_view_->corner_view_; }
+
+ private:
+  ScrollView* scroll_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollViewTestApi);
+};
+
+}  // namespace test
 
 namespace {
 
 const int kWidth = 100;
 const int kMinHeight = 50;
 const int kMaxHeight = 100;
-
-enum ScrollBarOrientation { HORIZONTAL, VERTICAL };
 
 // View implementation that allows setting the preferred size.
 class CustomView : public View {
@@ -67,7 +105,65 @@ void CheckScrollbarVisibility(const ScrollView& scroll_view,
   }
 }
 
+ui::MouseEvent TestLeftMouseAt(const gfx::Point& location, ui::EventType type) {
+  return ui::MouseEvent(type, location, location, base::TimeTicks(),
+                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+}
+
 }  // namespace
+
+using test::ScrollViewTestApi;
+
+// Test harness that includes a Widget to help test ui::Event handling.
+class WidgetScrollViewTest : public test::WidgetTest {
+ public:
+  static const int kDefaultHeight = 100;
+  static const int kDefaultWidth = 100;
+
+  WidgetScrollViewTest() {
+#if defined(OS_MACOSX)
+    // Disable scrollbar hiding (i.e. disable overlay scrollbars) by default.
+    scroller_style_.reset(new ui::test::ScopedPreferredScrollerStyle(false));
+#endif
+  }
+
+  // Adds a ScrollView with a contents view of the given |size| and does layout.
+  ScrollView* AddScrollViewWithContentSize(const gfx::Size& contents_size) {
+    const gfx::Rect default_bounds(50, 50, kDefaultWidth, kDefaultHeight);
+    widget_ = CreateTopLevelFramelessPlatformWidget();
+
+    ScrollView* scroll_view = new ScrollView();
+    View* contents = new View;
+    scroll_view->SetContents(contents);
+    contents->SetSize(contents_size);
+
+    widget_->SetBounds(default_bounds);
+    widget_->Show();
+
+    widget_->SetContentsView(scroll_view);
+    scroll_view->Layout();
+    return scroll_view;
+  }
+
+  // testing::Test:
+  void TearDown() override {
+    if (widget_)
+      widget_->CloseNow();
+    WidgetTest::TearDown();
+  }
+
+ private:
+  Widget* widget_ = nullptr;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetScrollViewTest);
+};
+
+const int WidgetScrollViewTest::kDefaultHeight;
+const int WidgetScrollViewTest::kDefaultWidth;
 
 // Verifies the viewport is sized to fit the available space.
 TEST(ScrollViewTest, ViewportSizedToFit) {
@@ -436,7 +532,7 @@ TEST(ScrollViewTest, CornerViewVisibility) {
   View* contents = new View;
   scroll_view.SetContents(contents);
   scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
-  View* corner_view = scroll_view.corner_view_;
+  View* corner_view = ScrollViewTestApi(&scroll_view).corner_view();
 
   // Corner view should be visible when both scrollbars are visible.
   contents->SetBounds(0, 0, 200, 200);
@@ -531,5 +627,38 @@ TEST(ScrollViewTest, CocoaOverlayScrollBars) {
   EXPECT_NE(0, scroll_view.GetScrollBarHeight());
 }
 #endif
+
+// Test scrolling behavior when clicking on the scroll track.
+TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
+  // Set up with a vertical scroller.
+  ScrollView* scroll_view =
+      AddScrollViewWithContentSize(gfx::Size(10, kDefaultHeight * 5));
+  ScrollViewTestApi test_api(scroll_view);
+  BaseScrollBar* scroll_bar = test_api.GetBaseScrollBar(VERTICAL);
+  View* thumb = test_api.GetScrollBarThumb(VERTICAL);
+
+  // Click in the middle of the track, ensuring it's below the thumb.
+  const gfx::Point location = scroll_bar->bounds().CenterPoint();
+  EXPECT_GT(location.y(), thumb->bounds().bottom());
+  ui::MouseEvent press(TestLeftMouseAt(location, ui::ET_MOUSE_PRESSED));
+  ui::MouseEvent release(TestLeftMouseAt(location, ui::ET_MOUSE_RELEASED));
+
+  const base::Timer& timer = test_api.GetScrollBarTimer(VERTICAL);
+  EXPECT_FALSE(timer.IsRunning());
+
+  EXPECT_EQ(0, scroll_view->GetVisibleRect().y());
+  scroll_bar->OnMouseEvent(&press);
+
+  // Clicking the scroll track should scroll one "page".
+  EXPECT_EQ(kDefaultHeight, scroll_view->GetVisibleRect().y());
+
+  // While the mouse is pressed, timer should trigger more scroll events.
+  EXPECT_TRUE(timer.IsRunning());
+
+  // Upon release timer should stop (and scroll position should remain).
+  scroll_bar->OnMouseEvent(&release);
+  EXPECT_FALSE(timer.IsRunning());
+  EXPECT_EQ(kDefaultHeight, scroll_view->GetVisibleRect().y());
+}
 
 }  // namespace views

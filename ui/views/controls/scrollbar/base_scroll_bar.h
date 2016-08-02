@@ -15,6 +15,9 @@
 #include "ui/views/repeat_controller.h"
 
 namespace views {
+namespace test {
+class ScrollViewTestApi;
+}
 
 class BaseScrollBarThumb;
 class MenuRunner;
@@ -114,6 +117,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual int GetScrollIncrement(bool is_page, bool is_positive);
 
  private:
+  friend class test::ScrollViewTestApi;
+
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ScrollBarFitsToBottom);
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ThumbFullLengthOfTrack);
   int GetThumbSizeForTest();

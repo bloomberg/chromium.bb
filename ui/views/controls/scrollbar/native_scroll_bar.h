@@ -18,6 +18,9 @@ class NativeTheme;
 }
 
 namespace views {
+namespace test {
+class ScrollViewTestApi;
+}
 
 class NativeScrollBarWrapper;
 
@@ -38,6 +41,7 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
 
  private:
   friend class NativeScrollBarTest;
+  friend class test::ScrollViewTestApi;
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
 
   // Overridden from View.

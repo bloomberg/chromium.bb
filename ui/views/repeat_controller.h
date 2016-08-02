@@ -33,6 +33,8 @@ class RepeatController {
   // Stop repeating.
   void Stop();
 
+  const base::OneShotTimer& timer_for_testing() const { return timer_; }
+
  private:
   // Called when the timer expires.
   void Run();

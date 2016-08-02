@@ -290,6 +290,7 @@ bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {
 
 void CocoaScrollBar::OnMouseReleased(const ui::MouseEvent& event) {
   ResetOverlayScrollbar();
+  BaseScrollBar::OnMouseReleased(event);
 }
 
 void CocoaScrollBar::OnMouseEntered(const ui::MouseEvent& event) {

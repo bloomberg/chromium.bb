@@ -13,6 +13,9 @@
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 
 namespace views {
+namespace test {
+class ScrollViewTestApi;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -94,7 +97,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
                          bool is_positive) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ScrollViewTest, CornerViewVisibility);
+  friend class test::ScrollViewTestApi;
+
   class Viewport;
 
   // Used internally by SetHeader() and SetContents() to reset the view.  Sets
