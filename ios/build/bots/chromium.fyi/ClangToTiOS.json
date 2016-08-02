@@ -17,6 +17,7 @@
   "gn_args": [
     "is_component_build=false",
     "ios_enable_code_signing=false",
+    "llvm_force_head_revision=true",
     "target_cpu=\"arm\"",
     "target_os=\"ios\""
   ],
