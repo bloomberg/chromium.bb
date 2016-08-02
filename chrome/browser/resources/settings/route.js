@@ -296,7 +296,15 @@ cr.define('settings', function() {
    * function settings.navigateTo.
    * @private {!settings.Route}
    */
-  var currentRoute_ = getRouteForPath(window.location.pathname) || Route.BASIC;
+  var currentRoute_ = (function() {
+    var route = getRouteForPath(window.location.pathname);
+    if (route)
+      return route;
+
+    // Reset the URL path to '/' if the user navigates to a nonexistent URL.
+    window.history.replaceState(undefined, '', Route.BASIC.path);
+    return Route.BASIC;
+  })();
 
   /**
    * Helper function to set the current route and notify all observers.
@@ -320,7 +328,7 @@ cr.define('settings', function() {
     if (assert(route) == currentRoute_)
       return;
 
-    window.history.pushState(undefined, document.title, route.path);
+    window.history.pushState(undefined, '', route.path);
     setCurrentRoute(route);
   };
 

@@ -659,3 +659,26 @@ CrSettingsRouteTest.prototype = {
 TEST_F('CrSettingsRouteTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {SettingsPageBrowserTest}
+*/
+function CrSettingsNonExistentRouteTest() {}
+
+CrSettingsNonExistentRouteTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/non/existent/route',
+};
+
+TEST_F('CrSettingsNonExistentRouteTest', 'All', function() {
+  suite('NonExistentRoutes', function() {
+    test('redirect to basic', function() {
+      assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+      assertEquals('/', location.pathname);
+    });
+  });
+  mocha.run();
+});
