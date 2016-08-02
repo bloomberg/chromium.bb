@@ -59,28 +59,22 @@ class PriorityQueue::SequenceAndSortKey {
 
 PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
     : auto_lock_(outer_queue->container_lock_), outer_queue_(outer_queue) {
-  DCHECK(CalledOnValidThread());
 }
 
-PriorityQueue::Transaction::~Transaction() {
-  DCHECK(CalledOnValidThread());
-}
+PriorityQueue::Transaction::~Transaction() = default;
 
 void PriorityQueue::Transaction::Push(
     scoped_refptr<Sequence> sequence,
     const SequenceSortKey& sequence_sort_key) {
-  DCHECK(CalledOnValidThread());
   outer_queue_->container_.emplace(std::move(sequence), sequence_sort_key);
 }
 
 const SequenceSortKey& PriorityQueue::Transaction::PeekSortKey() const {
-  DCHECK(CalledOnValidThread());
   DCHECK(!IsEmpty());
   return outer_queue_->container_.top().sort_key();
 }
 
 scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
-  DCHECK(CalledOnValidThread());
   DCHECK(!IsEmpty());
 
   // The const_cast on top() is okay since the SequenceAndSortKey is

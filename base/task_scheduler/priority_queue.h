@@ -15,7 +15,6 @@
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
-#include "base/threading/non_thread_safe.h"
 
 namespace base {
 namespace internal {
@@ -32,7 +31,7 @@ class BASE_EXPORT PriorityQueue {
   // priority. If the Peek and the Pop are done through the same Transaction, it
   // is guaranteed that the PriorityQueue hasn't changed between the 2
   // operations.
-  class BASE_EXPORT Transaction : public NonThreadSafe {
+  class BASE_EXPORT Transaction {
    public:
     ~Transaction();
 
