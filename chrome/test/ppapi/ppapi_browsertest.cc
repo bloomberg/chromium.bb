@@ -1161,7 +1161,13 @@ TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor1, RUN_COMPOSITOR_SUBTESTS_1)
 #endif
 TEST_PPAPI_NACL(MAYBE_MediaStreamAudioTrack)
 
-TEST_PPAPI_NACL(MediaStreamVideoTrack)
+#if defined(OS_WIN)
+// Flaky on Windows (crbug.com/633519)
+#define MAYBE_MediaStreamVideoTrack DISABLED_MediaStreamVideoTrack
+#else
+#define MAYBE_MediaStreamVideoTrack MediaStreamVideoTrack
+#endif
+TEST_PPAPI_NACL(MAYBE_MediaStreamVideoTrack)
 
 TEST_PPAPI_NACL(MouseCursor)
 
