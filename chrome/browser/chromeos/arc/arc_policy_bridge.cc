@@ -203,6 +203,9 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   // Keep them sorted by the ARC policy names.
   MapBoolToBool("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
                 true, &filtered_policies);
+  MapBoolToBool("debuggingFeaturesDisabled",
+                policy::key::kDeveloperToolsDisabled, policy_map, false,
+                &filtered_policies);
   MapBoolToBool("screenCaptureDisabled", policy::key::kDisableScreenshots,
                 policy_map, false, &filtered_policies);
   MapIntToBool("shareLocationDisabled", policy::key::kDefaultGeolocationSetting,

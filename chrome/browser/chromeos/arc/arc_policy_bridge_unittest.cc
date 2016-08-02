@@ -293,6 +293,15 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, DeveloperToolsDisabledTest) {
+  policy_map().Set(policy::key::kDeveloperToolsDisabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"debuggingFeaturesDisabled\":true}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
