@@ -82,13 +82,6 @@ size_t LoginDatabaseIOSTest::GetKeychainSize() {
 }
 
 TEST_F(LoginDatabaseIOSTest, KeychainStorage) {
-#if TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/619982): Broken by iOS10.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    return;
-  }
-#endif
-
   base::string16 test_passwords[] = {
       base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar"),
       base::WideToUTF16(L"\u043F\u0430\u0440\u043E\u043B\u044C"),
@@ -108,13 +101,6 @@ TEST_F(LoginDatabaseIOSTest, KeychainStorage) {
 }
 
 TEST_F(LoginDatabaseIOSTest, UpdateLogin) {
-#if TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/619982): Broken by iOS10.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    return;
-  }
-#endif
-
   PasswordForm form;
   form.origin = GURL("http://0.com");
   form.signon_realm = "http://www.example.com";
@@ -139,13 +125,6 @@ TEST_F(LoginDatabaseIOSTest, UpdateLogin) {
 }
 
 TEST_F(LoginDatabaseIOSTest, RemoveLogin) {
-#if TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/619982): Broken by iOS10.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    return;
-  }
-#endif
-
   PasswordForm form;
   form.signon_realm = "www.example.com";
   form.action = GURL("www.example.com/action");
@@ -164,13 +143,6 @@ TEST_F(LoginDatabaseIOSTest, RemoveLogin) {
 }
 
 TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
-#if TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/619982): Broken by iOS10.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    return;
-  }
-#endif
-
   PasswordForm forms[3];
   forms[0].origin = GURL("http://0.com");
   forms[0].signon_realm = "http://www.example.com";
