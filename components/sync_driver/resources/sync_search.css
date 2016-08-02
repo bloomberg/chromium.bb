@@ -22,7 +22,7 @@
 }
 
 #sync-results-container {
-  display: -webkit-box;
+  display: flex;
   /* Should be > #sync-page's min-height. */
   /* TODO(akalin): Find a less hacky way to do this. */
   height: 750px;
@@ -51,7 +51,7 @@
 }
 
 #sync-result-details-container {
-  -webkit-box-flex: 1;
+  flex: 1;
   height: 100%;
   overflow: auto;
   /* TODO(akalin): Figure out why this is needed, even with box-flex: 1. */

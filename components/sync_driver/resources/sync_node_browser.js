@@ -205,7 +205,21 @@
 
   document.addEventListener('DOMContentLoaded', function(e) {
     $('node-browser-refresh-button').addEventListener('click', refresh);
-    cr.ui.decorate('#sync-node-splitter', cr.ui.Splitter);
+    var Splitter = cr.ui.Splitter;
+    var customSplitter = cr.ui.define('div');
+
+    customSplitter.prototype = {
+      __proto__: Splitter.prototype,
+
+      handleSplitterDragEnd: function(e) {
+        Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
+        var treeElement = $("sync-node-tree-container");
+        var newWidth = parseFloat(treeElement.style.width);
+        treeElement.style.minWidth = Math.max(newWidth, 50) + "px";
+      }
+    };
+
+    customSplitter.decorate($("sync-node-splitter"));
 
     // Automatically trigger a refresh the first time this tab is selected.
     $('sync-browser-tab').addEventListener('selectedChange', function f(e) {

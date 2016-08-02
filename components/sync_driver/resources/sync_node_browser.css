@@ -11,7 +11,7 @@
 }
 
 #sync-node-browser-container {
-  display: -webkit-box;
+  display: flex;
   height: 750px;
 }
 
@@ -21,7 +21,7 @@
   height: 100%;
   /* min-width and max-width are used by the split pane. */
   max-width: 50%;
-  min-width: 50px;
+  min-width: 200px;
   overflow: auto;
   width: 200px;
 }
@@ -40,7 +40,7 @@
 #sync-node-splitter {
   background-color: rgb(235, 239, 249);
   cursor: col-resize;
-  width: 5px;
+  min-width: 5px;
 <if expr="is_win">
   /* TODO(akalin): Make the BMM also use this style. */
   cursor: e-resize;
@@ -48,14 +48,14 @@
 }
 
 #sync-node-details-container {
-  -webkit-box-flex: 1;
+  flex: 1;
   height: 100%;
   overflow: auto;
   visibility: hidden;  /* Element is invisible until first refresh. */
 }
 
 #node-details {
-  width: 100%;
+  flex-grow: 1;
 }
 
 #node-details td {
