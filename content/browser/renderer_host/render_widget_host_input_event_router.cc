@@ -210,9 +210,16 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         touch_target_.delta = transformed_point - original_point;
         touchscreen_gesture_target_queue_.push_back(touch_target_);
 
-        if (!touch_target_.target)
+        if (!touch_target_.target) {
           return;
+        } else if (touch_target_.target ==
+                   bubbling_gesture_scroll_target_.target) {
+          SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                               blink::WebGestureEvent());
+          CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
+        }
       }
+
       ++active_touches_;
       if (touch_target_.target) {
         TransformEventTouchPositions(event, touch_target_.delta);
@@ -290,7 +297,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // not proceed. This could cause confusion between independent
   // scrolls.
   if (target_view == touchscreen_gesture_target_.target ||
-      target_view == touchpad_gesture_target_.target)
+      target_view == touchpad_gesture_target_.target ||
+      target_view == touch_target_.target)
     return;
 
   // This accounts for bubbling through nested OOPIFs. A gesture scroll has
@@ -404,6 +412,15 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
 
     touchscreen_gesture_target_ = touchscreen_gesture_target_queue_.front();
     touchscreen_gesture_target_queue_.pop_front();
+
+    // Abort any scroll bubbling in progress to avoid double entry.
+    if (touchscreen_gesture_target_.target &&
+        touchscreen_gesture_target_.target ==
+            bubbling_gesture_scroll_target_.target) {
+      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                           blink::WebGestureEvent());
+      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
+    }
   }
 
   if (!touchscreen_gesture_target_.target)
@@ -433,6 +450,15 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
     // might be to always transform each point to the
     // |touchpad_gesture_target_.target| for the duration of the sequence.
     touchpad_gesture_target_.delta = transformed_point - original_point;
+
+    // Abort any scroll bubbling in progress to avoid double entry.
+    if (touchpad_gesture_target_.target &&
+        touchpad_gesture_target_.target ==
+            bubbling_gesture_scroll_target_.target) {
+      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                           blink::WebGestureEvent());
+      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
+    }
   }
 
   if (!touchpad_gesture_target_.target)

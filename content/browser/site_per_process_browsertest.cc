@@ -910,11 +910,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
+#if defined(OS_ANDROID)
 // Browser process hit testing is not implemented on Android.
 // https://crbug.com/491334
-// Flaky https://crbug.com/627238.
+#define MAYBE_ScrollBubblingFromOOPIFTest DISABLED_ScrollBubblingFromOOPIFTest
+#else
+#define MAYBE_ScrollBubblingFromOOPIFTest ScrollBubblingFromOOPIFTest
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_ScrollBubblingFromOOPIFTest) {
+                       MAYBE_ScrollBubblingFromOOPIFTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   NavigateToURL(shell(), main_url);
@@ -940,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
   NavigateFrameToURL(parent_iframe_node, site_url);
 
-    // Navigate the nested frame to a page large enough to have scrollbars.
+  // Navigate the nested frame to a page large enough to have scrollbars.
   FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
   GURL nested_site_url(embedded_test_server()->GetURL(
       "baz.com", "/tall_page.html"));
