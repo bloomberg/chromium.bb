@@ -57,6 +57,13 @@ void SpinRunLoopWithMaxDelay(TimeDelta max_delay) {
                            beforeDate:beforeDate];
 }
 
+void SpinRunLoopWithMinDelay(TimeDelta min_delay) {
+  ElapsedTimer timer;
+  while (timer.Elapsed() < min_delay) {
+    SpinRunLoopWithMaxDelay(base::TimeDelta::FromMilliseconds(10));
+  }
+}
+
 }  // namespace ios
 }  // namespace test
 }  // namespace base

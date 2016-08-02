@@ -69,7 +69,7 @@ using web::webViewContainingText;
   web::shell_test_util::LoadUrl(originURL);
 
   // Wait for redirect.
-  base::test::ios::SpinRunLoopWithMaxDelay(
+  base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(refreshIntervalInSeconds));
 
   // Verify that redirect happened.

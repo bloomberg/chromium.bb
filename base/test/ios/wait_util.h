@@ -39,8 +39,14 @@ void WaitUntilCondition(ConditionBlock condition,
 void WaitUntilCondition(ConditionBlock condition);
 
 // Lets the run loop of the current thread process other messages
-// within the given maximum delay.
+// within the given maximum delay. This method may return before max_delay
+// elapsed.
 void SpinRunLoopWithMaxDelay(TimeDelta max_delay);
+
+// Lets the run loop of the current thread process other messages
+// within the given minimum delay. This method returns after |min_delay|
+// elapsed.
+void SpinRunLoopWithMinDelay(TimeDelta min_delay);
 
 }  // namespace ios
 }  // namespace test
