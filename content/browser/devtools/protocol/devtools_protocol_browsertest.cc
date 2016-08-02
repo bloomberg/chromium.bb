@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -103,7 +104,8 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 }
 
 class DevToolsProtocolTest : public ContentBrowserTest,
-                             public DevToolsAgentHostClient {
+                             public DevToolsAgentHostClient,
+                             public WebContentsDelegate {
  public:
   DevToolsProtocolTest()
       : last_sent_id_(0),
@@ -112,6 +114,16 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
  protected:
+  // WebContentsDelegate method:
+  bool AddMessageToConsole(WebContents* source,
+                           int32_t level,
+                           const base::string16& message,
+                           int32_t line_no,
+                           const base::string16& source_id) override {
+    console_messages_.push_back(base::UTF16ToUTF8(message));
+    return true;
+  }
+
   void SendCommand(const std::string& method,
                    std::unique_ptr<base::DictionaryValue> params) {
     SendCommand(method, std::move(params), true);
@@ -167,6 +179,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   void Attach() {
     agent_host_ = DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
     agent_host_->AttachClient(this);
+    shell()->web_contents()->SetDelegate(this);
   }
 
   void TearDownOnMainThread() override {
@@ -257,6 +270,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   int last_sent_id_;
   std::vector<int> result_ids_;
   std::vector<std::string> notifications_;
+  std::vector<std::string> console_messages_;
   std::unique_ptr<base::DictionaryValue> requested_notification_params_;
 
  private:
@@ -830,6 +844,47 @@ IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
                   "iframe_navigation.html",
                   "http://a.com/devtools/navigation.html",
                   "http://b.com/devtools/control_navigations/meta_tag.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("policy", "pause");
+  SendCommand("Emulation.setVirtualTimePolicy", std::move(params), true);
+
+  params.reset(new base::DictionaryValue());
+  params->SetString("expression",
+                    "setTimeout(function(){console.log('before')}, 1000);"
+                    "setTimeout(function(){console.log('after')}, 1001);");
+  SendCommand("Runtime.evaluate", std::move(params), true);
+
+  // Let virtual time advance for one second.
+  params.reset(new base::DictionaryValue());
+  params->SetString("policy", "advance");
+  params->SetInteger("budget", 1000);
+  SendCommand("Emulation.setVirtualTimePolicy", std::move(params), true);
+
+  WaitForNotification("Emulation.virtualTimeBudgetExpired");
+
+  params.reset(new base::DictionaryValue());
+  params->SetString("expression", "console.log('done')");
+  SendCommand("Runtime.evaluate", std::move(params), true);
+
+  // The second timer shold not fire.
+  EXPECT_THAT(console_messages_, ElementsAre("before", "done"));
+
+  // Let virtual time advance for another second, which should make the second
+  // timer fire.
+  params.reset(new base::DictionaryValue());
+  params->SetString("policy", "advance");
+  params->SetInteger("budget", 1000);
+  SendCommand("Emulation.setVirtualTimePolicy", std::move(params), true);
+
+  WaitForNotification("Emulation.virtualTimeBudgetExpired");
+
+  EXPECT_THAT(console_messages_, ElementsAre("before", "done", "after"));
 }
 
 }  // namespace content

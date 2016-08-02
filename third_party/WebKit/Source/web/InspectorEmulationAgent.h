@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class CancellableTaskFactory;
 class WebLocalFrameImpl;
 class WebViewImpl;
 
@@ -33,7 +34,7 @@ public:
     void setTouchEmulationEnabled(ErrorString*, bool in_enabled, const protocol::Maybe<String>& in_configuration) override;
     void setEmulatedMedia(ErrorString*, const String& in_media) override;
     void setCPUThrottlingRate(ErrorString*, double in_rate) override;
-    void setVirtualTimePolicy(ErrorString*, const String& in_policy) override;
+    void setVirtualTimePolicy(ErrorString*, const String& in_policy, const protocol::Maybe<int>& in_virtualTimeBudgetMs) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;
@@ -44,9 +45,11 @@ public:
 private:
     InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
     WebViewImpl* webViewImpl();
+    void virtualTimeBudgetExpired();
 
     Member<WebLocalFrameImpl> m_webLocalFrameImpl;
     Client* m_client;
+    std::unique_ptr<CancellableTaskFactory> m_virtualTimeBudgetExpiredTask;
 };
 
 } // namespace blink

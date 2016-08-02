@@ -812,11 +812,18 @@
             },
             {
                 "name": "setVirtualTimePolicy",
-                "description": "Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.",
+                "description": "Turns on virtual time for all frames (replacing real-time with a synthetic time source) and sets the current virtual time policy.  Note this supersedes any previous time budget.",
                 "parameters": [
-                    { "name": "policy", "$ref": "VirtualTimePolicy" }
+                    { "name": "policy", "$ref": "VirtualTimePolicy" },
+                    { "name": "budget", "type": "integer", "optional": true, "description": "If set, after this many virtual milliseconds have elapsed virtual time will be paused and a virtualTimeBudgetExpired event is sent." }
                 ],
                 "hidden": true
+            }
+        ],
+        "events": [
+            {
+                "name": "virtualTimeBudgetExpired",
+                "description": "Notification sent after the virual time budget for the current VirtualTimePolicy has run out."
             }
         ]
     },
