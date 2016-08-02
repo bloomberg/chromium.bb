@@ -71,12 +71,15 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   class CONTENT_EXPORT Observer {
    public:
+    // Called just prior to the instance being deleted.
+    virtual void OnServiceDestructionImminent(AppCacheServiceImpl* service) {}
+
     // An observer method to inform consumers of reinitialzation. Managing
     // the lifetime of the old storage instance is a delicate process.
     // Consumers can keep the old disabled instance alive by hanging on to the
     // ref provided.
     virtual void OnServiceReinitialized(
-        AppCacheStorageReference* old_storage_ref) = 0;
+        AppCacheStorageReference* old_storage_ref) {}
     virtual ~Observer() {}
   };
 

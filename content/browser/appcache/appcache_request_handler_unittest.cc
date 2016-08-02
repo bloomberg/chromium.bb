@@ -780,6 +780,72 @@ class AppCacheRequestHandlerTest : public testing::Test {
     TestFinished();
   }
 
+  // DestroyedService -----------------------------
+
+  void DestroyedService() {
+    host_->AssociateCompleteCache(MakeNewCache());
+
+    mock_storage()->SimulateFindSubResource(
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
+
+    request_ = empty_context_.CreateRequest(
+        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    handler_.reset(host_->CreateRequestHandler(request_.get(),
+                                               RESOURCE_TYPE_SUB_RESOURCE,
+                                               false));
+    EXPECT_TRUE(handler_.get());
+    job_.reset(handler_->MaybeLoadResource(
+        request_.get(), request_->context()->network_delegate()));
+    EXPECT_TRUE(job_.get());
+
+    backend_impl_.reset();
+    mock_frontend_.reset();
+    mock_service_.reset();
+    mock_policy_.reset();
+    host_ = NULL;
+
+    EXPECT_TRUE(job_->has_been_killed());
+    EXPECT_FALSE(handler_->MaybeLoadResource(
+        request_.get(), request_->context()->network_delegate()));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
+        request_.get(),
+        request_->context()->network_delegate(),
+        GURL("http://blah/redirect")));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate()));
+
+    TestFinished();
+  }
+
+  void DestroyedServiceWithCrossSiteNav() {
+    request_ = empty_context_.CreateRequest(
+        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    handler_.reset(host_->CreateRequestHandler(request_.get(),
+                                               RESOURCE_TYPE_MAIN_FRAME,
+                                               false));
+    EXPECT_TRUE(handler_.get());
+    handler_->PrepareForCrossSiteTransfer(backend_impl_->process_id());
+    EXPECT_TRUE(handler_->host_for_cross_site_transfer_.get());
+
+    backend_impl_.reset();
+    mock_frontend_.reset();
+    mock_service_.reset();
+    mock_policy_.reset();
+    host_ = NULL;
+
+    EXPECT_FALSE(handler_->host_for_cross_site_transfer_.get());
+    EXPECT_FALSE(handler_->MaybeLoadResource(
+        request_.get(), request_->context()->network_delegate()));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
+        request_.get(),
+        request_->context()->network_delegate(),
+        GURL("http://blah/redirect")));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate()));
+
+    TestFinished();
+  }
+
   // UnsupportedScheme -----------------------------
 
   void UnsupportedScheme() {
@@ -1018,6 +1084,15 @@ TEST_F(AppCacheRequestHandlerTest, DestroyedHost) {
 
 TEST_F(AppCacheRequestHandlerTest, DestroyedHostWithWaitingJob) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::DestroyedHostWithWaitingJob);
+}
+
+TEST_F(AppCacheRequestHandlerTest, DestroyedService) {
+  RunTestOnIOThread(&AppCacheRequestHandlerTest::DestroyedService);
+}
+
+TEST_F(AppCacheRequestHandlerTest, DestroyedServiceWithCrossSiteNav) {
+  RunTestOnIOThread(
+      &AppCacheRequestHandlerTest::DestroyedServiceWithCrossSiteNav);
 }
 
 TEST_F(AppCacheRequestHandlerTest, UnsupportedScheme) {
