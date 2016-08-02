@@ -316,14 +316,22 @@ Response NetworkHandler::GetCertificateDetails(
   std::vector<std::string> ip_addrs;
   cert->GetSubjectAltName(&dns_names, &ip_addrs);
 
+  // IP addresses are in raw network bytes and must be converted to string form
+  std::vector<std::string> ip_addrs_string;
+  for (const std::string& ip : ip_addrs) {
+    net::IPAddress ip_addr(reinterpret_cast<const uint8_t*>(ip.c_str()),
+                           ip.length());
+    ip_addrs_string.push_back(ip_addr.ToString());
+  }
+
   *result = CertificateDetails::Create()
-                    ->set_subject(CertificateSubject::Create()
+                ->set_subject(CertificateSubject::Create()
                                   ->set_name(name)
                                   ->set_san_dns_names(dns_names)
-                                  ->set_san_ip_addresses(ip_addrs))
-                    ->set_issuer(issuer)
-                    ->set_valid_from(valid_from.ToDoubleT())
-                    ->set_valid_to(valid_to.ToDoubleT());
+                                  ->set_san_ip_addresses(ip_addrs_string))
+                ->set_issuer(issuer)
+                ->set_valid_from(valid_from.ToDoubleT())
+                ->set_valid_to(valid_to.ToDoubleT());
   return Response::OK();
 }
 
