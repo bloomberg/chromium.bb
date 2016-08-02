@@ -6,24 +6,22 @@
 #define StaticBitmapImage_h
 
 #include "platform/graphics/Image.h"
-#include "public/platform/WebExternalTextureMailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
 
 class WebGraphicsContext3DProvider;
 
-class PLATFORM_EXPORT StaticBitmapImage final : public Image {
+class PLATFORM_EXPORT StaticBitmapImage : public Image {
 public:
-    ~StaticBitmapImage() override;
+    ~StaticBitmapImage() override { };
 
     bool currentFrameIsComplete() override { return true; }
 
     static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
-    static PassRefPtr<StaticBitmapImage> create(WebExternalTextureMailbox&);
-    virtual void destroyDecodedData() { }
-    virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata);
-    virtual IntSize size() const;
+    void destroyDecodedData() override { }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
+    IntSize size() const override;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 
     PassRefPtr<SkImage> imageForCurrentFrame() override;
@@ -32,21 +30,16 @@ public:
     void setOriginClean(bool flag) { m_isOriginClean = flag; }
     bool isPremultiplied() const { return m_isPremultiplied; }
     void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
-    void copyToTexture(WebGraphicsContext3DProvider*, GLuint, GLenum, GLenum, bool);
     bool isTextureBacked() override;
-    bool hasMailbox() { return m_mailbox.textureSize.width != 0 && m_mailbox.textureSize.height != 0; }
+    virtual void copyToTexture(WebGraphicsContext3DProvider*, GLuint, GLenum, GLenum, bool) { NOTREACHED(); }
+    virtual bool hasMailbox() { return false; }
 
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
-    StaticBitmapImage(WebExternalTextureMailbox&);
+    StaticBitmapImage() { } // empty constructor for derived class.
+    RefPtr<SkImage> m_image;
 
 private:
-    GLuint switchStorageToSkImage(WebGraphicsContext3DProvider*);
-    bool switchStorageToMailbox(WebGraphicsContext3DProvider*);
-    GLuint switchStorageToSkImageForWebGL(WebGraphicsContext3DProvider*);
-
-    RefPtr<SkImage> m_image;
-    WebExternalTextureMailbox m_mailbox;
     bool m_isOriginClean = true;
     // The premultiply info is stored here because the SkImage API
     // doesn't expose this info.

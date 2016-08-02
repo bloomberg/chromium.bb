@@ -547,6 +547,8 @@
       'geometry/mac/IntPointMac.mm',
       'geometry/mac/IntRectMac.mm',
       'geometry/mac/IntSizeMac.mm',
+      'graphics/AcceleratedStaticBitmapImage.cpp',
+      'graphics/AcceleratedStaticBitmapImage.h',
       'graphics/BitmapImage.cpp',
       'graphics/BitmapImage.h',
       'graphics/BitmapImageMetrics.cpp',

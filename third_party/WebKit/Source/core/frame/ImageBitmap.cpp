@@ -7,6 +7,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -519,7 +520,7 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
 
 ImageBitmap::ImageBitmap(WebExternalTextureMailbox& mailbox)
 {
-    m_image = StaticBitmapImage::create(mailbox);
+    m_image = AcceleratedStaticBitmapImage::create(mailbox);
 }
 
 PassRefPtr<StaticBitmapImage> ImageBitmap::transfer()
