@@ -98,7 +98,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
                                                            visible_rect.size());
-    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+    display_list->Raster(generator.canvas(), nullptr, gfx::Rect(), 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
@@ -175,7 +175,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
                                                            layer_size);
-    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+    display_list->Raster(generator.canvas(), nullptr, gfx::Rect(), 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
@@ -275,7 +275,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
                                                            visible_rect.size());
-    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+    display_list->Raster(generator.canvas(), nullptr, gfx::Rect(), 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
@@ -318,7 +318,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
                                                            visible_rect.size());
-    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+    display_list->Raster(generator.canvas(), nullptr, gfx::Rect(), 1.f);
   }
   std::vector<PositionDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));

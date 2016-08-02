@@ -66,7 +66,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   settings.use_cached_picture =
       layer_tree_host()->settings().use_cached_picture_raster;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(PaintableRegion(), settings);
+      DisplayItemList::Create(settings);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas =

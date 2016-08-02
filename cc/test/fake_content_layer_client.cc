@@ -55,7 +55,8 @@ FakeContentLayerClient::PaintContentsToDisplayList(
   DisplayItemListSettings settings;
   settings.use_cached_picture = display_list_use_cached_picture_;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(PaintableRegion(), settings);
+      DisplayItemList::Create(settings);
+  display_list->SetRetainVisualRectsForTesting(true);
   SkPictureRecorder recorder;
   sk_sp<SkCanvas> canvas;
 

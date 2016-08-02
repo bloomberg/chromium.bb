@@ -32,8 +32,7 @@ namespace {
 scoped_refptr<cc::DisplayItemList> CreateUncachedDisplayItemListForBlink() {
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = false;
-  gfx::Rect layer_rect;
-  return cc::DisplayItemList::Create(layer_rect, settings);
+  return cc::DisplayItemList::Create(settings);
 }
 
 }  // namespace
@@ -50,13 +49,8 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 void WebDisplayItemListImpl::appendDrawingItem(
     const blink::WebRect& visual_rect,
     sk_sp<const SkPicture> picture) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-        visual_rect, std::move(picture));
-  } else {
-    cc::DrawingDisplayItem item(std::move(picture));
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
+      visual_rect, std::move(picture));
 }
 
 void WebDisplayItemListImpl::appendClipItem(
@@ -68,23 +62,13 @@ void WebDisplayItemListImpl::appendClipItem(
     rounded_rects.push_back(rounded_clip_rects[i]);
   }
   bool antialias = true;
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::ClipDisplayItem>(
-        visual_rect, clip_rect, rounded_rects, antialias);
-  } else {
-    cc::ClipDisplayItem item(clip_rect, rounded_rects, antialias);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::ClipDisplayItem>(
+      visual_rect, clip_rect, rounded_rects, antialias);
 }
 
 void WebDisplayItemListImpl::appendEndClipItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndClipDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndClipDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndClipDisplayItem>(visual_rect);
 }
 
 void WebDisplayItemListImpl::appendClipPathItem(
@@ -92,45 +76,27 @@ void WebDisplayItemListImpl::appendClipPathItem(
     const SkPath& clip_path,
     SkRegion::Op clip_op,
     bool antialias) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
-        visual_rect, clip_path, clip_op, antialias);
-  } else {
-    cc::ClipPathDisplayItem item(clip_path, clip_op, antialias);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::ClipPathDisplayItem>(
+      visual_rect, clip_path, clip_op, antialias);
 }
 
 void WebDisplayItemListImpl::appendEndClipPathItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndClipPathDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>(
+      visual_rect);
 }
 
 void WebDisplayItemListImpl::appendFloatClipItem(
     const blink::WebRect& visual_rect,
     const blink::WebFloatRect& clip_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::FloatClipDisplayItem>(
-        visual_rect, clip_rect);
-  } else {
-    cc::FloatClipDisplayItem item(clip_rect);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::FloatClipDisplayItem>(visual_rect,
+                                                                    clip_rect);
 }
 
 void WebDisplayItemListImpl::appendEndFloatClipItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndFloatClipDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndFloatClipDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndFloatClipDisplayItem>(
+      visual_rect);
 }
 
 void WebDisplayItemListImpl::appendTransformItem(
@@ -139,23 +105,14 @@ void WebDisplayItemListImpl::appendTransformItem(
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = matrix;
 
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::TransformDisplayItem>(
-        visual_rect, transform);
-  } else {
-    cc::TransformDisplayItem item(transform);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::TransformDisplayItem>(visual_rect,
+                                                                    transform);
 }
 
 void WebDisplayItemListImpl::appendEndTransformItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndTransformDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndTransformDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndTransformDisplayItem>(
+      visual_rect);
 }
 
 void WebDisplayItemListImpl::appendCompositingItem(
@@ -170,49 +127,29 @@ void WebDisplayItemListImpl::appendCompositingItem(
   // value, but that breaks slimming paint reftests.
 
   const bool kLcdTextRequiresOpaqueLayer = true;
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
-        visual_rect, static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)),
-        xfermode, bounds, sk_ref_sp(color_filter), kLcdTextRequiresOpaqueLayer);
-  } else {
-    cc::CompositingDisplayItem item(
-        static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)), xfermode,
-        bounds, sk_ref_sp(color_filter), kLcdTextRequiresOpaqueLayer);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
+      visual_rect, static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)),
+      xfermode, bounds, sk_ref_sp(color_filter), kLcdTextRequiresOpaqueLayer);
 }
 
 void WebDisplayItemListImpl::appendEndCompositingItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndCompositingDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>(
+      visual_rect);
 }
 
 void WebDisplayItemListImpl::appendFilterItem(
     const blink::WebRect& visual_rect,
     const cc::FilterOperations& filters,
     const blink::WebFloatRect& bounds) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>(
-        visual_rect, filters, bounds);
-  } else {
-    cc::FilterDisplayItem item(filters, bounds);
-    display_item_list_->RasterIntoCanvas(item);
-  }
+  display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>(
+      visual_rect, filters, bounds);
 }
 
 void WebDisplayItemListImpl::appendEndFilterItem(
     const blink::WebRect& visual_rect) {
-  if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendItem<cc::EndFilterDisplayItem>(
-        visual_rect);
-  } else {
-    display_item_list_->RasterIntoCanvas(cc::EndFilterDisplayItem());
-  }
+  display_item_list_->CreateAndAppendItem<cc::EndFilterDisplayItem>(
+      visual_rect);
 }
 
 void WebDisplayItemListImpl::appendScrollItem(
@@ -221,7 +158,8 @@ void WebDisplayItemListImpl::appendScrollItem(
     ScrollContainerId) {
   SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
   matrix.setTranslate(-scroll_offset.width, -scroll_offset.height, 0);
-  // TODO(wkorman): Should we translate the visual rect as well?
+  // TODO(wkorman): http://crbug.com/633636 Should we translate the visual rect
+  // as well? Create a test case and investigate.
   appendTransformItem(visual_rect, matrix);
 }
 

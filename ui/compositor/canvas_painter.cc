@@ -17,9 +17,8 @@ CanvasPainter::CanvasPainter(gfx::Canvas* canvas, float raster_scale_factor)
           gfx::Rect(canvas_->sk_canvas()->getBaseLayerSize().width(),
                     canvas_->sk_canvas()->getBaseLayerSize().height()),
           1.f / raster_scale_factor)),
-      list_(cc::DisplayItemList::Create(rect_, cc::DisplayItemListSettings())),
-      context_(list_.get(), raster_scale_factor_, rect_) {
-}
+      list_(cc::DisplayItemList::Create(cc::DisplayItemListSettings())),
+      context_(list_.get(), raster_scale_factor_, rect_) {}
 
 CanvasPainter::~CanvasPainter() {
   list_->Finalize();

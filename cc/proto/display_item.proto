@@ -21,8 +21,8 @@ message DisplayItemListSettings {
 
 message DisplayItemList {
   repeated DisplayItem items = 1;
-  optional cc.proto.Rect layer_rect = 2;
   optional DisplayItemListSettings settings = 3;
+  repeated cc.proto.Rect visual_rects = 4;
 }
 
 message DisplayItem {
