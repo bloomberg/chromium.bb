@@ -91,7 +91,7 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess)
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), Success));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), PaymentCompleter::Success));
 
     output.complete(scope.getScriptState(), "success");
 }
@@ -105,7 +105,7 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure)
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
     PaymentResponse output(std::move(input), completeCallback);
 
-    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), Fail));
+    EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), PaymentCompleter::Fail));
 
     output.complete(scope.getScriptState(), "fail");
 }

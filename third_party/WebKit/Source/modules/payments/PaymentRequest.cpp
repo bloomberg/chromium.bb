@@ -159,6 +159,10 @@ struct TypeConverter<WTFArray<PaymentMethodDataPtr>, WTF::Vector<blink::PaymentR
 namespace blink {
 namespace {
 
+// If the website does not call complete() 60 seconds after show() has been resolved, then behave as if
+// the website called complete("fail").
+static const int completeTimeoutSeconds = 60;
+
 // Validates ShippingOption or PaymentItem, which happen to have identical fields,
 // except for "id", which is present only in ShippingOption.
 template <typename T>
@@ -418,9 +422,14 @@ ScriptPromise PaymentRequest::complete(ScriptState* scriptState, PaymentComplete
     if (m_completeResolver)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called complete() once"));
 
+    if (!m_completeTimer.isActive())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Timed out after 60 seconds, complete() called too late"));
+
     // User has cancelled the transaction while the website was processing it.
     if (!m_paymentProvider)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Request cancelled"));
+
+    m_completeTimer.stop();
 
     // The payment provider should respond in PaymentRequest::OnComplete().
     m_paymentProvider->Complete(mojom::blink::PaymentComplete(result));
@@ -477,11 +486,17 @@ DEFINE_TRACE(PaymentRequest)
     ContextLifecycleObserver::trace(visitor);
 }
 
+void PaymentRequest::onCompleteTimeoutForTesting()
+{
+    onCompleteTimeout(0);
+}
+
 PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<PaymentMethodData>& methodData, const PaymentDetails& details, const PaymentOptions& options, ExceptionState& exceptionState)
     : ContextLifecycleObserver(scriptState->getExecutionContext())
     , ActiveScriptWrappable(this)
     , m_options(options)
     , m_clientBinding(this)
+    , m_completeTimer(this, &PaymentRequest::onCompleteTimeout)
 {
     validateAndConvertPaymentMethodData(methodData, &m_methodData, exceptionState);
     if (exceptionState.hadException())
@@ -554,6 +569,7 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
 {
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
+    DCHECK(!m_completeTimer.isActive());
 
     if (m_options.requestShipping()) {
         if (!response->shipping_address || response->shipping_option.isEmpty()) {
@@ -588,10 +604,12 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         return;
     }
 
+    m_completeTimer.startOneShot(completeTimeoutSeconds, BLINK_FROM_HERE);
+
     m_showResolver->resolve(new PaymentResponse(std::move(response), this));
 
     // Do not close the mojo connection here. The merchant website should call
-    // PaymentResponse::complete(boolean), which will be forwarded over the mojo
+    // PaymentResponse::complete(String), which will be forwarded over the mojo
     // connection to display a success or failure message to the user.
     m_showResolver.clear();
 }
@@ -663,6 +681,13 @@ void PaymentRequest::OnAbort(bool abortedSuccessfully)
 
     m_showResolver->reject(DOMException::create(AbortError));
     m_abortResolver->resolve();
+    clearResolversAndCloseMojoConnection();
+}
+
+void PaymentRequest::onCompleteTimeout(TimerBase*)
+{
+    m_completeTimer.stop();
+    m_paymentProvider->Complete(mojom::blink::PaymentComplete(Fail));
     clearResolversAndCloseMojoConnection();
 }
 

@@ -34,11 +34,11 @@ ScriptValue PaymentResponse::details(ScriptState* scriptState, ExceptionState& e
 
 ScriptPromise PaymentResponse::complete(ScriptState* scriptState, const String& result)
 {
-    PaymentComplete convertedResult = Unknown;
+    PaymentCompleter::PaymentComplete convertedResult = PaymentCompleter::Unknown;
     if (result == "success")
-        convertedResult = Success;
-    if (result == "fail")
-        convertedResult = Fail;
+        convertedResult = PaymentCompleter::Success;
+    else if (result == "fail")
+        convertedResult = PaymentCompleter::Fail;
     return m_paymentCompleter->complete(scriptState, convertedResult);
 }
 

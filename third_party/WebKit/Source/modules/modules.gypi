@@ -2049,6 +2049,7 @@
       'notifications/NotificationDataTest.cpp',
       'notifications/NotificationResourcesLoaderTest.cpp',
       'payments/AbortTest.cpp',
+      'payments/CompleteTest.cpp',
       'payments/OnPaymentResponseTest.cpp',
       'payments/PaymentAddressTest.cpp',
       'payments/PaymentRequestDetailsTest.cpp',
