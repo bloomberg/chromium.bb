@@ -300,7 +300,7 @@ function openAndWaitForClosingDialog(
  * @param {function(string, Array<Array<string>>)=} opt_callback Callback with
  *     the window ID and with the file list.
  * @return {Promise} Promise to be fulfilled with the result object, which
- *     coutnains the window ID and the file list.
+ *     contains the window ID and the file list.
  */
 function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
   var windowPromise = openNewWindow(appState, initialRoot);
