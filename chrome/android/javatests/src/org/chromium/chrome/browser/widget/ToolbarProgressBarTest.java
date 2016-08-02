@@ -17,6 +17,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
@@ -116,7 +118,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         final Object onAnimationEnd = new Object();
         final AtomicBoolean animationEnded = new AtomicBoolean(false);
         final AtomicReference<ToolbarProgressBar> progressBar =
-                new AtomicReference<ToolbarProgressBar>();
+                new AtomicReference<>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -147,8 +149,12 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
             }
         });
 
-        // Before the actual test, ensure that the progress bar is hidden.
-        assertNotSame(View.VISIBLE, progressBar.get().getVisibility());
+        CriteriaHelper.pollUiThread(new Criteria("Progress bar not hidden at start") {
+            @Override
+            public boolean isSatisfied() {
+                return progressBar.get().getVisibility() == View.INVISIBLE;
+            }
+        });
 
         // Make some progress and check that the progress bar is fully visible.
         animationEnded.set(false);

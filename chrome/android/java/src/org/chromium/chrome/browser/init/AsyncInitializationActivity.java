@@ -182,7 +182,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * Actions that may be run at some point after startup. Place tasks that are not critical to the
      * startup path here.  This method will be called automatically and should not be called
-     * directly by subclasses.  Overriding methods should call super.onDeferredStartup().
+     * directly by subclasses.
      */
     protected void onDeferredStartup() { }
 

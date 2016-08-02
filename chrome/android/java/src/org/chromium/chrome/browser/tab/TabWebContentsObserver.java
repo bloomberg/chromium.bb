@@ -207,8 +207,8 @@ public class TabWebContentsObserver extends WebContentsObserver {
             //   s = 1.05
             //   s^b = 60000
             //   b = ln(60000) / ln(1.05) ~= 225
-            RecordHistogram.recordCustomTimesHistogram("Startup.FirstCommitNavigationTime",
-                    SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+            RecordHistogram.recordCustomTimesHistogram("Startup.FirstCommitNavigationTime2",
+                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
                     1, 60000 /* 1 minute */, TimeUnit.MILLISECONDS, 225);
             UmaUtils.setRunningApplicationStart(false);
         }

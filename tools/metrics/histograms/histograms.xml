@@ -55919,10 +55919,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstCommitNavigationTime" units="ms">
+  <obsolete>
+    Replaced by Startup.FirstCommitNavigationTime2
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     [Android only] The time from the earliest entry point in the browser process
     to the moment the first navigation is committed, i.e. when renderer gets the
+    first byte of the document.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstCommitNavigationTime2" units="ms">
+  <owner>pasko@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    [Android only] The time from the first foreground entry point in the app to
+    the moment the first navigation is committed, i.e. when renderer gets the
     first byte of the document.
   </summary>
 </histogram>
@@ -60313,6 +60326,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime"
+    units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till all
+    deferred tasks are done. Only logged on Android.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpDuration"
     units="ms">
   <owner>wnwen@chromium.org</owner>
@@ -60333,7 +60355,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration"
+    units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Measures the maximum amount of time a single deferred startup task took.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime" units="ms">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.DeferredStartUptime2
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Measures how much time since start up it took for onDeferredStartup() to be
@@ -60342,12 +60375,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime2" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till
+    deferred tasks are initialized and queued on the idle handler. Only logged
+    on Android.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime"
     units="ms">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Measures how much time since start up it took before ChromeActivity's
     postDeferredStartupIfNeeded() was called. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2"
+    units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till
+    ChromeActivity's postDeferredStartupIfNeeded() was called exactly once. Only
+    logged on Android.
   </summary>
 </histogram>
 
@@ -60364,11 +60421,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.Debug.EnableCrashUpload.Uptime2" units="ms">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.Uptime3
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Measures how much time since start up it took before crash reporting was
     enabled via enablePotentialCrashUploading() as part of deferred start up.
     Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime3" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since application was first in foreground till crash
+    reporting was enabled via enablePotentialCrashUploading() as part of
+    deferred start up. Only logged on Android.
   </summary>
 </histogram>
 

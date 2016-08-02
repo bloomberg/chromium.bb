@@ -15,9 +15,9 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("chrome::android")
 public class UmaUtils {
     private static long sApplicationStartWallClockMs;
-    private static long sApplicationStartUptimeMs;
 
     private static boolean sRunningApplicationStart;
+    private static long sForegroundStartTimeMs;
 
     /**
      * Record the time at which the activity started. This should be called asap after
@@ -29,7 +29,10 @@ public class UmaUtils {
         // then need the start time in the C++ side before we return to Java. As such we
         // save it in a static that the C++ can fetch once it has initialized the JNI.
         sApplicationStartWallClockMs = System.currentTimeMillis();
-        sApplicationStartUptimeMs = SystemClock.uptimeMillis();
+    }
+
+    public static void recordForegroundStartTime() {
+        sForegroundStartTimeMs = SystemClock.uptimeMillis();
     }
 
     /**
@@ -65,8 +68,9 @@ public class UmaUtils {
         return sApplicationStartWallClockMs;
     }
 
-    public static long getMainEntryPointTime() {
-        return sApplicationStartUptimeMs;
+    public static long getForegroundStartTime() {
+        assert sForegroundStartTimeMs != 0;
+        return sForegroundStartTimeMs;
     }
 
     private static native void nativeRecordMetricsReportingDefaultOptIn(boolean optIn);
