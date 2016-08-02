@@ -5289,11 +5289,6 @@ public:
         kick(1, 8, WebTextDecorationTypeSpelling);
     }
 
-    void kickGrammar()
-    {
-        kick(1, 8, WebTextDecorationTypeGrammar);
-    }
-
     void kickInvisibleSpellcheck()
     {
         kick(1, 8, WebTextDecorationTypeInvisibleSpellcheck);
@@ -5390,9 +5385,8 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     EXPECT_FALSE(exceptionState.hadException());
     auto range = EphemeralRange::rangeOfContents(*element);
     document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
-    document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Grammar);
     document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::InvisibleSpellcheck);
-    EXPECT_EQ(3U, document->markers().markers().size());
+    EXPECT_EQ(2U, document->markers().markers().size());
 
     spellcheck.kickNoResults();
     EXPECT_EQ(0U, document->markers().markers().size());
@@ -5423,14 +5417,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument)
     ASSERT_EQ(1U, document->markers().markers().size());
     ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
     EXPECT_EQ(DocumentMarker::Spelling, document->markers().markers()[0]->type());
-
-    document->execCommand("InsertText", false, "wellcome ", exceptionState);
-    EXPECT_FALSE(exceptionState.hadException());
-
-    spellcheck.kickGrammar();
-    ASSERT_EQ(1U, document->markers().markers().size());
-    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
-    EXPECT_EQ(DocumentMarker::Grammar, document->markers().markers()[0]->type());
 
     document->execCommand("InsertText", false, "wellcome ", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
