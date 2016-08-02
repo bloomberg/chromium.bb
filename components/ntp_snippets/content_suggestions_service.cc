@@ -25,7 +25,7 @@ ContentSuggestionsService::ContentSuggestionsService(State state)
 ContentSuggestionsService::~ContentSuggestionsService() {}
 
 void ContentSuggestionsService::Shutdown() {
-  DCHECK(providers_.empty());
+  DCHECK(providers_by_category_.empty());
   DCHECK(categories_.empty());
   DCHECK(suggestions_by_category_.empty());
   DCHECK(id_category_map_.empty());
@@ -39,8 +39,8 @@ CategoryStatus ContentSuggestionsService::GetCategoryStatus(
     return CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
   }
 
-  auto iterator = providers_.find(category);
-  if (iterator == providers_.end())
+  auto iterator = providers_by_category_.find(category);
+  if (iterator == providers_by_category_.end())
     return CategoryStatus::NOT_PROVIDED;
 
   return iterator->second->GetCategoryStatus(category);
@@ -63,26 +63,27 @@ void ContentSuggestionsService::FetchSuggestionImage(
     return;
   }
   Category category = id_category_map_.at(suggestion_id);
-  if (!providers_.count(category)) {
+  if (!providers_by_category_.count(category)) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
                  << " for unavailable category " << category;
     callback.Run(suggestion_id, gfx::Image());
     return;
   }
-  providers_[category]->FetchSuggestionImage(suggestion_id, callback);
+  providers_by_category_[category]->FetchSuggestionImage(suggestion_id,
+                                                         callback);
 }
 
 void ContentSuggestionsService::ClearCachedSuggestionsForDebugging() {
   suggestions_by_category_.clear();
   id_category_map_.clear();
-  for (auto& category_provider_pair : providers_) {
+  for (auto& category_provider_pair : providers_by_category_) {
     category_provider_pair.second->ClearCachedSuggestionsForDebugging();
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
 }
 
 void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging() {
-  for (auto& category_provider_pair : providers_) {
+  for (auto& category_provider_pair : providers_by_category_) {
     category_provider_pair.second->ClearDismissedSuggestionsForDebugging();
   }
 }
@@ -94,12 +95,12 @@ void ContentSuggestionsService::DismissSuggestion(
     return;
   }
   Category category = id_category_map_.at(suggestion_id);
-  if (!providers_.count(category)) {
+  if (!providers_by_category_.count(category)) {
     LOG(WARNING) << "Dismissed suggestion " << suggestion_id
                  << " for unavailable category " << category;
     return;
   }
-  providers_[category]->DismissSuggestion(suggestion_id);
+  providers_by_category_[category]->DismissSuggestion(suggestion_id);
 
   // Remove the suggestion locally.
   id_category_map_.erase(suggestion_id);
@@ -132,55 +133,63 @@ void ContentSuggestionsService::RegisterProvider(
   if (state_ == State::DISABLED)
     return;
 
+  provider->SetObserver(this);
   for (Category category : provider->GetProvidedCategories()) {
-    DCHECK_EQ(0ul, providers_.count(category));
-    providers_[category] = provider;
-    categories_.push_back(category);
-    if (IsCategoryStatusAvailable(provider->GetCategoryStatus(category))) {
-      suggestions_by_category_[category] = std::vector<ContentSuggestion>();
-    }
+    DCHECK_NE(CategoryStatus::NOT_PROVIDED,
+              provider->GetCategoryStatus(category));
+    RegisterCategoryIfRequired(provider, category);
     NotifyCategoryStatusChanged(category);
   }
-  std::sort(categories_.begin(), categories_.end(),
-            [this](const Category& left, const Category& right) {
-              return category_factory_.CompareCategories(left, right);
-            });
-  provider->SetObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
 void ContentSuggestionsService::OnNewSuggestions(
-    Category changed_category,
+    ContentSuggestionsProvider* provider,
+    Category category,
     std::vector<ContentSuggestion> new_suggestions) {
-  DCHECK(IsCategoryRegistered(changed_category));
+  if (RegisterCategoryIfRequired(provider, category)) {
+    NotifyCategoryStatusChanged(category);
+  }
 
   for (const ContentSuggestion& suggestion :
-       suggestions_by_category_[changed_category]) {
+       suggestions_by_category_[category]) {
     id_category_map_.erase(suggestion.id());
   }
 
   for (const ContentSuggestion& suggestion : new_suggestions) {
-    id_category_map_.insert(std::make_pair(suggestion.id(), changed_category));
+    id_category_map_.insert(std::make_pair(suggestion.id(), category));
   }
 
-  suggestions_by_category_[changed_category] = std::move(new_suggestions);
+  suggestions_by_category_[category] = std::move(new_suggestions);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions());
 }
 
 void ContentSuggestionsService::OnCategoryStatusChanged(
-    Category changed_category,
+    ContentSuggestionsProvider* provider,
+    Category category,
     CategoryStatus new_status) {
   if (!IsCategoryStatusAvailable(new_status)) {
     for (const ContentSuggestion& suggestion :
-         suggestions_by_category_[changed_category]) {
+         suggestions_by_category_[category]) {
       id_category_map_.erase(suggestion.id());
     }
-    suggestions_by_category_.erase(changed_category);
+    suggestions_by_category_.erase(category);
   }
-  NotifyCategoryStatusChanged(changed_category);
+  if (new_status == CategoryStatus::NOT_PROVIDED) {
+    auto providers_it = providers_by_category_.find(category);
+    DCHECK(providers_it != providers_by_category_.end());
+    DCHECK_EQ(provider, providers_it->second);
+    providers_by_category_.erase(providers_it);
+    categories_.erase(
+        std::find(categories_.begin(), categories_.end(), category));
+  } else {
+    RegisterCategoryIfRequired(provider, category);
+    DCHECK_EQ(new_status, provider->GetCategoryStatus(category));
+  }
+  NotifyCategoryStatusChanged(category);
 }
 
 void ContentSuggestionsService::OnProviderShutdown(
@@ -194,14 +203,31 @@ void ContentSuggestionsService::OnProviderShutdown(
       id_category_map_.erase(suggestion.id());
     }
     suggestions_by_category_.erase(category);
-    providers_.erase(category);
+    providers_by_category_.erase(category);
     NotifyCategoryStatusChanged(category);
   }
 }
 
-bool ContentSuggestionsService::IsCategoryRegistered(Category category) const {
-  return std::find(categories_.begin(), categories_.end(), category) !=
-         categories_.end();
+bool ContentSuggestionsService::RegisterCategoryIfRequired(
+    ContentSuggestionsProvider* provider,
+    Category category) {
+  auto it = providers_by_category_.find(category);
+  if (it != providers_by_category_.end()) {
+    DCHECK_EQ(it->second, provider);
+    return false;
+  }
+
+  providers_by_category_[category] = provider;
+  categories_.push_back(category);
+  std::sort(categories_.begin(), categories_.end(),
+            [this](const Category& left, const Category& right) {
+              return category_factory_.CompareCategories(left, right);
+            });
+  if (IsCategoryStatusAvailable(provider->GetCategoryStatus(category))) {
+    suggestions_by_category_.insert(
+        std::make_pair(category, std::vector<ContentSuggestion>()));
+  }
+  return true;
 }
 
 void ContentSuggestionsService::NotifyCategoryStatusChanged(Category category) {

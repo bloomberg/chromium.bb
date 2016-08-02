@@ -815,7 +815,7 @@ void NTPSnippetsService::NotifyNewSuggestions() {
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }
-  observer_->OnNewSuggestions(provided_category_, std::move(result));
+  observer_->OnNewSuggestions(this, provided_category_, std::move(result));
 }
 
 void NTPSnippetsService::UpdateCategoryStatus(CategoryStatus status) {
@@ -824,7 +824,8 @@ void NTPSnippetsService::UpdateCategoryStatus(CategoryStatus status) {
 
   category_status_ = status;
   if (observer_) {
-    observer_->OnCategoryStatusChanged(provided_category_, category_status_);
+    observer_->OnCategoryStatusChanged(this, provided_category_,
+                                       category_status_);
   }
 }
 

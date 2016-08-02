@@ -126,14 +126,19 @@ class ContentSuggestionsService : public KeyedService,
   };
 
   // Implementation of ContentSuggestionsProvider::Observer.
-  void OnNewSuggestions(Category changed_category,
+  void OnNewSuggestions(ContentSuggestionsProvider* provider,
+                        Category category,
                         std::vector<ContentSuggestion> suggestions) override;
-  void OnCategoryStatusChanged(Category changed_category,
+  void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
+                               Category category,
                                CategoryStatus new_status) override;
   void OnProviderShutdown(ContentSuggestionsProvider* provider) override;
 
-  // Checks whether a provider for the given |category| is registered.
-  bool IsCategoryRegistered(Category category) const;
+  // Registers the given |provider| for the given |category|, unless it is
+  // already registered. Returns true if the category was newly registered or
+  // false if it was present before.
+  bool RegisterCategoryIfRequired(ContentSuggestionsProvider* provider,
+                                  Category category);
 
   // Fires the OnCategoryStatusChanged event for the given |category|.
   void NotifyCategoryStatusChanged(Category category);
@@ -148,7 +153,7 @@ class ContentSuggestionsService : public KeyedService,
   // provides multiple categories. The keys of this map are exactly the entries
   // of |categories_|.
   std::map<Category, ContentSuggestionsProvider*, CompareCategoriesByID>
-      providers_;
+      providers_by_category_;
 
   // All current suggestion categories, in an order determined by the
   // |category_factory_|. This vector contains exactly the same categories as

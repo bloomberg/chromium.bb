@@ -40,7 +40,7 @@ class Category {
  private:
   friend class CategoryFactory;
 
-  Category(int id);
+  explicit Category(int id);
 
   int id_;
 

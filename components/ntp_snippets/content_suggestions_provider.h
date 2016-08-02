@@ -39,20 +39,29 @@ class ContentSuggestionsProvider {
     // the full list of currently available suggestions for that category, i.e.,
     // an empty list will remove all suggestions from the given category. Note
     // that to clear them from the UI immediately, the provider needs to change
-    // the status of the respective category.
+    // the status of the respective category. If the given |category| is not
+    // known yet, the calling |provider| will be registered as its provider.
     // IDs for the ContentSuggestions should be generated with
     // |MakeUniqueID(..)| below.
     virtual void OnNewSuggestions(
-        Category changed_category,
+        ContentSuggestionsProvider* provider,
+        Category category,
         std::vector<ContentSuggestion> suggestions) = 0;
 
     // Called when the status of a category changed.
-    // |new_status| must be the value that is currently returned from the
-    // provider's |GetCategoryStatus(category)| below.
-    // Whenever the status changes to an unavailable status, all suggestions in
-    // that category must immediately be removed from all caches and from the
-    // UI.
-    virtual void OnCategoryStatusChanged(Category changed_category,
+    // If |new_status| is NOT_PROVIDED, the calling provider must be the one
+    // that currently provides the |category|, and the category is unregistered
+    // without clearing the UI. The |category| must also be removed from
+    // |GetProvidedCategories()|.
+    // If |new_status| is any other value, it must match the value that is
+    // currently returned from the provider's |GetCategoryStatus(category)|. In
+    // case the given |category| is not known yet, the calling |provider| will
+    // be registered as its provider. Whenever the status changes to an
+    // unavailable status, all suggestions in that category must immediately be
+    // removed from all caches and from the UI, but the provider remains
+    // registered.
+    virtual void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
+                                         Category category,
                                          CategoryStatus new_status) = 0;
 
     // Called when the provider needs to shut down and will not deliver any
@@ -66,8 +75,10 @@ class ContentSuggestionsProvider {
   virtual void SetObserver(Observer* observer) = 0;
 
   // Returns the categories provided by this provider.
-  // TODO(pke): "The value returned by this getter must not change unless
-  // OnXxx is called on the observer."
+  // When the set of provided categories changes, the Observer is notified
+  // through |OnNewSuggestions| or |OnCategoryStatusChanged| for added
+  // categories, and through |OnCategoryStatusChanged| with parameter
+  // NOT_PROVIDED for removed categories.
   virtual std::vector<Category> GetProvidedCategories() = 0;
 
   // Determines the status of the given |category|, see CategoryStatus.

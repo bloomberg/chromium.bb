@@ -129,7 +129,7 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
       break;
   }
 
-  observer_->OnNewSuggestions(provided_category_, std::move(suggestions));
+  observer_->OnNewSuggestions(this, provided_category_, std::move(suggestions));
 }
 
 void OfflinePageSuggestionsProvider::NotifyStatusChanged(
@@ -140,7 +140,7 @@ void OfflinePageSuggestionsProvider::NotifyStatusChanged(
 
   if (!observer_)
     return;
-  observer_->OnCategoryStatusChanged(provided_category_, new_status);
+  observer_->OnCategoryStatusChanged(this, provided_category_, new_status);
 }
 
 }  // namespace ntp_snippets

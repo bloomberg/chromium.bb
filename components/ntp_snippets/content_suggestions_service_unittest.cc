@@ -76,12 +76,12 @@ class MockProvider : public ContentSuggestionsProvider {
   }
 
   void FireSuggestionsChanged(Category category, std::vector<int> numbers) {
-    observer_->OnNewSuggestions(category, CreateSuggestions(numbers));
+    observer_->OnNewSuggestions(this, category, CreateSuggestions(numbers));
   }
 
   void FireCategoryStatusChanged(Category category, CategoryStatus new_status) {
     statuses_[category.id()] = new_status;
-    observer_->OnCategoryStatusChanged(category, new_status);
+    observer_->OnCategoryStatusChanged(this, category, new_status);
   }
 
   void FireShutdown() {
@@ -156,7 +156,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
                  ContentSuggestionsProvider*,
                  ContentSuggestionsService::CompareCategoriesByID>&
   providers() {
-    return service()->providers_;
+    return service()->providers_by_category_;
   }
 
   CategoryFactory* category_factory() { return service()->category_factory(); }
