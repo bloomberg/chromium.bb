@@ -124,16 +124,21 @@ static void swizzleImageData(unsigned char* srcAddr, int height, int bytesPerRow
         for (int i = 0; i < height / 2; i++) {
             int topRowStartPosition = i * bytesPerRow;
             int bottomRowStartPosition = (height - 1 - i) * bytesPerRow;
-            for (int j = 0; j < bytesPerRow; j += 4) {
-                std::swap(srcAddr[topRowStartPosition + j], srcAddr[bottomRowStartPosition + j + 2]);
-                std::swap(srcAddr[topRowStartPosition + j + 1], srcAddr[bottomRowStartPosition + j + 1]);
-                std::swap(srcAddr[topRowStartPosition + j + 2], srcAddr[bottomRowStartPosition + j]);
-                std::swap(srcAddr[topRowStartPosition + j + 3], srcAddr[bottomRowStartPosition + j + 3]);
+            if (kN32_SkColorType == kBGRA_8888_SkColorType) { // needs to swizzle
+                for (int j = 0; j < bytesPerRow; j += 4) {
+                    std::swap(srcAddr[topRowStartPosition + j], srcAddr[bottomRowStartPosition + j + 2]);
+                    std::swap(srcAddr[topRowStartPosition + j + 1], srcAddr[bottomRowStartPosition + j + 1]);
+                    std::swap(srcAddr[topRowStartPosition + j + 2], srcAddr[bottomRowStartPosition + j]);
+                    std::swap(srcAddr[topRowStartPosition + j + 3], srcAddr[bottomRowStartPosition + j + 3]);
+                }
+            } else {
+                std::swap_ranges(srcAddr + topRowStartPosition, srcAddr + topRowStartPosition + bytesPerRow, srcAddr + bottomRowStartPosition);
             }
         }
     } else {
-        for (int i = 0; i < height * bytesPerRow; i += 4)
-            std::swap(srcAddr[i], srcAddr[i + 2]);
+        if (kN32_SkColorType == kBGRA_8888_SkColorType) // needs to swizzle
+            for (int i = 0; i < height * bytesPerRow; i += 4)
+                std::swap(srcAddr[i], srcAddr[i + 2]);
     }
 }
 
@@ -401,12 +406,10 @@ ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const Imag
         int dstPixelBytesPerRow = info.bytesPerPixel() * parsedOptions.cropRect.width();
         RefPtr<SkImage> skImage;
         if (parsedOptions.cropRect == IntRect(IntPoint(), data->size())) {
-            if (kN32_SkColorType == kBGRA_8888_SkColorType)
-                swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
+            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
             skImage = fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, srcAddr, dstPixelBytesPerRow)));
             // restore the original ImageData
-            if (kN32_SkColorType == kBGRA_8888_SkColorType)
-                swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
+            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
         } else {
             std::unique_ptr<uint8_t[]> copiedDataBuffer = wrapArrayUnique(new uint8_t[dstHeight * dstPixelBytesPerRow]());
             if (!srcRect.isEmpty()) {
