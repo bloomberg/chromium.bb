@@ -176,7 +176,6 @@ mojom("mojo_bindings") {
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
-    "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",
@@ -200,6 +199,7 @@ mojom("new_wrapper_types_mojo_bindings") {
 mojom("android_mojo_bindings") {
   sources = [
     "platform/modules/payments/payment_request.mojom",
+    "platform/modules/webshare/webshare.mojom",
   ]
 
   use_new_wrapper_types = false

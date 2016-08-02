@@ -968,6 +968,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebappManagedActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappUrlBar.java",
+  "java/src/org/chromium/chrome/browser/webshare/ShareServiceImpl.java",
+  "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
   "java/src/org/chromium/chrome/browser/widget/AlertDialogEditText.java",
   "java/src/org/chromium/chrome/browser/widget/AlwaysDismissedDialog.java",
   "java/src/org/chromium/chrome/browser/widget/BoundedLinearLayout.java",
