@@ -41,6 +41,7 @@ import sys
 
 from webkitpy.common.host import Host
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
+from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
 from webkitpy.tool.commands.commit_announcer import CommitAnnouncerCommand
 from webkitpy.tool.commands.flaky_tests import FlakyTests
@@ -51,7 +52,6 @@ from webkitpy.tool.commands.pretty_diff import PrettyDiff
 from webkitpy.tool.commands.queries import CrashLog
 from webkitpy.tool.commands.queries import PrintBaselines
 from webkitpy.tool.commands.queries import PrintExpectations
-from webkitpy.tool.commands.rebaseline import AutoRebaseline
 from webkitpy.tool.commands.rebaseline import CopyExistingBaselinesInternal
 from webkitpy.tool.commands.rebaseline import Rebaseline
 from webkitpy.tool.commands.rebaseline import RebaselineExpectations
