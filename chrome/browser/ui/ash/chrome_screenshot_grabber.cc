@@ -408,9 +408,11 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       (screenshot_result == ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS);
   message_center::RichNotificationData optional_field;
   if (success) {
-    const base::string16 label = l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD);
-    optional_field.buttons.push_back(message_center::ButtonInfo(label));
+    message_center::ButtonInfo button_info(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD));
+    button_info.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD);
+    optional_field.buttons.push_back(button_info);
   }
   return new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
