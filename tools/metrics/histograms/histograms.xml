@@ -26576,6 +26576,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ellyjones@chromium.org</owner>
   <owner>rdsmith@chromium.org</owner>
   <summary>Counts of response bytes by cache state.</summary>
+  <obsolete>
+    Part of a concluded experiment, 2016-08-02.
+  </obsolete>
 </histogram>
 
 <histogram name="Net.CacheState.AllRequests" enum="NetCacheState">
@@ -26584,6 +26587,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     State of the cache for a request, delta-encoding eligible or otherwise.
   </summary>
+  <obsolete>
+    Part of a concluded experiment, 2016-08-02.
+  </obsolete>
 </histogram>
 
 <histogram name="Net.CacheState.EncodeableBytes">
@@ -26593,12 +26599,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Counts of response bytes by cache state for delta-encoding eligible
     requests.
   </summary>
+  <obsolete>
+    Part of a concluded experiment, 2016-08-02.
+  </obsolete>
 </histogram>
 
 <histogram name="Net.CacheState.EncodeableRequests" enum="NetCacheState">
   <owner>ellyjones@chromium.org</owner>
   <owner>rdsmith@chromium.org</owner>
   <summary>State of the cache for a delta-encoding eligible request.</summary>
+  <obsolete>
+    Part of a concluded experiment, 2016-08-02.
+  </obsolete>
 </histogram>
 
 <histogram name="Net.CertCommonNameFallback" enum="BooleanCommonNameMatch">

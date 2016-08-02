@@ -139,122 +139,6 @@ void RecordNetworkErrorHistograms(const net::URLRequest* request) {
   }
 }
 
-// Returns whether |request| is likely to be eligible for delta-encoding.
-// This is only a rough approximation right now, based on MIME type.
-bool CanRequestBeDeltaEncoded(const net::URLRequest* request) {
-  struct {
-    const char *prefix;
-    const char *suffix;
-  } kEligibleMasks[] = {
-    // All text/ types are eligible, even if not displayable.
-    { "text/", NULL },
-    // JSON (application/json and application/*+json) is eligible.
-    { "application/", "json" },
-    // Javascript is eligible.
-    { "application/", "javascript" },
-    // XML (application/xml and application/*+xml) is eligible.
-    { "application/", "xml" },
-  };
-
-  std::string mime_type;
-  request->GetMimeType(&mime_type);
-
-  for (size_t i = 0; i < arraysize(kEligibleMasks); i++) {
-    const char *prefix = kEligibleMasks[i].prefix;
-    const char *suffix = kEligibleMasks[i].suffix;
-    if (prefix &&
-        !base::StartsWith(mime_type, prefix, base::CompareCase::SENSITIVE))
-      continue;
-    if (suffix &&
-        !base::EndsWith(mime_type, suffix, base::CompareCase::SENSITIVE))
-      continue;
-    return true;
-  }
-  return false;
-}
-
-// Returns whether |request| was issued by a renderer process, as opposed to
-// the browser process or a plugin process.
-bool IsRendererInitiatedRequest(const net::URLRequest* request) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  return info && info->GetProcessType() == content::PROCESS_TYPE_RENDERER;
-}
-
-// Uploads UMA histograms for delta encoding eligibility. This method can only
-// be safely called after the network stack has called both OnStarted and
-// OnCompleted, since it needs the received response content length and the
-// response headers.
-void RecordCacheStateStats(const net::URLRequest* request) {
-  net::HttpRequestHeaders request_headers;
-  if (!request->GetFullRequestHeaders(&request_headers)) {
-    // GetFullRequestHeaders is guaranteed to succeed if OnResponseStarted() has
-    // been called on |request|, so if GetFullRequestHeaders() fails,
-    // RecordCacheStateStats must have been called before
-    // OnResponseStarted().
-    return;
-  }
-
-  if (!IsRendererInitiatedRequest(request)) {
-    // Ignore browser-initiated requests. These are internal requests like safe
-    // browsing and sync, and so on. Some of these could be eligible for
-    // delta-encoding, but to be conservative this function ignores all of them.
-    return;
-  }
-
-  const int kCacheAffectingFlags = net::LOAD_BYPASS_CACHE |
-                                   net::LOAD_DISABLE_CACHE |
-                                   net::LOAD_PREFERRING_CACHE;
-
-  if (request->load_flags() & kCacheAffectingFlags) {
-    // Ignore requests with cache-affecting flags, which would otherwise mess up
-    // these stats.
-    return;
-  }
-
-  enum {
-    CACHE_STATE_FROM_CACHE,
-    CACHE_STATE_STILL_VALID,
-    CACHE_STATE_NO_LONGER_VALID,
-    CACHE_STATE_NO_ENTRY,
-    CACHE_STATE_MAX,
-  } state = CACHE_STATE_NO_ENTRY;
-  bool had_cache_headers =
-      request_headers.HasHeader(net::HttpRequestHeaders::kIfModifiedSince) ||
-      request_headers.HasHeader(net::HttpRequestHeaders::kIfNoneMatch) ||
-      request_headers.HasHeader(net::HttpRequestHeaders::kIfRange);
-  if (request->was_cached() && !had_cache_headers) {
-    // Entry was served directly from cache.
-    state = CACHE_STATE_FROM_CACHE;
-  } else if (request->was_cached() && had_cache_headers) {
-    // Expired entry was present in cache, and server responded with NOT
-    // MODIFIED, indicating the expired entry is still valid.
-    state = CACHE_STATE_STILL_VALID;
-  } else if (!request->was_cached() && had_cache_headers) {
-    // Expired entry was present in cache, and server responded with something
-    // other than NOT MODIFIED, indicating the entry is no longer valid.
-    state = CACHE_STATE_NO_LONGER_VALID;
-  } else if (!request->was_cached() && !had_cache_headers) {
-    // Neither |was_cached| nor |had_cache_headers|, so there's no local cache
-    // entry for this content at all.
-    state = CACHE_STATE_NO_ENTRY;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Net.CacheState.AllRequests", state,
-                            CACHE_STATE_MAX);
-  if (CanRequestBeDeltaEncoded(request)) {
-    UMA_HISTOGRAM_ENUMERATION("Net.CacheState.EncodeableRequests", state,
-                              CACHE_STATE_MAX);
-  }
-
-  int64_t size = request->received_response_content_length();
-  if (size >= 0 && state == CACHE_STATE_NO_LONGER_VALID) {
-    UMA_HISTOGRAM_COUNTS("Net.CacheState.AllBytes", size);
-    if (CanRequestBeDeltaEncoded(request)) {
-      UMA_HISTOGRAM_COUNTS("Net.CacheState.EncodeableBytes", size);
-    }
-  }
-}
-
 }  // namespace
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
@@ -494,12 +378,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   // of redirected requests.
   data_use_measurement_.ReportDataUseUMA(request);
   RecordNetworkErrorHistograms(request);
-  if (started) {
-    // Only call in for requests that were started, to obey the precondition
-    // that RecordCacheStateStats can only be called on requests for which
-    // OnResponseStarted was called.
-    RecordCacheStateStats(request);
-  }
 
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
