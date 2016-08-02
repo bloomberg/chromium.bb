@@ -33,6 +33,10 @@ class JavaChecker(object):
 
   EXTENSIONS = ['.java']
 
+  # This regular expression will be used to extract filenames from import
+  # statements.
+  _EXTRACT_IMPORT_PATH = re.compile('^import\s+(?:static\s+)?([\w\.]+)\s*;')
+
   def __init__(self, base_directory, verbose):
     self._base_directory = base_directory
     self._verbose = verbose
@@ -83,6 +87,33 @@ class JavaChecker(object):
           return
       print 'WARNING: no package definition found in %s' % filepath
 
+  def CheckLine(self, rules, line, filepath, fail_on_temp_allow=False):
+    """Checks the given line with the given rule set.
+
+    Returns a tuple (is_import, dependency_violation) where
+    is_import is True only if the line is an import
+    statement, and dependency_violation is an instance of
+    results.DependencyViolation if the line violates a rule, or None
+    if it does not.
+    """
+    found_item = self._EXTRACT_IMPORT_PATH.match(line)
+    if not found_item:
+      return False, None  # Not a match
+    clazz = found_item.group(1)
+    if clazz not in self._classmap:
+      # Importing a class from outside the Chromium tree. That's fine --
+      # it's probably a Java or Android system class.
+      return True, None
+    import_path = os.path.relpath(
+        self._classmap[clazz], self._base_directory)
+    # Convert Windows paths to Unix style, as used in DEPS files.
+    import_path = import_path.replace(os.path.sep, '/')
+    rule = rules.RuleApplyingTo(import_path, filepath)
+    if (rule.allow == Rule.DISALLOW or
+        (fail_on_temp_allow and rule.allow == Rule.TEMP_ALLOW)):
+      return True, results.DependencyViolation(import_path, rule, rules)
+    return True, None
+
   def CheckFile(self, rules, filepath):
     if self._verbose:
       print 'Checking: ' + filepath
@@ -90,21 +121,29 @@ class JavaChecker(object):
     dependee_status = results.DependeeStatus(filepath)
     with codecs.open(filepath, encoding='utf-8') as f:
       for line in f:
-        for clazz in re.findall('^import\s+(?:static\s+)?([\w\.]+)\s*;', line):
-          if clazz not in self._classmap:
-            # Importing a class from outside the Chromium tree. That's fine --
-            # it's probably a Java or Android system class.
-            continue
-          include_path = os.path.relpath(
-              self._classmap[clazz], self._base_directory)
-          # Convert Windows paths to Unix style, as used in DEPS files.
-          include_path = include_path.replace(os.path.sep, '/')
-          rule = rules.RuleApplyingTo(include_path, filepath)
-          if rule.allow == Rule.DISALLOW:
-            dependee_status.AddViolation(
-                results.DependencyViolation(include_path, rule, rules))
+        is_import, violation = self.CheckLine(rules, line, filepath)
+        if violation:
+          dependee_status.AddViolation(violation)
         if '{' in line:
           # This is code, so we're finished reading imports for this file.
           break
 
     return dependee_status
+
+  @staticmethod
+  def IsJavaFile(filepath):
+    """Returns True if the given path ends in the extensions
+    handled by this checker.
+    """
+    return os.path.splitext(filepath)[1] in JavaChecker.EXTENSIONS
+
+  def ShouldCheck(self, file_path):
+    """Check if the new import file path should be presubmit checked.
+
+    Args:
+      file_path: file path to be checked
+
+    Return:
+      bool: True if the file should be checked; False otherwise.
+    """
+    return self.IsJavaFile(file_path)
