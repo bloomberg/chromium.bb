@@ -86,7 +86,9 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
             super(activity, windowAndroid, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             getSelectionController().getBaseContentView().setContextualSearchClient(this);
-            setContextualSearchPolicy(new MockContextualSearchPolicy(activity));
+            MockContextualSearchPolicy policy = new MockContextualSearchPolicy(activity);
+            setContextualSearchPolicy(policy);
+            mTranslateController = new MockedCSTranslateController(activity, policy, null);
         }
 
         @Override
@@ -131,6 +133,31 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         @Override
         public StubbedContentViewCore getBaseContentView() {
             return mContentViewCore;
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Translate controller that mocks out native calls.
+     */
+    private static class MockedCSTranslateController extends ContextualSearchTranslateController {
+        private static final String ENGLISH_TARGET_LANGUAGE = "en";
+        private static final String ENGLISH_ACCEPT_LANGUAGES = "en-US,en";
+
+        MockedCSTranslateController(ChromeActivity activity, ContextualSearchPolicy policy,
+                ContextualSearchTranslateInterface hostInterface) {
+            super(activity, policy, hostInterface);
+        }
+
+        @Override
+        protected String getNativeAcceptLanguages() {
+            return ENGLISH_ACCEPT_LANGUAGES;
+        }
+
+        @Override
+        protected String getNativeTranslateServiceTargetLanguage() {
+            return ENGLISH_TARGET_LANGUAGE;
         }
     }
 

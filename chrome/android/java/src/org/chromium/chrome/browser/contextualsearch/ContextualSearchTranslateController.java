@@ -186,7 +186,7 @@ public class ContextualSearchTranslateController  {
     /**
      * @return The accept-languages string from the cache or from native code (when not cached).
      */
-    private String getNativeAcceptLanguages() {
+    protected String getNativeAcceptLanguages() {
         if (mAcceptLanguages == null) {
             mAcceptLanguages = mHost.getAcceptLanguages();
         }
@@ -197,7 +197,7 @@ public class ContextualSearchTranslateController  {
      * @return The Translate Service's target language string from the cache or from
      *         native code (when not cached).
      */
-    private String getNativeTranslateServiceTargetLanguage() {
+    protected String getNativeTranslateServiceTargetLanguage() {
         if (mTranslateServiceTargetLanguage == null) {
             mTranslateServiceTargetLanguage = mHost.getTranslateServiceTargetLanguage();
         }

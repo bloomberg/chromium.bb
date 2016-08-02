@@ -88,11 +88,15 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
     private final TabModelObserver mTabModelObserver;
-    private final ContextualSearchTranslateController mTranslateController;
 
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
     private ContextualSearchPolicy mPolicy;
+
+    @VisibleForTesting
+    protected ContextualSearchTranslateController mTranslateController;
+
+    // The Overlay panel.
     private ContextualSearchPanel mSearchPanel;
 
     // The native manager associated with this object.
