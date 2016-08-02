@@ -349,18 +349,8 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
         return;
     }
 
-    TextCheckingTypeMask textCheckingOptions = TextCheckingTypeGrammar;
-
     if (isContinuousSpellCheckingEnabled())
-        textCheckingOptions |= TextCheckingTypeSpelling;
-
-    VisibleSelection wholeParagraph(
-        startOfParagraph(wordSelection.visibleStart()),
-        endOfParagraph(wordSelection.visibleEnd()));
-
-    markAllMisspellingsAndBadGrammarInRanges(
-        textCheckingOptions, wordSelection.toNormalizedEphemeralRange(),
-        wholeParagraph.toNormalizedEphemeralRange());
+        markAllMisspellingsInRange(wordSelection.toNormalizedEphemeralRange());
 }
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
@@ -376,15 +366,8 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         if (!(textCheckingOptions & TextCheckingTypeSpelling))
             return;
 
-        textCheckingOptions |= TextCheckingTypeGrammar;
-
         VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
-        if (textCheckingOptions & TextCheckingTypeGrammar) {
-            VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), selectedSentence.toNormalizedEphemeralRange());
-        } else {
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), adjacentWords.toNormalizedEphemeralRange());
-        }
+        markAllMisspellingsInRange(adjacentWords.toNormalizedEphemeralRange());
         return;
     }
 
@@ -455,14 +438,12 @@ void SpellChecker::markMisspellings(const VisibleSelection& selection)
     checker.markAllMisspellings();
 }
 
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
+void SpellChecker::markAllMisspellingsInRange(const EphemeralRange& spellingRange)
 {
     DCHECK(unifiedTextCheckerEnabled());
 
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-
     // This function is called with selections already expanded to word boundaries.
-    if (spellingRange.isNull() || (shouldMarkGrammar && grammarRange.isNull()))
+    if (spellingRange.isNull())
         return;
 
     // If we're not in an editable node, bail.
@@ -473,8 +454,8 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    TextCheckingParagraph fullParagraphToCheck(shouldMarkGrammar ? grammarRange : spellingRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck);
+    TextCheckingParagraph fullParagraphToCheck(spellingRange);
+    chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeSpelling, fullParagraphToCheck);
 }
 
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
@@ -653,10 +634,7 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
             return;
 
         // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling and grammar, but don't autocorrect misspellings.
-        TextCheckingTypeMask textCheckingOptions = TextCheckingTypeSpelling;
-        if (markGrammar)
-            textCheckingOptions |= TextCheckingTypeGrammar;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, spellingSelection.toNormalizedEphemeralRange(), grammarSelection.toNormalizedEphemeralRange());
+        markAllMisspellingsInRange(spellingSelection.toNormalizedEphemeralRange());
         return;
     }
 
