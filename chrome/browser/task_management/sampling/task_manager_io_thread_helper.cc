@@ -26,7 +26,11 @@ IoThreadHelperManager::IoThreadHelperManager() {
 }
 
 IoThreadHelperManager::~IoThreadHelperManager() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // This may be called at exit time when the main thread is no longer
+  // registered as the UI thread.
+  DCHECK(
+      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
+      !content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,

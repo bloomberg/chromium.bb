@@ -64,11 +64,6 @@ void HideTaskManager() {
   task_management::NewTaskManagerView::Hide();
 }
 
-bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
-                                   int64_t bytes_read) {
-  return false;
-}
-
 }  // namespace chrome
 
 #if defined(OS_CHROMEOS)

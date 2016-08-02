@@ -27,8 +27,6 @@ class View;
 
 namespace task_management {
 
-class TaskManagerTableModel;
-
 // The new task manager UI container.
 class NewTaskManagerView
     : public TableViewDelegate,

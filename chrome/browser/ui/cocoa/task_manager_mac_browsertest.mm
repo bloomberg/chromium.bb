@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
 #include "base/macros.h"
 #include "base/strings/pattern.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/task_manager_browsertest_util.h"
 #include "chrome/browser/task_management/task_manager_tester.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
-#include "chrome/browser/ui/views/new_task_manager_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -31,18 +29,19 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/views/controls/table/table_view.h"
+#include "testing/gtest_mac.h"
 
 namespace task_management {
 
 using browsertest_util::WaitForTaskManagerRows;
 
-class NewTaskManagerViewTest : public InProcessBrowserTest {
+class TaskManagerMacTest : public InProcessBrowserTest {
  public:
-  NewTaskManagerViewTest() {}
-  ~NewTaskManagerViewTest() override {}
+  TaskManagerMacTest() {}
+  ~TaskManagerMacTest() override {}
 
   void SetUpOnMainThread() override {
+    ASSERT_FALSE(GetTaskManagerMac());
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -50,21 +49,29 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     // Make sure the task manager is closed (if any).
     chrome::HideTaskManager();
-    content::RunAllPendingInMessageLoop();
-    ASSERT_FALSE(GetView());
+    ASSERT_FALSE(GetTaskManagerMac());
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  NewTaskManagerView* GetView() const {
-    return NewTaskManagerView::GetInstanceForTests();
+  TaskManagerMac* GetTaskManagerMac() const {
+    return TaskManagerMac::GetInstanceForTests();
   }
 
-  views::TableView* GetTable() const {
-    return GetView() ? GetView()->tab_table_ : nullptr;
+  NSTableView* GetTable() const {
+    return GetTaskManagerMac() ? [GetTaskManagerMac()->CocoaControllerForTests()
+                                         tableViewForTesting]
+                               : nullptr;
   }
 
-  void PressKillButton() { GetView()->Accept(); }
+  int TableFirstSelectedRow() const {
+    return [[GetTable() selectedRowIndexes] firstIndex];
+  }
+
+  void PressKillButton() {
+    [[GetTaskManagerMac()->CocoaControllerForTests() endProcessButtonForTesting]
+        performClick:nil];
+  }
 
   void ClearStoredColumnSettings() const {
     PrefService* local_state = g_browser_process->local_state();
@@ -76,9 +83,9 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
     dict_update->Clear();
   }
 
-  void ToggleColumnVisibility(NewTaskManagerView* view, int col_id) {
-    DCHECK(view);
-    view->table_model_->ToggleColumnVisibility(col_id);
+  void ToggleColumnVisibility(TaskManagerMac* task_manager, int col_id) {
+    DCHECK(task_manager);
+    task_manager->GetTableModelForTests()->ToggleColumnVisibility(col_id);
   }
 
   // Looks up a tab based on its tab ID.
@@ -104,12 +111,12 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NewTaskManagerViewTest);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerMacTest);
 };
 
 // Tests that all defined columns have a corresponding string IDs for keying
 // into the user preferences dictionary.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, AllColumnsHaveStringIds) {
+IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, AllColumnsHaveStringIds) {
   for (size_t i = 0; i < kColumnsSize; ++i)
     EXPECT_NE("", GetColumnIdAsString(kColumns[i].id));
 }
@@ -117,115 +124,83 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, AllColumnsHaveStringIds) {
 // In the case of no settings stored in the user preferences local store, test
 // that the task manager table starts with the default columns visibility as
 // stored in |kColumns|.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, TableStartsWithDefaultColumns) {
+IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, TableStartsWithDefaultColumns) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
-  views::TableView* table = GetTable();
+  NSTableView* table = GetTable();
   ASSERT_TRUE(table);
 
-  EXPECT_FALSE(table->is_sorted());
+  EXPECT_EQ(0u, [[table sortDescriptors] count]);
+  NSArray* tableColumns = [table tableColumns];
   for (size_t i = 0; i < kColumnsSize; ++i) {
+    EXPECT_EQ(kColumns[i].id,
+              [[[tableColumns objectAtIndex:i] identifier] intValue]);
     EXPECT_EQ(kColumns[i].default_visibility,
-              table->IsColumnVisible(kColumns[i].id));
+              ![[tableColumns objectAtIndex:i] isHidden]);
   }
 }
 
 // Tests that changing columns visibility and sort order will be stored upon
 // closing the task manager view and restored when re-opened.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, ColumnsSettingsAreRestored) {
+IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, ColumnsSettingsAreRestored) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
-  NewTaskManagerView* view = GetView();
-  ASSERT_TRUE(view);
-  views::TableView* table = GetTable();
+  TaskManagerMac* task_manager = GetTaskManagerMac();
+  ASSERT_TRUE(task_manager);
+  NSTableView* table = GetTable();
   ASSERT_TRUE(table);
 
   // Toggle the visibility of all columns.
-  EXPECT_FALSE(table->is_sorted());
+  EXPECT_EQ(0u, [[table sortDescriptors] count]);
+  NSArray* tableColumns = [table tableColumns];
   for (size_t i = 0; i < kColumnsSize; ++i) {
+    EXPECT_EQ(kColumns[i].id,
+              [[[tableColumns objectAtIndex:i] identifier] intValue]);
     EXPECT_EQ(kColumns[i].default_visibility,
-              table->IsColumnVisible(kColumns[i].id));
-    ToggleColumnVisibility(view, kColumns[i].id);
+              ![[tableColumns objectAtIndex:i] isHidden]);
+    ToggleColumnVisibility(task_manager, kColumns[i].id);
   }
 
-  // Sort by the first visible and initially ascending sortable column.
+  // Sort by the first visible and initially ascending sortable column. It would
+  // be nice to fake a click with -performClick: but that doesn't work (see
+  // http://www.cocoabuilder.com/archive/cocoa/177610-programmatically-click-column-header-in-nstableview.html).
   bool is_sorted = false;
   int sorted_col_id = -1;
-  for (size_t i = 0; i < table->visible_columns().size(); ++i) {
-    const ui::TableColumn& column = table->visible_columns()[i].column;
-    if (column.sortable && column.initial_sort_is_ascending) {
-      // Toggle the sort twice for a descending sort.
-      table->ToggleSortOrder(static_cast<int>(i));
-      table->ToggleSortOrder(static_cast<int>(i));
+  for (NSTableColumn* column in tableColumns) {
+    if ([column isHidden])
+      continue;
+    if ([column sortDescriptorPrototype].ascending) {
+      // Toggle the sort for a descending sort.
+      NSSortDescriptor* newSortDescriptor =
+          [[column sortDescriptorPrototype] reversedSortDescriptor];
+      [table setSortDescriptors:@[ newSortDescriptor ]];
       is_sorted = true;
-      sorted_col_id = column.id;
+      sorted_col_id = [[column identifier] intValue];
       break;
     }
   }
 
-  if (is_sorted) {
-    EXPECT_TRUE(table->is_sorted());
-    EXPECT_FALSE(table->sort_descriptors().front().ascending);
-    EXPECT_EQ(table->sort_descriptors().front().column_id, sorted_col_id);
-  }
+  NSArray* expectedSortDescriptors = [table sortDescriptors];
+  EXPECT_EQ(is_sorted, [expectedSortDescriptors count] > 0);
 
   // Close the task manager view and re-open. Expect the inverse of the default
   // visibility, and the last sort order.
   chrome::HideTaskManager();
-  content::RunAllPendingInMessageLoop();
-  ASSERT_FALSE(GetView());
+  ASSERT_FALSE(GetTaskManagerMac());
   chrome::ShowTaskManager(browser());
-  view = GetView();
-  ASSERT_TRUE(view);
+  task_manager = GetTaskManagerMac();
+  ASSERT_TRUE(task_manager);
   table = GetTable();
   ASSERT_TRUE(table);
 
   if (is_sorted) {
-    EXPECT_TRUE(table->is_sorted());
-    EXPECT_FALSE(table->sort_descriptors().front().ascending);
-    EXPECT_EQ(table->sort_descriptors().front().column_id, sorted_col_id);
-  }
-  for (size_t i = 0; i < kColumnsSize; ++i) {
-    EXPECT_EQ(!kColumns[i].default_visibility,
-              table->IsColumnVisible(kColumns[i].id));
+    EXPECT_NSEQ(expectedSortDescriptors, [table sortDescriptors]);
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, InitialSelection) {
-  // Navigate the first tab.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("a.com", "/title2.html"));
-
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("b.com", "/title3.html"),
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // When the task manager is initially shown, the row for the active tab should
-  // be selected.
-  chrome::ShowTaskManager(browser());
-
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
-  EXPECT_EQ(GetTable()->FirstSelectedRow(),
-            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(1)));
-
-  // Activate tab 0. The selection should not change.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
-  EXPECT_EQ(GetTable()->FirstSelectedRow(),
-            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(1)));
-
-  // If the user re-triggers chrome::ShowTaskManager (e.g. via shift-esc), this
-  // should set the TaskManager selection to the active tab.
-  chrome::ShowTaskManager(browser());
-
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
-  EXPECT_EQ(GetTable()->FirstSelectedRow(),
-            FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(0)));
-}
-
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
+IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, SelectionConsistency) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
@@ -262,35 +237,37 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
   EXPECT_EQ(3U, tabs.size());
 
   // Select the middle row, and store its tab id.
-  GetTable()->Select(FindRowForTab(tabs[1]));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  [GetTable()
+          selectRowIndexes:[NSIndexSet indexSetWithIndex:FindRowForTab(tabs[1])]
+      byExtendingSelection:NO];
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
+  EXPECT_EQ(1, [GetTable() numberOfSelectedRows]);
 
   // Add 3 rows above the selection. The selected tab should not change.
   for (int i = 0; i < 3; ++i) {
     ASSERT_TRUE(content::ExecuteScript(tabs[0], "window.open('title3.html');"));
-    EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
+    EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
   }
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows += 3), pattern));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
+  EXPECT_EQ(1, [GetTable() numberOfSelectedRows]);
 
   // Add 2 rows below the selection. The selected tab should not change.
   for (int i = 0; i < 2; ++i) {
     ASSERT_TRUE(content::ExecuteScript(tabs[2], "window.open('title3.html');"));
-    EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
+    EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
   }
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows += 2), pattern));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
+  EXPECT_EQ(1, [GetTable() numberOfSelectedRows]);
 
   // Add a new row in the same process as the selection. The selected tab should
   // not change.
   ASSERT_TRUE(content::ExecuteScript(tabs[1], "window.open('title3.html');"));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows += 1), pattern));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[1]));
-  EXPECT_EQ(1, GetTable()->SelectedRowCount());
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[1]));
+  EXPECT_EQ(2, [GetTable() numberOfSelectedRows]);
 
   // Press the button, which kills the process of the selected row.
   PressKillButton();
@@ -298,14 +275,13 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
   // Two rows should disappear.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows -= 2), pattern));
 
-  // A later row should now be selected. The selection should be after the 4
-  // rows sharing the tabs[0] process, and it should be at or before
-  // the tabs[2] row.
-  ASSERT_LT(FindRowForTab(tabs[0]) + 3, GetTable()->FirstSelectedRow());
-  ASSERT_LE(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[2]));
+  // No row should now be selected.
+  ASSERT_EQ(-1, TableFirstSelectedRow());
 
   // Now select tabs[2].
-  GetTable()->Select(FindRowForTab(tabs[2]));
+  [GetTable()
+          selectRowIndexes:[NSIndexSet indexSetWithIndex:FindRowForTab(tabs[2])]
+      byExtendingSelection:NO];
 
   // Focus and reload one of the sad tabs. It should reappear in the TM. The
   // other sad tab should not reappear.
@@ -314,13 +290,12 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows += 1), pattern));
 
   // tabs[2] should still be selected.
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[2]));
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[2]));
 
   // Close tabs[0]. The selection should not change.
   chrome::CloseWebContents(browser(), tabs[0], false);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows((rows -= 1), pattern));
-  EXPECT_EQ(GetTable()->FirstSelectedRow(), FindRowForTab(tabs[2]));
+  EXPECT_EQ(TableFirstSelectedRow(), FindRowForTab(tabs[2]));
 }
 
 }  // namespace task_management
-

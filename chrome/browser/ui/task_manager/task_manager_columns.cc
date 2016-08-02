@@ -98,7 +98,7 @@ const char kSortIsAscendingKey[] = "sort_is_ascending";
 // ID symbol (i.e. for the ID IDS_TASK_MANAGER_TASK_COLUMN, we use the literal
 // string "IDS_TASK_MANAGER_TASK_COLUMN". The following macros help us
 // efficiently get the literal ID for the integer value.
-#define COLUMNS_LITS(def) \
+#define COLUMNS_LIST(def) \
   def(IDS_TASK_MANAGER_TASK_COLUMN) \
   def(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) \
   def(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) \
@@ -127,12 +127,11 @@ const char kSortIsAscendingKey[] = "sort_is_ascending";
 
 std::string GetColumnIdAsString(int column_id) {
   switch (column_id) {
-    COLUMNS_LITS(COLUMN_ID_AS_STRING)
+    COLUMNS_LIST(COLUMN_ID_AS_STRING)
     default:
       NOTREACHED();
       return std::string();
   }
 }
-
 
 }  // namespace task_management

@@ -6,107 +6,148 @@
 #define CHROME_BROWSER_UI_COCOA_TASK_MANAGER_MAC_H_
 
 #import <Cocoa/Cocoa.h>
+
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/ui/task_manager/task_manager_table_model.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "ui/base/models/table_model_observer.h"
 
 @class WindowSizeAutosaver;
-class TaskManagerMac;
 
 namespace gfx {
 class ImageSkia;
 }
 
+namespace task_management {
+class TaskManagerMac;
+}
+
 // This class is responsible for loading the task manager window and for
 // managing it.
-@interface TaskManagerWindowController :
-  NSWindowController<NSTableViewDataSource,
-                     NSTableViewDelegate> {
+@interface TaskManagerWindowController
+    : NSWindowController<NSTableViewDataSource,
+                         NSTableViewDelegate,
+                         NSMenuDelegate> {
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* endProcessButton_;
-  TaskManagerMac* taskManagerObserver_;  // weak
-  TaskManager* taskManager_;  // weak
-  TaskManagerModel* model_;  // weak
+  task_management::TaskManagerMac* taskManagerMac_;     // weak
+  task_management::TaskManagerTableModel* tableModel_;  // weak
 
   base::scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
-  // These contain a permutation of [0..|model_->ResourceCount() - 1|]. Used to
+  // These contain a permutation of [0..|tableModel_->RowCount() - 1|]. Used to
   // implement sorting.
   std::vector<int> viewToModelMap_;
   std::vector<int> modelToViewMap_;
 
   // Descriptor of the current sort column.
-  base::scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;
+  task_management::TableSortDescriptor currentSortDescriptor_;
+
+  // Re-entrancy flag to allow meddling with the sort descriptor.
+  BOOL withinSortDescriptorsDidChange_;
 }
 
 // Creates and shows the task manager's window.
-- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver;
+- (id)initWithTaskManagerMac:(task_management::TaskManagerMac*)taskManagerMac
+                  tableModel:
+                      (task_management::TaskManagerTableModel*)tableModel;
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
+
+// Gets a copy of the current sort descriptor.
+- (task_management::TableSortDescriptor)sortDescriptor;
+
+// Sets the current sort descriptor.
+- (void)setSortDescriptor:
+    (const task_management::TableSortDescriptor&)sortDescriptor;
+
+// Returns YES if the specified column is visible.
+- (BOOL)visibilityOfColumnWithId:(int)columnId;
+
+// Sets the visibility of the specified column.
+- (void)setColumnWithId:(int)columnId toVisibility:(BOOL)visibility;
 
 // Callback for "End process" button.
 - (IBAction)killSelectedProcesses:(id)sender;
 
 // Callback for double clicks on the table.
-- (void)selectDoubleClickedTab:(id)sender;
+- (void)tableWasDoubleClicked:(id)sender;
 @end
 
 @interface TaskManagerWindowController (TestingAPI)
-- (NSTableView*)tableView;
+- (NSTableView*)tableViewForTesting;
+- (NSButton*)endProcessButtonForTesting;
 @end
 
-// This class listens to task changed events sent by chrome.
-class TaskManagerMac : public TaskManagerModelObserver {
+namespace task_management {
+
+// This class runs the Task Manager on the Mac.
+class TaskManagerMac : public ui::TableModelObserver,
+                       public content::NotificationObserver,
+                       public TableViewDelegate {
  public:
-  explicit TaskManagerMac(TaskManager* task_manager);
+  // Called by the TaskManagerWindowController:
+  void WindowWasClosed();
+  NSImage* GetImageForRow(int row);
+
+  // Creates the task manager if it doesn't exist; otherwise, it activates the
+  // existing task manager window.
+  static TaskManagerTableModel* Show();
+
+  // Hides the task manager if it is showing.
+  static void Hide();
+
+  // Various test-only functions.
+  static TaskManagerMac* GetInstanceForTests() { return instance_; }
+  TaskManagerTableModel* GetTableModelForTests() { return table_model_.get(); }
+  TaskManagerWindowController* CocoaControllerForTests() {
+    return window_controller_;
+  }
+
+ private:
+  TaskManagerMac();
   ~TaskManagerMac() override;
 
-  // TaskManagerModelObserver
+  // ui::TableModelObserver:
   void OnModelChanged() override;
   void OnItemsChanged(int start, int length) override;
   void OnItemsAdded(int start, int length) override;
   void OnItemsRemoved(int start, int length) override;
 
-  // Called by the cocoa window controller when its window closes and the
-  // controller destroyed itself. Informs the model to stop updating.
-  void WindowWasClosed();
+  // TableViewDelegate:
+  bool IsColumnVisible(int column_id) const override;
+  void SetColumnVisibility(int column_id, bool new_visibility) override;
+  bool IsTableSorted() const override;
+  TableSortDescriptor GetSortDescriptor() const override;
+  void SetSortDescriptor(const TableSortDescriptor& descriptor) override;
 
-  // Creates the task manager if it doesn't exist; otherwise, it activates the
-  // existing task manager window.
-  static void Show();
-
-  // Hides the task manager if it is showing.
-  static void Hide();
-
-  // Returns the TaskManager observed by |this|.
-  TaskManager* task_manager() { return task_manager_; }
-
-  // Lazily converts the image at the given row and caches it in |icon_cache_|.
-  NSImage* GetImageForRow(int row);
-
-  // Returns the cocoa object. Used for testing.
-  TaskManagerWindowController* cocoa_controller() { return window_controller_; }
-
- private:
-  // The task manager.
-  TaskManager* const task_manager_;  // weak
+  // content::NotificationObserver overrides:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Our model.
-  TaskManagerModel* const model_;  // weak
+  std::unique_ptr<TaskManagerTableModel> table_model_;
 
   // Controller of our window, destroys itself when the task manager window
   // is closed.
   TaskManagerWindowController* window_controller_;  // weak
 
+  content::NotificationRegistrar registrar_;
+
   // An open task manager window. There can only be one open at a time. This
-  // is reset to NULL when the window is closed.
+  // is reset to be null when the window is closed.
   static TaskManagerMac* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerMac);
 };
+
+}  // namespace task_management
 
 #endif  // CHROME_BROWSER_UI_COCOA_TASK_MANAGER_MAC_H_

@@ -15,7 +15,7 @@
 
 namespace task_management {
 
-// An adapter that abstracts away the difference of old vs. new task manager.
+// An adapter to simplify testing the task manager.
 class TaskManagerTester {
  public:
   using ColumnSpecifier = browsertest_util::ColumnSpecifier;
@@ -25,9 +25,6 @@ class TaskManagerTester {
   // if not a null callback, will be invoked when the underlying model changes.
   static std::unique_ptr<TaskManagerTester> Create(
       const base::Closure& callback);
-
-  // If using a legacy task manager, refresh the model.
-  static void MaybeRefreshLegacyInstance();
 
   virtual ~TaskManagerTester() {}
 
@@ -54,11 +51,6 @@ class TaskManagerTester {
   // Gets the start index and length of the group to which the task at
   // |row_index| belongs.
   virtual void GetRowsGroupRange(int row, int* out_start, int* out_length) = 0;
-
- private:
-  // Always creates a tester for the non-legacy TaskManager.
-  static std::unique_ptr<TaskManagerTester> CreateDefault(
-      const base::Closure& callback);
 };
 
 }  // namespace task_management

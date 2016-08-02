@@ -3187,36 +3187,6 @@
       'browser/task_management/task_manager_observer.cc',
       'browser/task_management/task_manager_observer.h',
     ],
-    'chrome_browser_old_task_manager_cocoa_sources': [
-      'browser/task_manager/background_information.cc',
-      'browser/task_manager/background_information.h',
-      'browser/task_manager/browser_process_resource_provider.cc',
-      'browser/task_manager/browser_process_resource_provider.h',
-      'browser/task_manager/child_process_resource_provider.cc',
-      'browser/task_manager/child_process_resource_provider.h',
-      'browser/task_manager/extension_information.cc',
-      'browser/task_manager/extension_information.h',
-      'browser/task_manager/guest_information.cc',
-      'browser/task_manager/guest_information.h',
-      'browser/task_manager/panel_information.cc',
-      'browser/task_manager/panel_information.h',
-      'browser/task_manager/printing_information.cc',
-      'browser/task_manager/printing_information.h',
-      'browser/task_manager/renderer_resource.cc',
-      'browser/task_manager/renderer_resource.h',
-      'browser/task_manager/resource_provider.cc',
-      'browser/task_manager/resource_provider.h',
-      'browser/task_manager/tab_contents_information.cc',
-      'browser/task_manager/tab_contents_information.h',
-      'browser/task_manager/task_manager.cc',
-      'browser/task_manager/task_manager.h',
-      'browser/task_manager/task_manager_util.cc',
-      'browser/task_manager/task_manager_util.h',
-      'browser/task_manager/web_contents_information.cc',
-      'browser/task_manager/web_contents_information.h',
-      'browser/task_manager/web_contents_resource_provider.cc',
-      'browser/task_manager/web_contents_resource_provider.h',
-    ],
     'chrome_browser_task_manager_chromeos_sources': [
       'browser/task_management/providers/arc/arc_process_task.cc',
       'browser/task_management/providers/arc/arc_process_task.h',
@@ -3632,11 +3602,6 @@
           'conditions': [
             ['chromeos==1', {
               'sources': [ '<@(chrome_browser_task_manager_chromeos_sources)' ],
-            }],
-            ['OS=="mac" and mac_views_browser==0', {
-              'sources': [
-                '<@(chrome_browser_old_task_manager_cocoa_sources)'
-              ],
             }],
           ],
         }],

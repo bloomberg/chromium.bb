@@ -64,7 +64,6 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
 
 }  // namespace
 
-// Implementation of TaskManagerTester for the 'new' TaskManager.
 class TaskManagerTesterImpl : public TaskManagerTester {
  public:
   explicit TaskManagerTesterImpl(const base::Closure& on_resource_change)
@@ -157,7 +156,7 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 };
 
 // static
-std::unique_ptr<TaskManagerTester> TaskManagerTester::CreateDefault(
+std::unique_ptr<TaskManagerTester> TaskManagerTester::Create(
     const base::Closure& callback) {
   return base::WrapUnique(new TaskManagerTesterImpl(callback));
 }

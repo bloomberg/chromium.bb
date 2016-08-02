@@ -45,11 +45,6 @@ class TaskManagerInterface {
   // Returns true if the user is allowed to end processes.
   static bool IsEndProcessEnabled();
 
-#if defined(OS_MACOSX)
-  // On Mac OS, the old task manager is still being used on cocoa.
-  static bool IsNewTaskManagerEnabled();
-#endif  // defined(OS_MACOSX)
-
   // Gets the existing instance of the task manager if any, otherwise it will
   // create it first. Must be called on the UI thread.
   static TaskManagerInterface* GetTaskManager();

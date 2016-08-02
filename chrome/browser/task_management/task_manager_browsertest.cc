@@ -98,10 +98,6 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     base::RunLoop().RunUntilIdle();  // OnWindowClosed happens asynchronously.
   }
 
-  void Refresh() {
-    task_management::TaskManagerTester::MaybeRefreshLegacyInstance();
-  }
-
   GURL GetTestURL() {
     return ui_test_utils::GetTestUrl(
         base::FilePath(base::FilePath::kCurrentDirectory),
@@ -692,7 +688,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
   // Force the TaskManager to query the title.
-  Refresh();
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
@@ -1186,12 +1181,6 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, OrderingOfDependentRows) {
-#if defined(OS_MACOSX)
-  // The ordering under test here is not implemented in the legacy task manager.
-  if (!task_management::TaskManagerInterface::IsNewTaskManagerEnabled())
-    return;
-#endif
-
   ShowTaskManager();
 
   GURL a_with_frames(embedded_test_server()->GetURL(

@@ -32,13 +32,6 @@ bool TaskManagerInterface::IsEndProcessEnabled() {
   return !state || state->GetBoolean(prefs::kTaskManagerEndProcessEnabled);
 }
 
-#if defined(OS_MACOSX)
-// static
-bool TaskManagerInterface::IsNewTaskManagerEnabled() {
-  return chrome::ToolkitViewsDialogsEnabled();
-}
-#endif  // defined(OS_MACOSX)
-
 // static
 TaskManagerInterface* TaskManagerInterface::GetTaskManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -50,11 +43,6 @@ TaskManagerInterface* TaskManagerInterface::GetTaskManager() {
 void TaskManagerInterface::OnRawBytesRead(const net::URLRequest& request,
                                           int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-#if defined(OS_MACOSX)
-  if (chrome::NotifyOldTaskManagerBytesRead(request, bytes_read))
-    return;
-#endif  // defined(OS_MACOSX)
 
   TaskManagerIoThreadHelper::OnRawBytesRead(request, bytes_read);
 }

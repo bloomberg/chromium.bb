@@ -13,14 +13,17 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
-#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
+#include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image_skia.h"
@@ -28,85 +31,15 @@
 
 namespace {
 
-// Width of "a" and most other letters/digits in "small" table views.
-const int kCharWidth = 6;
-
-// Some of the strings below have spaces at the end or are missing letters, to
-// make the columns look nicer, and to take potentially longer localized strings
-// into account.
-const struct ColumnWidth {
-  int columnId;
-  int minWidth;
-  int maxWidth;  // If this is -1, 1.5*minColumWidth is used as max width.
-} columnWidths[] = {
-  // Note that arraysize includes the trailing \0. That's intended.
-  { IDS_TASK_MANAGER_TASK_COLUMN, 120, 600 },
-  { IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, 60, 200 },
-  { IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
-      arraysize("800 MiB") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
-      arraysize("800 MiB") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN,
-      arraysize("800 MiB") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_CPU_COLUMN,
-      arraysize("99.9") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_NET_COLUMN,
-      arraysize("150 kiB/s") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
-      arraysize("73099  ") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
-      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
-      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
-      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN,
-      arraysize("2000.0K") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
-      arraysize("800 kB") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
-      arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN,
-      arraysize("32767") * kCharWidth, -1 },
-  { IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN,
-      arraysize("idlewakeups") * kCharWidth, -1 },
-};
-
-class SortHelper {
- public:
-  SortHelper(TaskManagerModel* model, NSSortDescriptor* column)
-      : sort_column_([[column key] intValue]),
-        ascending_([column ascending]),
-        model_(model) {}
-
-  bool operator()(int a, int b) {
-    TaskManagerModel::GroupRange group_range1 =
-        model_->GetGroupRangeForResource(a);
-    TaskManagerModel::GroupRange group_range2 =
-        model_->GetGroupRangeForResource(b);
-    if (group_range1 == group_range2) {
-      // The two rows are in the same group, sort so that items in the same
-      // group always appear in the same order. |ascending_| is intentionally
-      // ignored.
-      return a < b;
-    }
-    // Sort by the first entry of each of the groups.
-    int cmp_result = model_->CompareValues(
-        group_range1.first, group_range2.first, sort_column_);
-    if (!ascending_)
-      cmp_result = -cmp_result;
-    return cmp_result < 0;
-  }
- private:
-  int sort_column_;
-  bool ascending_;
-  TaskManagerModel* model_;  // weak;
-};
+NSString* ColumnIdentifier(int id) {
+  return [NSString stringWithFormat:@"%d", id];
+}
 
 }  // namespace
 
 @interface TaskManagerWindowController (Private)
-- (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
+- (NSTableColumn*)addColumnWithData:
+    (const task_management::TableColumnData&)columnData;
 - (void)setUpTableColumns;
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
@@ -119,14 +52,15 @@ class SortHelper {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver {
+- (id)initWithTaskManagerMac:(task_management::TaskManagerMac*)taskManagerMac
+                  tableModel:
+                      (task_management::TaskManagerTableModel*)tableModel {
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    taskManagerObserver_ = taskManagerObserver;
-    taskManager_ = taskManagerObserver_->task_manager();
-    model_ = taskManager_->model();
+    taskManagerMac_ = taskManagerMac;
+    tableModel_ = tableModel;
 
     if (g_browser_process && g_browser_process->local_state()) {
       size_saver_.reset([[WindowSizeAutosaver alloc]
@@ -135,18 +69,45 @@ class SortHelper {
                     path:prefs::kTaskManagerWindowPlacement]);
     }
     [[self window] setExcludedFromWindowsMenu:YES];
+
+    [self reloadData];
     [self showWindow:self];
   }
   return self;
 }
 
 - (void)sortShuffleArray {
-  viewToModelMap_.resize(model_->ResourceCount());
+  viewToModelMap_.resize(tableModel_->RowCount());
   for (size_t i = 0; i < viewToModelMap_.size(); ++i)
     viewToModelMap_[i] = i;
 
-  std::sort(viewToModelMap_.begin(), viewToModelMap_.end(),
-            SortHelper(model_, currentSortDescriptor_.get()));
+  if (currentSortDescriptor_.sorted_column_id != -1) {
+    task_management::TaskManagerTableModel* tableModel = tableModel_;
+    task_management::TableSortDescriptor currentSortDescriptor =
+        currentSortDescriptor_;
+    std::stable_sort(viewToModelMap_.begin(), viewToModelMap_.end(),
+                     [tableModel, currentSortDescriptor](int a, int b) {
+                       int aStart, aLength;
+                       tableModel->GetRowsGroupRange(a, &aStart, &aLength);
+                       int bStart, bLength;
+                       tableModel->GetRowsGroupRange(b, &bStart, &bLength);
+                       if (aStart == bStart) {
+                         // The two rows are in the same group, sort so that
+                         // items in the same group always appear in the same
+                         // order. The sort descriptor's ascending value is
+                         // intentionally ignored.
+                         return a < b;
+                       }
+
+                       // Sort by the first entry of each of the groups.
+                       int cmp_result = tableModel->CompareValues(
+                           aStart, bStart,
+                           currentSortDescriptor.sorted_column_id);
+                       if (!currentSortDescriptor.is_ascending)
+                         cmp_result = -cmp_result;
+                       return cmp_result < 0;
+                     });
+  }
 
   modelToViewMap_.resize(viewToModelMap_.size());
   for (size_t i = 0; i < viewToModelMap_.size(); ++i)
@@ -154,6 +115,10 @@ class SortHelper {
 }
 
 - (void)reloadData {
+  [self reloadDataWithRows:0 addedAtIndex:0];
+}
+
+- (void)reloadDataWithRows:(int)addedRows addedAtIndex:(int)addedRowIndex {
   // Store old view indices, and the model indices they map to.
   NSIndexSet* viewSelection = [tableView_ selectedRowIndexes];
   std::vector<int> modelSelection;
@@ -163,21 +128,73 @@ class SortHelper {
     modelSelection.push_back(viewToModelMap_[i]);
   }
 
+  // Adjust for any added or removed rows.
+  if (addedRows != 0) {
+    for (int& selectedItem : modelSelection) {
+      if (addedRowIndex > selectedItem) {
+        // Nothing to do; added/removed items are beyond the selected item.
+        continue;
+      }
+
+      if (addedRows > 0) {
+        selectedItem += addedRows;
+      } else {
+        int removedRows = -addedRows;
+        if (addedRowIndex + removedRows <= selectedItem)
+          selectedItem -= removedRows;
+        else
+          selectedItem = -1;  // The item was removed.
+      }
+    }
+  }
+
   // Sort.
   [self sortShuffleArray];
 
-  // Use the model indices to get the new view indices of the selection, and
-  // set selection to that. This assumes that no rows were added or removed
-  // (in that case, the selection is cleared before -reloadData is called).
-  if (!modelSelection.empty())
-    DCHECK_EQ([tableView_ numberOfRows], model_->ResourceCount());
+  // Clear the selection and reload the NSTableView. Note that it is important
+  // to clear the selection before reloading the data, and to reload the
+  // selection after reloading the data, because otherwise the table will adjust
+  // the selection in ways that are not desirable.
+  [tableView_ deselectAll:nil];
+  [tableView_ reloadData];
+
+  // Reload the selection.
   NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
-  for (size_t i = 0; i < modelSelection.size(); ++i)
-    [indexSet addIndex:modelToViewMap_[modelSelection[i]]];
+  for (auto selectedItem : modelSelection) {
+    if (selectedItem != -1)
+      [indexSet addIndex:modelToViewMap_[selectedItem]];
+  }
   [tableView_ selectRowIndexes:indexSet byExtendingSelection:NO];
 
-  [tableView_ reloadData];
   [self adjustSelectionAndEndProcessButton];
+}
+
+- (task_management::TableSortDescriptor)sortDescriptor {
+  return currentSortDescriptor_;
+}
+
+- (void)setSortDescriptor:
+    (const task_management::TableSortDescriptor&)sortDescriptor {
+  base::scoped_nsobject<NSSortDescriptor> nsSortDescriptor(
+      [[NSSortDescriptor alloc]
+          initWithKey:ColumnIdentifier(sortDescriptor.sorted_column_id)
+            ascending:sortDescriptor.is_ascending]);
+  [tableView_ setSortDescriptors:@[ nsSortDescriptor ]];
+}
+
+- (BOOL)visibilityOfColumnWithId:(int)columnId {
+  NSTableColumn* column =
+      [tableView_ tableColumnWithIdentifier:ColumnIdentifier(columnId)];
+  return ![column isHidden];
+}
+
+- (void)setColumnWithId:(int)columnId toVisibility:(BOOL)visibility {
+  NSTableColumn* column =
+      [tableView_ tableColumnWithIdentifier:ColumnIdentifier(columnId)];
+  [column setHidden:!visibility];
+
+  [tableView_ sizeToFit];
+  [tableView_ setNeedsDisplay];
 }
 
 - (IBAction)killSelectedProcesses:(id)sender {
@@ -185,19 +202,15 @@ class SortHelper {
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    taskManager_->KillProcess(viewToModelMap_[i]);
+    tableModel_->KillTask(viewToModelMap_[i]);
   }
 }
 
-- (void)selectDoubleClickedTab:(id)sender {
+- (void)tableWasDoubleClicked:(id)sender {
   NSInteger row = [tableView_ clickedRow];
   if (row < 0)
     return;  // Happens e.g. if the table header is double-clicked.
-  taskManager_->ActivateProcess(viewToModelMap_[row]);
-}
-
-- (NSTableView*)tableView {
-  return tableView_;
+  tableModel_->ActivateTask(viewToModelMap_[row]);
 }
 
 - (void)awakeFromNib {
@@ -205,7 +218,7 @@ class SortHelper {
   [self setUpTableHeaderContextMenu];
   [self adjustSelectionAndEndProcessButton];
 
-  [tableView_ setDoubleAction:@selector(selectDoubleClickedTab:)];
+  [tableView_ setDoubleAction:@selector(tableWasDoubleClicked:)];
   [tableView_ setIntercellSpacing:NSMakeSize(0.0, 0.0)];
   [tableView_ sizeToFit];
 }
@@ -218,51 +231,36 @@ class SortHelper {
 
 // Adds a column which has the given string id as title. |isVisible| specifies
 // if the column is initially visible.
-- (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
+- (NSTableColumn*)addColumnWithData:
+    (const task_management::TableColumnData&)columnData {
   base::scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
-      initWithIdentifier:[NSString stringWithFormat:@"%d", columnId]]);
+      initWithIdentifier:ColumnIdentifier(columnData.id)]);
 
-  NSTextAlignment textAlignment =
-      (columnId == IDS_TASK_MANAGER_TASK_COLUMN ||
-       columnId == IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) ?
-          NSLeftTextAlignment : NSRightTextAlignment;
+  NSTextAlignment textAlignment = (columnData.align == ui::TableColumn::LEFT)
+                                      ? NSLeftTextAlignment
+                                      : NSRightTextAlignment;
 
   [[column.get() headerCell]
-      setStringValue:l10n_util::GetNSStringWithFixup(columnId)];
+      setStringValue:l10n_util::GetNSStringWithFixup(columnData.id)];
   [[column.get() headerCell] setAlignment:textAlignment];
   [[column.get() dataCell] setAlignment:textAlignment];
 
   NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   [[column.get() dataCell] setFont:font];
 
-  [column.get() setHidden:!isVisible];
+  [column.get() setHidden:!columnData.default_visibility];
   [column.get() setEditable:NO];
-
-  // The page column should by default be sorted ascending.
-  BOOL ascending = columnId == IDS_TASK_MANAGER_TASK_COLUMN;
 
   base::scoped_nsobject<NSSortDescriptor> sortDescriptor(
       [[NSSortDescriptor alloc]
-          initWithKey:[NSString stringWithFormat:@"%d", columnId]
-            ascending:ascending]);
+          initWithKey:ColumnIdentifier(columnData.id)
+            ascending:columnData.initial_sort_is_ascending]);
   [column.get() setSortDescriptorPrototype:sortDescriptor.get()];
 
-  // Default values, only used in release builds if nobody notices the DCHECK
-  // during development when adding new columns.
-  int minWidth = 200, maxWidth = 400;
-
-  size_t i;
-  for (i = 0; i < arraysize(columnWidths); ++i) {
-    if (columnWidths[i].columnId == columnId) {
-      minWidth = columnWidths[i].minWidth;
-      maxWidth = columnWidths[i].maxWidth;
-      if (maxWidth < 0)
-        maxWidth = 3 * minWidth / 2;  // *1.5 for ints.
-      break;
-    }
-  }
-  DCHECK(i < arraysize(columnWidths)) << "Could not find " << columnId;
-  [column.get() setMinWidth:minWidth];
+  [column.get() setMinWidth:columnData.min_width];
+  int maxWidth = columnData.max_width;
+  if (maxWidth < 0)
+    maxWidth = 3 * columnData.min_width / 2;  // *1.5 for ints.
   [column.get() setMaxWidth:maxWidth];
   [column.get() setResizingMask:NSTableColumnAutoresizingMask |
                                 NSTableColumnUserResizingMask];
@@ -275,59 +273,46 @@ class SortHelper {
 - (void)setUpTableColumns {
   for (NSTableColumn* column in [tableView_ tableColumns])
     [tableView_ removeTableColumn:column];
-  NSTableColumn* nameColumn = [self addColumnWithId:IDS_TASK_MANAGER_TASK_COLUMN
-                                            visible:YES];
-  // |nameColumn| displays an icon for every row -- this is done by an
-  // NSButtonCell.
-  base::scoped_nsobject<NSButtonCell> nameCell(
-      [[NSButtonCell alloc] initTextCell:@""]);
-  [nameCell.get() setImagePosition:NSImageLeft];
-  [nameCell.get() setButtonType:NSSwitchButton];
-  [nameCell.get() setAlignment:[[nameColumn dataCell] alignment]];
-  [nameCell.get() setFont:[[nameColumn dataCell] font]];
-  [nameColumn setDataCell:nameCell.get()];
 
-  // Initially, sort on the tab name.
-  [tableView_ setSortDescriptors:
-      [NSArray arrayWithObject:[nameColumn sortDescriptorPrototype]]];
-  [self addColumnWithId:IDS_TASK_MANAGER_PROFILE_NAME_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN visible:YES];
-  [self addColumnWithId:IDS_TASK_MANAGER_SHARED_MEM_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_CPU_COLUMN visible:YES];
-  [self addColumnWithId:IDS_TASK_MANAGER_NET_COLUMN visible:YES];
-  [self addColumnWithId:IDS_TASK_MANAGER_PROCESS_ID_COLUMN visible:YES];
-  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN
-                visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN
-                visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN
-                visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN
-                visible:NO];
-  [self addColumnWithId:IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN
-                visible:NO];
+  for (size_t i = 0; i < task_management::kColumnsSize; ++i) {
+    const auto& columnData = task_management::kColumns[i];
+    NSTableColumn* column = [self addColumnWithData:columnData];
+
+    if (columnData.id == IDS_TASK_MANAGER_TASK_COLUMN) {
+      // The task column displays an icon for every row, done by an
+      // NSButtonCell.
+      base::scoped_nsobject<NSButtonCell> nameCell(
+          [[NSButtonCell alloc] initTextCell:@""]);
+      [nameCell.get() setImagePosition:NSImageLeft];
+      [nameCell.get() setButtonType:NSSwitchButton];
+      [nameCell.get() setAlignment:[[column dataCell] alignment]];
+      [nameCell.get() setFont:[[column dataCell] font]];
+      [column setDataCell:nameCell.get()];
+    }
+  }
 }
 
 // Creates a context menu for the table header that allows the user to toggle
-// which columns should be shown and which should be hidden (like e.g.
-// Task Manager.app's table header context menu).
+// which columns should be shown and which should be hidden (like the Activity
+// Monitor.app's table header context menu).
 - (void)setUpTableHeaderContextMenu {
   base::scoped_nsobject<NSMenu> contextMenu(
       [[NSMenu alloc] initWithTitle:@"Task Manager context menu"]);
+  [contextMenu setDelegate:self];
+  [[tableView_ headerView] setMenu:contextMenu.get()];
+}
+
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  [menu removeAllItems];
+
   for (NSTableColumn* column in [tableView_ tableColumns]) {
-    NSMenuItem* item = [contextMenu.get()
-        addItemWithTitle:[[column headerCell] stringValue]
-                  action:@selector(toggleColumn:)
-           keyEquivalent:@""];
+    NSMenuItem* item = [menu addItemWithTitle:[[column headerCell] stringValue]
+                                       action:@selector(toggleColumn:)
+                                keyEquivalent:@""];
     [item setTarget:self];
     [item setRepresentedObject:column];
     [item setState:[column isHidden] ? NSOffState : NSOnState];
   }
-  [[tableView_ headerView] setMenu:contextMenu.get()];
 }
 
 // Callback for the table header context menu. Toggles visibility of the table
@@ -338,6 +323,7 @@ class SortHelper {
     return;
 
   NSTableColumn* column = [item representedObject];
+  int columnId = [[column identifier] intValue];
   DCHECK(column);
   NSInteger oldState = [item state];
   NSInteger newState = oldState == NSOnState ? NSOffState : NSOnState;
@@ -371,52 +357,46 @@ class SortHelper {
     // If |column| is being used to sort the table (i.e. it's the primary sort
     // column), make the first remaining visible column the new primary sort
     // column.
-    int primarySortColumnId = [[currentSortDescriptor_.get() key] intValue];
+    int primarySortColumnId = currentSortDescriptor_.sorted_column_id;
     DCHECK(primarySortColumnId);
-    int columnId = [[column identifier] intValue];
 
     if (primarySortColumnId == columnId) {
       NSSortDescriptor* newSortDescriptor =
           [firstRemainingVisibleColumn sortDescriptorPrototype];
-      [tableView_ setSortDescriptors:
-          [NSArray arrayWithObject:newSortDescriptor]];
+      [tableView_ setSortDescriptors:@[ newSortDescriptor ]];
     }
   }
 
-  // Make the change.
-  [column setHidden:newState == NSOffState];
-  [item setState:newState];
-
-  [tableView_ sizeToFit];
-  [tableView_ setNeedsDisplay];
+  // Make the change. (This will call back into the SetColumnVisibility()
+  // function to actually do the visibility change.)
+  tableModel_->ToggleColumnVisibility(columnId);
 }
 
 // This function appropriately sets the enabled states on the table's editing
 // buttons.
 - (void)adjustSelectionAndEndProcessButton {
-  bool selectionContainsBrowserProcess = false;
+  bool allSelectionRowsAreKillableTasks = true;
+  NSMutableIndexSet* groupIndexes = [NSMutableIndexSet indexSet];
 
-  // If a row is selected, make sure that all rows belonging to the same process
-  // are selected as well. Also, check if the selection contains the browser
-  // process.
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
     int modelIndex = viewToModelMap_[i];
-    if (taskManager_->IsBrowserProcess(modelIndex))
-      selectionContainsBrowserProcess = true;
 
-    TaskManagerModel::GroupRange rangePair =
-        model_->GetGroupRangeForResource(modelIndex);
-    NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
-    for (int j = 0; j < rangePair.second; ++j)
-      [indexSet addIndex:modelToViewMap_[rangePair.first + j]];
-    [tableView_ selectRowIndexes:indexSet byExtendingSelection:YES];
+    if (!tableModel_->IsTaskKillable(modelIndex))
+      allSelectionRowsAreKillableTasks = false;
+
+    int groupStart, groupLength;
+    tableModel_->GetRowsGroupRange(modelIndex, &groupStart, &groupLength);
+    for (int j = 0; j < groupLength; ++j)
+      [groupIndexes addIndex:modelToViewMap_[groupStart + j]];
   }
 
-  bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess &&
-    task_management::TaskManagerInterface::IsEndProcessEnabled();
+  [tableView_ selectRowIndexes:groupIndexes byExtendingSelection:YES];
+
+  bool enabled = [selection count] > 0 && allSelectionRowsAreKillableTasks &&
+                 task_management::TaskManagerInterface::IsEndProcessEnabled();
   [endProcessButton_ setEnabled:enabled];
 }
 
@@ -437,9 +417,11 @@ class SortHelper {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  if (taskManagerObserver_) {
-    taskManagerObserver_->WindowWasClosed();
-    taskManagerObserver_ = nil;
+  if (taskManagerMac_) {
+    tableModel_->StoreColumnsSettings();
+    taskManagerMac_->WindowWasClosed();
+    taskManagerMac_ = nullptr;
+    tableModel_ = nullptr;
   }
   [self autorelease];
 }
@@ -450,13 +432,13 @@ class SortHelper {
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
   DCHECK(tableView == tableView_ || tableView_ == nil);
-  return model_->ResourceCount();
+  return tableModel_->RowCount();
 }
 
 - (NSString*)modelTextForRow:(int)row column:(int)columnId {
   DCHECK_LT(static_cast<size_t>(row), viewToModelMap_.size());
   return base::SysUTF16ToNSString(
-      model_->GetResourceById(viewToModelMap_[row], columnId));
+      tableModel_->GetText(viewToModelMap_[row], columnId));
 }
 
 - (id)tableView:(NSTableView*)tableView
@@ -484,8 +466,8 @@ class SortHelper {
     NSString* title = [self modelTextForRow:rowIndex
                                     column:[[tableColumn identifier] intValue]];
     [buttonCell setTitle:title];
-    [buttonCell setImage:
-        taskManagerObserver_->GetImageForRow(viewToModelMap_[rowIndex])];
+    [buttonCell
+        setImage:taskManagerMac_->GetImageForRow(viewToModelMap_[rowIndex])];
     [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
     [buttonCell setHighlightsBy:NSNoCellMask];
   }
@@ -493,13 +475,37 @@ class SortHelper {
   return cell;
 }
 
-- (void)           tableView:(NSTableView*)tableView
+- (void)tableView:(NSTableView*)tableView
     sortDescriptorsDidChange:(NSArray*)oldDescriptors {
-  NSArray* newDescriptors = [tableView sortDescriptors];
-  if ([newDescriptors count] < 1) {
-    currentSortDescriptor_.reset(nil);
+  if (withinSortDescriptorsDidChange_)
+    return;
+
+  NSSortDescriptor* oldDescriptor = [oldDescriptors firstObject];
+  NSSortDescriptor* newDescriptor = [[tableView sortDescriptors] firstObject];
+
+  // Implement three-way sorting, toggling "unsorted" as a third option.
+  if (oldDescriptor && newDescriptor &&
+      [[oldDescriptor key] isEqual:[newDescriptor key]]) {
+    // The user clicked to change the sort on the previously sorted column.
+    // AppKit toggled the sort order. However, if the sort was toggled to become
+    // the initial sorting direction, clear it instead.
+    NSTableColumn* column = [tableView
+        tableColumnWithIdentifier:ColumnIdentifier(
+                                      [[newDescriptor key] intValue])];
+    NSSortDescriptor* initialDescriptor = [column sortDescriptorPrototype];
+    if ([newDescriptor ascending] == [initialDescriptor ascending]) {
+      withinSortDescriptorsDidChange_ = YES;
+      [tableView_ setSortDescriptors:[NSArray array]];
+      newDescriptor = nil;
+      withinSortDescriptorsDidChange_ = NO;
+    }
+  }
+
+  if (newDescriptor) {
+    currentSortDescriptor_.sorted_column_id = [[newDescriptor key] intValue];
+    currentSortDescriptor_.is_ascending = [newDescriptor ascending];
   } else {
-    currentSortDescriptor_.reset([[newDescriptors objectAtIndex:0] retain]);
+    currentSortDescriptor_.sorted_column_id = -1;
   }
 
   [self reloadData];  // Sorts.
@@ -507,31 +513,46 @@ class SortHelper {
 
 @end
 
+@implementation TaskManagerWindowController (TestingAPI)
+
+- (NSTableView*)tableViewForTesting {
+  return tableView_;
+}
+
+- (NSButton*)endProcessButtonForTesting {
+  return endProcessButton_;
+}
+
+@end
+
+namespace task_management {
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac implementation:
 
-TaskManagerMac::TaskManagerMac(TaskManager* task_manager)
-  : task_manager_(task_manager),
-    model_(task_manager->model()) {
-  window_controller_ =
-      [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
-  model_->AddObserver(this);
+TaskManagerMac::TaskManagerMac()
+    : table_model_(new TaskManagerTableModel(
+          REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_NETWORK_USAGE,
+          this)),
+      window_controller_([[TaskManagerWindowController alloc]
+          initWithTaskManagerMac:this
+                      tableModel:table_model_.get()]) {
+  table_model_->SetObserver(this);  // Hook up the ui::TableModelObserver.
+  table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
+
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 // static
-TaskManagerMac* TaskManagerMac::instance_ = NULL;
+TaskManagerMac* TaskManagerMac::instance_ = nullptr;
 
 TaskManagerMac::~TaskManagerMac() {
-  if (this == instance_) {
-    // Do not do this when running in unit tests: |StartUpdating()| never got
-    // called in that case.
-    task_manager_->OnWindowClosed();
-  }
-  model_->RemoveObserver(this);
+  table_model_->SetObserver(nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerMac, TaskManagerModelObserver implementation:
+// ui::TableModelObserver implementation:
 
 void TaskManagerMac::OnModelChanged() {
   [window_controller_ deselectRows];
@@ -543,37 +564,71 @@ void TaskManagerMac::OnItemsChanged(int start, int length) {
 }
 
 void TaskManagerMac::OnItemsAdded(int start, int length) {
-  [window_controller_ deselectRows];
-  [window_controller_ reloadData];
+  [window_controller_ reloadDataWithRows:length addedAtIndex:start];
 }
 
 void TaskManagerMac::OnItemsRemoved(int start, int length) {
-  [window_controller_ deselectRows];
-  [window_controller_ reloadData];
-}
-
-NSImage* TaskManagerMac::GetImageForRow(int row) {
-  return gfx::NSImageFromImageSkia(model_->GetResourceIcon(row));
+  [window_controller_ reloadDataWithRows:-length addedAtIndex:start];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TaskManagerMac, public:
+// TableViewDelegate implementation:
+
+bool TaskManagerMac::IsColumnVisible(int column_id) const {
+  return [window_controller_ visibilityOfColumnWithId:column_id];
+}
+
+void TaskManagerMac::SetColumnVisibility(int column_id, bool new_visibility) {
+  [window_controller_ setColumnWithId:column_id toVisibility:new_visibility];
+}
+
+bool TaskManagerMac::IsTableSorted() const {
+  return [window_controller_ sortDescriptor].sorted_column_id != -1;
+}
+
+TableSortDescriptor TaskManagerMac::GetSortDescriptor() const {
+  return [window_controller_ sortDescriptor];
+}
+
+void TaskManagerMac::SetSortDescriptor(const TableSortDescriptor& descriptor) {
+  [window_controller_ setSortDescriptor:descriptor];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Called by the TaskManagerWindowController:
 
 void TaskManagerMac::WindowWasClosed() {
   delete this;
-  instance_ = NULL;  // |instance_| is static
+  instance_ = nullptr;  // |instance_| is static
+}
+
+NSImage* TaskManagerMac::GetImageForRow(int row) {
+  const CGFloat kImageWidth = 16.0;
+  NSImage* image = gfx::NSImageFromImageSkia(table_model_->GetIcon(row));
+  if (!image) {
+    image = [[[NSImage alloc] initWithSize:NSMakeSize(kImageWidth, kImageWidth)]
+        autorelease];
+  }
+  return image;
+}
+
+void TaskManagerMac::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  Hide();
 }
 
 // static
-void TaskManagerMac::Show() {
+TaskManagerTableModel* TaskManagerMac::Show() {
   if (instance_) {
     [[instance_->window_controller_ window]
-      makeKeyAndOrderFront:instance_->window_controller_];
-    return;
+        makeKeyAndOrderFront:instance_->window_controller_];
+  } else {
+    instance_ = new TaskManagerMac();
   }
-  // Create a new instance.
-  instance_ = new TaskManagerMac(TaskManager::GetInstance());
-  instance_->model_->StartUpdating();
+
+  return instance_->table_model_.get();
 }
 
 // static
@@ -582,6 +637,8 @@ void TaskManagerMac::Hide() {
     [instance_->window_controller_ close];
 }
 
+}  // namespace task_management
+
 namespace chrome {
 
 // Declared in browser_dialogs.h.
@@ -589,8 +646,7 @@ task_management::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
   if (chrome::ToolkitViewsDialogsEnabled())
     return chrome::ShowTaskManagerViews(browser);
 
-  TaskManagerMac::Show();
-  return nullptr;  // No ui::TableModel* to return on Mac, so return nullptr.
+  return task_management::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
@@ -599,17 +655,7 @@ void HideTaskManager() {
     return;
   }
 
-  TaskManagerMac::Hide();
-}
-
-bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
-                                   int64_t bytes_read) {
-  if (task_management::TaskManagerInterface::IsNewTaskManagerEnabled())
-    return false;
-
-  TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
-  return true;
+  task_management::TaskManagerMac::Hide();
 }
 
 }  // namespace chrome
-

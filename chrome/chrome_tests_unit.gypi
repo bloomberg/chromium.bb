@@ -1170,8 +1170,6 @@
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
     # Built on Mac, except when mac_views_browser==1.
     'chrome_unit_tests_cocoa_sources': [
-      'browser/task_manager/task_manager_unittest.cc',
-      'browser/task_manager/task_manager_util_unittest.cc',
       'browser/ui/cocoa/accelerators_cocoa_unittest.mm',
       'browser/ui/cocoa/animatable_image_unittest.mm',
       'browser/ui/cocoa/animatable_view_unittest.mm',
@@ -1337,7 +1335,6 @@
       'browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm',
       'browser/ui/cocoa/tabs/tab_strip_view_unittest.mm',
       'browser/ui/cocoa/tabs/tab_view_unittest.mm',
-      'browser/ui/cocoa/task_manager_mac_unittest.mm',
       'browser/ui/cocoa/toolbar/app_toolbar_button_cell_unittest.mm',
       'browser/ui/cocoa/toolbar/reload_button_unittest.mm',
       'browser/ui/cocoa/toolbar/toolbar_button_unittest.mm',
