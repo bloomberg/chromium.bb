@@ -176,26 +176,30 @@
           <div class="subtitle">Network</div>
           <!-- APN -->
           <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
-              hidden$="[[!isType_(networkProperties, NetworkType.CELLULAR)]]"
+              hidden$="[[!isType_(NetworkType.CELLULAR, networkProperties)]]"
               network-properties="[[networkProperties]]">
           </network-apnlist>
           <!-- IP Config -->
           <network-ip-config editable on-ip-change="onIPConfigChange_"
+              hidden$="[[!isRememberedOrConnected_(networkProperties)]]"
               network-properties="[[networkProperties]]">
           </network-ip-config>
 
           <!-- Nameservers -->
           <network-nameservers editable
               on-nameservers-change="onIPConfigChange_"
+              hidden$="[[!isRememberedOrConnected_(networkProperties)]]"
               network-properties="[[networkProperties]]">
           </network-nameservers>
         </div>
 
         <!-- Proxy -->
-        <div class="subtitle">Proxy</div> 
-        <network-proxy editable on-proxy-change="onProxyChange_"
-            network-properties="[[networkProperties]]">
-        </network-proxy>
+        <div hidden$="[[!isRememberedOrConnected_(networkProperties)]]">
+          <div class="subtitle">Proxy</div> 
+          <network-proxy editable on-proxy-change="onProxyChange_"
+              network-properties="[[networkProperties]]">
+          </network-proxy>
+        </div>
       </div>
     </iron-collapse>
   </template>
