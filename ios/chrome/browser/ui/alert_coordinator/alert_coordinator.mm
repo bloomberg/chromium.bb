@@ -14,7 +14,7 @@
   // Variables backing properties of the same name.
   base::scoped_nsobject<UIAlertController> _alertController;
   base::scoped_nsobject<NSString> _message;
-  base::mac::ScopedBlock<ProceduralBlock> _stopAction;
+  base::mac::ScopedBlock<ProceduralBlock> _cancelAction;
 
   // Title for the alert.
   base::scoped_nsobject<NSString> _title;
@@ -78,6 +78,11 @@
   [self.alertController addAction:alertAction];
 }
 
+- (void)executeCancelHandler {
+  if (self.cancelAction)
+    self.cancelAction();
+}
+
 - (void)start {
   // Check that the view is still visible on screen, otherwise just return and
   // don't show the context menu.
@@ -101,8 +106,6 @@
 
 - (void)stop {
   [_alertController dismissViewControllerAnimated:NO completion:nil];
-  if (_stopAction)
-    _stopAction.get()();
   [self alertDismissed];
 }
 
@@ -127,12 +130,12 @@
   _message.reset([message copy]);
 }
 
-- (ProceduralBlock)stopAction {
-  return _stopAction;
+- (ProceduralBlock)cancelAction {
+  return _cancelAction;
 }
 
-- (void)setStopAction:(ProceduralBlock)stopAction {
-  _stopAction.reset([stopAction copy]);
+- (void)setCancelAction:(ProceduralBlock)cancelAction {
+  _cancelAction.reset([cancelAction copy]);
 }
 
 #pragma mark - Private Methods.
@@ -141,7 +144,7 @@
   self.visible = NO;
   _cancelButtonAdded = NO;
   _alertController.reset();
-  _stopAction.reset();
+  _cancelAction.reset();
 }
 
 - (UIAlertController*)alertControllerWithTitle:(NSString*)title

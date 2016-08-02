@@ -23,8 +23,9 @@
 // Whether the alert is visible. This will be true after |-start| is called
 // until a subsequent |-stop|.
 @property(nonatomic, readonly, getter=isVisible) BOOL visible;
-// Handler executed when calling |-stop| on this coordinator.
-@property(nonatomic, copy) ProceduralBlock stopAction;
+// Handler executed when calling |-executeCancelHandler|. This handler is
+// deleted when the alert is dismissed (user interaction or |-stop|).
+@property(nonatomic, copy) ProceduralBlock cancelAction;
 
 // Init a coordinator for displaying a alert on this view controller.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -41,6 +42,9 @@
 - (void)addItemWithTitle:(NSString*)title
                   action:(ProceduralBlock)actionBlock
                    style:(UIAlertActionStyle)style;
+
+// Executes |cancelAction|.
+- (void)executeCancelHandler;
 
 @end
 
