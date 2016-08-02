@@ -125,6 +125,10 @@ const char kAshTouchHud[] = "ash-touch-hud";
 const char kAshUseFirstDisplayAsInternal[] =
     "ash-use-first-display-as-internal";
 
+// Use new window behavior for virtual keyboard (do not change work area in
+// non-sticky mode).
+const char kAshUseNewVKWindowBehavior[] = "ash-use-new-vk-window-behavior";
+
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we
 // lock the screen or shutdown the system immediately in response to a press

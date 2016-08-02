@@ -50,6 +50,7 @@ ASH_EXPORT extern const char kAshMaxWindowsToUseShapeInOverview[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshUseFirstDisplayAsInternal[];
+ASH_EXPORT extern const char kAshUseNewVKWindowBehavior[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 #if defined(OS_WIN)
 ASH_EXPORT extern const char kForceAshToDesktop[];

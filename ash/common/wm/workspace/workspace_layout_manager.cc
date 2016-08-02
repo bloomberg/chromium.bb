@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
@@ -19,7 +20,9 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
+#include "base/command_line.h"
 #include "ui/compositor/layer.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
@@ -130,6 +133,15 @@ void WorkspaceLayoutManager::SetChildBounds(WmWindow* child,
 
 void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
+  // If new window behavior flag enabled and in non-sticky mode, do not change
+  // the work area.
+  bool change_work_area =
+      (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshUseNewVKWindowBehavior) ||
+       keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
+  if (!change_work_area)
+    return;
+
   WmWindow* window = shell_->GetActiveWindow();
   if (!window)
     return;

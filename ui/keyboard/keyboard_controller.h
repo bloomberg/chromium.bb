@@ -89,6 +89,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
 
+  bool get_lock_keyboard() const { return lock_keyboard_; }
+
   KeyboardMode keyboard_mode() const { return keyboard_mode_; }
 
   void SetKeyboardMode(KeyboardMode mode);
