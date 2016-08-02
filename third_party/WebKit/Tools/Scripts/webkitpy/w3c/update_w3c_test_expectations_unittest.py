@@ -6,6 +6,7 @@ import logging
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.net.layouttestresults import LayoutTestResult
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
@@ -15,6 +16,7 @@ _log = logging.getLogger(__name__)
 class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder):
 
     def setUp(self):
+        self.host = MockHost()
         self.mock_dict_one = {
             'fake/test/path.html': {
                 'one': {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'},
@@ -96,9 +98,8 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         })
 
     def test_write_to_test_expectations_under_comment(self):
-        host = MockHost()
-        line_adder = W3CExpectationsLineAdder(host)
-        line_adder._host.filesystem.files = {'TestExpectations': '# Tests added from W3C auto import bot\n'}
+        self.host.filesystem.files = {'TestExpectations': '# Tests added from W3C auto import bot\n'}
+        line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
         path = 'TestExpectations'
         line_adder.write_to_test_expectations(line_adder, path, line_list)
@@ -106,9 +107,8 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         self.assertEqual(value, '# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]\n')
 
     def test_write_to_test_expectations_to_eof(self):
-        host = MockHost()
-        line_adder = W3CExpectationsLineAdder(host)
-        line_adder._host.filesystem.files['TestExpectations'] = 'not empty\n'
+        self.host.filesystem.files['TestExpectations'] = 'not empty\n'
+        line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
         path = 'TestExpectations'
         line_adder.write_to_test_expectations(line_adder, path, line_list)
@@ -116,11 +116,35 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         self.assertEqual(value, 'not empty\n\n# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]')
 
     def test_write_to_test_expectations_skip_lines(self):
-        host = MockHost()
-        line_adder = W3CExpectationsLineAdder(host)
-        line_adder._host.filesystem.files['TestExpectations'] = 'dont copy me\n'
+        self.host.filesystem.files['TestExpectations'] = 'dont copy me\n'
+        line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['[ ] dont copy me', '[ ] but copy me']
         path = 'TestExpectations'
         line_adder.write_to_test_expectations(line_adder, path, line_list)
         value = line_adder.filesystem.read_text_file(path)
         self.assertEqual(value, 'dont copy me\n\n# Tests added from W3C auto import bot\n[ ] but copy me')
+
+    def test_is_js_test_true(self):
+        self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
+        <script src="/resources/testharness.js"></script>'''
+        finder = WebKitFinder(self.host.filesystem)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertTrue(line_adder.is_js_test(finder, 'foo/bar.html'))
+
+    def test_is_js_test_false(self):
+        self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
+        <script src="ref-test.html"></script>'''
+        finder = WebKitFinder(self.host.filesystem)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertFalse(line_adder.is_js_test(finder, 'foo/bar.html'))
+
+    def test_get_test_to_rebaseline(self):
+        self.host = MockHost()
+        finder = WebKitFinder(self.host.filesystem)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        test_name = 'imported/fake/test/path.html'
+        test_dict = {'../../../imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
+        tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(
+            finder, test_name, test_dict)
+        self.assertEqual(tests_to_rebaseline, ['../../../imported/fake/test/path.html'])
+        self.assertEqual(tests_results, test_dict)

@@ -10,9 +10,10 @@ by retrieving the try job results for the current CL.
 
 import logging
 
-from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.net import rietveld
-
+from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def main(host, port):
         test_expectations = expectations_line_adder.merge_dicts(test_expectations, platform_results)
     for test_name, platform_result in test_expectations.iteritems():
         test_expectations[test_name] = expectations_line_adder.merge_same_valued_keys(platform_result)
+    test_expectations = expectations_line_adder.get_expected_txt_files(test_expectations)
     test_expectation_lines = expectations_line_adder.create_line_list(test_expectations)
     expectations_line_adder.write_to_test_expectations(host, expectations_file, test_expectation_lines)
 
@@ -267,3 +269,47 @@ class W3CExpectationsLineAdder(object):
             new_data = file_contents[: end_of_comment_line + 1] + all_lines + file_contents[end_of_comment_line:]
             file_contents = new_data
         host.filesystem.write_text_file(path, file_contents)
+
+    def get_expected_txt_files(self, tests_results):
+        """Gets -expected.txt files.
+
+        Invokes webkit-patch rebaseline-from-try-jobs in order
+        to download new -expected.txt files for testharness.js
+        tests that did not Crash or Timeout. Then the platform-
+        specific test is removed from the overall failure test dictionary.
+
+        Args:
+            tests_results: A dictionary that maps test name to platforms to
+            test results.
+
+        Returns:
+            An updated tests_results dictionary without the platform-specific test-
+            harness.js tests that required new baselines to be downloaded from
+            webkit-patch rebaseline-from-try-jobs.
+        """
+        finder = WebKitFinder(self._host.filesystem)
+        tests = self._host.executive.run_command(['git', 'diff', 'master', '--name-only'])
+        for test in tests.splitlines():
+            if self.is_js_test(finder, test):
+                tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(finder, test, tests_results)
+        if tests_to_rebaseline:
+            webkit_patch = self._host.filesystem.join(finder.chromium_base(), finder.webkit_base(),
+                                                      finder.path_to_script('webkit-patch'))
+            self._host.executive.run_command(['python', webkit_patch,
+                                              'rebaseline-from-try-jobs', '-v'] + tests_to_rebaseline)
+        return tests_results
+
+    def get_tests_to_rebaseline(self, webkit_finder, test_name, tests_results):
+        tests_to_rebaseline = set()
+        layout_tests_relative_path = self._host.filesystem.relpath(webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
+        test_path = self._host.filesystem.relpath(test_name, layout_tests_relative_path)
+        for platform in tests_results[test_path].keys():
+            if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
+                del tests_results[test_path][platform]
+                tests_to_rebaseline.add(test_path)
+        return list(tests_to_rebaseline), tests_results
+
+    def is_js_test(self, webkit_finder, test_path):
+        absolute_path = self._host.filesystem.join(webkit_finder.chromium_base(), test_path)
+        test_parser = TestParser(absolute_path, self._host)
+        return test_parser.is_jstest()
