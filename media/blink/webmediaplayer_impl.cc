@@ -123,6 +123,12 @@ bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   return result;
 }
 
+gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
+  if (rotation == VIDEO_ROTATION_90 || rotation == VIDEO_ROTATION_270)
+    return gfx::Size(natural_size.height(), natural_size.width());
+  return natural_size;
+}
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -1022,11 +1028,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
   if (hasVideo()) {
-    if (pipeline_metadata_.video_rotation == VIDEO_ROTATION_90 ||
-        pipeline_metadata_.video_rotation == VIDEO_ROTATION_270) {
-      gfx::Size size = pipeline_metadata_.natural_size;
-      pipeline_metadata_.natural_size = gfx::Size(size.height(), size.width());
-    }
+    pipeline_metadata_.natural_size = GetRotatedVideoSize(
+        pipeline_metadata_.video_rotation, pipeline_metadata_.natural_size);
 
     if (overlay_enabled_ && surface_manager_)
       surface_manager_->NaturalSizeChanged(pipeline_metadata_.natural_size);
@@ -1127,17 +1130,20 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
 
-  if (size == pipeline_metadata_.natural_size)
+  gfx::Size rotated_size =
+      GetRotatedVideoSize(pipeline_metadata_.video_rotation, size);
+
+  if (rotated_size == pipeline_metadata_.natural_size)
     return;
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
-  media_log_->AddEvent(
-      media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
+  media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
+      rotated_size.width(), rotated_size.height()));
 
   if (overlay_enabled_ && surface_manager_)
-    surface_manager_->NaturalSizeChanged(size);
+    surface_manager_->NaturalSizeChanged(rotated_size);
 
-  pipeline_metadata_.natural_size = size;
+  pipeline_metadata_.natural_size = rotated_size;
   client_->sizeChanged();
 }
 

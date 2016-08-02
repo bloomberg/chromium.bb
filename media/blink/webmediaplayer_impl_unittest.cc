@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -142,6 +143,12 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->SetReadyState(blink::WebMediaPlayer::ReadyStateHaveMetadata);
     wmpi_->pipeline_metadata_.has_audio = has_audio;
     wmpi_->pipeline_metadata_.has_video = has_video;
+  }
+
+  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
+
+  void OnVideoNaturalSizeChange(const gfx::Size& size) {
+    wmpi_->OnVideoNaturalSizeChange(size);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState() {
@@ -466,6 +473,33 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Suspended) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
   EXPECT_TRUE(state.is_memory_reporting_enabled);
   EXPECT_FALSE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.natural_size = gfx::Size(320, 240);
+
+  OnMetadata(metadata);
+  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->naturalSize());
+
+  // TODO(sandersd): Verify that the client is notified of the size change?
+  OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
+  ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->naturalSize());
+}
+
+TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.natural_size = gfx::Size(320, 240);
+  metadata.video_rotation = VIDEO_ROTATION_90;
+
+  // For 90/270deg rotations, the natural size should be transposed.
+  OnMetadata(metadata);
+  ASSERT_EQ(blink::WebSize(240, 320), wmpi_->naturalSize());
+
+  OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
+  ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
 }
 
 }  // namespace media
