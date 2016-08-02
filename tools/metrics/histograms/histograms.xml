@@ -7309,6 +7309,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.NonDefaultSessionPrerenderMatched"
+    enum="BooleanMatched">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Android: When there is a prerender for a session with non-default
+    parameters, whether the prerender was matched when navigating.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.PredictionStatus" enum="PredictionStatus">
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -7322,6 +7331,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     When a URL prediction succeeds, time in ms between the prediction and the
     actual launch.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.PrerenderSessionUsesDefaultParameters"
+    enum="BooleanDefault">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Android: When prerendering a URL for Custom Tabs, whether the client session
+    uses the default parameters.
   </summary>
 </histogram>
 
@@ -67999,6 +68017,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanDataReductionProxy" type="int">
   <int value="0" label="Not Data Reduction Proxy"/>
   <int value="1" label="Data Reduction Proxy"/>
+</enum>
+
+<enum name="BooleanDefault" type="int">
+  <int value="0" label="Not Default"/>
+  <int value="1" label="Default"/>
 </enum>
 
 <enum name="BooleanDeferred" type="int">

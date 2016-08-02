@@ -33,6 +33,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -464,13 +465,19 @@ public class CustomTabsConnection {
         boolean urlsMatch = TextUtils.equals(prerenderedUrl, url)
                 || (ignoreFragments
                         && UrlUtilities.urlsMatchIgnoringFragments(prerenderedUrl, url));
+        WebContents result = null;
         if (urlsMatch && TextUtils.equals(prerenderReferrer, referrer)) {
+            result = webContents;
             mPrerender = null;
-            return webContents;
         } else {
             cancelPrerender(session);
         }
-        return null;
+        if (!mClientManager.usesDefaultSessionParameters(session) && webContents != null) {
+            RecordHistogram.recordBooleanHistogram(
+                    "CustomTabs.NonDefaultSessionPrerenderMatched", result != null);
+        }
+
+        return result;
     }
 
     /** Returns the URL prerendered for a session, or null. */
@@ -765,6 +772,10 @@ public class CustomTabsConnection {
         if (webContents == null) return false;
         if (throttle) mClientManager.registerPrerenderRequest(uid, url);
         mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
+
+        RecordHistogram.recordBooleanHistogram("CustomTabs.PrerenderSessionUsesDefaultParameters",
+                mClientManager.usesDefaultSessionParameters(session));
+
         return true;
     }
 

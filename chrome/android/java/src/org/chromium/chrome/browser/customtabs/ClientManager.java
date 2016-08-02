@@ -94,6 +94,13 @@ class ClientManager {
         public long getLastMayLaunchUrlTimestamp() {
             return mLastMayLaunchUrlTimestamp;
         }
+
+        /**
+         * @return Whether the default parameters are used for this session.
+         */
+        public boolean isDefault() {
+            return !mIgnoreFragments && !mShouldPrerenderOnCellular;
+        }
     }
 
     private final Context mContext;
@@ -265,6 +272,15 @@ class ClientManager {
             CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mShouldPrerenderOnCellular : false;
+    }
+
+    /**
+     * @return Whether the session is using the default parameters (that is,
+     *         don't ignore fragments and don't prerender on cellular connections).
+     */
+    public synchronized boolean usesDefaultSessionParameters(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.isDefault() : true;
     }
 
     /**
