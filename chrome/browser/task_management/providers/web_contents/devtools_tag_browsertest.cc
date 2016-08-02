@@ -83,7 +83,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, TagsManagerRecordsATag) {
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
+// crbug.com/628570
+IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DISABLED_DevToolsTaskIsProvided) {
   MockWebContentsTaskManager task_manager;
   EXPECT_TRUE(task_manager.tasks().empty());
   // Browser tests start with a single tab.
