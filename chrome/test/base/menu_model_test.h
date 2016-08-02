@@ -18,16 +18,12 @@ class MenuModelTest {
  protected:
   // A menu delegate that counts the number of times certain things are called
   // to make sure things are hooked up properly.
-  class Delegate : public ui::SimpleMenuModel::Delegate,
-                   public ui::AcceleratorProvider {
+  class Delegate : public ui::SimpleMenuModel::Delegate {
    public:
     Delegate() : execute_count_(0), enable_count_(0) {}
 
     bool IsCommandIdChecked(int command_id) const override;
     bool IsCommandIdEnabled(int command_id) const override;
-    bool GetAcceleratorForCommandId(
-        int command_id,
-        ui::Accelerator* accelerator) const override;
     void ExecuteCommand(int command_id, int event_flags) override;
 
     int execute_count_;

@@ -15,12 +15,6 @@ bool MenuModelTest::Delegate::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool MenuModelTest::Delegate::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 void MenuModelTest::Delegate::ExecuteCommand(int command_id, int event_flags) {
   ++execute_count_;
 }

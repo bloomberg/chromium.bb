@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
 
 namespace gfx {
@@ -26,20 +28,15 @@ class ButtonMenuItemModel;
 // The breadth of MenuModel is not exposed through this API.
 class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
  public:
-  class UI_BASE_EXPORT Delegate {
+  class UI_BASE_EXPORT Delegate
+      : NON_EXPORTED_BASE(public AcceleratorProvider) {
    public:
-    virtual ~Delegate() {}
+    ~Delegate() override {}
 
     // Methods for determining the state of specific command ids.
     virtual bool IsCommandIdChecked(int command_id) const = 0;
     virtual bool IsCommandIdEnabled(int command_id) const = 0;
     virtual bool IsCommandIdVisible(int command_id) const;
-
-    // Gets the accelerator for the specified command id. Returns true if the
-    // command id has a valid accelerator, false otherwise. By default, returns
-    // false for all commands.
-    virtual bool GetAcceleratorForCommandId(int command_id,
-                                            ui::Accelerator* accelerator) const;
 
     // Some command ids have labels, sublabels, minor text and icons that change
     // over time.
@@ -66,6 +63,12 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
 
     // Notifies the delegate that the menu has closed.
     virtual void MenuClosed(SimpleMenuModel* source);
+
+    // AcceleratorProvider overrides:
+    // By default, returns false for all commands. Can be further overridden.
+    bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const override;
   };
 
   // The Delegate can be NULL, though if it is items can't be checked or

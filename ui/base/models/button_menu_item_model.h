@@ -7,13 +7,13 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
-
-class Accelerator;
 
 // A model representing the rows of buttons that should be inserted in a button
 // containing menu item.
@@ -26,7 +26,8 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
     TYPE_BUTTON_LABEL
   };
 
-  class UI_BASE_EXPORT Delegate {
+  class UI_BASE_EXPORT Delegate
+      : NON_EXPORTED_BASE(public AcceleratorProvider) {
    public:
     // Some command ids have labels that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
@@ -37,14 +38,14 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
     virtual bool IsCommandIdEnabled(int command_id) const;
     virtual bool DoesCommandIdDismissMenu(int command_id) const;
 
-    // Gets the accelerator for the specified command id. Returns true if the
-    // command id has a valid accelerator, false otherwise. By default, returns
-    // false for all commands.
-    virtual bool GetAcceleratorForCommandId(int command_id,
-                                            ui::Accelerator* accelerator) const;
+    // AcceleratorProvider overrides:
+    // By default, returns false for all commands. Can be further overridden.
+    bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const override;
 
    protected:
-    virtual ~Delegate() {}
+    ~Delegate() override {}
   };
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);

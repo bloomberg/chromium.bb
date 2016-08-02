@@ -37,12 +37,6 @@ bool SimpleMenuModel::Delegate::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
-bool SimpleMenuModel::Delegate::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) const {
-  return false;
-}
-
 bool SimpleMenuModel::Delegate::IsItemForCommandIdDynamic(
     int command_id) const {
   return false;
@@ -75,6 +69,12 @@ void SimpleMenuModel::Delegate::MenuWillShow(SimpleMenuModel* /*source*/) {
 }
 
 void SimpleMenuModel::Delegate::MenuClosed(SimpleMenuModel* /*source*/) {
+}
+
+bool SimpleMenuModel::Delegate::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
