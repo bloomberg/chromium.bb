@@ -28,7 +28,7 @@ COLORAMA_ROOT = os.path.join(host_paths.DIR_SOURCE_ROOT,
 # aapt should ignore OWNERS files in addition the default ignore pattern.
 AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
                        '!CVS:!thumbs.db:!picasa.ini:!*~:!*.d.stamp')
-_HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
+HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
 _HERMETIC_FILE_ATTR = (0644 << 16L)
 
 
@@ -267,7 +267,7 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   assert (src_path is None) != (data is None), (
       '|src_path| and |data| are mutually exclusive.')
   CheckZipPath(zip_path)
-  zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=_HERMETIC_TIMESTAMP)
+  zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=HERMETIC_TIMESTAMP)
   zipinfo.external_attr = _HERMETIC_FILE_ATTR
 
   if src_path and os.path.islink(src_path):
