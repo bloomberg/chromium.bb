@@ -1103,6 +1103,9 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
     return;
   gfx::Size s = GetClientAreaBounds().size();
   delegate_->HandleClientSizeChanged(s);
+
+  current_window_size_message_++;
+  sent_window_size_changing_ = false;
 }
 
 bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
@@ -2274,6 +2277,12 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       window_pos->flags & SWP_FRAMECHANGED) {
     delegate_->HandleWindowSizeChanging();
     sent_window_size_changing_ = true;
+
+    // It's possible that if Aero snap is being entered then the window size
+    // won't actually change. Post a message to ensure swaps will be re-enabled
+    // in that case.
+    PostMessage(hwnd(), WM_WINDOWSIZINGFINISHED, ++current_window_size_message_,
+                0);
   }
 
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
@@ -2307,11 +2316,22 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
     if (direct_manipulation_helper_)
       direct_manipulation_helper_->Deactivate(hwnd());
   }
-  if (sent_window_size_changing_) {
-    sent_window_size_changing_ = false;
-    delegate_->HandleWindowSizeChanged();
-  }
+
   SetMsgHandled(FALSE);
+}
+
+LRESULT HWNDMessageHandler::OnWindowSizingFinished(UINT message,
+                                                   WPARAM w_param,
+                                                   LPARAM l_param) {
+  // Check if a newer WM_WINDOWPOSCHANGING or WM_WINDOWPOSCHANGED have been
+  // received after this message was posted.
+  if (current_window_size_message_ != w_param)
+    return 0;
+
+  delegate_->HandleWindowSizeUnchanged();
+  sent_window_size_changing_ = false;
+
+  return 0;
 }
 
 void HWNDMessageHandler::OnSessionChange(WPARAM status_code) {

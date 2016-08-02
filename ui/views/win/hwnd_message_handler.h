@@ -59,6 +59,11 @@ class WindowsSessionChangeObserver;
 const int WM_NCUAHDRAWCAPTION = 0xAE;
 const int WM_NCUAHDRAWFRAME = 0xAF;
 
+// The HWNDMessageHandler sends this message to itself on
+// WM_WINDOWPOSCHANGING. It's used to inform the client if a
+// WM_WINDOWPOSCHANGED won't be received.
+const int WM_WINDOWSIZINGFINISHED = WM_USER;
+
 // IsMsgHandled() and BEGIN_SAFE_MSG_MAP_EX are a modified version of
 // BEGIN_MSG_MAP_EX. The main difference is it uses a WeakPtrFactory member
 // (|weak_factory|) that is used in _ProcessWindowMessage() and changing
@@ -373,6 +378,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
     // Touch Events.
     CR_MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
 
+    CR_MESSAGE_HANDLER_EX(WM_WINDOWSIZINGFINISHED, OnWindowSizingFinished)
+
     // Uses the general handler macro since the specific handler macro
     // MSG_WM_NCACTIVATE would convert WPARAM type to BOOL type. The high
     // word of WPARAM could be set when the window is minimized or restored.
@@ -470,6 +477,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);
+  LRESULT OnWindowSizingFinished(UINT message, WPARAM w_param, LPARAM l_param);
 
   // Receives Windows Session Change notifications.
   void OnSessionChange(WPARAM status_code);
@@ -642,8 +650,12 @@ class VIEWS_EXPORT HWNDMessageHandler :
   bool dwm_transition_desired_;
 
   // True if HandleWindowSizeChanging has been called in the delegate, but not
-  // HandleWindowSizeChanged.
+  // HandleClientSizeChanged.
   bool sent_window_size_changing_;
+
+  // This is used to keep track of whether a WM_WINDOWPOSCHANGED has
+  // been received after the WM_WINDOWPOSCHANGING.
+  uint32_t current_window_size_message_ = 0;
 
   // Manages observation of Windows Session Change messages.
   std::unique_ptr<WindowsSessionChangeObserver>

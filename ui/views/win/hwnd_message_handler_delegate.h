@@ -239,8 +239,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window size is about to change.
   virtual void HandleWindowSizeChanging() = 0;
 
-  // Called when the window size has finished changing.
-  virtual void HandleWindowSizeChanged() = 0;
+  // Called after HandleWindowSizeChanging() when it's determined the window
+  // size didn't actually change.
+  virtual void HandleWindowSizeUnchanged() = 0;
 
   // Called when the window scale factor has changed.
   virtual void HandleWindowScaleFactorChanged(float window_scale_factor) = 0;
