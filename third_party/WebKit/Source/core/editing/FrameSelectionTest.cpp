@@ -12,7 +12,6 @@
 #include "core/editing/FrameCaret.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDocument.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"

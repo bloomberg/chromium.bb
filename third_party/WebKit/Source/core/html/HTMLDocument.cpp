@@ -54,14 +54,8 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/page/FocusController.h"
-#include "core/page/FrameTree.h"
-#include "core/page/Page.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -209,7 +203,7 @@ static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
     // Mozilla treats all other values as case-sensitive, thus so do we.
     HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
 
-    const QualifiedName* caseInsesitiveAttributes[] = {
+    const QualifiedName* caseInsensitiveAttributes[] = {
         &accept_charsetAttr, &acceptAttr, &alignAttr, &alinkAttr, &axisAttr,
         &bgcolorAttr,
         &charsetAttr, &checkedAttr, &clearAttr, &codetypeAttr, &colorAttr, &compactAttr,
@@ -225,8 +219,8 @@ static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
         &targetAttr, &textAttr, &typeAttr,
         &valignAttr, &valuetypeAttr, &vlinkAttr };
 
-    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsesitiveAttributes));
-    for (const QualifiedName* attr : caseInsesitiveAttributes)
+    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
+    for (const QualifiedName* attr : caseInsensitiveAttributes)
         attrSet->add(attr->localName().impl());
 
     return attrSet;

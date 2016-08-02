@@ -16,7 +16,6 @@
 #include "core/dom/custom/CustomElementTestHelpers.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
-#include "core/html/HTMLDocument.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"

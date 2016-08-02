@@ -42,7 +42,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -464,7 +463,7 @@ TEST_F(WebViewTest, FocusIsInactive)
     WebLocalFrameImpl* frame = webView->mainFrameImpl();
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
-    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
+    Document* document = frame->frame()->document();
     EXPECT_TRUE(document->hasFocus());
     webView->setFocus(false);
     webView->setIsActive(false);
@@ -2698,7 +2697,7 @@ TEST_F(WebViewTest, TextInputFlags)
     webViewImpl->setInitialFocus(false);
 
     WebLocalFrameImpl* frame = webViewImpl->mainFrameImpl();
-    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
+    Document* document = frame->frame()->document();
 
     // (A) <input>
     // (A.1) Verifies autocorrect/autocomplete/spellcheck flags are Off and
@@ -2748,7 +2747,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     webViewImpl->setInitialFocus(false);
 
     WebLocalFrameImpl* frame = webViewImpl->mainFrameImpl();
-    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
+    Document* document = frame->frame()->document();
 
     // (A) <input>
     // (A.1) Focused and value is changed by script.

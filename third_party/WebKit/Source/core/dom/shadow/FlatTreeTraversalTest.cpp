@@ -11,7 +11,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/FrameView.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
@@ -25,7 +24,7 @@ namespace blink {
 
 class FlatTreeTraversalTest : public ::testing::Test {
 protected:
-    HTMLDocument& document() const;
+    Document& document() const;
 
     // Sets |mainHTML| to BODY element with |innerHTML| property and attaches
     // shadow root to child with |shadowHTML|, then update distribution for
@@ -40,18 +39,18 @@ protected:
 private:
     void SetUp() override;
 
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 void FlatTreeTraversalTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     DCHECK(m_document);
 }
 
-HTMLDocument& FlatTreeTraversalTest::document() const
+Document& FlatTreeTraversalTest::document() const
 {
     return *m_document;
 }

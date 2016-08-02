@@ -10,7 +10,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
@@ -41,7 +40,7 @@ protected:
     void SetUp() override;
 
     DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
-    HTMLDocument& document() const;
+    Document& document() const;
     void setSelection(const VisibleSelection&);
     FrameSelection& selection() const;
     Text* appendTextNode(const String& data);
@@ -70,19 +69,19 @@ protected:
 
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
 };
 
 void GranularityStrategyTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     DCHECK(m_document);
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 }
 
-HTMLDocument& GranularityStrategyTest::document() const
+Document& GranularityStrategyTest::document() const
 {
     return *m_document;
 }

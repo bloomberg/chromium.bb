@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/frame/FrameView.h"
 #include "core/html/FormData.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/testing/DummyPageHolder.h"
@@ -25,10 +25,10 @@ protected:
     void SetUp() override
     {
         m_dummyPageHolder = DummyPageHolder::create();
-        m_document = toHTMLDocument(&m_dummyPageHolder->document());
+        m_document = &m_dummyPageHolder->document();
     }
 
-    HTMLDocument& document() const { return *m_document; }
+    Document& document() const { return *m_document; }
 
     HTMLFormElement* populateForm(const char* enctype, const char* html)
     {
@@ -47,7 +47,7 @@ protected:
 
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
 };
 
 TEST_F(PasswordCredentialTest, CreateFromMultipartForm)

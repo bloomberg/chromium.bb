@@ -7,7 +7,6 @@
 #include "core/dom/custom/CustomElementReaction.h"
 #include "core/dom/custom/CustomElementReactionTestHelpers.h"
 #include "core/dom/custom/CustomElementTestHelpers.h"
-#include "core/html/HTMLDocument.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
 #include <initializer_list>

@@ -4,8 +4,8 @@
 
 #include "core/html/HTMLSelectElement.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/loader/EmptyClients.h"
@@ -18,11 +18,10 @@ namespace blink {
 class HTMLSelectElementTest : public::testing::Test {
 protected:
     void SetUp() override;
-    HTMLDocument& document() const { return *m_document; }
-
+    Document& document() const { return *m_document; }
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
 };
 
 void HTMLSelectElementTest::SetUp()
@@ -31,7 +30,7 @@ void HTMLSelectElementTest::SetUp()
     fillWithEmptyClients(pageClients);
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     m_document->setMimeType("text/html");
 }
 

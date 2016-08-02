@@ -10,7 +10,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLDocument.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"

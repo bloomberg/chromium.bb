@@ -4,6 +4,7 @@
 
 #include "core/html/HTMLTextFormControlElement.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
@@ -12,7 +13,6 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBRElement.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutTreeAsText.h"
@@ -31,7 +31,7 @@ protected:
     void SetUp() override;
 
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
-    HTMLDocument& document() const { return *m_document; }
+    Document& document() const { return *m_document; }
     HTMLTextFormControlElement& textControl() const { return *m_textControl; }
     HTMLInputElement& input() const { return *m_input; }
 
@@ -42,7 +42,7 @@ private:
     std::unique_ptr<SpellCheckerClient> m_spellCheckerClient;
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
     Persistent<HTMLTextFormControlElement> m_textControl;
     Persistent<HTMLInputElement> m_input;
 };
@@ -67,7 +67,7 @@ void HTMLTextFormControlElementTest::SetUp()
     pageClients.spellCheckerClient = m_spellCheckerClient.get();
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     m_document->documentElement()->setInnerHTML("<body><textarea id=textarea></textarea><input id=input /></body>", ASSERT_NO_EXCEPTION);
     m_document->view()->updateAllLifecyclePhases();
     m_textControl = toHTMLTextFormControlElement(m_document->getElementById("textarea"));
@@ -144,7 +144,7 @@ static VisiblePosition endOfWord(const VisiblePosition& position)
     return endOfWord(position, RightWordIfOnBoundary);
 }
 
-void testBoundary(HTMLDocument& document, HTMLTextFormControlElement& textControl)
+void testBoundary(Document& document, HTMLTextFormControlElement& textControl)
 {
     for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
         textControl.setSelectionRange(i, i);

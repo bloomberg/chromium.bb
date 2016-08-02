@@ -10,7 +10,6 @@
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrialContext.h"
@@ -89,7 +88,7 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document, const AtomicString
         return;
 
     // Exception (for sandboxed documents) ignored.
-    toHTMLDocument(document).setCookie(content, IGNORE_EXCEPTION);
+    document.setCookie(content, IGNORE_EXCEPTION);
 }
 
 } // namespace blink

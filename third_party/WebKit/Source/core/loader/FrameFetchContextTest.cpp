@@ -30,13 +30,13 @@
 
 #include "core/loader/FrameFetchContext.h"
 
+#include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
@@ -92,7 +92,7 @@ protected:
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
-        document = toHTMLDocument(&dummyPageHolder->document());
+        document = &dummyPageHolder->document();
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
         owner = DummyFrameOwner::create();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
@@ -151,7 +151,7 @@ protected:
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500), nullptr, client);
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(mainResourceUrl), SubstituteData());
-        document = toHTMLDocument(&dummyPageHolder->document());
+        document = &dummyPageHolder->document();
         document->setURL(mainResourceUrl);
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
         owner = DummyFrameOwner::create();
@@ -480,7 +480,7 @@ TEST_F(FrameFetchContextTest, PopulateRequestData)
         // Set up a new document to ensure sandbox flags are cleared:
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
-        document = toHTMLDocument(&dummyPageHolder->document());
+        document = &dummyPageHolder->document();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
 
         // Setup the test:

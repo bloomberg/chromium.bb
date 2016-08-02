@@ -4,9 +4,9 @@
 
 #include "core/layout/LayoutTheme.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -21,18 +21,18 @@ namespace blink {
 class LayoutThemeTest : public ::testing::Test {
 protected:
     void SetUp() override;
-    HTMLDocument& document() const { return *m_document; }
+    Document& document() const { return *m_document; }
     void setHtmlInnerHTML(const char* htmlContent);
 
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
 };
 
 void LayoutThemeTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     ASSERT(m_document);
 }
 

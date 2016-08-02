@@ -4,6 +4,7 @@
 
 #include "core/editing/InputMethodController.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
@@ -11,7 +12,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ namespace blink {
 class InputMethodControllerTest : public ::testing::Test {
 protected:
     InputMethodController& controller() { return frame().inputMethodController(); }
-    HTMLDocument& document() const { return *m_document; }
+    Document& document() const { return *m_document; }
     LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
     Element* insertHTMLElement(const char* elementCode, const char* elementId);
 
@@ -30,13 +30,13 @@ private:
     void SetUp() override;
 
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<HTMLDocument> m_document;
+    Persistent<Document> m_document;
 };
 
 void InputMethodControllerTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
+    m_document = &m_dummyPageHolder->document();
     DCHECK(m_document);
 }
 

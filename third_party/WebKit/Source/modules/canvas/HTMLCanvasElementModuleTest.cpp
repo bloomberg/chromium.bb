@@ -5,9 +5,9 @@
 #include "modules/canvas/HTMLCanvasElementModule.h"
 
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/HTMLDocument.h"
 #include "core/loader/EmptyClients.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/testing/DummyPageHolder.h"
@@ -23,7 +23,7 @@ protected:
         Page::PageClients pageClients;
         fillWithEmptyClients(pageClients);
         std::unique_ptr<DummyPageHolder> m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
-        Persistent<HTMLDocument> m_document = toHTMLDocument(&m_dummyPageHolder->document());
+        Persistent<Document> m_document = &m_dummyPageHolder->document();
         m_document->documentElement()->setInnerHTML("<body><canvas id='c'></canvas></body>", ASSERT_NO_EXCEPTION);
         m_document->view()->updateAllLifecyclePhases();
         m_canvasElement = toHTMLCanvasElement(m_document->getElementById("c"));
