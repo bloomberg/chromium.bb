@@ -4,19 +4,24 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //third_party/robolectric/robolectric.gyp:android-all-4.3_r2-robolectric-0
-java_prebuilt("android-all-4.3_r2-robolectric-0") {
-  jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
-}
-
-# GYP: //third_party/robolectric/robolectric.gyp:tagsoup-1.2
 java_prebuilt("tagsoup-1.2") {
+  testonly = true
   jar_path = "lib/tagsoup-1.2.jar"
 }
 
-# GYP: //third_party/robolectric/robolectric.gyp:json-20080701
 java_prebuilt("json-20080701") {
+  testonly = true
   jar_path = "lib/json-20080701.jar"
+}
+
+java_prebuilt("android-all-4.3_r2-robolectric-0") {
+  testonly = true
+  jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
+}
+
+java_prebuilt("android-all-5.0.0_r2-robolectric-1") {
+  testonly = true
+  jar_path = "lib/android-all-5.0.0_r2-robolectric-1.jar"
 }
 
 # TODO(mikecase): Remove this target once all tests have been converted to
@@ -32,10 +37,6 @@ java_prebuilt("robolectric_java") {
   ]
 }
 
-java_prebuilt("android-all-5.0.0_r2-robolectric-1") {
-  jar_path = "lib/android-all-5.0.0_r2-robolectric-1.jar"
-}
-
 # TODO(mikecase): Rename target to robolectric_java once all tests have been
 # converted to Robolectric 3.0 and the old robolectric_java target has been
 # removed.
@@ -47,7 +48,8 @@ java_library("robolectric_3_java") {
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_utils_java",
-    ":shadows-core-3.0",
+    ":shadows-core-3.0-18",
+    ":shadows-core-3.0-21",
     ":shadows-multidex-3.0",
     ":tagsoup-1.2",
     "//third_party/bouncycastle:bouncycastle_java",
@@ -311,12 +313,218 @@ template_files = [
   "robolectric/robolectric-shadows/shadows-core/src/main/resources/org/robolectric/shadows/ShadowWindowManagerGlobal.java.vm",
 ]
 
-processed_template_files = []
-foreach(t, template_files) {
-  gen_dir = get_path_info(t, "gen_dir")
-  name = get_path_info(t, "name")
-  processed_template_files += [ "$gen_dir/$name" ]
-}
+shadows_core_java_files = [
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboCursor.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboIntentSender.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboMenu.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboMenuItem.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboSharedPreferences.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboSubMenu.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/package-info.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/CoreShadowsAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/Provider.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsListView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsSeekBar.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsSpinner.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsoluteLayout.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbstractCursor.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAccessibilityService.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivity.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityGroup.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityManagerNative.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityThread.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAdapterView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAddress.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAlertController.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAlertDialog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAndroidBidi.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAndroidHttpClient.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAnimationBridge.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAnimationUtils.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetHost.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetHostView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowApplication.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowArrayAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTask.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTaskBridge.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTaskLoader.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAudioEffect.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAudioManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBaseAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBinder.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBinderBridge.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmap.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapDrawable.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapFactory.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapShader.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBluetoothDevice.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBroadcastReceiver.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBundle.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCamera.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCanvas.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowChoreographer.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColor.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColorMatrix.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColorMatrixColorFilter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCompoundButton.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowConfiguration.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentObserver.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProvider.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderClient.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderOperation.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderResult.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentResolver.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentUris.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContext.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContextThemeWrapper.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContextWrapper.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCookieManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCookieSyncManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCornerPathEffect.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCountDownTimer.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCursorAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDashPathEffect.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDateFormat.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDatePickerDialog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDebug.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDialog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDownloadManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDrawable.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowEdgeEffect.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowExifInterface.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowExpandableListView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFilter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFloatMath.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFrameLayout.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowGestureDetector.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowGradientDrawable.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowHandler.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowHttpResponseCache.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowImageView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputDevice.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputEvent.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputMethodManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntent.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentFilter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentSender.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentService.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowJsPromptResult.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowJsResult.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowKeyCharacterMap.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowKeyguardManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLayoutAnimationController.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinearGradient.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinearLayout.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinkMovementMethod.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowListPopupWindow.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowListView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocalActivityManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocation.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocationManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLooper.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMatrix.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaMetadataRetriever.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaPlayer.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaRecorder.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaRouter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaScannerConnection.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaStore.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMessenger.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMimeTypeMap.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNetworkInfo.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNfcAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNinePatch.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNotificationManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNumberPicker.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowObjectAnimator.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowOverScroller.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPaint.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowParcelFileDescriptor.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPath.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPendingIntent.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPhoneWindow.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPopupMenu.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPopupWindow.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPorterDuffColorFilter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreference.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreferenceActivity.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreferenceManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProcess.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProgressBar.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProgressDialog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRegion.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRelativeLayout.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRemoteCallbackList.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRemoteViews.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResolveInfo.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResourceCursorAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResources.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResultReceiver.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScaleGestureDetector.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScanResult.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScrollView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScroller.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSearchManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSeekBar.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSensorManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowService.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowServiceManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSimpleCursorAdapter.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSocketTagger.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSpannableStringBuilder.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSpellChecker.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSslErrorHandler.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowStateListDrawable.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowStrictMode.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSurface.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSurfaceView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSystemClock.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSystemProperties.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabActivity.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabHost.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabWidget.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTelephonyManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextPaint.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextToSpeech.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTimePickerDialog.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowToast.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTouchDelegate.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTrafficStats.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTypedArray.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVMRuntime.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowValueAnimator.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVelocityTracker.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVideoView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowView.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewAnimator.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewConfiguration.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewGroup.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewRootImpl.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewTreeObserver.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWallpaperManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWebSyncManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWebViewDatabase.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiConfiguration.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiInfo.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindow.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindowManager.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindowManagerImpl.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowZoomButtonsController.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/package-info.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/AppSingletonizer.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/DataSource.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/PreferenceBuilder.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/SQLiteLibraryLoader.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/package-info.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/util/concurrent/RoboExecutorService.java",
+  "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/util/concurrent/package-info.java",
+]
 
 java_binary("robolectric_template_processor") {
   testonly = true
@@ -331,281 +539,102 @@ java_binary("robolectric_template_processor") {
   ]
 }
 
-action("process_robolectric_templates") {
+template("shadows_core") {
+  forward_variables_from(invoker,
+                         [
+                           "api_level",
+                           "android_sdk_deps",
+                         ])
   testonly = true
 
-  api_level = "21"
-  base_template_dir = rebase_path(".", root_build_dir)
-  base_template_output_dir = rebase_path("$target_gen_dir", root_build_dir)
-  script = "$root_build_dir/bin/robolectric_template_processor"
-  args = [
-    "--api-level",
-    api_level,
-    "--base-template-dir",
-    base_template_dir,
-    "--output-dir",
-    base_template_output_dir,
-  ]
-  inputs = template_files
-  outputs = processed_template_files
+  _shadows_core_java_files = invoker.shadows_core_java_files
+  _template_files = invoker.template_files
+  _process_templates_target_name = "${target_name}__process_templates"
 
-  deps = [
-    ":robolectric_template_processor",
-  ]
+  _processed_template_files = []
+  foreach(t, _template_files) {
+    _gen_dir = get_path_info(t, "gen_dir")
+    _name = get_path_info(t, "name")
+    _processed_template_files += [ "$_gen_dir/$api_level/$_name" ]
+  }
+
+  action(_process_templates_target_name) {
+    _base_template_dir = rebase_path(".", root_build_dir)
+    _base_template_output_dir = rebase_path(target_gen_dir, root_build_dir)
+    script = "$root_build_dir/bin/robolectric_template_processor"
+    args = [
+      "--api-level",
+      "$api_level",
+      "--base-template-dir",
+      _base_template_dir,
+      "--output-dir",
+      _base_template_output_dir,
+    ]
+    inputs = _template_files
+    outputs = _processed_template_files
+
+    deps = [
+      ":robolectric_template_processor",
+    ]
+  }
+
+  java_library(target_name) {
+    testonly = true
+    processors_javac =
+        [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
+    processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric" ]
+    provider_configurations = [
+      "robolectric/robolectric-shadows/resources/META-INF/services/org.robolectric.internal.ShadowProvider",
+      "robolectric/robolectric-shadows/shadows-core/src/main/resources/META-INF/services/org.robolectric.ShadowsAdapter",
+    ]
+    if (is_linux) {
+      additional_jar_files = [
+        rebase_path("../sqlite4java/lib/linux-x86_64/libsqlite4java.so") +
+            ":linux-x86_64/libsqlite4java.so",
+        rebase_path("../sqlite4java/lib/linux-x86/libsqlite4java.so") +
+            ":linux-x86/libsqlite4java.so",
+      ]
+    }
+    if (is_mac) {
+      additional_jar_files =
+          [ rebase_path("../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib") +
+            ":mac-x86_64/libsqlite4java.jnilib" ]
+    }
+    if (is_win) {
+      additional_jar_files = [
+        rebase_path("../sqlite4java/lib/windows-x86/sqlite4java.dll") +
+            ":windows-x86/sqlite4java.dll",
+        rebase_path("../sqlite4java/lib/windows-x86_64/sqlite4java.dll") +
+            ":windows-x86_64/sqlite4java.dll",
+      ]
+    }
+    java_files = _shadows_core_java_files
+    java_files += _processed_template_files
+
+    deps = [
+      ":$_process_templates_target_name",
+      ":robolectric_annotations_java",
+      ":robolectric_processor_java",
+      ":robolectric_resources_java",
+      ":robolectric_utils_java",
+      "//build/android:sun_tools_java",
+      "//third_party/guava:guava_java",
+      "//third_party/icu4j:icu4j_java",
+      "//third_party/intellij:intellij_annotations_java",
+      "//third_party/sqlite4java:sqlite4java_java",
+    ]
+    deps += android_sdk_deps
+  }
 }
 
-java_library("shadows-core-3.0") {
-  testonly = true
-  processors_javac =
-      [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
-  processor_args_javac =
-      [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric" ]
-  provider_configurations = [
-    "robolectric/robolectric-shadows/shadows-core/src/main/resources/META-INF/services/org.robolectric.ShadowsAdapter",
+shadows_core("shadows-core-3.0-21") {
+  api_level = 21
+  android_sdk_deps = [ ":android-all-5.0.0_r2-robolectric-1" ]
+}
 
-    # TODO(mikecase): Switch to use the actual org.robolectric.internal.ShadowProvider file generated
-    # at compile time.
-    "robolectric/robolectric-processor/src/test/resources/META-INF/services/org.robolectric.internal.ShadowProvider",
-  ]
-  additional_jar_files = [
-    rebase_path("../sqlite4java/lib/linux-x86_64/libsqlite4java.so") +
-        ":linux-x86_64/libsqlite4java.so",
-    rebase_path("../sqlite4java/lib/linux-x86/libsqlite4java.so") +
-        ":linux-x86/libsqlite4java.so",
-    rebase_path("../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib") +
-        ":mac-x86_64/libsqlite4java.jnilib",
-    rebase_path("../sqlite4java/lib/windows-x86/sqlite4java.dll") +
-        ":windows-x86/sqlite4java.dll",
-    rebase_path("../sqlite4java/lib/windows-x86_64/sqlite4java.dll") +
-        ":windows-x86_64/sqlite4java.dll",
-  ]
-  java_files = [
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboCursor.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboIntentSender.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboMenu.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboMenuItem.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboSharedPreferences.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/RoboSubMenu.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/fakes/package-info.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/CoreShadowsAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/Provider.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsListView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsSeekBar.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsSpinner.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbsoluteLayout.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAbstractCursor.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAccessibilityService.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivity.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityGroup.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityManagerNative.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowActivityThread.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAdapterView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAddress.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAlertController.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAlertDialog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAndroidBidi.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAndroidHttpClient.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAnimationBridge.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAnimationUtils.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetHost.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetHostView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAppWidgetManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowApplication.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowArrayAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTask.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTaskBridge.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAsyncTaskLoader.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAudioEffect.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowAudioManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBaseAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBinder.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBinderBridge.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmap.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapDrawable.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapFactory.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBitmapShader.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBluetoothDevice.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBroadcastReceiver.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowBundle.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCamera.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCanvas.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowChoreographer.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColor.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColorMatrix.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowColorMatrixColorFilter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCompoundButton.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowConfiguration.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentObserver.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProvider.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderClient.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderOperation.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentProviderResult.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentResolver.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContentUris.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContext.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContextThemeWrapper.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowContextWrapper.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCookieManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCookieSyncManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCornerPathEffect.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCountDownTimer.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowCursorAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDashPathEffect.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDateFormat.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDatePickerDialog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDebug.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDialog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDownloadManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowDrawable.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowEdgeEffect.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowExifInterface.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowExpandableListView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFilter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFloatMath.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowFrameLayout.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowGestureDetector.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowGradientDrawable.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowHandler.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowHttpResponseCache.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowImageView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputDevice.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputEvent.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowInputMethodManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntent.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentFilter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentSender.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowIntentService.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowJsPromptResult.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowJsResult.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowKeyCharacterMap.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowKeyguardManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLayoutAnimationController.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinearGradient.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinearLayout.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLinkMovementMethod.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowListPopupWindow.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowListView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocalActivityManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocation.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLocationManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowLooper.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMatrix.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaMetadataRetriever.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaPlayer.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaRecorder.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaRouter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaScannerConnection.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMediaStore.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMessenger.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMimeTypeMap.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowMotionEvent.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNetworkInfo.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNfcAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNinePatch.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNotificationManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowNumberPicker.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowObjectAnimator.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowOverScroller.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPaint.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowParcelFileDescriptor.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPath.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPendingIntent.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPhoneWindow.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPopupMenu.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPopupWindow.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPorterDuffColorFilter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreference.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreferenceActivity.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowPreferenceManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProcess.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProgressBar.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowProgressDialog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRegion.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRelativeLayout.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRemoteCallbackList.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowRemoteViews.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResolveInfo.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResourceCursorAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResources.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowResultReceiver.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScaleGestureDetector.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScanResult.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScrollView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowScroller.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSearchManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSeekBar.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSensorManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowService.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowServiceManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSimpleCursorAdapter.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSocketTagger.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSpannableStringBuilder.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSpellChecker.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSslErrorHandler.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowStateListDrawable.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowStrictMode.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSurface.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSurfaceView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSystemClock.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowSystemProperties.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabActivity.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabHost.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTabWidget.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTelephonyManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextPaint.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextToSpeech.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTextView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTimePickerDialog.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowToast.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTouchDelegate.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTrafficStats.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowTypedArray.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVMRuntime.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowValueAnimator.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVelocityTracker.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowVideoView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowView.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewAnimator.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewConfiguration.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewGroup.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewRootImpl.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowViewTreeObserver.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWallpaperManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWebSyncManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWebViewDatabase.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiConfiguration.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiInfo.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWifiManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindow.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindowManager.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowWindowManagerImpl.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/ShadowZoomButtonsController.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/package-info.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/AppSingletonizer.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/DataSource.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/PreferenceBuilder.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/SQLiteLibraryLoader.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/shadows/util/package-info.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/util/concurrent/RoboExecutorService.java",
-    "robolectric/robolectric-shadows/shadows-core/src/main/java/org/robolectric/util/concurrent/package-info.java",
-  ]
-  java_files += processed_template_files
-
-  deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
-    ":process_robolectric_templates",
-    ":robolectric_annotations_java",
-    ":robolectric_processor_java",
-    ":robolectric_resources_java",
-    ":robolectric_utils_java",
-    "//build/android:sun_tools_java",
-    "//third_party/guava:guava_java",
-    "//third_party/icu4j:icu4j_java",
-    "//third_party/intellij:intellij_annotations_java",
-    "//third_party/sqlite4java:sqlite4java_java",
-  ]
+shadows_core("shadows-core-3.0-18") {
+  api_level = 18
+  android_sdk_deps = [ ":android-all-4.3_r2-robolectric-0" ]
 }
 
 java_library("shadows-multidex-3.0") {
@@ -613,11 +642,7 @@ java_library("shadows-multidex-3.0") {
   processors_javac =
       [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex" ]
-  provider_configurations = [
-    # TODO(mikecase): Switch to use the actual org.robolectric.internal.ShadowProvider file generated
-    # at compile time.
-    "robolectric/robolectric-processor/src/test/resources/META-INF/services/org.robolectric.internal.ShadowProvider",
-  ]
+  provider_configurations = [ "robolectric/robolectric-shadows/shadows-multidex/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
   java_files = [
     "robolectric/robolectric-shadows/shadows-multidex/src/main/java/org/robolectric/shadows/multidex/ShadowMultiDex.java",
     "robolectric/robolectric-shadows/shadows-multidex/src/main/java/org/robolectric/shadows/multidex/package-info.java",

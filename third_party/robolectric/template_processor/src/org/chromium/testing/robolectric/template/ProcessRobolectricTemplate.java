@@ -42,7 +42,7 @@ public final class ProcessRobolectricTemplate {
         Velocity.init();
 
         final VelocityContext context = new VelocityContext();
-        int api = parser.getApiLevel();
+        final int api = parser.getApiLevel();
         context.put("api", api);
         if (api >= 21) {
             context.put("ptrClass", "long");
@@ -60,7 +60,7 @@ public final class ProcessRobolectricTemplate {
                 public FileVisitResult visitFile(
                         Path path, BasicFileAttributes attrs) throws IOException {
                     if (templatePathMatcher.matches(path)) {
-                        processTemplate(context, path, parser.getBaseTemplateDir(), parser.getOutputDir());
+                        processTemplate(context, path, parser.getBaseTemplateDir(), parser.getOutputDir(), api);
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -70,12 +70,16 @@ public final class ProcessRobolectricTemplate {
         }
     }
 
-    private static void processTemplate(VelocityContext context, Path templateFile, Path baseTemplateDir, Path outputDir) throws IOException {
+    private static void processTemplate(VelocityContext context, Path templateFile, Path baseTemplateDir, Path outputDir, int api_level) throws IOException {
         final StringWriter stringWriter = new StringWriter();
         Template template = Velocity.getTemplate(baseTemplateDir.relativize(templateFile).toString(), "UTF-8");
         template.merge(context, stringWriter);
 
-        String relativeOutputFile = templateFile.toString().replace(baseTemplateDir.toString(), "").replace(".vm", "");
+        String templateFilename = templateFile.getFileName().toString();
+        String processedFilename = "" + api_level + File.separator + templateFilename.replace(".vm", "");
+
+        String relativeOutputFile = templateFile.toString().replace(baseTemplateDir.toString(), "").replace(templateFilename, processedFilename);
+
         if (relativeOutputFile.startsWith("/")) {
             relativeOutputFile = relativeOutputFile.substring(1);
         }

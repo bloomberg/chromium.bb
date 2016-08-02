@@ -51,7 +51,8 @@ _java_target_whitelist = [
   "//third_party/robolectric:android-all-5.0.0_r2-robolectric-1",
   "//third_party/robolectric:json-20080701",
   "//third_party/robolectric:tagsoup-1.2",
-  "//third_party/robolectric:shadows-core-3.0",
+  "//third_party/robolectric:shadows-core-3.0-18",
+  "//third_party/robolectric:shadows-core-3.0-21",
   "//third_party/robolectric:shadows-multidex-3.0",
 ]
 
