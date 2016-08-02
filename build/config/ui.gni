@@ -15,6 +15,7 @@
 # to set up feature flags.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/features.gni")
 
 declare_args() {
   # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
@@ -83,7 +84,7 @@ if (is_linux && !use_ozone) {
 }
 
 # Whether to use atk, the Accessibility ToolKit library
-use_atk = is_desktop_linux && use_x11
+use_atk = is_desktop_linux && use_x11 && use_gconf
 
 use_clipboard_aurax11 =
     (is_desktop_linux && use_aura && use_x11) || enable_clipboard_aurax11

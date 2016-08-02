@@ -347,10 +347,11 @@ split_static_library("ui") {
       deps -= [ "//chrome/browser/ui/views" ]
     }
   }
+  if (use_gio) {
+    deps += [ "//build/linux/libgio" ]
+  }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [
-      "//build/linux/libgio",
-
       # gtk2 is the only component that can interact with gtk2 in our new
       # world.
       "//chrome/browser/ui/libgtk2ui",
