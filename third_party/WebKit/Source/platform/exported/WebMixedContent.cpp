@@ -61,6 +61,7 @@ WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(WebU
     case WebURLRequest::RequestContextIframe:
     case WebURLRequest::RequestContextImageSet:
     case WebURLRequest::RequestContextImport:
+    case WebURLRequest::RequestContextInternal:
     case WebURLRequest::RequestContextLocation:
     case WebURLRequest::RequestContextManifest:
     case WebURLRequest::RequestContextObject:
@@ -78,7 +79,6 @@ WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(WebU
 
     // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
-    case WebURLRequest::RequestContextInternal:
     case WebURLRequest::RequestContextPrefetch:
         return ContextType::ShouldBeBlockable;
 

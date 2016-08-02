@@ -108,7 +108,6 @@
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
 # navigation to the browser
-  http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/insecure-prefetch-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
   http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
