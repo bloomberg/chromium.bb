@@ -76,8 +76,7 @@
         margin: 0 20px;
       }
     </style>
-    <dialog is="cr-dialog" id="dialog" class="layout vertical"
-        on-cancel="onDialogCanceled_">
+    <dialog is="cr-dialog" id="dialog" on-cancel="onDialogCanceled_">
       <div class="title">[[getTitle_(dialogId)]]</div>
       <div class="body">
         <template is="dom-if" if="[[isDialogType_(dialogId, 'addDevice')]]">
