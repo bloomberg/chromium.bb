@@ -82,8 +82,8 @@ test("5e1      ", "50");
 
 debug("");
 debug("Test behavior on overflow");
-test("2E+500", "baseline");
-test("-2E+500", "baseline");
+test("2E+500", "3.40282e+38");
+test("-2E+500", "-3.40282e+38");
 
 debug("");
 debug("Invalid values");

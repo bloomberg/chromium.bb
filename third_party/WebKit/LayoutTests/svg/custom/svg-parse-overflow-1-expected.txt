@@ -1,2 +1,1 @@
-CONSOLE ERROR: line 9: Error: <foreignObject> attribute y: Expected length, "1050000000000000…".
 

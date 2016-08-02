@@ -54,6 +54,9 @@ assert_valid_value("width", "1e-10%", "1e-10%");
 // Large exponents (not representable). This is not necessarily the correct value.
 assert_valid_value("opacity", "1e-600", "0");
 assert_valid_value("width", "1e-600px", "0px");
+assert_valid_value("width", "1e600px", "3.40282e+38px");
+assert_valid_value("opacity", "1e600", "3.40282e+38");
+assert_valid_value("transform", "translateX(1e600px)", "translateX(3.40282e+38px)");
 
 assert_invalid_value("width", "1e+px");
 assert_invalid_value("width", "1e-px");
@@ -61,7 +64,4 @@ assert_invalid_value("width", "1e1.0px");
 assert_invalid_value("width", "1e10.0px");
 assert_invalid_value("width", "1e1.0em");
 assert_invalid_value("width", "1e10.0em");
-assert_invalid_value("width", "1e600px");
-assert_invalid_value("opacity", "1e600");
-assert_invalid_value("transform", "translateX(1e600px)");
 </script>

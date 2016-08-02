@@ -87,7 +87,10 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned l
     // not represent a double.
     bool ok;
     number = charactersToDouble(characters, length, &ok);
-    return ok && CSSParserToken::isValidNumericValue(number);
+    if (!ok)
+        return false;
+    number = clampTo<double>(number, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    return true;
 }
 
 static CSSValue* parseSimpleLengthValue(CSSPropertyID propertyId, const String& string, CSSParserMode cssParserMode)

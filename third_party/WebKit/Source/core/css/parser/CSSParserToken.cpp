@@ -42,9 +42,9 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     , m_numericValueType(numericValueType)
     , m_numericSign(sign)
     , m_unit(static_cast<unsigned>(CSSPrimitiveValue::UnitType::Number))
-    , m_numericValue(numericValue)
 {
     ASSERT(type == NumberToken);
+    m_numericValue = clampTo<double>(numericValue, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
@@ -286,17 +286,6 @@ void CSSParserToken::serialize(StringBuilder& builder) const
         ASSERT_NOT_REACHED();
         return;
     }
-}
-
-bool CSSParserToken::isValidNumericValue(double value)
-{
-    return value >= -std::numeric_limits<float>::max()
-        && value <= std::numeric_limits<float>::max();
-}
-
-bool CSSParserToken::isValidNumericValue() const
-{
-    return isValidNumericValue(numericValue());
 }
 
 } // namespace blink

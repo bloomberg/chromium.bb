@@ -90,23 +90,10 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID property, cons
         addProperty(longhands[i], property, value, important);
 }
 
-static bool hasInvalidNumericValues(const CSSParserTokenRange& range)
-{
-    for (const CSSParserToken& token : range) {
-        CSSParserTokenType type = token.type();
-        if ((type == NumberToken || type == DimensionToken || type == PercentageToken)
-            && !token.isValidNumericValue())
-            return true;
-    }
-    return false;
-}
-
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
     const CSSParserTokenRange& range, const CSSParserContext& context,
     HeapVector<CSSProperty, 256>& parsedProperties, StyleRule::RuleType ruleType)
 {
-    if (hasInvalidNumericValues(range))
-        return false;
     int parsedPropertiesSize = parsedProperties.size();
 
     CSSPropertyParser parser(range, context, &parsedProperties);
@@ -135,8 +122,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 const CSSValue* CSSPropertyParser::parseSingleValue(
     CSSPropertyID property, const CSSParserTokenRange& range, const CSSParserContext& context)
 {
-    if (hasInvalidNumericValues(range))
-        return nullptr;
     CSSPropertyParser parser(range, context, nullptr);
     const CSSValue* value = parser.parseSingleValue(property);
     if (!value || !parser.m_range.atEnd())
