@@ -15,6 +15,7 @@ namespace blink {
 
 class ConsoleMessage;
 class LocalFrame;
+class ScriptSourceCode;
 
 class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope, public WorkletGlobalScopeProxy, public LocalFrameLifecycleObserver {
 public:
@@ -22,7 +23,7 @@ public:
     bool isMainThreadWorkletGlobalScope() const final { return true; }
 
     // WorkletGlobalScopeProxy
-    void evaluateScript(const String& source, const KURL& scriptURL) final;
+    void evaluateScript(const ScriptSourceCode&) final;
     void terminateWorkletGlobalScope() final;
 
     // WorkerOrWorkletGlobalScope

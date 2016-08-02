@@ -5,5 +5,5 @@
 [
     RuntimeEnabled=CSSPaintAPI,
 ] partial interface Window {
-    [CallWith=ExecutionContext] readonly attribute Worklet paintWorklet;
+    readonly attribute Worklet paintWorklet;
 };

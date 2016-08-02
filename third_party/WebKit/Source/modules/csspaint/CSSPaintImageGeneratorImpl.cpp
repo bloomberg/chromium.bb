@@ -16,7 +16,7 @@ namespace blink {
 CSSPaintImageGenerator* CSSPaintImageGeneratorImpl::create(const String& name, Document& document, Observer* observer)
 {
     LocalDOMWindow* domWindow = document.domWindow();
-    PaintWorklet* paintWorklet = WindowPaintWorklet::from(*domWindow).paintWorklet(&document);
+    PaintWorklet* paintWorklet = WindowPaintWorklet::from(*domWindow).paintWorklet();
 
     CSSPaintDefinition* paintDefinition = paintWorklet->findDefinition(name);
     CSSPaintImageGeneratorImpl* generator;

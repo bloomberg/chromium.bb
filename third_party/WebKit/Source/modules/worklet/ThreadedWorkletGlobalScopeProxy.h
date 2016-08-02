@@ -11,7 +11,7 @@ namespace blink {
 
 class ThreadedWorkletGlobalScopeProxy : public WorkletGlobalScopeProxy {
 public:
-    void evaluateScript(const String& source, const KURL& scriptURL) final
+    void evaluateScript(const ScriptSourceCode&) final
     {
         // TODO(ikilpatrick): implement.
     }

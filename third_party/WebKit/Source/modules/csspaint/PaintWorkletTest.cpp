@@ -26,7 +26,7 @@ public:
 
     PaintWorklet* paintWorklet()
     {
-        return WindowPaintWorklet::from(*m_page->frame().localDOMWindow()).paintWorklet(&m_page->document());
+        return WindowPaintWorklet::from(*m_page->frame().localDOMWindow()).paintWorklet();
     }
 
 protected:

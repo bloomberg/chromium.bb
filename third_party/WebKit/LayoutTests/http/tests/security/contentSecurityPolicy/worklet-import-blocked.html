@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'unsafe-inline'"/>
+
+</head>
+<body>
+<script>
+    promise_test(function() {
+
+        return paintWorklet.import('/resources/worklet.js').then(
+            function(undefined_arg) {
+                assert_unreached('import should fail.')
+            },
+            function(error) {
+                assert_equals(error.name, 'NetworkError', 'error should be a NetworkError.');
+            });
+
+    }, 'Importing a script rejects the given promise with NetworkError because it violated the same origin CSP policy.');
+</script>
+</body>
+</html>

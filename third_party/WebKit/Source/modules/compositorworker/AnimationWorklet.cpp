@@ -5,21 +5,21 @@
 #include "modules/compositorworker/AnimationWorklet.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/worklet/ThreadedWorkletGlobalScopeProxy.h"
 
 namespace blink {
 
 // static
-AnimationWorklet* AnimationWorklet::create(ExecutionContext* executionContext)
+AnimationWorklet* AnimationWorklet::create(LocalFrame* frame)
 {
-    AnimationWorklet* worklet = new AnimationWorklet(executionContext);
+    AnimationWorklet* worklet = new AnimationWorklet(frame);
     worklet->suspendIfNeeded();
     return worklet;
 }
 
-AnimationWorklet::AnimationWorklet(ExecutionContext* executionContext)
-    : Worklet(executionContext)
+AnimationWorklet::AnimationWorklet(LocalFrame* frame)
+    : Worklet(frame)
     , m_workletGlobalScopeProxy(new ThreadedWorkletGlobalScopeProxy())
 {
 }

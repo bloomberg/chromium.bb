@@ -13,7 +13,6 @@
 namespace blink {
 
 class DOMWindow;
-class ExecutionContext;
 class AnimationWorklet;
 class Worklet;
 
@@ -21,8 +20,8 @@ class MODULES_EXPORT WindowAnimationWorklet final : public GarbageCollected<Wind
     USING_GARBAGE_COLLECTED_MIXIN(WindowAnimationWorklet);
 public:
     static WindowAnimationWorklet& from(LocalDOMWindow&);
-    static Worklet* animationWorklet(ExecutionContext*, DOMWindow&);
-    AnimationWorklet* animationWorklet(ExecutionContext*);
+    static Worklet* animationWorklet(DOMWindow&);
+    AnimationWorklet* animationWorklet();
 
     DECLARE_TRACE();
 

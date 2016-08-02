@@ -32,15 +32,15 @@ WindowAnimationWorklet& WindowAnimationWorklet::from(LocalDOMWindow& window)
 }
 
 // static
-Worklet* WindowAnimationWorklet::animationWorklet(ExecutionContext* executionContext, DOMWindow& window)
+Worklet* WindowAnimationWorklet::animationWorklet(DOMWindow& window)
 {
-    return from(toLocalDOMWindow(window)).animationWorklet(executionContext);
+    return from(toLocalDOMWindow(window)).animationWorklet();
 }
 
-AnimationWorklet* WindowAnimationWorklet::animationWorklet(ExecutionContext* executionContext)
+AnimationWorklet* WindowAnimationWorklet::animationWorklet()
 {
     if (!m_animationWorklet)
-        m_animationWorklet = AnimationWorklet::create(executionContext);
+        m_animationWorklet = AnimationWorklet::create(frame());
     return m_animationWorklet.get();
 }
 

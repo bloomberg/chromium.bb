@@ -11,13 +11,15 @@
 
 namespace blink {
 
+class ScriptSourceCode;
+
 // A proxy to talk to the worklet global scope. The global scope may exist in
 // the main thread or on a different thread.
 class CORE_EXPORT WorkletGlobalScopeProxy {
 public:
     virtual ~WorkletGlobalScopeProxy() { }
 
-    virtual void evaluateScript(const String& source, const KURL& scriptURL) = 0;
+    virtual void evaluateScript(const ScriptSourceCode&) = 0;
     virtual void terminateWorkletGlobalScope() = 0;
 };
 

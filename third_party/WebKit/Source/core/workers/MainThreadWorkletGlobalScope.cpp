@@ -21,9 +21,9 @@ MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope()
 {
 }
 
-void MainThreadWorkletGlobalScope::evaluateScript(const String& source, const KURL& scriptURL)
+void MainThreadWorkletGlobalScope::evaluateScript(const ScriptSourceCode& scriptSourceCode)
 {
-    scriptController()->evaluate(ScriptSourceCode(source, scriptURL));
+    scriptController()->evaluate(scriptSourceCode);
 }
 
 void MainThreadWorkletGlobalScope::terminateWorkletGlobalScope()

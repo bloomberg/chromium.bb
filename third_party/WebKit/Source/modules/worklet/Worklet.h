@@ -8,17 +8,16 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerScriptLoader.h"
+#include "core/fetch/ScriptResource.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class ExecutionContext;
-class ScriptPromiseResolver;
-class WorkerScriptLoader;
+class LocalFrame;
+class ResourceFetcher;
 class WorkletGlobalScopeProxy;
+class WorkletScriptLoader;
 
 class MODULES_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
@@ -30,22 +29,22 @@ public:
     // Worklet
     ScriptPromise import(ScriptState*, const String& url);
 
+    void notifyFinished(WorkletScriptLoader*);
+
     // ActiveDOMObject
     void stop() final;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    // The ExecutionContext argument is the parent document of the Worklet. The
-    // Worklet inherits the url and userAgent from the document.
-    explicit Worklet(ExecutionContext*);
+    // The Worklet inherits the url and userAgent from the frame->document().
+    explicit Worklet(LocalFrame*);
 
 private:
-    void onResponse(WorkerScriptLoader*);
-    void onFinished(WorkerScriptLoader*, ScriptPromiseResolver*);
+    ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
-    Vector<RefPtr<WorkerScriptLoader>> m_scriptLoaders;
-    HeapVector<Member<ScriptPromiseResolver>> m_resolvers;
+    Member<ResourceFetcher> m_fetcher;
+    HeapHashSet<Member<WorkletScriptLoader>> m_scriptLoaders;
 };
 
 } // namespace blink

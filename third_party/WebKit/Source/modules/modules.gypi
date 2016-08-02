@@ -1982,6 +1982,8 @@
       'worklet/ThreadedWorkletGlobalScopeProxy.h',
       'worklet/Worklet.cpp',
       'worklet/Worklet.h',
+      'worklet/WorkletScriptLoader.cpp',
+      'worklet/WorkletScriptLoader.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

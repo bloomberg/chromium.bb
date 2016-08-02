@@ -32,15 +32,15 @@ WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window)
 }
 
 // static
-Worklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContext, DOMWindow& window)
+Worklet* WindowPaintWorklet::paintWorklet(DOMWindow& window)
 {
-    return from(toLocalDOMWindow(window)).paintWorklet(executionContext);
+    return from(toLocalDOMWindow(window)).paintWorklet();
 }
 
-PaintWorklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContext)
+PaintWorklet* WindowPaintWorklet::paintWorklet()
 {
     if (!m_paintWorklet && frame())
-        m_paintWorklet = PaintWorklet::create(frame(), executionContext);
+        m_paintWorklet = PaintWorklet::create(frame());
     return m_paintWorklet.get();
 }
 
