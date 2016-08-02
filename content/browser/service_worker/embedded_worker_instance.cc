@@ -39,6 +39,10 @@ namespace {
 // new process.
 const int kMaxSameProcessFailureCount = 2;
 
+const char kServiceWorkerTerminationCanceledMesage[] =
+    "Service Worker termination by a timeout timer was canceled because "
+    "DevTools is attached.";
+
 void NotifyWorkerReadyForInspectionOnUI(int worker_process_id,
                                         int worker_route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -49,12 +53,6 @@ void NotifyWorkerReadyForInspectionOnUI(int worker_process_id,
 void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
-      worker_process_id, worker_route_id);
-}
-
-void NotifyWorkerStopIgnoredOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ServiceWorkerDevToolsManager::GetInstance()->WorkerStopIgnored(
       worker_process_id, worker_route_id);
 }
 
@@ -142,14 +140,6 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
                                        process_id_, agent_route_id_));
   }
 
-  void NotifyWorkerStopIgnored() {
-    DCHECK(CalledOnValidThread());
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(NotifyWorkerStopIgnoredOnUI,
-                                       process_id_, agent_route_id_));
-  }
-
   void NotifyWorkerVersionInstalled() {
     DCHECK(CalledOnValidThread());
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -164,11 +154,18 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
                                        process_id_, agent_route_id_));
   }
 
+  bool ShouldNotifyWorkerStopIgnored() const {
+    return !worker_stop_ignored_notified_;
+  }
+
+  void WorkerStopIgnoredNotified() { worker_stop_ignored_notified_ = true; }
+
   int agent_route_id() const { return agent_route_id_; }
 
  private:
   const int process_id_;
   const int agent_route_id_;
+  bool worker_stop_ignored_notified_ = false;
   DISALLOW_COPY_AND_ASSIGN(DevToolsProxy);
 };
 
@@ -478,8 +475,15 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
 
 void EmbeddedWorkerInstance::StopIfIdle() {
   if (devtools_attached_) {
-    if (devtools_proxy_)
-      devtools_proxy_->NotifyWorkerStopIgnored();
+    if (devtools_proxy_) {
+      // Check ShouldNotifyWorkerStopIgnored not to show the same message
+      // multiple times in DevTools.
+      if (devtools_proxy_->ShouldNotifyWorkerStopIgnored()) {
+        AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_DEBUG,
+                            kServiceWorkerTerminationCanceledMesage);
+        devtools_proxy_->WorkerStopIgnoredNotified();
+      }
+    }
     return;
   }
   Stop();

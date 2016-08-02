@@ -148,13 +148,6 @@ void ServiceWorkerDevToolsManager::WorkerVersionDoomed(int worker_process_id,
   FOR_EACH_OBSERVER(Observer, observer_list_, WorkerVersionDoomed(host.get()));
 }
 
-void ServiceWorkerDevToolsManager::WorkerStopIgnored(int worker_process_id,
-                                                      int worker_route_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(pfeldman): Show a console message to tell the user that UA didn't
-  // terminate the worker because devtools is attached.
-}
-
 void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
                                                    int worker_route_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

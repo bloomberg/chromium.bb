@@ -92,7 +92,6 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
-  void WorkerStopIgnored(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
   void RemoveInspectedWorkerData(WorkerId id);
 

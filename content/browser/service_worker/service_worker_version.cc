@@ -69,6 +69,8 @@ const char kClaimClientsStateErrorMesage[] =
 const char kClaimClientsShutdownErrorMesage[] =
     "Failed to claim clients due to Service Worker system shutdown.";
 
+const char kNotRespondingErrorMesage[] = "Service Worker is not responding.";
+
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
@@ -1511,9 +1513,9 @@ ServiceWorkerStatusCode ServiceWorkerVersion::PingWorker() {
 void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
-  // TODO(falken): Show a message to the developer that the SW was stopped due
-  // to timeout (crbug.com/457968). Also, change the error code to
-  // SERVICE_WORKER_ERROR_TIMEOUT.
+  // TODO(falken): Change the error code to SERVICE_WORKER_ERROR_TIMEOUT.
+  embedded_worker_->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_DEBUG,
+                                        kNotRespondingErrorMesage);
   StopWorkerIfIdle();
 }
 
