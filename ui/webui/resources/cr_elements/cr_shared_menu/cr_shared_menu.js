@@ -92,6 +92,10 @@ Polymer({
     'tab': 'onTabPressed_',
   },
 
+  listeners: {
+    'dropdown.iron-overlay-canceled': 'onOverlayCanceled_',
+  },
+
   /**
    * The last anchor that was used to open a menu. It's necessary for toggling.
    * @private {?Element}
@@ -134,6 +138,7 @@ Polymer({
   openMenu: function(anchor, itemData) {
     this.itemData = itemData;
     this.lastAnchor_ = anchor;
+    this.$.dropdown.restoreFocusOnClose = true;
 
     var focusableChildren = Polymer.dom(this).querySelectorAll(
         '[tabindex]:not([hidden]),button:not([hidden])');
@@ -193,5 +198,16 @@ Polymer({
   menuOpenChanged_: function() {
     if (!this.menuOpen)
       this.itemData = null;
+  },
+
+  /**
+   * Prevent focus restoring when tapping outside the menu. This stops the
+   * focus moving around unexpectedly when closing the menu with the mouse.
+   * @param {CustomEvent} e
+   * @private
+   */
+  onOverlayCanceled_: function(e) {
+    if (e.detail.type == 'tap')
+      this.$.dropdown.restoreFocusOnClose = false;
   },
 });

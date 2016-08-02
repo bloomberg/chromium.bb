@@ -7,6 +7,7 @@ suite('cr-shared-menu', function() {
   var menu;
 
   var button;
+  var button2;
 
   var item1;
   var item2;
@@ -42,8 +43,14 @@ suite('cr-shared-menu', function() {
       menu.toggleMenu(button, {});
     });
 
+    button2 = document.createElement('button');
+    button2.addEventListener('tap', function() {
+      menu.toggleMenu(button2, {});
+    });
+
     document.body.appendChild(menu);
     document.body.appendChild(button);
+    document.body.appendChild(button2);
   });
 
   test('opening and closing menu', function(done) {
@@ -57,12 +64,17 @@ suite('cr-shared-menu', function() {
       MockInteractions.tap(document.body);
       assertFalse(menu.menuOpen);
 
-      MockInteractions.tap(button);
-      assertTrue(menu.menuOpen);
+      done();
+    });
+  });
 
+  test('open and close menu with escape', function(done) {
+    MockInteractions.tap(button);
+    assertTrue(menu.menuOpen);
+    afterOpen(function() {
       // Pressing escape should close the menu.
       MockInteractions.pressAndReleaseKeyOn(menu, 27);
-      assertTrue(menu.menuOpen);
+      assertFalse(menu.menuOpen);
       done();
     });
   });
@@ -83,6 +95,23 @@ suite('cr-shared-menu', function() {
       assertEquals(button, document.activeElement);
 
       done();
+    });
+  });
+
+  test('refocus latest button on close', function(done) {
+    // Regression test for crbug.com/628080.
+    button.focus();
+    MockInteractions.tap(button);
+
+    afterOpen(function() {
+      button2.focus();
+      MockInteractions.tap(button2);
+
+      afterOpen(function() {
+        menu.closeMenu();
+        assertEquals(button2, document.activeElement);
+        done();
+      });
     });
   });
 

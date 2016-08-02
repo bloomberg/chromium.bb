@@ -26,7 +26,6 @@ Polymer({
   listeners: {
     'history-list-scrolled': 'closeMenu_',
     'load-more-history': 'loadMoreHistory_',
-    'tap': 'closeMenu_',
     'toggle-menu': 'toggleMenu_',
   },
 
