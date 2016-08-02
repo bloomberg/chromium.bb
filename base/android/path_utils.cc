@@ -78,9 +78,5 @@ bool GetExternalStorageDirectory(FilePath* result) {
   return true;
 }
 
-bool RegisterPathUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace base

@@ -13,8 +13,6 @@
 
 namespace base {
 
-bool RegisterContentUriUtils(JNIEnv* env);
-
 // Opens a content URI for read and returns the file descriptor to the caller.
 // Returns -1 if the URI is invalid.
 BASE_EXPORT File OpenContentUriForRead(const FilePath& content_uri);

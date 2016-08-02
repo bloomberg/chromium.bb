@@ -19,8 +19,6 @@ BASE_EXPORT std::string GetDefaultCountryCode();
 // Return the current default locale of the device.
 BASE_EXPORT std::string GetDefaultLocale();
 
-BASE_EXPORT bool RegisterLocaleUtils(JNIEnv* env);
-
 }  // namespace android
 }  // namespace base
 

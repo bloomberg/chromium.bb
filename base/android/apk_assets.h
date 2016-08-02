@@ -14,8 +14,6 @@
 namespace base {
 namespace android {
 
-bool RegisterApkAssets(JNIEnv* env);
-
 // Opens an asset (e.g. a .pak file) from the apk.
 // Can be used from renderer process.
 // Fails if the asset is not stored uncompressed within the .apk.

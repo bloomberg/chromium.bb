@@ -15,10 +15,6 @@
 namespace base {
 namespace android {
 
-bool RegisterApkAssets(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 int OpenApkAsset(const std::string& file_path,
                  base::MemoryMappedFile::Region* region) {
   // The AAssetManager API of the NDK is does not expose a method for accessing

@@ -23,9 +23,5 @@ std::string GetDefaultLocale() {
   return ConvertJavaStringToUTF8(locale);
 }
 
-bool RegisterLocaleUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace base

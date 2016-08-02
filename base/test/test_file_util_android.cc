@@ -12,10 +12,6 @@
 
 namespace base {
 
-bool RegisterContentUriTestUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 FilePath InsertImageIntoMediaStore(const FilePath& path) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_path =

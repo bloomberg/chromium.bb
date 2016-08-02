@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 #include "base/android/jni_android.h"
-#include "base/android/thread_utils.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread_internal_posix.h"
@@ -94,10 +93,6 @@ size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
   // 1Mb is not enough for some tests (see http://crbug.com/263749 for example).
   return 2 * (1 << 20);  // 2Mb
 #endif
-}
-
-bool RegisterThreadUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace base

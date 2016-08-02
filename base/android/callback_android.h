@@ -24,9 +24,6 @@ void BASE_EXPORT RunCallbackAndroid(const JavaRef<jobject>& callback,
 // Runs the given |callback| with the specified |arg|.
 void BASE_EXPORT RunCallbackAndroid(const JavaRef<jobject>& callback, int arg);
 
-// JNI registration boilerplate.
-bool RegisterCallbackAndroid(JNIEnv* env);
-
 }  // namespace android
 }  // namespace base
 

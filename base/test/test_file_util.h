@@ -81,9 +81,6 @@ class FilePermissionRestorer {
 };
 
 #if defined(OS_ANDROID)
-// Register the ContentUriTestUrils JNI bindings.
-bool RegisterContentUriTestUtils(JNIEnv* env);
-
 // Insert an image file into the MediaStore, and retrieve the content URI for
 // testing purpose.
 FilePath InsertImageIntoMediaStore(const FilePath& path);

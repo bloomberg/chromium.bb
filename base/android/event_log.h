@@ -14,8 +14,6 @@ namespace android {
 
 void BASE_EXPORT EventLogWriteInt(int tag, int value);
 
-bool RegisterEventLog(JNIEnv* env);
-
 }  // namespace android
 }  // namespace base
 

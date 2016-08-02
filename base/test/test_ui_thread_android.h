@@ -15,7 +15,6 @@ namespace base {
 // thread events, so need a running UI thread.
 void StartTestUiThreadLooper();
 
-bool RegisterTestUiThreadAndroid(JNIEnv* env);
 }  // namespace base
 
 #endif  //  BASE_TEST_TEST_UI_THREAD_ANDROID_

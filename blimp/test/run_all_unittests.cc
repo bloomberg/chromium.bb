@@ -8,16 +8,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/test/test_file_util.h"
-#endif
-
 int main(int argc, char** argv) {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::RegisterContentUriTestUtils(env);
-#endif
   mojo::edk::Init();
   base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(

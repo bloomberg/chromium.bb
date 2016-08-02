@@ -81,10 +81,5 @@ void BuildInfo::ClearJavaExceptionInfo() {
   java_exception_info_ = nullptr;
 }
 
-// static
-bool BuildInfo::RegisterBindings(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace base

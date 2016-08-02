@@ -11,21 +11,12 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/test/test_file_util.h"
-#endif
-
 #if !defined(OS_IOS)
 #include "mojo/edk/embedder/embedder.h"  // nogncheck
 #include "mojo/edk/test/scoped_ipc_support.h"  // nogncheck
 #endif
 
 int main(int argc, char** argv) {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::RegisterContentUriTestUtils(env);
-#endif
   base::TestSuite test_suite(argc, argv);
 
 #if !defined(OS_IOS)

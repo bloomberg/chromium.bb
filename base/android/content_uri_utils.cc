@@ -13,10 +13,6 @@ using base::android::ConvertUTF8ToJavaString;
 
 namespace base {
 
-bool RegisterContentUriUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 bool ContentUriExists(const FilePath& content_uri) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_uri =

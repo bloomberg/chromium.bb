@@ -9,10 +9,6 @@
 namespace base {
 namespace android {
 
-bool JavaRuntime::Register(JNIEnv* env) {
-  return JNI_Runtime::RegisterNativesImpl(env);
-}
-
 void JavaRuntime::GetMemoryUsage(long* total_memory, long* free_memory) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> runtime =

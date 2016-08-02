@@ -15,8 +15,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/test/test_file_util.h"
-#include "base/test/test_ui_thread_android.h"
 #include "net/android/dummy_spnego_authenticator.h"
 #include "net/android/net_jni_registrar.h"
 #if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
@@ -41,8 +39,6 @@ int main(int argc, char** argv) {
     {"DummySpnegoAuthenticator",
      net::android::DummySpnegoAuthenticator::RegisterJni},
     {"NetAndroid", net::android::RegisterJni},
-    {"TestFileUtil", base::RegisterContentUriTestUtils},
-    {"TestUiThreadAndroid", base::RegisterTestUiThreadAndroid},
 #if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
     {"UrlAndroid", url::android::RegisterJni},
 #endif

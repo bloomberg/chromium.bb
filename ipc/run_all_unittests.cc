@@ -11,11 +11,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/test/test_file_util.h"
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_port_broker.h"
 #endif
@@ -23,9 +18,6 @@
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   base::InitAndroidMultiProcessTestHelper(main);
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::RegisterContentUriTestUtils(env);
 #endif
   base::TestSuite test_suite(argc, argv);
   mojo::edk::Init();

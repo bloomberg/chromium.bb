@@ -27,9 +27,5 @@ void RunCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
                                       callback.obj(), arg);
 }
 
-bool RegisterCallbackAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace base

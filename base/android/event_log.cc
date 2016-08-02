@@ -12,9 +12,5 @@ void EventLogWriteInt(int tag, int value) {
   Java_EventLog_writeEvent(AttachCurrentThread(), tag, value);
 }
 
-bool RegisterEventLog(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace base
