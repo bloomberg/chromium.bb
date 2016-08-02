@@ -1,79 +1,29 @@
-{{struct.name}}DataView::{{struct.name}}DataView(
-    internal::{{struct.name}}_Data*  data,
-    mojo::internal::SerializationContext* context)
-    : data_(data), context_(context) {}
-
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = pf.field.kind %}
 {%-   set name = pf.field.name %}
 
-{%-   if kind|is_object_kind %}
-{%-     if kind|is_union_kind %}
+{%-   if kind|is_union_kind %}
 void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
     {{kind|cpp_data_view_type}}* output) {
-{%-       if pf.min_version != 0 %}
+{%-     if pf.min_version != 0 %}
   auto pointer = data_->header_.version >= {{pf.min_version}}
                  ? &data_->{{name}} : nullptr;
-{%-       else %}
+{%-     else %}
   auto pointer = &data_->{{name}};
-{%-       endif %}
+{%-     endif %}
   *output = {{kind|cpp_data_view_type}}(pointer, context_);
 }
 
-bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
-    {{kind|cpp_wrapper_type}}* output) {
-{%-       if pf.min_version != 0 %}
-  auto pointer = data_->header_.version >= {{pf.min_version}}
-                 ? &data_->{{name}} : nullptr;
-{%-       else %}
-  auto pointer = &data_->{{name}};
-{%-       endif %}
-  return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-      pointer, output, context_);
-}
-
-{%-     else %}
+{%-   elif kind|is_object_kind %}
 void {{struct.name}}DataView::Get{{name|under_to_camel}}DataView(
     {{kind|cpp_data_view_type}}* output) {
-{%-       if pf.min_version != 0 %}
+{%-     if pf.min_version != 0 %}
   auto pointer = data_->header_.version >= {{pf.min_version}}
                  ? data_->{{name}}.Get() : nullptr;
-{%-       else %}
+{%-     else %}
   auto pointer = data_->{{name}}.Get();
-{%-       endif %}
+{%-     endif %}
   *output = {{kind|cpp_data_view_type}}(pointer, context_);
-}
-{%-     endif %}
-
-{%-   elif kind|is_enum_kind %}
-{{kind|get_qualified_name_for_kind}} {{struct.name}}DataView::{{name}}() const {
-{%-     if pf.min_version != 0 %}
-  if (data_->header_.version < {{pf.min_version}})
-    return {{kind|get_qualified_name_for_kind}}{};
-{%-     endif %}
-  return static_cast<{{kind|get_qualified_name_for_kind}}>(data_->{{name}});
-}
-
-{%-   elif kind|is_any_handle_or_interface_kind %}
-{{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  {{kind|cpp_wrapper_type}} result;
-{%-     if pf.min_version != 0 %}
-  if (data_->header_.version < {{pf.min_version}})
-    return result;
-{%-     endif %}
-  bool ret = mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-      &data_->{{name}}, &result, context_);
-  DCHECK(ret);
-  return result;
-}
-
-{%-   else %}
-{{kind|cpp_wrapper_type}} {{struct.name}}DataView::{{name}}() const {
-{%-     if pf.min_version != 0 %}
-  if (data_->header_.version < {{pf.min_version}})
-    return {{kind|cpp_wrapper_type}}{};
-{%-     endif %}
-  return data_->{{name}};
 }
 {%-   endif %}
 {%- endfor %}

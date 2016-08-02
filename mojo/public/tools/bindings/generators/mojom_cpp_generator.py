@@ -368,6 +368,12 @@ def TranslateConstants(token, kind):
 def ExpressionToText(value, kind=None):
   return TranslateConstants(value, kind)
 
+def RequiresContextForDataView(struct):
+  for field in struct.fields:
+    if mojom.IsReferenceKind(field.kind):
+      return True
+  return False
+
 def ShouldInlineStruct(struct):
   # TODO(darin): Base this on the size of the wrapper class.
   if len(struct.fields) > 4:
@@ -446,6 +452,7 @@ class Generator(generator.Generator):
     "get_qualified_name_for_kind": GetQualifiedNameForKind,
     "has_callbacks": mojom.HasCallbacks,
     "has_sync_methods": mojom.HasSyncMethods,
+    "requires_context_for_data_view": RequiresContextForDataView,
     "should_inline": ShouldInlineStruct,
     "should_inline_union": ShouldInlineUnion,
     "is_array_kind": mojom.IsArrayKind,
