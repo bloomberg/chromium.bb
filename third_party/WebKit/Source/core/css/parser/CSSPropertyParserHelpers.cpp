@@ -316,26 +316,26 @@ CSSStringValue* consumeString(CSSParserTokenRange& range)
     return CSSStringValue::create(range.consumeIncludingWhitespace().value().toString());
 }
 
-String consumeUrl(CSSParserTokenRange& range)
+StringView consumeUrl(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == UrlToken) {
         range.consumeIncludingWhitespace();
-        return token.value().toString();
+        return token.value();
     }
     if (token.functionId() == CSSValueUrl) {
         CSSParserTokenRange urlRange = range;
         CSSParserTokenRange urlArgs = urlRange.consumeBlock();
         const CSSParserToken& next = urlArgs.consumeIncludingWhitespace();
         if (next.type() == BadStringToken || !urlArgs.atEnd())
-            return String();
+            return StringView();
         ASSERT(next.type() == StringToken);
         range = urlRange;
         range.consumeWhitespace();
-        return next.value().toString();
+        return next.value();
     }
 
-    return String();
+    return StringView();
 }
 
 static int clampRGBComponent(const CSSPrimitiveValue& value)

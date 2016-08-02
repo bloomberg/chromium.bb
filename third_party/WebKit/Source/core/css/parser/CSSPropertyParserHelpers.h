@@ -51,7 +51,7 @@ template<CSSValueID... allowedIdents> CSSPrimitiveValue* consumeIdent(CSSParserT
 
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange&);
 CSSStringValue* consumeString(CSSParserTokenRange&);
-String consumeUrl(CSSParserTokenRange&);
+StringView consumeUrl(CSSParserTokenRange&);
 
 CSSValue* consumeColor(CSSParserTokenRange&, CSSParserMode, bool acceptQuirkyColors = false);
 

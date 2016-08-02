@@ -1441,7 +1441,7 @@ static CSSValue* consumeFilter(CSSParserTokenRange& range, const CSSParserContex
 
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     do {
-        String url = consumeUrl(range);
+        String url = consumeUrl(range).toString();
         CSSValue* filterValue = nullptr;
         if (!url.isNull()) {
             filterValue = CSSURIValue::create(url);
@@ -1799,7 +1799,7 @@ static CSSValue* consumePaintStroke(CSSParserTokenRange& range, CSSParserMode cs
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-    String url = consumeUrl(range);
+    String url = consumeUrl(range).toString();
     if (!url.isNull()) {
         CSSValue* parsedValue = nullptr;
         if (range.peek().id() == CSSValueNone)
@@ -1872,7 +1872,7 @@ static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range)
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
 
-    String url = consumeUrl(range);
+    String url = consumeUrl(range).toString();
     if (url.isNull())
         return nullptr;
     return CSSURIValue::create(url);
@@ -1930,7 +1930,7 @@ static CSSValue* consumeImageSet(CSSParserTokenRange& range, const CSSParserCont
     CSSParserTokenRange args = consumeFunction(rangeCopy);
     CSSImageSetValue* imageSet = CSSImageSetValue::create();
     do {
-        AtomicString urlValue(consumeUrl(args));
+        AtomicString urlValue = consumeUrl(args).toAtomicString();
         if (urlValue.isNull())
             return nullptr;
 
@@ -1959,7 +1959,7 @@ static CSSValue* consumeCursor(CSSParserTokenRange& range, const CSSParserContex
     CSSValueList* list = nullptr;
     while (true) {
         CSSValue* image = nullptr;
-        AtomicString uri(consumeUrl(range));
+        AtomicString uri = consumeUrl(range).toAtomicString();
         if (!uri.isNull()) {
             image = createCSSImageValueWithReferrer(uri, context);
         } else if (range.peek().type() == FunctionToken && range.peek().functionId() == CSSValueWebkitImageSet) {
@@ -2410,7 +2410,7 @@ static bool isGeneratedImage(CSSValueID id)
 
 static CSSValue* consumeImage(CSSParserTokenRange& range, CSSParserContext context)
 {
-    AtomicString uri(consumeUrl(range));
+    AtomicString uri = consumeUrl(range).toAtomicString();
     if (!uri.isNull())
         return createCSSImageValueWithReferrer(uri, context);
     if (range.peek().type() == FunctionToken) {
@@ -2754,7 +2754,7 @@ static CSSValue* consumeWebkitClipPath(CSSParserTokenRange& range, const CSSPars
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-    String url = consumeUrl(range);
+    String url = consumeUrl(range).toString();
     if (!url.isNull())
         return CSSURIValue::create(url);
     return consumeBasicShape(range, context);
@@ -3987,7 +3987,7 @@ static CSSValueList* consumeFontFaceUnicodeRange(CSSParserTokenRange& range)
 
 static CSSValue* consumeFontFaceSrcURI(CSSParserTokenRange& range, const CSSParserContext& context)
 {
-    String url = consumeUrl(range);
+    String url = consumeUrl(range).toString();
     if (url.isNull())
         return nullptr;
     CSSFontFaceSrcValue* uriValue(CSSFontFaceSrcValue::create(url, context.completeURL(url), context.shouldCheckContentSecurityPolicy()));
