@@ -72,8 +72,6 @@
         'core/common/cloud/policy_header_service.h',
         'core/common/cloud/resource_cache.cc',
         'core/common/cloud/resource_cache.h',
-        'core/common/cloud/system_policy_request_context.cc',
-        'core/common/cloud/system_policy_request_context.h',
         'core/common/cloud/user_cloud_policy_manager.cc',
         'core/common/cloud/user_cloud_policy_manager.h',
         'core/common/cloud/user_cloud_policy_store.cc',

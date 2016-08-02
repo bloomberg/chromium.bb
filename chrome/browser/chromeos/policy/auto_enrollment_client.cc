@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -104,10 +103,8 @@ AutoEnrollmentClient::AutoEnrollmentClient(
       power_limit_(power_limit),
       modulus_updates_received_(0),
       device_management_service_(service),
-      local_state_(local_state) {
-  request_context_ = new SystemPolicyRequestContext(
-      system_request_context, GetUserAgent());
-
+      local_state_(local_state),
+      request_context_(system_request_context) {
   DCHECK_LE(current_power_, power_limit_);
   DCHECK(!progress_callback_.is_null());
   CHECK(!server_backed_state_key_.empty());

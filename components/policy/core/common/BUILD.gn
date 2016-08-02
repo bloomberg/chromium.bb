@@ -59,8 +59,6 @@ source_set("common") {
       "cloud/policy_header_service.h",
       "cloud/resource_cache.cc",
       "cloud/resource_cache.h",
-      "cloud/system_policy_request_context.cc",
-      "cloud/system_policy_request_context.h",
       "cloud/user_cloud_policy_manager.cc",
       "cloud/user_cloud_policy_manager.h",
       "cloud/user_cloud_policy_store.cc",

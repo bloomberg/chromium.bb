@@ -159,8 +159,6 @@ class UserPolicySigninServiceBase : public KeyedService,
   content::NotificationRegistrar* registrar() { return &registrar_; }
 
  private:
-  scoped_refptr<net::URLRequestContextGetter> CreateSystemRequestContext();
-
   // Weak pointer to the UserCloudPolicyManager and SigninManager this service
   // is associated with.
   UserCloudPolicyManager* policy_manager_;

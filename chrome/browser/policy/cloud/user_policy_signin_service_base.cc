@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_source.h"
@@ -162,7 +161,7 @@ UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
 
   // Create a new CloudPolicyClient for fetching the DMToken.
   return UserCloudPolicyManager::CreateCloudPolicyClient(
-      device_management_service_, CreateSystemRequestContext());
+      device_management_service_, system_request_context_);
 }
 
 bool UserPolicySigninServiceBase::ShouldLoadPolicyForUser(
@@ -248,12 +247,6 @@ void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
   UserCloudPolicyManager* manager = policy_manager();
   if (manager)
     manager->DisconnectAndRemovePolicy();
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-UserPolicySigninServiceBase::CreateSystemRequestContext() {
-  return new SystemPolicyRequestContext(
-      system_request_context(), GetUserAgent());
 }
 
 }  // namespace policy

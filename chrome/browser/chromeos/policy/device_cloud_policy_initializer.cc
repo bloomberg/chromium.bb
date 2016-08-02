@@ -28,7 +28,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -250,14 +249,11 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
 
 std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
     DeviceManagementService* device_management_service) {
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      new SystemPolicyRequestContext(
-          g_browser_process->system_request_context(), GetUserAgent());
-
   return base::WrapUnique(new CloudPolicyClient(
       DeviceCloudPolicyManagerChromeOS::GetMachineID(),
       DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
-      kPolicyVerificationKeyHash, device_management_service, request_context));
+      kPolicyVerificationKeyHash, device_management_service,
+      g_browser_process->system_request_context()));
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

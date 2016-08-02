@@ -36,7 +36,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
-#include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,13 +63,9 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
     return std::unique_ptr<CloudPolicyClient>();
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      new SystemPolicyRequestContext(
-          system_request_context, GetUserAgent());
-
   std::unique_ptr<CloudPolicyClient> client(new CloudPolicyClient(
       std::string(), std::string(), kPolicyVerificationKeyHash,
-      device_management_service, request_context));
+      device_management_service, system_request_context));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client;
