@@ -630,15 +630,20 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
     return idbFactory;
 }
 
-void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, std::unique_ptr<RequestDatabaseNamesCallback> requestCallback)
+void InspectorIndexedDBAgent::requestDatabaseNames(const String& securityOrigin, std::unique_ptr<RequestDatabaseNamesCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-    Document* document = assertDocument(errorString, frame);
-    if (!document)
+    ErrorString errorString;
+    Document* document = assertDocument(&errorString, frame);
+    if (!document) {
+        requestCallback->sendFailure(errorString);
         return;
-    IDBFactory* idbFactory = assertIDBFactory(errorString, document);
-    if (!idbFactory)
+    }
+    IDBFactory* idbFactory = assertIDBFactory(&errorString, document);
+    if (!idbFactory) {
+        requestCallback->sendFailure(errorString);
         return;
+    }
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)
@@ -653,15 +658,20 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     idbRequest->addEventListener(EventTypeNames::success, GetDatabaseNamesCallback::create(std::move(requestCallback), document->getSecurityOrigin()->toRawString()), false);
 }
 
-void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, std::unique_ptr<RequestDatabaseCallback> requestCallback)
+void InspectorIndexedDBAgent::requestDatabase(const String& securityOrigin, const String& databaseName, std::unique_ptr<RequestDatabaseCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-    Document* document = assertDocument(errorString, frame);
-    if (!document)
+    ErrorString errorString;
+    Document* document = assertDocument(&errorString, frame);
+    if (!document) {
+        requestCallback->sendFailure(errorString);
         return;
-    IDBFactory* idbFactory = assertIDBFactory(errorString, document);
-    if (!idbFactory)
+    }
+    IDBFactory* idbFactory = assertIDBFactory(&errorString, document);
+    if (!idbFactory) {
+        requestCallback->sendFailure(errorString);
         return;
+    }
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)
@@ -671,7 +681,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     databaseLoader->start(idbFactory, document->getSecurityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
+void InspectorIndexedDBAgent::requestData(
     const String& securityOrigin,
     const String& databaseName,
     const String& objectStoreName,
@@ -682,16 +692,21 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
     std::unique_ptr<RequestDataCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-    Document* document = assertDocument(errorString, frame);
-    if (!document)
+    ErrorString errorString;
+    Document* document = assertDocument(&errorString, frame);
+    if (!document) {
+        requestCallback->sendFailure(errorString);
         return;
-    IDBFactory* idbFactory = assertIDBFactory(errorString, document);
-    if (!idbFactory)
+    }
+    IDBFactory* idbFactory = assertIDBFactory(&errorString, document);
+    if (!idbFactory) {
+        requestCallback->sendFailure(errorString);
         return;
+    }
 
     IDBKeyRange* idbKeyRange = keyRange.isJust() ? idbKeyRangeFromKeyRange(keyRange.fromJust()) : nullptr;
     if (keyRange.isJust() && !idbKeyRange) {
-        *errorString = "Can not parse key range.";
+        requestCallback->sendFailure("Can not parse key range.");
         return;
     }
 
@@ -788,15 +803,20 @@ private:
     std::unique_ptr<ClearObjectStoreCallback> m_requestCallback;
 };
 
-void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, std::unique_ptr<ClearObjectStoreCallback> requestCallback)
+void InspectorIndexedDBAgent::clearObjectStore(const String& securityOrigin, const String& databaseName, const String& objectStoreName, std::unique_ptr<ClearObjectStoreCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-    Document* document = assertDocument(errorString, frame);
-    if (!document)
+    ErrorString errorString;
+    Document* document = assertDocument(&errorString, frame);
+    if (!document) {
+        requestCallback->sendFailure(errorString);
         return;
-    IDBFactory* idbFactory = assertIDBFactory(errorString, document);
-    if (!idbFactory)
+    }
+    IDBFactory* idbFactory = assertIDBFactory(&errorString, document);
+    if (!idbFactory) {
+        requestCallback->sendFailure(errorString);
         return;
+    }
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
     if (!scriptState)

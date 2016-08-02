@@ -987,7 +987,7 @@ void InspectorNetworkAgent::getResponseBodyBlob(const String& requestId, std::un
     client->start(document);
 }
 
-void InspectorNetworkAgent::getResponseBody(ErrorString* errorString, const String& requestId, std::unique_ptr<GetResponseBodyCallback> passCallback)
+void InspectorNetworkAgent::getResponseBody(const String& requestId, std::unique_ptr<GetResponseBodyCallback> passCallback)
 {
     std::unique_ptr<GetResponseBodyCallback> callback = std::move(passCallback);
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);

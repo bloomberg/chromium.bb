@@ -186,7 +186,6 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 }
 
 void V8RuntimeAgentImpl::evaluate(
-    ErrorString* errorString,
     const String16& expression,
     const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
@@ -211,9 +210,10 @@ void V8RuntimeAgentImpl::evaluate(
         contextId = V8InspectorImpl::contextId(defaultContext);
     }
 
-    InjectedScript::ContextScope scope(errorString, m_inspector, m_session->contextGroupId(), contextId);
+    ErrorString errorString;
+    InjectedScript::ContextScope scope(&errorString, m_inspector, m_session->contextGroupId(), contextId);
     if (!scope.initialize()) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
 
@@ -223,7 +223,7 @@ void V8RuntimeAgentImpl::evaluate(
         scope.pretendUserGesture();
 
     if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI()) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
 
@@ -242,7 +242,7 @@ void V8RuntimeAgentImpl::evaluate(
 
     // Re-initialize after running client's code, as it could have destroyed context or session.
     if (!scope.initialize()) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
 
@@ -250,7 +250,7 @@ void V8RuntimeAgentImpl::evaluate(
     Maybe<bool> wasThrown;
     Maybe<protocol::Runtime::ExceptionDetails> exceptionDetails;
 
-    scope.injectedScript()->wrapEvaluateResult(errorString,
+    scope.injectedScript()->wrapEvaluateResult(&errorString,
         maybeResultValue,
         scope.tryCatch(),
         objectGroup.fromMaybe(""),
@@ -259,8 +259,8 @@ void V8RuntimeAgentImpl::evaluate(
         &result,
         &wasThrown,
         &exceptionDetails);
-    if (!errorString->isEmpty()) {
-        callback->sendFailure(*errorString);
+    if (!errorString.isEmpty()) {
+        callback->sendFailure(errorString);
         return;
     }
 
@@ -282,7 +282,7 @@ void V8RuntimeAgentImpl::evaluate(
     ProtocolPromiseHandler<EvaluateCallback>::add(m_inspector, m_session->contextGroupId(), result->getObjectId(String16()), std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
 }
 
-void V8RuntimeAgentImpl::awaitPromise(ErrorString* errorString,
+void V8RuntimeAgentImpl::awaitPromise(
     const String16& promiseObjectId,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,

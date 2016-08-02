@@ -304,7 +304,7 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
     }
 }
 
-void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback> prpRequestCallback)
+void InspectorDatabaseAgent::executeSQL(const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback> prpRequestCallback)
 {
     std::unique_ptr<ExecuteSQLCallback> requestCallback = std::move(prpRequestCallback);
 

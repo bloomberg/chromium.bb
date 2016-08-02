@@ -135,7 +135,7 @@ public:
     void disable(ErrorString*) override;
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     void setExtraHTTPHeaders(ErrorString*, std::unique_ptr<protocol::Network::Headers>) override;
-    void getResponseBody(ErrorString*, const String& requestId, std::unique_ptr<GetResponseBodyCallback>) override;
+    void getResponseBody(const String& requestId, std::unique_ptr<GetResponseBodyCallback>) override;
     void addBlockedURL(ErrorString*, const String& url) override;
     void removeBlockedURL(ErrorString*, const String& url) override;
     void replayXHR(ErrorString*, const String& requestId) override;

@@ -61,7 +61,7 @@ public:
     // Called from the front-end.
     void enable(ErrorString*) override;
     void getDatabaseTableNames(ErrorString*, const String& databaseId, std::unique_ptr<protocol::Array<String>>* names) override;
-    void executeSQL(ErrorString*, const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback>) override;
+    void executeSQL(const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback>) override;
 
     void didOpenDatabase(blink::Database*, const String& domain, const String& name, const String& version);
 private:

@@ -406,7 +406,7 @@ DEFINE_TRACE(InspectorCacheStorageAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, const String& securityOrigin, std::unique_ptr<RequestCacheNamesCallback> callback)
+void InspectorCacheStorageAgent::requestCacheNames(const String& securityOrigin, std::unique_ptr<RequestCacheNamesCallback> callback)
 {
     RefPtr<SecurityOrigin> secOrigin = SecurityOrigin::createFromString(securityOrigin);
 
@@ -417,20 +417,22 @@ void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, con
         return;
     }
 
-    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(errorString, securityOrigin);
+    ErrorString errorString;
+    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(&errorString, securityOrigin);
     if (!cache) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
     cache->dispatchKeys(new RequestCacheNames(securityOrigin, std::move(callback)));
 }
 
-void InspectorCacheStorageAgent::requestEntries(ErrorString* errorString, const String& cacheId, int skipCount, int pageSize, std::unique_ptr<RequestEntriesCallback> callback)
+void InspectorCacheStorageAgent::requestEntries(const String& cacheId, int skipCount, int pageSize, std::unique_ptr<RequestEntriesCallback> callback)
 {
+    ErrorString errorString;
     String cacheName;
-    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(errorString, cacheId, &cacheName);
+    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(&errorString, cacheId, &cacheName);
     if (!cache) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
     DataRequestParams params;
@@ -440,23 +442,25 @@ void InspectorCacheStorageAgent::requestEntries(ErrorString* errorString, const 
     cache->dispatchOpen(new GetCacheForRequestData(params, std::move(callback)), WebString(cacheName));
 }
 
-void InspectorCacheStorageAgent::deleteCache(ErrorString* errorString, const String& cacheId, std::unique_ptr<DeleteCacheCallback> callback)
+void InspectorCacheStorageAgent::deleteCache(const String& cacheId, std::unique_ptr<DeleteCacheCallback> callback)
 {
     String cacheName;
-    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(errorString, cacheId, &cacheName);
+    ErrorString errorString;
+    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(&errorString, cacheId, &cacheName);
     if (!cache) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
     cache->dispatchDelete(new DeleteCache(std::move(callback)), WebString(cacheName));
 }
 
-void InspectorCacheStorageAgent::deleteEntry(ErrorString* errorString, const String& cacheId, const String& request, std::unique_ptr<DeleteEntryCallback> callback)
+void InspectorCacheStorageAgent::deleteEntry(const String& cacheId, const String& request, std::unique_ptr<DeleteEntryCallback> callback)
 {
     String cacheName;
-    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(errorString, cacheId, &cacheName);
+    ErrorString errorString;
+    std::unique_ptr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(&errorString, cacheId, &cacheName);
     if (!cache) {
-        callback->sendFailure(*errorString);
+        callback->sendFailure(errorString);
         return;
     }
     cache->dispatchOpen(new GetCacheForDeleteEntry(request, cacheName, std::move(callback)), WebString(cacheName));

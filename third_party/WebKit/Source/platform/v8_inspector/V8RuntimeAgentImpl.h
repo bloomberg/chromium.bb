@@ -62,7 +62,7 @@ public:
     // Part of the protocol.
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void evaluate(ErrorString*,
+    void evaluate(
         const String16& expression,
         const Maybe<String16>& objectGroup,
         const Maybe<bool>& includeCommandLineAPI,
@@ -73,7 +73,7 @@ public:
         const Maybe<bool>& userGesture,
         const Maybe<bool>& awaitPromise,
         std::unique_ptr<EvaluateCallback>) override;
-    void awaitPromise(ErrorString*,
+    void awaitPromise(
         const String16& promiseObjectId,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,

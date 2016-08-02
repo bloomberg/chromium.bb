@@ -41,8 +41,8 @@ public:
     void disable(ErrorString*) override;
 
     // Protocol method implementations.
-    void start(ErrorString*, const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, const Maybe<protocol::Tracing::TraceConfig>&, std::unique_ptr<StartCallback>) override;
-    void end(ErrorString*, std::unique_ptr<EndCallback>) override;
+    void start(const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, const Maybe<protocol::Tracing::TraceConfig>&, std::unique_ptr<StartCallback>) override;
+    void end(std::unique_ptr<EndCallback>) override;
 
     // Methods for other agents to use.
     void setLayerTreeId(int);

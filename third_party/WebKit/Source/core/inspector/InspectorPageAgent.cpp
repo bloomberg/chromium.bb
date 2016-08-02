@@ -500,7 +500,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
         callback->sendFailure("No resource with given URL found");
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
@@ -526,7 +526,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     callback->sendSuccess(m_v8Session->searchInTextByLines(content, query, caseSensitive, isRegex));
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");

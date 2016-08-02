@@ -294,6 +294,7 @@ void DispatcherImpl::{{command.name}}(int callId, std::unique_ptr<DictionaryValu
     {% endif %}
 
     std::unique_ptr<DispatcherBase::WeakPtr> weak = weakPtr();
+    {% if not("async" in command) %}
     ErrorString error;
     m_backend->{{command.name}}(&error
       {%- for property in command.parameters -%}
@@ -303,29 +304,38 @@ void DispatcherImpl::{{command.name}}(int callId, std::unique_ptr<DictionaryValu
         , {{resolve_type(property).to_pass_type % ("in_" + property.name)}}
         {%- endif -%}
       {%- endfor %}
-      {%- if "async" in command -%}
-        , std::move(callback)
-      {%- elif "returns" in command %}
+      {%- if "returns" in command %}
         {%- for property in command.returns -%}
           , &out_{{property.name}}
         {%- endfor %}
       {% endif %});
-    {% if "returns" in command and not("async" in command) %}
+      {% if "returns" in command and not("async" in command) %}
     if (!error.length()) {
-      {% for parameter in command.returns %}
-        {% if "optional" in parameter %}
+        {% for parameter in command.returns %}
+          {% if "optional" in parameter %}
         if (out_{{parameter.name}}.isJust())
             result->setValue("{{parameter.name}}", ValueConversions<{{resolve_type(parameter).raw_type}}>::serialize(out_{{parameter.name}}.fromJust()));
-        {% else %}
+          {% else %}
         result->setValue("{{parameter.name}}", ValueConversions<{{resolve_type(parameter).raw_type}}>::serialize({{resolve_type(parameter).to_raw_type % ("out_" + parameter.name)}}));
-        {% endif %}
-      {% endfor %}
+          {% endif %}
+        {% endfor %}
     }
     if (weak->get())
         weak->get()->sendResponse(callId, error, std::move(result));
-    {% elif not("async" in command) %}
+      {% else %}
     if (weak->get())
         weak->get()->sendResponse(callId, error);
+      {% endif %}
+    {%- else %}
+    m_backend->{{command.name}}(
+      {%- for property in command.parameters -%}
+        {%- if "optional" in property -%}
+        in_{{property.name}},
+        {%- else -%}
+        {{resolve_type(property).to_pass_type % ("in_" + property.name)}},
+        {%- endif -%}
+      {%- endfor -%}
+        std::move(callback));
     {% endif %}
 }
   {% endfor %}

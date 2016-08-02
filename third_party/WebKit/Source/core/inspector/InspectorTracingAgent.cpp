@@ -42,7 +42,7 @@ void InspectorTracingAgent::restore()
 {
     emitMetadataEvents();
 }
-void InspectorTracingAgent::start(ErrorString* errorString,
+void InspectorTracingAgent::start(
     const Maybe<String>& categories,
     const Maybe<String>& options,
     const Maybe<double>& bufferUsageReportingInterval,
@@ -52,8 +52,7 @@ void InspectorTracingAgent::start(ErrorString* errorString,
 {
     ASSERT(sessionId().isEmpty());
     if (config.isJust()) {
-        *errorString =
-            "Using trace config on renderer targets is not supported yet.";
+        callback->sendFailure("Using trace config on renderer targets is not supported yet.");
         return;
     }
 
@@ -63,7 +62,7 @@ void InspectorTracingAgent::start(ErrorString* errorString,
     callback->sendSuccess();
 }
 
-void InspectorTracingAgent::end(ErrorString* errorString, std::unique_ptr<EndCallback> callback)
+void InspectorTracingAgent::end(std::unique_ptr<EndCallback> callback)
 {
     m_client->disableTracing();
     resetSessionId();
