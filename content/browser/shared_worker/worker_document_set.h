@@ -78,7 +78,7 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   bool IsEmpty() const { return document_set_.empty(); }
 
   // Define a typedef for convenience here when declaring iterators, etc.
-  typedef std::set<DocumentInfo> DocumentInfoSet;
+  using DocumentInfoSet = std::set<DocumentInfo>;
 
   // Returns the set of documents associated with this worker.
   const DocumentInfoSet& documents() { return document_set_; }

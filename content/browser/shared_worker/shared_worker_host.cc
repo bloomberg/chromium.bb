@@ -147,7 +147,7 @@ void SharedWorkerHost::WorkerContextDestroyed() {
   if (!instance_)
     return;
   instance_.reset();
-  worker_document_set_ = NULL;
+  worker_document_set_ = nullptr;
 }
 
 void SharedWorkerHost::WorkerReadyForInspection() {

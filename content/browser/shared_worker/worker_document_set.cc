@@ -21,9 +21,8 @@ void WorkerDocumentSet::Add(BrowserMessageFilter* parent,
 
 bool WorkerDocumentSet::Contains(BrowserMessageFilter* parent,
                                  unsigned long long document_id) const {
-  for (DocumentInfoSet::const_iterator i = document_set_.begin();
-       i != document_set_.end(); ++i) {
-    if (i->filter() == parent && i->document_id() == document_id)
+  for (const DocumentInfo& info : document_set_) {
+    if (info.filter() == parent && info.document_id() == document_id)
       return true;
   }
   return false;
@@ -31,9 +30,8 @@ bool WorkerDocumentSet::Contains(BrowserMessageFilter* parent,
 
 bool WorkerDocumentSet::ContainsExternalRenderer(
       int worker_process_id) const {
-  for (DocumentInfoSet::const_iterator i = document_set_.begin();
-       i != document_set_.end(); ++i) {
-    if (i->render_process_id() != worker_process_id)
+  for (const DocumentInfo& info : document_set_) {
+    if (info.render_process_id() != worker_process_id)
       return true;
   }
   return false;
@@ -41,10 +39,9 @@ bool WorkerDocumentSet::ContainsExternalRenderer(
 
 void WorkerDocumentSet::Remove(BrowserMessageFilter* parent,
                                unsigned long long document_id) {
-  for (DocumentInfoSet::iterator i = document_set_.begin();
-       i != document_set_.end(); i++) {
-    if (i->filter() == parent && i->document_id() == document_id) {
-      document_set_.erase(i);
+  for (const DocumentInfo& info : document_set_) {
+    if (info.filter() == parent && info.document_id() == document_id) {
+      document_set_.erase(info);
       break;
     }
   }
@@ -55,7 +52,6 @@ void WorkerDocumentSet::Remove(BrowserMessageFilter* parent,
 void WorkerDocumentSet::RemoveAll(BrowserMessageFilter* parent) {
   for (DocumentInfoSet::iterator i = document_set_.begin();
        i != document_set_.end();) {
-
     // Note this idiom is somewhat tricky - calling document_set_.erase(iter)
     // invalidates any iterators that point to the element being removed, so
     // bump the iterator beyond the item being removed before calling erase.

@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -98,17 +100,16 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
 
-  typedef void (*UpdateWorkerDependencyFunc)(const std::vector<int>&,
-                                             const std::vector<int>&);
-  typedef bool (*TryIncrementWorkerRefCountFunc)(bool);
+  using UpdateWorkerDependencyFunc = void (*)(const std::vector<int>&,
+                                              const std::vector<int>&);
+  using TryIncrementWorkerRefCountFunc = bool (*)(bool);
+
   // Pair of render_process_id and worker_route_id.
-  typedef std::pair<int, int> ProcessRouteIdPair;
-  typedef base::ScopedPtrHashMap<ProcessRouteIdPair,
-                                 std::unique_ptr<SharedWorkerHost>>
-      WorkerHostMap;
-  typedef base::ScopedPtrHashMap<int,
-                                 std::unique_ptr<SharedWorkerPendingInstance>>
-      PendingInstanceMap;
+  using ProcessRouteIdPair = std::pair<int, int>;
+  using WorkerHostMap =
+      std::map<ProcessRouteIdPair, std::unique_ptr<SharedWorkerHost>>;
+  using PendingInstanceMap =
+      std::map<int, std::unique_ptr<SharedWorkerPendingInstance>>;
 
   SharedWorkerServiceImpl();
   ~SharedWorkerServiceImpl() override;
@@ -137,9 +138,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                                           int worker_route_id,
                                           bool is_new_worker);
 
-  SharedWorkerHost* FindSharedWorkerHost(
-      SharedWorkerMessageFilter* filter,
-      int worker_route_id);
+  // Returns nullptr if there is no host for given ids.
+  SharedWorkerHost* FindSharedWorkerHost(int render_process_id,
+                                         int worker_route_id);
 
   SharedWorkerHost* FindSharedWorkerHost(const SharedWorkerInstance& instance);
   SharedWorkerPendingInstance* FindPendingInstance(

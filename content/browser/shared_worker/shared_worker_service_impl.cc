@@ -8,14 +8,12 @@
 
 #include <algorithm>
 #include <iterator>
-#include <set>
-#include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
@@ -56,18 +54,16 @@ class ScopedWorkerDependencyChecker {
 
 void UpdateWorkerDependencyOnUI(const std::vector<int>& added_ids,
                                 const std::vector<int>& removed_ids) {
-  for (size_t i = 0; i < added_ids.size(); ++i) {
+  for (int id : added_ids) {
     RenderProcessHostImpl* render_process_host_impl =
-        static_cast<RenderProcessHostImpl*>(
-            RenderProcessHost::FromID(added_ids[i]));
+        static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
     if (!render_process_host_impl)
       continue;
     render_process_host_impl->IncrementWorkerRefCount();
   }
-  for (size_t i = 0; i < removed_ids.size(); ++i) {
+  for (int id : removed_ids) {
     RenderProcessHostImpl* render_process_host_impl =
-        static_cast<RenderProcessHostImpl*>(
-            RenderProcessHost::FromID(removed_ids[i]));
+        static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
     if (!render_process_host_impl)
       continue;
     render_process_host_impl->DecrementWorkerRefCount();
@@ -99,9 +95,8 @@ void DecrementWorkerRefCount(int process_id) {
 bool TryIncrementWorkerRefCount(int worker_process_id) {
   RenderProcessHostImpl* render_process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHost::FromID(worker_process_id));
-  if (!render_process || render_process->FastShutdownStarted()) {
+  if (!render_process || render_process->FastShutdownStarted())
     return false;
-  }
   render_process->IncrementWorkerRefCount();
   return true;
 }
@@ -128,37 +123,42 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
     const int render_frame_route_id;
   };
 
-  typedef ScopedVector<SharedWorkerPendingRequest> SharedWorkerPendingRequests;
+  using SharedWorkerPendingRequests =
+      std::vector<std::unique_ptr<SharedWorkerPendingRequest>>;
 
   explicit SharedWorkerPendingInstance(
       std::unique_ptr<SharedWorkerInstance> instance)
       : instance_(std::move(instance)) {}
+
   ~SharedWorkerPendingInstance() {}
+
   SharedWorkerInstance* instance() { return instance_.get(); }
   SharedWorkerInstance* release_instance() { return instance_.release(); }
   SharedWorkerPendingRequests* requests() { return &requests_; }
+
   SharedWorkerMessageFilter* FindFilter(int process_id) {
-    for (size_t i = 0; i < requests_.size(); ++i) {
-      if (requests_[i]->render_process_id == process_id)
-        return requests_[i]->filter;
+    for (const auto& request : requests_) {
+      if (request->render_process_id == process_id)
+        return request->filter;
     }
-    return NULL;
+    return nullptr;
   }
+
   void AddRequest(std::unique_ptr<SharedWorkerPendingRequest> request_info) {
-    requests_.push_back(request_info.release());
+    requests_.push_back(std::move(request_info));
   }
+
   void RemoveRequest(int process_id) {
-    for (SharedWorkerPendingRequests::iterator request_itr = requests_.begin();
-         request_itr != requests_.end();) {
-      if ((*request_itr)->render_process_id == process_id)
-        request_itr = requests_.erase(request_itr);
-      else
-        ++request_itr;
-    }
+    auto to_remove = std::remove_if(
+        requests_.begin(), requests_.end(),
+        [process_id](const std::unique_ptr<SharedWorkerPendingRequest>& r) {
+          return r->render_process_id == process_id;
+        });
+    requests_.erase(to_remove, requests_.end());
   }
+
   void RegisterToSharedWorkerHost(SharedWorkerHost* host) {
-    for (size_t i = 0; i < requests_.size(); ++i) {
-      SharedWorkerPendingRequest* request = requests_[i];
+    for (const auto& request : requests_) {
       host->AddFilter(request->filter, request->route_id);
       host->worker_document_set()->Add(request->filter,
                                        request->document_id,
@@ -166,11 +166,10 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
                                        request->render_frame_route_id);
     }
   }
+
   void SendWorkerCreatedMessages() {
-    for (size_t i = 0; i < requests_.size(); ++i) {
-      SharedWorkerPendingRequest* request = requests_[i];
+    for (const auto& request : requests_)
       request->filter->Send(new ViewMsg_WorkerCreated(request->route_id));
-    }
   }
 
  private:
@@ -245,8 +244,7 @@ void SharedWorkerServiceImpl::ResetForTesting() {
 }
 
 bool SharedWorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
-  SharedWorkerHost* host =
-      worker_hosts_.get(std::make_pair(process_id, route_id));
+  SharedWorkerHost* host = FindSharedWorkerHost(process_id, route_id);
   if (!host || !host->instance())
     return false;
   host->TerminateWorker();
@@ -255,10 +253,8 @@ bool SharedWorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
 
 std::vector<WorkerService::WorkerInfo> SharedWorkerServiceImpl::GetWorkers() {
   std::vector<WorkerService::WorkerInfo> results;
-  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
-       iter != worker_hosts_.end();
-       ++iter) {
-    SharedWorkerHost* host = iter->second;
+  for (const auto& iter : worker_hosts_) {
+    SharedWorkerHost* host = iter.second.get();
     const SharedWorkerInstance* instance = host->instance();
     if (instance) {
       WorkerService::WorkerInfo info;
@@ -345,7 +341,8 @@ void SharedWorkerServiceImpl::WorkerContextClosed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerContextClosed();
 }
 
@@ -353,24 +350,27 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
-  std::unique_ptr<SharedWorkerHost> host = worker_hosts_.take_and_erase(
-      std::make_pair(filter->render_process_id(), worker_route_id));
-  if (!host)
+  ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
+  if (!ContainsKey(worker_hosts_, key))
     return;
+  std::unique_ptr<SharedWorkerHost> host(worker_hosts_[key].release());
+  worker_hosts_.erase(key);
   host->WorkerContextDestroyed();
 }
 
 void SharedWorkerServiceImpl::WorkerReadyForInspection(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerReadyForInspection();
 }
 
 void SharedWorkerServiceImpl::WorkerScriptLoaded(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerScriptLoaded();
 }
 
@@ -378,10 +378,11 @@ void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
-  std::unique_ptr<SharedWorkerHost> host = worker_hosts_.take_and_erase(
-      std::make_pair(filter->render_process_id(), worker_route_id));
-  if (!host)
+  ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
+  if (!ContainsKey(worker_hosts_, key))
     return;
+  std::unique_ptr<SharedWorkerHost> host(worker_hosts_[key].release());
+  worker_hosts_.erase(key);
   host->WorkerScriptLoadFailed();
 }
 
@@ -389,7 +390,8 @@ void SharedWorkerServiceImpl::WorkerConnected(
     int message_port_id,
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->WorkerConnected(message_port_id);
 }
 
@@ -398,7 +400,8 @@ void SharedWorkerServiceImpl::AllowFileSystem(
     const GURL& url,
     IPC::Message* reply_msg,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id)) {
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id)) {
     host->AllowFileSystem(url, base::WrapUnique(reply_msg));
   } else {
     filter->Send(reply_msg);
@@ -412,7 +415,8 @@ void SharedWorkerServiceImpl::AllowIndexedDB(
     const base::string16& name,
     bool* result,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
     host->AllowIndexedDB(url, name, result);
   else
     *result = false;
@@ -422,24 +426,22 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
   std::vector<ProcessRouteIdPair> remove_list;
-  for (auto it : worker_hosts_) {
+  for (const auto& it : worker_hosts_) {
     it.second->FilterShutdown(filter);
     if (it.first.first == filter->render_process_id())
       remove_list.push_back(it.first);
   }
-  for (ProcessRouteIdPair& to_remove : remove_list) {
-    std::unique_ptr<SharedWorkerHost> host =
-        worker_hosts_.take_and_erase(to_remove);
-  }
+  for (const ProcessRouteIdPair& to_remove : remove_list)
+    worker_hosts_.erase(to_remove);
 
   std::vector<int> remove_pending_instance_list;
-  for (auto it : pending_instances_) {
+  for (const auto& it : pending_instances_) {
     it.second->RemoveRequest(filter->render_process_id());
     if (it.second->requests()->empty())
       remove_pending_instance_list.push_back(it.first);
   }
   for (int to_remove : remove_pending_instance_list)
-    pending_instances_.take_and_erase(to_remove);
+    pending_instances_.erase(to_remove);
 }
 
 void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
@@ -509,7 +511,7 @@ void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
               worker_route_id,
               is_new_worker),
           s_try_increment_worker_ref_count_));
-  pending_instances_.set(pending_instance_id, std::move(pending_instance));
+  pending_instances_[pending_instance_id] = std::move(pending_instance);
 }
 
 void SharedWorkerServiceImpl::RenderProcessReservedCallback(
@@ -524,41 +526,46 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
   // ScopeWorkerDependencyChecker's destructor.
   ScopedWorkerDependencyChecker checker(
       this, base::Bind(&DecrementWorkerRefCount, worker_process_id));
-  std::unique_ptr<SharedWorkerPendingInstance> pending_instance =
-      pending_instances_.take_and_erase(pending_instance_id);
-  if (!pending_instance)
+
+  if (!ContainsKey(pending_instances_, pending_instance_id))
     return;
+  std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
+      pending_instances_[pending_instance_id].release());
+  pending_instances_.erase(pending_instance_id);
+
   if (!is_new_worker) {
-    SharedWorkerHost* existing_host =
-        worker_hosts_.get(std::make_pair(worker_process_id, worker_route_id));
-    if (!existing_host) {
+    SharedWorkerHost* host =
+        FindSharedWorkerHost(worker_process_id, worker_route_id);
+    if (!host) {
       // Retry reserving a renderer process if the existed Shared Worker was
       // destroyed on IO thread while reserving the renderer process on UI
       // thread.
-      ReserveRenderProcessToCreateWorker(std::move(pending_instance), NULL);
+      ReserveRenderProcessToCreateWorker(std::move(pending_instance), nullptr);
       return;
     }
-    pending_instance->RegisterToSharedWorkerHost(existing_host);
+    pending_instance->RegisterToSharedWorkerHost(host);
     pending_instance->SendWorkerCreatedMessages();
     return;
   }
+
   SharedWorkerMessageFilter* filter =
       pending_instance->FindFilter(worker_process_id);
   if (!filter) {
     pending_instance->RemoveRequest(worker_process_id);
     // Retry reserving a renderer process if the requested renderer process was
     // destroyed on IO thread while reserving the renderer process on UI thread.
-    ReserveRenderProcessToCreateWorker(std::move(pending_instance), NULL);
+    ReserveRenderProcessToCreateWorker(std::move(pending_instance), nullptr);
     return;
   }
+
   std::unique_ptr<SharedWorkerHost> host(new SharedWorkerHost(
       pending_instance->release_instance(), filter, worker_route_id));
   pending_instance->RegisterToSharedWorkerHost(host.get());
   const GURL url = host->instance()->url();
   const base::string16 name = host->instance()->name();
   host->Start(pause_on_start);
-  worker_hosts_.set(std::make_pair(worker_process_id, worker_route_id),
-                    std::move(host));
+  ProcessRouteIdPair key(worker_process_id, worker_route_id);
+  worker_hosts_[key] = std::move(host);
   FOR_EACH_OBSERVER(
       WorkerServiceObserver,
       observers_,
@@ -570,45 +577,44 @@ void SharedWorkerServiceImpl::RenderProcessReserveFailedCallback(
     int worker_process_id,
     int worker_route_id,
     bool is_new_worker) {
-  worker_hosts_.take_and_erase(
-      std::make_pair(worker_process_id, worker_route_id));
-  std::unique_ptr<SharedWorkerPendingInstance> pending_instance =
-      pending_instances_.take_and_erase(pending_instance_id);
-  if (!pending_instance)
+  worker_hosts_.erase(std::make_pair(worker_process_id, worker_route_id));
+  if (!ContainsKey(pending_instances_, pending_instance_id))
     return;
+  std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
+      pending_instances_[pending_instance_id].release());
+  pending_instances_.erase(pending_instance_id);
   pending_instance->RemoveRequest(worker_process_id);
   // Retry reserving a renderer process.
-  ReserveRenderProcessToCreateWorker(std::move(pending_instance), NULL);
+  ReserveRenderProcessToCreateWorker(std::move(pending_instance), nullptr);
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
-    SharedWorkerMessageFilter* filter,
+    int render_process_id,
     int worker_route_id) {
-  return worker_hosts_.get(std::make_pair(filter->render_process_id(),
-                                          worker_route_id));
+  ProcessRouteIdPair key = std::make_pair(render_process_id, worker_route_id);
+  if (!ContainsKey(worker_hosts_, key))
+    return nullptr;
+  return worker_hosts_[key].get();
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
     const SharedWorkerInstance& instance) {
-  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
-       iter != worker_hosts_.end();
-       ++iter) {
-    SharedWorkerHost* host = iter->second;
+  for (const auto& iter : worker_hosts_) {
+    SharedWorkerHost* host = iter.second.get();
     if (host->IsAvailable() && host->instance()->Matches(instance))
-      return iter->second;
+      return host;
   }
-  return NULL;
+  return nullptr;
 }
 
 SharedWorkerServiceImpl::SharedWorkerPendingInstance*
 SharedWorkerServiceImpl::FindPendingInstance(
     const SharedWorkerInstance& instance) {
-  for (PendingInstanceMap::iterator iter = pending_instances_.begin();
-       iter != pending_instances_.end(); ++iter) {
-    if (iter->second->instance()->Matches(instance))
-      return iter->second;
+  for (const auto& iter : pending_instances_) {
+    if (iter.second->instance()->Matches(instance))
+      return iter.second.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 const std::set<int>

@@ -9,12 +9,12 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <tuple>
-#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -49,15 +49,15 @@ class SharedWorkerServiceImplTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         partition_(new WorkerStoragePartition(
-            BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
-                GetURLRequestContext(),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL)) {
+            BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+                ->GetURLRequestContext(),
+            nullptr /* media_url_request_context */,
+            nullptr /* appcache_service */,
+            nullptr /* quota_manager */,
+            nullptr /* filesystem_context */,
+            nullptr /* database_tracker */,
+            nullptr /* indexed_db_context */,
+            nullptr /* service_worker_context */)) {
     SharedWorkerServiceImpl::GetInstance()
         ->ChangeUpdateWorkerDependencyFuncForTesting(
             &SharedWorkerServiceImplTest::MockUpdateWorkerDependency);
@@ -94,6 +94,8 @@ class SharedWorkerServiceImplTest : public testing::Test {
   static std::vector<int> s_worker_dependency_removed_ids_;
   static base::Lock s_lock_;
   static std::set<int> s_running_process_id_set_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImplTest);
 };
 
@@ -112,36 +114,37 @@ static const int kRenderFrameRouteIDs[] = {300, 301, 302};
 
 class MockMessagePortMessageFilter : public MessagePortMessageFilter {
  public:
-  MockMessagePortMessageFilter(const NextRoutingIDCallback& callback,
-                               ScopedVector<IPC::Message>* message_queue)
+  MockMessagePortMessageFilter(
+      const NextRoutingIDCallback& callback,
+      std::vector<std::unique_ptr<IPC::Message>>* message_queue)
       : MessagePortMessageFilter(callback), message_queue_(message_queue) {}
 
   bool Send(IPC::Message* message) override {
-    if (!message_queue_) {
-      delete message;
+    std::unique_ptr<IPC::Message> owned(message);
+    if (!message_queue_)
       return false;
-    }
-    message_queue_->push_back(message);
+    message_queue_->push_back(std::move(owned));
     return true;
   }
 
   void Close() {
-    message_queue_ = NULL;
+    message_queue_ = nullptr;
     OnChannelClosing();
   }
 
  private:
   ~MockMessagePortMessageFilter() override {}
-  ScopedVector<IPC::Message>* message_queue_;
+  std::vector<std::unique_ptr<IPC::Message>>* message_queue_;
 };
 
 class MockSharedWorkerMessageFilter : public SharedWorkerMessageFilter {
  public:
-  MockSharedWorkerMessageFilter(int render_process_id,
-                                ResourceContext* resource_context,
-                                const WorkerStoragePartition& partition,
-                                MessagePortMessageFilter* message_port_filter,
-                                ScopedVector<IPC::Message>* message_queue)
+  MockSharedWorkerMessageFilter(
+      int render_process_id,
+      ResourceContext* resource_context,
+      const WorkerStoragePartition& partition,
+      MessagePortMessageFilter* message_port_filter,
+      std::vector<std::unique_ptr<IPC::Message>>* message_queue)
       : SharedWorkerMessageFilter(render_process_id,
                                   resource_context,
                                   partition,
@@ -149,22 +152,21 @@ class MockSharedWorkerMessageFilter : public SharedWorkerMessageFilter {
         message_queue_(message_queue) {}
 
   bool Send(IPC::Message* message) override {
-    if (!message_queue_) {
-      delete message;
+    std::unique_ptr<IPC::Message> owned(message);
+    if (!message_queue_)
       return false;
-    }
-    message_queue_->push_back(message);
+    message_queue_->push_back(std::move(owned));
     return true;
   }
 
   void Close() {
-    message_queue_ = NULL;
+    message_queue_ = nullptr;
     OnChannelClosing();
   }
 
  private:
   ~MockSharedWorkerMessageFilter() override {}
-  ScopedVector<IPC::Message>* message_queue_;
+  std::vector<std::unique_ptr<IPC::Message>>* message_queue_;
 };
 
 class MockRendererProcessHost {
@@ -197,13 +199,14 @@ class MockRendererProcessHost {
                      worker_filter_->OnMessageReceived(*message);
     if (message->is_sync()) {
       CHECK(!queued_messages_.empty());
-      const IPC::Message* response_msg = queued_messages_.back();
+      std::unique_ptr<IPC::Message> response_msg(
+          queued_messages_.back().release());
+      queued_messages_.pop_back();
       IPC::SyncMessage* sync_msg = static_cast<IPC::SyncMessage*>(message);
       std::unique_ptr<IPC::MessageReplyDeserializer> reply_serializer(
           sync_msg->GetReplyDeserializer());
       bool result = reply_serializer->SerializeOutputParameters(*response_msg);
       CHECK(result);
-      queued_messages_.pop_back();
     }
     return ret;
   }
@@ -212,8 +215,8 @@ class MockRendererProcessHost {
 
   std::unique_ptr<IPC::Message> PopMessage() {
     CHECK(queued_messages_.size());
-    std::unique_ptr<IPC::Message> msg(*queued_messages_.begin());
-    queued_messages_.weak_erase(queued_messages_.begin());
+    std::unique_ptr<IPC::Message> msg(queued_messages_.begin()->release());
+    queued_messages_.erase(queued_messages_.begin());
     return msg;
   }
 
@@ -223,7 +226,7 @@ class MockRendererProcessHost {
 
  private:
   const int process_id_;
-  ScopedVector<IPC::Message> queued_messages_;
+  std::vector<std::unique_ptr<IPC::Message>> queued_messages_;
   base::AtomicSequenceNumber next_routing_id_;
   scoped_refptr<MockMessagePortMessageFilter> message_filter_;
   scoped_refptr<MockSharedWorkerMessageFilter> worker_filter_;
