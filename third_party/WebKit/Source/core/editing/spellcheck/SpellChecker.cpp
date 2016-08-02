@@ -267,7 +267,16 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    markMisspellingsAndBadGrammar(movingSelection, isContinuousSpellCheckingEnabled(), movingSelection);
+    if (unifiedTextCheckerEnabled()) {
+        if (!isContinuousSpellCheckingEnabled())
+            return;
+
+        // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling, but don't autocorrect misspellings.
+        markAllMisspellingsInRange(movingSelection.toNormalizedEphemeralRange());
+        return;
+    }
+
+    markMisspellings(movingSelection);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
@@ -544,20 +553,6 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     }
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection)
-{
-    if (unifiedTextCheckerEnabled()) {
-        if (!isContinuousSpellCheckingEnabled())
-            return;
-
-        // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling and grammar, but don't autocorrect misspellings.
-        markAllMisspellingsInRange(spellingSelection.toNormalizedEphemeralRange());
-        return;
-    }
-
-    markMisspellings(spellingSelection);
-}
-
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
     DCHECK(frame().selection().isAvailable());
@@ -756,12 +751,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (oldAdjacentWords == newAdjacentWords)
         return;
-    if (isContinuousSpellCheckingEnabled()) {
-        VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-        markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
-        return;
-    }
-    markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
+    markMisspellingsAndBadGrammar(oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node)

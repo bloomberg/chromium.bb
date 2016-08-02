@@ -102,7 +102,6 @@ private:
     }
 
     void markMisspellings(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, bool markGrammar, const VisibleSelection& grammarSelection);
     void markAllMisspellingsInRange(const EphemeralRange& spellingRange);
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 
