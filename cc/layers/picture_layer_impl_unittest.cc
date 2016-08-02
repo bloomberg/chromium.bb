@@ -4309,6 +4309,23 @@ TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {
   EXPECT_FALSE(active_layer()->GetPendingOrActiveTwinLayer());
 }
 
+void GetClientDataAndUpdateInvalidation(RecordingSource* recording_source,
+                                        FakeContentLayerClient* client,
+                                        Region invalidation,
+                                        gfx::Size layer_bounds) {
+  gfx::Rect new_recorded_viewport = client->PaintableRegion();
+  scoped_refptr<DisplayItemList> display_list =
+      client->PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  size_t painter_reported_memory_usage =
+      client->GetApproximateUnsharedMemoryUsage();
+
+  recording_source->UpdateAndExpandInvalidation(&invalidation, layer_bounds,
+                                                new_recorded_viewport);
+  recording_source->UpdateDisplayItemList(display_list,
+                                          painter_reported_memory_usage);
+}
+
 void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
@@ -4326,14 +4343,12 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
-  int frame_number = 0;
-
   client.set_fill_with_nonsolid_color(!test_for_solid);
 
   Region invalidation(layer_rect);
-  recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation, layer_bounds, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+
+  GetClientDataAndUpdateInvalidation(recording_source, &client, invalidation,
+                                     layer_bounds);
 
   scoped_refptr<RasterSource> pending_raster_source =
       recording_source->CreateRasterSource(true);
@@ -4389,15 +4404,13 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
-  int frame_number = 0;
-
   client.set_fill_with_nonsolid_color(true);
 
   recording_source->SetNeedsDisplayRect(layer_rect);
   Region invalidation1;
-  recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation1, layer_bounds, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+
+  GetClientDataAndUpdateInvalidation(recording_source, &client, invalidation1,
+                                     layer_bounds);
 
   scoped_refptr<RasterSource> raster_source1 =
       recording_source->CreateRasterSource(true);
@@ -4415,9 +4428,9 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   recording_source->SetNeedsDisplayRect(layer_rect);
   Region invalidation2;
-  recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation2, layer_bounds, frame_number++,
-      RecordingSource::RECORD_NORMALLY);
+
+  GetClientDataAndUpdateInvalidation(recording_source, &client, invalidation2,
+                                     layer_bounds);
 
   scoped_refptr<RasterSource> raster_source2 =
       recording_source->CreateRasterSource(true);

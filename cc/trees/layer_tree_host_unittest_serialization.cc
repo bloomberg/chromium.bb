@@ -386,8 +386,8 @@ class LayerTreeHostSerializationTest : public testing::Test {
     EXPECT_EQ(recording_source_src->GetSize(), recording_source_dst->GetSize());
     EXPECT_TRUE(AreDisplayListDrawingResultsSame(
         gfx::Rect(recording_source_src->GetSize()),
-        recording_source_src->GetDisplayItemList(),
-        recording_source_dst->GetDisplayItemList()));
+        picture_layer_src->GetDisplayItemList(),
+        picture_layer_dst->GetDisplayItemList()));
 
     VerifySerializationAndDeserialization();
   }

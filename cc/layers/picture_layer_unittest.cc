@@ -96,12 +96,27 @@ class TestSerializationPictureLayer : public PictureLayer {
     EXPECT_EQ(is_mask_, layer->is_mask_);
     EXPECT_EQ(picture_layer_inputs_.nearest_neighbor,
               layer->picture_layer_inputs_.nearest_neighbor);
+    EXPECT_EQ(picture_layer_inputs_.recorded_viewport,
+              layer->picture_layer_inputs_.recorded_viewport);
+
+    // The DisplayItemLists are equal if they are both null or they are both not
+    // null and render to the same thing.
+    bool display_lists_equal = !picture_layer_inputs_.display_list &&
+                               !layer->picture_layer_inputs_.display_list;
+    if (picture_layer_inputs_.display_list &&
+        layer->picture_layer_inputs_.display_list) {
+      display_lists_equal = AreDisplayListDrawingResultsSame(
+          picture_layer_inputs_.recorded_viewport,
+          picture_layer_inputs_.display_list.get(),
+          layer->picture_layer_inputs_.display_list.get());
+    }
+    EXPECT_TRUE(display_lists_equal);
   }
 
   std::vector<uint32_t> GetPictureIds() {
     std::vector<uint32_t> ids;
     const DisplayItemList* display_list =
-        recording_source()->GetDisplayItemList();
+        picture_layer_inputs_.display_list.get();
     if (!display_list)
       return ids;
 
@@ -445,16 +460,23 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   gfx::Size layer_bounds(200, 200);
   gfx::Rect layer_rect(layer_bounds);
   Region invalidation(layer_rect);
-  recording_source->UpdateAndExpandInvalidation(
-      client, &invalidation, layer_bounds, 1, RecordingSource::RECORD_NORMALLY);
+
+  gfx::Rect new_recorded_viewport = client->PaintableRegion();
+  scoped_refptr<DisplayItemList> display_list =
+      client->PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  size_t painter_reported_memory_usage =
+      client->GetApproximateUnsharedMemoryUsage();
+  recording_source->UpdateAndExpandInvalidation(&invalidation, layer_bounds,
+                                                new_recorded_viewport);
+  recording_source->UpdateDisplayItemList(display_list,
+                                          painter_reported_memory_usage);
 
   // Layer is suitable for gpu rasterization by default.
-  EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
 
   // Veto gpu rasterization.
-  recording_source->SetForceUnsuitableForGpuRasterization(true);
-  EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
+  layer->set_force_unsuitable_for_gpu_rasterization(true);
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }
 

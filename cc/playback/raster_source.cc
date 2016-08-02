@@ -41,8 +41,7 @@ RasterSource::RasterSource(const RecordingSource* other, bool can_use_lcd_text)
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(false),
-      image_decode_controller_(nullptr) {
-}
+      image_decode_controller_(nullptr) {}
 
 RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
     : display_list_(other->display_list_),

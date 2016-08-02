@@ -42,6 +42,20 @@ class FakePictureLayer : public PictureLayer {
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
+  void set_recorded_viewport(const gfx::Rect& recorded_viewport) {
+    picture_layer_inputs_.recorded_viewport = recorded_viewport;
+  }
+
+  DisplayItemList* display_list() const {
+    return picture_layer_inputs_.display_list.get();
+  }
+
+  void set_force_unsuitable_for_gpu_rasterization(bool flag) {
+    force_unsuitable_for_gpu_rasterization_ = flag;
+  }
+
+  bool IsSuitableForGpuRasterization() const override;
+
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
   FakePictureLayer(ContentLayerClient* client,
@@ -51,6 +65,8 @@ class FakePictureLayer : public PictureLayer {
   int update_count_;
   size_t push_properties_count_;
   bool always_update_resources_;
+
+  bool force_unsuitable_for_gpu_rasterization_;
 };
 
 }  // namespace cc

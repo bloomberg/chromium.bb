@@ -86,13 +86,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
     }
   }
 
-  FakeRecordingSource recording_source;
-  Region invalidation(visible_rect);
-  recording_source.SetGenerateDiscardableImagesMetadata(true);
-  recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), 1,
-      RecordingSource::RECORD_NORMALLY);
-  DisplayItemList* display_list = recording_source.display_list();
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 
   DiscardableImageMap image_map;
   {
@@ -163,13 +159,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
     }
   }
 
-  FakeRecordingSource recording_source;
-  Region invalidation(visible_rect);
-  recording_source.SetGenerateDiscardableImagesMetadata(true);
-  recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, layer_size, 1,
-      RecordingSource::RECORD_NORMALLY);
-  DisplayItemList* display_list = recording_source.display_list();
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 
   DiscardableImageMap image_map;
   {
@@ -263,13 +255,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
     }
   }
 
-  FakeRecordingSource recording_source;
-  Region invalidation(visible_rect);
-  recording_source.SetGenerateDiscardableImagesMetadata(true);
-  recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), 1,
-      RecordingSource::RECORD_NORMALLY);
-  DisplayItemList* display_list = recording_source.display_list();
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 
   DiscardableImageMap image_map;
   {
@@ -306,13 +294,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
                                       paint);
 
-  FakeRecordingSource recording_source;
-  Region invalidation(visible_rect);
-  recording_source.SetGenerateDiscardableImagesMetadata(true);
-  recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), 1,
-      RecordingSource::RECORD_NORMALLY);
-  DisplayItemList* display_list = recording_source.display_list();
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 
   DiscardableImageMap image_map;
   {

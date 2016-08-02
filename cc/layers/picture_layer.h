@@ -13,7 +13,12 @@
 
 namespace cc {
 
+namespace proto {
+class PictureLayerProperties;
+}
+
 class ContentLayerClient;
+class DisplayItemList;
 class RecordingSource;
 class ResourceUpdateQueue;
 
@@ -33,6 +38,7 @@ class CC_EXPORT PictureLayer : public Layer {
   bool Update() override;
   void SetIsMask(bool is_mask) override;
   sk_sp<SkPicture> GetPicture() const override;
+
   bool IsSuitableForGpuRasterization() const override;
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
@@ -43,7 +49,21 @@ class CC_EXPORT PictureLayer : public Layer {
     return recording_source_.get();
   }
 
+  const DisplayItemList* GetDisplayItemList();
+
  protected:
+  // Encapsulates all data, callbacks or interfaces received from the embedder.
+  struct PictureLayerInputs {
+    PictureLayerInputs();
+    ~PictureLayerInputs();
+
+    ContentLayerClient* client = nullptr;
+    bool nearest_neighbor = false;
+    gfx::Rect recorded_viewport;
+    scoped_refptr<DisplayItemList> display_list;
+    size_t painter_reported_memory_usage = 0;
+  };
+
   explicit PictureLayer(ContentLayerClient* client);
   // Allow tests to inject a recording source.
   PictureLayer(ContentLayerClient* client,
@@ -58,6 +78,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   bool is_mask() const { return is_mask_; }
 
+  PictureLayerInputs picture_layer_inputs_;
+
  private:
   friend class TestSerializationPictureLayer;
 
@@ -71,14 +93,6 @@ class CC_EXPORT PictureLayer : public Layer {
 
   int update_source_frame_number_;
   bool is_mask_;
-
-  // Encapsulates all data, callbacks or interfaces received from the embedder.
-  struct PictureLayerInputs {
-    ContentLayerClient* client = nullptr;
-    bool nearest_neighbor = false;
-  };
-
-  PictureLayerInputs picture_layer_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };

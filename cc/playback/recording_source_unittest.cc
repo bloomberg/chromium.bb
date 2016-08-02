@@ -37,30 +37,11 @@ scoped_refptr<RasterSource> CreateRasterSource(
 }
 
 void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
-  std::unique_ptr<FakeImageSerializationProcessor>
-      fake_image_serialization_processor =
-          base::WrapUnique(new FakeImageSerializationProcessor);
-  std::unique_ptr<EnginePictureCache> fake_engine_picture_cache =
-      fake_image_serialization_processor->CreateEnginePictureCache();
-  FakeEnginePictureCache* fake_engine_picture_cache_ptr =
-      static_cast<FakeEnginePictureCache*>(fake_engine_picture_cache.get());
-  std::unique_ptr<ClientPictureCache> fake_client_picture_cache =
-      fake_image_serialization_processor->CreateClientPictureCache();
-
-  fake_engine_picture_cache_ptr->MarkAllSkPicturesAsUsed(
-      source->GetDisplayItemList());
-
   proto::RecordingSource proto;
   source->ToProtobuf(&proto);
 
-  std::vector<uint32_t> actual_picture_ids;
   FakeRecordingSource new_source;
-  new_source.FromProtobuf(proto, fake_client_picture_cache.get(),
-                          &actual_picture_ids);
-
-  EXPECT_THAT(actual_picture_ids,
-              testing::UnorderedElementsAreArray(
-                  fake_engine_picture_cache_ptr->GetAllUsedPictureIds()));
+  new_source.FromProtobuf(proto, nullptr);
 
   EXPECT_TRUE(source->EqualsTo(new_source));
 }

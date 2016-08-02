@@ -4,6 +4,7 @@
 
 syntax = "proto2";
 
+import "display_item.proto";
 import "layer_position_constraint.proto";
 import "point3f.proto";
 import "pointf.proto";
@@ -138,6 +139,9 @@ message PictureLayerProperties {
   optional bool nearest_neighbor = 5;
 
   optional int64 update_source_frame_number = 6;
+
+  optional Rect recorded_viewport = 7;
+  optional DisplayItemList display_list = 8;
 }
 
 message SolidColorScrollbarLayerProperties {

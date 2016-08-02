@@ -4994,7 +4994,6 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
@@ -5002,7 +5001,6 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
@@ -5047,7 +5045,6 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
@@ -5055,7 +5052,6 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
@@ -5105,7 +5101,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is relevant as well.
-    recording_source_->SetForceUnsuitableForGpuRasterization(true);
+    layer_->set_force_unsuitable_for_gpu_rasterization(true);
 
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -5117,7 +5113,6 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     // Ensure the suitability bit sticks.
-    EXPECT_FALSE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
@@ -5125,7 +5120,6 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
@@ -5177,7 +5171,7 @@ class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is relevant as well.
-    recording_source_->SetForceUnsuitableForGpuRasterization(true);
+    layer_->set_force_unsuitable_for_gpu_rasterization(true);
 
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -5198,13 +5192,13 @@ class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
-        recording_source_->SetForceUnsuitableForGpuRasterization(false);
+        layer_->set_force_unsuitable_for_gpu_rasterization(false);
         break;
       case 30:
-        recording_source_->SetForceUnsuitableForGpuRasterization(true);
+        layer_->set_force_unsuitable_for_gpu_rasterization(true);
         break;
       case 31:
-        recording_source_->SetForceUnsuitableForGpuRasterization(false);
+        layer_->set_force_unsuitable_for_gpu_rasterization(false);
         break;
       case 90:
         expected_gpu_enabled_ = true;
@@ -5260,7 +5254,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is irrelevant as well.
-    recording_source_->SetForceUnsuitableForGpuRasterization(true);
+    layer_->set_force_unsuitable_for_gpu_rasterization(true);
 
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -5272,7 +5266,6 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     // Ensure the suitability bit sticks.
-    EXPECT_FALSE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_TRUE(host_impl->sync_tree()->use_gpu_rasterization());
@@ -5280,7 +5273,6 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(recording_source_->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
     EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());

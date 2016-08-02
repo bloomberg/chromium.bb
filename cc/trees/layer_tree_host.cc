@@ -105,10 +105,8 @@ ComputeLayerTreeHostProtoSizeSplitAsValue(proto::LayerTreeHost* proto) {
           layer_properties_proto.picture();
       picture_layer_properties_size += picture_proto.ByteSize();
 
-      const proto::RecordingSource& recording_source_proto =
-          picture_proto.recording_source();
       const proto::DisplayItemList& display_list_proto =
-          recording_source_proto.display_list();
+          picture_proto.display_list();
       display_item_list_size += display_list_proto.ByteSize();
 
       for (int j = 0; j < display_list_proto.items_size(); ++j) {

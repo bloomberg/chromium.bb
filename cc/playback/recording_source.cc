@@ -36,13 +36,11 @@ RecordingSource::RecordingSource()
       is_solid_color_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       solid_color_(SK_ColorTRANSPARENT),
-      background_color_(SK_ColorTRANSPARENT),
-      painter_reported_memory_usage_(0) {}
+      background_color_(SK_ColorTRANSPARENT) {}
 
 RecordingSource::~RecordingSource() {}
 
 void RecordingSource::ToProtobuf(proto::RecordingSource* proto) const {
-  RectToProto(recorded_viewport_, proto->mutable_recorded_viewport());
   SizeToProto(size_, proto->mutable_size());
   proto->set_slow_down_raster_scale_factor_for_debug(
       slow_down_raster_scale_factor_for_debug_);
@@ -53,16 +51,11 @@ void RecordingSource::ToProtobuf(proto::RecordingSource* proto) const {
   proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
   proto->set_solid_color(static_cast<uint64_t>(solid_color_));
   proto->set_background_color(static_cast<uint64_t>(background_color_));
-  if (display_list_)
-    display_list_->ToProtobuf(proto->mutable_display_list());
 }
 
 void RecordingSource::FromProtobuf(
     const proto::RecordingSource& proto,
-    ClientPictureCache* client_picture_cache,
-    std::vector<uint32_t>* used_engine_picture_ids) {
-  DCHECK(client_picture_cache);
-  recorded_viewport_ = ProtoToRect(proto.recorded_viewport());
+    const scoped_refptr<DisplayItemList>& display_list) {
   size_ = ProtoToSize(proto.size());
   slow_down_raster_scale_factor_for_debug_ =
       proto.slow_down_raster_scale_factor_for_debug();
@@ -74,16 +67,9 @@ void RecordingSource::FromProtobuf(
   solid_color_ = static_cast<SkColor>(proto.solid_color());
   background_color_ = static_cast<SkColor>(proto.background_color());
 
-  // This might not exist if the |display_list_| of the serialized
-  // RecordingSource was null, wich can happen if |Clear()| is
-  // called.
-  if (proto.has_display_list()) {
-    display_list_ = DisplayItemList::CreateFromProto(
-        proto.display_list(), client_picture_cache, used_engine_picture_ids);
+  display_list_ = display_list;
+  if (display_list_)
     FinishDisplayItemListUpdate();
-  } else {
-    display_list_ = nullptr;
-  }
 }
 
 void RecordingSource::UpdateInvalidationForNewViewport(
@@ -116,11 +102,9 @@ void RecordingSource::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
 }
 
 bool RecordingSource::UpdateAndExpandInvalidation(
-    ContentLayerClient* painter,
     Region* invalidation,
     const gfx::Size& layer_size,
-    int frame_number,
-    RecordingMode recording_mode) {
+    const gfx::Rect& new_recorded_viewport) {
   bool updated = false;
 
   if (size_ != layer_size)
@@ -129,7 +113,6 @@ bool RecordingSource::UpdateAndExpandInvalidation(
   invalidation_.Swap(invalidation);
   invalidation_.Clear();
 
-  gfx::Rect new_recorded_viewport = painter->PaintableRegion();
   if (new_recorded_viewport != recorded_viewport_) {
     UpdateInvalidationForNewViewport(recorded_viewport_, new_recorded_viewport,
                                      invalidation);
@@ -143,38 +126,16 @@ bool RecordingSource::UpdateAndExpandInvalidation(
   if (invalidation->IsEmpty())
     return false;
 
-  ContentLayerClient::PaintingControlSetting painting_control =
-      ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
+  return true;
+}
 
-  switch (recording_mode) {
-    case RECORD_NORMALLY:
-      // Already setup for normal recording.
-      break;
-    case RECORD_WITH_PAINTING_DISABLED:
-      painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
-      break;
-    case RECORD_WITH_CACHING_DISABLED:
-      painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
-      break;
-    case RECORD_WITH_CONSTRUCTION_DISABLED:
-      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
-      break;
-    case RECORD_WITH_SUBSEQUENCE_CACHING_DISABLED:
-      painting_control = ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED;
-      break;
-    case RECORD_WITH_SK_NULL_CANVAS:
-    case RECORDING_MODE_COUNT:
-      NOTREACHED();
-  }
-
-  // TODO(vmpstr): Add a slow_down_recording_scale_factor_for_debug_ to be able
-  // to slow down recording.
-  display_list_ = painter->PaintContentsToDisplayList(painting_control);
-  painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
+void RecordingSource::UpdateDisplayItemList(
+    const scoped_refptr<DisplayItemList>& display_list,
+    const size_t& painter_reported_memory_usage) {
+  display_list_ = display_list;
+  painter_reported_memory_usage_ = painter_reported_memory_usage;
 
   FinishDisplayItemListUpdate();
-
-  return true;
 }
 
 gfx::Size RecordingSource::GetSize() const {
@@ -183,7 +144,11 @@ gfx::Size RecordingSource::GetSize() const {
 
 void RecordingSource::SetEmptyBounds() {
   size_ = gfx::Size();
-  Clear();
+  is_solid_color_ = false;
+
+  recorded_viewport_ = gfx::Rect();
+  display_list_ = nullptr;
+  painter_reported_memory_usage_ = 0;
 }
 
 void RecordingSource::SetSlowdownRasterScaleFactor(int factor) {
@@ -201,14 +166,6 @@ void RecordingSource::SetBackgroundColor(SkColor background_color) {
 
 void RecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
-}
-
-bool RecordingSource::IsSuitableForGpuRasterization() const {
-  // The display list needs to be created (see: UpdateAndExpandInvalidation)
-  // before checking for suitability. There are cases where an update will not
-  // create a display list (e.g., if the size is empty). We return true in these
-  // cases because the gpu suitability bit sticks false.
-  return !display_list_ || display_list_->IsSuitableForGpuRasterization();
 }
 
 const DisplayItemList* RecordingSource::GetDisplayItemList() {
@@ -235,13 +192,6 @@ void RecordingSource::DetermineIfSolidColor() {
   skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
   display_list_->Raster(&canvas, nullptr, gfx::Rect(layer_size), 1.f);
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
-}
-
-void RecordingSource::Clear() {
-  recorded_viewport_ = gfx::Rect();
-  display_list_ = nullptr;
-  painter_reported_memory_usage_ = 0;
-  is_solid_color_ = false;
 }
 
 }  // namespace cc

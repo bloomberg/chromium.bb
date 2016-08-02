@@ -22,7 +22,8 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
     : PictureLayer(client, std::move(source)),
       update_count_(0),
       push_properties_count_(0),
-      always_update_resources_(false) {
+      always_update_resources_(false),
+      force_unsuitable_for_gpu_rasterization_(false) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -45,6 +46,12 @@ bool FakePictureLayer::Update() {
 void FakePictureLayer::PushPropertiesTo(LayerImpl* layer) {
   PictureLayer::PushPropertiesTo(layer);
   push_properties_count_++;
+}
+
+bool FakePictureLayer::IsSuitableForGpuRasterization() const {
+  if (force_unsuitable_for_gpu_rasterization_)
+    return false;
+  return PictureLayer::IsSuitableForGpuRasterization();
 }
 
 }  // namespace cc
