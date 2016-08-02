@@ -50,9 +50,7 @@ const char* const kValidNumbers[] = {
   "4222-2222-2222-2",
   "5019717010103742",
   "6331101999990016",
-
-  // A UnionPay card that doesn't pass the Luhn checksum
-  "6200000000000000",
+  "6247130048162403",
 };
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
@@ -642,7 +640,7 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "4222222222222", kVisaCard, true },
 
     // The relevant sample numbers from
-    // http://auricsystems.com/support-center/sample-credit-card-numbers/
+    // https://www.auricsystems.com/sample-credit-card-numbers/
     { "343434343434343", kAmericanExpressCard, true },
     { "371144371144376", kAmericanExpressCard, true },
     { "341134113411347", kAmericanExpressCard, true },
@@ -665,9 +663,9 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "5111005111051128", kMasterCard, true },
     { "5112345112345114", kMasterCard, true },
     { "5115915115915118", kMasterCard, true },
-
-    // A UnionPay card that doesn't pass the Luhn checksum
-    { "6200000000000000", kUnionPay, true },
+    { "6247130048162403", kUnionPay, true },
+    { "6247130048162403", kUnionPay, true },
+    { "622384452162063648", kUnionPay, true },
 
     // Empty string
     { std::string(), kGenericCard, false },
@@ -678,6 +676,7 @@ TEST(CreditCardTest, GetCreditCardType) {
 
     // Fails Luhn check.
     { "4111111111111112", kVisaCard, false },
+    { "6247130048162413", kUnionPay, false },
 
     // Invalid length.
     { "3434343434343434", kAmericanExpressCard, false },

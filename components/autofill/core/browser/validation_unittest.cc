@@ -44,9 +44,7 @@ const char* const kValidNumbers[] = {
   "4222-2222-2222-2",
   "5019717010103742",
   "6331101999990016",
-
-  // A UnionPay card that doesn't pass the Luhn checksum
-  "6200000000000000",
+  "6247130048162403",
 };
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
