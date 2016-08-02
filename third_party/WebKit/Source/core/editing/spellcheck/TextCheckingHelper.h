@@ -89,10 +89,7 @@ public:
     ~TextCheckingHelper();
 
     String findFirstMisspelling(int& firstMisspellingOffset, bool markAll);
-    String findFirstMisspellingOrBadGrammar(bool& outIsSpelling, int& outFirstFoundOffset, GrammarDetail& outGrammarDetail);
-    String findFirstBadGrammar(GrammarDetail& outGrammarDetail, int& outGrammarPhraseOffset, bool markAll);
     bool markAllMisspellings();
-    void markAllBadGrammar();
 
 private:
     SpellCheckerClient* m_client;

@@ -1336,7 +1336,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // FIXME (5098931): We should add a new insert action "WebViewInsertActionMoved" and call shouldInsertFragment here.
 
     setEndingSelection(VisibleSelection(start, end));
-    document().frame()->spellChecker().clearMisspellingsAndBadGrammar(endingSelection());
+    document().frame()->spellChecker().clearMisspellings(endingSelection());
     deleteSelection(editingState, false, false, false);
     if (editingState->isAborted())
         return;
@@ -1381,7 +1381,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     if (editingState->isAborted())
         return;
 
-    document().frame()->spellChecker().markMisspellingsAndBadGrammar(endingSelection());
+    document().frame()->spellChecker().markMisspellings(endingSelection());
 
     // If the selection is in an empty paragraph, restore styles from the old empty paragraph to the new empty paragraph.
     bool selectionIsEmptyParagraph = endingSelection().isCaret() && isStartOfParagraph(endingSelection().visibleStart()) && isEndOfParagraph(endingSelection().visibleStart());

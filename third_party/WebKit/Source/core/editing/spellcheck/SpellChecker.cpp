@@ -144,7 +144,7 @@ void SpellChecker::didBeginEditing(Element* element)
                 return;
             // We always recheck textfields because markers are removed from them on blur.
             VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
-            markMisspellingsAndBadGrammar(selection);
+            markMisspellings(selection);
             if (!isTextField)
                 parent->setAlreadySpellChecked(true);
         }
@@ -238,8 +238,8 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     }
 
     if (!misspelledWord.isEmpty()) {
-        // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
-        // a marker so we draw the red squiggle later.
+        // We found a misspelling. Select the misspelling, update the spelling
+        // panel, and store a marker so we draw the red squiggle later.
 
         const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(spellingSearchStart, spellingSearchEnd), misspellingOffset, misspelledWord.length());
         frame().selection().setSelection(VisibleSelection(misspellingRange));
@@ -260,23 +260,24 @@ void SpellChecker::showSpellingGuessPanel()
     spellCheckerClient().showSpellingUI(true);
 }
 
-void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
+void SpellChecker::clearMisspellings(const VisibleSelection &movingSelection)
 {
     removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
+void SpellChecker::markMisspellings(const VisibleSelection &movingSelection)
 {
     if (unifiedTextCheckerEnabled()) {
         if (!isContinuousSpellCheckingEnabled())
             return;
 
-        // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling, but don't autocorrect misspellings.
+        // markMisspellings() is triggered by selection change, in which
+        // case we check spelling, but don't autocorrect misspellings.
         markAllMisspellingsInRange(movingSelection.toNormalizedEphemeralRange());
         return;
     }
 
-    markMisspellings(movingSelection);
+    markMisspellingsWithTextCheckingHelper(movingSelection);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
@@ -284,7 +285,7 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
 
     if (!unifiedTextCheckerEnabled()) {
-        markMisspellings(wordSelection);
+        markMisspellingsWithTextCheckingHelper(wordSelection);
         return;
     }
 
@@ -314,7 +315,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         return;
 
     // Check spelling of one word
-    markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
+    markMisspellingsWithTextCheckingHelper(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
 }
 
 bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
@@ -349,13 +350,12 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
     return false;
 }
 
-void SpellChecker::markMisspellings(const VisibleSelection& selection)
+void SpellChecker::markMisspellingsWithTextCheckingHelper(const VisibleSelection& selection)
 {
     // This function is called with a selection already expanded to word boundaries.
     // TODO(xiaochengh): Might be nice to assert that here.
 
-    // This function is used only for as-you-type checking, so if that's off we do nothing. Note that
-    // grammar checking can only be on if spell checking is also on.
+    // This function is used only for as-you-type checking, so if that's off we do nothing.
     if (!isContinuousSpellCheckingEnabled())
         return;
 
@@ -415,9 +415,9 @@ static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
     return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, range.endPosition()));
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const EphemeralRange& insertedRange)
+void SpellChecker::chunkAndMarkAllMisspellings(Node* node, const EphemeralRange& insertedRange)
 {
-    TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
+    TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellings");
     if (!node)
         return;
     EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
@@ -751,7 +751,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (oldAdjacentWords == newAdjacentWords)
         return;
-    markMisspellingsAndBadGrammar(oldAdjacentWords);
+    markMisspellings(oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node)

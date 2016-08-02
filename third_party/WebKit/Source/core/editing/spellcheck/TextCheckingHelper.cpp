@@ -286,111 +286,12 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
     return firstMisspelling;
 }
 
-String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool& outIsSpelling, int& outFirstFoundOffset, GrammarDetail& outGrammarDetail)
-{
-    if (!unifiedTextCheckerEnabled())
-        return "";
-
-    String firstFoundItem;
-    String misspelledWord;
-    String badGrammarPhrase;
-
-    // Initialize out parameters; these will be updated if we find something to return.
-    outIsSpelling = true;
-    outFirstFoundOffset = 0;
-    outGrammarDetail.location = -1;
-    outGrammarDetail.length = 0;
-    outGrammarDetail.guesses.clear();
-    outGrammarDetail.userDescription = "";
-
-    // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
-    // Determine the character offset from the start of the paragraph to the start of the original search range,
-    // since we will want to ignore results in this area.
-    Position paragraphStart = startOfParagraph(createVisiblePosition(m_start)).toParentAnchoredPosition();
-    Position paragraphEnd = m_end;
-    int totalRangeLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
-    paragraphEnd = endOfParagraph(createVisiblePosition(m_start)).toParentAnchoredPosition();
-
-    int rangeStartOffset = TextIterator::rangeLength(paragraphStart, m_start);
-    int totalLengthProcessed = 0;
-
-    bool firstIteration = true;
-    bool lastIteration = false;
-    while (totalLengthProcessed < totalRangeLength) {
-        // Iterate through the search range by paragraphs, checking each one for spelling.
-        int currentLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
-        int currentStartOffset = firstIteration ? rangeStartOffset : 0;
-        int currentEndOffset = currentLength;
-        if (inSameParagraph(createVisiblePosition(paragraphStart), createVisiblePosition(m_end))) {
-            // Determine the character offset from the end of the original search range to the end of the paragraph,
-            // since we will want to ignore results in this area.
-            currentEndOffset = TextIterator::rangeLength(paragraphStart, m_end);
-            lastIteration = true;
-        }
-        if (currentStartOffset < currentEndOffset) {
-            String paragraphString = plainText(EphemeralRange(paragraphStart, paragraphEnd));
-            if (paragraphString.length() > 0) {
-                int spellingLocation = 0;
-
-                Vector<TextCheckingResult> results;
-                TextCheckingTypeMask checkingTypes = TextCheckingTypeSpelling;
-                checkTextOfParagraph(m_client->textChecker(), paragraphString, checkingTypes, results);
-
-                for (unsigned i = 0; i < results.size(); i++) {
-                    const TextCheckingResult* result = &results[i];
-                    if (result->decoration == TextDecorationTypeSpelling && result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
-                        DCHECK_GT(result->length, 0);
-                        DCHECK_GE(result->location, 0);
-                        spellingLocation = result->location;
-                        misspelledWord = paragraphString.substring(result->location, result->length);
-                        DCHECK(misspelledWord.length());
-                        break;
-                    }
-                }
-
-                if (!misspelledWord.isEmpty()) {
-                    int spellingOffset = spellingLocation - currentStartOffset;
-                    if (!firstIteration)
-                        spellingOffset += TextIterator::rangeLength(m_start, paragraphStart);
-                    outIsSpelling = true;
-                    outFirstFoundOffset = spellingOffset;
-                    firstFoundItem = misspelledWord;
-                    break;
-                }
-            }
-        }
-        if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
-            break;
-        VisiblePosition newParagraphStart = startOfNextParagraph(createVisiblePosition(paragraphEnd));
-        paragraphStart = newParagraphStart.toParentAnchoredPosition();
-        paragraphEnd = endOfParagraph(newParagraphStart).toParentAnchoredPosition();
-        firstIteration = false;
-        totalLengthProcessed += currentLength;
-    }
-    return firstFoundItem;
-}
-
-String TextCheckingHelper::findFirstBadGrammar(GrammarDetail& outGrammarDetail, int& outGrammarPhraseOffset, bool markAll)
-{
-    // Return empty result since there is no grammar checking.
-    outGrammarDetail.location = -1;
-    outGrammarDetail.length = 0;
-    outGrammarDetail.guesses.clear();
-    outGrammarDetail.userDescription = "";
-    outGrammarPhraseOffset = 0;
-    return "";
-}
-
 bool TextCheckingHelper::markAllMisspellings()
 {
     // Use the "markAll" feature of findFirstMisspelling. Ignore the return value and the "out parameter";
     // all we need to do is mark every instance.
     int ignoredOffset;
     return findFirstMisspelling(ignoredOffset, true).isEmpty();
-}
-
-void TextCheckingHelper::markAllBadGrammar()
-{
 }
 
 bool TextCheckingHelper::unifiedTextCheckerEnabled() const

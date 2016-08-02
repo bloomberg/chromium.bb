@@ -714,7 +714,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
     const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
     if (insertedRange.isNull())
         return;
-    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(cmd->endingSelection().rootEditableElement(), insertedRange);
+    spellChecker().chunkAndMarkAllMisspellings(cmd->endingSelection().rootEditableElement(), insertedRange);
 }
 
 void Editor::appliedEditing(CompositeEditCommand* cmd)
