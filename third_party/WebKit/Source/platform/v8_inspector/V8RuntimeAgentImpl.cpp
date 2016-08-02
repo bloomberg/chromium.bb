@@ -35,6 +35,7 @@
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
@@ -109,7 +110,7 @@ private:
         v8::Local<v8::Value> value = info.Length() > 0 ? info[0] : v8::Local<v8::Value>::Cast(v8::Undefined(info.GetIsolate()));
 
         std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetails;
-        std::unique_ptr<V8StackTraceImpl> stack = handler->m_inspector->captureStackTraceImpl(true);
+        std::unique_ptr<V8StackTraceImpl> stack = handler->m_inspector->debugger()->captureStackTrace(true);
         if (stack) {
             exceptionDetails = protocol::Runtime::ExceptionDetails::create()
                 .setText("Promise was rejected")
@@ -207,7 +208,7 @@ void V8RuntimeAgentImpl::evaluate(
             callback->sendFailure("Cannot find default execution context");
             return;
         }
-        contextId = V8InspectorImpl::contextId(defaultContext);
+        contextId = V8Debugger::contextId(defaultContext);
     }
 
     ErrorString errorString;
@@ -376,7 +377,7 @@ void V8RuntimeAgentImpl::getProperties(
     if (!errorString->isEmpty() || exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
         return;
     v8::Local<v8::Array> propertiesArray;
-    if (hasInternalError(errorString, !m_inspector->internalProperties(scope.context(), scope.object()).ToLocal(&propertiesArray)))
+    if (hasInternalError(errorString, !m_inspector->debugger()->internalProperties(scope.context(), scope.object()).ToLocal(&propertiesArray)))
         return;
     std::unique_ptr<protocol::Array<InternalPropertyDescriptor>> propertiesProtocolArray = protocol::Array<InternalPropertyDescriptor>::create();
     for (uint32_t i = 0; i < propertiesArray->Length(); i += 2) {

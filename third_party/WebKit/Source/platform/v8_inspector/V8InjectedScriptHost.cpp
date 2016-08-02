@@ -7,6 +7,7 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/V8Compat.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -146,7 +147,7 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
     if (info.Length() < 1)
         return;
     v8::Local<v8::Array> properties;
-    if (unwrapInspector(info)->internalProperties(info.GetIsolate()->GetCurrentContext(), info[0]).ToLocal(&properties))
+    if (unwrapInspector(info)->debugger()->internalProperties(info.GetIsolate()->GetCurrentContext(), info[0]).ToLocal(&properties))
         info.GetReturnValue().Set(properties);
 }
 

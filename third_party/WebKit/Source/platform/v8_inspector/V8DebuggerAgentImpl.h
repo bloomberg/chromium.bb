@@ -7,15 +7,19 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/V8InspectorImpl.h"
+#include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
 
 #include <vector>
 
 namespace blink {
 
+struct ScriptBreakpoint;
 class JavaScriptCallFrame;
 class PromiseTracker;
+class V8Debugger;
+class V8DebuggerScript;
+class V8InspectorImpl;
 class V8InspectorSessionImpl;
 class V8Regex;
 class V8StackTraceImpl;
@@ -184,6 +188,7 @@ private:
     };
 
     V8InspectorImpl* m_inspector;
+    V8Debugger* m_debugger;
     V8InspectorSessionImpl* m_session;
     bool m_enabled;
     protocol::DictionaryValue* m_state;

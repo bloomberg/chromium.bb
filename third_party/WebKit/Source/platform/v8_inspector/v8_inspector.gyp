@@ -205,6 +205,8 @@
         'V8ConsoleAgentImpl.h',
         'V8ConsoleMessage.cpp',
         'V8ConsoleMessage.h',
+        'V8Debugger.cpp',
+        'V8Debugger.h',
         'V8DebuggerAgentImpl.cpp',
         'V8DebuggerAgentImpl.h',
         'V8InspectorImpl.cpp',

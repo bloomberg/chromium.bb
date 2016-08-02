@@ -6,7 +6,7 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/V8InspectorImpl.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 
 #include <v8-debug.h>
@@ -105,7 +105,7 @@ void V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(v8::Isolate* is
 }
 
 // static
-std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8InspectorImpl* inspector, int contextGroupId, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
+std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8Debugger* debugger, int contextGroupId, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -115,9 +115,9 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8InspectorImpl* insp
 
     int maxAsyncCallChainDepth = 1;
     V8StackTraceImpl* asyncCallChain = nullptr;
-    if (inspector && maxStackSize > 1) {
-        asyncCallChain = inspector->currentAsyncCallChain();
-        maxAsyncCallChainDepth = inspector->maxAsyncCallChainDepth();
+    if (debugger && maxStackSize > 1) {
+        asyncCallChain = debugger->currentAsyncCallChain();
+        maxAsyncCallChainDepth = debugger->maxAsyncCallChainDepth();
     }
     // Do not accidentally append async call chain from another group. This should not
     // happen if we have proper instrumentation, but let's double-check to be safe.
@@ -147,7 +147,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8InspectorImpl* insp
     return result;
 }
 
-std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8InspectorImpl* inspector, int contextGroupId, size_t maxStackSize, const String16& description)
+std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8Debugger* debugger, int contextGroupId, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -158,7 +158,7 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::capture(V8InspectorImpl* ins
 #endif
         stackTrace = v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions);
     }
-    return V8StackTraceImpl::create(inspector, contextGroupId, stackTrace, maxStackSize, description);
+    return V8StackTraceImpl::create(debugger, contextGroupId, stackTrace, maxStackSize, description);
 }
 
 std::unique_ptr<V8StackTrace> V8StackTraceImpl::clone()
@@ -242,11 +242,11 @@ std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorO
     return stackTrace;
 }
 
-std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8InspectorImpl* inspector) const
+std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8Debugger* debugger) const
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     // Next call collapses possible empty stack and ensures maxAsyncCallChainDepth.
-    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(inspector, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTraceImpl::maxCallStackSizeToCapture);
+    std::unique_ptr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(debugger, m_contextGroupId, v8::Local<v8::StackTrace>(), V8StackTraceImpl::maxCallStackSizeToCapture);
     if (!fullChain || !fullChain->m_parent)
         return nullptr;
     return fullChain->m_parent->buildInspectorObjectImpl();

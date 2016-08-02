@@ -32,6 +32,7 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/V8Compat.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
@@ -98,7 +99,7 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
         DCHECK(!info[i].IsEmpty());
     }
 
-    int contextGroupId = V8InspectorImpl::getGroupId(m_context);
+    int contextGroupId = V8Debugger::getGroupId(m_context);
     if (contextGroupId)
         m_inspector->client()->muteWarningsAndDeprecations(contextGroupId);
     v8::MicrotasksScope microtasksScope(m_context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);

@@ -165,6 +165,11 @@ v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String1
     return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
 }
 
+v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const char* str)
+{
+    return v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized).ToLocalChecked();
+}
+
 String16 toProtocolString(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull() || value->IsUndefined())

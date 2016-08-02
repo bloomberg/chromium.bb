@@ -9,6 +9,7 @@
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
@@ -216,7 +217,7 @@ std::unique_ptr<protocol::Runtime::API::RemoteObject> V8InspectorSessionImpl::wr
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8InspectorImpl::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
@@ -225,7 +226,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObj
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8InspectorImpl::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapTable(table, columns);

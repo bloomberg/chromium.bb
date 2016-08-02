@@ -7,12 +7,12 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/v8_inspector/public/V8ContextInfo.h"
 
 #include <v8.h>
 
 namespace blink {
 
-class V8ContextInfo;
 class V8InspectorClient;
 class V8InspectorSession;
 class V8InspectorSessionClient;

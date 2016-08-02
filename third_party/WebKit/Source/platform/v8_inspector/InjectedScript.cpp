@@ -314,7 +314,7 @@ std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExcep
 
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        exceptionDetailsObject->setStackTrace(m_context->inspector()->createStackTraceImpl(stackTrace)->buildInspectorObjectImpl());
+        exceptionDetailsObject->setStackTrace(m_context->inspector()->debugger()->createStackTrace(stackTrace)->buildInspectorObjectImpl());
     return exceptionDetailsObject;
 }
 
@@ -360,7 +360,7 @@ InjectedScript::Scope::Scope(ErrorString* errorString, V8InspectorImpl* inspecto
     , m_handleScope(inspector->isolate())
     , m_tryCatch(inspector->isolate())
     , m_ignoreExceptionsAndMuteConsole(false)
-    , m_previousPauseOnExceptionsState(V8InspectorImpl::DontPauseOnExceptions)
+    , m_previousPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions)
     , m_userGesture(false)
 {
 }
@@ -394,16 +394,16 @@ void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()
     DCHECK(!m_ignoreExceptionsAndMuteConsole);
     m_ignoreExceptionsAndMuteConsole = true;
     m_inspector->client()->muteWarningsAndDeprecations(m_contextGroupId);
-    m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8InspectorImpl::DontPauseOnExceptions);
+    m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
 }
 
-V8InspectorImpl::PauseOnExceptionsState InjectedScript::Scope::setPauseOnExceptionsState(V8InspectorImpl::PauseOnExceptionsState newState)
+V8Debugger::PauseOnExceptionsState InjectedScript::Scope::setPauseOnExceptionsState(V8Debugger::PauseOnExceptionsState newState)
 {
-    if (!m_inspector->enabled())
+    if (!m_inspector->debugger()->enabled())
         return newState;
-    V8InspectorImpl::PauseOnExceptionsState presentState = m_inspector->getPauseOnExceptionsState();
+    V8Debugger::PauseOnExceptionsState presentState = m_inspector->debugger()->getPauseOnExceptionsState();
     if (presentState != newState)
-        m_inspector->setPauseOnExceptionsState(newState);
+        m_inspector->debugger()->setPauseOnExceptionsState(newState);
     return presentState;
 }
 

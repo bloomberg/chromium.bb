@@ -6,7 +6,6 @@
 #define V8InspectorClient_h
 
 #include "platform/inspector_protocol/Platform.h"
-#include "platform/v8_inspector/public/V8ContextInfo.h"
 
 #include <v8.h>
 

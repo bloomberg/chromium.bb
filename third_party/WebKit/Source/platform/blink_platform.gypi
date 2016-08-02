@@ -1086,6 +1086,8 @@
       'v8_inspector/V8ConsoleAgentImpl.h',
       'v8_inspector/V8ConsoleMessage.cpp',
       'v8_inspector/V8ConsoleMessage.h',
+      'v8_inspector/V8Debugger.cpp',
+      'v8_inspector/V8Debugger.h',
       'v8_inspector/V8DebuggerAgentImpl.cpp',
       'v8_inspector/V8DebuggerAgentImpl.h',
       'v8_inspector/V8InspectorImpl.cpp',

@@ -108,7 +108,7 @@ public:
         if (!inspectedContext)
             return;
         V8InspectorImpl* inspector = inspectedContext->inspector();
-        std::unique_ptr<V8ConsoleMessage> message = V8ConsoleMessage::createForConsoleAPI(inspector->client()->currentTimeMS(), type, arguments, inspector->captureStackTraceImpl(false), inspectedContext);
+        std::unique_ptr<V8ConsoleMessage> message = V8ConsoleMessage::createForConsoleAPI(inspector->client()->currentTimeMS(), type, arguments, inspector->debugger()->captureStackTrace(false), inspectedContext);
         inspector->ensureConsoleMessageStorage(inspectedContext->contextGroupId())->addMessage(std::move(message));
     }
 
@@ -656,6 +656,7 @@ void V8Console::inspectedObject(const v8::FunctionCallbackInfo<v8::Value>& info,
 v8::Local<v8::Object> V8Console::createConsole(InspectedContext* inspectedContext, bool hasMemoryAttribute)
 {
     v8::Local<v8::Context> context = inspectedContext->context();
+    v8::Context::Scope contextScope(context);
     v8::Isolate* isolate = context->GetIsolate();
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 

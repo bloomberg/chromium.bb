@@ -36,7 +36,7 @@
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8Console.h"
-#include "platform/v8_inspector/V8InspectorImpl.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 
 #include <v8.h>
@@ -45,6 +45,7 @@ namespace blink {
 
 class RemoteObjectId;
 class V8FunctionCall;
+class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
 namespace protocol {
@@ -110,14 +111,14 @@ public:
 
     private:
         void cleanup();
-        V8InspectorImpl::PauseOnExceptionsState setPauseOnExceptionsState(V8InspectorImpl::PauseOnExceptionsState);
+        V8Debugger::PauseOnExceptionsState setPauseOnExceptionsState(V8Debugger::PauseOnExceptionsState);
 
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;
         v8::Local<v8::Context> m_context;
         std::unique_ptr<V8Console::CommandLineAPIScope> m_commandLineAPIScope;
         bool m_ignoreExceptionsAndMuteConsole;
-        V8InspectorImpl::PauseOnExceptionsState m_previousPauseOnExceptionsState;
+        V8Debugger::PauseOnExceptionsState m_previousPauseOnExceptionsState;
         bool m_userGesture;
     };
 

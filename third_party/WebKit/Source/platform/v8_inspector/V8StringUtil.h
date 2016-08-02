@@ -18,6 +18,7 @@ std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context>, v8::Loc
 
 v8::Local<v8::String> toV8String(v8::Isolate*, const String16&);
 v8::Local<v8::String> toV8StringInternalized(v8::Isolate*, const String16&);
+v8::Local<v8::String> toV8StringInternalized(v8::Isolate*, const char*);
 
 String16 toProtocolString(v8::Local<v8::String>);
 String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value>);
