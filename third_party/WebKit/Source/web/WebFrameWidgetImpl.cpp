@@ -406,8 +406,6 @@ void WebFrameWidgetImpl::setBaseBackgroundColor(WebColor color)
     m_baseBackgroundColor = color;
 
     m_localRoot->frameView()->setBaseBackgroundColor(color);
-
-    updateAllLifecyclePhases();
 }
 
 void WebFrameWidgetImpl::scheduleAnimation()

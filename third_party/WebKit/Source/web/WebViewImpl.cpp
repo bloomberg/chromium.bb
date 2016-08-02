@@ -3995,8 +3995,6 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color)
 
     if (m_page->mainFrame() && m_page->mainFrame()->isLocalFrame())
         m_page->deprecatedLocalMainFrame()->view()->setBaseBackgroundColor(color);
-
-    updateAllLifecyclePhases();
 }
 
 void WebViewImpl::setIsActive(bool active)

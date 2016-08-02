@@ -1893,7 +1893,9 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
     if (m_layoutSchedulingEnabled) {
         m_hasPendingLayout = true;
 
-        page()->animator().scheduleVisualUpdate(m_frame.get());
+        if (!shouldThrottleRendering())
+            page()->animator().scheduleVisualUpdate(m_frame.get());
+
         lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
@@ -1972,6 +1974,9 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
             compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
     }
     recalculateScrollbarOverlayStyle(documentBackgroundColor());
+
+    if (!shouldThrottleRendering())
+        page()->animator().scheduleVisualUpdate(m_frame.get());
 }
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
