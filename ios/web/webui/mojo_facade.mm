@@ -51,8 +51,8 @@ std::string MojoFacade::HandleMojoMessage(
   GetMessageNameAndArguments(mojo_message_as_json, &name, &args);
 
   std::unique_ptr<base::Value> result;
-  if (name == "service_provider.connectToService") {
-    result = HandleServiceProviderConnectToService(args.get());
+  if (name == "interface_provider.getInterface") {
+    result = HandleInterfaceProviderGetInterface(args.get());
   } else if (name == "core.close") {
     result = HandleCoreClose(args.get());
   } else if (name == "core.createMessagePipe") {
@@ -99,19 +99,19 @@ void MojoFacade::GetMessageNameAndArguments(
   *out_args = args->CreateDeepCopy();
 }
 
-std::unique_ptr<base::Value> MojoFacade::HandleServiceProviderConnectToService(
+std::unique_ptr<base::Value> MojoFacade::HandleInterfaceProviderGetInterface(
     const base::DictionaryValue* args) {
-  const base::Value* service_name_as_value = nullptr;
-  CHECK(args->Get("serviceName", &service_name_as_value));
+  const base::Value* interface_name_as_value = nullptr;
+  CHECK(args->Get("interfaceName", &interface_name_as_value));
 
-  // By design service_provider.connectToService either succeeds or crashes, so
-  // check if service name is a valid string is intentionally omitted.
-  std::string service_name_as_string;
-  service_name_as_value->GetAsString(&service_name_as_string);
+  // By design interface_provider.getInterface either succeeds or crashes, so
+  // check if interface name is a valid string is intentionally omitted.
+  std::string interface_name_as_string;
+  interface_name_as_value->GetAsString(&interface_name_as_string);
 
   mojo::MessagePipe pipe;
-  interface_provider_->GetInterface(mojo::String::From(service_name_as_string),
-                                    std::move(pipe.handle0));
+  interface_provider_->GetInterface(
+      mojo::String::From(interface_name_as_string), std::move(pipe.handle0));
 
   return ValueFromInteger(pipe.handle1.release().value());
 }

@@ -415,14 +415,14 @@ function usbMocks(mojo) {
     }
 
     let mockDeviceManager = new MockDeviceManager;
-    mojo.frameServiceRegistry.addServiceOverrideForTesting(
+    mojo.frameInterfaces.addInterfaceOverrideForTesting(
         deviceManager.DeviceManager.name,
         pipe => {
           mockDeviceManager.bindToPipe(pipe);
         });
 
     let mockChooserService = new MockChooserService;
-    mojo.frameServiceRegistry.addServiceOverrideForTesting(
+    mojo.frameInterfaces.addInterfaceOverrideForTesting(
         chooserService.ChooserService.name,
         pipe => {
           mockChooserService.bindToPipe(pipe);

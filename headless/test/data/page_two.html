@@ -8,13 +8,13 @@ define([
     'headless/lib/embedder_test.mojom',
     'mojo/public/js/core',
     'mojo/public/js/router',
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
     ], function(embedderMojom, mojoCore, routerModule,
-                serviceProvider) {
+                frameInterfaces) {
   var testEmbedderService =
       new embedderMojom.TestEmbedderService.proxyClass(
           new routerModule.Router(
-              serviceProvider.connectToService(
+              frameInterfaces.getInterfaces(
                   embedderMojom.TestEmbedderService.name)));
 
   // Send a message to the embedder!

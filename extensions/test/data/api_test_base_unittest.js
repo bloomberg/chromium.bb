@@ -38,14 +38,14 @@ unittestBindings.exportTests([
     Promise.all([
       requireAsync('mojo/public/js/connection'),
       requireAsync('mojo/public/js/core'),
-      requireAsync('content/public/renderer/frame_service_registry'),
+      requireAsync('content/public/renderer/frame_interfaces'),
     ]).then(test.callback(function(modules) {
       var connection = modules[0];
       var core = modules[1];
-      var serviceProvider = modules[2];
+      var frameInterfaces = modules[2];
       test.assertTrue(!!connection.Connection);
       test.assertTrue(!!core.createMessagePipe);
-      test.assertTrue(!!serviceProvider.connectToService);
+      test.assertTrue(!!frameInterfaces.getInterface);
     }));
   },
   function testTestBindings() {

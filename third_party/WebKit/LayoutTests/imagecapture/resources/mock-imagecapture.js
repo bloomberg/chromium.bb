@@ -5,12 +5,12 @@ let mockImageCaptureReady = define(
   ['media/mojo/interfaces/image_capture.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/connection',
-   'content/public/renderer/service_registry',
-  ], (imageCapture, bindings, connection, serviceRegistry) => {
+   'content/public/renderer/interfaces',
+  ], (imageCapture, bindings, connection, interfaces) => {
 
   class MockImageCapture {
     constructor() {
-      serviceRegistry.addServiceOverrideForTesting(
+      interfaces.addInterfaceOverrideForTesting(
           imageCapture.ImageCapture.name,
           pipe => this.bindToPipe(pipe));
 

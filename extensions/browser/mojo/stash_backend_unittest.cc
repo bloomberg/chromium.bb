@@ -191,18 +191,18 @@ TEST_F(StashServiceTest, NotifyOnReadableHandle) {
   stashed_object->id = "test type";
   stashed_object->data.push_back(0);
   stashed_object->monitor_handles = true;
-  shell::mojom::InterfaceProviderPtr service_provider;
+  shell::mojom::InterfaceProviderPtr interface_provider;
 
   // Stash the ServiceProvider request. When we make a call on
-  // |service_provider|, the stashed handle will become readable.
+  // |interface_provider|, the stashed handle will become readable.
   stashed_object->stashed_handles.push_back(mojo::ScopedHandle::From(
-      mojo::GetProxy(&service_provider).PassMessagePipe()));
+      mojo::GetProxy(&interface_provider).PassMessagePipe()));
 
   stash_entries.push_back(std::move(stashed_object));
   stash_service_->AddToStash(std::move(stash_entries));
 
   mojo::MessagePipe pipe;
-  service_provider->GetInterface("", std::move(pipe.handle0));
+  interface_provider->GetInterface("", std::move(pipe.handle0));
 
   WaitForEvent(EVENT_HANDLE_READY);
   EXPECT_EQ(1, handles_ready_);

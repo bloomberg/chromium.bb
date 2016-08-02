@@ -284,14 +284,14 @@ function initializeProxies() {
   return importModules([
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/plugins/plugins.mojom',
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
   ]).then(function(modules) {
     var connection = modules[0];
     var pluginsMojom = modules[1];
-    var serviceRegistry = modules[2];
+    var frameInterfaces = modules[2];
 
     browserProxy = connection.bindHandleToProxy(
-        serviceRegistry.connectToService(pluginsMojom.PluginsPageHandler.name),
+        frameInterfaces.getInterface(pluginsMojom.PluginsPageHandler.name),
         pluginsMojom.PluginsPageHandler);
 
     /** @constructor */

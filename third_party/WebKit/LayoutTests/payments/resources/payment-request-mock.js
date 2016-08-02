@@ -12,12 +12,12 @@ let paymentRequestMock = loadMojoModules(
   let [paymentRequest, router] =  mojo.modules;
 
   class PaymentRequestMock {
-    constructor(serviceRegistry) {
-      serviceRegistry.addServiceOverrideForTesting(
+    constructor(interfaceProvider) {
+      interfaceProvider.addInterfaceOverrideForTesting(
         paymentRequest.PaymentRequest.name,
         handle => this.connectPaymentRequest_(handle));
 
-      this.serviceRegistry_ = serviceRegistry;
+      this.interfaceProvider_ = interfaceProvider;
       this.pendingResponse_ = null;
     }
 
@@ -57,5 +57,5 @@ let paymentRequestMock = loadMojoModules(
       this.client_.onComplete();
     }
   }
-  return new PaymentRequestMock(mojo.frameServiceRegistry);
+  return new PaymentRequestMock(mojo.frameInterfaces);
 });

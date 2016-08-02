@@ -24,15 +24,15 @@ function generateData(size, pattern) {
 // Returns a promise to a newly created DataSender.
 function createSender() {
   return Promise.all([
-    requireAsync('content/public/renderer/frame_service_registry'),
+    requireAsync('content/public/renderer/frame_interfaces'),
     requireAsync('data_sender'),
     requireAsync('device/serial/data_stream.mojom'),
   ]).then(function(modules) {
-    var serviceProvider = modules[0];
+    var frameInterfaces = modules[0];
     var dataSender = modules[1];
     var dataStream = modules[2];
     return new dataSender.DataSender(
-        serviceProvider.connectToService(dataStream.DataSink.name),
+        frameInterfaces.getInterface(dataStream.DataSink.name),
         BUFFER_SIZE,
         FATAL_ERROR);
   });

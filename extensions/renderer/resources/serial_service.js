@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define('serial_service', [
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
     'data_receiver',
     'data_sender',
     'device/serial/serial.mojom',
@@ -11,7 +11,7 @@ define('serial_service', [
     'mojo/public/js/core',
     'mojo/public/js/router',
     'stash_client',
-], function(serviceProvider,
+], function (frameInterfaces,
             dataReceiver,
             dataSender,
             serialMojom,
@@ -30,7 +30,7 @@ define('serial_service', [
 
   var service = new serialMojom.SerialService.proxyClass(
       new routerModule.Router(
-          serviceProvider.connectToService(serialMojom.SerialService.name)));
+          frameInterfaces.getInterface(serialMojom.SerialService.name)));
 
   function getDevices() {
     return service.getDevices().then(function(response) {

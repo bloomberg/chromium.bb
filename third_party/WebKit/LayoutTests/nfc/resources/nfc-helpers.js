@@ -262,7 +262,7 @@ function nfc_mocks(mojo) {
     }
 
     let mockNFC = new MockNFC;
-    mojo.frameServiceRegistry.addServiceOverrideForTesting(
+    mojo.frameInterfaces.addInterfaceOverrideForTesting(
         nfc.NFC.name,
         pipe => {
           mockNFC.bindToPipe(pipe);

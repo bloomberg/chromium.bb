@@ -80,13 +80,13 @@ class MojoFacadeTest : public WebTest {
   std::unique_ptr<MojoFacade> facade_;
 };
 
-// Tests connecting to existing service and closing the handle.
-TEST_F(MojoFacadeTest, ConnectToServiceAndCloseHandle) {
-  // Connect to the service.
+// Tests connecting to existing interface and closing the handle.
+TEST_F(MojoFacadeTest, GetInterfaceAndCloseHandle) {
+  // Bind to the interface.
   NSDictionary* connect = @{
-    @"name" : @"service_provider.connectToService",
+    @"name" : @"interface_provider.getInterface",
     @"args" : @{
-      @"serviceName" : @"::TestUIHandlerMojo",
+      @"interfaceName" : @"::TestUIHandlerMojo",
     },
   };
 

@@ -7,14 +7,14 @@ var mediaRouter;
 define('media_router_bindings', [
     'mojo/public/js/bindings',
     'mojo/public/js/core',
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
     'chrome/browser/media/router/mojo/media_router.mojom',
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/public/js/connection',
     'mojo/public/js/router',
 ], function(bindings,
             core,
-            serviceProvider,
+            frameInterfaces,
             mediaRouterMojom,
             keepAliveMojom,
             connector,
@@ -300,8 +300,7 @@ define('media_router_bindings', [
       this.keepAlive_ = null;
     } else if (keepAlive === true && !this.keepAlive_) {
       this.keepAlive_ = new routerModule.Router(
-          serviceProvider.connectToService(
-              keepAliveMojom.KeepAlive.name));
+          frameInterfaces.getInterface(keepAliveMojom.KeepAlive.name));
     }
   };
 
@@ -857,8 +856,7 @@ define('media_router_bindings', [
   };
 
   mediaRouter = new MediaRouter(connector.bindHandleToProxy(
-      serviceProvider.connectToService(
-          mediaRouterMojom.MediaRouter.name),
+      frameInterfaces.getInterface(mediaRouterMojom.MediaRouter.name),
       mediaRouterMojom.MediaRouter));
 
   return mediaRouter;

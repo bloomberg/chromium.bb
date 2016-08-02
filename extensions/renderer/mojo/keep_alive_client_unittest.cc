@@ -47,7 +47,7 @@ class KeepAliveClientTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    service_provider()->AddService(
+    interface_provider()->AddInterface(
         base::Bind(&TestKeepAlive::Create,
                    base::Bind(&KeepAliveClientTest::KeepAliveCreated,
                               base::Unretained(this)),

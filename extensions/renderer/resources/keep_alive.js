@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 define('keep_alive', [
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/public/js/core',
-], function(serviceProvider, mojom, core) {
+], function(frameInterfaces, mojom, core) {
 
   /**
    * An object that keeps the background page alive until closed.
@@ -19,7 +19,7 @@ define('keep_alive', [
      * @type {!MojoHandle}
      * @private
      */
-    this.handle_ = serviceProvider.connectToService(mojom.KeepAlive.name);
+    this.handle_ = frameInterfaces.getInterface(mojom.KeepAlive.name);
   }
 
   /**

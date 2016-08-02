@@ -94,14 +94,14 @@ PluginsTest.prototype = {
         'mojo/public/js/bindings',
         'mojo/public/js/connection',
         'chrome/browser/ui/webui/plugins/plugins.mojom',
-        'content/public/renderer/frame_service_registry',
+        'content/public/renderer/frame_interfaces',
       ]).then(function(modules) {
         var bindings = modules[0];
         var connection = modules[1];
         var pluginsMojom = modules[2];
-        var serviceProvider = modules[3];
+        var frameInterfaces = modules[3];
 
-        serviceProvider.addServiceOverrideForTesting(
+        frameInterfaces.addInterfaceOverrideForTesting(
             pluginsMojom.PluginsPageHandler.name, function(handle) {
               var stub = connection.bindHandleToStub(
                   handle, pluginsMojom.PluginsPageHandler);

@@ -430,14 +430,14 @@
     return importModules([
       'mojo/public/js/connection',
       'chrome/browser/ui/webui/omnibox/omnibox.mojom',
-      'content/public/renderer/frame_service_registry',
+      'content/public/renderer/frame_interfaces',
     ]).then(function(modules) {
       var connection = modules[0];
       var mojom = modules[1];
-      var serviceRegistry = modules[2];
+      var frameInterfaces = modules[2];
 
       browserProxy = connection.bindHandleToProxy(
-          serviceRegistry.connectToService(mojom.OmniboxPageHandler.name),
+          frameInterfaces.getInterface(mojom.OmniboxPageHandler.name),
           mojom.OmniboxPageHandler);
 
       /** @constructor */

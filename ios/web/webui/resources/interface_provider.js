@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Module "content/public/renderer/frame_service_registry"
+// Module "content/public/renderer/frame_interfaces"
 //
 // This module provides the JavaScript bindings for
 // services/shell/public/cpp/connection.h.
 // Refer to that file for more detailed documentation for equivalent methods.
 
-define("content/public/renderer/frame_service_registry", [
+define("content/public/renderer/frame_interfaces", [
   "ios/mojo/public/js/sync_message_channel",
   "ios/mojo/public/js/handle_util",
 ], function(syncMessageChannel, handleUtil) {
 
   /**
-   * Connects to specified Mojo interface.
-   * @param {string} serviceName service name to connect.
+   * Binds to specified Mojo interface.
+   * @param {string} getInterface interface name to connect.
    * @return {!MojoResult} Result code.
    */
-  function connectToService(serviceName) {
+  function getInterface(interfaceName) {
     var nativeHandle = syncMessageChannel.sendMessage({
-      name: "service_provider.connectToService",
+      name: "interface_provider.getInterface",
       args: {
-        serviceName: serviceName
+        interfaceName: interfaceName
       }
     });
     return handleUtil.getJavaScriptHandle(nativeHandle);
   }
 
   var exports = {};
-  exports.connectToService = connectToService;
+  exports.getInterface = getInterface;
   return exports;
 });

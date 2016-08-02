@@ -27,7 +27,7 @@ class StashClientTest : public ApiTestBase {
   }
 
   void PrepareEnvironment(ApiTestEnvironment* env) {
-    env->service_provider()->AddService(base::Bind(
+    env->interface_provider()->AddInterface(base::Bind(
         &StashBackend::BindToRequest, base::Unretained(stash_backend_.get())));
   }
 

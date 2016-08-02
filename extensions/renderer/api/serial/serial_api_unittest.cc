@@ -412,12 +412,13 @@ class SerialApiTest : public ApiTestBase {
   void PrepareEnvironment(ApiTestEnvironment* environment,
                           StashBackend* stash_backend) {
     environment->env()->RegisterModule("serial", IDR_SERIAL_CUSTOM_BINDINGS_JS);
-    environment->service_provider()->AddService<device::serial::SerialService>(
-        base::Bind(&SerialApiTest::CreateSerialService,
-                   base::Unretained(this)));
-    environment->service_provider()->AddService(base::Bind(
+    environment->interface_provider()->
+        AddInterface<device::serial::SerialService>(
+            base::Bind(&SerialApiTest::CreateSerialService,
+                       base::Unretained(this)));
+    environment->interface_provider()->AddInterface(base::Bind(
         &StashBackend::BindToRequest, base::Unretained(stash_backend)));
-    environment->service_provider()->IgnoreServiceRequests<KeepAlive>();
+    environment->interface_provider()->IgnoreInterfaceRequests<KeepAlive>();
   }
 
   scoped_refptr<TestIoHandlerBase> io_handler_;

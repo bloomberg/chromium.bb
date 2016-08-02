@@ -8,9 +8,9 @@ let mockShareService = loadMojoModules(
   let [router, webshare] = mojo.modules;
 
   class MockShareService extends webshare.ShareService.stubClass {
-    constructor(serviceRegistry) {
+    constructor(interfaceProvider) {
       super();
-      serviceRegistry.addServiceOverrideForTesting(
+      interfaceProvider.addInterfaceOverrideForTesting(
           webshare.ShareService.name,
           handle => this.connect_(handle));
     }
@@ -55,7 +55,7 @@ let mockShareService = loadMojoModules(
       this.shareResultQueue_.push([expectedTitle, expectedText, result]);
     }
   }
-  return new MockShareService(mojo.frameServiceRegistry);
+  return new MockShareService(mojo.frameInterfaces);
 });
 
 function share_test(func, name, properties) {

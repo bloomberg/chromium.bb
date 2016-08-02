@@ -16,9 +16,9 @@ namespace content {
 gin::WrapperInfo InterfaceProviderJsWrapper::kWrapperInfo = {
     gin::kEmbedderNativeGin};
 const char InterfaceProviderJsWrapper::kPerFrameModuleName[] =
-    "content/public/renderer/frame_service_registry";
+    "content/public/renderer/frame_interfaces";
 const char InterfaceProviderJsWrapper::kPerProcessModuleName[] =
-    "content/public/renderer/service_registry";
+    "content/public/renderer/interfaces";
 
 InterfaceProviderJsWrapper::~InterfaceProviderJsWrapper() {
 }
@@ -40,11 +40,11 @@ gin::ObjectTemplateBuilder
 InterfaceProviderJsWrapper::GetObjectTemplateBuilder(v8::Isolate* isolate) {
   return Wrappable<InterfaceProviderJsWrapper>::GetObjectTemplateBuilder(
       isolate)
-      .SetMethod("connectToService",
+      .SetMethod("getInterface",
                  &InterfaceProviderJsWrapper::GetInterface)
-      .SetMethod("addServiceOverrideForTesting",
+      .SetMethod("addInterfaceOverrideForTesting",
                  &InterfaceProviderJsWrapper::AddOverrideForTesting)
-      .SetMethod("clearServiceOverridesForTesting",
+      .SetMethod("clearInterfaceOverridesForTesting",
                  &InterfaceProviderJsWrapper::ClearOverridesForTesting);
 }
 

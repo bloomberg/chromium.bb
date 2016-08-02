@@ -11,47 +11,49 @@ mojo_test(mojo => {
   assert_true(mojo instanceof Object);
   assert_true(mojo.core instanceof Object);
   assert_true(mojo.router instanceof Object);
-  assert_true(mojo.frameServiceRegistry instanceof Object);
-  assert_true(mojo.serviceRegistry instanceof Object);
+  assert_true(mojo.frameInterfaces instanceof Object);
+  assert_true(mojo.interfaces instanceof Object);
 }, 'Mojo system APIs should be available to layout tests.');
 
 mojo_test(mojo => {
   return new Promise(resolve => {
     let calls = 0;
-    // Complete the test as soon as two requests come in for a Frobinator service.
-    mojo.frameServiceRegistry.addServiceOverrideForTesting('Frobinator', () => {
+    // Complete the test as soon as two requests come in for a Frobinator
+    // interface.
+    mojo.frameInterfaces.addInterfaceOverrideForTesting('Frobinator', () => {
       if (++calls == 2)
         resolve();
     });
 
-    // Try to connect to the browser's Frobinator service. This should be
+    // Try to connect to the browser's Frobinator interface. This should be
     // intercepted by the above override.
-    mojo.frameServiceRegistry.connectToService('Frobinator');
-    mojo.frameServiceRegistry.connectToService('Frobinator');
+    mojo.frameInterfaces.getInterface('Frobinator');
+    mojo.frameInterfaces.getInterface('Frobinator');
   });
-}, 'Frame service registry overrides should be properly intercepted.');
+}, 'Frame interface provider overrides should be properly intercepted.');
 
 mojo_test(mojo => {
   return new Promise(resolve => {
     let calls = 0;
-    // Complete the test as soon as two requests come in for a Frobinator service.
-    mojo.serviceRegistry.addServiceOverrideForTesting('Frobinator', () => {
+    // Complete the test as soon as two requests come in for a Frobinator
+    // interface.
+    mojo.interfaces.addInterfaceOverrideForTesting('Frobinator', () => {
       if (++calls == 2)
         resolve();
     });
 
-    // Try to connect to the browser's Frobinator service. This should be
+    // Try to connect to the browser's Frobinator interface. This should be
     // intercepted by the above override.
-    mojo.serviceRegistry.connectToService('Frobinator');
-    mojo.serviceRegistry.connectToService('Frobinator');
+    mojo.interfaces.getInterface('Frobinator');
+    mojo.interfaces.getInterface('Frobinator');
   });
-}, 'Service registry overrides should be properly intercepted.');
+}, 'Interface provider overrides should be properly intercepted.');
 
 mojo_test(mojo => {
   return new Promise(resolve => {
     let TEST_REQUEST = new Uint8Array([42, 0, 2, 3, 5, 7, 11, 13, 17, 19, 23]);
 
-    mojo.serviceRegistry.addServiceOverrideForTesting('Frobinator', pipe => {
+    mojo.interfaces.addInterfaceOverrideForTesting('Frobinator', pipe => {
       resolve(mojo_wait_for_incoming_message(mojo, pipe)
         .then(message => {
           assert_array_equals(new Uint8Array(message.buffer), TEST_REQUEST);
@@ -59,18 +61,18 @@ mojo_test(mojo => {
         }));
     });
 
-    let pipe = mojo.serviceRegistry.connectToService('Frobinator');
+    let pipe = mojo.interfaces.getInterface('Frobinator');
     assert_equals(mojo.core.writeMessage(pipe, TEST_REQUEST, [], 0),
         mojo.core.RESULT_OK);
   });
-}, 'Mock services can receive messages from test code.');
+}, 'Mock interfaces can receive messages from test code.');
 
 mojo_test(mojo => {
   let TEST_REQUEST = new Uint8Array([1, 2, 3, 4, 5]);
   let EXPECTED_RESPONSE = new Uint8Array([5, 4, 3, 2, 1]);
 
-  // Mock service should respond to any message with its reverse.
-  mojo.serviceRegistry.addServiceOverrideForTesting('Reversinator', pipe => {
+  // Mock interface should respond to any message with its reverse.
+  mojo.interfaces.addInterfaceOverrideForTesting('Reversinator', pipe => {
     mojo_wait_for_incoming_message(mojo, pipe)
       .then(message => {
         let response = new Uint8Array(message.buffer);
@@ -80,7 +82,7 @@ mojo_test(mojo => {
       });
   });
 
-  let pipe = mojo.serviceRegistry.connectToService('Reversinator');
+  let pipe = mojo.interfaces.getInterface('Reversinator');
   assert_equals(mojo.core.writeMessage(pipe, TEST_REQUEST, [], 0),
       mojo.core.RESULT_OK);
 
@@ -89,7 +91,7 @@ mojo_test(mojo => {
       assert_array_equals(new Uint8Array(response.buffer), EXPECTED_RESPONSE);
       assert_array_equals(response.handles, []);
     });
-}, 'Test code can receive response messages from mock services.');
+}, 'Test code can receive response messages from mock interfaces.');
 
 mojo_test(() => {
   return loadMojoModules(

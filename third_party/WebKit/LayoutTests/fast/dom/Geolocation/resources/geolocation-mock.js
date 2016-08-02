@@ -16,16 +16,16 @@ let geolocationServiceMock = loadMojoModules(
       mojo.modules;
 
   class GeolocationServiceMock {
-    constructor(serviceRegistry) {
-      serviceRegistry.addServiceOverrideForTesting(
+    constructor(interfaceProvider) {
+      interfaceProvider.addInterfaceOverrideForTesting(
           geolocation.GeolocationService.name,
           handle => this.connectGeolocation_(handle));
 
-      serviceRegistry.addServiceOverrideForTesting(
+      interfaceProvider.addInterfaceOverrideForTesting(
           permission.PermissionService.name,
           handle => this.connectPermission_(handle));
 
-      this.serviceRegistry_ = serviceRegistry;
+      this.interfaceProvider_ = interfaceProvider;
 
       /**
        * The next geoposition to return in response to a queryNextPosition()
@@ -182,5 +182,5 @@ let geolocationServiceMock = loadMojoModules(
     }
 
   }
-  return new GeolocationServiceMock(mojo.frameServiceRegistry);
+  return new GeolocationServiceMock(mojo.frameInterfaces);
 });

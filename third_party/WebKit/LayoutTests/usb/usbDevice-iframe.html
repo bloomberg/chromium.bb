@@ -34,9 +34,9 @@ function runIframeDisconnectTest(usb, onDeviceConnected) {
     iframe.onload = () => {
       iframe.contentWindow.mojo.define(
           "Mojo Service Registry",
-          [ 'content/public/renderer/frame_service_registry' ],
-          (frameServiceRegistry) => {
-        frameServiceRegistry.addServiceOverrideForTesting(
+          [ 'content/public/renderer/frame_interfaces' ],
+          (frameInterfaces) => {
+            frameInterfaces.addInterfaceOverrideForTesting(
             usb.DeviceManager.name,
             pipe => { mockDeviceManager.bindToPipe(pipe); });
         iframe.contentWindow.postMessage('Ready', '*');
@@ -79,9 +79,9 @@ usb_test(usb => {
     iframe.onload = () => {
       iframe.contentWindow.mojo.define(
           "Mojo Service Registry",
-          [ 'content/public/renderer/frame_service_registry' ],
-          (frameServiceRegistry) => {
-        frameServiceRegistry.addServiceOverrideForTesting(
+          [ 'content/public/renderer/frame_interfaces' ],
+          (frameInterfaces) => {
+            frameInterfaces.addInterfaceOverrideForTesting(
             usb.DeviceManager.name,
             pipe => { mockDeviceManager.bindToPipe(pipe); });
         iframe.contentWindow.postMessage('Ready', '*');

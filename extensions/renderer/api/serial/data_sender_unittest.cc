@@ -22,7 +22,7 @@ class DataSenderTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    service_provider()->AddService(
+    interface_provider()->AddInterface(
         base::Bind(&DataSenderTest::CreateDataSink, base::Unretained(this)));
   }
 

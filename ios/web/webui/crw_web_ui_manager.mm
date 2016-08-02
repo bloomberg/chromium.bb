@@ -257,7 +257,7 @@ const char kScriptCommandPrefix[] = "webui";
       {web::kHandleUtilModuleName, IDR_IOS_MOJO_HANDLE_UTIL_JS},
       {web::kSupportModuleName, IDR_IOS_MOJO_SUPPORT_JS},
       {web::kCoreModuleName, IDR_IOS_MOJO_CORE_JS},
-      {web::kServiceRegistryModuleName, IDR_IOS_MOJO_SERVICE_REGISTRY_JS},
+      {web::kInterfaceProviderModuleName, IDR_IOS_SHELL_INTERFACE_PROVIDER_JS},
   };
   scoped_refptr<base::RefCountedMemory> scriptData(
       web::GetWebClient()->GetDataResourceBytes(resource_map[moduleName]));

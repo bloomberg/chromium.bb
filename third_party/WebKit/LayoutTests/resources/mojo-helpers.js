@@ -31,12 +31,12 @@ define('Mojo Helpers', [
     'mojo/public/js/core',
     'mojo/public/js/router',
     'mojo/public/js/support',
-    'content/public/renderer/frame_service_registry',
-    'content/public/renderer/service_registry',
-], (core, router, support, frameServiceRegistry, serviceRegistry) => {
+    'content/public/renderer/frame_interfaces',
+    'content/public/renderer/interfaces',
+], (core, router, support, frameInterfaces, interfaces) => {
   let tearDown = () => {
-    frameServiceRegistry.clearServiceOverridesForTesting();
-    serviceRegistry.clearServiceOverridesForTesting();
+    frameInterfaces.clearInterfaceOverridesForTesting();
+    interfaces.clearInterfaceOverridesForTesting();
   };
   addEventListener('unload', tearDown);
   if (window.add_completion_callback)
@@ -46,8 +46,8 @@ define('Mojo Helpers', [
     core,
     router,
     support,
-    frameServiceRegistry,
-    serviceRegistry,
+    frameInterfaces,
+    interfaces,
   };
 });
 

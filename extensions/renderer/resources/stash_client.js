@@ -4,20 +4,20 @@
 
 define('stash_client', [
     'async_waiter',
-    'content/public/renderer/frame_service_registry',
+    'content/public/renderer/frame_interfaces',
     'extensions/common/mojo/stash.mojom',
     'mojo/public/js/buffer',
     'mojo/public/js/codec',
     'mojo/public/js/core',
     'mojo/public/js/router',
-], function(asyncWaiter, serviceProvider, stashMojom, bufferModule,
+], function(asyncWaiter, frameInterfaces, stashMojom, bufferModule,
             codec, core, routerModule) {
   /**
    * @module stash_client
    */
 
   var service = new stashMojom.StashService.proxyClass(new routerModule.Router(
-      serviceProvider.connectToService(stashMojom.StashService.name)));
+      frameInterfaces.getInterface(stashMojom.StashService.name)));
 
   /**
    * A callback invoked to obtain objects to stash from a particular client.
