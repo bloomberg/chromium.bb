@@ -1375,9 +1375,7 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::BDNAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    // TODO(615720): Use the upcoming GetName (was GetDeviceName).
-    btp->set_bdname(
-        mojo::String::From(base::UTF16ToUTF8(device->GetNameForDisplay())));
+    btp->set_bdname(device->GetName() ? device->GetName().value() : nullptr);
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1415,7 +1413,6 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::REMOTE_FRIENDLY_NAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    // TODO(615720): Use the upcoming GetName (was GetDeviceName).
     btp->set_remote_friendly_name(
         mojo::String::From(base::UTF16ToUTF8(device->GetNameForDisplay())));
     properties.push_back(std::move(btp));
@@ -1520,7 +1517,8 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   // LocalName
   mojom::BluetoothAdvertisingDataPtr local_name =
       mojom::BluetoothAdvertisingData::New();
-  local_name->set_local_name(base::UTF16ToUTF8(device->GetNameForDisplay()));
+  local_name->set_local_name(device->GetName() ? device->GetName().value()
+                                               : nullptr);
   advertising_data.push_back(std::move(local_name));
 
   // ServiceUuid
