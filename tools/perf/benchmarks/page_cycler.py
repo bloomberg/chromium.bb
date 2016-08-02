@@ -116,31 +116,6 @@ class PageCyclerIntlKoThVi(_PageCycler):
               possible_browser.platform.GetOSVersionName() == 'snowleopard'))
 
 
-@benchmark.Enabled('android')
-class PageCyclerTop10Mobile(_PageCycler):
-  """Page load time benchmark for the top 10 mobile web pages.
-
-  Runs against pages recorded in November, 2013.
-  """
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.top_10_mobile'
-
-  def CreateStorySet(self, options):
-    # Disable the taobao.com page since it's crashing. crbug.com/509690
-    stories = page_sets.Top10MobilePageSet(run_no_page_interactions=True)
-    found = next((x for x in stories if 'taobao.com' in x.url), None)
-    if found:
-      stories.RemoveStory(found)
-    return stories
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    # http://crbug.com/633222 (Android Nexus 5).
-    return possible_browser.platform.GetDeviceTypeName() == 'Nexus 5'
-
-
 @benchmark.Disabled('android')  # crbug.com/357326
 class PageCyclerToughLayoutCases(_PageCycler):
   """Page loading for the slowest layouts observed in the Alexa top 1 million.
