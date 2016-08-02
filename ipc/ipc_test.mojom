@@ -5,6 +5,18 @@
 module IPC.mojom;
 
 interface SimpleTestDriver {
-  ExpectString(string str);
+  ExpectValue(int32 value);
+
+  [Sync]
+  GetExpectedValue() => (int32 value);
+
+  [Sync]
+  RequestValue() => (int32 value);
+
   RequestQuit() => ();
+};
+
+interface SimpleTestClient {
+  [Sync]
+  RequestValue() => (int32 value);
 };
