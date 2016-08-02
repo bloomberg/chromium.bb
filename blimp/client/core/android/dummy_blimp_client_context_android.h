@@ -16,7 +16,6 @@ namespace client {
 // JNI bridge between DummyBlimpClientContext in Java and C++.
 class DummyBlimpClientContextAndroid : public base::SupportsUserData::Data {
  public:
-  static bool RegisterJni(JNIEnv* env);
   static DummyBlimpClientContextAndroid* FromJavaObject(JNIEnv* env,
                                                         jobject jobj);
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();

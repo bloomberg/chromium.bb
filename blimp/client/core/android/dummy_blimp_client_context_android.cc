@@ -12,11 +12,6 @@ namespace blimp {
 namespace client {
 
 // static
-bool DummyBlimpClientContextAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 DummyBlimpClientContextAndroid* DummyBlimpClientContextAndroid::FromJavaObject(
     JNIEnv* env,
     jobject jobj) {
