@@ -86,9 +86,6 @@ ProfileSyncComponentsFactoryImplTest.*
 PermissionsTest.GetWarningMessages_Plugins
 ImageOperations.ResizeShouldAverageColors
 
-# crbug.com/138275
-PrerenderTest.*
-
 # crbug.com/139643
 VariationsUtilTest.DisableAfterInitialization
 VariationsUtilTest.AssociateGoogleVariationID
