@@ -29,6 +29,7 @@
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
@@ -456,6 +457,10 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new metrics::CallStackProfileMetricsProvider));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider>(
+          new metrics::SamplingMetricsProvider));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   metrics_service_->RegisterMetricsProvider(

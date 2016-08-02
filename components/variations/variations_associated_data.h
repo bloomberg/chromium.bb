@@ -156,11 +156,11 @@ std::string GetVariationParamValue(const std::string& trial_name,
 // variation associated with the specified |feature|. A feature is associated
 // with at most one variation, through the variation's associated field trial,
 // and selected group. See base/feature_list.h for more information on
-// features. If the feature is not enabled, or if there's no associated
-// variation params, returns false and does not modify |params|. Calling this
-// function will result in the associated field trial being marked as active if
-// found (i.e. group() will be called on it), if it wasn't already. Currently,
-// this information is only available from the browser process. Thread safe.
+// features. If the feature is not enabled, or the specified parameter does not
+// exist, returns an empty string.Calling this function will result in the
+// associated field trial being marked as active if found (i.e. group() will be
+// called on it), if it wasn't already. Currently, this information is only
+// available from the browser process. Thread safe.
 std::string GetVariationParamValueByFeature(const base::Feature& feature,
                                             const std::string& param_name);
 

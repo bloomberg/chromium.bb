@@ -20,17 +20,23 @@ class EnabledStateProvider;
 class MetricsStateManager;
 }
 
-// Metrics reporting feature. This feature, along with user consent, controls if
-// recording and reporting are enabled. If the feature is enabled, but no
-// consent is given, then there will be no recording or reporting.
-extern const base::Feature kMetricsReportingFeature;
-
 // Provides a //chrome-specific implementation of MetricsServicesManagerClient.
 class ChromeMetricsServicesManagerClient
     : public metrics_services_manager::MetricsServicesManagerClient {
  public:
   explicit ChromeMetricsServicesManagerClient(PrefService* local_state);
   ~ChromeMetricsServicesManagerClient() override;
+
+  // Determines if this client is eligible to send metrics. If they are, and
+  // there was user consent, then metrics and crashes would be reported.
+  static bool IsClientInSample();
+
+  // Gets the sample rate for in-sample clients. If the sample rate is not
+  // defined, returns false, and |rate| is unchanged, otherwise returns true,
+  // and |rate| contains the sample rate. If the client isn't in-sample, the
+  // sample rate is undefined. It is also undefined for clients that are not
+  // eligible for sampling.
+  static bool GetSamplingRatePerMille(int* rate);
 
  private:
   // This is defined as a member class to get access to

@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -21,9 +22,19 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
+
+// Name of the variations param that defines the sampling rate.
+const char kRateParamName[] = "sampling_rate_per_mille";
+
+// Metrics reporting feature. This feature, along with user consent, controls if
+// recording and reporting are enabled. If the feature is enabled, but no
+// consent is given, then there will be no recording or reporting.
+const base::Feature kMetricsReportingFeature{"MetricsReporting",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
@@ -33,10 +44,16 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
       base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
 }
 
+// Only clients that were given an opt-out metrics-reporting consent flow are
+// eligible for sampling.
+bool IsClientEligibleForSampling() {
+  return metrics::GetMetricsReportingDefaultState(
+             g_browser_process->local_state()) ==
+         metrics::EnableMetricsDefault::OPT_OUT;
+}
+
 }  // namespace
 
-const base::Feature kMetricsReportingFeature{"MetricsReporting",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
     : public metrics::EnabledStateProvider {
@@ -50,7 +67,7 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
 
   bool IsReportingEnabled() override {
     return IsConsentGiven() &&
-           base::FeatureList::IsEnabled(kMetricsReportingFeature);
+           ChromeMetricsServicesManagerClient::IsClientInSample();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeEnabledStateProvider);
@@ -66,6 +83,36 @@ ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
 }
 
 ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}
+
+// static
+bool ChromeMetricsServicesManagerClient::IsClientInSample() {
+  // Only some clients are eligible for sampling. Clients that aren't eligible
+  // will always be considered "in sample". In this case, we don't want the
+  // feature state queried, because we don't want the field trial that controls
+  // sampling to be reported as active.
+  if (!IsClientEligibleForSampling())
+    return true;
+
+  return base::FeatureList::IsEnabled(kMetricsReportingFeature);
+}
+
+// static
+bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
+  // The population that is NOT eligible for sampling in considered "in sample",
+  // but does not have a defined sample rate.
+  if (!IsClientEligibleForSampling())
+    return false;
+
+  std::string rate_str = variations::GetVariationParamValueByFeature(
+      kMetricsReportingFeature, kRateParamName);
+  if (rate_str.empty())
+    return false;
+
+  if (!base::StringToInt(rate_str, rate) || *rate > 1000)
+    return false;
+
+  return true;
+}
 
 std::unique_ptr<rappor::RapporService>
 ChromeMetricsServicesManagerClient::CreateRapporService() {
