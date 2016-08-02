@@ -58,8 +58,6 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::NOTIFICATIONS;
   } else if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     *out = PermissionType::MIDI_SYSEX;
-  } else if (type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
-    *out = PermissionType::PUSH_MESSAGING;
   } else if (type == CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {
     *out = PermissionType::DURABLE_STORAGE;
   } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {

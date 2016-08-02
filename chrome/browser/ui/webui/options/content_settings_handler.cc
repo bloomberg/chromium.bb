@@ -182,11 +182,6 @@ const ExceptionsInfoMap& GetExceptionsInfoMap() {
         ContentSettingWithExceptions(
             true,
             UserMetricsAction("Options_DefaultPPAPIBrokerSettingChanged"))));
-    exceptions_info_map.insert(std::make_pair(
-        CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-        ContentSettingWithExceptions(
-            true,
-            UserMetricsAction("Options_DefaultPushMessagingSettingChanged"))));
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     exceptions_info_map.insert(std::make_pair(
         CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,

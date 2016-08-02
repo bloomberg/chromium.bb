@@ -343,7 +343,7 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
   TestRequestPermissionInvalidUrl(content::PermissionType::MIDI_SYSEX,
                                   CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
   TestRequestPermissionInvalidUrl(content::PermissionType::PUSH_MESSAGING,
-                                  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestRequestPermissionInvalidUrl(
       content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
@@ -366,9 +366,6 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
   // TODO(timvolodine): currently no test for
   // CONTENT_SETTINGS_TYPE_NOTIFICATIONS because notification permissions work
   // differently with infobars as compared to bubbles (crbug.com/453784).
-  // TODO(timvolodine): currently no test for
-  // CONTENT_SETTINGS_TYPE_PUSH_MESSAGING because infobars do not implement push
-  // messaging permissions (crbug.com/453788).
 }
 #endif
 
@@ -388,7 +385,7 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
                                  CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
   TestGrantAndRevoke_TestContent(content::PermissionType::PUSH_MESSAGING,
-                                 CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                  CONTENT_SETTING_ASK);
 }
 #endif
@@ -402,7 +399,7 @@ TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
   TestGlobalPermissionsKillSwitch(content::PermissionType::MIDI_SYSEX,
                                   CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
   TestGlobalPermissionsKillSwitch(content::PermissionType::PUSH_MESSAGING,
-                                  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+                                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   TestGlobalPermissionsKillSwitch(content::PermissionType::DURABLE_STORAGE,
                                   CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

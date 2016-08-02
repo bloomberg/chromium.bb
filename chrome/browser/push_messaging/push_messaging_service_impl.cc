@@ -683,10 +683,8 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_PUSH_MESSAGING &&
-      content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
     return;
-  }
 
   std::vector<PushMessagingAppIdentifier> all_app_identifiers =
       PushMessagingAppIdentifier::GetAll(profile_);

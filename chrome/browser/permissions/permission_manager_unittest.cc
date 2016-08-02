@@ -112,13 +112,11 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS,
                         PermissionStatus::GRANTED);
+  CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
+                        PermissionStatus::GRANTED);
 
   SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
-
-  SetPermission(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
-                        PermissionStatus::GRANTED);
 
 #if defined(OS_ANDROID)
   SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
