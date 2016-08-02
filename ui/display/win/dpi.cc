@@ -62,12 +62,5 @@ float GetScalingFactorFromDPI(int dpi) {
   return static_cast<float>(dpi) / kDefaultDPI;
 }
 
-int GetSystemMetricsInDIP(int metric) {
-  // The system metrics always reflect the system DPI, not whatever scale we've
-  // forced or decided to use.
-  return static_cast<int>(
-      std::round(GetSystemMetrics(metric) / GetUnforcedDeviceScaleFactor()));
-}
-
 }  // namespace win
 }  // namespace display

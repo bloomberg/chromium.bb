@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/display/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/icon_util.h"
@@ -233,10 +234,11 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   int client_border_thickness = ClientBorderThickness(false);
-  gfx::Rect sys_menu_region(client_border_thickness,
-                            display::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
-                            display::win::GetSystemMetricsInDIP(SM_CXSMICON),
-                            display::win::GetSystemMetricsInDIP(SM_CYSMICON));
+  gfx::Rect sys_menu_region(
+      client_border_thickness,
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSMICON),
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON));
   if (sys_menu_region.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
@@ -342,7 +344,7 @@ int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
   return (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      0 : display::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+      0 : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
 }
 
 int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
@@ -359,6 +361,7 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
   // so we need to floor instead or else the difference will cause the hittest
   // to fail when it ought to succeed.
+  // TODO(robliao): Resolve this GetSystemMetrics call.
   return std::floor(GetSystemMetrics(SM_CYSIZEFRAME) /
                     display::win::GetDPIScale());
 }

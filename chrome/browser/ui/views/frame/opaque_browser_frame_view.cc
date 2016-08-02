@@ -43,7 +43,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/display/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #endif
 
 using content::WebContents;
@@ -350,7 +350,7 @@ int OpaqueBrowserFrameView::GetIconSize() const {
 #if defined(OS_WIN)
   // This metric scales up if either the titlebar height or the titlebar font
   // size are increased.
-  return display::win::GetSystemMetricsInDIP(SM_CYSMICON);
+  return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
   // The icon never shrinks below 16 px on a side.
   const int kIconMinimumSize = 16;
