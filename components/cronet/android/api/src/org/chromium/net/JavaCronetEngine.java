@@ -120,10 +120,10 @@ final class JavaCronetEngine extends CronetEngine {
     public void removeThroughputListener(NetworkQualityThroughputListener listener) {}
 
     @Override
-    public void addRequestFinishedListener(RequestFinishedListener listener) {}
+    public void addRequestFinishedListener(RequestFinishedInfo.Listener listener) {}
 
     @Override
-    public void removeRequestFinishedListener(RequestFinishedListener listener) {}
+    public void removeRequestFinishedListener(RequestFinishedInfo.Listener listener) {}
 
     @Override
     public URLConnection openConnection(URL url) throws IOException {

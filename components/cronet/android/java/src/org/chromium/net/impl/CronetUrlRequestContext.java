@@ -22,7 +22,7 @@ import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
-import org.chromium.net.RequestFinishedListener;
+import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
@@ -72,8 +72,8 @@ public class CronetUrlRequestContext extends CronetEngine {
     private final Object mNetworkQualityLock = new Object();
 
     /**
-     * Locks operations on the list of RequestFinishedListeners, because operations can happen on
-     * any thread.
+     * Locks operations on the list of RequestFinishedInfo.Listeners, because operations can happen
+     * on any thread.
      */
     private final Object mFinishedListenerLock = new Object();
 
@@ -86,8 +86,8 @@ public class CronetUrlRequestContext extends CronetEngine {
             new ObserverList<NetworkQualityThroughputListener>();
 
     @GuardedBy("mFinishedListenerLock")
-    private final List<RequestFinishedListener> mFinishedListenerList =
-            new ArrayList<RequestFinishedListener>();
+    private final List<RequestFinishedInfo.Listener> mFinishedListenerList =
+            new ArrayList<RequestFinishedInfo.Listener>();
 
     /**
      * Synchronize access to mCertVerifierData.
@@ -339,14 +339,14 @@ public class CronetUrlRequestContext extends CronetEngine {
     }
 
     @Override
-    public void addRequestFinishedListener(RequestFinishedListener listener) {
+    public void addRequestFinishedListener(RequestFinishedInfo.Listener listener) {
         synchronized (mFinishedListenerLock) {
             mFinishedListenerList.add(listener);
         }
     }
 
     @Override
-    public void removeRequestFinishedListener(RequestFinishedListener listener) {
+    public void removeRequestFinishedListener(RequestFinishedInfo.Listener listener) {
         synchronized (mFinishedListenerLock) {
             mFinishedListenerList.remove(listener);
         }
@@ -476,12 +476,12 @@ public class CronetUrlRequestContext extends CronetEngine {
     }
 
     void reportFinished(final CronetUrlRequest request) {
-        final UrlRequestInfo requestInfo = request.getRequestInfo();
-        ArrayList<RequestFinishedListener> currentListeners;
+        final RequestFinishedInfo requestInfo = request.getRequestFinishedInfo();
+        ArrayList<RequestFinishedInfo.Listener> currentListeners;
         synchronized (mFinishedListenerLock) {
-            currentListeners = new ArrayList<RequestFinishedListener>(mFinishedListenerList);
+            currentListeners = new ArrayList<RequestFinishedInfo.Listener>(mFinishedListenerList);
         }
-        for (final RequestFinishedListener listener : currentListeners) {
+        for (final RequestFinishedInfo.Listener listener : currentListeners) {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {

@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.http.HttpResponseCache;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 
@@ -838,14 +837,14 @@ public abstract class CronetEngine {
      * @param priority priority of the request which should be one of the
      *         {@link UrlRequest.Builder#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
      *         values.
-     * @param requestAnnotations Objects to pass on to {@link RequestFinishedListener}.
+     * @param requestAnnotations Objects to pass on to {@link RequestFinishedInfo.Listener}.
      * @param disableCache disables cache for the request.
      *         If context is not set up to use cache this param has no effect.
      * @param disableConnectionMigration disables connection migration for this
      *         request if it is enabled for the session.
      * @return new request.
      * @deprecated Use {@link UrlRequest.Builder#build}.
-     * @hide as it references hidden RequestFinishedListener
+     * @hide as it references hidden RequestFinishedInfo.Listener
      */
     @Deprecated
     protected abstract UrlRequest createRequest(String url, UrlRequest.Callback callback,
@@ -1110,7 +1109,7 @@ public abstract class CronetEngine {
      *
      * @hide as it's a prototype.
      */
-    public abstract void addRequestFinishedListener(RequestFinishedListener listener);
+    public abstract void addRequestFinishedListener(RequestFinishedInfo.Listener listener);
 
     /**
      * Removes a finished request listener.
@@ -1119,121 +1118,5 @@ public abstract class CronetEngine {
      *
      * @hide it's a prototype.
      */
-    public abstract void removeRequestFinishedListener(RequestFinishedListener listener);
-
-    /**
-     * Information about a finished request. Passed to {@link RequestFinishedListener}.
-     *
-     * @hide as it's a prototype.
-     */
-    public static final class UrlRequestInfo {
-        private final String mUrl;
-        private final Collection<Object> mAnnotations;
-        private final UrlRequestMetrics mMetrics;
-        @Nullable private final UrlResponseInfo mResponseInfo;
-
-        /**
-         * @hide only used by internal implementation.
-         */
-        public UrlRequestInfo(String url, Collection<Object> annotations, UrlRequestMetrics metrics,
-                @Nullable UrlResponseInfo responseInfo) {
-            mUrl = url;
-            mAnnotations = annotations;
-            mMetrics = metrics;
-            mResponseInfo = responseInfo;
-        }
-
-        /** Returns the request's original URL. */
-        public String getUrl() {
-            return mUrl;
-        }
-
-        /** Returns the objects that the caller has supplied when initiating the request. */
-        public Collection<Object> getAnnotations() {
-            return mAnnotations;
-        }
-
-        // TODO(klm): Collect and return a chain of Metrics objects for redirect responses.
-        /**
-         * Returns metrics collected for this request.
-         *
-         * <p>The reported times and bytes account for all redirects, i.e.
-         * the TTFB is from the start of the original request to the ultimate response headers,
-         * the TTLB is from the start of the original request to the end of the ultimate response,
-         * the received byte count is for all redirects and the ultimate response combined.
-         * These cumulative metric definitions are debatable, but are chosen to make sense
-         * for user-facing latency analysis.
-         *
-         * <p>Must call {@link #enableNetworkQualityEstimator} to enable request metrics collection.
-         * @return metrics collected for this request.
-         */
-        public UrlRequestMetrics getMetrics() {
-            return mMetrics;
-        }
-
-        /**
-         * Returns a {@link UrlResponseInfo} for the request, if its response had started.
-         * @return {@link UrlResponseInfo} for the request, if its response had started.
-         */
-        @Nullable
-        public UrlResponseInfo getResponseInfo() {
-            return mResponseInfo;
-        }
-    }
-
-    /**
-     * Metrics collected for a single request.
-     *
-     * <p>Must call {@link #enableNetworkQualityEstimator} to enable request metrics collection.
-     *
-     * @hide as it's a prototype.
-     */
-    public static final class UrlRequestMetrics {
-        @Nullable private final Long mTtfbMs;
-        @Nullable private final Long mTotalTimeMs;
-        @Nullable private final Long mSentBytesCount;
-        @Nullable private final Long mReceivedBytesCount;
-
-        public UrlRequestMetrics(@Nullable Long ttfbMs, @Nullable Long totalTimeMs,
-                @Nullable Long sentBytesCount, @Nullable Long receivedBytesCount) {
-            mTtfbMs = ttfbMs;
-            mTotalTimeMs = totalTimeMs;
-            mSentBytesCount = sentBytesCount;
-            mReceivedBytesCount = receivedBytesCount;
-        }
-
-        /**
-         * Returns milliseconds between request initiation and first byte of response headers,
-         * or null if not collected.
-         */
-        @Nullable
-        public Long getTtfbMs() {
-            return mTtfbMs;
-        }
-
-        /**
-         * Returns milliseconds between request initiation and finish,
-         * including a failure or cancellation, or null if not collected.
-         */
-        @Nullable
-        public Long getTotalTimeMs() {
-            return mTotalTimeMs;
-        }
-
-        /**
-         * Returns total bytes sent over the network transport layer, or null if not collected.
-         */
-        @Nullable
-        public Long getSentBytesCount() {
-            return mSentBytesCount;
-        }
-
-        /**
-         * Returns total bytes received over the network transport layer, or null if not collected.
-         */
-        @Nullable
-        public Long getReceivedBytesCount() {
-            return mReceivedBytesCount;
-        }
-    }
+    public abstract void removeRequestFinishedListener(RequestFinishedInfo.Listener listener);
 }

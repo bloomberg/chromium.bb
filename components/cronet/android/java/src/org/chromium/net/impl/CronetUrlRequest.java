@@ -13,10 +13,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
-import org.chromium.net.CronetEngine.UrlRequestInfo;
-import org.chromium.net.CronetEngine.UrlRequestMetrics;
 import org.chromium.net.Preconditions;
 import org.chromium.net.QuicException;
+import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
@@ -48,8 +47,8 @@ import javax.annotation.concurrent.GuardedBy;
 @JNIAdditionalImport(UrlRequest.class)
 @VisibleForTesting
 public final class CronetUrlRequest implements UrlRequest {
-    private static final UrlRequestMetrics EMPTY_METRICS =
-            new UrlRequestMetrics(null, null, null, null);
+    private static final RequestFinishedInfo.Metrics EMPTY_METRICS =
+            new RequestFinishedInfo.Metrics(null, null, null, null);
 
     /* Native adapter object, owned by UrlRequest. */
     @GuardedBy("mUrlRequestAdapterLock")
@@ -696,8 +695,8 @@ public final class CronetUrlRequest implements UrlRequest {
         postTaskToExecutor(task);
     }
 
-    UrlRequestInfo getRequestInfo() {
-        return new UrlRequestInfo(mInitialUrl, mRequestAnnotations,
+    RequestFinishedInfo getRequestFinishedInfo() {
+        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations,
                 (mRequestMetricsAccumulator != null ? mRequestMetricsAccumulator.getRequestMetrics()
                                                     : EMPTY_METRICS),
                 mResponseInfo);
@@ -711,8 +710,8 @@ public final class CronetUrlRequest implements UrlRequest {
         @Nullable
         private Long mTotalTimeMs;
 
-        private UrlRequestMetrics getRequestMetrics() {
-            return new UrlRequestMetrics(mTtfbMs, mTotalTimeMs,
+        private RequestFinishedInfo.Metrics getRequestMetrics() {
+            return new RequestFinishedInfo.Metrics(mTtfbMs, mTotalTimeMs,
                     null, // TODO(klm): Compute sentBytesCount.
                     (mResponseInfo != null ? mResponseInfo.getReceivedBytesCount() : 0));
         }
