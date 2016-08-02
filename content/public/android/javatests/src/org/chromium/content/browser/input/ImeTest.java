@@ -139,9 +139,6 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("he", "", "llo");
     }
 
-    // When newCursorPosition != 1, setComposingText doesn't work for ReplicaInputConnection
-    // because there is a bug in BaseInputConnection.
-    @CommandLineFlags.Add("enable-features=ImeThread")
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingTextForDifferentnewCursorPositions() throws Throwable {
@@ -186,6 +183,24 @@ public class ImeTest extends ContentShellTestBase {
         // Cursor exceeds the right boundary.
         setComposingText("efgh", 100);
         waitAndVerifyUpdateSelection(10, 8, 8, 2, 6);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testSetComposingTextWithEmptyText() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+
+        setComposingText("AB", 1);
+        waitAndVerifyUpdateSelection(1, 7, 7, 5, 7);
+
+        // With previous composition.
+        setComposingText("", -3);
+        waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
+
+        // Without previous composition.
+        setComposingText("", 3);
+        waitAndVerifyUpdateSelection(3, 4, 4, -1, -1);
     }
 
     @SmallTest

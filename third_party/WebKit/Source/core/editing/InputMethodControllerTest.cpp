@@ -349,6 +349,36 @@ TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithDifferentN
     EXPECT_EQ(24u, controller().getSelectionOffsets().end());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'>hello</div>",
+        "sample");
+
+    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+
+    Vector<CompositionUnderline> underlines0;
+    underlines0.append(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
+    Vector<CompositionUnderline> underlines2;
+    underlines2.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+
+    controller().setComposition("AB", underlines2, 2, 2);
+    // With previous composition.
+    controller().setComposition("", underlines0, 2, 2);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(4u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+
+    // Without previous composition.
+    controller().setComposition("", underlines0, -1, -1);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
 TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)
 {
     document().settings()->setScriptEnabled(true);

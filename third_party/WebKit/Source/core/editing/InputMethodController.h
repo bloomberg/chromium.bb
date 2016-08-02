@@ -78,6 +78,7 @@ public:
     // Returns true if setting selection to specified offsets, otherwise false.
     bool setEditableSelectionOffsets(const PlainTextRange&);
     void extendSelectionAndDelete(int before, int after);
+    PlainTextRange createRangeForSelection(int start, int end, size_t textLength) const;
 
 private:
     class SelectionOffsetsScope {
