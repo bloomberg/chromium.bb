@@ -38,10 +38,12 @@
 //                --Stephen Adams <sra@chromium.org>
 // 2010-05-26 - Use a paged array for V and I. The address space may be too
 //              fragmented for these big arrays to be contiguous.
-//               --Stephen Adams <sra@chromium.org>
+//                --Stephen Adams <sra@chromium.org>
 // 2015-08-03 - Extract qsufsort portion to a separate file.
 //                --Samuel Huang <huangs@chromium.org>
 // 2015-08-12 - Interface change to search().
+//                --Samuel Huang <huangs@chromium.org>
+// 2016-07-29 - Replacing qsufsort with divsufsort.
 //                --Samuel Huang <huangs@chromium.org>
 
 // Copyright 2016 The Chromium Authors. All rights reserved.
@@ -53,6 +55,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -63,7 +66,7 @@
 #include "courgette/streams.h"
 #include "courgette/third_party/bsdiff/bsdiff_search.h"
 #include "courgette/third_party/bsdiff/paged_array.h"
-#include "courgette/third_party/bsdiff/qsufsort.h"
+#include "courgette/third_party/divsufsort/divsufsort.h"
 
 namespace {
 
@@ -106,8 +109,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
   uint32_t pending_diff_zeros = 0;
 
-  PagedArray<int> I;
-  PagedArray<int> V;
+  PagedArray<divsuf::saidx_t> I;
 
   if (!I.Allocate(oldsize + 1)) {
     LOG(ERROR) << "Could not allocate I[], " << ((oldsize + 1) * sizeof(int))
@@ -115,17 +117,13 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
     return MEM_ERROR;
   }
 
-  if (!V.Allocate(oldsize + 1)) {
-    LOG(ERROR) << "Could not allocate V[], " << ((oldsize + 1) * sizeof(int))
-               << " bytes";
-    return MEM_ERROR;
-  }
-
   base::Time q_start_time = base::Time::Now();
-  qsuf::qsufsort<PagedArray<int>&>(I, V, old, oldsize);
-  VLOG(1) << " done qsufsort "
+  divsuf::saint_t result = divsuf::divsufsort_include_empty(
+      old, I.begin(), oldsize);
+  VLOG(1) << " done divsufsort "
           << (base::Time::Now() - q_start_time).InSecondsF();
-  V.clear();
+  if (result != 0)
+    return UNEXPECTED_ERROR;
 
   const uint8_t* newbuf = new_stream->Buffer();
   const int newsize = static_cast<int>(new_stream->Remaining());
@@ -185,7 +183,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
     scan += match.size;
     for (int scsc = scan; scan < newsize; ++scan) {
-      match = search<PagedArray<int>&>(
+      match = search<PagedArray<divsuf::saidx_t>&>(
           I, old, oldsize, newbuf + scan, newsize - scan);
 
       for (; scsc < scan + match.size; scsc++)

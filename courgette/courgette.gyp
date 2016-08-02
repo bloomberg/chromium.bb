@@ -62,7 +62,6 @@
       'third_party/bsdiff/bsdiff_create.cc',
       'third_party/bsdiff/bsdiff_search.h',
       'third_party/bsdiff/paged_array.h',
-      'third_party/bsdiff/qsufsort.h',
       'third_party/divsufsort/divsufsort.cc',
       'third_party/divsufsort/divsufsort.h',
       'third_party/divsufsort/divsufsort_private.h',
@@ -137,7 +136,6 @@
         'versioning_unittest.cc',
         'third_party/bsdiff/bsdiff_search_unittest.cc',
         'third_party/bsdiff/paged_array_unittest.cc',
-        'third_party/bsdiff/qsufsort_unittest.cc',
         'third_party/divsufsort/divsufsort_unittest.cc',
       ],
       'dependencies': [

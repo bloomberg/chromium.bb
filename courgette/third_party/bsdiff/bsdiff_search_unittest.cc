@@ -5,10 +5,10 @@
 #include "courgette/third_party/bsdiff/bsdiff_search.h"
 
 #include <cstring>
-#include <vector>
 
 #include "base/macros.h"
-#include "courgette/third_party/bsdiff/qsufsort.h"
+#include "courgette/third_party/bsdiff/paged_array.h"
+#include "courgette/third_party/divsufsort/divsufsort.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(BSDiffSearchTest, Search) {
@@ -18,9 +18,9 @@ TEST(BSDiffSearchTest, Search) {
   const char* str = "the quick brown fox jumps over the lazy dog.";
   int size = static_cast<int>(::strlen(str));
   const unsigned char* buf = reinterpret_cast<const unsigned char*>(str);
-  std::vector<int> I(size + 1);
-  std::vector<int> V(size + 1);
-  qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
+  courgette::PagedArray<divsuf::saidx_t> I;
+  ASSERT_TRUE(I.Allocate(size + 1));
+  divsuf::divsufsort_include_empty(buf, I.begin(), size);
 
   // Specific queries.
   const struct {
@@ -65,7 +65,8 @@ TEST(BSDiffSearchTest, Search) {
 
     // Perform the search.
     bsdiff::SearchResult match =
-        bsdiff::search(&I[0], buf, size, query_buf, query_size);
+        bsdiff::search<courgette::PagedArray<divsuf::saidx_t>&>(
+            I, buf, size, query_buf, query_size);
 
     // Check basic properties and match with expected values.
     EXPECT_GE(match.size, 0);
@@ -100,9 +101,9 @@ TEST(BSDiffSearchTest, SearchExact) {
     int size = static_cast<int>(::strlen(test_cases[idx]));
     const unsigned char* buf =
         reinterpret_cast<const unsigned char*>(test_cases[idx]);
-    std::vector<int> I(size + 1);
-    std::vector<int> V(size + 1);
-    qsuf::qsufsort<int*>(&I[0], &V[0], buf, size);
+    courgette::PagedArray<divsuf::saidx_t> I;
+    ASSERT_TRUE(I.Allocate(size + 1));
+    divsuf::divsufsort_include_empty(buf, I.begin(), size);
 
     // Test exact matches for every non-empty substring.
     for (int lo = 0; lo < size; ++lo) {
@@ -113,7 +114,8 @@ TEST(BSDiffSearchTest, SearchExact) {
         const unsigned char* query_buf =
             reinterpret_cast<const unsigned char*>(query.c_str());
         bsdiff::SearchResult match =
-            bsdiff::search(&I[0], buf, size, query_buf, query_size);
+            bsdiff::search<courgette::PagedArray<divsuf::saidx_t>&>(
+                I, buf, size, query_buf, query_size);
 
         EXPECT_EQ(query_size, match.size);
         EXPECT_GE(match.pos, 0);
