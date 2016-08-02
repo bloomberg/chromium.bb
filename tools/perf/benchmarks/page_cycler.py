@@ -35,6 +35,32 @@ class _PageCycler(perf_benchmark.PerfBenchmark):
         report_speed_index=options.report_speed_index)
 
 
+@benchmark.Enabled('chromeos')
+class PageCyclerIntlArFaHe(_PageCycler):
+  """Page load time for a variety of pages in Arabic, Farsi and Hebrew.
+
+  Runs against pages recorded in April, 2013.
+  """
+  page_set = page_sets.IntlArFaHePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_ar_fa_he'
+
+
+@benchmark.Enabled('chromeos')
+class PageCyclerIntlEsFrPtBr(_PageCycler):
+  """Page load time for a pages in Spanish, French and Brazilian Portuguese.
+
+  Runs against pages recorded in April, 2013.
+  """
+  page_set = page_sets.IntlEsFrPtBrPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_es_fr_pt-BR'
+
+
 class PageCyclerIntlHiRu(_PageCycler):
   """Page load time benchmark for a variety of pages in Hindi and Russian.
 
@@ -45,6 +71,29 @@ class PageCyclerIntlHiRu(_PageCycler):
   @classmethod
   def Name(cls):
     return 'page_cycler.intl_hi_ru'
+
+
+@benchmark.Enabled('chromeos')
+class PageCyclerIntlJaZh(_PageCycler):
+  """Page load time benchmark for a variety of pages in Japanese and Chinese.
+
+  Runs against pages recorded in April, 2013.
+  """
+  page_set = page_sets.IntlJaZhPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'page_cycler.intl_ja_zh'
+
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    # Filter out vm_private_dirty_final_renderer
+    # crbug.com/551522
+    print '**** %s ***' % value.name
+    filtered_name = (
+        'vm_private_dirty_final_renderer.vm_private_dirty_final_renderer')
+    return (super(PageCyclerIntlJaZh, cls).ValueCanBeAddedPredicate(
+        value, is_first_result) and value.name != filtered_name)
 
 
 class PageCyclerIntlKoThVi(_PageCycler):
