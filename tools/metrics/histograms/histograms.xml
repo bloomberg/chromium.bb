@@ -41311,6 +41311,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToCommit" units="ms">
+  <obsolete>
+    Use PageLoad.Timing2.NavigationToCommit instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;begin&quot; to &quot;commit.&quot;   &quot;Begin&quot;==
@@ -41323,6 +41326,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
 </histogram>
@@ -41587,6 +41593,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
 </histogram>
@@ -41625,6 +41634,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFirstPaint" units="ms">
+  <obsolete>
+    Use PageLoad.PaintTiming.NavigationToFirstContentfulPaint instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     Time from &quot;begin&quot; to &quot;first paint.&quot;  &quot;Begin&quot;==
@@ -41637,6 +41649,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFirstPaint_Negative" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Magnitude and difference between begin and first paint, when first_paint
@@ -41646,6 +41661,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.BeginToFirstPaintAfterLoad" units="ms">
+  <obsolete>
+    The first paint after load is not useful for most documents. Consider using
+    PageLoad.PaintTiming.NavigationToFirstContentfulPaint instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     Time from &quot;big&quot; to &quot;first paint after load.&quot;
@@ -41658,6 +41677,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.CommitToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;commit&quot; to &quot;finish.&quot; &quot;Commit&quot;==
@@ -41667,6 +41689,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.CommitToFinishDoc" units="ms">
+  <obsolete>
+    Use PageLoad.ParseTiming.ParseDuration instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;commit&quot; to &quot;finish doc.&quot; &quot;Commit&quot;==
@@ -41677,6 +41702,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.CommitToFirstPaint" units="ms">
+  <obsolete>
+    Use PageLoad.PaintTiming.ParseStartToFirstContentfulPaint instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;commit&quot; to &quot;first paint.&quot;
@@ -41686,6 +41714,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.CommitToFirstPaintAfterLoad" units="ms">
+  <obsolete>
+    The first paint after load is not useful for most documents. Consider using
+    PageLoad.PaintTiming.ParseStartToFirstContentfulPaint instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;commit&quot; to &quot;first paint after load.&quot;
@@ -41696,6 +41728,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.FinishDocToFinish" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;finish doc&quot; to &quot;finish.&quot; &quot;Finish
@@ -41705,6 +41740,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.FinishToFirstPaintAfterLoad" units="ms">
+  <obsolete>
+    The first paint after load is not useful for most documents. Consider using
+    PageLoad.PaintTiming.NavigationToFirstContentfulPaint instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;finish &quot; to &quot;first paint after load.&quot;
@@ -41715,6 +41754,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.LoadType" enum="LoadType">
+  <obsolete>
+    Use PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.*
+    instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Probability distribution for enumerated varieties of page loads.
@@ -41990,6 +42033,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToCommit" units="ms">
+  <obsolete>
+    Use PageLoad.Timing2.NavigationToCommit instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42011,6 +42057,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42032,6 +42081,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_BeginToFinishDoc" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42053,6 +42105,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_CommitToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42072,6 +42127,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_CommitToFinishDoc" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42093,6 +42151,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_FinishDocToFinish" units="ms">
+  <obsolete>
+    No longer needed.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42113,6 +42174,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToCommit" units="ms">
+  <obsolete>
+    Use PageLoad.Timing2.NavigationToCommit instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and measures the time until
@@ -42122,6 +42186,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToDomContentLoaded" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and measures the time until
@@ -42131,6 +42198,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and is a more accurate
@@ -42152,6 +42222,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT_RequestToFinishDoc" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the NavigationTiming spec and measures the page load
@@ -42217,6 +42290,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.RequestToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot; ==
@@ -42235,6 +42311,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.StartToCommit" units="ms">
+  <obsolete>
+    Use PageLoad.Timing2.NavigationToCommit instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;start&quot; to &quot;commit.&quot; &quot;Start&quot;== time
@@ -42244,6 +42323,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.StartToFinish" units="ms">
+  <obsolete>
+    Use PageLoad.DocumentTiming.NavigationToLoadEventFired instead.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from &quot;start&quot; to &quot;finish.&quot; &quot;Start&quot;== time
