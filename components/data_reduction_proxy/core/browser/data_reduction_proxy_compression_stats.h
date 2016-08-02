@@ -14,6 +14,7 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -34,6 +35,7 @@ class Value;
 
 namespace data_reduction_proxy {
 class DataReductionProxyService;
+class DataUseGroup;
 
 // Data reduction proxy delayed pref service reduces the number calls to pref
 // service by storing prefs in memory and writing to the given PrefService after
@@ -67,7 +69,7 @@ class DataReductionProxyCompressionStats
                             int64_t original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
-                            const std::string& data_usage_host,
+                            const scoped_refptr<DataUseGroup>& data_use_group,
                             const std::string& mime_type);
 
   // Creates a |Value| summary of the persistent state of the network session.

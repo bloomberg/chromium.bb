@@ -375,6 +375,7 @@
       'browser/net/nqe/ui_network_quality_estimator_service_browsertest.cc',
       'browser/net/nqe/ui_network_quality_estimator_service_test_util.cc',
       'browser/net/nqe/ui_network_quality_estimator_service_test_util.h',
+      "browser/net/spdyproxy/chrome_data_use_group_browsertest.cc",
       'browser/net/predictor_browsertest.cc',
       'browser/net/proxy_browsertest.cc',
       'browser/net/sdch_browsertest.cc',

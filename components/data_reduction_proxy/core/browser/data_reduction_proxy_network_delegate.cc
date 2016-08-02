@@ -17,6 +17,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/browser/data_use_group.h"
+#include "components/data_reduction_proxy/core/browser/data_use_group_provider.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
@@ -162,6 +164,16 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  if (data_use_group_provider_) {
+    // Creates and initializes a |DataUseGroup| for the |request| if it does not
+    // exist. Even though we do not use the |DataUseGroup| here, we want to
+    // associate one with a request as early as possible in case the frame
+    // associated with the request goes away before the request is completed.
+    scoped_refptr<DataUseGroup> data_use_group =
+        data_use_group_provider_->GetDataUseGroup(request);
+    data_use_group->Initialize();
+  }
+
   // |data_reduction_proxy_io_data_| can be NULL for Webview.
   if (data_reduction_proxy_io_data_ &&
       (request->load_flags() & net::LOAD_MAIN_FRAME)) {
@@ -301,12 +313,11 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
   if (request.response_headers())
     request.response_headers()->GetMimeType(&mime_type);
 
-  std::string data_usage_host =
-      request.first_party_for_cookies().HostNoBrackets();
-  if (data_usage_host.empty())
-    data_usage_host = request.url().HostNoBrackets();
-
-  AccumulateDataUsage(data_used, original_size, request_type, data_usage_host,
+  scoped_refptr<DataUseGroup> data_use_group =
+      data_use_group_provider_
+          ? data_use_group_provider_->GetDataUseGroup(&request)
+          : nullptr;
+  AccumulateDataUsage(data_used, original_size, request_type, data_use_group,
                       mime_type);
 }
 
@@ -314,14 +325,14 @@ void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
     int64_t data_used,
     int64_t original_size,
     DataReductionProxyRequestType request_type,
-    const std::string& data_usage_host,
+    const scoped_refptr<DataUseGroup>& data_use_group,
     const std::string& mime_type) {
   DCHECK_GE(data_used, 0);
   DCHECK_GE(original_size, 0);
   if (data_reduction_proxy_io_data_) {
     data_reduction_proxy_io_data_->UpdateContentLengths(
         data_used, original_size, data_reduction_proxy_io_data_->IsEnabled(),
-        request_type, data_usage_host, mime_type);
+        request_type, data_use_group, mime_type);
   }
   total_received_bytes_ += data_used;
   total_original_received_bytes_ += original_size;
@@ -383,6 +394,11 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
   return util::ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
                                            request.url(),
                                            &data_reduction_proxy_info);
+}
+
+void DataReductionProxyNetworkDelegate::SetDataUseGroupProvider(
+    std::unique_ptr<DataUseGroupProvider> data_use_group_provider) {
+  data_use_group_provider_.reset(data_use_group_provider.release());
 }
 
 }  // namespace data_reduction_proxy

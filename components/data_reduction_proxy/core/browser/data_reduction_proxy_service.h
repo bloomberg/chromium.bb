@@ -43,6 +43,7 @@ class DataReductionProxyIOData;
 class DataReductionProxyPingbackClient;
 class DataReductionProxyServiceObserver;
 class DataReductionProxySettings;
+class DataUseGroup;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
@@ -90,7 +91,7 @@ class DataReductionProxyService
                             int64_t original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
-                            const std::string& data_usage_host,
+                            scoped_refptr<DataUseGroup> data_use_group,
                             const std::string& mime_type);
 
   // Overrides of DataReductionProxyEventStorageDelegate.

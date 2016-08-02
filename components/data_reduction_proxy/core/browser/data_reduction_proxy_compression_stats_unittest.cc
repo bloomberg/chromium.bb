@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -580,7 +581,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
 
   compression_stats()->UpdateContentLengths(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, std::string(), std::string());
+      UNKNOWN_TYPE, nullptr, std::string());
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -591,7 +592,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
   // Record the same numbers again, and total lengths should be doubled.
   compression_stats()->UpdateContentLengths(
       kReceivedLength, kOriginalLength, IsDataReductionProxyEnabled(),
-      UNKNOWN_TYPE, std::string(), std::string());
+      UNKNOWN_TYPE, nullptr, std::string());
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));

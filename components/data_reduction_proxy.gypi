@@ -50,6 +50,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h',
         'data_reduction_proxy/core/browser/data_store.cc',
         'data_reduction_proxy/core/browser/data_store.h',
+        'data_reduction_proxy/core/browser/data_use_group.h',
+        'data_reduction_proxy/core/browser/data_use_group_provider.h',
         'data_reduction_proxy/core/browser/data_usage_store.cc',
         'data_reduction_proxy/core/browser/data_usage_store.h',
         'data_reduction_proxy/core/browser/db_data_owner.cc',

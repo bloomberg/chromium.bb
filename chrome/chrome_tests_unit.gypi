@@ -154,6 +154,8 @@
       'browser/net/probe_message_unittest.cc',
       'browser/net/quota_policy_channel_id_store_unittest.cc',
       'browser/net/safe_search_util_unittest.cc',
+      'browser/net/spdyproxy/chrome_data_use_group_provider_unittest.cc',
+      'browser/net/spdyproxy/chrome_data_use_group_unittest.cc',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings_unittest.cc',
       'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
       'browser/net/url_info_unittest.cc',
