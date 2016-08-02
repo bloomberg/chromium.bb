@@ -149,8 +149,69 @@ const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 // Block or crash if the number of pending sync queries reach this high as
 // something is seriously wrong on the service side if this happens.
 const size_t kMaxPendingSyncQueries = 16;
-
 }  // anonymous namespace
+
+// Parameters needed to draw a RenderPassDrawQuad.
+struct DrawRenderPassDrawQuadParams {
+  DrawRenderPassDrawQuadParams() {}
+  ~DrawRenderPassDrawQuadParams() {}
+
+  // Inputs.
+  const RenderPassDrawQuad* quad = nullptr;
+  const Resource* contents_texture = nullptr;
+  DirectRenderer::DrawingFrame* frame = nullptr;
+  const gfx::QuadF* clip_region = nullptr;
+  bool flip_texture = false;
+
+  // Whether the texture to be sampled from needs to be flipped.
+  bool source_needs_flip = false;
+
+  float edge[24];
+  SkScalar color_matrix[20];
+
+  // Blending refers to modifications to the backdrop.
+  bool use_shaders_for_blending = false;
+  ShaderLocations locations;
+
+  bool use_aa = false;
+
+  // Some filters affect pixels outside the original contents bounds. This
+  // requires translation of the source when texturing, as well as a change in
+  // the bounds of the destination.
+  gfx::Point src_offset;
+  gfx::RectF dst_rect;
+
+  // A Skia image that should be sampled from instead of the original
+  // contents.
+  sk_sp<SkImage> filter_image;
+
+  // The original contents, bound for sampling.
+  std::unique_ptr<ResourceProvider::ScopedSamplerGL> contents_resource_lock;
+
+  // A mask to be applied when drawing the RPDQ.
+  std::unique_ptr<ResourceProvider::ScopedSamplerGL> mask_resource_lock;
+
+  // Original background texture.
+  std::unique_ptr<ScopedResource> background_texture;
+  std::unique_ptr<ResourceProvider::ScopedSamplerGL>
+      shader_background_sampler_lock;
+
+  // Backdrop bounding box.
+  gfx::Rect background_rect;
+
+  // Filtered background texture.
+  sk_sp<SkImage> background_image;
+  GLuint background_image_id = 0;
+
+  // Whether the original background texture is needed for the mask.
+  bool mask_for_background = false;
+
+  // Whether a color matrix needs to be applied by the shaders when drawing
+  // the RPDQ.
+  bool use_color_matrix = false;
+
+  gfx::QuadF surface_quad;
+};
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
   GLint active_unit = 0;
@@ -973,6 +1034,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
+  DrawRenderPassDrawQuadParams params;
+  params.quad = quad;
+  params.frame = frame;
+  params.clip_region = clip_region;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 here is arbitrary and unused.
@@ -981,9 +1046,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
-    bool flip_texture = false;
-    DrawRenderPassQuadInternal(frame, quad, clip_region, &tile_resource,
-                               flip_texture);
+    params.flip_texture = false;
+    params.contents_texture = &tile_resource;
+    DrawRenderPassQuadInternal(&params);
   } else {
     ScopedResource* contents_texture =
         render_pass_textures_[quad->render_pass_id].get();
@@ -991,66 +1056,73 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     DCHECK(contents_texture->id());
     // See above comments about texture flipping.  When the input is a
     // render pass, it needs to an extra flip to be oriented correctly.
-    bool flip_texture = true;
-    DrawRenderPassQuadInternal(frame, quad, clip_region, contents_texture,
-                               flip_texture);
+    params.flip_texture = true;
+    params.contents_texture = contents_texture;
+    DrawRenderPassQuadInternal(&params);
   }
 }
 
-void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
-                                            const RenderPassDrawQuad* quad,
-                                            const gfx::QuadF* clip_region,
-                                            const Resource* contents_texture,
-                                            bool flip_texture) {
+void GLRenderer::DrawRenderPassQuadInternal(
+    DrawRenderPassDrawQuadParams* params) {
+  if (!InitializeRPDQParameters(params))
+    return;
+  ChooseRPDQProgram(params);
+  UpdateRPDQUniforms(params);
+  DrawRPDQ(*params);
+}
+
+bool GLRenderer::InitializeRPDQParameters(
+    DrawRenderPassDrawQuadParams* params) {
+  const RenderPassDrawQuad* quad = params->quad;
   SkMatrix scale_matrix;
   scale_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-  gfx::RectF dst_rect(quad->filters.MapRect(quad->rect, scale_matrix));
+  gfx::Rect dst_rect = quad->filters.MapRect(quad->rect, scale_matrix);
+  params->dst_rect.SetRect(static_cast<float>(dst_rect.x()),
+                           static_cast<float>(dst_rect.y()),
+                           static_cast<float>(dst_rect.width()),
+                           static_cast<float>(dst_rect.height()));
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
-                    dst_rect);
-  gfx::Transform contents_device_transform =
-      frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
+                    params->dst_rect);
+  gfx::Transform contents_device_transform = params->frame->window_matrix *
+                                             params->frame->projection_matrix *
+                                             quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
 
   // Can only draw surface if device matrix is invertible.
   if (!contents_device_transform.IsInvertible())
-    return;
+    return false;
 
-  gfx::QuadF surface_quad = SharedGeometryQuad();
+  params->surface_quad = SharedGeometryQuad();
 
   gfx::QuadF device_layer_quad;
-  bool use_aa = false;
   if (settings_->allow_antialiasing) {
     bool clipped = false;
-    device_layer_quad =
-        MathUtil::MapQuad(contents_device_transform, surface_quad, &clipped);
-    use_aa = ShouldAntialiasQuad(device_layer_quad, clipped,
-                                 settings_->force_antialiasing);
+    device_layer_quad = MathUtil::MapQuad(contents_device_transform,
+                                          params->surface_quad, &clipped);
+    params->use_aa = ShouldAntialiasQuad(device_layer_quad, clipped,
+                                         settings_->force_antialiasing);
   }
 
-  float edge[24];
-  const gfx::QuadF* aa_quad = use_aa ? &device_layer_quad : nullptr;
-  SetupRenderPassQuadForClippingAndAntialiasing(contents_device_transform, quad,
-                                                aa_quad, clip_region,
-                                                &surface_quad, edge);
+  const gfx::QuadF* aa_quad = params->use_aa ? &device_layer_quad : nullptr;
+  SetupRenderPassQuadForClippingAndAntialiasing(
+      contents_device_transform, quad, aa_quad, params->clip_region,
+      &params->surface_quad, params->edge);
   SkXfermode::Mode blend_mode = quad->shared_quad_state->blend_mode;
-  bool use_shaders_for_blending =
+  params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
       ShouldApplyBackgroundFilters(quad) ||
       settings_->force_blending_with_shaders;
 
-  std::unique_ptr<ScopedResource> background_texture;
-  sk_sp<SkImage> background_image;
-  GLuint background_image_id = 0;
-  gfx::Rect background_rect;
-  if (use_shaders_for_blending) {
+  if (params->use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
-    background_rect = GetBackdropBoundingBoxForRenderPassQuad(
-        frame, quad, contents_device_transform, clip_region, use_aa);
+    params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
+        params->frame, quad, contents_device_transform, params->clip_region,
+        params->use_aa);
 
-    if (!background_rect.IsEmpty()) {
+    if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
       // current pixel values.
       if (blend_enabled())
@@ -1060,67 +1132,63 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
       // This function allocates a texture, which should contribute to the
       // amount of memory used by render surfaces:
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
-      background_texture = GetBackdropTexture(background_rect);
+      params->background_texture = GetBackdropTexture(params->background_rect);
 
-      if (ShouldApplyBackgroundFilters(quad) && background_texture) {
+      if (ShouldApplyBackgroundFilters(quad) && params->background_texture) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
-        background_image = ApplyBackgroundFilters(
-            frame, quad, background_texture.get(), gfx::RectF(background_rect));
-        if (background_image) {
-          background_image_id = skia::GrBackendObjectToGrGLTextureInfo(
-                                    background_image->getTextureHandle(true))
-                                    ->fID;
-          DCHECK(background_image_id);
+        params->background_image = ApplyBackgroundFilters(
+            params->frame, quad, params->background_texture.get(),
+            gfx::RectF(params->background_rect));
+        if (params->background_image) {
+          params->background_image_id =
+              skia::GrBackendObjectToGrGLTextureInfo(
+                  params->background_image->getTextureHandle(true))
+                  ->fID;
+          DCHECK(params->background_image_id);
         }
       }
     }
 
-    if (!background_texture) {
+    if (!params->background_texture) {
       // Something went wrong with reading the backdrop.
-      DCHECK(!background_image_id);
-      use_shaders_for_blending = false;
-    } else if (background_image_id) {
+      DCHECK(!params->background_image_id);
+      params->use_shaders_for_blending = false;
+    } else if (params->background_image_id) {
       // Reset original background texture if there is not any mask
       if (!quad->mask_resource_id())
-        background_texture.reset();
+        params->background_texture.reset();
     } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
                ShouldApplyBackgroundFilters(quad)) {
       // Something went wrong with applying background filters to the backdrop.
-      use_shaders_for_blending = false;
-      background_texture.reset();
+      params->use_shaders_for_blending = false;
+      params->background_texture.reset();
     }
   }
   // Need original background texture for mask?
-  bool mask_for_background =
-      background_texture &&      // Have original background texture
-      background_image_id &&     // Have filtered background texture
-      quad->mask_resource_id();  // Have mask texture
+  params->mask_for_background =
+      params->background_texture &&   // Have original background texture
+      params->background_image_id &&  // Have filtered background texture
+      quad->mask_resource_id();       // Have mask texture
   SetBlendEnabled(
-      !use_shaders_for_blending &&
+      !params->use_shaders_for_blending &&
       (quad->ShouldDrawWithBlending() || !IsDefaultBlendMode(blend_mode)));
 
   // TODO(senorblanco): Cache this value so that we don't have to do it for both
   // the surface and its replica.  Apply filters to the contents texture.
-  sk_sp<SkImage> filter_image;
-  GLuint filter_image_id = 0;
-  SkScalar color_matrix[20];
-  bool use_color_matrix = false;
-  gfx::Size texture_size = contents_texture->size();
-  gfx::Point src_offset;
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-        quad->filters, gfx::SizeF(contents_texture->size()));
+        quad->filters, gfx::SizeF(params->contents_texture->size()));
     if (filter) {
       SkColorFilter* colorfilter_rawptr = NULL;
       filter->asColorFilter(&colorfilter_rawptr);
       sk_sp<SkColorFilter> cf(colorfilter_rawptr);
 
-      if (cf && cf->asColorMatrix(color_matrix)) {
+      if (cf && cf->asColorMatrix(params->color_matrix)) {
         // We have a color matrix at the root of the filter DAG; apply it
         // locally in the compositor and process the rest of the DAG (if any)
         // in Skia.
-        use_color_matrix = true;
+        params->use_color_matrix = true;
         filter = sk_ref_sp(filter->getInput(0));
       }
       if (filter) {
@@ -1132,151 +1200,167 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
             quad->shared_quad_state->quad_to_target_transform;
         gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
         gfx::QuadF local_clip = MapQuadToLocalSpace(transform, clip_quad);
-        dst_rect.Intersect(local_clip.BoundingBox());
+        params->dst_rect.Intersect(local_clip.BoundingBox());
         // If we've been fully clipped out (by crop rect or clipping), there's
         // nothing to draw.
-        if (dst_rect.IsEmpty()) {
-          return;
+        if (params->dst_rect.IsEmpty()) {
+          return false;
         }
         SkIPoint offset;
         SkIRect subset;
         gfx::RectF src_rect(quad->rect);
-        filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this, frame), resource_provider_,
-            src_rect, dst_rect, quad->filters_scale, std::move(filter),
-            contents_texture, &offset, &subset, flip_texture);
-        if (!filter_image)
-          return;
-        filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
-                              filter_image->getTextureHandle(true))
-                              ->fID;
-        texture_size.set_width(filter_image->width());
-        texture_size.set_height(filter_image->height());
-        DCHECK(filter_image_id);
-        dst_rect =
+        params->filter_image = ApplyImageFilter(
+            ScopedUseGrContext::Create(this, params->frame), resource_provider_,
+            src_rect, params->dst_rect, quad->filters_scale, std::move(filter),
+            params->contents_texture, &offset, &subset, params->flip_texture);
+        if (!params->filter_image)
+          return false;
+        params->dst_rect =
             gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
                        subset.width(), subset.height());
-        src_offset.SetPoint(subset.x(), subset.y());
-        // If the output of the filter needs to be flipped.
-        flip_texture =
-            filter_image->getTexture()->origin() == kBottomLeft_GrSurfaceOrigin;
+        params->src_offset.SetPoint(subset.x(), subset.y());
       }
     }
   }
 
-  std::unique_ptr<ResourceProvider::ScopedSamplerGL> mask_resource_lock;
-  unsigned mask_texture_id = 0;
-  SamplerType mask_sampler = SAMPLER_TYPE_NA;
   if (quad->mask_resource_id()) {
-    mask_resource_lock.reset(new ResourceProvider::ScopedSamplerGL(
+    params->mask_resource_lock.reset(new ResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->mask_resource_id(), GL_TEXTURE1, GL_LINEAR));
-    mask_texture_id = mask_resource_lock->texture_id();
-    mask_sampler = SamplerTypeFromTextureTarget(mask_resource_lock->target());
   }
 
-  std::unique_ptr<ResourceProvider::ScopedSamplerGL> contents_resource_lock;
-  if (filter_image_id) {
+  if (params->filter_image) {
+    GLuint filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
+                                 params->filter_image->getTextureHandle(true))
+                                 ->fID;
+    DCHECK(filter_image_id);
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    params->source_needs_flip = params->filter_image->getTexture()->origin() ==
+                                kBottomLeft_GrSurfaceOrigin;
   } else {
-    contents_resource_lock =
+    params->contents_resource_lock =
         base::WrapUnique(new ResourceProvider::ScopedSamplerGL(
-            resource_provider_, contents_texture->id(), GL_LINEAR));
+            resource_provider_, params->contents_texture->id(), GL_LINEAR));
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
-              contents_resource_lock->target());
+              params->contents_resource_lock->target());
+    params->source_needs_flip = params->flip_texture;
   }
 
-  if (!use_shaders_for_blending) {
+  if (!params->use_shaders_for_blending) {
     if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
       gl_->BlendBarrierKHR();
 
     ApplyBlendModeUsingBlendFunc(blend_mode);
   }
 
+  DCHECK_EQ(params->background_texture || params->background_image_id,
+            params->use_shaders_for_blending);
+  return true;
+}
+
+void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_,
-      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
+      params->quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  ShaderLocations locations;
+  BlendMode shader_blend_mode =
+      params->use_shaders_for_blending
+          ? BlendModeFromSkXfermode(params->quad->shared_quad_state->blend_mode)
+          : BLEND_MODE_NONE;
 
-  DCHECK_EQ(background_texture || background_image_id,
-            use_shaders_for_blending);
-  BlendMode shader_blend_mode = use_shaders_for_blending
-                                    ? BlendModeFromSkXfermode(blend_mode)
-                                    : BLEND_MODE_NONE;
+  unsigned mask_texture_id = 0;
+  SamplerType mask_sampler = SAMPLER_TYPE_NA;
+  if (params->mask_resource_lock) {
+    mask_texture_id = params->mask_resource_lock->texture_id();
+    mask_sampler =
+        SamplerTypeFromTextureTarget(params->mask_resource_lock->target());
+  }
+  bool mask_for_background = params->mask_for_background;
 
-  if (use_aa && mask_texture_id && !use_color_matrix) {
+  if (params->use_aa && mask_texture_id && !params->use_color_matrix) {
     const RenderPassMaskProgramAA* program = GetRenderPassMaskProgramAA(
         tex_coord_precision, mask_sampler,
         shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (!use_aa && mask_texture_id && !use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (!params->use_aa && mask_texture_id && !params->use_color_matrix) {
     const RenderPassMaskProgram* program = GetRenderPassMaskProgram(
         tex_coord_precision, mask_sampler,
         shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (use_aa && !mask_texture_id && !use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (params->use_aa && !mask_texture_id && !params->use_color_matrix) {
     const RenderPassProgramAA* program =
         GetRenderPassProgramAA(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (use_aa && mask_texture_id && use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (params->use_aa && mask_texture_id && params->use_color_matrix) {
     const RenderPassMaskColorMatrixProgramAA* program =
         GetRenderPassMaskColorMatrixProgramAA(
             tex_coord_precision, mask_sampler,
             shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (use_aa && !mask_texture_id && use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (params->use_aa && !mask_texture_id && params->use_color_matrix) {
     const RenderPassColorMatrixProgramAA* program =
         GetRenderPassColorMatrixProgramAA(tex_coord_precision,
                                           shader_blend_mode);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (!use_aa && mask_texture_id && use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (!params->use_aa && mask_texture_id && params->use_color_matrix) {
     const RenderPassMaskColorMatrixProgram* program =
         GetRenderPassMaskColorMatrixProgram(
             tex_coord_precision, mask_sampler,
             shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
-  } else if (!use_aa && !mask_texture_id && use_color_matrix) {
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
+  } else if (!params->use_aa && !mask_texture_id && params->use_color_matrix) {
     const RenderPassColorMatrixProgram* program =
         GetRenderPassColorMatrixProgram(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
   } else {
     const RenderPassProgram* program =
         GetRenderPassProgram(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&locations);
-    program->fragment_shader().FillLocations(&locations);
-    gl_->Uniform1i(locations.sampler, 0);
+    program->vertex_shader().FillLocations(&params->locations);
+    program->fragment_shader().FillLocations(&params->locations);
+    gl_->Uniform1i(params->locations.sampler, 0);
   }
-  gfx::RectF tex_rect(src_offset.x(), src_offset.y(), dst_rect.width(),
-                      dst_rect.height());
+}
+
+void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
+  ShaderLocations& locations = params->locations;
+  gfx::RectF tex_rect(params->src_offset.x(), params->src_offset.y(),
+                      params->dst_rect.width(), params->dst_rect.height());
+  gfx::Size texture_size;
+  if (params->filter_image) {
+    texture_size.set_width(params->filter_image->width());
+    texture_size.set_height(params->filter_image->height());
+  } else {
+    texture_size = params->contents_texture->size();
+  }
   tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
 
   DCHECK(locations.tex_transform != -1 || IsContextLost());
-  if (flip_texture) {
+  if (params->source_needs_flip) {
     // Flip the content vertically in the shader, as the RenderPass input
     // texture is already oriented the same way as the framebuffer, but the
     // projection transform does a flip.
@@ -1291,16 +1375,18 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
 
   GLint last_texture_unit = 0;
   if (locations.mask_sampler != -1) {
+    DCHECK(params->mask_resource_lock);
     DCHECK_NE(locations.mask_tex_coord_scale, 1);
     DCHECK_NE(locations.mask_tex_coord_offset, 1);
     gl_->Uniform1i(locations.mask_sampler, 1);
 
-    gfx::RectF mask_uv_rect = quad->MaskUVRect();
-    if (mask_sampler != SAMPLER_TYPE_2D) {
-      mask_uv_rect.Scale(quad->mask_texture_size.width(),
-                         quad->mask_texture_size.height());
+    gfx::RectF mask_uv_rect = params->quad->MaskUVRect();
+    if (SamplerTypeFromTextureTarget(params->mask_resource_lock->target()) !=
+        SAMPLER_TYPE_2D) {
+      mask_uv_rect.Scale(params->quad->mask_texture_size.width(),
+                         params->quad->mask_texture_size.height());
     }
-    if (flip_texture) {
+    if (params->source_needs_flip) {
       // Mask textures are oriented vertically flipped relative to the
       // framebuffer and the RenderPass contents texture, so we flip the tex
       // coords from the RenderPass texture to find the mask texture coords.
@@ -1323,7 +1409,7 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
   }
 
   if (locations.edge != -1)
-    gl_->Uniform3fv(locations.edge, 8, edge);
+    gl_->Uniform3fv(locations.edge, 8, params->edge);
 
   if (locations.viewport != -1) {
     float viewport[4] = {
@@ -1339,7 +1425,7 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
     float matrix[16];
     for (int i = 0; i < 4; ++i) {
       for (int j = 0; j < 4; ++j)
-        matrix[i * 4 + j] = SkScalarToFloat(color_matrix[j * 5 + i]);
+        matrix[i * 4 + j] = SkScalarToFloat(params->color_matrix[j * 5 + i]);
     }
     gl_->UniformMatrix4fv(locations.color_matrix, 1, false, matrix);
   }
@@ -1347,53 +1433,55 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
   if (locations.color_offset != -1) {
     float offset[4];
     for (int i = 0; i < 4; ++i)
-      offset[i] = SkScalarToFloat(color_matrix[i * 5 + 4]) * kScale;
+      offset[i] = SkScalarToFloat(params->color_matrix[i * 5 + 4]) * kScale;
 
     gl_->Uniform4fv(locations.color_offset, 1, offset);
   }
 
-  std::unique_ptr<ResourceProvider::ScopedSamplerGL>
-      shader_background_sampler_lock;
   if (locations.backdrop != -1) {
-    DCHECK(background_texture || background_image_id);
+    DCHECK(params->background_texture || params->background_image_id);
     DCHECK_NE(locations.backdrop, 0);
     DCHECK_NE(locations.backdrop_rect, 0);
 
     gl_->Uniform1i(locations.backdrop, ++last_texture_unit);
 
-    gl_->Uniform4f(locations.backdrop_rect, background_rect.x(),
-                   background_rect.y(), background_rect.width(),
-                   background_rect.height());
+    gl_->Uniform4f(locations.backdrop_rect, params->background_rect.x(),
+                   params->background_rect.y(), params->background_rect.width(),
+                   params->background_rect.height());
 
-    if (background_image_id) {
+    if (params->background_image_id) {
       gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
-      gl_->BindTexture(GL_TEXTURE_2D, background_image_id);
+      gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
       gl_->ActiveTexture(GL_TEXTURE0);
-      if (mask_for_background)
+      if (params->mask_for_background)
         gl_->Uniform1i(locations.original_backdrop, ++last_texture_unit);
     }
-    if (background_texture) {
-      shader_background_sampler_lock =
+    if (params->background_texture) {
+      params->shader_background_sampler_lock =
           base::WrapUnique(new ResourceProvider::ScopedSamplerGL(
-              resource_provider_, background_texture->id(),
+              resource_provider_, params->background_texture->id(),
               GL_TEXTURE0 + last_texture_unit, GL_LINEAR));
       DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
-                shader_background_sampler_lock->target());
+                params->shader_background_sampler_lock->target());
     }
   }
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, locations.alpha);
-  SetShaderQuadF(surface_quad, locations.quad);
-  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
-                   dst_rect, locations.matrix);
+  SetShaderOpacity(params->quad->shared_quad_state->opacity, locations.alpha);
+  SetShaderQuadF(params->surface_quad, locations.quad);
+}
+
+void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
+  DrawQuadGeometry(params.frame,
+                   params.quad->shared_quad_state->quad_to_target_transform,
+                   params.dst_rect, params.locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
-  if (filter_image_id)
+  if (params.filter_image)
     gl_->Flush();
 
-  if (!use_shaders_for_blending)
-    RestoreBlendFuncToDefault(blend_mode);
+  if (!params.use_shaders_for_blending)
+    RestoreBlendFuncToDefault(params.quad->shared_quad_state->blend_mode);
 }
 
 struct SolidColorProgramUniforms {

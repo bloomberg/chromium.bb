@@ -43,6 +43,7 @@ class TextureMailboxDeleter;
 class StaticGeometryBinding;
 class DynamicGeometryBinding;
 class ScopedEnsureFramebufferAllocation;
+struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
 class CC_EXPORT GLRenderer : public DirectRenderer {
@@ -150,6 +151,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
 
+  // Returns false if drawing is not possible for any reason.
+  bool InitializeRPDQParameters(DrawRenderPassDrawQuadParams* params);
+
+  void ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params);
+  void UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params);
+  void DrawRPDQ(const DrawRenderPassDrawQuadParams& params);
+
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
 
   void DiscardPixels();
@@ -185,11 +193,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void DrawRenderPassQuad(DrawingFrame* frame,
                           const RenderPassDrawQuad* quadi,
                           const gfx::QuadF* clip_region);
-  void DrawRenderPassQuadInternal(DrawingFrame* frame,
-                                  const RenderPassDrawQuad* quad,
-                                  const gfx::QuadF* clip_region,
-                                  const Resource* contents_texture,
-                                  bool is_render_pass_input);
+  void DrawRenderPassQuadInternal(DrawRenderPassDrawQuadParams* params);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad,
                           const gfx::QuadF* clip_region);
