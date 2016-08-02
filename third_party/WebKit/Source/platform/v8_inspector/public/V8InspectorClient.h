@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8DebuggerClient_h
-#define V8DebuggerClient_h
+#ifndef V8InspectorClient_h
+#define V8InspectorClient_h
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
@@ -16,9 +16,9 @@ class V8StackTrace;
 
 enum class V8ConsoleAPIType { kClear, kDebug, kLog, kInfo, kWarning, kError };
 
-class PLATFORM_EXPORT V8DebuggerClient {
+class PLATFORM_EXPORT V8InspectorClient {
 public:
-    virtual ~V8DebuggerClient() { }
+    virtual ~V8InspectorClient() { }
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
     virtual void muteWarningsAndDeprecations(int contextGroupId) = 0;
@@ -53,4 +53,4 @@ public:
 } // namespace blink
 
 
-#endif // V8DebuggerClient_h
+#endif // V8InspectorClient_h

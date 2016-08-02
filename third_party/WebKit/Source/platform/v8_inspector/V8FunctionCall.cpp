@@ -32,16 +32,16 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/V8Compat.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8InspectorClient.h"
 
 #include <v8.h>
 
 namespace blink {
 
-V8FunctionCall::V8FunctionCall(V8DebuggerImpl* debugger, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
-    : m_debugger(debugger)
+V8FunctionCall::V8FunctionCall(V8InspectorImpl* inspector, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
+    : m_inspector(inspector)
     , m_context(context)
     , m_name(toV8String(context->GetIsolate(), name))
     , m_value(value)
@@ -81,7 +81,7 @@ v8::Local<v8::Value> V8FunctionCall::call(bool& hadException, bool reportExcepti
 v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
 {
     // TODO(dgozman): get rid of this check.
-    if (!m_debugger->client()->isExecutionAllowed())
+    if (!m_inspector->client()->isExecutionAllowed())
         return v8::Local<v8::Value>();
 
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);
@@ -98,13 +98,13 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
         DCHECK(!info[i].IsEmpty());
     }
 
-    int contextGroupId = V8DebuggerImpl::getGroupId(m_context);
+    int contextGroupId = V8InspectorImpl::getGroupId(m_context);
     if (contextGroupId)
-        m_debugger->client()->muteWarningsAndDeprecations(contextGroupId);
+        m_inspector->client()->muteWarningsAndDeprecations(contextGroupId);
     v8::MicrotasksScope microtasksScope(m_context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::MaybeLocal<v8::Value> maybeResult = function->Call(m_context, thisObject, m_arguments.size(), info.get());
     if (contextGroupId)
-        m_debugger->client()->unmuteWarningsAndDeprecations(contextGroupId);
+        m_inspector->client()->unmuteWarningsAndDeprecations(contextGroupId);
 
     v8::Local<v8::Value> result;
     if (!maybeResult.ToLocal(&result))

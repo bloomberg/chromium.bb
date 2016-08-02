@@ -21,7 +21,7 @@ class ExecutionContext;
 class InspectorAgent;
 class InstrumentingAgents;
 class LocalFrame;
-class V8Debugger;
+class V8Inspector;
 class V8InspectorSession;
 
 class CORE_EXPORT InspectorSession
@@ -37,7 +37,7 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, InstrumentingAgents*, int sessionId, bool autoFlush, V8Debugger*, int contextGroupId, const String* savedState);
+    InspectorSession(Client*, InstrumentingAgents*, int sessionId, bool autoFlush, V8Inspector*, int contextGroupId, const String* savedState);
     ~InspectorSession() override;
     int sessionId() { return m_sessionId; }
     V8InspectorSession* v8Session() { return m_v8Session.get(); }

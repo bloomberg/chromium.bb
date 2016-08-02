@@ -10,13 +10,13 @@
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
-#include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace blink {
 
@@ -30,14 +30,14 @@ bool V8InspectorSession::canDispatchMethod(const String16& method)
         || method.startWith(protocol::Console::Metainfo::commandPrefix);
 }
 
-std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
 {
-    return wrapUnique(new V8InspectorSessionImpl(debugger, contextGroupId, channel, client, state));
+    return wrapUnique(new V8InspectorSessionImpl(inspector, contextGroupId, channel, client, state));
 }
 
-V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* savedState)
+V8InspectorSessionImpl::V8InspectorSessionImpl(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* savedState)
     : m_contextGroupId(contextGroupId)
-    , m_debugger(debugger)
+    , m_inspector(inspector)
     , m_client(client)
     , m_customObjectFormatterEnabled(false)
     , m_dispatcher(channel)
@@ -92,7 +92,7 @@ V8InspectorSessionImpl::~V8InspectorSessionImpl()
     m_runtimeAgent->disable(&errorString);
 
     discardInjectedScripts();
-    m_debugger->disconnect(this);
+    m_inspector->disconnect(this);
 }
 
 protocol::DictionaryValue* V8InspectorSessionImpl::agentState(const String16& name)
@@ -116,7 +116,7 @@ void V8InspectorSessionImpl::reset()
 void V8InspectorSessionImpl::discardInjectedScripts()
 {
     m_inspectedObjects.clear();
-    const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
+    const V8InspectorImpl::ContextByIdMap* contexts = m_inspector->contextGroup(m_contextGroupId);
     if (!contexts)
         return;
 
@@ -125,7 +125,7 @@ void V8InspectorSessionImpl::discardInjectedScripts()
     for (auto& idContext : *contexts)
         keys.push_back(idContext.first);
     for (auto& key : keys) {
-        contexts = m_debugger->contextGroup(m_contextGroupId);
+        contexts = m_inspector->contextGroup(m_contextGroupId);
         if (!contexts)
             continue;
         auto contextIt = contexts->find(key);
@@ -141,7 +141,7 @@ InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorStr
         return nullptr;
     }
 
-    const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
+    const V8InspectorImpl::ContextByIdMap* contexts = m_inspector->contextGroup(m_contextGroupId);
     if (!contexts) {
         *errorString = "Cannot find context with specified id";
         return nullptr;
@@ -173,7 +173,7 @@ InjectedScript* V8InspectorSessionImpl::findInjectedScript(ErrorString* errorStr
 
 void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
 {
-    const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
+    const V8InspectorImpl::ContextByIdMap* contexts = m_inspector->contextGroup(m_contextGroupId);
     if (!contexts)
         return;
 
@@ -181,7 +181,7 @@ void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
     for (auto& idContext : *contexts)
         keys.push_back(idContext.first);
     for (auto& key : keys) {
-        contexts = m_debugger->contextGroup(m_contextGroupId);
+        contexts = m_inspector->contextGroup(m_contextGroupId);
         if (!contexts)
             continue;
         auto contextsIt = contexts->find(key);
@@ -216,7 +216,7 @@ std::unique_ptr<protocol::Runtime::API::RemoteObject> V8InspectorSessionImpl::wr
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8DebuggerImpl::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8InspectorImpl::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
@@ -225,7 +225,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObj
 std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
 {
     ErrorString errorString;
-    InjectedScript* injectedScript = findInjectedScript(&errorString, V8DebuggerImpl::contextId(context));
+    InjectedScript* injectedScript = findInjectedScript(&errorString, V8InspectorImpl::contextId(context));
     if (!injectedScript)
         return nullptr;
     return injectedScript->wrapTable(table, columns);
@@ -234,7 +234,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTab
 void V8InspectorSessionImpl::setCustomObjectFormatterEnabled(bool enabled)
 {
     m_customObjectFormatterEnabled = enabled;
-    const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
+    const V8InspectorImpl::ContextByIdMap* contexts = m_inspector->contextGroup(m_contextGroupId);
     if (!contexts)
         return;
     for (auto& idContext : *contexts) {
@@ -246,7 +246,7 @@ void V8InspectorSessionImpl::setCustomObjectFormatterEnabled(bool enabled)
 
 void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
 {
-    const V8DebuggerImpl::ContextByIdMap* contexts = m_debugger->contextGroup(m_contextGroupId);
+    const V8InspectorImpl::ContextByIdMap* contexts = m_inspector->contextGroup(m_contextGroupId);
     if (!contexts)
         return;
     for (auto& idContext : *contexts)

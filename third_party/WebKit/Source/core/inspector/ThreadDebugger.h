@@ -9,8 +9,8 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
-#include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
+#include "platform/v8_inspector/public/V8InspectorClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include <memory>
@@ -22,7 +22,8 @@ class ConsoleMessage;
 class ExecutionContext;
 class SourceLocation;
 
-class CORE_EXPORT ThreadDebugger : public V8DebuggerClient {
+// TODO(dgozman): rename this to ThreadInspector (and subclasses).
+class CORE_EXPORT ThreadDebugger : public V8InspectorClient {
     WTF_MAKE_NONCOPYABLE(ThreadDebugger);
 public:
     explicit ThreadDebugger(v8::Isolate*);
@@ -42,7 +43,7 @@ public:
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
     void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId);
 
-    // V8DebuggerClient implementation.
+    // V8InspectorClient implementation.
     void beginUserGesture() override;
     void endUserGesture() override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
@@ -54,10 +55,10 @@ public:
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
-    void startRepeatingTimer(double, V8DebuggerClient::TimerCallback, void* data) override;
+    void startRepeatingTimer(double, V8InspectorClient::TimerCallback, void* data) override;
     void cancelTimer(void* data) override;
 
-    V8Debugger* debugger() const { return m_debugger.get(); }
+    V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
     virtual bool isWorker() { return true; }
     virtual void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) = 0;
     virtual int contextGroupId(ExecutionContext*) = 0;
@@ -68,7 +69,6 @@ protected:
     static MessageLevel consoleAPITypeToMessageLevel(V8ConsoleAPIType);
 
     v8::Isolate* m_isolate;
-    std::unique_ptr<V8Debugger> m_debugger;
 
 private:
     static void setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&, bool enabled);
@@ -77,8 +77,9 @@ private:
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
+    std::unique_ptr<V8Inspector> m_v8Inspector;
     Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
-    Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
+    Vector<V8InspectorClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
     std::unique_ptr<UserGestureIndicator> m_userGestureIndicator;
 };

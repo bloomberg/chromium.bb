@@ -10,7 +10,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/inspector_protocol/Parser.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
-InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, bool autoFlush, V8Debugger* debugger, int contextGroupId, const String* savedState)
+InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, bool autoFlush, V8Inspector* inspector, int contextGroupId, const String* savedState)
     : m_client(client)
     , m_v8Session(nullptr)
     , m_sessionId(sessionId)
@@ -40,7 +40,7 @@ InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrume
 
     String16 v8State;
     m_state->getString(kV8StateKey, &v8State);
-    m_v8Session = debugger->connect(contextGroupId, this, this, savedState ? &v8State : nullptr);
+    m_v8Session = inspector->connect(contextGroupId, this, this, savedState ? &v8State : nullptr);
 }
 
 InspectorSession::~InspectorSession()

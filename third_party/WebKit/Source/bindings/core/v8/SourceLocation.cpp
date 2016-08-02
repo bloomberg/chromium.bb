@@ -14,7 +14,7 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -29,7 +29,7 @@ std::unique_ptr<V8StackTrace> captureStackTrace(bool full)
     if (!data->threadDebugger() || !isolate->InContext())
         return nullptr;
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
-    return data->threadDebugger()->debugger()->captureStackTrace(full);
+    return data->threadDebugger()->v8Inspector()->captureStackTrace(full);
 }
 
 }
@@ -70,7 +70,7 @@ std::unique_ptr<SourceLocation> SourceLocation::fromMessage(v8::Isolate* isolate
     std::unique_ptr<V8StackTrace> stackTrace = nullptr;
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     if (data && data->threadDebugger())
-        stackTrace = data->threadDebugger()->debugger()->createStackTrace(stack);
+        stackTrace = data->threadDebugger()->v8Inspector()->createStackTrace(stack);
 
     int scriptId = message->GetScriptOrigin().ScriptID()->Value();
     if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {

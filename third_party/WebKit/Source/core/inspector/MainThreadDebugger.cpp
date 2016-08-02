@@ -61,7 +61,7 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include <memory>
@@ -137,7 +137,7 @@ void MainThreadDebugger::didClearContextsForFrame(LocalFrame* frame)
 {
     DCHECK(isMainThread());
     if (frame->localFrameRoot() == frame)
-        debugger()->resetContextGroup(contextGroupId(frame));
+        v8Inspector()->resetContextGroup(contextGroupId(frame));
 }
 
 void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* frame, SecurityOrigin* origin)
@@ -145,13 +145,13 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame), scriptState->getExecutionContext()->isDocument()));
+    v8Inspector()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame), scriptState->getExecutionContext()->isDocument()));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
 {
     v8::HandleScope handles(scriptState->isolate());
-    debugger()->contextDestroyed(scriptState->context());
+    v8Inspector()->contextDestroyed(scriptState->context());
 }
 
 void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* event)
@@ -175,7 +175,7 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* 
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
         SourceLocation* location = event->location();
-        debugger()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
     }
 
     // TODO(dgozman): do not wrap in ConsoleMessage.

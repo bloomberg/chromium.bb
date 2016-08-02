@@ -43,7 +43,7 @@ class InjectedScript;
 class InspectedContext;
 class RemoteObjectIdBase;
 class V8ConsoleMessage;
-class V8DebuggerImpl;
+class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
 namespace protocol {
@@ -130,7 +130,7 @@ private:
     V8InspectorSessionImpl* m_session;
     protocol::DictionaryValue* m_state;
     protocol::Runtime::Frontend m_frontend;
-    V8DebuggerImpl* m_debugger;
+    V8InspectorImpl* m_inspector;
     bool m_enabled;
     protocol::HashMap<String16, std::unique_ptr<v8::Global<v8::Script>>> m_compiledScripts;
 };

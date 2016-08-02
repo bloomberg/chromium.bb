@@ -41,7 +41,6 @@
 namespace blink {
 
 class InstrumentingAgents;
-class V8Debugger;
 class WorkerThread;
 class WorkerThreadDebugger;
 

@@ -6,12 +6,12 @@
 
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
-#include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace blink {
 
@@ -219,7 +219,7 @@ std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> V8ConsoleMessa
 {
     if (!m_arguments.size() || !m_contextId)
         return nullptr;
-    InspectedContext* inspectedContext = session->debugger()->getContext(session->contextGroupId(), m_contextId);
+    InspectedContext* inspectedContext = session->inspector()->getContext(session->contextGroupId(), m_contextId);
     if (!inspectedContext)
         return nullptr;
 
@@ -296,7 +296,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> V8ConsoleMessage::wrapException
     if (!m_arguments.size() || !m_contextId)
         return nullptr;
     DCHECK_EQ(1u, m_arguments.size());
-    InspectedContext* inspectedContext = session->debugger()->getContext(session->contextGroupId(), m_contextId);
+    InspectedContext* inspectedContext = session->inspector()->getContext(session->contextGroupId(), m_contextId);
     if (!inspectedContext)
         return nullptr;
 
@@ -344,7 +344,7 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
         clientType = V8ConsoleAPIType::kInfo;
     else if (type == ConsoleAPIType::kClear)
         clientType = V8ConsoleAPIType::kClear;
-    context->debugger()->client()->consoleAPIMessage(context->contextGroupId(), clientType, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
+    context->inspector()->client()->consoleAPIMessage(context->contextGroupId(), clientType, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
 
     return message;
 }
@@ -384,8 +384,8 @@ void V8ConsoleMessage::contextDestroyed(int contextId)
 
 // ------------------------ V8ConsoleMessageStorage ----------------------------
 
-V8ConsoleMessageStorage::V8ConsoleMessageStorage(V8DebuggerImpl* debugger, int contextGroupId)
-    : m_debugger(debugger)
+V8ConsoleMessageStorage::V8ConsoleMessageStorage(V8InspectorImpl* inspector, int contextGroupId)
+    : m_inspector(inspector)
     , m_contextGroupId(contextGroupId)
     , m_expiredCount(0)
 {
@@ -401,7 +401,7 @@ void V8ConsoleMessageStorage::addMessage(std::unique_ptr<V8ConsoleMessage> messa
     if (message->type() == ConsoleAPIType::kClear)
         clear();
 
-    V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId);
+    V8InspectorSessionImpl* session = m_inspector->sessionForContextGroup(m_contextGroupId);
     if (session) {
         if (message->origin() == V8MessageOrigin::kConsole)
             session->consoleAgent()->messageAdded(message.get());
@@ -420,7 +420,7 @@ void V8ConsoleMessageStorage::clear()
 {
     m_messages.clear();
     m_expiredCount = 0;
-    if (V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId))
+    if (V8InspectorSessionImpl* session = m_inspector->sessionForContextGroup(m_contextGroupId))
         session->releaseObjectGroup("console");
 }
 

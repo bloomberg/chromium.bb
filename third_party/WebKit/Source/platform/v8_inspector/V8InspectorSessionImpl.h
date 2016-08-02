@@ -23,7 +23,7 @@ class InjectedScript;
 class RemoteObjectIdBase;
 class V8ConsoleAgentImpl;
 class V8DebuggerAgentImpl;
-class V8DebuggerImpl;
+class V8InspectorImpl;
 class V8HeapProfilerAgentImpl;
 class V8ProfilerAgentImpl;
 class V8RuntimeAgentImpl;
@@ -31,10 +31,10 @@ class V8RuntimeAgentImpl;
 class V8InspectorSessionImpl : public V8InspectorSession {
     PROTOCOL_DISALLOW_COPY(V8InspectorSessionImpl);
 public:
-    static std::unique_ptr<V8InspectorSessionImpl> create(V8DebuggerImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
+    static std::unique_ptr<V8InspectorSessionImpl> create(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
     ~V8InspectorSessionImpl();
 
-    V8DebuggerImpl* debugger() const { return m_debugger; }
+    V8InspectorImpl* inspector() const { return m_inspector; }
     V8InspectorSessionClient* client() const { return m_client; }
     V8ConsoleAgentImpl* consoleAgent() { return m_consoleAgent.get(); }
     V8DebuggerAgentImpl* debuggerAgent() { return m_debuggerAgent.get(); }
@@ -70,11 +70,11 @@ public:
     static const unsigned kInspectedObjectBufferSize = 5;
 
 private:
-    V8InspectorSessionImpl(V8DebuggerImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
+    V8InspectorSessionImpl(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
     protocol::DictionaryValue* agentState(const String16& name);
 
     int m_contextGroupId;
-    V8DebuggerImpl* m_debugger;
+    V8InspectorImpl* m_inspector;
     V8InspectorSessionClient* m_client;
     bool m_customObjectFormatterEnabled;
 

@@ -15,7 +15,7 @@
 namespace blink {
 
 class TracedValue;
-class V8DebuggerImpl;
+class V8InspectorImpl;
 
 // Note: async stack trace may have empty top stack with non-empty tail to indicate
 // that current native-only state had some async story.
@@ -51,14 +51,14 @@ public:
     };
 
     static void setCaptureStackTraceForUncaughtExceptions(v8::Isolate*, bool capture);
-    static std::unique_ptr<V8StackTraceImpl> create(V8DebuggerImpl*, int contextGroupId, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
-    static std::unique_ptr<V8StackTraceImpl> capture(V8DebuggerImpl*, int contextGroupId, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> create(V8InspectorImpl*, int contextGroupId, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> capture(V8InspectorImpl*, int contextGroupId, size_t maxStackSize, const String16& description = String16());
 
     std::unique_ptr<V8StackTrace> clone() override;
     std::unique_ptr<V8StackTraceImpl> cloneImpl();
     std::unique_ptr<V8StackTrace> isolatedCopy() override;
     std::unique_ptr<V8StackTraceImpl> isolatedCopyImpl();
-    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerImpl*) const;
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8InspectorImpl*) const;
     std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectImpl() const;
     ~V8StackTraceImpl() override;
 

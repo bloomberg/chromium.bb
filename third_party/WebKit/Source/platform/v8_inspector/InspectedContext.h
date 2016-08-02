@@ -15,7 +15,7 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptHost;
 class V8ContextInfo;
-class V8DebuggerImpl;
+class V8InspectorImpl;
 
 class InspectedContext {
     PROTOCOL_DISALLOW_COPY(InspectedContext);
@@ -34,19 +34,19 @@ public:
     void setReported(bool reported) { m_reported = reported; }
 
     v8::Isolate* isolate() const;
-    V8DebuggerImpl* debugger() const { return m_debugger; }
+    V8InspectorImpl* inspector() const { return m_inspector; }
 
     InjectedScript* getInjectedScript() { return m_injectedScript.get(); }
     void createInjectedScript();
     void discardInjectedScript();
 
 private:
-    friend class V8DebuggerImpl;
-    InspectedContext(V8DebuggerImpl*, const V8ContextInfo&, int contextId);
+    friend class V8InspectorImpl;
+    InspectedContext(V8InspectorImpl*, const V8ContextInfo&, int contextId);
     static void weakCallback(const v8::WeakCallbackInfo<InspectedContext>&);
     static void consoleWeakCallback(const v8::WeakCallbackInfo<InspectedContext>&);
 
-    V8DebuggerImpl* m_debugger;
+    V8InspectorImpl* m_inspector;
     v8::Global<v8::Context> m_context;
     int m_contextId;
     int m_contextGroupId;

@@ -5,7 +5,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 
@@ -143,10 +143,10 @@ std::unique_ptr<protocol::Debugger::SearchMatch> buildObjectForSearchMatch(int l
         .build();
 }
 
-std::unique_ptr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String16& query, bool caseSensitive, bool isRegex)
+std::unique_ptr<V8Regex> createSearchRegex(V8InspectorImpl* inspector, const String16& query, bool caseSensitive, bool isRegex)
 {
     String16 regexSource = isRegex ? query : createSearchRegexSource(query);
-    return wrapUnique(new V8Regex(debugger, regexSource, caseSensitive));
+    return wrapUnique(new V8Regex(inspector, regexSource, caseSensitive));
 }
 
 } // namespace
@@ -183,7 +183,7 @@ String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value> value)
 
 std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLinesImpl(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
 {
-    std::unique_ptr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->debugger(), query, caseSensitive, isRegex);
+    std::unique_ptr<V8Regex> regex = createSearchRegex(static_cast<V8InspectorSessionImpl*>(session)->inspector(), query, caseSensitive, isRegex);
     std::vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> result;

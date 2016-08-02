@@ -46,7 +46,6 @@
 #include "core/page/Page.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 

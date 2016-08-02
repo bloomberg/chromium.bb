@@ -83,7 +83,7 @@ public:
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
 
 private:
-    // V8DebuggerClient implementation.
+    // V8InspectorClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
     void muteWarningsAndDeprecations(int contextGroupId) override;

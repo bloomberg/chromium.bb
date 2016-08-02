@@ -86,12 +86,12 @@ int WorkerThreadDebugger::contextGroupId(ExecutionContext* context)
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->globalScope()->url().getString(), "", "", false));
+    v8Inspector()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->globalScope()->url().getString(), "", "", false));
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)
 {
-    debugger()->contextDestroyed(context);
+    v8Inspector()->contextDestroyed(context);
 }
 
 void WorkerThreadDebugger::exceptionThrown(ErrorEvent* event)
@@ -105,7 +105,7 @@ void WorkerThreadDebugger::exceptionThrown(ErrorEvent* event)
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
         SourceLocation* location = event->location();
-        debugger()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
     }
 
     // TODO(dgozman): do not wrap in ConsoleMessage.

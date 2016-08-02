@@ -7,7 +7,7 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
 
 #include <vector>
@@ -122,7 +122,6 @@ public:
         std::unique_ptr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
     bool enabled();
-    V8DebuggerImpl& debugger() { return *m_debugger; }
 
     void setBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String16& condition = String16());
     void removeBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource);
@@ -133,7 +132,7 @@ public:
 
     void reset();
 
-    // Interface for V8DebuggerImpl
+    // Interface for V8InspectorImpl
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const std::vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(std::unique_ptr<V8DebuggerScript>, bool success);
@@ -184,7 +183,7 @@ private:
         StepOut
     };
 
-    V8DebuggerImpl* m_debugger;
+    V8InspectorImpl* m_inspector;
     V8InspectorSessionImpl* m_session;
     bool m_enabled;
     protocol::DictionaryValue* m_state;

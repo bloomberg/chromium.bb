@@ -72,7 +72,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -368,7 +368,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
 
-    m_session = new InspectorSession(this, m_instrumentingAgents.get(), sessionId, false /* autoFlush */, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()), state);
+    m_session = new InspectorSession(this, m_instrumentingAgents.get(), sessionId, false /* autoFlush */, mainThreadDebugger->v8Inspector(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()), state);
 
     InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_session->v8Session(), m_overlay.get());
     m_domAgent = domAgent;

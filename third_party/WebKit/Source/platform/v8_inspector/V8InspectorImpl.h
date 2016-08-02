@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8DebuggerImpl_h
-#define V8DebuggerImpl_h
+#ifndef V8InspectorImpl_h
+#define V8InspectorImpl_h
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/Maybe.h"
@@ -37,12 +37,10 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 
 #include <v8-debug.h>
 #include <v8.h>
-#include <vector>
-
 #include <vector>
 
 namespace blink {
@@ -57,11 +55,11 @@ class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
 class V8StackTraceImpl;
 
-class V8DebuggerImpl : public V8Debugger {
-    PROTOCOL_DISALLOW_COPY(V8DebuggerImpl);
+class V8InspectorImpl : public V8Inspector {
+    PROTOCOL_DISALLOW_COPY(V8InspectorImpl);
 public:
-    V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
-    ~V8DebuggerImpl() override;
+    V8InspectorImpl(v8::Isolate*, V8InspectorClient*);
+    ~V8InspectorImpl() override;
 
     static int contextId(v8::Local<v8::Context>);
     static int getGroupId(v8::Local<v8::Context>);
@@ -109,7 +107,7 @@ public:
     v8::MaybeLocal<v8::Array> internalProperties(v8::Local<v8::Context>, v8::Local<v8::Value>);
 
     v8::Isolate* isolate() const { return m_isolate; }
-    V8DebuggerClient* client() { return m_client; }
+    V8InspectorClient* client() { return m_client; }
 
     v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Context>, v8::Local<v8::Script>);
     v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]);
@@ -177,7 +175,7 @@ private:
     v8::Local<v8::Value> functionLocation(v8::Local<v8::Context>, v8::Local<v8::Function>);
 
     v8::Isolate* m_isolate;
-    V8DebuggerClient* m_client;
+    V8InspectorClient* m_client;
     ContextsByGroupMap m_contexts;
     using SessionMap = protocol::HashMap<int, V8InspectorSessionImpl*>;
     SessionMap m_sessions;
@@ -206,4 +204,4 @@ private:
 } // namespace blink
 
 
-#endif // V8DebuggerImpl_h
+#endif // V8InspectorImpl_h

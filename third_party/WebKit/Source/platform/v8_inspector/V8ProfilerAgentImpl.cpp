@@ -5,7 +5,7 @@
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 
 #include "platform/v8_inspector/Atomics.h"
-#include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -105,9 +105,9 @@ std::unique_ptr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* is
     return profile;
 }
 
-std::unique_ptr<protocol::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
+std::unique_ptr<protocol::Debugger::Location> currentDebugLocation(V8InspectorImpl* inspector)
 {
-    std::unique_ptr<V8StackTrace> callStack = debugger->captureStackTrace(1);
+    std::unique_ptr<V8StackTrace> callStack = inspector->captureStackTrace(1);
     std::unique_ptr<protocol::Debugger::Location> location = protocol::Debugger::Location::create()
         .setScriptId(callStack->topScriptId())
         .setLineNumber(callStack->topLineNumber()).build();
@@ -130,7 +130,7 @@ public:
 
 V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::FrontendChannel* frontendChannel, protocol::DictionaryValue* state)
     : m_session(session)
-    , m_isolate(m_session->debugger()->isolate())
+    , m_isolate(m_session->inspector()->isolate())
     , m_profiler(nullptr)
     , m_state(state)
     , m_frontend(frontendChannel)
@@ -154,7 +154,7 @@ void V8ProfilerAgentImpl::consoleProfile(const String16& title)
     String16 id = nextProfileId();
     m_startedProfiles.push_back(ProfileDescriptor(id, title));
     startProfiling(id);
-    m_frontend.consoleProfileStarted(id, currentDebugLocation(m_session->debugger()), title);
+    m_frontend.consoleProfileStarted(id, currentDebugLocation(m_session->inspector()), title);
 }
 
 void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
@@ -185,7 +185,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     std::unique_ptr<protocol::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
-    std::unique_ptr<protocol::Debugger::Location> location = currentDebugLocation(m_session->debugger());
+    std::unique_ptr<protocol::Debugger::Location> location = currentDebugLocation(m_session->inspector());
     m_frontend.consoleProfileFinished(id, std::move(location), std::move(profile), resolvedTitle);
 }
 

@@ -29,7 +29,7 @@ namespace blink {
 
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : m_isolate(isolate)
-    , m_debugger(V8Debugger::create(isolate, this))
+    , m_v8Inspector(V8Inspector::create(isolate, this))
 {
 }
 
@@ -62,50 +62,50 @@ MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(V8ConsoleAPIType type)
 void ThreadDebugger::willExecuteScript(v8::Isolate* isolate, int scriptId)
 {
     if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-        debugger->debugger()->willExecuteScript(isolate->GetCurrentContext(), scriptId);
+        debugger->v8Inspector()->willExecuteScript(isolate->GetCurrentContext(), scriptId);
 }
 
 void ThreadDebugger::didExecuteScript(v8::Isolate* isolate)
 {
     if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-        debugger->debugger()->didExecuteScript(isolate->GetCurrentContext());
+        debugger->v8Inspector()->didExecuteScript(isolate->GetCurrentContext());
 }
 
 void ThreadDebugger::idleStarted(v8::Isolate* isolate)
 {
     if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-        debugger->debugger()->idleStarted();
+        debugger->v8Inspector()->idleStarted();
 }
 
 void ThreadDebugger::idleFinished(v8::Isolate* isolate)
 {
     if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-        debugger->debugger()->idleFinished();
+        debugger->v8Inspector()->idleFinished();
 }
 
 void ThreadDebugger::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
 {
-    m_debugger->asyncTaskScheduled(operationName, task, recurring);
+    m_v8Inspector->asyncTaskScheduled(operationName, task, recurring);
 }
 
 void ThreadDebugger::asyncTaskCanceled(void* task)
 {
-    m_debugger->asyncTaskCanceled(task);
+    m_v8Inspector->asyncTaskCanceled(task);
 }
 
 void ThreadDebugger::allAsyncTasksCanceled()
 {
-    m_debugger->allAsyncTasksCanceled();
+    m_v8Inspector->allAsyncTasksCanceled();
 }
 
 void ThreadDebugger::asyncTaskStarted(void* task)
 {
-    m_debugger->asyncTaskStarted(task);
+    m_v8Inspector->asyncTaskStarted(task);
 }
 
 void ThreadDebugger::asyncTaskFinished(void* task)
 {
-    m_debugger->asyncTaskFinished(task);
+    m_v8Inspector->asyncTaskFinished(task);
 }
 
 unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
@@ -117,7 +117,7 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
     else if (message.startWith("Uncaught "))
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
-    unsigned result = debugger()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    unsigned result = v8Inspector()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
     // TODO(dgozman): do not wrap in ConsoleMessage.
     reportConsoleMessage(toExecutionContext(context), ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message, std::move(location)));
     return result;
@@ -126,7 +126,7 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
 void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
 {
     const String16 message = "Handler added to rejected promise";
-    debugger()->exceptionRevoked(context, promiseRejectionId, message);
+    v8Inspector()->exceptionRevoked(context, promiseRejectionId, message);
 }
 
 void ThreadDebugger::beginUserGesture()
@@ -350,7 +350,7 @@ void ThreadDebugger::consoleTimeStamp(const String16& title)
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), title));
 }
 
-void ThreadDebugger::startRepeatingTimer(double interval, V8DebuggerClient::TimerCallback callback, void* data)
+void ThreadDebugger::startRepeatingTimer(double interval, V8InspectorClient::TimerCallback callback, void* data)
 {
     m_timerData.append(data);
     m_timerCallbacks.append(callback);

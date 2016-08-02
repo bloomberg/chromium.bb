@@ -37,7 +37,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
-    m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
+    m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->v8Inspector(), m_debugger->contextGroupId(), nullptr);
     m_session->append(new InspectorLogAgent(m_thread->consoleMessageStorage()));
 }
 

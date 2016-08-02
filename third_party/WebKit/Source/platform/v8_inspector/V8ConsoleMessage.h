@@ -15,7 +15,7 @@
 namespace blink {
 
 class InspectedContext;
-class V8DebuggerImpl;
+class V8InspectorImpl;
 class V8InspectorSessionImpl;
 class V8StackTraceImpl;
 
@@ -85,7 +85,7 @@ private:
 
 class V8ConsoleMessageStorage {
 public:
-    V8ConsoleMessageStorage(V8DebuggerImpl*, int contextGroupId);
+    V8ConsoleMessageStorage(V8InspectorImpl*, int contextGroupId);
     ~V8ConsoleMessageStorage();
 
     int contextGroupId() { return m_contextGroupId; }
@@ -97,7 +97,7 @@ public:
     void clear();
 
 private:
-    V8DebuggerImpl* m_debugger;
+    V8InspectorImpl* m_inspector;
     int m_contextGroupId;
     int m_expiredCount;
     std::deque<std::unique_ptr<V8ConsoleMessage>> m_messages;

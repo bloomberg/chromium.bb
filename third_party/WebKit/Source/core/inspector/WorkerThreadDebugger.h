@@ -57,7 +57,7 @@ public:
     void exceptionThrown(ErrorEvent*);
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
 
-    // V8DebuggerClient implementation.
+    // V8InspectorClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
     void muteWarningsAndDeprecations(int contextGroupId) override;
