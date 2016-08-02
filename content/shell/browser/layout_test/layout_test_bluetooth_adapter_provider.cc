@@ -1053,9 +1053,27 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
     MockBluetoothGattService* service,
     const std::string& uuid,
     BluetoothRemoteGattCharacteristic::Properties properties) {
-  return base::WrapUnique(new NiceMockBluetoothGattCharacteristic(
-      service, identifier, BluetoothUUID(uuid), false /* is_local */,
-      properties, NULL /* permissions */));
+  std::unique_ptr<NiceMockBluetoothGattCharacteristic> characteristic(
+      new NiceMockBluetoothGattCharacteristic(
+          service, identifier, BluetoothUUID(uuid), false /* is_local */,
+          properties, NULL /* permissions */));
+
+  // Read response.
+  ON_CALL(*characteristic, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(
+          RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
+
+  // Write response.
+  ON_CALL(*characteristic, WriteRemoteCharacteristic(_, _, _))
+      .WillByDefault(
+          RunCallback<2>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
+
+  // StartNotifySession response
+  ON_CALL(*characteristic, StartNotifySession(_, _))
+      .WillByDefault(
+          RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
+
+  return characteristic;
 }
 
 // static

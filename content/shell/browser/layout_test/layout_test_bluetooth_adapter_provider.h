@@ -587,6 +587,12 @@ class LayoutTestBluetoothAdapterProvider {
   //       Returns: NULL
   //   - GetPermissions:
   //       Returns: NULL
+  //   - ReadRemoteCharacteristic:
+  //       Calls error callback with GATT_ERROR_NOT_SUPPORTED.
+  //   - WriteRemoteCharacteristic:
+  //       Calls error callback with GATT_ERROR_NOT_SUPPORTED.
+  //   - StartNotifySession:
+  //       Calls error callback with GATT_ERROR_NOT_SUPPORTED.
   static std::unique_ptr<
       testing::NiceMock<device::MockBluetoothGattCharacteristic>>
   GetBaseGATTCharacteristic(
