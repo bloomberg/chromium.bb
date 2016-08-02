@@ -35,10 +35,6 @@ const wchar_t kLegacyCmdQuickEnableApplicationHost[] =
 // The legacy app_host.exe executable, which should be eradicated.
 const wchar_t kLegacyChromeAppHostExe[] = L"app_host.exe";
 
-base::string16 GetAppLauncherDisplayName() {
-  return GetLocalizedString(IDS_PRODUCT_APP_LAUNCHER_NAME_BASE);
-}
-
 void AddLegacyAppCommandRemovalItem(const InstallerState& installer_state,
                                     const AppRegistrationData& reg_data,
                                     const wchar_t* name,
