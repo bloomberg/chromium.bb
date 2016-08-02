@@ -117,8 +117,6 @@
         'views/apps_grid_view.h',
         'views/apps_grid_view_delegate.h',
         'views/apps_grid_view_folder_delegate.h',
-        'views/cached_label.cc',
-        'views/cached_label.h',
         'views/contents_view.cc',
         'views/contents_view.h',
         'views/custom_launcher_page_view.cc',
@@ -205,6 +203,8 @@
         'test/app_list_test_view_delegate.h',
         'test/test_search_result.cc',
         'test/test_search_result.h',
+        'views/test/app_list_view_test_api.cc',
+        'views/test/app_list_view_test_api.h',
       ],
     },
     {

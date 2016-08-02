@@ -85,9 +85,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetProfileByPath(const base::FilePath& profile_path) override;
   app_list::AppListModel* GetModel() override;
   app_list::SpeechUIModel* GetSpeechUI() override;
-  void GetShortcutPathForApp(
-      const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) override;
   void StartSearch() override;
   void StopSearch() override;
   void OpenSearchResult(app_list::SearchResult* result,

@@ -942,6 +942,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Apps.AppListWarmupDuration" units="ms">
+  <obsolete>
+    Deprecated 07/2016 in Issue 600915 with the removal of the app list on
+    Windows.
+  </obsolete>
   <owner>tapted@chromium.org</owner>
   <summary>
     The amount of time spent in warmup (in WarmupForProfile call). This will

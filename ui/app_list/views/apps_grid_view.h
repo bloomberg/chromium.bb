@@ -30,21 +30,12 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-#if defined(OS_WIN)
-#include <wrl/client.h>
-#include "ui/base/dragdrop/drag_source_win.h"
-#endif
-
 namespace views {
 class ButtonListener;
 class DragImageView;
 }
 
 namespace app_list {
-
-#if defined(OS_WIN)
-class SynchronousDrag;
-#endif
 
 namespace test {
 class AppsGridViewTestApi;
@@ -122,9 +113,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Set the drag and drop host for application links.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
-
-  // Prerenders the icons on and around the currently selected page.
-  void Prerender();
 
   // Return true if the |bounds_animator_| is animating |view|.
   bool IsAnimatingView(AppListItemView* view);
@@ -462,14 +450,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
-  void StartSettingUpSynchronousDrag();
-  bool RunSynchronousDrag();
-  void CleanUpSynchronousDrag();
-#if defined(OS_WIN)
-  void OnGotShortcutPath(Microsoft::WRL::ComPtr<SynchronousDrag> drag,
-                         const base::FilePath& path);
-#endif
-
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.
   AppsGridViewDelegate* delegate_;
@@ -509,15 +489,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Page the drag started on.
   int drag_start_page_;
-
-#if defined(OS_WIN)
-  // Created when a drag is started (ie: drag exceeds the drag threshold), but
-  // not Run() until supplied with a shortcut path.
-  Microsoft::WRL::ComPtr<SynchronousDrag> synchronous_drag_;
-
-  // Whether to use SynchronousDrag to support dropping to task bar etc.
-  bool use_synchronous_drag_;
-#endif
 
   Pointer drag_pointer_;
 

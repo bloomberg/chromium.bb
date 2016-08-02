@@ -21,10 +21,6 @@ namespace base {
 class FilePath;
 }
 
-namespace test {
-class AppListViewTestApi;
-}
-
 namespace views {
 class ImageView;
 }
@@ -39,6 +35,10 @@ class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
 class SpeechView;
+
+namespace test {
+class AppListViewTestApi;
+}
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -103,7 +103,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnThemeChanged() override;
 
   // WidgetDelegate overrides:
   bool ShouldHandleSystemCommands() const override;
@@ -115,19 +114,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void OnProfilesChanged() override;
   void OnShutdown() override;
 
-  void Prerender();
-
   void SetProfileByPath(const base::FilePath& profile_path);
 
   void AddObserver(AppListViewObserver* observer);
   void RemoveObserver(AppListViewObserver* observer);
-
-  // Set a callback to be called the next time any app list paints.
-  void SetNextPaintCallback(const base::Closure& callback);
-
-#if defined(OS_WIN)
-  HWND GetHWND() const;
-#endif
 
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
@@ -140,7 +130,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void SchedulePaintInRect(const gfx::Rect& rect) override;
 
  private:
-  friend class ::test::AppListViewTestApi;
+  friend class test::AppListViewTestApi;
 
   void InitContents(gfx::NativeView parent, int initial_apps_page);
 

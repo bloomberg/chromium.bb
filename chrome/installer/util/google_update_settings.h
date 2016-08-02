@@ -175,12 +175,6 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
-  // Set did_run "dr" in the client state value for app specified by
-  // |app_reg_data|. This is used to measure active users. Returns false if
-  // registry write fails.
-  static bool UpdateDidRunStateForApp(const AppRegistrationData& app_reg_data,
-                                      bool did_run);
-
   // Convenience routine: UpdateDidRunStateForApp() specialized for the current
   // BrowserDistribution, and also updates Chrome Binary's did_run if the
   // current distribution is multi-install.

@@ -53,8 +53,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   void Close();
 
-  void Prerender();
-
   void ModelChanged();
 
   SearchBoxView* search_box_view() const { return search_box_view_; }
@@ -102,9 +100,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // Overridden from AppsGridViewDelegate:
   void ActivateApp(AppListItem* item, int event_flags) override;
-  void GetShortcutPathForApp(
-      const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) override;
   void CancelDragInActiveFolder() override;
 
   // Overridden from SearchBoxViewDelegate:

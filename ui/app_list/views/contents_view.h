@@ -94,8 +94,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   int NumLauncherPages() const;
 
-  void Prerender();
-
   AppsContainerView* apps_container_view() const {
     return apps_container_view_;
   }

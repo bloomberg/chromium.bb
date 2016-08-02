@@ -33,6 +33,7 @@
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/start_page_view.h"
+#include "ui/app_list/views/test/app_list_view_test_api.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/events/event_utils.h"
@@ -259,7 +260,8 @@ bool AppListViewTestContext::IsStateShown(AppListModel::State state) {
 void AppListViewTestContext::Show() {
   view_->GetWidget()->Show();
   run_loop_.reset(new base::RunLoop);
-  view_->SetNextPaintCallback(run_loop_->QuitClosure());
+  AppListViewTestApi test_api(view_);
+  test_api.SetNextPaintCallback(run_loop_->QuitClosure());
   run_loop_->Run();
 
   EXPECT_TRUE(view_->GetWidget()->IsVisible());

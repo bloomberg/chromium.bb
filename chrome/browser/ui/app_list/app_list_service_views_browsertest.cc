@@ -22,6 +22,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/test/app_list_view_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,27 +44,6 @@ app_list::AppListView* GetAppListView(AppListService* service) {
 }
 
 }  // namespace
-
-namespace test {
-
-// Allow access to private variables of the AppListView for testing.
-class AppListViewTestApi {
- public:
-  explicit AppListViewTestApi(app_list::AppListView* view) : view_(view) {}
-  virtual ~AppListViewTestApi() {}
-
-  bool is_overlay_visible() {
-    DCHECK(view_->overlay_view_);
-    return view_->overlay_view_->visible();
-  }
-
- private:
-  app_list::AppListView* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewTestApi);
-};
-
-}  // namespace test
 
 // Browser Test for AppListService on Views platforms.
 typedef InProcessBrowserTest AppListServiceViewsBrowserTest;
@@ -101,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, NativeClose) {
 // Dismiss the app list via an accelerator when it is the only thing keeping
 // Chrome alive and expect everything to clean up properly. This is a regression
 // test for http://crbug.com/395937.
-// Flaky on Win and Linux. https://crbug.com/477697
-#if defined(OS_WIN) || defined(OS_LINUX)
+// Flaky on Linux. https://crbug.com/477697
+#if defined(OS_LINUX)
 #define MAYBE_AcceleratorClose DISABLED_AcceleratorClose
 #else
 #define MAYBE_AcceleratorClose AcceleratorClose
@@ -207,7 +187,7 @@ class AppListControllerAppInfoDialogBrowserTest :
 // flaky: http://crbug.com/378251
 IN_PROC_BROWSER_TEST_P(AppListControllerAppInfoDialogBrowserTest,
                        DISABLED_DoShowAppInfoFlow) {
-  test::AppListViewTestApi test_api(app_list_view_);
+  app_list::test::AppListViewTestApi test_api(app_list_view_);
 
   views::Widget::Widgets owned_widgets;
   views::Widget::GetAllOwnedWidgets(native_view_, &owned_widgets);

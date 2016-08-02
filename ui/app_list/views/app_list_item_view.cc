@@ -14,7 +14,6 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
-#include "ui/app_list/views/cached_label.h"
 #include "ui/app_list/views/progress_bar_view.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,11 +48,6 @@ const int kFolderPreviewRadius = 40;
 
 const int kLeftRightPaddingChars = 1;
 
-#if !defined(OS_WIN)
-// Scale to transform the icon when a drag starts.
-const float kDraggingIconScale = 1.5f;
-#endif
-
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 200;
 
@@ -84,7 +78,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       item_weak_(item),
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
-      title_(new CachedLabel),
+      title_(new views::Label),
       progress_bar_(new ProgressBarView),
       ui_state_(UI_STATE_NORMAL),
       touch_dragging_(false),
@@ -105,7 +99,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   static const gfx::FontList font_list = GetFontList();
   title_->SetFontList(font_list);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->Invalidate();
   SetTitleSubpixelAA();
 
   AddChildView(icon_);
@@ -161,23 +154,6 @@ void AppListItemView::SetUIState(UIState ui_state) {
     case UI_STATE_DROPPING_IN_FOLDER:
       break;
   }
-#if !defined(OS_WIN)
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  switch (ui_state_) {
-    case UI_STATE_NORMAL:
-      layer()->SetTransform(gfx::Transform());
-      break;
-    case UI_STATE_DRAGGING: {
-      const gfx::Rect bounds(layer()->bounds().size());
-      layer()->SetTransform(gfx::GetScaleTransform(
-          bounds.CenterPoint(),
-          kDraggingIconScale));
-      break;
-    }
-    case UI_STATE_DROPPING_IN_FOLDER:
-      break;
-  }
-#endif  // !OS_WIN
 
   SetTitleSubpixelAA();
   SchedulePaint();
@@ -195,10 +171,6 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
 void AppListItemView::OnMouseDragTimer() {
   DCHECK(apps_grid_view_->IsDraggedView(this));
   SetUIState(UI_STATE_DRAGGING);
-}
-
-void AppListItemView::Prerender() {
-  title_->PaintToBackingImage();
 }
 
 void AppListItemView::CancelContextMenu() {
@@ -230,7 +202,6 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
   title_->SetText(display_name);
-  title_->Invalidate();
 
   tooltip_text_ = display_name == full_name ? base::string16() : full_name;
 
@@ -409,16 +380,6 @@ void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   apps_grid_view_->EndDrag(false);
 }
 
-void AppListItemView::OnMouseCaptureLost() {
-  // We don't cancel the dag on mouse capture lost for windows as entering a
-  // synchronous drag causes mouse capture to be lost and pressing escape
-  // dismisses the app list anyway.
-#if !defined(OS_WIN)
-  CustomButton::OnMouseCaptureLost();
-  apps_grid_view_->EndDrag(true);
-#endif
-}
-
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
   if (apps_grid_view_->IsDraggedView(this)) {
@@ -551,7 +512,6 @@ void AppListItemView::SetTitleSubpixelAA() {
     title_->SetBackgroundColor(0);
     title_->set_background(NULL);
   }
-  title_->Invalidate();
   title_->SchedulePaint();
 }
 

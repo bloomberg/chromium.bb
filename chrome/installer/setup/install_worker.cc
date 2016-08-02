@@ -244,10 +244,8 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
 
 #if defined(GOOGLE_CHROME_BUILD)
       if (!InstallUtil::IsChromeSxSProcess()) {
-        // Add items to set up the App Launcher's version key if Google Chrome
-        // is being installed or updated.
-        AddAppLauncherVersionKeyWorkItems(installer_state.root_key(),
-            new_version, add_language_identifier, list);
+        // Remove the app launcher key as it has been deprecated.
+        RemoveAppLauncherVersionKey(installer_state.root_key());
       }
 #endif  // GOOGLE_CHROME_BUILD
       InstallUtil::AddUpdateDowngradeVersionItem(

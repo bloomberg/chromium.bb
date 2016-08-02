@@ -30,12 +30,7 @@ void AppListMenu::InitMenu() {
   // only 1 user.
   if (users_.size() > 1) {
     for (size_t i = 0; i < users_.size(); ++i) {
-#if defined(OS_MACOSX)
-      menu_model_.AddRadioItem(SELECT_PROFILE + i,
-                               users_[i].email.empty() ? users_[i].name
-                                                       : users_[i].email,
-                               0 /* group_id */);
-#elif defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
       menu_model_.AddItem(SELECT_PROFILE + i, users_[i].name);
       int menu_index = menu_model_.GetIndexOfCommandId(SELECT_PROFILE + i);
       menu_model_.SetSublabel(menu_index, users_[i].email);
@@ -58,12 +53,7 @@ void AppListMenu::InitMenu() {
 }
 
 bool AppListMenu::IsCommandIdChecked(int command_id) const {
-#if defined(OS_MACOSX)
-  DCHECK_LT(static_cast<unsigned>(command_id) - SELECT_PROFILE, users_.size());
-  return users_[command_id - SELECT_PROFILE].active;
-#else
   return false;
-#endif
 }
 
 bool AppListMenu::IsCommandIdEnabled(int command_id) const {

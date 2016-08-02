@@ -328,10 +328,6 @@ void ContentsView::ShowFolderContent(AppListFolderItem* item) {
   apps_container_view_->ShowActiveFolder(item);
 }
 
-void ContentsView::Prerender() {
-  apps_container_view_->apps_grid_view()->Prerender();
-}
-
 AppListPage* ContentsView::GetPageView(int index) const {
   DCHECK_GT(static_cast<int>(app_list_pages_.size()), index);
   return app_list_pages_[index];

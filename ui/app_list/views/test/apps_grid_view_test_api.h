@@ -30,8 +30,6 @@ class AppsGridViewTestApi {
 
   void PressItemAt(int index);
 
-  void DisableSynchronousDrag();
-
   bool HasPendingPageFlip() const;
 
  private:

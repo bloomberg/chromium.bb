@@ -160,10 +160,6 @@ void AppListMainView::Close() {
   contents_view_->CancelDrag();
 }
 
-void AppListMainView::Prerender() {
-  contents_view_->Prerender();
-}
-
 void AppListMainView::ModelChanged() {
   pending_icon_loaders_.clear();
   model_->RemoveObserver(this);
@@ -290,12 +286,6 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
     contents_view_->ShowFolderContent(static_cast<AppListFolderItem*>(item));
   else
     item->Activate(event_flags);
-}
-
-void AppListMainView::GetShortcutPathForApp(
-    const std::string& app_id,
-    const base::Callback<void(const base::FilePath&)>& callback) {
-  delegate_->GetShortcutPathForApp(app_id, callback);
 }
 
 void AppListMainView::CancelDragInActiveFolder() {

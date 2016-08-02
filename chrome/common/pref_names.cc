@@ -2076,9 +2076,6 @@ const char kAppListEnableMethod[] = "app_list.how_enabled";
 // The time that the app launcher was enabled. Cleared when UMA is recorded.
 const char kAppListEnableTime[] = "app_list.when_enabled";
 
-// The last time the app list was launched.
-const char kAppListLastLaunchTime[] = "app_list.last_launch";
-
 #if defined(OS_MACOSX)
 // Integer representing the version of the app launcher shortcut installed on
 // the system. Incremented, e.g., when embedded icons change.

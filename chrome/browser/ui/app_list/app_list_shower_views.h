@@ -40,7 +40,6 @@ class AppListShower {
   // Virtual functions mocked out in tests.
   virtual void HandleViewBeingDestroyed();
   virtual bool IsAppListVisible() const;
-  void WarmupForProfile(Profile* profile);
   virtual bool HasView() const;
 
  protected:

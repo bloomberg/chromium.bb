@@ -54,20 +54,6 @@ void AddLegacyAppCommandRemovalItem(const InstallerState& installer_state,
 
 }  // namespace
 
-void AddAppLauncherVersionKeyWorkItems(HKEY root,
-                                       const base::Version& new_version,
-                                       bool add_language_identifier,
-                                       WorkItemList* list) {
-  DCHECK(!InstallUtil::IsChromeSxSProcess());
-  const UpdatingAppRegistrationData app_launcher_reg_data(kAppLauncherGuid);
-  AddVersionKeyWorkItems(root,
-                         app_launcher_reg_data.GetVersionKey(),
-                         GetAppLauncherDisplayName(),
-                         new_version,
-                         add_language_identifier,
-                         list);
-}
-
 void RemoveAppLauncherVersionKey(HKEY reg_root) {
   DCHECK(!InstallUtil::IsChromeSxSProcess());
   const UpdatingAppRegistrationData app_launcher_reg_data(kAppLauncherGuid);

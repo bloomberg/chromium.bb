@@ -207,10 +207,6 @@ class AppListMainViewTest : public views::ViewsTestBase {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(FolderView()->visible());
 
-#if defined(OS_WIN)
-    AppsGridViewTestApi folder_grid_view_test_api(FolderGridView());
-    folder_grid_view_test_api.DisableSynchronousDrag();
-#endif
     return folder_item_view;
   }
 

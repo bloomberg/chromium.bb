@@ -29,27 +29,14 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#if defined(OS_WIN)
-#include "ui/views/win/hwnd_util.h"
-#endif  // defined(OS_WIN)
 #endif  // defined(USE_AURA)
-
-#if defined(OS_WIN)
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/win/shortcut.h"
-#include "ui/base/dragdrop/drag_utils.h"
-#include "ui/base/dragdrop/drop_target_win.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
-#include "ui/display/win/screen_win.h"
-#endif
 
 namespace app_list {
 
@@ -85,10 +72,6 @@ const int kPageFlipZoneSize = 40;
 
 // Delay in milliseconds to do the page flip.
 const int kPageFlipDelayInMs = 1000;
-
-// How many pages on either side of the selected one we prerender. Currently 0
-// to test impact of prerendering on UI jank for http://crbug.com/440224. Was 1.
-const int kPrerenderPages = 0;
 
 // The drag and drop proxy should get scaled by this factor.
 const float kDragAndDropProxyScale = 1.5f;
@@ -233,127 +216,6 @@ int ClampToRange(int value, int min, int max) {
 
 }  // namespace
 
-#if defined(OS_WIN)
-// Interprets drag events sent from Windows via the drag/drop API and forwards
-// them to AppsGridView.
-// On Windows, in order to have the OS perform the drag properly we need to
-// provide it with a shortcut file which may or may not exist at the time the
-// drag is started. Therefore while waiting for that shortcut to be located we
-// just do a regular "internal" drag and transition into the synchronous drag
-// when the shortcut is found/created. Hence a synchronous drag is an optional
-// phase of a regular drag and non-Windows platforms drags are equivalent to a
-// Windows drag that never enters the synchronous drag phase.
-class SynchronousDrag : public ui::DragSourceWin {
- public:
-  SynchronousDrag(AppsGridView* grid_view,
-                  AppListItemView* drag_view,
-                  const gfx::Point& drag_view_offset)
-      : grid_view_(grid_view),
-        drag_view_(drag_view),
-        drag_view_offset_(drag_view_offset),
-        has_shortcut_path_(false),
-        running_(false),
-        canceled_(false) {}
-
-  void set_shortcut_path(const base::FilePath& shortcut_path) {
-    has_shortcut_path_ = true;
-    shortcut_path_ = shortcut_path;
-  }
-
-  bool running() { return running_; }
-
-  bool CanRun() {
-    return has_shortcut_path_ && !running_;
-  }
-
-  void Run() {
-    DCHECK(CanRun());
-
-    // Prevent the synchronous dragger being destroyed while the drag is
-    // running.
-    Microsoft::WRL::ComPtr<SynchronousDrag> this_ref = this;
-    running_ = true;
-
-    ui::OSExchangeData data;
-    SetupExchangeData(&data);
-
-    // Hide the dragged view because the OS is going to create its own.
-    drag_view_->SetVisible(false);
-
-    // Blocks until the drag is finished. Calls into the ui::DragSourceWin
-    // methods.
-    DWORD effects;
-    DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
-               this, DROPEFFECT_MOVE | DROPEFFECT_LINK, &effects);
-
-    // If |drag_view_| is NULL the drag was ended by some reentrant code.
-    if (drag_view_) {
-      // Make the drag view visible again.
-      drag_view_->SetVisible(true);
-      drag_view_->OnSyncDragEnd();
-
-      grid_view_->EndDrag(canceled_ || !IsCursorWithinGridView());
-    }
-  }
-
-  void EndDragExternally() {
-    CancelDrag();
-    DCHECK(drag_view_);
-    drag_view_->SetVisible(true);
-    drag_view_ = NULL;
-  }
-
- private:
-  // Overridden from ui::DragSourceWin.
-  void OnDragSourceCancel() override { canceled_ = true; }
-
-  void OnDragSourceDrop() override {}
-
-  void OnDragSourceMove() override {
-    grid_view_->UpdateDrag(AppsGridView::MOUSE, GetCursorInGridViewCoords());
-  }
-
-  void SetupExchangeData(ui::OSExchangeData* data) {
-    data->SetFilename(shortcut_path_);
-    drag_utils::SetDragImageOnDataObject(
-        drag_view_->GetDragImage(),
-        drag_view_offset_ - drag_view_->GetDragImageOffset(), data);
-  }
-
-  HWND GetGridViewHWND() {
-    return views::HWNDForView(grid_view_);
-  }
-
-  bool IsCursorWithinGridView() {
-    POINT p;
-    GetCursorPos(&p);
-    return GetGridViewHWND() == WindowFromPoint(p);
-  }
-
-  gfx::Point GetCursorInGridViewCoords() {
-    POINT p;
-    GetCursorPos(&p);
-    ScreenToClient(GetGridViewHWND(), &p);
-    gfx::Point grid_view_pt(p.x, p.y);
-    grid_view_pt =
-        display::win::ScreenWin::ClientToDIPPoint(GetGridViewHWND(),
-                                                  grid_view_pt);
-    views::View::ConvertPointFromWidget(grid_view_, &grid_view_pt);
-    return grid_view_pt;
-  }
-
-  AppsGridView* grid_view_;
-  AppListItemView* drag_view_;
-  gfx::Point drag_view_offset_;
-  bool has_shortcut_path_;
-  base::FilePath shortcut_path_;
-  bool running_;
-  bool canceled_;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousDrag);
-};
-#endif  // defined(OS_WIN)
-
 AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
     : model_(NULL),
       item_list_(NULL),
@@ -365,9 +227,6 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
       selected_view_(NULL),
       drag_view_(NULL),
       drag_start_page_(-1),
-#if defined(OS_WIN)
-      use_synchronous_drag_(true),
-#endif
       drag_pointer_(NONE),
       drop_attempt_(DROP_FOR_NONE),
       drag_and_drop_host_(NULL),
@@ -510,80 +369,6 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
-void AppsGridView::StartSettingUpSynchronousDrag() {
-#if defined(OS_WIN)
-  if (!delegate_ || !use_synchronous_drag_)
-    return;
-
-  // Folders and downloading items can't be integrated with the OS.
-  if (IsFolderItem(drag_view_->item()) || drag_view_->item()->is_installing())
-    return;
-
-  // Favor the drag and drop host over native win32 drag. For the Win8/ash
-  // launcher we want to have ashes drag and drop over win32's.
-  if (drag_and_drop_host_)
-    return;
-
-  // Never create a second synchronous drag if the drag started in a folder.
-  if (IsDraggingForReparentInRootLevelGridView())
-    return;
-
-  synchronous_drag_ = Microsoft::WRL::Make<SynchronousDrag>(this, drag_view_,
-                                                            drag_view_offset_);
-  delegate_->GetShortcutPathForApp(drag_view_->item()->id(),
-                                   base::Bind(&AppsGridView::OnGotShortcutPath,
-                                              base::Unretained(this),
-                                              synchronous_drag_));
-#endif
-}
-
-bool AppsGridView::RunSynchronousDrag() {
-#if defined(OS_WIN)
-  if (!synchronous_drag_.Get())
-    return false;
-
-  if (synchronous_drag_->CanRun()) {
-    if (IsDraggingForReparentInHiddenGridView())
-      folder_delegate_->SetRootLevelDragViewVisible(false);
-    synchronous_drag_->Run();
-    synchronous_drag_ = nullptr;
-    return true;
-  } else if (!synchronous_drag_->running()) {
-    // The OS drag is not ready yet. If the root grid has a drag view because
-    // a reparent has started, ensure it is visible.
-    if (IsDraggingForReparentInHiddenGridView())
-      folder_delegate_->SetRootLevelDragViewVisible(true);
-  }
-#endif
-  return false;
-}
-
-void AppsGridView::CleanUpSynchronousDrag() {
-#if defined(OS_WIN)
-  if (synchronous_drag_.Get())
-    synchronous_drag_->EndDragExternally();
-
-  synchronous_drag_ = nullptr;
-#endif
-}
-
-#if defined(OS_WIN)
-void AppsGridView::OnGotShortcutPath(
-    Microsoft::WRL::ComPtr<SynchronousDrag> synchronous_drag,
-    const base::FilePath& path) {
-  // Drag may have ended before we get the shortcut path or a new drag may have
-  // begun.
-  if (synchronous_drag_ != synchronous_drag)
-    return;
-  // Setting the shortcut path here means the next time we hit UpdateDrag()
-  // we'll enter the synchronous drag.
-  // NOTE we don't Run() the drag here because that causes animations not to
-  // update for some reason.
-  synchronous_drag_->set_shortcut_path(path);
-  DCHECK(synchronous_drag_->CanRun());
-}
-#endif
-
 bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
   if (!drag_view_)
@@ -612,9 +397,6 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   if (!drag_view_)
     return;  // Drag canceled.
 
-  if (RunSynchronousDrag())
-    return;
-
   gfx::Vector2d drag_vector(point - drag_start_grid_view_);
   if (!dragging() && ExceededDragThreshold(drag_vector)) {
     drag_pointer_ = pointer;
@@ -626,7 +408,6 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     if (!drag_view_)
       return;
 
-    StartSettingUpSynchronousDrag();
     if (!dragging_for_reparent_item_)
       StartDragAndDropHostDrag(point);
   }
@@ -733,10 +514,6 @@ void AppsGridView::EndDrag(bool cancel) {
                     !landed_in_drag_and_drop_host /* animate */);
     }
   }
-
-  // The drag can be ended after the synchronous drag is created but before it
-  // is Run().
-  CleanUpSynchronousDrag();
 
   SetAsFolderDroppingTarget(folder_drop_target_, false);
   ClearDragState();
@@ -868,16 +645,6 @@ void AppsGridView::SetDragViewVisible(bool visible) {
 void AppsGridView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   drag_and_drop_host_ = drag_and_drop_host;
-}
-
-void AppsGridView::Prerender() {
-  Layout();
-  int selected_page = std::max(0, pagination_model_.selected_page());
-  int start = std::max(0, (selected_page - kPrerenderPages) * tiles_per_page());
-  int end = std::min(view_model_.view_size(),
-                     (selected_page + 1 + kPrerenderPages) * tiles_per_page());
-  for (int i = start; i < end; i++)
-    GetItemViewAt(i)->Prerender();
 }
 
 bool AppsGridView::IsAnimatingView(AppListItemView* view) {
@@ -1475,9 +1242,6 @@ void AppsGridView::OnFolderItemReparentTimer() {
   DCHECK(folder_delegate_);
   if (drag_out_of_folder_container_ && drag_view_) {
     bool has_native_drag = drag_and_drop_host_ != nullptr;
-#if defined(OS_WIN)
-    has_native_drag = has_native_drag || synchronous_drag_.Get();
-#endif
     folder_delegate_->ReparentItem(
         drag_view_, last_drag_point_, has_native_drag);
 
@@ -1588,10 +1352,6 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     SetViewHidden(drag_view_, false /* show */, true /* no animate */);
   }
 
-  // The drag can be ended after the synchronous drag is created but before it
-  // is Run().
-  CleanUpSynchronousDrag();
-
   SetAsFolderDroppingTarget(folder_drop_target_, false);
   if (cancel_reparent) {
     CancelFolderItemReparent(drag_view_);
@@ -1614,10 +1374,6 @@ void AppsGridView::EndDragForReparentInHiddenFolderGridView() {
     // item visible again.
     drag_and_drop_host_->DestroyDragIconProxy();
   }
-
-  // The drag can be ended after the synchronous drag is created but before it
-  // is Run().
-  CleanUpSynchronousDrag();
 
   SetAsFolderDroppingTarget(folder_drop_target_, false);
   ClearDragState();

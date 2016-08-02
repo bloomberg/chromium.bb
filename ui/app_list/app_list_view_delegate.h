@@ -75,12 +75,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Gets the SpeechUIModel for the app list. Owned by the AppListViewDelegate.
   virtual SpeechUIModel* GetSpeechUI() = 0;
 
-  // Gets a path to a shortcut for the given app. Returns asynchronously as the
-  // shortcut may not exist yet.
-  virtual void GetShortcutPathForApp(
-      const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) = 0;
-
   // Invoked to start a new search. Delegate collects query input from
   // SearchBoxModel and populates SearchResults. Both models are sub models
   // of AppListModel.

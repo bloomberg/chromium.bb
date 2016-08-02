@@ -98,12 +98,6 @@ bool AppListShower::IsAppListVisible() const {
   return app_list_ && app_list_->GetWidget()->IsVisible();
 }
 
-void AppListShower::WarmupForProfile(Profile* profile) {
-  DCHECK(!profile_);
-  CreateViewForProfile(profile);
-  app_list_->Prerender();
-}
-
 bool AppListShower::HasView() const {
   return !!app_list_;
 }

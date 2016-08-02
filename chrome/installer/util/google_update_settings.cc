@@ -222,13 +222,18 @@ bool GetUpdatePolicyFromDword(
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+bool UpdateDidRunStateForApp(const AppRegistrationData& app_reg_data,
+                             bool did_run) {
+  return WriteGoogleUpdateStrKeyInternal(
+      app_reg_data, google_update::kRegDidRunField, did_run ? L"1" : L"0");
+}
+
 // Convenience routine: GoogleUpdateSettings::UpdateDidRunStateForApp()
 // specialized for Chrome Binaries.
 bool UpdateDidRunStateForBinaries(bool did_run) {
   BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BINARIES);
-  return GoogleUpdateSettings::UpdateDidRunStateForApp(
-      dist->GetAppRegistrationData(), did_run);
+  return UpdateDidRunStateForApp(dist->GetAppRegistrationData(), did_run);
 }
 
 }  // namespace
@@ -477,14 +482,6 @@ bool GoogleUpdateSettings::GetReferral(base::string16* referral) {
 
 bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
-}
-
-bool GoogleUpdateSettings::UpdateDidRunStateForApp(
-    const AppRegistrationData& app_reg_data,
-    bool did_run) {
-  return WriteGoogleUpdateStrKeyInternal(app_reg_data,
-                                         google_update::kRegDidRunField,
-                                         did_run ? L"1" : L"0");
 }
 
 bool GoogleUpdateSettings::UpdateDidRunState(bool did_run, bool system_level) {

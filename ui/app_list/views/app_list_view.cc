@@ -50,9 +50,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/wm/core/masked_window_targeter.h"
-#if defined(OS_WIN)
-#include "ui/base/win/shell.h"
-#endif
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
@@ -73,14 +70,7 @@ const int kArrowOffset = 10;
 
 // Determines whether the current environment supports shadows bubble borders.
 bool SupportsShadow() {
-#if defined(OS_WIN)
-  // Shadows are not supported on Windows without Aero Glass.
-  if (!ui::win::IsAeroGlassEnabled() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableDwmComposition)) {
-    return false;
-  }
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Shadows are not supported on (non-ChromeOS) Linux.
   return false;
 #endif
@@ -354,12 +344,6 @@ void AppListView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void AppListView::OnThemeChanged() {
-#if defined(OS_WIN)
-  GetWidget()->Close();
-#endif
-}
-
 bool AppListView::ShouldHandleSystemCommands() const {
   return true;
 }
@@ -378,10 +362,6 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
 
   return views::BubbleDialogDelegateView::
       ShouldDescendIntoChildForEventHandling(child, location);
-}
-
-void AppListView::Prerender() {
-  app_list_main_view_->Prerender();
 }
 
 void AppListView::OnProfilesChanged() {
@@ -405,19 +385,6 @@ void AppListView::AddObserver(AppListViewObserver* observer) {
 void AppListView::RemoveObserver(AppListViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
-
-// static
-void AppListView::SetNextPaintCallback(const base::Closure& callback) {
-  next_paint_callback_ = callback;
-}
-
-#if defined(OS_WIN)
-HWND AppListView::GetHWND() const {
-  gfx::NativeWindow window =
-      GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  return window->GetHost()->GetAcceleratedWidget();
-}
-#endif
 
 PaginationModel* AppListView::GetAppsPaginationModel() {
   return app_list_main_view_->contents_view()
@@ -600,13 +567,7 @@ void AppListView::OnBeforeBubbleWidgetInit(
   if (!params->native_widget && delegate_ && delegate_->ForceNativeDesktop())
     params->native_widget = new views::DesktopNativeWidgetAura(widget);
 #endif
-#if defined(OS_WIN)
-  // Windows 7 and higher offer pinning to the taskbar, but we need presence
-  // on the taskbar for the user to be able to pin us. So, show the window on
-  // the taskbar for these versions of Windows.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    params->force_show_in_taskbar = true;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   // Set up a custom WM_CLASS for the app launcher window. This allows task
   // switchers in X11 environments to distinguish it from main browser windows.
   params->wm_class_name = kAppListWMClass;

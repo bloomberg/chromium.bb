@@ -28,6 +28,7 @@
 #include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {

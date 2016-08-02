@@ -248,12 +248,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
 
-  void GetShortcutPathForApp(
-      const std::string& app_id,
-      const base::Callback<void(const base::FilePath&)>& callback) override {
-    callback.Run(base::FilePath());
-  }
-
   void OpenSearchResult(app_list::SearchResult* result,
                         bool auto_launch,
                         int event_flags) override {

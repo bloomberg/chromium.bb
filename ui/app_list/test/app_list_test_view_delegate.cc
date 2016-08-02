@@ -52,12 +52,6 @@ SpeechUIModel* AppListTestViewDelegate::GetSpeechUI() {
   return &speech_ui_;
 }
 
-void AppListTestViewDelegate::GetShortcutPathForApp(
-    const std::string& app_id,
-    const base::Callback<void(const base::FilePath&)>& callback) {
-  callback.Run(base::FilePath());
-}
-
 void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
                                                bool auto_launch,
                                                int event_flags) {

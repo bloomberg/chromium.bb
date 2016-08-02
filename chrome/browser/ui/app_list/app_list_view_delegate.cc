@@ -76,10 +76,6 @@
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/web_applications/web_app_win.h"
-#endif
-
 #if !defined(OS_CHROMEOS)
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -93,19 +89,6 @@ const char kAppLauncherCategoryTag[] = "AppLauncher";
 namespace {
 
 const int kAutoLaunchDefaultTimeoutMilliSec = 50;
-
-#if defined(OS_WIN)
-void CreateShortcutInWebAppDir(
-    const base::FilePath& app_data_dir,
-    base::Callback<void(const base::FilePath&)> callback,
-    std::unique_ptr<web_app::ShortcutInfo> info) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(web_app::CreateShortcutInWebAppDir, app_data_dir,
-                 base::Passed(&info)),
-      callback);
-}
-#endif
 
 void PopulateUsers(const base::FilePath& active_profile_path,
                    app_list::AppListViewDelegate::Users* users) {
@@ -445,32 +428,6 @@ app_list::AppListModel* AppListViewDelegate::GetModel() {
 
 app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
   return speech_ui_.get();
-}
-
-void AppListViewDelegate::GetShortcutPathForApp(
-    const std::string& app_id,
-    const base::Callback<void(const base::FilePath&)>& callback) {
-#if defined(OS_WIN)
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::EVERYTHING);
-  if (!extension) {
-    callback.Run(base::FilePath());
-    return;
-  }
-
-  base::FilePath app_data_dir(
-      web_app::GetWebAppDataDirectory(profile_->GetPath(),
-                                      extension->id(),
-                                      GURL()));
-
-  web_app::GetShortcutInfoForApp(
-      extension,
-      profile_,
-      base::Bind(CreateShortcutInWebAppDir, app_data_dir, callback));
-#else
-  callback.Run(base::FilePath());
-#endif
 }
 
 void AppListViewDelegate::StartSearch() {

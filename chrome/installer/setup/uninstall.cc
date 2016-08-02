@@ -1153,11 +1153,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteChromeRegistrationKeys(installer_state, browser_dist,
                                  HKEY_CURRENT_USER, suffix, &ret);
 
-#if defined(GOOGLE_CHROME_BUILD)
-    if (!InstallUtil::IsChromeSxSProcess())
-      RemoveAppLauncherVersionKey(reg_root);
-#endif  // GOOGLE_CHROME_BUILD
-
     // If the user's Chrome is registered with a suffix: it is possible that old
     // unsuffixed registrations were left in HKCU (e.g. if this install was
     // previously installed with no suffix in HKCU (old suffix rules if the user
