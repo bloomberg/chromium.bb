@@ -78,7 +78,7 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         std::unique_ptr<AwaitPromiseCallback>) override;
-    void callFunctionOn(ErrorString*,
+    void callFunctionOn(
         const String16& objectId,
         const String16& expression,
         const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
@@ -86,8 +86,8 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         const Maybe<bool>& userGesture,
-        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown) override;
+        const Maybe<bool>& awaitPromise,
+        std::unique_ptr<CallFunctionOnCallback>) override;
     void releaseObject(ErrorString*, const String16& objectId) override;
     void getProperties(ErrorString*,
         const String16& objectId,

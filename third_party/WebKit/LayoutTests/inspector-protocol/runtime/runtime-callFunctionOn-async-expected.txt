@@ -1,0 +1,107 @@
+CONSOLE ERROR: Uncaught (in promise) #<Object>
+Tests that Runtime.callFunctionOn works with awaitPromise flag.
+
+Running test: testArguments
+{
+    result : {
+        type : string
+        value : undefined|NaN|[object Object]|[object Window]
+    }
+    wasThrown : false
+}
+
+Running test: testSyntaxErrorInFunction
+{
+    exceptionDetails : {
+        columnNumber : 2
+        lineNumber : 1
+        scriptId : 0
+        text : Uncaught SyntaxError: Unexpected token }
+    }
+    result : {
+        className : SyntaxError
+        description : SyntaxError: Unexpected token }
+        objectId : [ObjectId]
+        subtype : error
+        type : object
+    }
+    wasThrown : true
+}
+
+Running test: testExceptionInFunctionExpression
+{
+    exceptionDetails : {
+        columnNumber : 15
+        lineNumber : 0
+        scriptId : 0
+        text : Uncaught Error
+    }
+    result : {
+        className : Error
+        description : Error     at <anonymous>:1:22     at <anonymous>:1:36
+        objectId : [ObjectId]
+        subtype : error
+        type : object
+    }
+    wasThrown : true
+}
+
+Running test: testFunctionReturnNotPromise
+{
+    code : -32000
+    message : Result of the function call is not a promise.
+}
+
+Running test: testFunctionReturnResolvedPromiseReturnByValue
+{
+    result : {
+        type : object
+        value : {
+            a : 3
+        }
+    }
+}
+
+Running test: testFunctionReturnResolvedPromiseWithPreview
+{
+    result : {
+        className : Object
+        description : Object
+        objectId : [ObjectId]
+        preview : {
+            description : Object
+            overflow : false
+            properties : [
+                [0] : {
+                    name : a
+                    type : number
+                    value : 3
+                }
+            ]
+            type : object
+        }
+        type : object
+    }
+}
+
+Running test: testFunctionReturnRejectedPromise
+{
+    exceptionDetails : {
+        columnNumber : 0
+        lineNumber : 0
+        scriptId : 
+        stackTrace : {
+            callFrames : [
+            ]
+        }
+        text : Promise was rejected
+    }
+    result : {
+        type : object
+        value : {
+            a : 3
+        }
+    }
+    wasThrown : true
+}
+

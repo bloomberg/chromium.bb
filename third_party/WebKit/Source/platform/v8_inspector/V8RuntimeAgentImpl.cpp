@@ -64,36 +64,23 @@ namespace {
 template<typename Callback>
 class ProtocolPromiseHandler {
 public:
-    static void add(V8InspectorImpl* inspector, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<Callback> callback, bool returnByValue, bool generatePreview)
+    static void add(V8InspectorImpl* inspector, v8::Local<v8::Context> context, v8::Local<v8::Promise> promise, int contextGroupId, int executionContextId, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<Callback> callback)
     {
-        ErrorString errorString;
-        InjectedScript::ObjectScope scope(&errorString, inspector, contextGroupId, promiseObjectId);
-        if (!scope.initialize()) {
-            callback->sendFailure(errorString);
-            return;
-        }
-        if (!scope.object()->IsPromise()) {
-            callback->sendFailure("Could not find promise with given id");
-            return;
-        }
-
         Callback* rawCallback = callback.get();
-        ProtocolPromiseHandler<Callback>* handler = new ProtocolPromiseHandler(inspector, contextGroupId, promiseObjectId, std::move(callback), returnByValue, generatePreview);
+        ProtocolPromiseHandler<Callback>* handler = new ProtocolPromiseHandler(inspector, contextGroupId, executionContextId, objectGroup, returnByValue, generatePreview, std::move(callback));
         v8::Local<v8::Value> wrapper = handler->m_wrapper.Get(inspector->isolate());
-        v8::Local<v8::Promise> promise = v8::Local<v8::Promise>::Cast(scope.object());
 
-        v8::Local<v8::Function> thenCallbackFunction = v8::Function::New(scope.context(), thenCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
-        if (promise->Then(scope.context(), thenCallbackFunction).IsEmpty()) {
+        v8::Local<v8::Function> thenCallbackFunction = v8::Function::New(context, thenCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
+        if (promise->Then(context, thenCallbackFunction).IsEmpty()) {
             rawCallback->sendFailure("Internal error");
             return;
         }
-        v8::Local<v8::Function> catchCallbackFunction = v8::Function::New(scope.context(), catchCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
-        if (promise->Catch(scope.context(), catchCallbackFunction).IsEmpty()) {
+        v8::Local<v8::Function> catchCallbackFunction = v8::Function::New(context, catchCallback, wrapper, 0, v8::ConstructorBehavior::kThrow).ToLocalChecked();
+        if (promise->Catch(context, catchCallbackFunction).IsEmpty()) {
             rawCallback->sendFailure("Internal error");
             return;
         }
     }
-
 private:
     static void thenCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
@@ -123,13 +110,14 @@ private:
         handler->m_callback->sendSuccess(handler->wrapObject(value), true, std::move(exceptionDetails));
     }
 
-    ProtocolPromiseHandler(V8InspectorImpl* inspector, int contextGroupId, const String16& promiseObjectId, std::unique_ptr<Callback> callback, bool returnByValue, bool generatePreview)
+    ProtocolPromiseHandler(V8InspectorImpl* inspector, int contextGroupId, int executionContextId, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<Callback> callback)
         : m_inspector(inspector)
         , m_contextGroupId(contextGroupId)
-        , m_promiseObjectId(promiseObjectId)
-        , m_callback(std::move(callback))
+        , m_executionContextId(executionContextId)
+        , m_objectGroup(objectGroup)
         , m_returnByValue(returnByValue)
         , m_generatePreview(generatePreview)
+        , m_callback(std::move(callback))
         , m_wrapper(inspector->isolate(), v8::External::New(inspector->isolate(), this))
     {
         m_wrapper.SetWeak(this, cleanup, v8::WeakCallbackType::kParameter);
@@ -149,12 +137,12 @@ private:
     std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value> value)
     {
         ErrorString errorString;
-        InjectedScript::ObjectScope scope(&errorString, m_inspector, m_contextGroupId, m_promiseObjectId);
+        InjectedScript::ContextScope scope(&errorString, m_inspector, m_contextGroupId, m_executionContextId);
         if (!scope.initialize()) {
             m_callback->sendFailure(errorString);
             return nullptr;
         }
-        std::unique_ptr<protocol::Runtime::RemoteObject> wrappedValue = scope.injectedScript()->wrapObject(&errorString, value, scope.objectGroupName(), m_returnByValue, m_generatePreview);
+        std::unique_ptr<protocol::Runtime::RemoteObject> wrappedValue = scope.injectedScript()->wrapObject(&errorString, value, m_objectGroup, m_returnByValue, m_generatePreview);
         if (!wrappedValue) {
             m_callback->sendFailure(errorString);
             return nullptr;
@@ -164,12 +152,38 @@ private:
 
     V8InspectorImpl* m_inspector;
     int m_contextGroupId;
-    String16 m_promiseObjectId;
-    std::unique_ptr<Callback> m_callback;
+    int m_executionContextId;
+    String16 m_objectGroup;
     bool m_returnByValue;
     bool m_generatePreview;
+    std::unique_ptr<Callback> m_callback;
     v8::Global<v8::External> m_wrapper;
 };
+
+template<typename Callback>
+bool wrapEvaluateResultAsync(InjectedScript* injectedScript, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, Callback* callback)
+{
+    std::unique_ptr<RemoteObject> result;
+    Maybe<bool> wasThrown;
+    Maybe<protocol::Runtime::ExceptionDetails> exceptionDetails;
+
+    ErrorString errorString;
+    injectedScript->wrapEvaluateResult(&errorString,
+        maybeResultValue,
+        tryCatch,
+        objectGroup,
+        returnByValue,
+        generatePreview,
+        &result,
+        &wasThrown,
+        &exceptionDetails);
+    if (errorString.isEmpty()) {
+        callback->sendSuccess(std::move(result), wasThrown, exceptionDetails);
+        return true;
+    }
+    callback->sendFailure(errorString);
+    return false;
+}
 
 } // namespace
 
@@ -247,26 +261,8 @@ void V8RuntimeAgentImpl::evaluate(
         return;
     }
 
-    std::unique_ptr<RemoteObject> result;
-    Maybe<bool> wasThrown;
-    Maybe<protocol::Runtime::ExceptionDetails> exceptionDetails;
-
-    scope.injectedScript()->wrapEvaluateResult(&errorString,
-        maybeResultValue,
-        scope.tryCatch(),
-        objectGroup.fromMaybe(""),
-        returnByValue.fromMaybe(false) && !awaitPromise.fromMaybe(false),
-        generatePreview.fromMaybe(false) && !awaitPromise.fromMaybe(false),
-        &result,
-        &wasThrown,
-        &exceptionDetails);
-    if (!errorString.isEmpty()) {
-        callback->sendFailure(errorString);
-        return;
-    }
-
-    if (!awaitPromise.fromMaybe(false) || wasThrown.fromMaybe(false)) {
-        callback->sendSuccess(std::move(result), wasThrown, exceptionDetails);
+    if (!awaitPromise.fromMaybe(false) || scope.tryCatch().HasCaught()) {
+        wrapEvaluateResultAsync(scope.injectedScript(), maybeResultValue, scope.tryCatch(), objectGroup.fromMaybe(""), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), callback.get());
         return;
     }
 
@@ -280,7 +276,16 @@ void V8RuntimeAgentImpl::evaluate(
         return;
     }
 
-    ProtocolPromiseHandler<EvaluateCallback>::add(m_inspector, m_session->contextGroupId(), result->getObjectId(String16()), std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
+    ProtocolPromiseHandler<EvaluateCallback>::add(
+        m_inspector,
+        scope.context(),
+        v8::Local<v8::Promise>::Cast(maybeResultValue.ToLocalChecked()),
+        m_session->contextGroupId(),
+        scope.injectedScript()->context()->contextId(),
+        objectGroup.fromMaybe(""),
+        returnByValue.fromMaybe(false),
+        generatePreview.fromMaybe(false),
+        std::move(callback));
 }
 
 void V8RuntimeAgentImpl::awaitPromise(
@@ -289,10 +294,29 @@ void V8RuntimeAgentImpl::awaitPromise(
     const Maybe<bool>& generatePreview,
     std::unique_ptr<AwaitPromiseCallback> callback)
 {
-    ProtocolPromiseHandler<AwaitPromiseCallback>::add(m_inspector, m_session->contextGroupId(), promiseObjectId, std::move(callback), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false));
+    ErrorString errorString;
+    InjectedScript::ObjectScope scope(&errorString, m_inspector, m_session->contextGroupId(), promiseObjectId);
+    if (!scope.initialize()) {
+        callback->sendFailure(errorString);
+        return;
+    }
+    if (!scope.object()->IsPromise()) {
+        callback->sendFailure("Could not find promise with given id");
+        return;
+    }
+    ProtocolPromiseHandler<AwaitPromiseCallback>::add(
+        m_inspector,
+        scope.context(),
+        v8::Local<v8::Promise>::Cast(scope.object()),
+        m_session->contextGroupId(),
+        scope.injectedScript()->context()->contextId(),
+        scope.objectGroupName(),
+        returnByValue.fromMaybe(false),
+        generatePreview.fromMaybe(false),
+        std::move(callback));
 }
 
-void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
+void V8RuntimeAgentImpl::callFunctionOn(
     const String16& objectId,
     const String16& expression,
     const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
@@ -300,12 +324,15 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     const Maybe<bool>& userGesture,
-    std::unique_ptr<RemoteObject>* result,
-    Maybe<bool>* wasThrown)
+    const Maybe<bool>& awaitPromise,
+    std::unique_ptr<CallFunctionOnCallback> callback)
 {
-    InjectedScript::ObjectScope scope(errorString, m_inspector, m_session->contextGroupId(), objectId);
-    if (!scope.initialize())
+    ErrorString errorString;
+    InjectedScript::ObjectScope scope(&errorString, m_inspector, m_session->contextGroupId(), objectId);
+    if (!scope.initialize()) {
+        callback->sendFailure(errorString);
         return;
+    }
 
     std::unique_ptr<v8::Local<v8::Value>[]> argv = nullptr;
     int argc = 0;
@@ -315,8 +342,10 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         argv.reset(new v8::Local<v8::Value>[argc]);
         for (int i = 0; i < argc; ++i) {
             v8::Local<v8::Value> argumentValue;
-            if (!scope.injectedScript()->resolveCallArgument(errorString, arguments->get(i)).ToLocal(&argumentValue))
+            if (!scope.injectedScript()->resolveCallArgument(&errorString, arguments->get(i)).ToLocal(&argumentValue)) {
+                callback->sendFailure(errorString);
                 return;
+            }
             argv[i] = argumentValue;
         }
     }
@@ -328,26 +357,54 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
 
     v8::MaybeLocal<v8::Value> maybeFunctionValue = m_inspector->compileAndRunInternalScript(scope.context(), toV8String(m_inspector->isolate(), "(" + expression + ")"));
     // Re-initialize after running client's code, as it could have destroyed context or session.
-    if (!scope.initialize())
+    if (!scope.initialize()) {
+        callback->sendFailure(errorString);
         return;
+    }
 
     if (scope.tryCatch().HasCaught()) {
-        scope.injectedScript()->wrapEvaluateResult(errorString, maybeFunctionValue, scope.tryCatch(), scope.objectGroupName(), false, false, result, wasThrown, nullptr);
+        wrapEvaluateResultAsync(scope.injectedScript(), maybeFunctionValue, scope.tryCatch(), scope.objectGroupName(), false, false, callback.get());
         return;
     }
 
     v8::Local<v8::Value> functionValue;
     if (!maybeFunctionValue.ToLocal(&functionValue) || !functionValue->IsFunction()) {
-        *errorString = "Given expression does not evaluate to a function";
+        callback->sendFailure("Given expression does not evaluate to a function");
         return;
     }
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_inspector->callFunction(functionValue.As<v8::Function>(), scope.context(), scope.object(), argc, argv.get());
     // Re-initialize after running client's code, as it could have destroyed context or session.
-    if (!scope.initialize())
+    if (!scope.initialize()) {
+        callback->sendFailure(errorString);
         return;
+    }
 
-    scope.injectedScript()->wrapEvaluateResult(errorString, maybeResultValue, scope.tryCatch(), scope.objectGroupName(), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, nullptr);
+    if (!awaitPromise.fromMaybe(false) || scope.tryCatch().HasCaught()) {
+        wrapEvaluateResultAsync(scope.injectedScript(), maybeResultValue, scope.tryCatch(), scope.objectGroupName(), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), callback.get());
+        return;
+    }
+
+    if (maybeResultValue.IsEmpty()) {
+        callback->sendFailure("Internal error");
+        return;
+    }
+
+    if (!maybeResultValue.ToLocalChecked()->IsPromise()) {
+        callback->sendFailure("Result of the function call is not a promise.");
+        return;
+    }
+
+    ProtocolPromiseHandler<CallFunctionOnCallback>::add(
+        m_inspector,
+        scope.context(),
+        v8::Local<v8::Promise>::Cast(maybeResultValue.ToLocalChecked()),
+        m_session->contextGroupId(),
+        scope.injectedScript()->context()->contextId(),
+        scope.objectGroupName(),
+        returnByValue.fromMaybe(false),
+        generatePreview.fromMaybe(false),
+        std::move(callback));
 }
 
 void V8RuntimeAgentImpl::getProperties(
