@@ -29,6 +29,7 @@ class DepsUpdater(object):
         self.keep_w3c_repos_around = False
         self.target = None
         self.auto_update = False
+        self.auth_refresh_token_json = None
 
     def main(self, argv=None):
         self.parse_args(argv)
@@ -73,7 +74,11 @@ class DepsUpdater(object):
             _, out = self.run(['git', 'diff', 'master', '--name-only'])
             email_list = self.generate_email_list(out, directory_dict)
             self.print_('## Uploading change list.')
-            self.check_run(['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'] + ['--cc' + email for email in email_list])
+            command = ['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'] + ['--cc' + email for email in email_list]
+            if self.auth_refresh_token_json:
+                command.append('--auth-refresh-token-json')
+                command.append(self.auth_refresh_token_json)
+            self.check_run(command)
             self.print_('## Triggering try jobs.')
             for try_bot in try_bots:
                 self.run(['git', 'cl', 'try', '-b', try_bot])
@@ -112,6 +117,8 @@ class DepsUpdater(object):
                             help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
         parser.add_argument('--auto-update', action='store_true',
                             help='uploads CL and initiates commit queue.')
+        parser.add_argument('--auth-refresh-token-json',
+                            help='Rietveld auth refresh JSON token.')
 
         args = parser.parse_args(argv)
         self.allow_local_commits = args.allow_local_commits
@@ -119,6 +126,7 @@ class DepsUpdater(object):
         self.verbose = args.verbose
         self.target = args.target
         self.auto_update = args.auto_update
+        self.auth_refresh_token_json = args.auth_refresh_token_json
 
     def checkout_is_okay(self):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
