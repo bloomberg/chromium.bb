@@ -125,13 +125,12 @@
     </div>
 
     <!-- SIM Info (Cellular only). -->
-    <div class="settings-box self-stretch"
-        hidden$="[[!showCellularSim_(networkProperties)]]">
-      <network-siminfo editable network-properties="[[networkProperties]]"
-          on-siminfo-change="onNetworkPropertyChange_"
-          networking-private="[[networkingPrivate]]">
-      </network-siminfo>
-    </div>
+    <network-siminfo
+        editable on-siminfo-change="onNetworkPropertyChange_"
+        hidden$="[[!showCellularSim_(networkProperties)]]"
+        network-properties="[[networkProperties]]"
+        networking-private="[[networkingPrivate]]">
+    </network-siminfo>
 
     <!-- IP Address. -->
     <div class="settings-box two-line single-column" hidden$="[[!IPAddress]]">
