@@ -1529,6 +1529,12 @@ void remote_surface_set_rectangular_shadow_background_opacity(
       wl_fixed_to_double(opacity));
 }
 
+void remote_surface_activate(wl_client* client,
+                             wl_resource* resource,
+                             uint32_t serial) {
+  GetUserDataAs<ShellSurface>(resource)->Activate();
+}
+
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -1546,7 +1552,8 @@ const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_top_inset,
     remote_surface_set_system_modal,
     remote_surface_unset_system_modal,
-    remote_surface_set_rectangular_shadow_background_opacity};
+    remote_surface_set_rectangular_shadow_background_opacity,
+    remote_surface_activate};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -1888,7 +1895,7 @@ const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 9;
+const uint32_t remote_shell_version = 10;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

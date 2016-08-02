@@ -569,6 +569,16 @@ struct zwp_remote_surface_v1_interface {
 	void (*set_rectangular_shadow_background_opacity)(struct wl_client *client,
 							  struct wl_resource *resource,
 							  wl_fixed_t opacity);
+	/**
+	 * activate surface
+	 *
+	 * Make surface active.
+	 *
+	 * @since 10
+	 */
+	void (*activate)(struct wl_client *client,
+				struct wl_resource *resource,
+				uint32_t serial);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

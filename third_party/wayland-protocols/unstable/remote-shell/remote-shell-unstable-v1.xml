@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="9">
+  <interface name="zwp_remote_shell_v1" version="10">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -167,7 +167,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="9">
+  <interface name="zwp_remote_surface_v1" version="10">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -496,6 +496,14 @@
       <arg name="opacity" type="fixed"/>
     </request>
 
+    <!-- Version 10 additions -->
+
+    <request name="activate" since="10">
+      <description summary="make the surface active">
+	Make the surface active and bring it to the front.
+      </description>
+      <arg name="serial" type="uint" summary="the serial of the user event"/>
+    </request>
   </interface>
 
   <!-- Version 6 additions -->

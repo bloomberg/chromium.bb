@@ -547,6 +547,7 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL	14
 #define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL	15
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY	16
+#define ZWP_REMOTE_SURFACE_V1_ACTIVATE	17
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -616,6 +617,10 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY_SINCE_VERSION	9
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_ACTIVATE_SINCE_VERSION	10
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -915,6 +920,18 @@ zwp_remote_surface_v1_set_rectangular_shadow_background_opacity(struct zwp_remot
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY, opacity);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Make the surface active and bring it to the front.
+ */
+static inline void
+zwp_remote_surface_v1_activate(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, uint32_t serial)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_ACTIVATE, serial);
 }
 
 #define ZWP_NOTIFICATION_SURFACE_V1_DESTROY	0

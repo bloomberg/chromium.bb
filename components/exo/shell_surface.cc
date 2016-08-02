@@ -335,6 +335,15 @@ void ShellSurface::SetParent(ShellSurface* parent) {
   }
 }
 
+void ShellSurface::Activate() {
+  TRACE_EVENT0("exo", "ShellSurface::Activate");
+
+  if (!widget_ || widget_->IsActive())
+    return;
+
+  widget_->Activate();
+}
+
 void ShellSurface::Maximize() {
   TRACE_EVENT0("exo", "ShellSurface::Maximize");
 

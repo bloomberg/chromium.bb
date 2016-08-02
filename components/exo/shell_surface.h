@@ -97,6 +97,9 @@ class ShellSurface : public SurfaceDelegate,
   // parent.
   void SetParent(ShellSurface* parent);
 
+  // Activates the shell surface.
+  void Activate();
+
   // Maximizes the shell surface.
   void Maximize();
 
