@@ -6,6 +6,9 @@ isolate.py
 isolate_format.py
 isolated_format.py
 isolateserver.py
+libs/__init__.py
+libs/arfile/__init__.py
+libs/arfile/arfile.py
 run_isolated.py
 third_party/__init__.py
 third_party/chromium/__init__.py
@@ -84,6 +87,7 @@ third_party/infra_libs/logs/__init__.py
 third_party/infra_libs/logs/logs.py
 third_party/infra_libs/memoize.py
 third_party/infra_libs/time_functions/__init__.py
+third_party/infra_libs/time_functions/parser.py
 third_party/infra_libs/time_functions/testing.py
 third_party/infra_libs/time_functions/timestamp.py
 third_party/infra_libs/time_functions/zulu.py
@@ -97,6 +101,7 @@ third_party/infra_libs/ts_mon/common/interface.py
 third_party/infra_libs/ts_mon/common/metric_store.py
 third_party/infra_libs/ts_mon/common/metrics.py
 third_party/infra_libs/ts_mon/common/monitors.py
+third_party/infra_libs/ts_mon/common/pb_to_popo.py
 third_party/infra_libs/ts_mon/common/standard_metrics.py
 third_party/infra_libs/ts_mon/common/targets.py
 third_party/infra_libs/ts_mon/config.py
