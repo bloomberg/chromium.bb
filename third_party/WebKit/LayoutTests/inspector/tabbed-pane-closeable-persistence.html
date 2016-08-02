@@ -9,7 +9,7 @@ var test = function()
         InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedPaneController._closeableTabSetting.get()));
     }
 
-    var tabbedPaneController = WebInspector.inspectorView._drawer._extensibleTabbedPaneController;
+    var tabbedPaneController = WebInspector.inspectorView._drawer._extensibleTabbedPane;
     logPersistenceSetting();
     // Show a closeable tab.
     tabbedPaneController.showTab("sensors");
