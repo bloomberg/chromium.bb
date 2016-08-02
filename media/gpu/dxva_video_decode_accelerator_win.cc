@@ -1413,12 +1413,6 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     copy_nv12_textures_ = false;
   }
 
-  // The MS VP9 MFT doesn't pass through the bind flags we specify, so
-  // textures aren't created with D3D11_BIND_SHADER_RESOURCE and can't be used
-  // from ANGLE.
-  if (using_ms_vp9_mft_)
-    share_nv12_textures_ = false;
-
   return true;
 }
 
