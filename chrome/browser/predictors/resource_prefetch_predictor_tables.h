@@ -16,6 +16,7 @@
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/request_priority.h"
 #include "url/gurl.h"
 
 namespace sql {
@@ -46,7 +47,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                 int number_of_hits,
                 int number_of_misses,
                 int consecutive_misses,
-                double average_position);
+                double average_position,
+                net::RequestPriority priority);
     void UpdateScore();
     bool operator==(const ResourceRow& rhs) const;
 
@@ -61,6 +63,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
     size_t number_of_misses;
     size_t consecutive_misses;
     double average_position;
+    net::RequestPriority priority;
 
     // Not stored.
     float score;
@@ -141,6 +144,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // PredictorTableBase methods.
   void CreateTableIfNonExistent() override;
   void LogDatabaseStats() override;
+
+  bool DropTablesIfOutdated(sql::Connection* db);
 
   // Helpers to return Statements for cached Statements. The caller must take
   // ownership of the return Statements.

@@ -31,7 +31,7 @@ class Entry(object):
 
   def __init__(
       self, main_page_url, resource_url, resource_type, number_of_hits,
-      number_of_misses, consecutive_misses, average_position):
+      number_of_misses, consecutive_misses, average_position, priority):
     self.main_page_url = main_page_url
     self.resource_url = resource_url
     self.resource_type = resource_type
@@ -39,6 +39,7 @@ class Entry(object):
     self.number_of_misses = int(number_of_misses)
     self.consecutive_misses = int(consecutive_misses)
     self.average_position = int(average_position)
+    self.priority = int(priority)
     self.confidence = float(number_of_hits) / (
         number_of_hits + number_of_misses)
     self.score = self._Score()
@@ -57,10 +58,11 @@ class Entry(object):
     return Entry(*row)
 
   def __str__(self):
-    return '%f,%s,%d,%d,%d,%d,%d,%f\t%s' % (
+    return '%f,%s,%d,%d,%d,%d,%d,%f,%d\t%s' % (
         self.score, self.main_page_url, self.resource_type,
         self.number_of_hits, self.number_of_misses, self.consecutive_misses,
-        self.average_position, self.confidence, self.resource_url)
+        self.average_position, self.confidence, self.priority,
+        self.resource_url)
 
 
 def FilterAndSort(entries, domain):
@@ -79,7 +81,7 @@ def DatabaseStats(filename, domain):
   connection = sqlite3.connect(filename)
   c = connection.cursor()
   query = ('SELECT main_page_url, resource_url, resource_type, number_of_hits, '
-           'number_of_misses, consecutive_misses, average_position '
+           'number_of_misses, consecutive_misses, average_position, priority '
            'FROM resource_prefetch_predictor_host')
   entries = [Entry.FromRow(row) for row in c.execute(query)]
   prefetched = FilterAndSort(entries, domain)

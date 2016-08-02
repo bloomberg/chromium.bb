@@ -72,6 +72,7 @@ bool SummarizeResponse(net::URLRequest* request,
   summary->navigation_id.creation_time = request->creation_time();
   summary->resource_url = request->original_url();
   summary->resource_type = info->GetResourceType();
+  summary->priority = request->priority();
   request->GetMimeType(&summary->mime_type);
   summary->was_cached = request->was_cached();
 

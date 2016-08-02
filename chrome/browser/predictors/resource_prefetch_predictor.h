@@ -85,6 +85,7 @@ class ResourcePrefetchPredictor
     NavigationID navigation_id;
     GURL resource_url;
     content::ResourceType resource_type;
+    net::RequestPriority priority;
 
     // Only for responses.
     std::string mime_type;

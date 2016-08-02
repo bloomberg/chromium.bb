@@ -38,6 +38,7 @@ void BindResourceRowToStatement(
   statement->BindInt(4, row.number_of_misses);
   statement->BindInt(5, row.consecutive_misses);
   statement->BindDouble(6, row.average_position);
+  statement->BindInt(7, static_cast<int>(row.priority));
 }
 
 bool StepAndInitializeResourceRow(
@@ -54,6 +55,7 @@ bool StepAndInitializeResourceRow(
   row->number_of_misses = statement->ColumnInt(4);
   row->consecutive_misses = statement->ColumnInt(5);
   row->average_position = statement->ColumnDouble(6);
+  row->priority = static_cast<net::RequestPriority>(statement->ColumnInt(7));
   return true;
 }
 
@@ -70,20 +72,20 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow()
       number_of_misses(0),
       consecutive_misses(0),
       average_position(0.0),
-      score(0.0) {
-}
+      priority(net::IDLE),
+      score(0.0) {}
 
 ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
     const ResourceRow& other)
-        : primary_key(other.primary_key),
-          resource_url(other.resource_url),
-          resource_type(other.resource_type),
-          number_of_hits(other.number_of_hits),
-          number_of_misses(other.number_of_misses),
-          consecutive_misses(other.consecutive_misses),
-          average_position(other.average_position),
-          score(other.score) {
-}
+    : primary_key(other.primary_key),
+      resource_url(other.resource_url),
+      resource_type(other.resource_type),
+      number_of_hits(other.number_of_hits),
+      number_of_misses(other.number_of_misses),
+      consecutive_misses(other.consecutive_misses),
+      average_position(other.average_position),
+      priority(other.priority),
+      score(other.score) {}
 
 ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
     const std::string& i_primary_key,
@@ -92,14 +94,16 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
     int i_number_of_hits,
     int i_number_of_misses,
     int i_consecutive_misses,
-    double i_average_position)
-        : primary_key(i_primary_key),
-          resource_url(i_resource_url),
-          resource_type(i_resource_type),
-          number_of_hits(i_number_of_hits),
-          number_of_misses(i_number_of_misses),
-          consecutive_misses(i_consecutive_misses),
-          average_position(i_average_position) {
+    double i_average_position,
+    net::RequestPriority i_priority)
+    : primary_key(i_primary_key),
+      resource_url(i_resource_url),
+      resource_type(i_resource_type),
+      number_of_hits(i_number_of_hits),
+      number_of_misses(i_number_of_misses),
+      consecutive_misses(i_consecutive_misses),
+      average_position(i_average_position),
+      priority(i_priority) {
   UpdateScore();
 }
 
@@ -120,18 +124,18 @@ void ResourcePrefetchPredictorTables::ResourceRow::UpdateScore() {
       score = kMaxResourcesPerType - average_position;
       break;
   }
+  // TODO(lizeb): Take priority into account.
 }
 
 bool ResourcePrefetchPredictorTables::ResourceRow::operator==(
     const ResourceRow& rhs) const {
-  return primary_key == rhs.primary_key &&
-      resource_url == rhs.resource_url &&
-      resource_type == rhs.resource_type &&
-      number_of_hits == rhs.number_of_hits &&
-      number_of_misses == rhs.number_of_misses &&
-      consecutive_misses == rhs.consecutive_misses &&
-      average_position == rhs.average_position &&
-      score == rhs.score;
+  return primary_key == rhs.primary_key && resource_url == rhs.resource_url &&
+         resource_type == rhs.resource_type &&
+         number_of_hits == rhs.number_of_hits &&
+         number_of_misses == rhs.number_of_misses &&
+         consecutive_misses == rhs.consecutive_misses &&
+         average_position == rhs.average_position && priority == rhs.priority &&
+         score == rhs.score;
 }
 
 bool ResourcePrefetchPredictorTables::ResourceRowSorter::operator()(
@@ -387,6 +391,20 @@ bool ResourcePrefetchPredictorTables::StringsAreSmallerThanDBLimit(
   return true;
 }
 
+bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
+    sql::Connection* db) {
+  bool success = true;
+  for (const char* table_name :
+       {kUrlResourceTableName, kHostResourceTableName}) {
+    if (db->DoesTableExist(table_name) &&
+        !db->DoesColumnExist(table_name, "priority")) {
+      success &=
+          db->Execute(base::StringPrintf("DROP TABLE %s", table_name).c_str());
+    }
+  }
+  return success;
+}
+
 void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
@@ -401,6 +419,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
       "number_of_misses INTEGER, "
       "consecutive_misses INTEGER, "
       "average_position DOUBLE, "
+      "priority INTEGER, "
       "PRIMARY KEY(main_page_url, resource_url))";
   const char* metadata_table_creator =
       "CREATE TABLE %s ( "
@@ -409,19 +428,23 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
       "PRIMARY KEY(main_page_url))";
 
   sql::Connection* db = DB();
-  bool success =
-      (db->DoesTableExist(kUrlResourceTableName) ||
-       db->Execute(base::StringPrintf(resource_table_creator,
-                                      kUrlResourceTableName).c_str())) &&
-      (db->DoesTableExist(kUrlMetadataTableName) ||
-       db->Execute(base::StringPrintf(metadata_table_creator,
-                                      kUrlMetadataTableName).c_str())) &&
-      (db->DoesTableExist(kHostResourceTableName) ||
-       db->Execute(base::StringPrintf(resource_table_creator,
-                                      kHostResourceTableName).c_str())) &&
-      (db->DoesTableExist(kHostMetadataTableName) ||
-       db->Execute(base::StringPrintf(metadata_table_creator,
-                                      kHostMetadataTableName).c_str()));
+  bool success = DropTablesIfOutdated(db) &&
+                 (db->DoesTableExist(kUrlResourceTableName) ||
+                  db->Execute(base::StringPrintf(resource_table_creator,
+                                                 kUrlResourceTableName)
+                                  .c_str())) &&
+                 (db->DoesTableExist(kUrlMetadataTableName) ||
+                  db->Execute(base::StringPrintf(metadata_table_creator,
+                                                 kUrlMetadataTableName)
+                                  .c_str())) &&
+                 (db->DoesTableExist(kHostResourceTableName) ||
+                  db->Execute(base::StringPrintf(resource_table_creator,
+                                                 kHostResourceTableName)
+                                  .c_str())) &&
+                 (db->DoesTableExist(kHostMetadataTableName) ||
+                  db->Execute(base::StringPrintf(metadata_table_creator,
+                                                 kHostMetadataTableName)
+                                  .c_str()));
 
   if (!success)
     ResetDB();
@@ -462,8 +485,10 @@ Statement*
       base::StringPrintf(
           "INSERT INTO %s "
           "(main_page_url, resource_url, resource_type, number_of_hits, "
-          "number_of_misses, consecutive_misses, average_position) "
-          "VALUES (?,?,?,?,?,?,?)", kUrlResourceTableName).c_str()));
+          "number_of_misses, consecutive_misses, average_position, priority) "
+          "VALUES (?,?,?,?,?,?,?,?)",
+          kUrlResourceTableName)
+          .c_str()));
 }
 
 Statement*
@@ -498,8 +523,10 @@ Statement*
       base::StringPrintf(
           "INSERT INTO %s "
           "(main_page_url, resource_url, resource_type, number_of_hits, "
-          "number_of_misses, consecutive_misses, average_position) "
-          "VALUES (?,?,?,?,?,?,?)", kHostResourceTableName).c_str()));
+          "number_of_misses, consecutive_misses, average_position, priority) "
+          "VALUES (?,?,?,?,?,?,?,?)",
+          kHostResourceTableName)
+          .c_str()));
 }
 
 Statement*

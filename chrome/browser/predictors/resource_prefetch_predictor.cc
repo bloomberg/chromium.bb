@@ -357,18 +357,18 @@ content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
-      was_cached(false) {
-}
+      priority(net::IDLE),
+      was_cached(false) {}
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
     const URLRequestSummary& other)
-        : navigation_id(other.navigation_id),
-          resource_url(other.resource_url),
-          resource_type(other.resource_type),
-          mime_type(other.mime_type),
-          was_cached(other.was_cached),
-          redirect_url(other.redirect_url) {
-}
+    : navigation_id(other.navigation_id),
+      resource_url(other.resource_url),
+      resource_type(other.resource_type),
+      priority(other.priority),
+      mime_type(other.mime_type),
+      was_cached(other.was_cached),
+      redirect_url(other.redirect_url) {}
 
 ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
 }
@@ -941,6 +941,7 @@ void ResourcePrefetchPredictor::LearnNavigation(
       row_to_add.resource_type = new_resources[i].resource_type;
       row_to_add.number_of_hits = 1;
       row_to_add.average_position = i + 1;
+      row_to_add.priority = new_resources[i].priority;
       cache_entry->second.resources.push_back(row_to_add);
       resources_seen.insert(new_resources[i].resource_url);
     }
@@ -978,6 +979,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
         if (new_row.resource_type != content::RESOURCE_TYPE_LAST_TYPE)
           old_row.resource_type = new_row.resource_type;
 
+        old_row.priority = new_row.priority;
+
         int position = new_index[old_row.resource_url] + 1;
         int total = old_row.number_of_hits + old_row.number_of_misses;
         old_row.average_position =
@@ -999,6 +1002,7 @@ void ResourcePrefetchPredictor::LearnNavigation(
       row_to_add.resource_type = summary.resource_type;
       row_to_add.number_of_hits = 1;
       row_to_add.average_position = i + 1;
+      row_to_add.priority = summary.priority;
       old_resources.push_back(row_to_add);
 
       // To ensure we dont add the same url twice.
