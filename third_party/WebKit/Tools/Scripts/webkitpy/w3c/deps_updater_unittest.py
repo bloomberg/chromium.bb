@@ -68,3 +68,19 @@ Total: 8 tryjobs
         })
         self.assertTrue(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))
         self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'y-manual.html'))
+
+    def test_generate_email_list(self):
+        updater = DepsUpdater(MockHost())
+        owners = {'foo/bar': 'me@gmail.com', 'foo/baz': 'you@gmail.com', 'foo/bat': 'noone@gmail.com'}
+        results = """third_party/WebKit/LayoutTests/foo/bar/file.html
+third_party/WebKit/LayoutTests/foo/bar/otherfile.html
+third_party/WebKit/LayoutTests/foo/baz/files.html"""
+        self.assertEqual(updater.generate_email_list(results, owners), ['me@gmail.com', 'you@gmail.com'])
+
+    def test_parse_directory_owners(self):
+        updater = DepsUpdater(MockHost())
+        data_file = [{'notification-email': 'charizard@gmail.com', 'directory': 'foo/bar'},
+                     {'notification-email': 'blastoise@gmail.com', 'directory': 'foo/baz'},
+                     {'notification-email': '', 'directory': 'gol/bat'}]
+        self.assertEqual(updater.parse_directory_owners(data_file),
+                         {'foo/bar': 'charizard@gmail.com', 'foo/baz': 'blastoise@gmail.com'})

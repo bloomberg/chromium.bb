@@ -5,6 +5,7 @@
 """Pull latest revisions of a W3C test repo and make a local commit."""
 
 import argparse
+import json
 import time
 
 from webkitpy.common.webkit_finder import WebKitFinder
@@ -65,8 +66,14 @@ class DepsUpdater(object):
         self.commit_changes_if_needed(chromium_commitish, import_commitish)
         if self.auto_update:
             try_bots = self.host.builders.all_try_builder_names()
+            data_file_path = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
+            with open(data_file_path) as data_file:
+                directory_dict = self.parse_directory_owners(json.load(data_file))
+            self.print_('## Gathering directory owners email to CC')
+            _, out = self.run(['git', 'diff', 'master', '--name-only'])
+            email_list = self.generate_email_list(out, directory_dict)
             self.print_('## Uploading change list.')
-            self.check_run(['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'])
+            self.check_run(['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'] + ['--cc' + email for email in email_list])
             self.print_('## Triggering try jobs.')
             for try_bot in try_bots:
                 self.run(['git', 'cl', 'try', '-b', try_bot])
@@ -296,8 +303,44 @@ class DepsUpdater(object):
                 sets[result_type].add(line.split()[0])
         return sets
 
+    def generate_email_list(self, changed_files, directory_dict):
+        """Generates a list of emails to be cc'd for current import.
+
+        Takes output from git diff master --name-only and gets the
+        directories and generates list of contact emails.
+
+        Args:
+            changed_files: A string with newline-separated file paths relative
+                           to the repository root.
+            directory_dict: A mapping of directories in the LayoutTests/imported
+                            folder to the email address of the point of contact.
+
+        Returns:
+            A list of the email addresses to be notified for the current
+            import.
+        """
+        email_list = []
+        directories = set()
+        for line in changed_files.splitlines():
+            layout_tests_relative_path = self.fs.relpath(self.finder.layout_tests_dir(), self.finder.chromium_base())
+            test_path = self.fs.relpath(line, layout_tests_relative_path)
+            test_path = self.fs.dirname(test_path)
+            test_path = test_path.strip('../')
+            if test_path in directory_dict and test_path not in directories:
+                email_list.append(directory_dict[test_path])
+                directories.add(test_path)
+        return email_list
+
     def check_run(self, command):
         return_code, out = self.run(command)
         if return_code:
             raise Exception('%s failed with exit code %d.' % ' '.join(command), return_code)
         return out
+
+    @staticmethod
+    def parse_directory_owners(decoded_data_file):
+        directory_dict = {}
+        for dict_set in decoded_data_file:
+            if dict_set['notification-email']:
+                directory_dict[dict_set['directory']] = dict_set['notification-email']
+        return directory_dict
