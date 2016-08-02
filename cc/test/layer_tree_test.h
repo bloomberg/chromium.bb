@@ -9,14 +9,15 @@
 #include "base/threading/thread.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/test/remote_proto_channel_bridge.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_hooks.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 class AnimationPlayer;
-class FakeExternalBeginFrameSource;
 class FakeLayerTreeHostClient;
 class FakeOutputSurface;
 class LayerImpl;
@@ -24,10 +25,12 @@ class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
+class LayerTreeTestDelegatingOutputSurfaceClient;
 class ProxyImpl;
 class ProxyMain;
 class RemoteChannelImplForTest;
 class TestContextProvider;
+class TestDelegatingOutputSurface;
 class TestGpuMemoryBufferManager;
 class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
@@ -113,8 +116,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchCompositeImmediately();
   void DispatchNextCommitWaitsForActivation();
 
-  void SetOutputSurfaceOnLayerTreeHost(
-      std::unique_ptr<OutputSurface> output_surface);
   std::unique_ptr<OutputSurface> ReleaseOutputSurfaceOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
 
@@ -137,7 +138,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
   Proxy* remote_client_proxy() const;
   TaskRunnerProvider* task_runner_provider() const;
-  TaskGraphRunner* task_graph_runner() const;
+  TaskGraphRunner* task_graph_runner() const {
+    return task_graph_runner_.get();
+  }
   bool TestEnded() const { return ended_; }
 
   LayerTreeHost* layer_tree_host();
@@ -146,7 +149,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   SharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
   }
-  TestGpuMemoryBufferManager* gpu_memory_buffer_manager() {
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return gpu_memory_buffer_manager_.get();
   }
 
@@ -158,9 +161,20 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   // By default, output surface recreation is synchronous.
   void RequestNewOutputSurface() override;
-  // Override this for pixel tests, where you need a real output surface, or
-  // if you want to control the output surface used for drawing.
-  virtual std::unique_ptr<OutputSurface> CreateOutputSurface();
+  // Override this and call the base class to change what ContextProviders will
+  // be used (such as for pixel tests). Or override it and create your own
+  // TestDelegatingOutputSurface to control how it is created.
+  virtual std::unique_ptr<TestDelegatingOutputSurface>
+  CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider);
+  // Override this and call the base class to change what ContextProvider will
+  // be used, such as to prevent sharing the context with the delegating
+  // OutputSurface. Or override it and create your own OutputSurface to change
+  // what type of OutputSurface is used, such as a real OutputSurface for pixel
+  // tests or a software-compositing OutputSurface.
+  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider);
 
   bool IsRemoteTest() const;
 
@@ -177,21 +191,22 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // The LayerTreeHost created by the cc embedder on the client in remote mode.
   std::unique_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
 
-  FakeExternalBeginFrameSource* external_begin_frame_source_;
   RemoteProtoChannelBridge remote_proto_channel_bridge_;
 
   std::unique_ptr<ImageSerializationProcessor> image_serialization_processor_;
 
-  bool beginning_;
-  bool end_when_begin_returns_;
-  bool timed_out_;
-  bool scheduled_;
-  bool started_;
-  bool ended_;
-  bool delegating_renderer_;
+  bool beginning_ = false;
+  bool end_when_begin_returns_ = false;
+  bool timed_out_ = false;
+  bool scheduled_ = false;
+  bool started_ = false;
+  bool ended_ = false;
+  bool delegating_renderer_ = false;
 
-  int timeout_seconds_;
+  int timeout_seconds_ = false;
 
+  std::unique_ptr<LayerTreeTestDelegatingOutputSurfaceClient>
+      delegating_output_surface_client_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;

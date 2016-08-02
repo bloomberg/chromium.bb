@@ -47,6 +47,7 @@
 #include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_delegating_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -432,25 +433,37 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 
 class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
  public:
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto output_surface = base::WrapUnique(
-        new testing::StrictMock<
-            MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface>(
-            delegating_renderer()));
+  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    auto mock_worker_context_support_owned =
+        base::MakeUnique<MockContextSupport>();
+    auto* mock_worker_context_support = mock_worker_context_support_owned.get();
+
+    auto mock_worker_context_provider = make_scoped_refptr(
+        new MockContextProvider(std::move(mock_worker_context_support_owned)));
+
+    // Workers are bound on the main thread.
+    mock_worker_context_provider->BindToCurrentThread();
 
     // At init, we expect one call to set visibility to true.
     testing::Expectation visibility_true =
-        EXPECT_CALL(*output_surface,
-                    SetWorkerContextShouldAggressivelyFreeResources(false))
+        EXPECT_CALL(*mock_worker_context_support,
+                    SetAggressivelyFreeResources(false))
             .Times(1);
 
     // After running, we should get exactly one call to
-    // FreeWorkerContextGpuResources.
-    EXPECT_CALL(*output_surface,
-                SetWorkerContextShouldAggressivelyFreeResources(true))
+    // DeleteCachedResources, along with SetAggressivelyFreeResources.
+    EXPECT_CALL(*mock_worker_context_provider, DeleteCachedResources())
+        .After(visibility_true);
+    EXPECT_CALL(*mock_worker_context_support,
+                SetAggressivelyFreeResources(true))
         .After(visibility_true)
         .WillOnce(testing::Invoke([this](bool is_visible) { EndTest(); }));
-    return std::move(output_surface);
+
+    return LayerTreeHostTest::CreateDelegatingOutputSurface(
+        std::move(compositor_context_provider),
+        std::move(mock_worker_context_provider));
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -458,27 +471,27 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
     settings->gpu_rasterization_forced = true;
   }
 
-  void BeginTest() override {
-    // Logic is handled in InitializedRendererOnThread to ensure that our
-    // LTHI is fully set up.
-  }
-
-  void AfterTest() override {
-    // Expectations handled via mock.
-  }
+  void BeginTest() override {}
+  void AfterTest() override {}
 
  private:
-  class MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface
-      : public FakeOutputSurface {
+  class MockContextProvider : public TestContextProvider {
    public:
-    ~MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface() {}
-    explicit MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface(
-        bool delegated_rendering)
-        : FakeOutputSurface(TestContextProvider::Create(),
-                            TestContextProvider::CreateWorker(),
-                            delegated_rendering) {}
-    MOCK_METHOD1(SetWorkerContextShouldAggressivelyFreeResources,
-                 void(bool is_visible));
+    explicit MockContextProvider(std::unique_ptr<TestContextSupport> support)
+        : TestContextProvider(std::move(support),
+                              base::MakeUnique<TestGLES2Interface>(),
+                              TestWebGraphicsContext3D::Create()) {}
+
+    MOCK_METHOD0(DeleteCachedResources, void());
+
+   private:
+    ~MockContextProvider() = default;
+  };
+
+  class MockContextSupport : public TestContextSupport {
+   public:
+    MOCK_METHOD1(SetAggressivelyFreeResources,
+                 void(bool aggressively_free_resources));
   };
 };
 
@@ -520,7 +533,6 @@ class LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimitSynchronous
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostFreeWorkerContextResourcesTest::InitializeSettings(settings);
-    settings->use_external_begin_frame_source = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 };
@@ -2562,39 +2574,10 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDChange);
 
-// Verify that the BeginFrame notification is used to initiate rendering.
-class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_external_begin_frame_source = true;
-  }
-
-  void BeginTest() override {
-    // This will trigger a SetNeedsBeginFrame which will trigger a
-    // BeginFrame.
-    PostSetNeedsCommitToMainThread();
-  }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame,
-                                   DrawResult draw_result) override {
-    EndTest();
-    return DRAW_SUCCESS;
-  }
-
-  void AfterTest() override {}
-
- private:
-  base::TimeTicks frame_time_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestBeginFrameNotification);
-
 class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_external_begin_frame_source = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 
@@ -2605,8 +2588,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     // once we return. End test while it's enabled.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTestBeginFrameNotification::EndTest,
-                   base::Unretained(this)));
+        base::Bind(&LayerTreeHostTest::EndTest, base::Unretained(this)));
   }
 
   void AfterTest() override {}
@@ -2619,10 +2601,6 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestAbortedCommitDoesntStall()
       : commit_count_(0), commit_abort_count_(0), commit_complete_count_(0) {}
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_external_begin_frame_source = true;
-  }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -2664,35 +2642,41 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   int commit_complete_count_;
 };
 
-class OnDrawOutputSurface : public OutputSurface {
+class OnDrawOutputSurface : public TestDelegatingOutputSurface {
  public:
-  explicit OnDrawOutputSurface(base::Closure invalidate_callback)
-      : OutputSurface(TestContextProvider::Create(),
-                      TestContextProvider::CreateWorker(),
-                      nullptr),
-        invalidate_callback_(std::move(invalidate_callback)) {
-    capabilities_.delegated_rendering = true;
-  }
+  explicit OnDrawOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider,
+      std::unique_ptr<OutputSurface> display_output_surface,
+      SharedBitmapManager* shared_bitmap_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const RendererSettings& renderer_settings,
+      base::SingleThreadTaskRunner* task_runner,
+      bool synchronous_composite,
+      bool force_disable_reclaim_resources,
+      base::Closure invalidate_callback)
+      : TestDelegatingOutputSurface(std::move(compositor_context_provider),
+                                    std::move(worker_context_provider),
+                                    std::move(display_output_surface),
+                                    shared_bitmap_manager,
+                                    gpu_memory_buffer_manager,
+                                    renderer_settings,
+                                    task_runner,
+                                    synchronous_composite,
+                                    force_disable_reclaim_resources),
+        invalidate_callback_(std::move(invalidate_callback)) {}
 
-  // OutputSurface implementation.
-  void SwapBuffers(CompositorFrame frame) override { did_swap_ = true; }
-  uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
+  // TestDelegatingOutputSurface overrides.
   void Invalidate() override { invalidate_callback_.Run(); }
 
   void OnDraw(bool resourceless_software_draw) {
     gfx::Transform identity;
     gfx::Rect empty_rect;
-    // SwapBuffers happens inside of OnDraw.
     client_->OnDraw(identity, empty_rect, resourceless_software_draw);
-    if (did_swap_) {
-      did_swap_ = false;
-      client_->DidSwapBuffersComplete();
-    }
   }
 
  private:
-  bool did_swap_ = false;
-  base::Closure invalidate_callback_;
+  const base::Closure invalidate_callback_;
 };
 
 class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
@@ -2703,11 +2687,21 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     settings->using_synchronous_renderer_compositor = true;
   }
 
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(base::Bind(
+  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    auto on_draw_callback = base::Bind(
         &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
             CallOnDraw,
-        base::Unretained(this)));
+        base::Unretained(this));
+    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+        compositor_context_provider, std::move(worker_context_provider),
+        CreateDisplayOutputSurface(compositor_context_provider),
+        shared_bitmap_manager(), gpu_memory_buffer_manager(),
+        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
+        false /* synchronous_composite */,
+        false /* force_disable_reclaim_resources */,
+        std::move(on_draw_callback));
     output_surface_ = output_surface.get();
     return std::move(output_surface);
   }
@@ -2843,10 +2837,20 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     client_.set_bounds(root_layer_->bounds());
   }
 
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    auto on_draw_callback =
         base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
-                   base::Unretained(this)));
+                   base::Unretained(this));
+    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+        compositor_context_provider, std::move(worker_context_provider),
+        CreateDisplayOutputSurface(compositor_context_provider),
+        shared_bitmap_manager(), gpu_memory_buffer_manager(),
+        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
+        false /* synchronous_composite */,
+        false /* force_disable_reclaim_resources */,
+        std::move(on_draw_callback));
     output_surface_ = output_surface.get();
     return std::move(output_surface);
   }
@@ -4376,22 +4380,19 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
       : first_output_surface_memory_limit_(4321234),
         second_output_surface_memory_limit_(1234321) {}
 
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    if (!first_context_provider_.get()) {
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) override {
+    if (!first_context_provider_) {
       first_context_provider_ = TestContextProvider::Create();
+      compositor_context_provider = first_context_provider_;
     } else {
-      EXPECT_FALSE(second_context_provider_.get());
+      EXPECT_FALSE(second_context_provider_);
       second_context_provider_ = TestContextProvider::Create();
+      compositor_context_provider = second_context_provider_;
     }
 
-    scoped_refptr<TestContextProvider> provider(second_context_provider_.get()
-                                                    ? second_context_provider_
-                                                    : first_context_provider_);
-    std::unique_ptr<FakeOutputSurface> output_surface;
-    if (delegating_renderer())
-      output_surface = FakeOutputSurface::CreateDelegating3d(provider);
-    else
-      output_surface = FakeOutputSurface::Create3d(provider);
+    auto output_surface =
+        FakeOutputSurface::Create3d(std::move(compositor_context_provider));
     output_surface->SetMemoryPolicyToSetAtBind(
         base::WrapUnique(new ManagedMemoryPolicy(
             second_context_provider_.get() ? second_output_surface_memory_limit_
@@ -4527,7 +4528,7 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  void SwapBuffersCompleteOnThread() override { EndTest(); }
+  void DisplayDidDrawAndSwapOnThread() override { EndTest(); }
 
   void AfterTest() override {
     // The pending swap promise should activate and swap.
@@ -4719,7 +4720,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
             : base::Closure());
   }
 
-  void SwapBuffersCompleteOnThread() override {
+  void DisplayDidDrawAndSwapOnThread() override {
     if (num_swaps_++ >= 1) {
       // The commit changes layers so it should cause a swap.
       base::AutoLock lock(swap_promise_result_.lock);
@@ -5471,11 +5472,27 @@ MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestActivateOnInvisible);
 class LayerTreeHostTestSynchronousCompositeSwapPromise
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestSynchronousCompositeSwapPromise() : commit_count_(0) {}
+  LayerTreeHostTestSynchronousCompositeSwapPromise() = default;
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
+  }
+
+  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    bool synchronous_composite =
+        !HasImplThread() &&
+        !layer_tree_host()->settings().single_thread_proxy_scheduler;
+    // Relaiming resources is parameterized for this test.
+    bool force_disable_reclaim_resources = !reclaim_resources_;
+    return base::MakeUnique<TestDelegatingOutputSurface>(
+        compositor_context_provider, std::move(worker_context_provider),
+        CreateDisplayOutputSurface(compositor_context_provider),
+        shared_bitmap_manager(), gpu_memory_buffer_manager(),
+        layer_tree_host()->settings().renderer_settings, ImplThreadTaskRunner(),
+        synchronous_composite, force_disable_reclaim_resources);
   }
 
   void BeginTest() override {
@@ -5485,7 +5502,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise0));
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
-    // Fail to swap (no damage).
+    // Fail to swap (no damage) if not reclaiming resources from the Display.
     std::unique_ptr<SwapPromise> swap_promise1(
         new TestSwapPromise(&swap_promise_result_[1]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise1));
@@ -5519,13 +5536,19 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
       EXPECT_TRUE(swap_promise_result_[0].dtor_called);
     }
 
-    // Second swap promise fails to swap.
+    // Second swap promise fails to swap if not reclaiming resources from the
+    // Display.
     {
       base::AutoLock lock(swap_promise_result_[1].lock);
       EXPECT_TRUE(swap_promise_result_[1].did_activate_called);
-      EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
-      EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
-      EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[1].reason);
+      if (!reclaim_resources_) {
+        EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
+        EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
+        EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[1].reason);
+      } else {
+        EXPECT_TRUE(swap_promise_result_[1].did_swap_called);
+        EXPECT_FALSE(swap_promise_result_[1].did_not_swap_called);
+      }
       EXPECT_TRUE(swap_promise_result_[1].dtor_called);
     }
 
@@ -5540,11 +5563,20 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     }
   }
 
-  int commit_count_;
+  bool reclaim_resources_;
+  int commit_count_ = 0;
   TestSwapPromiseResult swap_promise_result_[3];
 };
 
-SINGLE_THREAD_TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise);
+TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, NoReclaim) {
+  reclaim_resources_ = false;
+  RunTest(CompositorMode::SINGLE_THREADED, true);
+}
+
+TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, Reclaim) {
+  reclaim_resources_ = true;
+  RunTest(CompositorMode::SINGLE_THREADED, true);
+}
 
 // Make sure page scale and top control deltas are applied to the client even
 // when the LayerTreeHost doesn't have a root layer.
@@ -5782,19 +5814,18 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    std::unique_ptr<TestWebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create();
-    context3d->set_support_image(true);
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) override {
+    scoped_refptr<TestContextProvider> display_context_provider =
+        TestContextProvider::Create();
+    TestWebGraphicsContext3D* context3d =
+        display_context_provider->UnboundTestContext3d();
     context3d->set_support_sync_query(true);
 #if defined(OS_MACOSX)
     context3d->set_support_texture_rectangle(true);
 #endif
-
-    if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(std::move(context3d));
-    else
-      return FakeOutputSurface::Create3d(std::move(context3d));
+    return LayerTreeTest::CreateDisplayOutputSurface(
+        std::move(display_context_provider));
   }
 };
 
@@ -6834,14 +6865,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDestroyWhileInitializingOutputSurface);
 // frame's metadata.
 class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestPaintedDeviceScaleFactor() = default;
-
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    auto ret = FakeOutputSurface::CreateDelegating3d();
-    fake_output_surface_ = ret.get();
-    return std::move(ret);
-  }
-
   void BeginTest() override {
     layer_tree_host()->SetPaintedDeviceScaleFactor(2.0f);
     EXPECT_EQ(1.0f, layer_tree_host()->device_scale_factor());
@@ -6853,16 +6876,13 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
     EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
   }
 
-  void SwapBuffersCompleteOnThread() override {
-    EXPECT_EQ(
-        2.0f,
-        fake_output_surface_->last_sent_frame()->metadata.device_scale_factor);
+  void DisplayReceivedCompositorFrameOnThread(
+      const CompositorFrame& frame) override {
+    EXPECT_EQ(2.0f, frame.metadata.device_scale_factor);
     EndTest();
   }
 
   void AfterTest() override {}
-
-  FakeOutputSurface* fake_output_surface_ = nullptr;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);

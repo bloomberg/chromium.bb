@@ -55,9 +55,12 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              const RenderPassList& render_passes) override;
+  void DisplayDidDrawAndSwap() override;
 
  private:
-  void SwapBuffersComplete();
+  void DidDrawCallback();
 
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;

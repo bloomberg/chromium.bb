@@ -24,7 +24,8 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     base::SingleThreadTaskRunner* task_runner,
-    bool synchronous_composite)
+    bool synchronous_composite,
+    bool force_disable_reclaim_resources)
     : OutputSurface(std::move(compositor_context_provider),
                     std::move(worker_context_provider),
                     nullptr),
@@ -37,6 +38,9 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
   if (!synchronous_composite) {
     begin_frame_source.reset(new DelayBasedBeginFrameSource(
         base::MakeUnique<DelayBasedTimeSource>(task_runner)));
+    begin_frame_source->SetAuthoritativeVSyncInterval(
+        base::TimeDelta::FromMilliseconds(1000.f /
+                                          renderer_settings.refresh_rate));
     scheduler.reset(new DisplayScheduler(
         begin_frame_source.get(), task_runner,
         display_output_surface->capabilities().max_frames_pending));
@@ -52,8 +56,9 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
   capabilities_.delegated_rendering = true;
   // Since this OutputSurface and the Display are tightly coupled and in the
   // same process/thread, the LayerTreeHostImpl can reclaim resources from
-  // the Display.
-  capabilities_.can_force_reclaim_resources = true;
+  // the Display. But we allow tests to disable this to mimic an out-of-process
+  // Display.
+  capabilities_.can_force_reclaim_resources = !force_disable_reclaim_resources;
   capabilities_.delegated_sync_points_required =
       !context_shared_with_compositor;
 }
@@ -107,6 +112,9 @@ void TestDelegatingOutputSurface::DetachFromClient() {
 }
 
 void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
+  if (test_client_)
+    test_client_->DisplayReceivedCompositorFrame(frame);
+
   if (delegated_surface_id_.is_null()) {
     delegated_surface_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(delegated_surface_id_);
@@ -122,7 +130,7 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
 
   surface_factory_->SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
-      base::Bind(&TestDelegatingOutputSurface::DrawCallback,
+      base::Bind(&TestDelegatingOutputSurface::DidDrawCallback,
                  weak_ptrs_.GetWeakPtr(), synchronous));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_)
@@ -130,11 +138,11 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
                                            std::move(copy_request));
   copy_requests_.clear();
 
-  if (!display_->has_scheduler())
+  if (synchronous)
     display_->DrawAndSwap();
 }
 
-void TestDelegatingOutputSurface::DrawCallback(bool synchronous) {
+void TestDelegatingOutputSurface::DidDrawCallback(bool synchronous) {
   // This is the frame ack to unthrottle the next frame, not actually a notice
   // that drawing is done.
   if (synchronous) {
@@ -184,6 +192,18 @@ void TestDelegatingOutputSurface::DisplayOutputSurfaceLost() {
 void TestDelegatingOutputSurface::DisplaySetMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
   SetMemoryPolicy(policy);
+}
+
+void TestDelegatingOutputSurface::DisplayWillDrawAndSwap(
+    bool will_draw_and_swap,
+    const RenderPassList& render_passes) {
+  if (test_client_)
+    test_client_->DisplayWillDrawAndSwap(will_draw_and_swap, render_passes);
+}
+
+void TestDelegatingOutputSurface::DisplayDidDrawAndSwap() {
+  if (test_client_)
+    test_client_->DisplayDidDrawAndSwap();
 }
 
 }  // namespace cc

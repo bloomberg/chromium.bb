@@ -264,7 +264,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
         std::move(compositor_context_provider),
         std::move(worker_context_provider), std::move(display_output_surface),
         deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
-        settings.renderer_settings, task_runner, synchronous_composite);
+        settings.renderer_settings, task_runner, synchronous_composite,
+        false /* force_disable_reclaim_resources */);
     output_surfaces_[routing_id] = output_surface.get();
     return std::move(output_surface);
   }

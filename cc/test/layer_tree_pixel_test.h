@@ -41,8 +41,11 @@ class LayerTreePixelTest : public LayerTreeTest {
   ~LayerTreePixelTest() override;
 
   // LayerTreeTest overrides.
-  void InitializeSettings(LayerTreeSettings* settings) override;
-  std::unique_ptr<OutputSurface> CreateOutputSurface() override;
+  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override;
+  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+      scoped_refptr<ContextProvider> compositor_context_provider) override;
 
   virtual std::unique_ptr<CopyOutputRequest> CreateCopyOutputRequest();
 

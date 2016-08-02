@@ -17,13 +17,24 @@
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {
-
 class CopyOutputRequest;
+
+class TestDelegatingOutputSurfaceClient {
+ public:
+  virtual ~TestDelegatingOutputSurfaceClient() {}
+
+  virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
+  virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                                      const RenderPassList& render_passes) = 0;
+  virtual void DisplayDidDrawAndSwap() = 0;
+};
 
 class TestDelegatingOutputSurface : public OutputSurface,
                                     public SurfaceFactoryClient,
                                     public DisplayClient {
  public:
+  // Pass true for |force_disable_reclaim_resources| to act like the Display
+  // is out-of-process and can't return resources synchronously.
   TestDelegatingOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
@@ -32,8 +43,13 @@ class TestDelegatingOutputSurface : public OutputSurface,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
       base::SingleThreadTaskRunner* task_runner,
-      bool synchronous_composite);
+      bool synchronous_composite,
+      bool force_disable_reclaim_resources);
   ~TestDelegatingOutputSurface() override;
+
+  void SetClient(TestDelegatingOutputSurfaceClient* client) {
+    test_client_ = client;
+  }
 
   Display* display() const { return display_.get(); }
 
@@ -55,9 +71,12 @@ class TestDelegatingOutputSurface : public OutputSurface,
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              const RenderPassList& render_passes) override;
+  void DisplayDidDrawAndSwap() override;
 
  private:
-  void DrawCallback(bool synchronous);
+  void DidDrawCallback(bool synchronous);
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
@@ -72,6 +91,7 @@ class TestDelegatingOutputSurface : public OutputSurface,
   std::unique_ptr<Display> display_;
 
   bool bound_ = false;
+  TestDelegatingOutputSurfaceClient* test_client_ = nullptr;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 

@@ -61,6 +61,10 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   // cc::DisplayClient overrides.
   void DisplayOutputSurfaceLost() override {}
   void DisplaySetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      const cc::RenderPassList& render_passes) override {}
+  void DisplayDidDrawAndSwap() override {}
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
