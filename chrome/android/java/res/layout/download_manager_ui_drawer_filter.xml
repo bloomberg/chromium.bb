@@ -9,7 +9,7 @@
     android:layout_height="wrap_content"
     android:layout_gravity="start"
     android:minHeight="48dp"
-    android:drawablePadding="@dimen/drawer_margin_large"
+    android:drawablePadding="@dimen/drawer_drawable_padding"
     android:paddingStart="@dimen/drawer_margin_large"
     android:paddingEnd="@dimen/drawer_margin_large"
     android:textColor="@color/default_text_color"

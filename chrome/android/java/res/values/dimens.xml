@@ -304,6 +304,7 @@
 
     <!-- Drawers -->
     <dimen name="drawer_width">240dp</dimen>
+    <dimen name="drawer_drawable_padding">32dp</dimen>
     <dimen name="drawer_margin_large">16dp</dimen>
 
     <!-- Bookmarks dimensions -->
