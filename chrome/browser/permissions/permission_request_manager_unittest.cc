@@ -13,7 +13,7 @@
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,11 +40,11 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("http://www.google.com"));
 
     manager_.reset(new PermissionRequestManager(web_contents()));
-    view_factory_.reset(new MockPermissionBubbleFactory(manager_.get()));
+    prompt_factory_.reset(new MockPermissionPromptFactory(manager_.get()));
   }
 
   void TearDown() override {
-    view_factory_.reset();
+    prompt_factory_.reset();
     manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -91,7 +91,7 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   MockPermissionRequest iframe_request_same_domain_;
   MockPermissionRequest iframe_request_other_domain_;
   std::unique_ptr<PermissionRequestManager> manager_;
-  std::unique_ptr<MockPermissionBubbleFactory> view_factory_;
+  std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
 };
 
 TEST_F(PermissionRequestManagerTest, SingleRequest) {
@@ -99,8 +99,8 @@ TEST_F(PermissionRequestManagerTest, SingleRequest) {
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 
   ToggleAccept(0, true);
   Accept();
@@ -112,8 +112,8 @@ TEST_F(PermissionRequestManagerTest, SingleRequestViewFirst) {
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 
   ToggleAccept(0, true);
   Accept();
@@ -126,8 +126,8 @@ TEST_F(PermissionRequestManagerTest, TwoRequests) {
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
 
   ToggleAccept(0, true);
   ToggleAccept(1, false);
@@ -142,19 +142,19 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
 
   ToggleAccept(0, true);
   ToggleAccept(1, false);
 
   MockTabSwitchAway();
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 
   MockTabSwitchBack();
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
 
   Accept();
   EXPECT_TRUE(request1_.granted());
@@ -164,25 +164,25 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
 TEST_F(PermissionRequestManagerTest, NoRequests) {
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
 TEST_F(PermissionRequestManagerTest, NoView) {
   manager_->AddRequest(&request1_);
   // Don't display the pending requests.
   WaitForCoalescing();
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
 TEST_F(PermissionRequestManagerTest, TwoRequestsCoalesce) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
 }
 
 TEST_F(PermissionRequestManagerTest, TwoRequestsDoNotCoalesce) {
@@ -191,8 +191,8 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsDoNotCoalesce) {
   WaitForCoalescing();
   manager_->AddRequest(&request2_);
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 }
 
 TEST_F(PermissionRequestManagerTest, TwoRequestsShownInTwoBubbles) {
@@ -201,15 +201,15 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsShownInTwoBubbles) {
   WaitForCoalescing();
   manager_->AddRequest(&request2_);
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 
   Accept();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
-  ASSERT_EQ(view_factory_->show_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
+  ASSERT_EQ(prompt_factory_->show_count(), 2);
 }
 
 TEST_F(PermissionRequestManagerTest, TestAddDuplicateRequest) {
@@ -219,26 +219,26 @@ TEST_F(PermissionRequestManagerTest, TestAddDuplicateRequest) {
   manager_->AddRequest(&request1_);
 
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
 }
 
 TEST_F(PermissionRequestManagerTest, SequentialRequests) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
 
   Accept();
   EXPECT_TRUE(request1_.granted());
 
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 
   manager_->AddRequest(&request2_);
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Accept();
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
   EXPECT_TRUE(request2_.granted());
 }
 
@@ -249,8 +249,8 @@ TEST_F(PermissionRequestManagerTest, SameRequestRejected) {
   EXPECT_FALSE(request1_.finished());
 
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 }
 
 TEST_F(PermissionRequestManagerTest, DuplicateRequestCancelled) {
@@ -297,13 +297,13 @@ TEST_F(PermissionRequestManagerTest, ForgetRequestsOnPageNavigation) {
   manager_->AddRequest(&request2_);
   manager_->AddRequest(&iframe_request_other_domain_);
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 
   NavigateAndCommit(GURL("http://www2.google.com/"));
   WaitForCoalescing();
 
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
   EXPECT_TRUE(request1_.finished());
   EXPECT_TRUE(request2_.finished());
   EXPECT_TRUE(iframe_request_other_domain_.finished());
@@ -311,18 +311,18 @@ TEST_F(PermissionRequestManagerTest, ForgetRequestsOnPageNavigation) {
 
 TEST_F(PermissionRequestManagerTest, TestCancelQueued) {
   manager_->AddRequest(&request1_);
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 
   manager_->CancelRequest(&request1_);
   EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
   manager_->DisplayPendingRequests();
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 
   manager_->AddRequest(&request2_);
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
 }
 
 TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShown) {
@@ -330,27 +330,27 @@ TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShown) {
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
 
-  view_factory_->SetCanUpdateUi(true);
-  EXPECT_TRUE(view_factory_->is_visible());
+  prompt_factory_->SetCanUpdateUi(true);
+  EXPECT_TRUE(prompt_factory_->is_visible());
   EXPECT_FALSE(request1_.finished());
   manager_->CancelRequest(&request1_);
   WaitForCoalescing();
   EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
 TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShownNoUpdate) {
   manager_->DisplayPendingRequests();
-  view_factory_->SetCanUpdateUi(false);
+  prompt_factory_->SetCanUpdateUi(false);
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
-  view_factory_->SetCanUpdateUi(false);
+  prompt_factory_->SetCanUpdateUi(false);
 
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   EXPECT_FALSE(request1_.finished());
   manager_->CancelRequest(&request1_);
   EXPECT_TRUE(request1_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Closing();
 }
 
@@ -360,11 +360,11 @@ TEST_F(PermissionRequestManagerTest, TestCancelPendingRequest) {
   WaitForCoalescing();
   manager_->AddRequest(&request2_);
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
   manager_->CancelRequest(&request2_);
 
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   EXPECT_FALSE(request1_.finished());
   EXPECT_TRUE(request2_.finished());
 }
@@ -375,7 +375,7 @@ TEST_F(PermissionRequestManagerTest, MainFrameNoRequestIFrameRequest) {
   WaitForCoalescing();
   WaitForFrameLoad();
 
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Closing();
   EXPECT_TRUE(iframe_request_same_domain_.finished());
 }
@@ -387,12 +387,12 @@ TEST_F(PermissionRequestManagerTest, MainFrameAndIFrameRequestSameDomain) {
   WaitForFrameLoad();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 2);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
   Closing();
   EXPECT_TRUE(request1_.finished());
   EXPECT_TRUE(iframe_request_same_domain_.finished());
-  EXPECT_FALSE(view_factory_->is_visible());
+  EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
 TEST_F(PermissionRequestManagerTest, MainFrameAndIFrameRequestOtherDomain) {
@@ -402,11 +402,11 @@ TEST_F(PermissionRequestManagerTest, MainFrameAndIFrameRequestOtherDomain) {
   WaitForFrameLoad();
   WaitForCoalescing();
 
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Closing();
   EXPECT_TRUE(request1_.finished());
   EXPECT_FALSE(iframe_request_other_domain_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Closing();
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
@@ -415,16 +415,16 @@ TEST_F(PermissionRequestManagerTest, IFrameRequestWhenMainRequestVisible) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
 
   manager_->AddRequest(&iframe_request_same_domain_);
   WaitForFrameLoad();
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
   Closing();
   EXPECT_TRUE(request1_.finished());
   EXPECT_FALSE(iframe_request_same_domain_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
-  ASSERT_EQ(view_factory_->request_count(), 1);
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
   Closing();
   EXPECT_TRUE(iframe_request_same_domain_.finished());
 }
@@ -434,14 +434,14 @@ TEST_F(PermissionRequestManagerTest,
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
 
   manager_->AddRequest(&iframe_request_other_domain_);
   WaitForFrameLoad();
   Closing();
   EXPECT_TRUE(request1_.finished());
   EXPECT_FALSE(iframe_request_other_domain_.finished());
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
   Closing();
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
@@ -455,7 +455,7 @@ TEST_F(PermissionRequestManagerTest, RequestsDontNeedUserGesture) {
   manager_->AddRequest(&request2_);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(view_factory_->is_visible());
+  EXPECT_TRUE(prompt_factory_->is_visible());
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {

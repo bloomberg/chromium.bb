@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/permission_prompt.h"
 
 namespace base {
 class CommandLine;
@@ -15,7 +15,7 @@ class CommandLine;
 class PermissionRequest;
 class Browser;
 
-class TestPermissionBubbleViewDelegate : public PermissionBubbleView::Delegate {
+class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
  public:
   TestPermissionBubbleViewDelegate();
 
@@ -43,7 +43,7 @@ class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
 
   std::vector<PermissionRequest*> requests() { return requests_.get(); }
   std::vector<bool> accept_states() { return accept_states_; }
-  PermissionBubbleView::Delegate* test_delegate() { return &test_delegate_; }
+  PermissionPrompt::Delegate* test_delegate() { return &test_delegate_; }
 
  private:
   TestPermissionBubbleViewDelegate test_delegate_;

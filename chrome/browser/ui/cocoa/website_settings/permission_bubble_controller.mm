@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
+#include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -79,7 +79,7 @@ const NSSize kPermissionIconSize = {18, 18};
 - (id)initForURL:(const GURL&)url
          allowed:(BOOL)allow
            index:(int)index
-        delegate:(PermissionBubbleView::Delegate*)delegate;
+        delegate:(PermissionPrompt::Delegate*)delegate;
 
 // Returns the maximum width of its possible titles.
 - (CGFloat)maximumTitleWidth;
@@ -90,14 +90,14 @@ const NSSize kPermissionIconSize = {18, 18};
 - (id)initForURL:(const GURL&)url
          allowed:(BOOL)allow
            index:(int)index
-        delegate:(PermissionBubbleView::Delegate*)delegate {
+        delegate:(PermissionPrompt::Delegate*)delegate {
   if (self = [super initWithFrame:NSZeroRect pullsDown:NO]) {
     ContentSetting setting =
         allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
     [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
     [self setBordered:NO];
 
-    __block PermissionBubbleView::Delegate* blockDelegate = delegate;
+    __block PermissionPrompt::Delegate* blockDelegate = delegate;
     __block AllowBlockMenuButton* blockSelf = self;
     PermissionMenuModel::ChangeCallback changeCallback =
         base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
@@ -309,7 +309,7 @@ const NSSize kPermissionIconSize = {18, 18};
   [self setAnchorPoint:[self getExpectedAnchorPoint]];
 }
 
-- (void)showWithDelegate:(PermissionBubbleView::Delegate*)delegate
+- (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate
              forRequests:(const std::vector<PermissionRequest*>&)requests
             acceptStates:(const std::vector<bool>&)acceptStates {
   DCHECK(!requests.empty());

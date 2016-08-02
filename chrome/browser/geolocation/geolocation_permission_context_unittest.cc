@@ -56,7 +56,7 @@
 #include "components/prefs/pref_service.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -168,8 +168,8 @@ class GeolocationPermissionContextTests
   ClosedInfoBarTracker closed_infobar_tracker_;
   std::vector<std::unique_ptr<content::WebContents>> extra_tabs_;
 #if !BUILDFLAG(ANDROID_JAVA_UI)
-  std::vector<std::unique_ptr<MockPermissionBubbleFactory>>
-      mock_permission_bubble_factories_;
+  std::vector<std::unique_ptr<MockPermissionPromptFactory>>
+      mock_permission_prompt_factories_;
 #endif
 
   // A map between renderer child id and a pair represending the bridge id and
@@ -301,7 +301,7 @@ void GeolocationPermissionContextTests::SetUp() {
 
 void GeolocationPermissionContextTests::TearDown() {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
-  mock_permission_bubble_factories_.clear();
+  mock_permission_prompt_factories_.clear();
 #endif
   extra_tabs_.clear();
   ChromeRenderViewHostTestHarness::TearDown();
@@ -315,9 +315,9 @@ void GeolocationPermissionContextTests::SetupRequestManager(
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);
 
-  // Create a MockPermissionBubbleFactory for the PermissionRequestManager.
-  mock_permission_bubble_factories_.push_back(base::WrapUnique(
-      new MockPermissionBubbleFactory(permission_request_manager)));
+  // Create a MockPermissionPromptFactory for the PermissionRequestManager.
+  mock_permission_prompt_factories_.push_back(base::WrapUnique(
+      new MockPermissionPromptFactory(permission_request_manager)));
 
   // Prepare the PermissionRequestManager to display a mock bubble.
   permission_request_manager->DisplayPendingRequests();

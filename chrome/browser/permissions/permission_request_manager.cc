@@ -79,7 +79,7 @@ PermissionRequestManager::PermissionRequestManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
 #if !defined(OS_ANDROID)  // No bubbles in android tests.
-      view_factory_(base::Bind(&PermissionBubbleView::Create)),
+      view_factory_(base::Bind(&PermissionPrompt::Create)),
 #endif
       view_(nullptr),
       main_frame_has_fully_loaded_(false),

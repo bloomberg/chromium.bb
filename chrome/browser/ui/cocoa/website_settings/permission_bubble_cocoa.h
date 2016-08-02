@@ -12,18 +12,18 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 
 class Browser;
 @class PermissionBubbleController;
 
-class PermissionBubbleCocoa : public PermissionBubbleView {
+class PermissionBubbleCocoa : public PermissionPrompt {
  public:
   explicit PermissionBubbleCocoa(Browser* browser);
   ~PermissionBubbleCocoa() override;
 
-  // PermissionBubbleView interface.
+  // PermissionPrompt:
   void Show(const std::vector<PermissionRequest*>& requests,
             const std::vector<bool>& accept_state) override;
   void Hide() override;

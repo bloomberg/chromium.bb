@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate()
-    : PermissionBubbleView::Delegate() {
+    : PermissionPrompt::Delegate() {
 }
 
 PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {

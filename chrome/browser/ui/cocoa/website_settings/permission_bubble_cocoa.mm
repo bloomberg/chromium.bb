@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
-#import "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#import "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/nsview_additions.h"
 

@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 
-MockPermissionBubbleView::~MockPermissionBubbleView() {
+MockPermissionPrompt::~MockPermissionPrompt() {
   Hide();
 }
 
-void MockPermissionBubbleView::Show(
-    const std::vector<PermissionRequest*>& requests,
-    const std::vector<bool>& accept_state) {
+void MockPermissionPrompt::Show(const std::vector<PermissionRequest*>& requests,
+                                const std::vector<bool>& accept_state) {
   factory_->ShowView(this);
   factory_->show_count_++;
   factory_->requests_count_ = manager_->requests_.size();
@@ -24,31 +23,30 @@ void MockPermissionBubbleView::Show(
   is_visible_ = true;
 }
 
-bool MockPermissionBubbleView::CanAcceptRequestUpdate() {
+bool MockPermissionPrompt::CanAcceptRequestUpdate() {
   return can_update_ui_;
 }
 
-void MockPermissionBubbleView::Hide() {
+void MockPermissionPrompt::Hide() {
   if (is_visible_ && factory_)
     factory_->HideView(this);
   is_visible_ = false;
 }
 
-bool MockPermissionBubbleView::IsVisible() {
+bool MockPermissionPrompt::IsVisible() {
   return is_visible_;
 }
 
-void MockPermissionBubbleView::UpdateAnchorPosition() {}
+void MockPermissionPrompt::UpdateAnchorPosition() {}
 
-gfx::NativeWindow MockPermissionBubbleView::GetNativeWindow() {
+gfx::NativeWindow MockPermissionPrompt::GetNativeWindow() {
   // This class should only be used when the UI is not necessary.
   NOTREACHED();
   return nullptr;
 }
 
-MockPermissionBubbleView::MockPermissionBubbleView(
-    MockPermissionBubbleFactory* factory,
-    PermissionRequestManager* manager)
+MockPermissionPrompt::MockPermissionPrompt(MockPermissionPromptFactory* factory,
+                                           PermissionRequestManager* manager)
     : factory_(factory),
       manager_(manager),
       can_update_ui_(true),

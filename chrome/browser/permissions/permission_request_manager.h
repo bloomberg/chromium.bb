@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -35,7 +35,7 @@ class PermissionReporterBrowserTest;
 class PermissionRequestManager
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PermissionRequestManager>,
-      public PermissionBubbleView::Delegate {
+      public PermissionPrompt::Delegate {
  public:
   class Observer {
    public:
@@ -104,11 +104,11 @@ class PermissionRequestManager
   // TODO(felt): Update testing so that it doesn't involve a lot of friends.
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
-  friend class MockPermissionBubbleFactory;
-  friend class MockPermissionBubbleView;
-  friend class safe_browsing::PermissionReporterBrowserTest;
-  friend class PermissionRequestManagerTest;
+  friend class MockPermissionPrompt;
+  friend class MockPermissionPromptFactory;
   friend class PermissionContextBaseTests;
+  friend class PermissionRequestManagerTest;
+  friend class safe_browsing::PermissionReporterBrowserTest;
   friend class content::WebContentsUserData<PermissionRequestManager>;
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
 
@@ -123,7 +123,7 @@ class PermissionRequestManager
       content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
-  // PermissionBubbleView::Delegate:
+  // PermissionPrompt::Delegate:
   void ToggleAccept(int request_index, bool new_value) override;
   void Accept() override;
   void Deny() override;
@@ -168,10 +168,10 @@ class PermissionRequestManager
   void DoAutoResponseForTesting();
 
   // Factory to be used to create views when needed.
-  PermissionBubbleView::Factory view_factory_;
+  PermissionPrompt::Factory view_factory_;
 
   // The UI surface to be used to display the permissions requests.
-  std::unique_ptr<PermissionBubbleView> view_;
+  std::unique_ptr<PermissionPrompt> view_;
 
   std::vector<PermissionRequest*> requests_;
   std::vector<PermissionRequest*> queued_requests_;

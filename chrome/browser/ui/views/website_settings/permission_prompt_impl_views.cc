@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
+#include "chrome/browser/ui/views/website_settings/permission_prompt_impl.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-// The Views browser implementation of PermissionBubbleViewViews'
+// The Views browser implementation of PermissionPromptImpl's
 // anchor methods. Views browsers have a native View to anchor the bubble to,
 // which these functions provide.
 
@@ -22,7 +22,7 @@
 // fullscreen mode.
 const int kFullscreenLeftMargin = 40;
 
-views::View* PermissionBubbleViewViews::GetAnchorView() {
+views::View* PermissionPromptImpl::GetAnchorView() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
   if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
@@ -32,7 +32,7 @@ views::View* PermissionBubbleViewViews::GetAnchorView() {
   return nullptr;
 }
 
-gfx::Point PermissionBubbleViewViews::GetAnchorPoint() {
+gfx::Point PermissionPromptImpl::GetAnchorPoint() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   // Get position in view (taking RTL displays into account).
   int x_within_browser_view =
@@ -43,12 +43,11 @@ gfx::Point PermissionBubbleViewViews::GetAnchorPoint() {
   return browser_view_origin + gfx::Vector2d(x_within_browser_view, 0);
 }
 
-views::BubbleBorder::Arrow PermissionBubbleViewViews::GetAnchorArrow() {
+views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
   return views::BubbleBorder::TOP_LEFT;
 }
 
 // static
-std::unique_ptr<PermissionBubbleView> PermissionBubbleView::Create(
-    Browser* browser) {
-  return base::WrapUnique(new PermissionBubbleViewViews(browser));
+std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(Browser* browser) {
+  return base::WrapUnique(new PermissionPromptImpl(browser));
 }

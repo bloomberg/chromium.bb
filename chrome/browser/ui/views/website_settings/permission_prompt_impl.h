@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSIONS_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSIONS_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_
+#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_
 
 #include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/bubble/bubble_border.h"
 
@@ -21,12 +21,12 @@ class View;
 class Browser;
 class PermissionsBubbleDialogDelegateView;
 
-class PermissionBubbleViewViews : public PermissionBubbleView {
+class PermissionPromptImpl : public PermissionPrompt {
  public:
-  explicit PermissionBubbleViewViews(Browser* browser);
-  ~PermissionBubbleViewViews() override;
+  explicit PermissionPromptImpl(Browser* browser);
+  ~PermissionPromptImpl() override;
 
-  // PermissionBubbleView:
+  // PermissionPrompt:
   void SetDelegate(Delegate* delegate) override;
   void Show(const std::vector<PermissionRequest*>& requests,
             const std::vector<bool>& accept_state) override;
@@ -57,7 +57,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   Delegate* delegate_;
   PermissionsBubbleDialogDelegateView* bubble_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleViewViews);
+  DISALLOW_COPY_AND_ASSIGN(PermissionPromptImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSIONS_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_

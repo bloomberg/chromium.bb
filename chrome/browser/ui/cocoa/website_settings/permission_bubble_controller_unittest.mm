@@ -65,7 +65,7 @@ const char* const kPermissionC = "Permission C";
 }
 
 class PermissionBubbleControllerTest : public CocoaProfileTest,
-                                       public PermissionBubbleView::Delegate {
+                                       public PermissionPrompt::Delegate {
  public:
 
   MOCK_METHOD2(ToggleAccept, void(int, bool));
@@ -73,7 +73,7 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
   MOCK_METHOD0(Accept, void());
   MOCK_METHOD0(Deny, void());
   MOCK_METHOD0(Closing, void());
-  MOCK_METHOD1(SetView, void(PermissionBubbleView*));
+  MOCK_METHOD1(SetView, void(PermissionPrompt*));
 
   void SetUp() override {
     CocoaProfileTest::SetUp();

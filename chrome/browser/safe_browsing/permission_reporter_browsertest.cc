@@ -15,7 +15,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -45,8 +45,8 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
 
     PermissionRequestManager* manager = GetPermissionRequestManager();
-    mock_permission_bubble_factory_.reset(
-        new MockPermissionBubbleFactory(manager));
+    mock_permission_prompt_factory_ =
+        base::MakeUnique<MockPermissionPromptFactory>(manager);
     manager->DisplayPendingRequests();
 
 #if !defined(OS_CHROMEOS)
@@ -58,7 +58,7 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     InProcessBrowserTest::TearDownOnMainThread();
-    mock_permission_bubble_factory_.reset();
+    mock_permission_prompt_factory_.reset();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -83,8 +83,8 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
 
   void AcceptBubble() { GetPermissionRequestManager()->Accept(); }
 
-  MockPermissionBubbleFactory* bubble_factory() {
-    return mock_permission_bubble_factory_.get();
+  MockPermissionPromptFactory* prompt_factory() {
+    return mock_permission_prompt_factory_.get();
   }
 
   MockPermissionReportSender* mock_report_sender() {
@@ -92,7 +92,7 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
+  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
 
   // Owned by permission reporter.
   MockPermissionReportSender* mock_report_sender_;
@@ -107,12 +107,12 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
       browser(), embedded_test_server()->GetURL("/permissions/request.html"),
       1);
 
-  bubble_factory()->WaitForPermissionBubble();
-  EXPECT_TRUE(bubble_factory()->is_visible());
+  prompt_factory()->WaitForPermissionBubble();
+  EXPECT_TRUE(prompt_factory()->is_visible());
 
   AcceptBubble();
 
-  EXPECT_FALSE(bubble_factory()->is_visible());
+  EXPECT_FALSE(prompt_factory()->is_visible());
   EXPECT_EQ(1, mock_report_sender()->GetAndResetNumberOfReportsSent());
 
   PermissionReport permission_report;

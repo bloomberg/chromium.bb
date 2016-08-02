@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
+#include "chrome/browser/ui/views/website_settings/permission_prompt_impl.h"
 
 #include <stddef.h>
 
@@ -146,7 +146,7 @@ class PermissionsBubbleDialogDelegateView
       public PermissionCombobox::Listener {
  public:
   PermissionsBubbleDialogDelegateView(
-      PermissionBubbleViewViews* owner,
+      PermissionPromptImpl* owner,
       const std::vector<PermissionRequest*>& requests,
       const std::vector<bool>& accept_state);
   ~PermissionsBubbleDialogDelegateView() override;
@@ -177,7 +177,7 @@ class PermissionsBubbleDialogDelegateView
                     views::BubbleBorder::Arrow anchor_arrow);
 
  private:
-  PermissionBubbleViewViews* owner_;
+  PermissionPromptImpl* owner_;
   bool multiple_requests_;
   base::string16 display_origin_;
   std::unique_ptr<PermissionMenuModel> menu_button_model_;
@@ -187,7 +187,7 @@ class PermissionsBubbleDialogDelegateView
 };
 
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
-    PermissionBubbleViewViews* owner,
+    PermissionPromptImpl* owner,
     const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state)
     : owner_(owner),
@@ -367,9 +367,9 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor(
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// PermissionBubbleViewViews
+// PermissionPromptImpl
 
-PermissionBubbleViewViews::PermissionBubbleViewViews(Browser* browser)
+PermissionPromptImpl::PermissionPromptImpl(Browser* browser)
     : browser_(browser),
       delegate_(nullptr),
       bubble_delegate_(nullptr) {
@@ -377,21 +377,20 @@ PermissionBubbleViewViews::PermissionBubbleViewViews(Browser* browser)
   DCHECK(browser->window());
 }
 
-PermissionBubbleViewViews::~PermissionBubbleViewViews() {
+PermissionPromptImpl::~PermissionPromptImpl() {
 }
 
-void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
+void PermissionPromptImpl::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void PermissionBubbleViewViews::Show(
-    const std::vector<PermissionRequest*>& requests,
-    const std::vector<bool>& values) {
+void PermissionPromptImpl::Show(const std::vector<PermissionRequest*>& requests,
+                                const std::vector<bool>& values) {
   if (bubble_delegate_)
     bubble_delegate_->CloseBubble();
 
-  bubble_delegate_ = new PermissionsBubbleDialogDelegateView(
-      this, requests, values);
+  bubble_delegate_ =
+      new PermissionsBubbleDialogDelegateView(this, requests, values);
 
   // Set |parent_window| because some valid anchors can become hidden.
   bubble_delegate_->set_parent_window(
@@ -405,22 +404,22 @@ void PermissionBubbleViewViews::Show(
                                  GetAnchorArrow());
 }
 
-bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
+bool PermissionPromptImpl::CanAcceptRequestUpdate() {
   return !(bubble_delegate_ && bubble_delegate_->IsMouseHovered());
 }
 
-void PermissionBubbleViewViews::Hide() {
+void PermissionPromptImpl::Hide() {
   if (bubble_delegate_) {
     bubble_delegate_->CloseBubble();
     bubble_delegate_ = nullptr;
   }
 }
 
-bool PermissionBubbleViewViews::IsVisible() {
+bool PermissionPromptImpl::IsVisible() {
   return bubble_delegate_ != nullptr;
 }
 
-void PermissionBubbleViewViews::UpdateAnchorPosition() {
+void PermissionPromptImpl::UpdateAnchorPosition() {
   if (IsVisible()) {
     bubble_delegate_->set_parent_window(
         platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
@@ -430,30 +429,30 @@ void PermissionBubbleViewViews::UpdateAnchorPosition() {
   }
 }
 
-gfx::NativeWindow PermissionBubbleViewViews::GetNativeWindow() {
+gfx::NativeWindow PermissionPromptImpl::GetNativeWindow() {
   if (bubble_delegate_ && bubble_delegate_->GetWidget())
     return bubble_delegate_->GetWidget()->GetNativeWindow();
   return nullptr;
 }
 
-void PermissionBubbleViewViews::Closing() {
+void PermissionPromptImpl::Closing() {
   if (bubble_delegate_)
     bubble_delegate_ = nullptr;
   if (delegate_)
     delegate_->Closing();
 }
 
-void PermissionBubbleViewViews::Toggle(int index, bool value) {
+void PermissionPromptImpl::Toggle(int index, bool value) {
   if (delegate_)
     delegate_->ToggleAccept(index, value);
 }
 
-void PermissionBubbleViewViews::Accept() {
+void PermissionPromptImpl::Accept() {
   if (delegate_)
     delegate_->Accept();
 }
 
-void PermissionBubbleViewViews::Deny() {
+void PermissionPromptImpl::Deny() {
   if (delegate_)
     delegate_->Deny();
 }

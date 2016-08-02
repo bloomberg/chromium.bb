@@ -28,7 +28,7 @@
 #else
 #include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #endif
 
 using content::WebContents;
@@ -99,41 +99,42 @@ class TestingDelegate {
  public:
   void SetUp(WebContents* web_contents) {
     PermissionRequestManager::CreateForWebContents(web_contents);
-    mock_permission_bubble_factory_.reset(new MockPermissionBubbleFactory(
+    mock_permission_prompt_factory_.reset(new MockPermissionPromptFactory(
         PermissionRequestManager::FromWebContents(web_contents)));
     PermissionRequestManager::FromWebContents(web_contents)
         ->DisplayPendingRequests();
   }
 
-  void TearDown() { mock_permission_bubble_factory_.reset(); }
+  void TearDown() { mock_permission_prompt_factory_.reset(); }
 
   void LoadCompleted(WebContents* web_contents) {
-    mock_permission_bubble_factory_->DocumentOnLoadCompletedInMainFrame();
+    mock_permission_prompt_factory_->DocumentOnLoadCompletedInMainFrame();
   }
 
-  void ResetCounts() { mock_permission_bubble_factory_->ResetCounts(); }
+  void ResetCounts() { mock_permission_prompt_factory_->ResetCounts(); }
 
-  int AllowCount() { return mock_permission_bubble_factory_->show_count(); }
+  int AllowCount() { return mock_permission_prompt_factory_->show_count(); }
 
   void UpdateExpectations(TestingAction action) {
     // Set expectations for PermissionRequestManager.
-    if (action == ACCEPT) {
-      mock_permission_bubble_factory_->set_response_type(
-          PermissionRequestManager::ACCEPT_ALL);
-    } else if (action == CANCEL) {
-      mock_permission_bubble_factory_->set_response_type(
-          PermissionRequestManager::DENY_ALL);
-    } else if (action == WAIT) {
-      mock_permission_bubble_factory_->set_response_type(
-          PermissionRequestManager::NONE);
-    } else {
-      mock_permission_bubble_factory_->set_response_type(
-          PermissionRequestManager::DISMISS);
+    PermissionRequestManager::AutoResponseType response_type =
+        PermissionRequestManager::DISMISS;
+    switch (action) {
+      case ACCEPT:
+        response_type = PermissionRequestManager::ACCEPT_ALL;
+        break;
+      case CANCEL:
+        response_type = PermissionRequestManager::DENY_ALL;
+        break;
+      case WAIT:
+        response_type = PermissionRequestManager::NONE;
+        break;
     }
+    mock_permission_prompt_factory_->set_response_type(response_type);
   }
 
  private:
-  std::unique_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
+  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
 };
 #endif
 }  // namespace

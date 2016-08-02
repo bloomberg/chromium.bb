@@ -11,7 +11,7 @@
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
+#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/variations/variations_associated_data.h"
@@ -36,13 +36,13 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     PermissionRequestManager* manager = GetPermissionRequestManager();
-    mock_permission_bubble_factory_.reset(
-        new MockPermissionBubbleFactory(manager));
+    mock_permission_prompt_factory_.reset(
+        new MockPermissionPromptFactory(manager));
     manager->DisplayPendingRequests();
   }
 
   void TearDownOnMainThread() override {
-    mock_permission_bubble_factory_.reset();
+    mock_permission_prompt_factory_.reset();
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -51,8 +51,8 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
-  MockPermissionBubbleFactory* bubble_factory() {
-    return mock_permission_bubble_factory_.get();
+  MockPermissionPromptFactory* bubble_factory() {
+    return mock_permission_prompt_factory_.get();
   }
 
   void EnableKillSwitch(content::PermissionType permission_type) {
@@ -67,7 +67,7 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
+  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
 };
 
 // Requests before the load event should be bundled into one bubble.
