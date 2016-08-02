@@ -66,7 +66,7 @@ group("deps_no_options") {
       public_deps += [ "//buildtools/third_party/libc++:libcxx_proxy" ]
       data += [ "$root_out_dir/libc++.so" ]
     }
-    if (is_mac) {
+    if (is_mac || is_win) {
       data_deps = [
         ":copy_asan_runtime",
       ]
@@ -76,10 +76,17 @@ group("deps_no_options") {
   }
 }
 
-if (is_mac && using_sanitizer) {
+if ((is_mac || is_win) && using_sanitizer) {
   copy("copy_asan_runtime") {
+    if (is_mac) {
+      clang_rt_dso_path = "darwin/libclang_rt.asan_osx_dynamic.dylib"
+    } else if (is_win && target_cpu == "x86") {
+      clang_rt_dso_path = "windows/clang_rt.asan_dynamic-i386.dll"
+    } else if (is_win && target_cpu == "x64") {
+      clang_rt_dso_path = "windows/clang_rt.asan_dynamic-x86_64.dll"
+    }
     sources = [
-      "$clang_base_path/lib/clang/$clang_version/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "$clang_base_path/lib/clang/$clang_version/lib/$clang_rt_dso_path",
     ]
     outputs = [
       "$root_out_dir/{{source_file_part}}",
