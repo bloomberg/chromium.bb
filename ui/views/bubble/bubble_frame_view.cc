@@ -211,7 +211,12 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void BubbleFrameView::ResetWindowControls() {
+#if defined(OS_MACOSX)
+  // On Mac, close buttons are never shown.
+  close_->SetVisible(false);
+#else
   close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
+#endif
 }
 
 void BubbleFrameView::UpdateWindowIcon() {
@@ -244,7 +249,10 @@ gfx::Insets BubbleFrameView::GetInsets() const {
   const bool has_title = icon_height > 0 || label_height > 0;
   const int title_padding = has_title ? title_margins_.height() : 0;
   const int title_height = std::max(icon_height, label_height) + title_padding;
-  const int close_height = close_->visible() ? close_->height() : 0;
+  const int close_height =
+      GetWidget()->widget_delegate()->ShouldShowCloseButton()
+          ? close_->height()
+          : 0;
   insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
   return insets;
 }
