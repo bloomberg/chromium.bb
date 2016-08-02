@@ -445,7 +445,6 @@ _x86_internal_release_boards = frozenset([
     'clapper',
     'cranky',
     'cyan',
-    'cyan-cheets',
     'edgar',
     'enguarde',
     'expresso',
@@ -489,7 +488,6 @@ _x86_internal_release_boards = frozenset([
     'relm',
     'rikku',
     'samus',
-    'samus-cheets',
     'sentry',
     'setzer',
     'slippy',
@@ -565,12 +563,10 @@ _brillo_boards = frozenset([
 ])
 
 _cheets_boards = frozenset([
-    'cyan-cheets',
     'elm-cheets',
     'glados-cheets',
     'glimmer-cheets',
     'oak-cheets',
-    'samus-cheets',
     'smaug-cheets',
     'veyron_minnie-cheets',
     'celes-cheets',
@@ -642,23 +638,12 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
-        # Experimental PFQs.
-        'cyan-chrome-pfq',
-        'cyan-cheets-chrome-pfq',
-        'veyron_minnie-chrome-pfq',
-        'veyron_minnie-cheets-chrome-pfq',
-
         # Experimental Paladins.
-        'cyan-paladin',
-        'cyan-cheets-paladin',
         'elm-paladin',
         'elm-cheets-paladin',
         'gale-paladin',
         'gru-paladin',
         'lakitu_next-paladin',
-        'samus-paladin',
-        'veyron_minnie-paladin',
-        'veyron_minnie-cheets-paladin',
 
         # KASAN
         'smaug-kasan-kernel-3_18',
@@ -1340,18 +1325,9 @@ def GetConfig():
   )
 
   site_config.Add(
-      'cyan-cheets-chrome-pfq', chrome_pfq,
-      _base_configs['cyan-cheets'],
-      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
-  )
-
-
-  site_config.Add(
       'cyan-chrome-pfq', chrome_pfq,
       _base_configs['cyan'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
   )
 
   site_config.Add(
@@ -1370,16 +1346,7 @@ def GetConfig():
       'veyron_minnie-chrome-pfq', chrome_pfq,
       _base_configs['veyron_minnie'],
       hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
   )
-
-  site_config.Add(
-      'veyron_minnie-cheets-chrome-pfq', chrome_pfq,
-      _base_configs['veyron_minnie-cheets'],
-      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      important=False,
-  )
-
 
   site_config.Add(
       'peach_pit-chrome-pfq', chrome_pfq,
@@ -1395,15 +1362,12 @@ def GetConfig():
 
   _android_pfq_hwtest_boards = frozenset([
       'cyan',
-      'cyan-cheets',
       'samus',
       'veyron_minnie',
-      'veyron_minnie-cheets',
   ])
 
   _android_pfq_no_hwtest_boards = frozenset([
       'glados-cheets',
-      'samus-cheets',
   ])
 
   _telemetry_boards = frozenset([
@@ -1749,6 +1713,7 @@ def GetConfig():
       'auron',
       'beaglebone',
       'butterfly',
+      'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -1768,6 +1733,7 @@ def GetConfig():
       'peach_pit',
       'peppy',
       'rambi',
+      'samus',
       'smaug',
       'storm',
       'stout',
@@ -1775,6 +1741,7 @@ def GetConfig():
       'stumpy',
       'tricky',
       'veyron_mighty',
+      'veyron_minnie',
       'veyron_pinky',
       'veyron_rialto',
       'veyron_speedy',
@@ -1836,9 +1803,7 @@ def GetConfig():
   # *-cheets devices run a different suite
   _paladin_cheets_hwtest_boards = frozenset([
     'cyan',
-    'cyan-cheets',
     'veyron_minnie',
-    'veyron_minnie-cheets',
   ])
 
   _paladin_chroot_replace_boards = frozenset([
