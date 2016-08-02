@@ -74,8 +74,8 @@ const char kAshEnableStableOverviewOrder[] = "ash-enable-stable-overview-order";
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
 // Enables touch view testing.
-// TODO(skuhne): Remove TOGGLE_TOUCH_VIEW_TESTING accelerator once this
-// flag is removed.
+// TODO(skuhne): Remove DEBUG_TOGGLE_TOUCH_VIEW accelerator once this flag is
+// removed.
 const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
 
 // Enables the window cycling UI (more visual feedback for alt-tab).
