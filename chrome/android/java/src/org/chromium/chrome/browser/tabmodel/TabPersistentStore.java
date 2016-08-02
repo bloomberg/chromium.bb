@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class handles saving and loading tab state from the persistent storage.
@@ -103,7 +104,7 @@ public class TabPersistentStore extends TabPersister {
      */
     private static final Object CLEAN_UP_TASK_LOCK = new Object();
 
-    /** Prevents two state directories from getting created simultaneously */
+    /** Prevents two state directories from getting created simultaneously. */
     private static final Object DIR_CREATION_LOCK = new Object();
 
     /**
@@ -182,6 +183,8 @@ public class TabPersistentStore extends TabPersister {
     private static AsyncTask<Void, Void, Void> sMigrationTask = null;
     private static AsyncTask<Void, Void, Void> sCleanupTask = null;
     private static File sStateDirectory;
+    /** Tracks whether tabs from two TabPersistentStores tabs are being merged together. */
+    private static final AtomicBoolean sMergeInProgress = new AtomicBoolean();
 
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
@@ -215,8 +218,6 @@ public class TabPersistentStore extends TabPersister {
 
     // Tracks whether this TabPersistentStore's tabs are being loaded.
     private boolean mLoadInProgress;
-    // Tracks whether another TabPersistentStore's tabs are being merged into this instance.
-    private boolean mMergeInProgress;
 
     @VisibleForTesting
     AsyncTask<Void, Void, TabState> mPrefetchActiveTabTask;
@@ -246,12 +247,22 @@ public class TabPersistentStore extends TabPersister {
         mObserver = observer;
         mPreferences = ContextUtils.getAppSharedPreferences();
         startMigrationTaskIfNecessary();
-        mPrefetchTabListTask = startFetchTabListTask(getPrefetchExecutor(), selectorIndex);
-        startPrefetchActiveTabTask();
 
-        if (mergeTabs) {
-            mPrefetchTabListToMergeTask =
-                    startFetchTabListTask(getPrefetchExecutor(), mOtherSelectorIndex);
+        // Skip loading state if a merge is currently in progress. If this instance is being
+        // created while a merge is in progress then the tabs belonging to this instance are
+        // currently being merged into another instance and should not be loaded. This instance
+        // should start with no tabs.
+        // Note: Custom tabs will go through this code path, potentially skipping tab loading if
+        // a merge for regular Chrome is in progress. This is okay because custom tabs does not
+        // (currently) care about loading state.
+        if (!sMergeInProgress.get()) {
+            mPrefetchTabListTask = startFetchTabListTask(getPrefetchExecutor(), selectorIndex);
+            startPrefetchActiveTabTask();
+
+            if (mergeTabs) {
+                mPrefetchTabListToMergeTask =
+                        startFetchTabListTask(getPrefetchExecutor(), mOtherSelectorIndex);
+            }
         }
     }
 
@@ -414,20 +425,23 @@ public class TabPersistentStore extends TabPersister {
             assert mTabModelSelector.getModel(true).getCount() == 0;
             assert mTabModelSelector.getModel(false).getCount() == 0;
             checkAndUpdateMaxTabId();
-            long timeWaitingForPrefetch = SystemClock.uptimeMillis();
-            DataInputStream stream = mPrefetchTabListTask.get();
+            DataInputStream stream;
+            if (mPrefetchTabListTask != null) {
+                long timeWaitingForPrefetch = SystemClock.uptimeMillis();
+                stream = mPrefetchTabListTask.get();
 
-            // Restore the tabs for this TabPeristentStore instance if the tab metadata file
-            // exists.
-            if (stream != null) {
-                logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
-                mLoadInProgress = true;
-                readSavedStateFile(
-                        stream,
-                        createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
-                                false),
-                        null);
-                logExecutionTime("LoadStateInternalTime", time);
+                // Restore the tabs for this TabPeristentStore instance if the tab metadata file
+                // exists.
+                if (stream != null) {
+                    logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
+                    mLoadInProgress = true;
+                    readSavedStateFile(
+                            stream,
+                            createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
+                                    false),
+                            null);
+                    logExecutionTime("LoadStateInternalTime", time);
+                }
             }
 
             // Restore the tabs for the other TabPeristentStore instance if its tab metadata file
@@ -435,7 +449,7 @@ public class TabPersistentStore extends TabPersister {
             if (mPrefetchTabListToMergeTask != null) {
                 stream = mPrefetchTabListToMergeTask.get();
                 if (stream != null) {
-                    mMergeInProgress = true;
+                    sMergeInProgress.set(true);
                     readSavedStateFile(
                             stream,
                             createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
@@ -463,7 +477,7 @@ public class TabPersistentStore extends TabPersister {
     public void mergeState() {
         // TODO(twellington): Add UMA metrics to determine merging performance.
 
-        if (mLoadInProgress || mMergeInProgress || !mTabsToRestore.isEmpty()) {
+        if (mLoadInProgress || sMergeInProgress.get() || !mTabsToRestore.isEmpty()) {
             Log.e(TAG, "Tab load still in progress when merge was attempted.");
             return;
         }
@@ -482,7 +496,7 @@ public class TabPersistentStore extends TabPersister {
             // Return early if the stream is null, which indicates there isn't a second instance
             // to merge.
             if (stream == null) return;
-            mMergeInProgress = true;
+            sMergeInProgress.set(true);
             readSavedStateFile(stream,
                     createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(), true),
                     null);
@@ -923,7 +937,7 @@ public class TabPersistentStore extends TabPersister {
                     // are being read. If a merge was previously started and interrupted due to the
                     // app dying, the two metadata files may contain duplicate IDs. Skip tabs with
                     // duplicate IDs.
-                    if (mMergeInProgress && mTabIdsToRestore.contains(id)) {
+                    if (sMergeInProgress.get() && mTabIdsToRestore.contains(id)) {
                         return;
                     }
 
@@ -1129,7 +1143,7 @@ public class TabPersistentStore extends TabPersister {
             // If tabs are done being merged into this instance, save the tab metadata file for this
             // TabPersistentStore and delete the metadata file for the other instance, then notify
             // observers.
-            if (mMergeInProgress) {
+            if (sMergeInProgress.get()) {
                 ThreadUtils.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1189,7 +1203,7 @@ public class TabPersistentStore extends TabPersister {
                     // The merge isn't completely finished until the other TabPersistentStore's
                     // metadata file is deleted.
                     if (file.equals(getStateFileName(mOtherSelectorIndex))) {
-                        mMergeInProgress = false;
+                        sMergeInProgress.set(false);
                     }
                 }
                 return null;
