@@ -15,6 +15,7 @@ class CSSProperties(in_generator.Writer):
         'longhands': '',
         'interpolable': False,
         'inherited': False,
+        'independent': False,
         'font': False,
         'svg': False,
         'name_for_methods': None,
@@ -40,6 +41,7 @@ class CSSProperties(in_generator.Writer):
     valid_values = {
         'interpolable': (True, False),
         'inherited': (True, False),
+        'independent': (True, False),
         'font': (True, False),
         'svg': (True, False),
         'custom_all': (True, False),

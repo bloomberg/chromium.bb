@@ -45,6 +45,12 @@
 // The property will inherit by default if no value is specified, typically
 // mentioned in specifications as "Inherited: yes"
 
+// - independent
+// This property affects only one field on ComputedStyle, and can be set
+// directly during inheritance instead of forcing a recalc.
+// StyleResolver and StyleAdjuster are not invoked when these properties
+// are changed on a parent. Recalcs only happen if at least one
+// non-independent inherited property is changed in the parent.
 
 // The remaining arguments are used for the StyleBuilder and allow us to
 // succinctly describe how to apply properties. When default handlers are not
@@ -272,7 +278,7 @@ padding-top interpolable, initial=initialPadding, converter=convertLength
 paint-order inherited, svg, converter=convertPaintOrder
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
-pointer-events inherited
+pointer-events inherited, independent
 position custom_inherit
 quotes inherited, converter=convertQuotes
 resize custom_value
@@ -336,7 +342,7 @@ transition-timing-function custom_all
 unicode-bidi
 vector-effect svg
 vertical-align interpolable, custom_inherit, custom_value
-visibility interpolable, inherited
+visibility interpolable, inherited, independent
 x interpolable, svg, converter=convertLength
 y interpolable, svg, converter=convertLength
 -webkit-appearance type_name=ControlPart
