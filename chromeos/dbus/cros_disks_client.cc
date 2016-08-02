@@ -33,19 +33,17 @@ namespace chromeos {
 namespace {
 
 const char* kDefaultMountOptions[] = {
-  "rw",
-  "nodev",
-  "noexec",
-  "nosuid",
+    "nodev", "noexec", "nosuid",
 };
+const char kReadOnlyOption[] = "ro";
+const char kReadWriteOption[] = "rw";
+const char kMountLabelOption[] = "mountlabel";
 
 const char* kDefaultUnmountOptions[] = {
   "force",
 };
 
 const char kLazyUnmountOption[] = "lazy";
-
-const char kMountLabelOption[] = "mountlabel";
 
 // Checks if retrieved media type is in boundaries of DeviceMediaType.
 bool IsValidMediaType(uint32_t type) {
@@ -105,6 +103,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   void Mount(const std::string& source_path,
              const std::string& source_format,
              const std::string& mount_label,
+             MountAccessMode access_mode,
              const base::Closure& callback,
              const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
@@ -112,15 +111,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(source_path);
     writer.AppendString(source_format);
-    std::vector<std::string> mount_options(kDefaultMountOptions,
-                                           kDefaultMountOptions +
-                                           arraysize(kDefaultMountOptions));
-    if (!mount_label.empty()) {
-      std::string mount_label_option = base::StringPrintf("%s=%s",
-                                                          kMountLabelOption,
-                                                          mount_label.c_str());
-      mount_options.push_back(mount_label_option);
-    }
+    std::vector<std::string> mount_options =
+        ComposeMountOptions(mount_label, access_mode);
     writer.AppendArrayOfStrings(mount_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnMount,
@@ -658,6 +650,30 @@ base::FilePath CrosDisksClient::GetRemovableDiskMountPoint() {
   return base::FilePath(base::SysInfo::IsRunningOnChromeOS() ?
                         FILE_PATH_LITERAL("/media/removable") :
                         FILE_PATH_LITERAL("/tmp/chromeos/media/removable"));
+}
+
+// static
+std::vector<std::string> CrosDisksClient::ComposeMountOptions(
+    const std::string& mount_label,
+    MountAccessMode access_mode) {
+  std::vector<std::string> mount_options(
+      kDefaultMountOptions,
+      kDefaultMountOptions + arraysize(kDefaultMountOptions));
+  switch (access_mode) {
+    case MOUNT_ACCESS_MODE_READ_ONLY:
+      mount_options.push_back(kReadOnlyOption);
+      break;
+    case MOUNT_ACCESS_MODE_READ_WRITE:
+      mount_options.push_back(kReadWriteOption);
+      break;
+  }
+
+  if (!mount_label.empty()) {
+    std::string mount_label_option =
+        base::StringPrintf("%s=%s", kMountLabelOption, mount_label.c_str());
+    mount_options.push_back(mount_label_option);
+  }
+  return mount_options;
 }
 
 }  // namespace chromeos

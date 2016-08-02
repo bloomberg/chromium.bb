@@ -79,9 +79,7 @@ class DiskMountManagerImpl : public DiskMountManager {
       }
     }
     cros_disks_client_->Mount(
-        source_path,
-        source_format,
-        mount_label,
+        source_path, source_format, mount_label, MOUNT_ACCESS_MODE_READ_WRITE,
         // When succeeds, OnMountCompleted will be called by
         // "MountCompleted" signal instead.
         base::Bind(&base::DoNothing),

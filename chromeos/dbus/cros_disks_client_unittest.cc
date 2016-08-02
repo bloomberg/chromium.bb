@@ -16,6 +16,8 @@ namespace chromeos {
 
 namespace {
 
+const char kMountLabel[] = "/tmp/cros-disks-test";
+
 // Appends a boolean entry to a dictionary of type "a{sv}"
 void AppendBoolDictEntry(dbus::MessageWriter* array_writer,
                          const std::string& key,
@@ -151,6 +153,30 @@ TEST(CrosDisksClientTest, DiskInfo) {
   EXPECT_EQ(kDeviceSize, result.total_size_in_bytes());
   EXPECT_EQ(DEVICE_TYPE_SD, result.device_type());
   EXPECT_EQ(kMountPath, result.mount_path());
+}
+
+TEST(CrosDisksClientTest, ComposeMountOptions) {
+  std::string kExpectedMountLabelOption =
+      std::string("mountlabel=") + kMountLabel;
+  std::vector<std::string> rw_mount_options =
+      CrosDisksClient::ComposeMountOptions(kMountLabel,
+                                           MOUNT_ACCESS_MODE_READ_WRITE);
+  ASSERT_EQ(5U, rw_mount_options.size());
+  EXPECT_EQ("nodev", rw_mount_options[0]);
+  EXPECT_EQ("noexec", rw_mount_options[1]);
+  EXPECT_EQ("nosuid", rw_mount_options[2]);
+  EXPECT_EQ("rw", rw_mount_options[3]);
+  EXPECT_EQ(kExpectedMountLabelOption, rw_mount_options[4]);
+
+  std::vector<std::string> ro_mount_options =
+      CrosDisksClient::ComposeMountOptions(kMountLabel,
+                                           MOUNT_ACCESS_MODE_READ_ONLY);
+  ASSERT_EQ(5U, ro_mount_options.size());
+  EXPECT_EQ("nodev", ro_mount_options[0]);
+  EXPECT_EQ("noexec", ro_mount_options[1]);
+  EXPECT_EQ("nosuid", ro_mount_options[2]);
+  EXPECT_EQ("ro", ro_mount_options[3]);
+  EXPECT_EQ(kExpectedMountLabelOption, ro_mount_options[4]);
 }
 
 }  // namespace chromeos

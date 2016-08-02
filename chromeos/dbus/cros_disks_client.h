@@ -102,6 +102,12 @@ enum UnmountOptions {
   UNMOUNT_OPTIONS_LAZY,  // Do lazy unmount.
 };
 
+// Mount option to control write permission to a device.
+enum MountAccessMode {
+  MOUNT_ACCESS_MODE_READ_WRITE,
+  MOUNT_ACCESS_MODE_READ_ONLY,
+};
+
 // A class to represent information about a disk sent from cros-disks.
 class CHROMEOS_EXPORT DiskInfo {
  public:
@@ -271,6 +277,7 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
+                     MountAccessMode access_mode,
                      const base::Closure& callback,
                      const base::Closure& error_callback) = 0;
 
@@ -330,6 +337,11 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
 
   // Returns the path of the mount point for removable disks.
   static base::FilePath GetRemovableDiskMountPoint();
+
+  // Composes a list of mount options.
+  static std::vector<std::string> ComposeMountOptions(
+      const std::string& mount_label,
+      MountAccessMode access_mode);
 
  protected:
   // Create() should be used instead.
