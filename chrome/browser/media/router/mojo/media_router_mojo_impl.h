@@ -137,9 +137,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaRoutesObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           PresentationSessionMessagesSingleObserver);
+                           RouteMessagesSingleObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           PresentationSessionMessagesMultipleObservers);
+                           RouteMessagesMultipleObservers);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
@@ -229,10 +229,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
   void RegisterIssuesObserver(IssuesObserver* observer) override;
   void UnregisterIssuesObserver(IssuesObserver* observer) override;
-  void RegisterPresentationSessionMessagesObserver(
-      PresentationSessionMessagesObserver* observer) override;
-  void UnregisterPresentationSessionMessagesObserver(
-      PresentationSessionMessagesObserver* observer) override;
+  void RegisterRouteMessageObserver(RouteMessageObserver* observer) override;
+  void UnregisterRouteMessageObserver(RouteMessageObserver* observer) override;
 
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
@@ -305,7 +303,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,
-      std::vector<mojom::RouteMessagePtr> messages) override;
+      const std::vector<RouteMessage>& messages) override;
 
   // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
   // to the ID of the route that was terminated.
@@ -376,12 +374,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
       routes_queries_;
 
-  using PresentationSessionMessagesObserverList =
-      base::ObserverList<PresentationSessionMessagesObserver>;
   base::ScopedPtrHashMap<
-      MediaRoute::Id,
-      std::unique_ptr<PresentationSessionMessagesObserverList>>
-      messages_observers_;
+      MediaRoute::Id, std::unique_ptr<base::ObserverList<RouteMessageObserver>>>
+      message_observers_;
 
   IssueManager issue_manager_;
 

@@ -99,10 +99,10 @@ class MockMediaRouter : public MediaRouter {
                void(MediaRoutesObserver* observer));
   MOCK_METHOD1(UnregisterMediaRoutesObserver,
                void(MediaRoutesObserver* observer));
-  MOCK_METHOD1(RegisterPresentationSessionMessagesObserver,
-               void(PresentationSessionMessagesObserver* observer));
-  MOCK_METHOD1(UnregisterPresentationSessionMessagesObserver,
-               void(PresentationSessionMessagesObserver* observer));
+  MOCK_METHOD1(RegisterRouteMessageObserver,
+               void(RouteMessageObserver* observer));
+  MOCK_METHOD1(UnregisterRouteMessageObserver,
+               void(RouteMessageObserver* observer));
 
  private:
   base::CallbackList<void(

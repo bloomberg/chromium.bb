@@ -7,9 +7,17 @@
 
 #include <utility>
 
+#include "base/hash.h"
+
 namespace media_router {
 
 using RenderFrameHostId = std::pair<int, int>;
+
+struct RenderFrameHostIdHasher {
+  std::size_t operator()(const RenderFrameHostId id) const {
+    return base::HashInts(id.first, id.second);
+  }
+};
 
 }  // namespace media_router
 

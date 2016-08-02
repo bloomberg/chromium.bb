@@ -24,7 +24,7 @@ class MediaRoutesObserver {
  public:
   explicit MediaRoutesObserver(MediaRouter* router) :
     MediaRoutesObserver(router, MediaSource::Id()) {}
-  MediaRoutesObserver(MediaRouter* router, const MediaSource::Id source_id);
+  MediaRoutesObserver(MediaRouter* router, const MediaSource::Id& source_id);
   virtual ~MediaRoutesObserver();
 
   // Invoked when the list of routes and their associated sinks have been
@@ -41,7 +41,7 @@ class MediaRoutesObserver {
   const MediaSource::Id source_id() const { return source_id_; }
 
  private:
-  MediaRouter* router_;
+  MediaRouter* const router_;
   const MediaSource::Id source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRoutesObserver);

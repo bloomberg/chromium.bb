@@ -25,7 +25,8 @@
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
 #include "chrome/browser/media/router/mojo/media_router_type_converters.h"
-#include "chrome/browser/media/router/presentation_session_messages_observer.h"
+#include "chrome/browser/media/router/route_message.h"
+#include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -83,16 +84,6 @@ const int kInvalidTabId = -1;
 const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 const int kTimeoutMillis = 5 * 1000;
 
-bool ArePresentationSessionMessagesEqual(
-    const content::PresentationSessionMessage* expected,
-    const content::PresentationSessionMessage* actual) {
-  if (expected->type != actual->type)
-    return false;
-
-  return expected->is_binary() ? *expected->data == *actual->data
-                               : expected->message == actual->message;
-}
-
 mojom::IssuePtr CreateMojoIssue(const std::string& title) {
   mojom::IssuePtr mojoIssue = mojom::Issue::New();
   mojoIssue->title = title;
@@ -141,31 +132,6 @@ class SinkResponseCallbackHandler {
 class SendMessageCallbackHandler {
  public:
   MOCK_METHOD1(Invoke, void(bool));
-};
-
-class ListenForMessagesCallbackHandler {
- public:
-  ListenForMessagesCallbackHandler(
-      ScopedVector<content::PresentationSessionMessage> expected_messages,
-      bool pass_ownership)
-      : expected_messages_(std::move(expected_messages)),
-        pass_ownership_(pass_ownership) {}
-  void Invoke(const ScopedVector<content::PresentationSessionMessage>& messages,
-              bool pass_ownership) {
-    InvokeObserver();
-    EXPECT_EQ(pass_ownership_, pass_ownership);
-    EXPECT_EQ(messages.size(), expected_messages_.size());
-    for (size_t i = 0; i < expected_messages_.size(); ++i) {
-      EXPECT_TRUE(ArePresentationSessionMessagesEqual(expected_messages_[i],
-                                                      messages[i]));
-    }
-  }
-
-  MOCK_METHOD0(InvokeObserver, void());
-
- private:
-  ScopedVector<content::PresentationSessionMessage> expected_messages_;
-  bool pass_ownership_;
 };
 
 template <typename T>
@@ -993,70 +959,82 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
-  std::vector<mojom::RouteMessagePtr> mojo_messages(2);
-  mojo_messages[0] = mojom::RouteMessage::New();
-  mojo_messages[0]->type = mojom::RouteMessage::Type::TEXT;
-  mojo_messages[0]->message = std::string("text");
-  mojo_messages[1] = mojom::RouteMessage::New();
-  mojo_messages[1]->type = mojom::RouteMessage::Type::BINARY;
-  mojo_messages[1]->data = std::vector<uint8_t>(1, UINT8_C(1));
+namespace {
 
-  ScopedVector<content::PresentationSessionMessage> expected_messages;
-  std::unique_ptr<content::PresentationSessionMessage> message;
-  message.reset(new content::PresentationSessionMessage(
-      content::PresentationMessageType::TEXT));
-  message->message = "text";
-  expected_messages.push_back(std::move(message));
-
-  message.reset(new content::PresentationSessionMessage(
-      content::PresentationMessageType::ARRAY_BUFFER));
-  message->data.reset(new std::vector<uint8_t>(1, UINT8_C(1)));
-  expected_messages.push_back(std::move(message));
-
-  base::RunLoop run_loop;
-  MediaRoute::Id expected_route_id("foo");
-  EXPECT_CALL(mock_media_route_provider_,
-              StartListeningForRouteMessages(Eq(expected_route_id)))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-
-  // |pass_ownership| param is |true| here because there is only one observer.
-  ListenForMessagesCallbackHandler handler(std::move(expected_messages), true);
-
-  // Creating PresentationSessionMessagesObserver will register itself to the
-  // MediaRouter, which in turn will start listening for route messages.
-  std::unique_ptr<PresentationSessionMessagesObserver> observer(
-      new PresentationSessionMessagesObserver(
-          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
-                     base::Unretained(&handler)),
-          expected_route_id, router()));
-  run_loop.Run();
-
-  EXPECT_CALL(handler, InvokeObserver());
-  router()->OnRouteMessagesReceived(expected_route_id,
-                                    std::move(mojo_messages));
+// Used in the RouteMessages* tests to populate the messages that will be
+// processed and dispatched to RouteMessageObservers.
+void PopulateRouteMessages(std::vector<RouteMessage>* batch1,
+                           std::vector<RouteMessage>* batch2,
+                           std::vector<RouteMessage>* batch3) {
+  batch1->resize(1);
+  batch1->at(0).type = RouteMessage::TEXT;
+  batch1->at(0).text = std::string("text1");
+  batch2->resize(2);
+  batch2->at(0).type = RouteMessage::BINARY;
+  batch2->at(0).binary = std::vector<uint8_t>(1, UINT8_C(1));
+  batch2->at(1).type = RouteMessage::TEXT;
+  batch2->at(1).text = std::string("text2");
+  batch3->resize(3);
+  batch3->at(0).type = RouteMessage::TEXT;
+  batch3->at(0).text = std::string("text3");
+  batch3->at(1).type = RouteMessage::BINARY;
+  batch3->at(1).binary = std::vector<uint8_t>(1, UINT8_C(2));
+  batch3->at(2).type = RouteMessage::BINARY;
+  batch3->at(2).binary = std::vector<uint8_t>(1, UINT8_C(3));
 }
 
-TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
-  std::vector<mojom::RouteMessagePtr> mojo_messages(2);
-  mojo_messages[0] = mojom::RouteMessage::New();
-  mojo_messages[0]->type = mojom::RouteMessage::Type::TEXT;
-  mojo_messages[0]->message = std::string("text");
-  mojo_messages[1] = mojom::RouteMessage::New();
-  mojo_messages[1]->type = mojom::RouteMessage::Type::BINARY;
-  mojo_messages[1]->data = std::vector<uint8_t>(1, UINT8_C(1));
+// Used in the RouteMessages* tests to observe and sanity-check that the
+// messages being received from the router are correct and in-sequence. The
+// checks here correspond to the expected messages in PopulateRouteMessages()
+// above.
+class ExpectedMessagesObserver : public RouteMessageObserver {
+ public:
+  ExpectedMessagesObserver(MediaRouter* router, const MediaRoute::Id& route_id)
+      : RouteMessageObserver(router, route_id) {}
 
-  ScopedVector<content::PresentationSessionMessage> expected_messages;
-  std::unique_ptr<content::PresentationSessionMessage> message;
-  message.reset(new content::PresentationSessionMessage(
-      content::PresentationMessageType::TEXT));
-  message->message = "text";
-  expected_messages.push_back(std::move(message));
+  ~ExpectedMessagesObserver() final {
+    CheckReceivedMessages();
+  }
 
-  message.reset(new content::PresentationSessionMessage(
-      content::PresentationMessageType::ARRAY_BUFFER));
-  message->data.reset(new std::vector<uint8_t>(1, UINT8_C(1)));
-  expected_messages.push_back(std::move(message));
+ private:
+  void OnMessagesReceived(
+      const std::vector<RouteMessage>& messages) final {
+    messages_.insert(messages_.end(), messages.begin(), messages.end());
+  }
+
+  void CheckReceivedMessages() {
+    ASSERT_EQ(6u, messages_.size());
+    EXPECT_EQ(RouteMessage::TEXT, messages_[0].type);
+    ASSERT_TRUE(messages_[0].text);
+    EXPECT_EQ("text1", *messages_[0].text);
+    EXPECT_EQ(RouteMessage::BINARY, messages_[1].type);
+    ASSERT_TRUE(messages_[1].binary);
+    ASSERT_EQ(1u, messages_[1].binary->size());
+    EXPECT_EQ(UINT8_C(1), messages_[1].binary->front());
+    EXPECT_EQ(RouteMessage::TEXT, messages_[2].type);
+    ASSERT_TRUE(messages_[2].text);
+    EXPECT_EQ("text2", *messages_[2].text);
+    EXPECT_EQ(RouteMessage::TEXT, messages_[3].type);
+    ASSERT_TRUE(messages_[3].text);
+    EXPECT_EQ("text3", *messages_[3].text);
+    EXPECT_EQ(RouteMessage::BINARY, messages_[4].type);
+    ASSERT_TRUE(messages_[4].binary);
+    ASSERT_EQ(1u, messages_[4].binary->size());
+    EXPECT_EQ(UINT8_C(2), messages_[4].binary->front());
+    EXPECT_EQ(RouteMessage::BINARY, messages_[5].type);
+    ASSERT_TRUE(messages_[5].binary);
+    ASSERT_EQ(1u, messages_[5].binary->size());
+    EXPECT_EQ(UINT8_C(3), messages_[5].binary->front());
+  }
+
+  std::vector<RouteMessage> messages_;
+};
+
+}  // namespace
+
+TEST_F(MediaRouterMojoImplTest, RouteMessagesSingleObserver) {
+  std::vector<RouteMessage> incoming_batch1, incoming_batch2, incoming_batch3;
+  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3);
 
   base::RunLoop run_loop;
   MediaRoute::Id expected_route_id("foo");
@@ -1064,27 +1042,37 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
               StartListeningForRouteMessages(Eq(expected_route_id)))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
-  // |pass_ownership| param is |false| here because there are more than one
-  // observers.
-  ListenForMessagesCallbackHandler handler(std::move(expected_messages), false);
-
-  // Creating PresentationSessionMessagesObserver will register itself to the
+  // Creating ExpectedMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
-  std::unique_ptr<PresentationSessionMessagesObserver> observer1(
-      new PresentationSessionMessagesObserver(
-          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
-                     base::Unretained(&handler)),
-          expected_route_id, router()));
-  std::unique_ptr<PresentationSessionMessagesObserver> observer2(
-      new PresentationSessionMessagesObserver(
-          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
-                     base::Unretained(&handler)),
-          expected_route_id, router()));
-  run_loop.Run();
+  ExpectedMessagesObserver observer(router(), expected_route_id);
+  run_loop.Run();  // Will quit when StartListeningForRouteMessages() is called.
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch1);
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch2);
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch3);
+  // When |observer| goes out-of-scope, its destructor will ensure all expected
+  // messages have been received.
+}
 
-  EXPECT_CALL(handler, InvokeObserver()).Times(2);
-  router()->OnRouteMessagesReceived(expected_route_id,
-                                    std::move(mojo_messages));
+TEST_F(MediaRouterMojoImplTest, RouteMessagesMultipleObservers) {
+  std::vector<RouteMessage> incoming_batch1, incoming_batch2, incoming_batch3;
+  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3);
+
+  base::RunLoop run_loop;
+  MediaRoute::Id expected_route_id("foo");
+  EXPECT_CALL(mock_media_route_provider_,
+              StartListeningForRouteMessages(Eq(expected_route_id)))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+
+  // The ExpectedMessagesObservers will register themselves with the
+  // MediaRouter, which in turn will start listening for route messages.
+  ExpectedMessagesObserver observer1(router(), expected_route_id);
+  ExpectedMessagesObserver observer2(router(), expected_route_id);
+  run_loop.Run();  // Will quit when StartListeningForRouteMessages() is called.
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch1);
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch2);
+  router()->OnRouteMessagesReceived(expected_route_id, incoming_batch3);
+  // As each |observer| goes out-of-scope, its destructor will ensure all
+  // expected messages have been received.
 }
 
 TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {

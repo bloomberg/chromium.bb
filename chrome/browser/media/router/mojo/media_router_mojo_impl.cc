@@ -24,7 +24,8 @@
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/mojo/media_router_type_converters.h"
-#include "chrome/browser/media/router/presentation_session_messages_observer.h"
+#include "chrome/browser/media/router/route_message.h"
+#include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/process_manager.h"
@@ -37,37 +38,6 @@
 namespace media_router {
 
 using SinkAvailability = mojom::MediaRouter::SinkAvailability;
-
-namespace {
-
-std::unique_ptr<content::PresentationSessionMessage>
-ConvertToPresentationSessionMessage(mojom::RouteMessagePtr input) {
-  DCHECK(!input.is_null());
-  std::unique_ptr<content::PresentationSessionMessage> output;
-  switch (input->type) {
-    case mojom::RouteMessage::Type::TEXT: {
-      DCHECK(input->message);
-      DCHECK(!input->data);
-      output.reset(new content::PresentationSessionMessage(
-          content::PresentationMessageType::TEXT));
-      output->message = std::move(*input->message);
-      return output;
-    }
-    case mojom::RouteMessage::Type::BINARY: {
-      DCHECK(input->data);
-      DCHECK(!input->message);
-      output.reset(new content::PresentationSessionMessage(
-          content::PresentationMessageType::ARRAY_BUFFER));
-      output->data.reset(new std::vector<uint8_t>(std::move(*input->data)));
-      return output;
-    }
-  }
-
-  NOTREACHED() << "Invalid route message type " << input->type;
-  return output;
-}
-
-}  // namespace
 
 MediaRouterMojoImpl::MediaRoutesQuery::MediaRoutesQuery() = default;
 
@@ -571,15 +541,15 @@ void MediaRouterMojoImpl::UnregisterIssuesObserver(IssuesObserver* observer) {
   issue_manager_.UnregisterObserver(observer);
 }
 
-void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
-    PresentationSessionMessagesObserver* observer) {
+void MediaRouterMojoImpl::RegisterRouteMessageObserver(
+    RouteMessageObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   const MediaRoute::Id& route_id = observer->route_id();
-  auto* observer_list = messages_observers_.get(route_id);
+  auto* observer_list = message_observers_.get(route_id);
   if (!observer_list) {
-    observer_list = new base::ObserverList<PresentationSessionMessagesObserver>;
-    messages_observers_.add(route_id, base::WrapUnique(observer_list));
+    observer_list = new base::ObserverList<RouteMessageObserver>;
+    message_observers_.add(route_id, base::WrapUnique(observer_list));
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -595,19 +565,19 @@ void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
   }
 }
 
-void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
-    PresentationSessionMessagesObserver* observer) {
+void MediaRouterMojoImpl::UnregisterRouteMessageObserver(
+    RouteMessageObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
 
   const MediaRoute::Id& route_id = observer->route_id();
-  auto* observer_list = messages_observers_.get(route_id);
+  auto* observer_list = message_observers_.get(route_id);
   if (!observer_list || !observer_list->HasObserver(observer))
     return;
 
   observer_list->RemoveObserver(observer);
   if (!observer_list->might_have_observers()) {
-    messages_observers_.erase(route_id);
+    message_observers_.erase(route_id);
     SetWakeReason(
         MediaRouteProviderWakeReason::STOP_LISTENING_FOR_ROUTE_MESSAGES);
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopListeningForRouteMessages,
@@ -732,28 +702,19 @@ void MediaRouterMojoImpl::DoSearchSinks(
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const std::string& route_id,
-    std::vector<mojom::RouteMessagePtr> messages) {
+    const std::vector<RouteMessage>& messages) {
   DVLOG_WITH_INSTANCE(1) << "OnRouteMessagesReceived";
 
-  DCHECK(!messages.empty());
+  if (messages.empty())
+    return;
 
-  auto* observer_list = messages_observers_.get(route_id);
+  auto* observer_list = message_observers_.get(route_id);
   if (!observer_list) {
     return;
   }
 
-  ScopedVector<content::PresentationSessionMessage> session_messages;
-  session_messages.reserve(messages.size());
-  for (size_t i = 0; i < messages.size(); ++i) {
-    session_messages.push_back(
-        ConvertToPresentationSessionMessage(std::move(messages[i])));
-  }
-  base::ObserverList<PresentationSessionMessagesObserver>::Iterator observer_it(
-      observer_list);
-  bool single_observer =
-      observer_it.GetNext() != nullptr && observer_it.GetNext() == nullptr;
-  FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
-                    OnMessagesReceived(session_messages, single_observer));
+  FOR_EACH_OBSERVER(RouteMessageObserver, *observer_list,
+                    OnMessagesReceived(messages));
 }
 
 void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(

@@ -49,6 +49,9 @@
       'includes': [
         '../../../../mojo/mojom_bindings_generator.gypi',
       ],
+      'mojom_typemaps': [
+          'mojo/media_router.typemap',
+      ],
     },
     {
       'target_name': 'media_router_mojo',

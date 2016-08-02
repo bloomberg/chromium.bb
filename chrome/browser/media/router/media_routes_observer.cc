@@ -10,7 +10,7 @@
 namespace media_router {
 
 MediaRoutesObserver::MediaRoutesObserver(MediaRouter* router,
-    const MediaSource::Id source_id)
+                                         const MediaSource::Id& source_id)
     : router_(router),
       source_id_(source_id) {
   DCHECK(router_);
