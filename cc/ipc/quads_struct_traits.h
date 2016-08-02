@@ -395,7 +395,7 @@ struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
 
 struct DrawQuadWithSharedQuadState {
   const cc::DrawQuad* quad;
-  bool include_sqs;
+  const cc::SharedQuadState* shared_quad_state;
 };
 
 template <>
@@ -464,9 +464,7 @@ struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
   }
 
   static OptSharedQuadState sqs(const DrawQuadWithSharedQuadState& input) {
-    OptSharedQuadState sqs;
-    sqs.sqs = input.include_sqs ? input.quad->shared_quad_state : nullptr;
-    return sqs;
+    return {input.shared_quad_state};
   }
 };
 
@@ -480,29 +478,29 @@ template <>
 struct ArrayTraits<cc::QuadList> {
   using Element = DrawQuadWithSharedQuadState;
   struct ConstIterator {
-    ConstIterator(const cc::QuadList::ConstIterator& it,
-                  const cc::DrawQuad* last_quad)
-        : it(it), last_quad(last_quad) {}
+    explicit ConstIterator(const cc::QuadList::ConstIterator& it)
+        : it(it), last_shared_quad_state(nullptr) {}
 
     cc::QuadList::ConstIterator it;
-    const cc::DrawQuad* last_quad;
+    const cc::SharedQuadState* last_shared_quad_state;
   };
 
   static ConstIterator GetBegin(const cc::QuadList& input) {
-    return ConstIterator(input.begin(), nullptr);
+    return ConstIterator(input.begin());
   }
 
   static void AdvanceIterator(ConstIterator& iterator) {
-    iterator.last_quad = *iterator.it;
+    iterator.last_shared_quad_state = (*iterator.it)->shared_quad_state;
     ++iterator.it;
   }
 
   static Element GetValue(ConstIterator& iterator) {
-    DrawQuadWithSharedQuadState dq;
-    dq.quad = *iterator.it;
-    dq.include_sqs = !iterator.last_quad ||
-                     iterator.last_quad->shared_quad_state !=
-                         (*iterator.it)->shared_quad_state;
+    DrawQuadWithSharedQuadState dq = {*iterator.it, nullptr};
+    // Only serialize the SharedQuadState if we haven't seen it before and
+    // therefore have not already serialized it.
+    const cc::SharedQuadState* current_sqs = (*iterator.it)->shared_quad_state;
+    if (current_sqs != iterator.last_shared_quad_state)
+      dq.shared_quad_state = current_sqs;
     return dq;
   }
 
