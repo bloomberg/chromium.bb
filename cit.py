@@ -99,27 +99,7 @@ def get_available_tools():
   return (sorted(infra_tools), sorted(cipd_tools))
 
 
-def run(args):
-  if args:
-    tool_name = args[0]
-    # Check to see if it is a infra tool first.
-    infra_dir = os.path.join(
-      TARGET_DIR, 'infra', 'infra', 'tools', *tool_name.split('.'))
-    cipd_file = os.path.join(TARGET_DIR, 'infra', 'cipd', tool_name)
-    if sys.platform.startswith('win'):
-      cipd_file += '.exe'
-    if (os.path.isdir(infra_dir)
-        and os.path.isfile(os.path.join(infra_dir, '__main__.py'))):
-      cmd = [
-          sys.executable, os.path.join(TARGET_DIR, 'infra', 'run.py'),
-          'infra.tools.%s' % tool_name]
-    elif os.path.isfile(cipd_file) and is_exe(cipd_file):
-      cmd = [cipd_file]
-
-    # Add the remaining arguments.
-    cmd.extend(args[1:])
-    return subprocess.call(cmd)
-
+def usage():
   infra_tools, cipd_tools = get_available_tools()
   print """usage: cit.py <name of tool> [args for tool]
 
@@ -136,6 +116,32 @@ def run(args):
   for tool in cipd_tools:
     print '  * %s' % tool
 
+
+def run(args):
+  if not args:
+    return usage()
+
+  tool_name = args[0]
+  # Check to see if it is a infra tool first.
+  infra_dir = os.path.join(
+    TARGET_DIR, 'infra', 'infra', 'tools', *tool_name.split('.'))
+  cipd_file = os.path.join(TARGET_DIR, 'infra', 'cipd', tool_name)
+  if sys.platform.startswith('win'):
+    cipd_file += '.exe'
+  if (os.path.isdir(infra_dir)
+      and os.path.isfile(os.path.join(infra_dir, '__main__.py'))):
+    cmd = [
+        sys.executable, os.path.join(TARGET_DIR, 'infra', 'run.py'),
+        'infra.tools.%s' % tool_name]
+  elif os.path.isfile(cipd_file) and is_exe(cipd_file):
+    cmd = [cipd_file]
+  else:
+    print >>sys.stderr, 'Unknown tool "%s"' % tool_name
+    return usage()
+
+  # Add the remaining arguments.
+  cmd.extend(args[1:])
+  return subprocess.call(cmd)
 
 
 def main():
