@@ -83,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, TagsManagerRecordsATag) {
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
-// crbug.com/628570
-IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DISABLED_DevToolsTaskIsProvided) {
+IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
   MockWebContentsTaskManager task_manager;
   EXPECT_TRUE(task_manager.tasks().empty());
   // Browser tests start with a single tab.
@@ -106,12 +105,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DISABLED_DevToolsTaskIsProvided) {
   const Task* task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, task->GetType());
 
-  // Navigating to a new page will not change the title of the devtools main
-  // WebContents.
-  const base::string16 title1 = task->title();
+  // Navigating to a new page will not change the id of the devtools main
+  // WebContents (its js may update its title).
+  const int64_t task_id = task->task_id();
   LoadTestPage(kTestPage2);
-  const base::string16 title2 = task->title();
-  EXPECT_EQ(title1, title2);
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(task_id,  task_manager.tasks().back()->task_id());
+  EXPECT_EQ(task, task_manager.tasks().back());
+  EXPECT_NE(task_manager.tasks()[0]->title(),
+            task_manager.tasks()[1]->title());
 
   CloseDevToolsWindow();
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
