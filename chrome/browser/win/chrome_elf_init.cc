@@ -18,6 +18,7 @@
 #include "chrome_elf/dll_hash/dll_hash.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 
 const char kBrowserBlacklistTrialName[] = "BrowserBlacklist";
 const char kBrowserBlacklistTrialDisabledGroupName[] = "NoBlacklist";
@@ -109,6 +110,22 @@ void InitializeChromeElf() {
       FROM_HERE,
       base::Bind(&ReportSuccessfulBlocks),
       base::TimeDelta::FromSeconds(kBlacklistReportingDelaySec));
+
+  // Make sure the early finch emergency "off switch" for
+  // sandbox::MITIGATION_EXTENSION_POINT_DISABLE is set properly in reg.
+  // Note: the very existence of this key signals elf to not enable
+  // this mitigation on browser next start.
+  base::win::RegKey finch_security_registry_key(
+      HKEY_CURRENT_USER, elf_sec::kRegSecurityFinchPath, KEY_READ);
+
+  if (base::FeatureList::IsEnabled(features::kWinSboxDisableExtensionPoints)) {
+    if (finch_security_registry_key.Valid())
+      finch_security_registry_key.DeleteKey(L"");
+  } else {
+    if (!finch_security_registry_key.Valid())
+      finch_security_registry_key.Create(
+          HKEY_CURRENT_USER, elf_sec::kRegSecurityFinchPath, KEY_WRITE);
+  }
 }
 
 void BrowserBlacklistBeaconSetup() {
