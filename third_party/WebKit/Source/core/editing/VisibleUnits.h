@@ -165,6 +165,7 @@ CORE_EXPORT VisiblePositionInFlatTree startOfLine(const VisiblePositionInFlatTre
 // shadow tree isn't defined well. We should not use it for shadow tree.
 CORE_EXPORT VisiblePosition endOfLine(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInFlatTree endOfLine(const VisiblePositionInFlatTree&);
+enum EditableType { ContentIsEditable, HasEditableAXRole };
 CORE_EXPORT VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT bool inSameLine(const VisiblePosition&, const VisiblePosition&);

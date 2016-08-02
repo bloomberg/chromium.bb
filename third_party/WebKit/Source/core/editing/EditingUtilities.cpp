@@ -285,32 +285,9 @@ static bool hasEditableLevel(const Node& node, EditableLevel editableLevel)
     return false;
 }
 
-static bool hasAXEditableLevel(const Node& node, EditableLevel editableLevel)
+bool hasEditableStyle(const Node& node)
 {
-    if (hasEditableLevel(node, editableLevel))
-        return true;
-
-    // FIXME: Respect editableLevel for ARIA editable elements.
-    if (editableLevel == RichlyEditable)
-        return false;
-
-    // FIXME(dmazzoni): support ScopedAXObjectCache (crbug/489851).
-    if (AXObjectCache* cache = node.document().existingAXObjectCache())
-        return cache->rootAXEditableElement(&node);
-
-    return false;
-}
-
-bool hasEditableStyle(const Node& node, EditableType editableType)
-{
-    switch (editableType) {
-    case ContentIsEditable:
-        return hasEditableLevel(node, Editable);
-    case HasEditableAXRole:
-        return hasAXEditableLevel(node, Editable);
-    }
-    NOTREACHED();
-    return false;
+    return hasEditableLevel(node, Editable);
 }
 
 bool hasRichlyEditableStyle(const Node& node)
@@ -336,22 +313,12 @@ Element* rootEditableElement(const Node& node)
     return toElement(const_cast<Node*>(result));
 }
 
-Element* rootEditableElement(const Node& node, EditableType editableType)
-{
-    if (editableType == HasEditableAXRole) {
-        if (AXObjectCache* cache = node.document().existingAXObjectCache())
-            return const_cast<Element*>(cache->rootAXEditableElement(&node));
-    }
-
-    return rootEditableElement(node);
-}
-
-ContainerNode* highestEditableRoot(const Position& position, EditableType editableType)
+ContainerNode* highestEditableRoot(const Position& position, Element*(*rootEditableElementOf)(const Position&), bool(*hasEditableStyle)(const Node&))
 {
     if (position.isNull())
         return 0;
 
-    ContainerNode* highestRoot = rootEditableElementOf(position, editableType);
+    ContainerNode* highestRoot = rootEditableElementOf(position);
     if (!highestRoot)
         return 0;
 
@@ -360,7 +327,7 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
 
     ContainerNode* node = highestRoot->parentNode();
     while (node) {
-        if (hasEditableStyle(*node, editableType))
+        if (hasEditableStyle(*node))
             highestRoot = node;
         if (isHTMLBodyElement(*node))
             break;
@@ -372,7 +339,7 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
 
 ContainerNode* highestEditableRoot(const PositionInFlatTree& position)
 {
-    return highestEditableRoot(toPositionInDOMTree(position), ContentIsEditable);
+    return highestEditableRoot(toPositionInDOMTree(position));
 }
 
 bool isEditablePosition(const Position& position)
@@ -394,7 +361,7 @@ bool isEditablePosition(const Position& position)
 
     if (node->isDocumentNode())
         return false;
-    return hasEditableStyle(*node, ContentIsEditable);
+    return hasEditableStyle(*node);
 }
 
 bool isEditablePosition(const PositionInFlatTree& p)
@@ -414,7 +381,7 @@ bool isRichlyEditablePosition(const Position& p)
     return hasRichlyEditableStyle(*node);
 }
 
-Element* rootEditableElementOf(const Position& p, EditableType editableType)
+Element* rootEditableElementOf(const Position& p)
 {
     Node* node = p.computeContainerNode();
     if (!node)
@@ -423,12 +390,12 @@ Element* rootEditableElementOf(const Position& p, EditableType editableType)
     if (isDisplayInsideTable(node))
         node = node->parentNode();
 
-    return rootEditableElement(*node, editableType);
+    return rootEditableElement(*node);
 }
 
 Element* rootEditableElementOf(const PositionInFlatTree& p)
 {
-    return rootEditableElementOf(toPositionInDOMTree(p), ContentIsEditable);
+    return rootEditableElementOf(toPositionInDOMTree(p));
 }
 
 // TODO(yosin) This does not handle [table, 0] correctly.

@@ -77,17 +77,19 @@ CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
 // Node
 // -------------------------------------------------------------------------
 
-CORE_EXPORT bool hasEditableStyle(const Node&, EditableType = ContentIsEditable);
+CORE_EXPORT bool hasEditableStyle(const Node&);
 CORE_EXPORT bool hasRichlyEditableStyle(const Node&);
 CORE_EXPORT bool isRootEditableElement(const Node&);
 CORE_EXPORT Element* rootEditableElement(const Node&);
-CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
+Element* rootEditableElementOf(const Position&);
+Element* rootEditableElementOf(const PositionInFlatTree&);
+Element* rootEditableElementOf(const VisiblePosition&);
 // highestEditableRoot returns the highest editable node. If the
 // rootEditableElement of the speicified Position is <body>, this returns the
 // <body>. Otherwise, this searches ancestors for the highest editable node in
 // defiance of editing boundaries. This returns a Document if designMode="on"
 // and the specified Position is not in the <body>.
-CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
+CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, Element*(*)(const Position&) = rootEditableElementOf, bool(*)(const Node&) = hasEditableStyle);
 ContainerNode* highestEditableRoot(const PositionInFlatTree&);
 
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
@@ -315,10 +317,6 @@ Node* enclosingListChild(Node*);
 
 HTMLSpanElement* createTabSpanElement(Document&);
 HTMLSpanElement* createTabSpanElement(Document&, const String& tabText);
-
-Element* rootEditableElementOf(const Position&, EditableType = ContentIsEditable);
-Element* rootEditableElementOf(const PositionInFlatTree&);
-Element* rootEditableElementOf(const VisiblePosition&);
 
 // Boolean functions on Element
 

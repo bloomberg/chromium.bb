@@ -237,6 +237,53 @@ static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const Vis
     return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), *highestRoot);
 }
 
+static bool hasEditableStyle(const Node& node, EditableType editableType)
+{
+    if (editableType == HasEditableAXRole) {
+        if (AXObjectCache* cache = node.document().existingAXObjectCache()) {
+            if (cache->rootAXEditableElement(&node))
+                return true;
+        }
+    }
+
+    return hasEditableStyle(node);
+}
+
+static Element* rootEditableElement(const Node& node, EditableType editableType)
+{
+    if (editableType == HasEditableAXRole) {
+        if (AXObjectCache* cache = node.document().existingAXObjectCache())
+            return const_cast<Element*>(cache->rootAXEditableElement(&node));
+    }
+
+    return rootEditableElement(node);
+}
+
+static Element* rootAXEditableElementOf(const Position& position)
+{
+    Node* node = position.computeContainerNode();
+    if (!node)
+        return 0;
+
+    if (isDisplayInsideTable(node))
+        node = node->parentNode();
+
+    return rootEditableElement(*node, HasEditableAXRole);
+}
+
+static bool hasAXEditableStyle(const Node& node)
+{
+    return hasEditableStyle(node, HasEditableAXRole);
+}
+
+static ContainerNode* highestEditableRoot(const Position& position, EditableType editableType)
+{
+    if (editableType == HasEditableAXRole)
+        return highestEditableRoot(position, rootAXEditableElementOf, hasAXEditableStyle);
+
+    return highestEditableRoot(position);
+}
+
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
 {
     bool editable = hasEditableStyle(*node, editableType);
