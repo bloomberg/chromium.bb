@@ -15,6 +15,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -191,6 +193,15 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
           render_widget_delegate_, manager_delegate_, parent, scope, frame_name,
           frame_unique_name, frame_owner_properties)),
       process_id, new_routing_id);
+
+  // The last committed NavigationEntry may have a FrameNavigationEntry with the
+  // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
+  // their frames are deleted.  If there is a stale one, remove it to avoid
+  // conflicts on future updates.
+  NavigationEntryImpl* last_committed_entry = static_cast<NavigationEntryImpl*>(
+      parent->navigator()->GetController()->GetLastCommittedEntry());
+  if (last_committed_entry)
+    last_committed_entry->ClearStaleFrameEntriesForNewFrame(added_node);
 
   // Set sandbox flags and make them effective immediately, since initial
   // sandbox flags should apply to the initial empty document in the frame.

@@ -99,6 +99,29 @@ void RecursivelyGenerateFrameState(
   }
 }
 
+// Walk the ancestor chain for both the |frame_tree_node| and the |node|.
+// Comparing the inputs directly is not performed, as this method assumes they
+// already match each other. Returns false if a mismatch in unique name or
+// ancestor chain is detected, otherwise true.
+bool InSameTreePosition(FrameTreeNode* frame_tree_node,
+                        NavigationEntryImpl::TreeNode* node) {
+  FrameTreeNode* ftn = frame_tree_node->parent();
+  NavigationEntryImpl::TreeNode* current_node = node->parent;
+  while (ftn && current_node) {
+    if (!current_node->MatchesFrame(ftn))
+      return false;
+
+    if ((!current_node->parent && ftn->parent()) ||
+        (current_node->parent && !ftn->parent())) {
+      return false;
+    }
+
+    ftn = ftn->parent();
+    current_node = current_node->parent;
+  }
+  return true;
+}
+
 }  // namespace
 
 int NavigationEntryImpl::kInvalidBindings = -1;
@@ -808,6 +831,43 @@ void NavigationEntryImpl::ClearChildren(FrameTreeNode* frame_tree_node) {
   NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
   if (tree_node)
     tree_node->children.clear();
+}
+
+void NavigationEntryImpl::ClearStaleFrameEntriesForNewFrame(
+    FrameTreeNode* frame_tree_node) {
+  DCHECK(!frame_tree_node->IsMainFrame());
+
+  NavigationEntryImpl::TreeNode* node = nullptr;
+  std::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  int count = 0;
+
+  work_queue.push(root_node());
+  while (!work_queue.empty()) {
+    node = work_queue.front();
+    work_queue.pop();
+
+    // Enqueue any children and keep looking if the current node doesn't match.
+    if (!node->MatchesFrame(frame_tree_node)) {
+      for (auto* child : node->children) {
+        work_queue.push(child);
+      }
+      continue;
+    }
+
+    // Remove the node from the tree if it is not in the same position in the
+    // tree of FrameNavigationEntries and the FrameTree.
+    if (!InSameTreePosition(frame_tree_node, node)) {
+      NavigationEntryImpl::TreeNode* parent_node = node->parent;
+      auto it = std::find(parent_node->children.begin(),
+                          parent_node->children.end(), node);
+      CHECK(it != parent_node->children.end());
+      parent_node->children.erase(it);
+    }
+    ++count;
+  }
+
+  // At most one match is expected, since it is based on unique frame name.
+  DCHECK_LE(count, 1);
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

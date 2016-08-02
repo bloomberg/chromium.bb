@@ -232,6 +232,12 @@ class CONTENT_EXPORT NavigationEntryImpl
   // during session history navigations, when the child items no longer apply.
   void ClearChildren(FrameTreeNode* frame_tree_node);
 
+  // Removes any subframe FrameNavigationEntries that match the unique name of
+  // |frame_tree_node|, and all of their children. There should be at most one,
+  // since collisions are avoided but leave old FrameNavigationEntries in the
+  // tree after their frame has been detached.
+  void ClearStaleFrameEntriesForNewFrame(FrameTreeNode* frame_tree_node);
+
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
   }

@@ -44,6 +44,21 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 
+namespace {
+
+static std::string kAddNamedFrameScript =
+      "var f = document.createElement('iframe');"
+      "f.name = 'foo-frame-name';"
+      "document.body.appendChild(f);";
+static std::string kAddFrameScript =
+      "var f = document.createElement('iframe');"
+      "document.body.appendChild(f);";
+static std::string kRemoveFrameScript =
+      "var f = document.querySelector('iframe');"
+      "f.parentNode.removeChild(f);";
+
+}  // namespace
+
 namespace content {
 
 class NavigationControllerBrowserTest : public ContentBrowserTest {
@@ -5424,6 +5439,181 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
       "document.getElementsByTagName('pre')[0].innerText);",
       &body));
   EXPECT_EQ("text=value\n", body);
+}
+
+// Tests that inserting a named subframe into the FrameTree clears any
+// previously existing FrameNavigationEntry objects for the same name.
+// See https://crbug.com/628677.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       EnsureFrameNavigationEntriesClearedOnMismatch) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  NavigationControllerImpl& controller = web_contents->GetController();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Start by navigating to a page with complex frame hierarchy.
+  GURL start_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(3U, root->child_count());
+  EXPECT_EQ(2U, root->child_at(0)->child_count());
+
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // Verify only the parts of the NavigationEntry affected by this test.
+  {
+    // * Main frame has 3 subframes.
+    FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
+    EXPECT_NE(nullptr, root_entry);
+    EXPECT_EQ("", root_entry->frame_unique_name());
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+      EXPECT_EQ(3U, entry->root_node()->children.size());
+
+      // * The first child of the main frame is named and has two more children.
+      FrameTreeNode* frame = root->child_at(0);
+      FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame);
+      EXPECT_NE(nullptr, frame_entry);
+      EXPECT_EQ("1-1-name", frame_entry->frame_unique_name());
+      EXPECT_EQ(2U, entry->root_node()->children[0]->children.size());
+    }
+  }
+
+  // Removing the first child of the main frame should remove the corresponding
+  // FrameTreeNode.
+  EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
+  EXPECT_EQ(2U, root->child_count());
+
+  // However, the FrameNavigationEntry objects for the frame that was removed
+  // should still be around.
+  {
+    FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
+    EXPECT_NE(nullptr, root_entry);
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+      EXPECT_EQ(3U, entry->root_node()->children.size());
+      EXPECT_EQ(2U, entry->root_node()->children[0]->children.size());
+    }
+  }
+
+  // Now, insert a frame with the same name as the previously removed one
+  // at a different layer of the frame tree.
+  FrameTreeNode* subframe = root->child_at(1)->child_at(1)->child_at(0);
+  EXPECT_EQ(2U, root->child_at(1)->child_count());
+  EXPECT_EQ(0U, subframe->child_count());
+  std::string add_matching_name_frame_script =
+      "var f = document.createElement('iframe');"
+      "f.name = '1-1-name';"
+      "document.body.appendChild(f);";
+  EXPECT_TRUE(ExecuteScript(subframe, add_matching_name_frame_script));
+  EXPECT_EQ(1U, subframe->child_count());
+
+  // Verify that the FrameNavigationEntry for the original frame is now gone.
+  {
+    FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
+    EXPECT_NE(nullptr, root_entry);
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+      EXPECT_EQ(2U, entry->root_node()->children.size());
+    }
+  }
+}
+
+// Tests that sending a PageState update from a named subframe does not get
+// incorrectly set on previously existing FrameNavigationEntry for the same
+// name. It is similar to EnsureFrameNavigationEntriesClearedOnMismatch, but
+// doesn't navigate the iframes to real URLs when added to the DOM.
+// See https://crbug.com/628677.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       EnsureFrameNavigationEntriesClearedOnMismatchNoSrc) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  NavigationEntryImpl* nav_entry =
+      web_contents->GetController().GetLastCommittedEntry();
+
+  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
+  EXPECT_EQ(1U, root->child_count());
+  EXPECT_EQ("foo-frame-name", root->child_at(0)->frame_name());
+
+  EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
+  EXPECT_EQ(0U, root->child_count());
+
+  // When a frame is removed from the page, the corresponding
+  // FrameNavigationEntry is not removed. This is done intentionally to support
+  // back-forward navigations in subframes and more intuitive UX on tab restore.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        nav_entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ("foo-frame-name", frame_entry->frame_unique_name());
+  }
+
+  EXPECT_TRUE(ExecuteScript(root, kAddFrameScript));
+  EXPECT_EQ(1U, root->child_count());
+  EXPECT_NE("foo-frame-name", root->child_at(0)->frame_name());
+
+  // Add a nested frame with the previously used name.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), kAddNamedFrameScript));
+  EXPECT_EQ(1U, root->child_at(0)->child_count());
+  EXPECT_EQ("foo-frame-name", root->child_at(0)->child_at(0)->frame_name());
+
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+
+    NavigationEntryImpl::TreeNode* tree_node =
+        nav_entry->root_node()->children[0];
+    EXPECT_EQ(1U, tree_node->children.size());
+
+    tree_node = tree_node->children[0];
+    EXPECT_EQ(0U, tree_node->children.size());
+    EXPECT_EQ("foo-frame-name", tree_node->frame_entry->frame_unique_name());
+  }
+
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), kRemoveFrameScript));
+  EXPECT_EQ(0U, root->child_at(0)->child_count());
+}
+
+// This test ensures that the comparison of tree position between a
+// FrameTreeNode and FrameNavigationEntry works correctly for matching
+// first-level frames.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       EnsureFirstLevelFrameNavigationEntriesMatch) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  NavigationEntryImpl::TreeNode* tree_node = nullptr;
+
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  NavigationEntryImpl* nav_entry =
+      web_contents->GetController().GetLastCommittedEntry();
+
+  // Add, then remove a named frame. It will create a FrameNavigationEntry
+  // for the name and leave it around.
+  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
+  EXPECT_EQ(1U, root->child_count());
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+    tree_node = nav_entry->root_node()->children[0];
+  }
+
+  EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
+  EXPECT_EQ(0U, root->child_count());
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+
+  // Add another frame with the same name as before. The matching logic
+  // should consider them the same and result in the FrameNavigationEntry
+  // being reused.
+  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
+  EXPECT_EQ(1U, root->child_count());
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+    EXPECT_EQ(tree_node, nav_entry->root_node()->children[0]);
+  }
+
+  EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
+  EXPECT_EQ(0U, root->child_count());
 }
 
 }  // namespace content
