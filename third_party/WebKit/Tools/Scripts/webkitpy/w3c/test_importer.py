@@ -234,7 +234,7 @@ class TestImporter(object):
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
-                test_parser = TestParser(fullpath, vars(self.options))
+                test_parser = TestParser(fullpath, self.host(), vars(self.options))
                 test_info = test_parser.analyze_test()
                 if test_info is None:
                     continue
