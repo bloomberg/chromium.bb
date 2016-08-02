@@ -258,6 +258,8 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   os = "linux";
 #elif defined(OS_ANDROID)
   os = "android";
+#elif defined(OS_NETBSD)
+  os = "netbsd";
 #else
   #error Unknown OS type.
 #endif
