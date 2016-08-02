@@ -627,7 +627,7 @@ if (is_mac) {
     testonly = true
     info_plist = "app/framework-Info.plist"
     args = [
-      "--breakpad=1",
+      "--breakpad=0",
       "--keystone=0",
       "--scm=1",
       "--version",

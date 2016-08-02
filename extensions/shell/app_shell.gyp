@@ -307,7 +307,7 @@
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../../build/mac/tweak_info_plist.py',
                          '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
-                         '--breakpad=1',
+                         '--breakpad=0',
                          '--keystone=0',
                          '--scm=1',
                          '--version=<(app_shell_version)',
