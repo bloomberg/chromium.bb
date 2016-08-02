@@ -575,7 +575,10 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             barrierCallback->onError("Vary header contains *");
             return promise;
         }
-
+        if (responses[i]->status() == 206) {
+            barrierCallback->onError("Partial response (status code 206) is unsupported");
+            return promise;
+        }
         if (responses[i]->isBodyLocked() || responses[i]->bodyUsed()) {
             barrierCallback->onError("Response body is already used");
             return promise;

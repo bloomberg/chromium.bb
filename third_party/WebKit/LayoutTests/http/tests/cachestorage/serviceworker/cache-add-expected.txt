@@ -9,6 +9,8 @@ PASS Cache.add called twice with the same Request object
 PASS Cache.add called with Request object with a used body 
 PASS Cache.add with request that results in a status of 404 
 PASS Cache.add with request that results in a status of 500 
+PASS Cache.add with request that results in a status of 206 
+PASS Cache.addAll with request that results in a status of 206 
 PASS Cache.addAll with no arguments 
 PASS Cache.addAll with a mix of valid and undefined arguments 
 PASS Cache.addAll with an empty array 

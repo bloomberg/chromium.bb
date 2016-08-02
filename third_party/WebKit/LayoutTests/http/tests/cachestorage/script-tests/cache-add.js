@@ -103,6 +103,23 @@ cache_test(function(cache, test) {
     return promise_rejects(
       test,
       new TypeError(),
+      cache.add('../resources/fetch-status.php?status=206'),
+      'Cache.add should reject on partial response');
+  }, 'Cache.add with request that results in a status of 206');
+
+cache_test(function(cache, test) {
+    return promise_rejects(
+      test,
+      new TypeError(),
+      cache.addAll(['../resources/simple.txt',
+                    '../resources/fetch-status.php?status=206']),
+      'Cache.addAll should reject on partial response');
+  }, 'Cache.addAll with request that results in a status of 206');
+
+cache_test(function(cache, test) {
+    return promise_rejects(
+      test,
+      new TypeError(),
       cache.addAll(),
       'Cache.addAll with no arguments should throw TypeError.');
   }, 'Cache.addAll with no arguments');

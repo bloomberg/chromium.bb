@@ -128,6 +128,19 @@ cache_test(function(cache) {
         });
   }, 'Cache.put with HTTP 500 response');
 
+cache_test(function(cache, test) {
+    var test_url = new URL('../resources/fetch-status.php?status=206', location.href).href;
+    var request = new Request(test_url);
+    var response;
+    return fetch(test_url)
+      .then(function(fetch_result) {
+          assert_equals(fetch_result.status, 206,
+                        'Test framework error: The status code should be 206.');
+          response = fetch_result.clone();
+          return promise_rejects(test, new TypeError, cache.put(request, fetch_result));
+        });
+  }, 'Cache.put with HTTP 206 response');
+
 cache_test(function(cache) {
     var alternate_response_body = 'New body';
     var alternate_response = new Response(alternate_response_body,
