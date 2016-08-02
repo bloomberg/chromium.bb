@@ -88,6 +88,8 @@
         'browser/chromeos/arc/arc_process_service.h',
         'browser/chromeos/arc/arc_settings_service.cc',
         'browser/chromeos/arc/arc_settings_service.h',
+        'browser/chromeos/arc/arc_tts_service.cc',
+        'browser/chromeos/arc/arc_tts_service.h',
         'browser/chromeos/arc/gpu_arc_video_service_host.cc',
         'browser/chromeos/arc/gpu_arc_video_service_host.h',
         'browser/chromeos/arc/arc_optin_uma.cc',

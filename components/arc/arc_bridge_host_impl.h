@@ -63,6 +63,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
   void OnStorageManagerInstanceReady(
       mojom::StorageManagerInstancePtr storage_manager_ptr) override;
+  void OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
 
  private:

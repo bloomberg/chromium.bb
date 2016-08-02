@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_print_service.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/arc_settings_service.h"
+#include "chrome/browser/chromeos/arc/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/arc_wallpaper_handler.h"
 #include "chrome/browser/chromeos/arc/gpu_arc_video_service_host.h"
 #include "components/arc/arc_bridge_service.h"
@@ -51,6 +52,8 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(base::MakeUnique<ArcProcessService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcSettingsService>(
+      arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(base::MakeUnique<ArcTtsService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<GpuArcVideoServiceHost>(
       arc_service_manager_->arc_bridge_service()));

@@ -179,6 +179,10 @@ void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
                   std::move(storage_manager_ptr));
 }
 
+void ArcBridgeHostImpl::OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) {
+  OnInstanceReady(ArcBridgeService::Get()->tts(), std::move(tts_ptr));
+}
+
 void ArcBridgeHostImpl::OnVideoInstanceReady(
     mojom::VideoInstancePtr video_ptr) {
   OnInstanceReady(ArcBridgeService::Get()->video(), std::move(video_ptr));

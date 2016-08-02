@@ -115,6 +115,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::StorageManagerInstance>* storage_manager() {
     return &storage_manager_;
   }
+  InstanceHolder<mojom::TtsInstance>* tts() { return &tts_; }
   InstanceHolder<mojom::VideoInstance>* video() { return &video_; }
 
   // Gets if ARC is currently running.
@@ -182,6 +183,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::PrintInstance> print_;
   InstanceHolder<mojom::ProcessInstance> process_;
   InstanceHolder<mojom::StorageManagerInstance> storage_manager_;
+  InstanceHolder<mojom::TtsInstance> tts_;
   InstanceHolder<mojom::VideoInstance> video_;
 
   // Gets the current state of the bridge service.
