@@ -843,12 +843,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         CustomTabsCallback cb = new CustomTabsCallback() {
             @Override
-            public void onNavigationEvent(int navigationEvent, Bundle extras) {
-                if (navigationEvent == CustomTabsConnection.PAGE_LOAD_METRIC) {
-                    long value = extras.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
-                    assertTrue(value > 0);
-                    firstContentfulPaintMs.set(value);
-                }
+            public void extraCallback(String callbackName, Bundle args) {
+                assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                long value = args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
+                assertTrue(value > 0);
+                firstContentfulPaintMs.set(value);
             }
         };
 

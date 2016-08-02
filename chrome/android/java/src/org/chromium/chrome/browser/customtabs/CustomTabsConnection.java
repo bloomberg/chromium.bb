@@ -69,9 +69,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CustomTabsConnection {
     private static final String TAG = "ChromeConnection";
     private static final String LOG_SERVICE_REQUESTS = "custom-tabs-log-service-requests";
-    // TODO(lizeb): Switch to a proper notification for page load metrics.
-    public static final int PAGE_LOAD_METRIC = 42;
 
+    @VisibleForTesting
+    static final String PAGE_LOAD_METRICS_CALLBACK = "NavigationMetrics";
     @VisibleForTesting
     static final String NO_PRERENDERING_KEY =
             "android.support.customtabs.maylaunchurl.NO_PRERENDERING";
@@ -579,7 +579,7 @@ public class CustomTabsConnection {
         Bundle args = new Bundle();
         args.putLong(metricName, offsetMs);
         try {
-            callback.onNavigationEvent(PAGE_LOAD_METRIC, args);
+            callback.extraCallback(PAGE_LOAD_METRICS_CALLBACK, args);
         } catch (Exception e) {
             // Pokemon exception handling, see above and crbug.com/517023.
             return false;
