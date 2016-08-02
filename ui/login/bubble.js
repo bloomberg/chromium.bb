@@ -61,6 +61,10 @@ cr.define('cr.ui', function() {
       this.selfClickHandler_ = this.handleSelfClick_.bind(this);
       this.ownerDocument.addEventListener('click',
                                           this.handleDocClick_.bind(this));
+      // Set useCapture to true because scroll event does not bubble.
+      this.ownerDocument.addEventListener('scroll',
+                                          this.handleScroll_.bind(this),
+                                          true);
       this.ownerDocument.addEventListener('keydown',
                                           this.docKeyDownHandler_);
       window.addEventListener('blur', this.handleWindowBlur_.bind(this));
@@ -298,6 +302,15 @@ cr.define('cr.ui', function() {
         if (this.elementToFocusOnHide_)
           this.elementToFocusOnHide_.focus();
       }
+    },
+
+    /**
+     * Handler of scroll event.
+     * @private
+     */
+    handleScroll_: function(e) {
+      if (!this.hidden)
+        this.hide();
     },
 
     /**
