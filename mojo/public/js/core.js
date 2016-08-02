@@ -114,6 +114,27 @@ var READ_DATA_FLAG_QUERY;
 var READ_DATA_FLAG_PEEK;
 
 /**
+ * MojoCreateSharedBufferOptionsFlags: Used to specify options to
+ *   |createSharedBuffer()|.
+ * See core.h for more information.
+ */
+var CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
+
+/**
+ * MojoDuplicateBufferHandleOptionsFlags: Used to specify options to
+ *   |duplicateBufferHandle()|.
+ * See core.h for more information.
+ */
+var DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE;
+var DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY;
+
+/**
+ * MojoMapBufferFlags: Used to specify options to |mapBuffer()|.
+ * See core.h for more information.
+ */
+var MAP_BUFFER_FLAG_NONE;
+
+/**
  * Closes the given |handle|. See MojoClose for more info.
  * @param {MojoHandle} Handle to close.
  * @return {MojoResult} Result code.
@@ -236,3 +257,57 @@ function readData(handle, flags) { [native code] }
  * @return true or false
  */
 function isHandle(value) { [native code] }
+
+/**
+ * Creates shared buffer of specified size |num_bytes|.
+ * See MojoCreateSharedBuffer for more information including error codes.
+ *
+ * @param {number} num_bytes Size of the memory to be allocated for shared
+ * @param {MojoCreateSharedBufferOptionsFlags} flags Flags.
+ *   buffer.
+ * @return {object} An object of the form {
+ *     result,  // |RESULT_OK| on success, error code otherwise.
+ *     handle,  // An MojoHandle for shared buffer (only on success).
+ *   }
+ */
+function createSharedBuffer(num_bytes, flags) { [native code] }
+
+/**
+ * Duplicates the |buffer_handle| to a shared buffer. Duplicated handle can be
+ * sent to another process over message pipe. See MojoDuplicateBufferHandle for
+ * more information including error codes.
+ *
+ * @param {MojoHandle} buffer_handle MojoHandle.
+ * @param {MojoCreateSharedBufferOptionsFlags} flags Flags.
+ * @return {object} An object of the form {
+ *     result,  // |RESULT_OK| on success, error code otherwise.
+ *     handle,  // A duplicated MojoHandle for shared buffer (only on success).
+ *   }
+ */
+function duplicateBufferHandle(buffer_handle, flags) { [native code] }
+
+/**
+ * Maps the part (at offset |offset| of length |num_bytes|) of the buffer given
+ * by |buffer_handle| into ArrayBuffer memory |buffer|, with options specified
+ * by |flags|. See MojoMapBuffer for more information including error codes.
+ *
+ * @param {MojoHandle} buffer_handle A sharedBufferHandle returned by
+ *   createSharedBuffer.
+ * @param {number} offset Offset.
+ * @param {number} num_bytes Size of the memory to be mapped.
+ * @param {MojoMapBufferFlags} flags Flags.
+ * @return {object} An object of the form {
+ *     result,  // |RESULT_OK| on success, error code otherwise.
+ *     buffer,  // An ArrayBuffer (only on success).
+ *   }
+ */
+function mapBuffer(buffer_handle, offset, num_bytes, flags) { [native code] }
+
+/**
+ * Unmaps buffer that was mapped using mapBuffer.
+ * See MojoUnmapBuffer for more information including error codes.
+ *
+ * @param {ArrayBuffer} buffer ArrayBuffer.
+ * @return {MojoResult} Result code.
+ */
+function unmapBuffer(buffer) { [native code] }

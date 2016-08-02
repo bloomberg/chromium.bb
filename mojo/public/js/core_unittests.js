@@ -24,6 +24,7 @@ define([
   runWithDataPipeWithOptions(testReadAndWriteDataPipe);
   runWithMessagePipe(testIsHandleMessagePipe);
   runWithDataPipe(testIsHandleDataPipe);
+  runWithSharedBuffer(testSharedBuffer);
   gc.collectGarbage();  // should not crash
   this.result = "PASS";
 
@@ -71,6 +72,17 @@ define([
 
     expect(core.close(pipe.producerHandle)).toBe(core.RESULT_OK);
     expect(core.close(pipe.consumerHandle)).toBe(core.RESULT_OK);
+  }
+
+  function runWithSharedBuffer(test) {
+    let buffer_size = 32;
+    let sharedBuffer = core.createSharedBuffer(buffer_size,
+        core.CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE);
+
+    expect(sharedBuffer.result).toBe(core.RESULT_OK);
+    expect(core.isHandle(sharedBuffer.handle)).toBeTruthy();
+
+    test(sharedBuffer, buffer_size);
   }
 
   function testNop(pipe) {
@@ -193,6 +205,42 @@ define([
   function testIsHandleDataPipe(pipe) {
     expect(core.isHandle(pipe.consumerHandle)).toBeTruthy();
     expect(core.isHandle(pipe.producerHandle)).toBeTruthy();
+  }
+
+  function testSharedBuffer(sharedBuffer, buffer_size) {
+    let offset = 0;
+    let mappedBuffer0 = core.mapBuffer(sharedBuffer.handle,
+                                       offset,
+                                       buffer_size,
+                                       core.MAP_BUFFER_FLAG_NONE);
+
+    expect(mappedBuffer0.result).toBe(core.RESULT_OK);
+
+    let dupedBufferHandle = core.duplicateBufferHandle(sharedBuffer.handle,
+        core.DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE);
+
+    expect(dupedBufferHandle.result).toBe(core.RESULT_OK);
+    expect(core.isHandle(dupedBufferHandle.handle)).toBeTruthy();
+
+    let mappedBuffer1 = core.mapBuffer(dupedBufferHandle.handle,
+                                       offset,
+                                       buffer_size,
+                                       core.MAP_BUFFER_FLAG_NONE);
+
+    expect(mappedBuffer1.result).toBe(core.RESULT_OK);
+
+    let buffer0 = new Uint8Array(mappedBuffer0.buffer);
+    let buffer1 = new Uint8Array(mappedBuffer1.buffer);
+    for(let i = 0; i < buffer0.length; ++i) {
+      buffer0[i] = i;
+      expect(buffer1[i]).toBe(i);
+    }
+
+    expect(core.unmapBuffer(mappedBuffer0.buffer)).toBe(core.RESULT_OK);
+    expect(core.unmapBuffer(mappedBuffer1.buffer)).toBe(core.RESULT_OK);
+
+    expect(core.close(dupedBufferHandle.handle)).toBe(core.RESULT_OK);
+    expect(core.close(sharedBuffer.handle)).toBe(core.RESULT_OK);
   }
 
 });
