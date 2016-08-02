@@ -101,6 +101,9 @@ MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
 
 std::unique_ptr<base::SharedMemory>
 MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  if (shared_memory->CreateAndMapAnonymous(size))
+    return shared_memory;
   return nullptr;
 }
 

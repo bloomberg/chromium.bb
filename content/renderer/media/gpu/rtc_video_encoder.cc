@@ -585,22 +585,27 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    // Do a strided copy of the input frame to match the input requirements for
-    // the encoder.
-    // TODO(sheu): support zero-copy from WebRTC.  http://crbug.com/269312
-    if (libyuv::I420Copy(next_frame->video_frame_buffer()->DataY(),
-                         next_frame->video_frame_buffer()->StrideY(),
-                         next_frame->video_frame_buffer()->DataU(),
-                         next_frame->video_frame_buffer()->StrideU(),
-                         next_frame->video_frame_buffer()->DataV(),
-                         next_frame->video_frame_buffer()->StrideV(),
-                         frame->data(media::VideoFrame::kYPlane),
-                         frame->stride(media::VideoFrame::kYPlane),
-                         frame->data(media::VideoFrame::kUPlane),
-                         frame->stride(media::VideoFrame::kUPlane),
-                         frame->data(media::VideoFrame::kVPlane),
-                         frame->stride(media::VideoFrame::kVPlane),
-                         next_frame->width(), next_frame->height())) {
+
+    // Do a strided copy and scale (if necessary) the input frame to match
+    // the input requirements for the encoder.
+    // TODO(sheu): Support zero-copy from WebRTC. http://crbug.com/269312
+    // TODO(magjed): Downscale with kFilterBox in an image pyramid instead.
+    if (libyuv::I420Scale(next_frame->video_frame_buffer()->DataY(),
+                          next_frame->video_frame_buffer()->StrideY(),
+                          next_frame->video_frame_buffer()->DataU(),
+                          next_frame->video_frame_buffer()->StrideU(),
+                          next_frame->video_frame_buffer()->DataV(),
+                          next_frame->video_frame_buffer()->StrideV(),
+                          next_frame->width(), next_frame->height(),
+                          frame->visible_data(media::VideoFrame::kYPlane),
+                          frame->stride(media::VideoFrame::kYPlane),
+                          frame->visible_data(media::VideoFrame::kUPlane),
+                          frame->stride(media::VideoFrame::kUPlane),
+                          frame->visible_data(media::VideoFrame::kVPlane),
+                          frame->stride(media::VideoFrame::kVPlane),
+                          frame->visible_rect().width(),
+                          frame->visible_rect().height(),
+                          libyuv::kFilterBox)) {
       LogAndNotifyError(FROM_HERE, "Failed to copy buffer",
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;

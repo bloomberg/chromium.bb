@@ -1600,6 +1600,8 @@
         'renderers/mock_gpu_video_accelerator_factories.h',
         'video/mock_video_decode_accelerator.cc',
         'video/mock_video_decode_accelerator.h',
+        'video/mock_video_encode_accelerator.cc',
+        'video/mock_video_encode_accelerator.h',
       ],
     },
     {
