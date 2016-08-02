@@ -129,7 +129,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+    # This one is causing intermittent timeouts on the device, and it
+    # looks like when that happens, the next test also always times
+    # out. Skip it for now until it's fixed and running reliably.
+    self.Skip('conformance/extensions/oes-texture-half-float-with-video.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
