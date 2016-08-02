@@ -182,6 +182,39 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
+  // |GetEmptyNameHeartRateAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Heart Rate UUID (0x180d)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //            - gap.device_name returns an empty string.
+  //         - Heart Rate Service - Characteristics as described in
+  //           GetHeartRateService.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetEmptyNameHeartRateAdapter();
+
+  // |GetNoNameHeartRateAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - GetName returns base::null_opt.
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Heart Rate UUID (0x180d)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //            - gap.device_name returns an empty string.
+  //         - Heart Rate Service - Characteristics as described in
+  //           GetHeartRateService.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetNoNameHeartRateAdapter();
+
   // |TwoHeartRateServicesAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:
@@ -460,7 +493,8 @@ class LayoutTestBluetoothAdapterProvider {
   // None. Each user of the HeartRateDevice is in charge of adding the
   // relevant services, characteristics and descriptors.
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetHeartRateDevice(device::MockBluetoothAdapter* adapter);
+  GetHeartRateDevice(device::MockBluetoothAdapter* adapter,
+                     const char* device_name = "Heart Rate Device");
 
   // Services
 

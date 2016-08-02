@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('EmptyNameHeartRateAdapter')
+  .then(() => promise_rejects(
+    t, 'NotFoundError', requestDeviceWithKeyDown({
+      filters: [{
+        name: 'a',
+        services: ['heart_rate']
+      }]})));
+}, 'An empty name device is not matched by a filter with a name.');
+</script>
+

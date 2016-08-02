@@ -92,7 +92,7 @@ enum WebBluetoothGATTQueryQuantity {
 
 struct WebBluetoothDevice {
   string id;
-  string name;
+  string? name;
   array<string> uuids;
 };
 

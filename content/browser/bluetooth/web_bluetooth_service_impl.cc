@@ -783,8 +783,8 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
   blink::mojom::WebBluetoothDevicePtr device_ptr =
       blink::mojom::WebBluetoothDevice::New();
   device_ptr->id = device_id_for_origin;
-  // TODO(615720): Use the upcoming GetName (was GetDeviceName).
-  device_ptr->name = base::UTF16ToUTF8(device->GetNameForDisplay());
+  device_ptr->name = device->GetName() ? mojo::String(device->GetName().value())
+                                       : mojo::String(nullptr);
   device_ptr->uuids = std::move(filtered_uuids);
 
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);

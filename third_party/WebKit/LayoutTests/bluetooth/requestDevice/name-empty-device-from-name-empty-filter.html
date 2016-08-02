@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('EmptyNameHeartRateAdapter')
+  .then(() => requestDeviceWithKeyDown({
+     filters: [{name: ''}],
+     optionalServices: ['generic_access']}))
+  .then(device => {
+    assert_equals(device.name, '');
+  })
+}, 'An empty name device can be obtained by empty name filter.');
+</script>
+

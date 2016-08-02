@@ -71,6 +71,8 @@ bool IsEmptyOrInvalidFilter(
   // kMaxLengthForDeviceName.
   if (!filter->name.is_null() && filter->name.size() > kMaxLengthForDeviceName)
     return true;
+  if (!filter->name_prefix.is_null() && filter->name_prefix.size() == 0)
+    return true;
   if (!filter->name_prefix.is_null() &&
       filter->name_prefix.size() > kMaxLengthForDeviceName)
     return true;
@@ -88,19 +90,19 @@ bool HasEmptyOrInvalidFilter(
 
 bool MatchesFilter(const device::BluetoothDevice& device,
                    const blink::mojom::WebBluetoothScanFilterPtr& filter) {
-  DCHECK(!IsEmptyOrInvalidFilter(filter));
-
-  // TODO(615720): Use the upcoming GetName (was GetDeviceName).
-  const std::string device_name = base::UTF16ToUTF8(device.GetNameForDisplay());
-
-  if (!filter->name.is_null() && (device_name != filter->name)) {
-    return false;
+  if (!filter->name.is_null()) {
+    if (!device.GetName())
+      return false;
+    if (filter->name != device.GetName().value())
+      return false;
   }
 
-  if (!filter->name_prefix.is_null() &&
-      (!base::StartsWith(device_name, filter->name_prefix.get(),
-                         base::CompareCase::SENSITIVE))) {
-    return false;
+  if (!filter->name_prefix.is_null() && filter->name_prefix.size()) {
+    if (!device.GetName())
+      return false;
+    if (!base::StartsWith(device.GetName().value(), filter->name_prefix.get(),
+                          base::CompareCase::SENSITIVE))
+      return false;
   }
 
   if (!filter->services.is_null()) {
