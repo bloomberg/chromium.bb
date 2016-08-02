@@ -190,7 +190,7 @@ public class CronetPerfTestActivity extends Activity {
                     new CronetEngine.Builder(CronetPerfTestActivity.this);
             cronetEngineBuilder.setLibraryName("cronet_tests");
             if (mProtocol == Protocol.QUIC) {
-                cronetEngineBuilder.enableQUIC(true);
+                cronetEngineBuilder.enableQuic(true);
                 cronetEngineBuilder.addQuicHint(host, port, port);
                 cronetEngineBuilder.setMockCertVerifierForTesting(
                         MockCertVerifier.createMockCertVerifier(

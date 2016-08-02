@@ -400,7 +400,7 @@ public class PkpTest extends CronetTestBase {
         // Set common CronetEngine parameters
         mBuilder = new CronetEngine.Builder(getContext());
         mBuilder.enablePublicKeyPinningBypassForLocalTrustAnchors(bypassPinningForLocalAnchors);
-        mBuilder.enableQUIC(true);
+        mBuilder.enableQuic(true);
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
         JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");

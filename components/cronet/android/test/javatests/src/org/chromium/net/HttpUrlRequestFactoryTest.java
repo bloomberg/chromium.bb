@@ -40,7 +40,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testCreateFactory() throws Throwable {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableQUIC(true);
+        config.enableQuic(true);
         config.addQuicHint("www.google.com", 443, 443);
         config.addQuicHint("www.youtube.com", 443, 443);
         config.setLibraryName("cronet_tests");

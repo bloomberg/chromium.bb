@@ -37,7 +37,7 @@ public class QuicTest extends CronetTestBase {
         QuicTestServer.startQuicTestServer(getContext());
 
         mBuilder = new CronetEngine.Builder(getContext());
-        mBuilder.enableQUIC(true).enableNetworkQualityEstimator(true);
+        mBuilder.enableQuic(true).enableNetworkQualityEstimator(true);
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
 
@@ -140,7 +140,7 @@ public class QuicTest extends CronetTestBase {
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
-        builder.enableQUIC(true);
+        builder.enableQuic(true);
         JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
         builder.setExperimentalOptions(experimentalOptions.toString());

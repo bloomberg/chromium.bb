@@ -287,7 +287,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 new TestNetworkQualityRttListener(listenersExecutor);
         TestNetworkQualityThroughputListener throughputListener =
                 new TestNetworkQualityThroughputListener(listenersExecutor, waitForThroughput);
-        mCronetEngineBuilder.enableHTTP2(true).enableQUIC(false).enableNetworkQualityEstimator(
+        mCronetEngineBuilder.enableHttp2(true).enableQuic(false).enableNetworkQualityEstimator(
                 true);
         mTestFramework =
                 startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
@@ -1043,8 +1043,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         startCronetTestFramework();
         // Verify CronetEngine.Builder config is passed down accurately to native code.
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        builder.enableHTTP2(false);
-        builder.enableQUIC(true);
+        builder.enableHttp2(false);
+        builder.enableQuic(true);
         builder.enableSDCH(true);
         builder.addQuicHint("example.com", 12, 34);
         builder.setCertVerifierData("test_cert_verifier_data");

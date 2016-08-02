@@ -29,7 +29,7 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
 
         QuicTestServer.startQuicTestServer(getContext());
 
-        builder.enableQUIC(true);
+        builder.enableQuic(true);
         JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
         if (enabled == QuicBidirectionalStreams.DISABLED) {
             quicParams.put("quic_disable_bidirectional_streams", true);
@@ -342,7 +342,7 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
 
         // Create a new builder and verify that the |serialized_data| is deserialized correctly.
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        builder.enableQUIC(true);
+        builder.enableQuic(true);
         builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
         builder.setCertVerifierData(serialized_data);
 

@@ -137,8 +137,8 @@ public abstract class CronetEngine {
             mContext = context;
             setLibraryName("cronet");
             enableLegacyMode(false);
-            enableQUIC(false);
-            enableHTTP2(true);
+            enableQuic(false);
+            enableHttp2(true);
             enableSDCH(false);
             enableHttpCache(HTTP_CACHE_DISABLED, 0);
             enableNetworkQualityEstimator(false);
@@ -277,7 +277,7 @@ public abstract class CronetEngine {
          * @param value {@code true} to enable QUIC, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
-        public Builder enableQUIC(boolean value) {
+        public Builder enableQuic(boolean value) {
             mQuicEnabled = value;
             return this;
         }
@@ -308,7 +308,7 @@ public abstract class CronetEngine {
          * @param value {@code true} to enable HTTP/2, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
-        public Builder enableHTTP2(boolean value) {
+        public Builder enableHttp2(boolean value) {
             mHttp2Enabled = value;
             return this;
         }

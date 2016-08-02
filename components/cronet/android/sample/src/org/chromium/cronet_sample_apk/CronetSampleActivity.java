@@ -115,8 +115,8 @@ public class CronetSampleActivity extends Activity {
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(this);
         myBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 100 * 1024)
-                .enableHTTP2(true)
-                .enableQUIC(true);
+                .enableHttp2(true)
+                .enableQuic(true);
 
         mCronetEngine = myBuilder.build();
 
