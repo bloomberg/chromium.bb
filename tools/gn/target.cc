@@ -543,7 +543,8 @@ void Target::FillOutputFiles() {
       // These don't get linked to and use stamps which should be the first
       // entry in the outputs. These stamps are named
       // "<target_out_dir>/<targetname>.stamp".
-      dependency_output_file_ = GetTargetOutputDirAsOutputFile(this);
+      dependency_output_file_ =
+          GetBuildDirForTargetAsOutputFile(this, BuildDirType::OBJ);
       dependency_output_file_.value().append(GetComputedOutputName());
       dependency_output_file_.value().append(".stamp");
       break;

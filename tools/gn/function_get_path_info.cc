@@ -88,16 +88,16 @@ std::string GetOnePathInfo(const Settings* settings,
       return dir_incl_slash.substr(0, dir_incl_slash.size() - 1).as_string();
     }
     case WHAT_GEN_DIR: {
-      return DirectoryWithNoLastSlash(
-          GetGenDirForSourceDir(settings,
-                                DirForInput(settings, current_dir,
-                                            input, err)));
+      return DirectoryWithNoLastSlash(GetSubBuildDirAsSourceDir(
+          BuildDirContext(settings),
+          DirForInput(settings, current_dir, input, err),
+          BuildDirType::GEN));
     }
     case WHAT_OUT_DIR: {
-      return DirectoryWithNoLastSlash(
-          GetOutputDirForSourceDir(settings,
-                                   DirForInput(settings, current_dir,
-                                               input, err)));
+      return DirectoryWithNoLastSlash(GetSubBuildDirAsSourceDir(
+          BuildDirContext(settings),
+          DirForInput(settings, current_dir, input, err),
+          BuildDirType::OBJ));
     }
     case WHAT_ABSPATH: {
       if (!input_string.empty() &&
@@ -168,7 +168,7 @@ const char kGetPathInfo_Help[] =
     "      The output file directory corresponding to the path of the\n"
     "      given file, not including a trailing slash.\n"
     "        \"//foo/bar/baz.txt\" => \"//out/Default/obj/foo/bar\"\n"
-
+    "\n"
     "  \"gen_dir\"\n"
     "      The generated file directory corresponding to the path of the\n"
     "      given file, not including a trailing slash.\n"

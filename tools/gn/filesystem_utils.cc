@@ -163,6 +163,37 @@ bool FilesystemStringsEqual(const base::FilePath::StringType& a,
 #endif
 }
 
+// Helper function for computing subdirectories in the build directory
+// corresponding to absolute paths. This will try to resolve the absolute
+// path as a source-relative path first, and otherwise it creates a
+// special subdirectory for absolute paths to keep them from colliding with
+// other generated sources and outputs.
+void AppendFixedAbsolutePathSuffix(const BuildSettings* build_settings,
+                                   const SourceDir& source_dir,
+                                   OutputFile* result) {
+  const std::string& build_dir = build_settings->build_dir().value();
+
+  if (base::StartsWith(source_dir.value(), build_dir,
+                       base::CompareCase::SENSITIVE)) {
+    size_t build_dir_size = build_dir.size();
+    result->value().append(&source_dir.value()[build_dir_size],
+                           source_dir.value().size() - build_dir_size);
+  } else {
+    result->value().append("ABS_PATH");
+#if defined(OS_WIN)
+    // Windows absolute path contains ':' after drive letter. Remove it to
+    // avoid inserting ':' in the middle of path (eg. "ABS_PATH/C:/").
+    std::string src_dir_value = source_dir.value();
+    const auto colon_pos = src_dir_value.find(':');
+    if (colon_pos != std::string::npos)
+      src_dir_value.erase(src_dir_value.begin() + colon_pos);
+#else
+    const std::string& src_dir_value = source_dir.value();
+#endif
+    result->value().append(src_dir_value);
+  }
+}
+
 }  // namespace
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str) {
@@ -780,87 +811,67 @@ bool WriteFileIfChanged(const base::FilePath& file_path,
   return write_success;
 }
 
-SourceDir GetToolchainOutputDir(const Settings* settings) {
-  return settings->toolchain_output_subdir().AsSourceDir(
-      settings->build_settings());
+BuildDirContext::BuildDirContext(const Target* target)
+    : BuildDirContext(target->settings()) {
 }
 
-SourceDir GetToolchainOutputDir(const BuildSettings* build_settings,
-                                const Label& toolchain_label, bool is_default) {
-  std::string result = build_settings->build_dir().value();
-  result.append(GetOutputSubdirName(toolchain_label, is_default));
-  return SourceDir(SourceDir::SWAP_IN, &result);
+BuildDirContext::BuildDirContext(const Settings* settings)
+    : BuildDirContext(settings->build_settings(),
+                      settings->toolchain_label(),
+                      settings->is_default()) {
 }
 
-SourceDir GetToolchainGenDir(const Settings* settings) {
-  return GetToolchainGenDirAsOutputFile(settings).AsSourceDir(
-      settings->build_settings());
+BuildDirContext::BuildDirContext(const Scope* execution_scope)
+    : BuildDirContext(execution_scope->settings()) {
 }
 
-OutputFile GetToolchainGenDirAsOutputFile(const Settings* settings) {
-  OutputFile result(settings->toolchain_output_subdir());
-  result.value().append("gen/");
+BuildDirContext::BuildDirContext(const Scope* execution_scope,
+                                 const Label& toolchain_label)
+    : BuildDirContext(execution_scope->settings()->build_settings(),
+                      toolchain_label,
+                      execution_scope->settings()->default_toolchain_label() ==
+                          toolchain_label) {
+}
+
+BuildDirContext::BuildDirContext(const BuildSettings* in_build_settings,
+                                 const Label& in_toolchain_label,
+                                 bool in_is_default_toolchain)
+    : build_settings(in_build_settings),
+      toolchain_label(in_toolchain_label),
+      is_default_toolchain(in_is_default_toolchain) {
+}
+
+SourceDir GetBuildDirAsSourceDir(const BuildDirContext& context,
+                                 BuildDirType type) {
+  return GetBuildDirAsOutputFile(context, type).AsSourceDir(
+      context.build_settings);
+}
+
+OutputFile GetBuildDirAsOutputFile(const BuildDirContext& context,
+                                   BuildDirType type) {
+  OutputFile result(GetOutputSubdirName(context.toolchain_label,
+                                        context.is_default_toolchain));
+  DCHECK(result.value().empty() || result.value().back() == '/');
+
+  if (type == BuildDirType::GEN)
+    result.value().append("gen/");
+  else if (type == BuildDirType::OBJ)
+    result.value().append("obj/");
   return result;
 }
 
-SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
-                             const Label& toolchain_label, bool is_default) {
-  std::string result = GetToolchainOutputDir(
-      build_settings, toolchain_label, is_default).value();
-  result.append("gen/");
-  return SourceDir(SourceDir::SWAP_IN, &result);
+SourceDir GetSubBuildDirAsSourceDir(const BuildDirContext& context,
+                                    const SourceDir& source_dir,
+                                    BuildDirType type) {
+  return GetSubBuildDirAsOutputFile(context, source_dir, type)
+      .AsSourceDir(context.build_settings);
 }
 
-SourceDir GetOutputDirForSourceDir(const Settings* settings,
-                                   const SourceDir& source_dir) {
-  return GetOutputDirForSourceDir(
-      settings->build_settings(), source_dir,
-      settings->toolchain_label(), settings->is_default());
-}
-
-void AppendFixedAbsolutePathSuffix(const BuildSettings* build_settings,
-                                   const SourceDir& source_dir,
-                                   OutputFile* result) {
-  const std::string& build_dir = build_settings->build_dir().value();
-
-  if (base::StartsWith(source_dir.value(), build_dir,
-                       base::CompareCase::SENSITIVE)) {
-    size_t build_dir_size = build_dir.size();
-    result->value().append(&source_dir.value()[build_dir_size],
-                           source_dir.value().size() - build_dir_size);
-  } else {
-    result->value().append("ABS_PATH");
-#if defined(OS_WIN)
-    // Windows absolute path contains ':' after drive letter. Remove it to
-    // avoid inserting ':' in the middle of path (eg. "ABS_PATH/C:/").
-    std::string src_dir_value = source_dir.value();
-    const auto colon_pos = src_dir_value.find(':');
-    if (colon_pos != std::string::npos)
-      src_dir_value.erase(src_dir_value.begin() + colon_pos);
-#else
-    const std::string& src_dir_value = source_dir.value();
-#endif
-    result->value().append(src_dir_value);
-  }
-}
-
-SourceDir GetOutputDirForSourceDir(
-    const BuildSettings* build_settings,
-    const SourceDir& source_dir,
-    const Label& toolchain_label,
-    bool is_default_toolchain) {
-  return GetOutputDirForSourceDirAsOutputFile(
-          build_settings, source_dir, toolchain_label, is_default_toolchain)
-      .AsSourceDir(build_settings);
-}
-
-OutputFile GetOutputDirForSourceDirAsOutputFile(
-    const BuildSettings* build_settings,
-    const SourceDir& source_dir,
-    const Label& toolchain_label,
-    bool is_default_toolchain) {
-  OutputFile result(GetOutputSubdirName(toolchain_label, is_default_toolchain));
-  result.value().append("obj/");
+OutputFile GetSubBuildDirAsOutputFile(const BuildDirContext& context,
+                                      const SourceDir& source_dir,
+                                      BuildDirType type) {
+  DCHECK(type != BuildDirType::TOOLCHAIN_ROOT);
+  OutputFile result = GetBuildDirAsOutputFile(context, type);
 
   if (source_dir.is_source_absolute()) {
     // The source dir is source-absolute, so we trim off the two leading
@@ -869,69 +880,27 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(
                           source_dir.value().size() - 2);
   } else {
     // System-absolute.
-    AppendFixedAbsolutePathSuffix(build_settings, source_dir, &result);
+    AppendFixedAbsolutePathSuffix(context.build_settings, source_dir, &result);
   }
   return result;
 }
 
-OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
-                                                const SourceDir& source_dir) {
-  return GetOutputDirForSourceDirAsOutputFile(
-      settings->build_settings(), source_dir,
-      settings->toolchain_label(), settings->is_default());
+SourceDir GetBuildDirForTargetAsSourceDir(const Target* target,
+                                          BuildDirType type) {
+  return GetSubBuildDirAsSourceDir(
+      BuildDirContext(target), target->label().dir(), type);
 }
 
-SourceDir GetGenDirForSourceDir(const Settings* settings,
-                                const SourceDir& source_dir) {
-  return GetGenDirForSourceDirAsOutputFile(settings, source_dir).AsSourceDir(
-      settings->build_settings());
+OutputFile GetBuildDirForTargetAsOutputFile(const Target* target,
+                                            BuildDirType type) {
+  return GetSubBuildDirAsOutputFile(
+      BuildDirContext(target), target->label().dir(), type);
 }
 
-OutputFile GetGenDirForSourceDirAsOutputFile(const Settings* settings,
-                                             const SourceDir& source_dir) {
-  OutputFile result = GetToolchainGenDirAsOutputFile(settings);
-
-  if (source_dir.is_source_absolute()) {
-    // The source dir should be source-absolute, so we trim off the two leading
-    // slashes to append to the toolchain object directory.
-    DCHECK(source_dir.is_source_absolute());
-    result.value().append(&source_dir.value()[2],
-                          source_dir.value().size() - 2);
-  } else {
-    // System-absolute.
-    AppendFixedAbsolutePathSuffix(settings->build_settings(), source_dir,
-                                  &result);
-  }
-  return result;
-}
-
-SourceDir GetTargetOutputDir(const Target* target) {
-  return GetOutputDirForSourceDirAsOutputFile(
-      target->settings(), target->label().dir()).AsSourceDir(
-          target->settings()->build_settings());
-}
-
-OutputFile GetTargetOutputDirAsOutputFile(const Target* target) {
-  return GetOutputDirForSourceDirAsOutputFile(
-      target->settings(), target->label().dir());
-}
-
-SourceDir GetTargetGenDir(const Target* target) {
-  return GetTargetGenDirAsOutputFile(target).AsSourceDir(
-      target->settings()->build_settings());
-}
-
-OutputFile GetTargetGenDirAsOutputFile(const Target* target) {
-  return GetGenDirForSourceDirAsOutputFile(
-      target->settings(), target->label().dir());
-}
-
-SourceDir GetCurrentOutputDir(const Scope* scope) {
-  return GetOutputDirForSourceDirAsOutputFile(
-      scope->settings(), scope->GetSourceDir()).AsSourceDir(
-          scope->settings()->build_settings());
-}
-
-SourceDir GetCurrentGenDir(const Scope* scope) {
-  return GetGenDirForSourceDir(scope->settings(), scope->GetSourceDir());
+SourceDir GetScopeCurrentBuildDirAsSourceDir(const Scope* scope,
+                                             BuildDirType type) {
+  if (type == BuildDirType::TOOLCHAIN_ROOT)
+    return GetBuildDirAsSourceDir(BuildDirContext(scope), type);
+  return GetSubBuildDirAsSourceDir(
+      BuildDirContext(scope), scope->GetSourceDir(), type);
 }

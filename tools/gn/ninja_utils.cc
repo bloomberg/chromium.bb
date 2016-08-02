@@ -9,13 +9,15 @@
 #include "tools/gn/target.h"
 
 SourceFile GetNinjaFileForTarget(const Target* target) {
-  return SourceFile(GetTargetOutputDir(target).value() +
-                    target->label().name() + ".ninja");
+  return SourceFile(
+      GetBuildDirForTargetAsSourceDir(target, BuildDirType::OBJ).value() +
+      target->label().name() + ".ninja");
 }
 
 SourceFile GetNinjaFileForToolchain(const Settings* settings) {
-  return SourceFile(GetToolchainOutputDir(settings).value() +
-                    "toolchain.ninja");
+  return SourceFile(GetBuildDirAsSourceDir(
+      BuildDirContext(settings), BuildDirType::TOOLCHAIN_ROOT).value() +
+      "toolchain.ninja");
 }
 
 std::string GetNinjaRulePrefixForToolchain(const Settings* settings) {

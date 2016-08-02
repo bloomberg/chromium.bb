@@ -364,13 +364,13 @@ std::string SubstitutionWriter::GetSourceSubstitution(
           settings->build_settings()->root_path_utf8());
 
     case SUBSTITUTION_SOURCE_GEN_DIR:
-      to_rebase = DirectoryWithNoLastSlash(
-          GetGenDirForSourceDir(settings, source.GetDir()));
+      to_rebase = DirectoryWithNoLastSlash(GetSubBuildDirAsSourceDir(
+          BuildDirContext(settings), source.GetDir(), BuildDirType::GEN));
       break;
 
     case SUBSTITUTION_SOURCE_OUT_DIR:
-      to_rebase = DirectoryWithNoLastSlash(
-          GetOutputDirForSourceDir(settings, source.GetDir()));
+      to_rebase = DirectoryWithNoLastSlash(GetSubBuildDirAsSourceDir(
+          BuildDirContext(settings), source.GetDir(), BuildDirType::OBJ));
       break;
 
     default:
@@ -433,7 +433,8 @@ bool SubstitutionWriter::GetTargetSubstitution(
       break;
     case SUBSTITUTION_ROOT_GEN_DIR:
       SetDirOrDotWithNoSlash(
-          GetToolchainGenDirAsOutputFile(target->settings()).value(),
+          GetBuildDirAsOutputFile(BuildDirContext(target),
+                                  BuildDirType::GEN).value(),
           result);
       break;
     case SUBSTITUTION_ROOT_OUT_DIR:
@@ -443,12 +444,12 @@ bool SubstitutionWriter::GetTargetSubstitution(
       break;
     case SUBSTITUTION_TARGET_GEN_DIR:
       SetDirOrDotWithNoSlash(
-          GetTargetGenDirAsOutputFile(target).value(),
+          GetBuildDirForTargetAsOutputFile(target, BuildDirType::GEN).value(),
           result);
       break;
     case SUBSTITUTION_TARGET_OUT_DIR:
       SetDirOrDotWithNoSlash(
-          GetTargetOutputDirAsOutputFile(target).value(),
+          GetBuildDirForTargetAsOutputFile(target, BuildDirType::OBJ).value(),
           result);
       break;
     case SUBSTITUTION_TARGET_OUTPUT_NAME:

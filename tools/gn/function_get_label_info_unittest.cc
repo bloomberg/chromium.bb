@@ -73,12 +73,18 @@ TEST_F(GetLabelInfoTest, RootGenDir) {
 
 TEST_F(GetLabelInfoTest, TargetOutDir) {
   EXPECT_EQ("//out/Debug/obj/src/foo", Call(":name", "target_out_dir"));
-  EXPECT_EQ("//out/Debug", Call(":name", "root_out_dir"));
-
   EXPECT_EQ("//out/Debug/obj/foo",
             Call("//foo:name(//toolchain:default)", "target_out_dir"));
   EXPECT_EQ("//out/Debug/random/obj/foo",
             Call("//foo:name(//toolchain:random)", "target_out_dir"));
+}
+
+TEST_F(GetLabelInfoTest, TargetGenDir) {
+  EXPECT_EQ("//out/Debug/gen/src/foo", Call(":name", "target_gen_dir"));
+  EXPECT_EQ("//out/Debug/gen/foo",
+            Call("//foo:name(//toolchain:default)", "target_gen_dir"));
+  EXPECT_EQ("//out/Debug/random/gen/foo",
+            Call("//foo:name(//toolchain:random)", "target_gen_dir"));
 }
 
 TEST_F(GetLabelInfoTest, LabelNoToolchain) {

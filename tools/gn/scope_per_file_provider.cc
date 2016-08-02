@@ -85,7 +85,8 @@ const Value* ScopePerFileProvider::GetRootGenDir() {
   if (!root_gen_dir_) {
     root_gen_dir_.reset(new Value(
         nullptr,
-        DirectoryWithNoLastSlash(GetToolchainGenDir(scope_->settings()))));
+        DirectoryWithNoLastSlash(GetBuildDirAsSourceDir(
+            BuildDirContext(scope_), BuildDirType::GEN))));
   }
   return root_gen_dir_.get();
 }
@@ -94,15 +95,18 @@ const Value* ScopePerFileProvider::GetRootOutDir() {
   if (!root_out_dir_) {
     root_out_dir_.reset(new Value(
         nullptr,
-        DirectoryWithNoLastSlash(GetToolchainOutputDir(scope_->settings()))));
+        DirectoryWithNoLastSlash(GetScopeCurrentBuildDirAsSourceDir(
+            scope_, BuildDirType::TOOLCHAIN_ROOT))));
   }
   return root_out_dir_.get();
 }
 
 const Value* ScopePerFileProvider::GetTargetGenDir() {
   if (!target_gen_dir_) {
-    target_gen_dir_.reset(
-        new Value(nullptr, DirectoryWithNoLastSlash(GetCurrentGenDir(scope_))));
+    target_gen_dir_.reset(new Value(
+        nullptr,
+        DirectoryWithNoLastSlash(
+            GetScopeCurrentBuildDirAsSourceDir(scope_, BuildDirType::GEN))));
   }
   return target_gen_dir_.get();
 }
@@ -110,7 +114,9 @@ const Value* ScopePerFileProvider::GetTargetGenDir() {
 const Value* ScopePerFileProvider::GetTargetOutDir() {
   if (!target_out_dir_) {
     target_out_dir_.reset(new Value(
-        nullptr, DirectoryWithNoLastSlash(GetCurrentOutputDir(scope_))));
+        nullptr,
+        DirectoryWithNoLastSlash(
+            GetScopeCurrentBuildDirAsSourceDir(scope_, BuildDirType::OBJ))));
   }
   return target_out_dir_.get();
 }

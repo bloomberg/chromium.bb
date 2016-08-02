@@ -337,8 +337,9 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
       project_config_platform = "Win32";
   }
 
-  SourceFile target_file = GetTargetOutputDir(target).ResolveRelativeFile(
-      Value(nullptr, project_name + ".vcxproj"), err);
+  SourceFile target_file =
+      GetBuildDirForTargetAsSourceDir(target, BuildDirType::OBJ)
+          .ResolveRelativeFile(Value(nullptr, project_name + ".vcxproj"), err);
   if (target_file.is_null())
     return false;
 
@@ -377,9 +378,9 @@ bool VisualStudioWriter::WriteProjectFileContents(
     const Target* target,
     SourceFileCompileTypePairs* source_types,
     Err* err) {
-  PathOutput path_output(GetTargetOutputDir(target),
-                         build_settings_->root_path_utf8(),
-                         EscapingMode::ESCAPE_NONE);
+  PathOutput path_output(
+      GetBuildDirForTargetAsSourceDir(target, BuildDirType::OBJ),
+      build_settings_->root_path_utf8(), EscapingMode::ESCAPE_NONE);
 
   out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl;
   XmlElementWriter project(
@@ -612,9 +613,9 @@ void VisualStudioWriter::WriteFiltersFileContents(
     // File paths are relative to vcxproj files which are generated to out dirs.
     // Filters tree structure need to reflect source directories and be relative
     // to target file. We need two path outputs then.
-    PathOutput file_path_output(GetTargetOutputDir(target),
-                                build_settings_->root_path_utf8(),
-                                EscapingMode::ESCAPE_NONE);
+    PathOutput file_path_output(
+        GetBuildDirForTargetAsSourceDir(target, BuildDirType::OBJ),
+        build_settings_->root_path_utf8(), EscapingMode::ESCAPE_NONE);
     PathOutput filter_path_output(target->label().dir(),
                                   build_settings_->root_path_utf8(),
                                   EscapingMode::ESCAPE_NONE);

@@ -262,10 +262,8 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   }
 
   // Make a stamp file.
-  OutputFile input_stamp_file(
-      RebasePath(GetTargetOutputDir(target_).value(),
-                 settings_->build_settings()->build_dir(),
-                 settings_->build_settings()->root_path_utf8()));
+  OutputFile input_stamp_file =
+      GetBuildDirForTargetAsOutputFile(target_, BuildDirType::OBJ);
   input_stamp_file.value().append(target_->label().name());
   input_stamp_file.value().append(".inputdeps.stamp");
 
