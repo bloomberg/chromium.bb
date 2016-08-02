@@ -24,6 +24,10 @@ namespace shell {
 class Connector;
 }
 
+namespace ui {
+class GpuService;
+}
+
 namespace views {
 class ClipboardMus;
 class NativeWidget;
@@ -96,6 +100,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   shell::Identity identity_;
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<ui::WindowTreeClient> client_;
+  std::unique_ptr<ui::GpuService> gpu_service_;
   // Must be empty on destruction.
   base::ObserverList<PointerWatcher, true> pointer_watchers_;
   base::ObserverList<TouchEventWatcher, true> touch_event_watchers_;

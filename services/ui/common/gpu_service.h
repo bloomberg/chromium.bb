@@ -27,6 +27,8 @@ namespace ui {
 
 class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
  public:
+  ~GpuService() override;
+
   void EstablishGpuChannel(const base::Closure& callback);
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
@@ -36,16 +38,13 @@ class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
 
   // The GpuService has to be initialized in the main thread before establishing
   // the gpu channel.
-  static void Initialize(shell::Connector* connector);
-  // The GpuService has to be terminated in the main thread.
-  static void Terminate();
+  static std::unique_ptr<GpuService> Initialize(shell::Connector* connector);
   static GpuService* GetInstance();
 
  private:
   friend struct base::DefaultSingletonTraits<GpuService>;
 
   explicit GpuService(shell::Connector* connector);
-  ~GpuService() override;
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannelLocked();
   void EstablishGpuChannelOnMainThread();

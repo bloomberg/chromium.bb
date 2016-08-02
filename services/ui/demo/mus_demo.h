@@ -21,6 +21,8 @@
 
 namespace ui {
 class BitmapUploader;
+class GpuService;
+
 namespace demo {
 
 // A simple MUS Demo mojo app. This app connects to the mojo:ui, creates a new
@@ -69,6 +71,7 @@ class MusDemo : public shell::Service,
 
   Window* window_ = nullptr;
   WindowTreeClient* window_tree_client_ = nullptr;
+  std::unique_ptr<GpuService> gpu_service_;
 
   // Used to send frames to mus.
   std::unique_ptr<ui::BitmapUploader> uploader_;
