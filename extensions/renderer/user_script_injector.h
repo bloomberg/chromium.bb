@@ -49,11 +49,9 @@ class UserScriptInjector : public ScriptInjector,
       blink::WebLocalFrame* web_frame,
       int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
-      UserScript::RunLocation run_location,
-      ScriptsRunInfo* scripts_run_info) const override;
+      UserScript::RunLocation run_location) const override;
   std::vector<std::string> GetCssSources(
-      UserScript::RunLocation run_location,
-      ScriptsRunInfo* scripts_run_info) const override;
+      UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
   void OnInjectionComplete(std::unique_ptr<base::Value> execution_result,

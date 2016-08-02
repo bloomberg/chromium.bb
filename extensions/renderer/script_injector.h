@@ -65,14 +65,12 @@ class ScriptInjector {
   // Returns the javascript sources to inject at the given |run_location|.
   // Only called if ShouldInjectJs() is true.
   virtual std::vector<blink::WebScriptSource> GetJsSources(
-      UserScript::RunLocation run_location,
-      ScriptsRunInfo* scripts_run_info) const = 0;
+      UserScript::RunLocation run_location) const = 0;
 
   // Returns the css to inject at the given |run_location|.
   // Only called if ShouldInjectCss() is true.
   virtual std::vector<std::string> GetCssSources(
-      UserScript::RunLocation run_location,
-      ScriptsRunInfo* scripts_run_info) const = 0;
+      UserScript::RunLocation run_location) const = 0;
 
   // Fill scriptrs run info based on information about injection.
   virtual void GetRunInfo(

@@ -195,8 +195,7 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
-    UserScript::RunLocation run_location,
-    ScriptsRunInfo* scripts_run_info) const {
+    UserScript::RunLocation run_location) const {
   std::vector<blink::WebScriptSource> sources;
   if (!script_)
     return sources;
@@ -208,11 +207,6 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
   for (UserScript::FileList::const_iterator iter = js_scripts.begin();
        iter != js_scripts.end();
        ++iter) {
-    const GURL& script_url = iter->url();
-    // Check if the script is already injected.
-    if (scripts_run_info->injected_scripts.count(script_url) != 0)
-      continue;
-
     std::string content = iter->GetContent().as_string();
 
     // We add this dumb function wrapper for user scripts to emulate what
@@ -222,9 +216,7 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
       content += kUserScriptTail;
     }
     sources.push_back(blink::WebScriptSource(
-        blink::WebString::fromUTF8(content), script_url));
-
-    scripts_run_info->injected_scripts.insert(script_url);
+        blink::WebString::fromUTF8(content), iter->url()));
   }
 
   // Emulate Greasemonkey API for scripts that were converted to extension
@@ -236,8 +228,7 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
 }
 
 std::vector<std::string> UserScriptInjector::GetCssSources(
-    UserScript::RunLocation run_location,
-    ScriptsRunInfo* scripts_run_info) const {
+    UserScript::RunLocation run_location) const {
   DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
 
   std::vector<std::string> sources;
@@ -245,18 +236,10 @@ std::vector<std::string> UserScriptInjector::GetCssSources(
     return sources;
 
   const UserScript::FileList& css_scripts = script_->css_scripts();
-
   for (UserScript::FileList::const_iterator iter = css_scripts.begin();
        iter != css_scripts.end();
        ++iter) {
-    const GURL& script_url = iter->url();
-    // Check if the stylesheet is already injected.
-    if (scripts_run_info->injected_scripts.find(script_url) ==
-        scripts_run_info->injected_scripts.end()) {
-      sources.push_back(iter->GetContent().as_string());
-
-      scripts_run_info->injected_scripts.insert(script_url);
-    }
+    sources.push_back(iter->GetContent().as_string());
   }
   return sources;
 }

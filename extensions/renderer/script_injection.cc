@@ -219,9 +219,9 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   DCHECK(should_inject_js || should_inject_css);
 
   if (should_inject_js)
-    InjectJs(scripts_run_info);
+    InjectJs();
   if (should_inject_css)
-    InjectCss(scripts_run_info);
+    InjectCss();
 
   complete_ = did_inject_js_ || !should_inject_js;
 
@@ -237,11 +237,11 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   return complete_ ? INJECTION_FINISHED : INJECTION_BLOCKED;
 }
 
-void ScriptInjection::InjectJs(ScriptsRunInfo* scripts_run_info) {
+void ScriptInjection::InjectJs() {
   DCHECK(!did_inject_js_);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   std::vector<blink::WebScriptSource> sources =
-      injector_->GetJsSources(run_location_, scripts_run_info);
+      injector_->GetJsSources(run_location_);
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
   int world_id = in_main_world
                      ? DOMActivityLogger::kMainWorldId
@@ -311,9 +311,9 @@ void ScriptInjection::OnJsInjectionCompleted(
   }
 }
 
-void ScriptInjection::InjectCss(ScriptsRunInfo* scripts_run_info) {
+void ScriptInjection::InjectCss() {
   std::vector<std::string> css_sources =
-      injector_->GetCssSources(run_location_, scripts_run_info);
+      injector_->GetCssSources(run_location_);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   for (const std::string& css : css_sources)
     web_frame->document().insertStyleSheet(blink::WebString::fromUTF8(css));

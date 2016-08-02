@@ -94,8 +94,7 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
 }
 
 std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
-    UserScript::RunLocation run_location,
-    ScriptsRunInfo* scripts_run_info) const {
+    UserScript::RunLocation run_location) const {
   DCHECK_EQ(GetRunLocation(), run_location);
   DCHECK(params_->is_javascript);
 
@@ -106,8 +105,7 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
 }
 
 std::vector<std::string> ProgrammaticScriptInjector::GetCssSources(
-    UserScript::RunLocation run_location,
-    ScriptsRunInfo* scripts_run_info) const {
+    UserScript::RunLocation run_location) const {
   DCHECK_EQ(GetRunLocation(), run_location);
   DCHECK(!params_->is_javascript);
 

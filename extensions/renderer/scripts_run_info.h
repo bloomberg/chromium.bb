@@ -40,8 +40,6 @@ struct ScriptsRunInfo {
   ExecutingScriptsMap executing_scripts;
   // The elapsed time since the ScriptsRunInfo was constructed.
   base::ElapsedTimer timer;
-  // A list of extension urls of executing scripts.
-  std::set<GURL> injected_scripts;
 
   // Log information about a given script run. If |send_script_activity| is
   // true, this also informs the browser of the script run.
