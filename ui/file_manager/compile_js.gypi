@@ -4,6 +4,7 @@
 {
   'variables': {
     'closure_args': [
+      '<@(default_closure_args)',
       'warning_level=VERBOSE',
     ],
   },

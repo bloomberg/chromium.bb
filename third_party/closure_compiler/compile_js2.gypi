@@ -39,8 +39,10 @@
       'variables': {
         'target_path': '<!(python <(CLOSURE_DIR)/build/outputs.py <(default_source_file))',
         'out_file%': '<(SHARED_INTERMEDIATE_DIR)/closure/<(target_path)',
-        # TODO(dbeam): add --custom_sources when 'source_files' is set?
+        'runner_args%': ['enable-chrome-pass'],
+        # TODO(dbeam): remove when no longer used from remoting/.
         'script_args%': [],
+        'closure_args%': '<(default_closure_args)',
         'disabled_closure_args%': '<(default_disabled_closure_args)',
       },
 
@@ -63,6 +65,7 @@
         '<@(script_args)',
         '>@(_sources)',
         '--out_file', '<(out_file)',
+        '--runner_args', '<@(runner_args)',
         '--closure_args', '<@(closure_args)', '<@(disabled_closure_args)',
         # '--verbose' # for make glorious log spam of Closure compiler.
       ],

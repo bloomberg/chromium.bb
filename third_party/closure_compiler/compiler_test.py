@@ -24,9 +24,9 @@ _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                     "externs", "chrome_send.js")
 _CLOSURE_ARGS_GYPI = os.path.join(_SCRIPT_DIR, "closure_args.gypi")
 _GYPI_DICT = literal_eval(open(_CLOSURE_ARGS_GYPI).read())
-_COMMON_CLOSURE_ARGS = _GYPI_DICT["closure_args"] + \
+_COMMON_CLOSURE_ARGS = _GYPI_DICT["default_closure_args"] + \
                        _GYPI_DICT["default_disabled_closure_args"]
-
+_RUNNER_ARGS = ["enable-chrome-pass"]
 
 class CompilerTest(unittest.TestCase):
   _ASSERT_DEFINITION = Processor(_ASSERT_JS).contents
@@ -55,6 +55,7 @@ class CompilerTest(unittest.TestCase):
     found_errors, stderr = self._checker.check(file_path,
                                                externs=externs,
                                                out_file=out_file,
+                                               runner_args=_RUNNER_ARGS,
                                                closure_args=args)
     return found_errors, stderr, out_file, out_map
 

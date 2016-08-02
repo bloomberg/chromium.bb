@@ -78,10 +78,10 @@ template("build_webapp_html") {
 
       args = rebase_path(js_files, root_build_dir)
       args += [
-                "--no-single-file",
-                "--out-file",
+                "--no_single_file",
+                "--out_file",
                 rebase_path(target_jscompile_stamp, root_build_dir),
-                "--closure-args",
+                "--closure_args",
               ] + closure_args + extra_closure_args
       args += [ "--externs" ] + rebase_path(externs, root_build_dir)
     }

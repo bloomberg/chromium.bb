@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: third_party/closure_compiler/closure_args.gypi
-closure_args = [
+default_closure_args = [
   "compilation_level=SIMPLE_OPTIMIZATIONS",
 
   "extra_annotation_name=attribute",

@@ -4,10 +4,13 @@
 
 {
   'variables': {
-    'externs': ['../third_party/closure_compiler/externs/chrome_extensions.js',
-      '../third_party/closure_compiler/externs/metrics_private.js'],
-    'script_args': ['--no-single-file'],
+    'externs': [
+      '../third_party/closure_compiler/externs/chrome_extensions.js',
+      '../third_party/closure_compiler/externs/metrics_private.js'
+    ],
+    'script_args': ['--no_single_file'],
     'closure_args': [
+      '<@(default_closure_args)',
       'jscomp_error=duplicate',
       'jscomp_error=misplacedTypeAnnotation',
     ],
