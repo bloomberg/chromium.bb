@@ -2392,6 +2392,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ChromeGeneratedCustomTab.StartedInitially">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A Chrome generated CustomTabActivity (instead of a client app) was stared
+    for the first time.
+  </description>
+</action>
+
+<action name="ChromeGeneratedCustomTab.StartedReopened">
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A Chrome generated CustomTabActivity (instead of a client app) was started
+    by reopening a previously created instance. This can happen if you send a
+    CCT to the background via the home button and reselect it from Android
+    Overview.
+  </description>
+</action>
+
 <action name="ClearAuthenticationCache">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -3015,6 +3033,11 @@ should be able to be added at any place in this file.
   <description>
     User hit the 'back' button in the CustomTabActivity.
   </description>
+</action>
+
+<action name="CustomTabs.TapUrlBar">
+  <owner>tedchoc@chromium.org</owner>
+  <description>User tapped the URL bar in the CustomTabActivity.</description>
 </action>
 
 <action name="CustomTabsCustomActionButtonClick">

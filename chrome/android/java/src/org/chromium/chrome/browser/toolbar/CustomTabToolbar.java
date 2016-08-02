@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +34,8 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -74,13 +77,31 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
      * read-only in custom tabs.
      */
     public static class InterceptTouchLayout extends FrameLayout {
+        private GestureDetector mGestureDetector;
+
         public InterceptTouchLayout(Context context, AttributeSet attrs) {
             super(context, attrs);
+            mGestureDetector = new GestureDetector(getContext(),
+                    new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onSingleTapConfirmed(MotionEvent e) {
+                            if (LibraryLoader.isInitialized()) {
+                                RecordUserAction.record("CustomTabs.TapUrlBar");
+                            }
+                            return super.onSingleTapConfirmed(e);
+                        }
+                    });
         }
 
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
             return true;
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+            return super.onTouchEvent(event);
         }
     }
 

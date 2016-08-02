@@ -418,7 +418,8 @@ public class CustomTabActivity extends ChromeActivity {
                 false);
         tab.getTabRedirectHandler().updateIntent(getIntent());
         tab.getView().requestFocus();
-        mTabObserver = new CustomTabObserver(getApplication(), mSession);
+        mTabObserver = new CustomTabObserver(
+                getApplication(), mSession, mIntentDataProvider.isOpenedByChrome());
 
         mMetricsObserver = new PageLoadMetricsObserver(
                 CustomTabsConnection.getInstance(getApplication()), mSession, webContents);
@@ -453,14 +454,23 @@ public class CustomTabActivity extends ChromeActivity {
         setActiveContentHandler(mCustomTabContentHandler);
 
         if (getSavedInstanceState() != null || !mIsInitialStart) {
-            RecordUserAction.record("CustomTabs.StartedReopened");
-        } else {
-            ExternalAppId externalId =
-                    IntentHandler.determineExternalIntentSource(getPackageName(), getIntent());
-            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
-                    externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
 
-            RecordUserAction.record("CustomTabs.StartedInitially");
+            if (mIntentDataProvider.isOpenedByChrome()) {
+                RecordUserAction.record("ChromeGeneratedCustomTab.StartedReopened");
+            } else {
+                RecordUserAction.record("CustomTabs.StartedReopened");
+            }
+        } else {
+            if (mIntentDataProvider.isOpenedByChrome()) {
+                RecordUserAction.record("ChromeGeneratedCustomTab.StartedInitially");
+            } else {
+                ExternalAppId externalId =
+                        IntentHandler.determineExternalIntentSource(getPackageName(), getIntent());
+                RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
+                        externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
+
+                RecordUserAction.record("CustomTabs.StartedInitially");
+            }
         }
         mIsInitialStart = false;
     }

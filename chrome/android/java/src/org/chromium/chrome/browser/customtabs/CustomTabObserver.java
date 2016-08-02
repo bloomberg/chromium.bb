@@ -22,8 +22,10 @@ import java.util.concurrent.TimeUnit;
  * A {@link TabObserver} that also handles custom tabs specific logging and messaging.
  */
 class CustomTabObserver extends EmptyTabObserver {
-    private CustomTabsConnection mCustomTabsConnection;
-    private CustomTabsSessionToken mSession;
+    private final CustomTabsConnection mCustomTabsConnection;
+    private final CustomTabsSessionToken mSession;
+    private final boolean mOpenedByChrome;
+
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
 
@@ -32,9 +34,15 @@ class CustomTabObserver extends EmptyTabObserver {
     private static final int STATE_WAITING_LOAD_FINISH = 2;
     private int mCurrentState;
 
-    public CustomTabObserver(Application application, CustomTabsSessionToken session) {
-        mCustomTabsConnection = CustomTabsConnection.getInstance(application);
+    public CustomTabObserver(
+            Application application, CustomTabsSessionToken session, boolean openedByChrome) {
+        if (openedByChrome) {
+            mCustomTabsConnection = null;
+        } else {
+            mCustomTabsConnection = CustomTabsConnection.getInstance(application);
+        }
         mSession = session;
+        mOpenedByChrome = openedByChrome;
         resetPageLoadTracking();
     }
 
@@ -48,7 +56,9 @@ class CustomTabObserver extends EmptyTabObserver {
 
     @Override
     public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-        mCustomTabsConnection.registerLaunch(mSession, params.getUrl());
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.registerLaunch(mSession, params.getUrl());
+        }
     }
 
     @Override
@@ -57,25 +67,33 @@ class CustomTabObserver extends EmptyTabObserver {
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
             mCurrentState = STATE_WAITING_LOAD_FINISH;
         } else if (mCurrentState == STATE_WAITING_LOAD_FINISH) {
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.NAVIGATION_ABORTED);
+            if (mCustomTabsConnection != null) {
+                mCustomTabsConnection.notifyNavigationEvent(
+                        mSession, CustomTabsCallback.NAVIGATION_ABORTED);
+            }
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
         }
-        mCustomTabsConnection.notifyNavigationEvent(
-                mSession, CustomTabsCallback.NAVIGATION_STARTED);
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_STARTED);
+        }
     }
 
     @Override
     public void onShown(Tab tab) {
-        mCustomTabsConnection.notifyNavigationEvent(
-                mSession, CustomTabsCallback.TAB_SHOWN);
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.TAB_SHOWN);
+        }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab) {
         long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
-        mCustomTabsConnection.notifyNavigationEvent(
-                mSession, CustomTabsCallback.NAVIGATION_FINISHED);
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FINISHED);
+        }
         // Both histograms (commit and PLT) are reported here, to make sure
         // that they are always recorded together, and that we only record
         // commits for successful navigations.
@@ -83,12 +101,14 @@ class CustomTabObserver extends EmptyTabObserver {
             long timeToPageLoadStartedMs = mPageLoadStartedTimestamp - mIntentReceivedTimestamp;
             long timeToPageLoadFinishedMs =
                     pageLoadFinishedTimestamp - mIntentReceivedTimestamp;
+
+            String histogramPrefix = mOpenedByChrome ? "ChromeGeneratedCustomTab" : "CustomTabs";
             // Same bounds and bucket count as "Startup.FirstCommitNavigationTime"
             RecordHistogram.recordCustomTimesHistogram(
-                    "CustomTabs.IntentToFirstCommitNavigationTime", timeToPageLoadStartedMs,
+                    histogramPrefix + ".IntentToFirstCommitNavigationTime", timeToPageLoadStartedMs,
                     1, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS, 225);
             // Same bounds and bucket count as PLT histograms.
-            RecordHistogram.recordCustomTimesHistogram("CustomTabs.IntentToPageLoadedTime",
+            RecordHistogram.recordCustomTimesHistogram(histogramPrefix + ".IntentToPageLoadedTime",
                     timeToPageLoadFinishedMs, 10, TimeUnit.MINUTES.toMillis(10),
                     TimeUnit.MILLISECONDS, 100);
         }
@@ -99,15 +119,19 @@ class CustomTabObserver extends EmptyTabObserver {
     public void onDidAttachInterstitialPage(Tab tab) {
         if (tab.getSecurityLevel() != ConnectionSecurityLevel.SECURITY_ERROR) return;
         resetPageLoadTracking();
-        mCustomTabsConnection.notifyNavigationEvent(
-                mSession, CustomTabsCallback.NAVIGATION_FAILED);
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
+        }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         resetPageLoadTracking();
-        mCustomTabsConnection.notifyNavigationEvent(
-                mSession, CustomTabsCallback.NAVIGATION_FAILED);
+        if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
+        }
     }
 
     private void resetPageLoadTracking() {

@@ -5332,6 +5332,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromeGeneratedCustomTab.IntentToFirstCommitNavigationTime"
+    units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Time between the intent arrival in a Chrome generated CCT and the first
+    navigation commit, if the navigation is successful. Similar in principle to
+    Startup.FirstCommitNavigationTime.
+  </summary>
+</histogram>
+
+<histogram name="ChromeGeneratedCustomTab.IntentToPageLoadedTime" units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Time between the intent arrival in a Chrome generated CCT and the first
+    &quot;page loaded&quot; event, if the navigation is successful.
+  </summary>
+</histogram>
+
 <histogram name="ChromeNotifierService.Actions"
     enum="ChromeNotifierServiceActionType">
   <obsolete>
