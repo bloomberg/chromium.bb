@@ -166,13 +166,6 @@ Polymer({
     }
   },
 
-  /** @private */
-  onDrawerFocus_: function() {
-    var sideBar = this.$$('#drawer-side-bar');
-    if (sideBar)
-      sideBar.focusCurrentPage();
-  },
-
   /**
    * @param {string} searchTerm
    * @private
