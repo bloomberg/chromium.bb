@@ -96,15 +96,16 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
   size_t hmac_expected_length = EVP_MD_size(digest_algorithm);
 
   buffer->resize(hmac_expected_length);
-  crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
-      buffer->data(), hmac_expected_length);
 
   unsigned int hmac_actual_length;
-  unsigned char* const success =
-      HMAC(digest_algorithm, raw_key.data(), raw_key.size(), data.bytes(),
-           data.byte_length(), hmac_result.safe_buffer(), &hmac_actual_length);
-  if (!success || hmac_actual_length != hmac_expected_length)
+  if (!HMAC(digest_algorithm, raw_key.data(), raw_key.size(), data.bytes(),
+            data.byte_length(), buffer->data(), &hmac_actual_length)) {
     return Status::OperationError();
+  }
+
+  // HMAC() promises to use at most EVP_MD_CTX_size(). If this was not the
+  // case then memory corruption may have just occurred.
+  CHECK_EQ(hmac_expected_length, hmac_actual_length);
 
   return Status::Success();
 }
