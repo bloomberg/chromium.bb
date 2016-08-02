@@ -552,15 +552,16 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   // RegisterThrottleForTesting.
   ScopedVector<NavigationThrottle> throttles_to_register =
       GetContentClient()->browser()->CreateThrottlesForNavigation(this);
-  if (throttles_to_register.size() > 0) {
-    throttles_.insert(throttles_.end(), throttles_to_register.begin(),
-                      throttles_to_register.end());
-    throttles_to_register.weak_clear();
-  }
   std::unique_ptr<NavigationThrottle> devtools_throttle =
       RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
   if (devtools_throttle)
-    throttles_.push_back(devtools_throttle.release());
+    throttles_to_register.push_back(devtools_throttle.release());
+
+  if (throttles_to_register.size() > 0) {
+    throttles_.insert(throttles_.begin(), throttles_to_register.begin(),
+                      throttles_to_register.end());
+    throttles_to_register.weak_clear();
+  }
 }
 
 }  // namespace content

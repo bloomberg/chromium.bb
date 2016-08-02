@@ -44,6 +44,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -349,6 +351,29 @@ CrossSiteRedirectResponseHandler(const GURL& server_base_url,
   http_response->AddCustomHeader("Location", redirect_target.spec());
   return std::move(http_response);
 }
+
+// Helper class used by the TestNavigationManager to pause navigations.
+// Note: the throttle should be added to the *end* of the list of throttles,
+// so all NavigationThrottles that should be attached observe the
+// WillStartRequest callback. RegisterThrottleForTesting has this behavior.
+class TestNavigationManagerThrottle : public NavigationThrottle {
+ public:
+  TestNavigationManagerThrottle(NavigationHandle* handle,
+                                base::Closure on_will_start_request_closure)
+      : NavigationThrottle(handle),
+        on_will_start_request_closure_(on_will_start_request_closure) {}
+  ~TestNavigationManagerThrottle() override {}
+
+ private:
+  // NavigationThrottle:
+  NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_will_start_request_closure_);
+    return NavigationThrottle::DEFER;
+  }
+
+  base::Closure on_will_start_request_closure_;
+};
 
 }  // namespace
 
@@ -1536,6 +1561,100 @@ FrameFocusedObserver::~FrameFocusedObserver() {}
 
 void FrameFocusedObserver::Wait() {
   impl_->Run();
+}
+
+TestNavigationManager::TestNavigationManager(WebContents* web_contents,
+                                             const GURL& url)
+    : WebContentsObserver(web_contents),
+      url_(url),
+      navigation_paused_(false),
+      handle_(nullptr),
+      handled_navigation_(false),
+      weak_factory_(this) {}
+
+TestNavigationManager::~TestNavigationManager() {
+  ResumeNavigation();
+}
+
+bool TestNavigationManager::WaitForWillStartRequest() {
+  DCHECK(!did_finish_loop_runner_);
+  if (!handle_ && handled_navigation_)
+    return true;
+  if (navigation_paused_)
+    return true;
+  will_start_loop_runner_ = new MessageLoopRunner();
+  will_start_loop_runner_->Run();
+  will_start_loop_runner_ = nullptr;
+
+  // This will only be false if DidFinishNavigation is called before
+  // OnWillStartRequest, which could occur if a throttle cancels the navigation
+  // before the TestNavigationManagerThrottle's method is called.
+  return !handled_navigation_;
+}
+
+void TestNavigationManager::WaitForNavigationFinished() {
+  DCHECK(!will_start_loop_runner_);
+  if (!handle_ && handled_navigation_)
+    return;
+  // Ensure the navigation is resumed if the manager paused it previously.
+  if (navigation_paused_)
+    ResumeNavigation();
+  did_finish_loop_runner_ = new MessageLoopRunner();
+  did_finish_loop_runner_->Run();
+  did_finish_loop_runner_ = nullptr;
+}
+
+void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
+  if (!ShouldMonitorNavigation(handle))
+    return;
+
+  handle_ = handle;
+  std::unique_ptr<NavigationThrottle> throttle(
+      new TestNavigationManagerThrottle(
+          handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
+                              weak_factory_.GetWeakPtr())));
+  handle_->RegisterThrottleForTesting(std::move(throttle));
+}
+
+void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
+  if (handle != handle_)
+    return;
+  handle_ = nullptr;
+  handled_navigation_ = true;
+  navigation_paused_ = false;
+
+  // Resume any clients that are waiting for the end of the navigation. Note
+  // that |will_start_loop_runner_| can be running if the navigation was
+  // cancelled while it was deferred.
+  if (did_finish_loop_runner_)
+    did_finish_loop_runner_->Quit();
+  if (will_start_loop_runner_)
+    will_start_loop_runner_->Quit();
+}
+
+void TestNavigationManager::OnWillStartRequest() {
+  navigation_paused_ = true;
+  if (will_start_loop_runner_)
+    will_start_loop_runner_->Quit();
+
+  // If waiting for the navigation to finish, resume the navigation.
+  if (did_finish_loop_runner_)
+    ResumeNavigation();
+}
+
+void TestNavigationManager::ResumeNavigation() {
+  if (!navigation_paused_ || !handle_)
+    return;
+  navigation_paused_ = false;
+  handle_->Resume();
+}
+
+bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
+  if (handle_ || handle->GetURL() != url_)
+    return false;
+  if (handled_navigation_)
+    return false;
+  return true;
 }
 
 }  // namespace content

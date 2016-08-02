@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   // Starts and verifies the main frame navigation.
   shell()->LoadURL(main_url);
-  main_manager.WaitForWillStartRequest();
+  EXPECT_TRUE(main_manager.WaitForWillStartRequest());
   // The throttle should not be null.
   EXPECT_NE(previous_throttle, installer.navigation_throttle());
   // Checks the only URL recorded so far is the one expected for the main frame.
@@ -709,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   // Ditto for frame b navigation.
   main_manager.WaitForNavigationFinished();
-  b_manager.WaitForWillStartRequest();
+  EXPECT_TRUE(b_manager.WaitForWillStartRequest());
   EXPECT_NE(previous_throttle, installer.navigation_throttle());
   EXPECT_EQ(b_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
   // Ditto for frame c navigation.
   b_manager.WaitForNavigationFinished();
-  c_manager.WaitForWillStartRequest();
+  EXPECT_TRUE(c_manager.WaitForWillStartRequest());
   EXPECT_NE(previous_throttle, installer.navigation_throttle());
   EXPECT_EQ(c_url, url_recorder.urls().back());
   EXPECT_EQ(3ul, url_recorder.urls().size());
@@ -757,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
       shell(), "window.domAutomationController.send(clickSameSiteLink());",
       &success));
   EXPECT_TRUE(success);
-  link_manager.WaitForWillStartRequest();
+  EXPECT_TRUE(link_manager.WaitForWillStartRequest());
   EXPECT_EQ(link_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_HYPERLINK,
@@ -790,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   GURL submit_url("javascript:submitForm('isubmit')");
   shell()->LoadURL(submit_url);
-  post_manager.WaitForWillStartRequest();
+  EXPECT_TRUE(post_manager.WaitForWillStartRequest());
   EXPECT_EQ(post_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_FORM,
@@ -823,7 +823,7 @@ class NavigationHandleImplHttpsUpgradeBrowserTest
     // iframe_secure_url never happened and the expected upgrade may not be
     // working.
     shell()->LoadURL(start_url);
-    navigation_manager.WaitForWillStartRequest();
+    EXPECT_TRUE(navigation_manager.WaitForWillStartRequest());
 
     // The main frame should have finished navigating while the iframe should
     // have just started.

@@ -188,6 +188,8 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
                         completed_after_background);
 }
 
+// TODO(csharrison): Add a case for client side redirects, which is what JS
+// initiated window.location / window.history navigations get set to.
 UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD))
     return ABORT_RELOAD;
@@ -253,6 +255,7 @@ PageLoadTracker::PageLoadTracker(
       url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
       started_in_foreground_(in_foreground),
+      page_transition_(navigation_handle->GetPageTransition()),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
@@ -276,11 +279,12 @@ PageLoadTracker::~PageLoadTracker() {
     if (!failed_provisional_load_info_)
       RecordInternalError(ERR_NO_COMMIT_OR_FAILED_PROVISIONAL_LOAD);
 
-    // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
-    // chain length added to the next navigation. Take care not to double count
-    // them. Also do not double count committed loads, which call this already.
-    if (abort_type_ != ABORT_UNKNOWN_NAVIGATION)
+    // Don't include any aborts that resulted in a new navigation, as the chain
+    // length will be included in the aborter PageLoadTracker.
+    if (abort_type_ != ABORT_RELOAD && abort_type_ != ABORT_FORWARD_BACK &&
+        abort_type_ != ABORT_NEW_NAVIGATION) {
       LogAbortChainHistograms(nullptr);
+    }
   } else if (timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
     PAGE_LOAD_HISTOGRAM(internal::kCommitToCompleteNoTimingIPCs,
@@ -378,6 +382,8 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   commit_time_ = base::TimeTicks::Now();
   ClampBrowserTimestampIfInterProcessTimeTickSkew(&commit_time_);
   url_ = navigation_handle->GetURL();
+  // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
+  page_transition_ = navigation_handle->GetPageTransition();
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
@@ -559,7 +565,7 @@ void PageLoadTracker::UpdateAbort(UserAbortType abort_type,
 }
 
 bool PageLoadTracker::IsLikelyProvisionalAbort(
-    base::TimeTicks abort_cause_time) {
+    base::TimeTicks abort_cause_time) const {
   // Note that |abort_cause_time - abort_time| can be negative.
   return abort_type_ == ABORT_OTHER &&
          (abort_cause_time - abort_time_).InMilliseconds() < 100;
@@ -660,7 +666,7 @@ bool MetricsWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
-void MetricsWebContentsObserver::DidStartNavigation(
+void MetricsWebContentsObserver::WillStartNavigationRequest(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -890,17 +896,19 @@ void MetricsWebContentsObserver::NotifyAbortAllLoadsWithTimestamp(
     UserAbortType abort_type,
     base::TimeTicks timestamp,
     bool is_certainly_browser_timestamp) {
-  if (committed_load_)
+  if (committed_load_) {
     committed_load_->NotifyAbort(abort_type, timestamp,
                                  is_certainly_browser_timestamp);
+  }
   for (const auto& kv : provisional_loads_) {
     kv.second->NotifyAbort(abort_type, timestamp,
                            is_certainly_browser_timestamp);
   }
   for (const auto& tracker : aborted_provisional_loads_) {
-    if (tracker->IsLikelyProvisionalAbort(timestamp))
+    if (tracker->IsLikelyProvisionalAbort(timestamp)) {
       tracker->UpdateAbort(abort_type, timestamp,
                            is_certainly_browser_timestamp);
+    }
   }
   aborted_provisional_loads_.clear();
 }
@@ -921,8 +929,11 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
   aborted_provisional_loads_.pop_back();
 
   base::TimeTicks timestamp = new_navigation->NavigationStart();
-  if (last_aborted_load->IsLikelyProvisionalAbort(timestamp))
-    last_aborted_load->UpdateAbort(ABORT_UNKNOWN_NAVIGATION, timestamp, false);
+  if (last_aborted_load->IsLikelyProvisionalAbort(timestamp)) {
+    last_aborted_load->UpdateAbort(
+        AbortTypeForPageTransition(new_navigation->GetPageTransition()),
+        timestamp, false);
+  }
 
   aborted_provisional_loads_.clear();
   return last_aborted_load;

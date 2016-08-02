@@ -922,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   TestNavigationManager cross_site_delayer(shell()->web_contents(),
                                            kCrossSiteURL);
   shell()->LoadURL(kCrossSiteURL);
-  cross_site_delayer.WaitForWillStartRequest();
+  EXPECT_TRUE(cross_site_delayer.WaitForWillStartRequest());
 
   // Click on a link in the page. This will show the BeforeUnload dialog.
   // Ensure the dialog is not dismissed, which will cause it to still be

@@ -329,12 +329,8 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
   web_contents()->WasShown();
 
   // Start another provisional load
-  StartNavigation(GURL(kDefaultTestUrl2));
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
   SimulateTimingUpdate(timing);
-  rfh_tester->SimulateNavigationStop();
 
   // Navigate again to see if the timing updated for the foregrounded load.
   NavigateAndCommit(GURL(kDefaultTestUrl));

@@ -38,9 +38,8 @@ const char kHistogramFromGWSParseDuration[] =
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 
-const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[] =
-    "PageLoad.Clients.FromGoogleSearch.AbortTiming.UnknownNavigation."
-    "BeforeCommit";
+const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.NewNavigation.BeforeCommit";
 const char kHistogramFromGWSAbortNewNavigationBeforePaint[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.NewNavigation.AfterCommit."
     "BeforePaint";
@@ -65,12 +64,17 @@ const char kHistogramFromGWSAbortCloseBeforeInteraction[] =
     "BeforeInteraction";
 const char kHistogramFromGWSAbortOtherBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.Other.BeforeCommit";
+const char kHistogramFromGWSAbortReloadBeforeCommit[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Reload.BeforeCommit";
 const char kHistogramFromGWSAbortReloadBeforePaint[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.Reload.AfterCommit."
     "BeforePaint";
 const char kHistogramFromGWSAbortReloadBeforeInteraction[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.Reload.AfterPaint."
     "Before1sDelayedInteraction";
+const char kHistogramFromGWSAbortForwardBackBeforeCommit[] =
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.ForwardBackNavigation."
+    "BeforeCommit";
 const char kHistogramFromGWSAbortForwardBackBeforePaint[] =
     "PageLoad.Clients.FromGoogleSearch.AbortTiming.ForwardBackNavigation."
     "AfterCommit.BeforePaint";
@@ -110,7 +114,6 @@ void LogCommittedAbortsBeforePaint(UserAbortType abort_type,
     default:
       // These should only be logged for provisional aborts.
       DCHECK_NE(abort_type, UserAbortType::ABORT_OTHER);
-      DCHECK_NE(abort_type, UserAbortType::ABORT_UNKNOWN_NAVIGATION);
       break;
   }
 }
@@ -145,7 +148,6 @@ void LogAbortsAfterPaintBeforeInteraction(UserAbortType abort_type,
     default:
       // These should only be logged for provisional aborts.
       DCHECK_NE(abort_type, UserAbortType::ABORT_OTHER);
-      DCHECK_NE(abort_type, UserAbortType::ABORT_UNKNOWN_NAVIGATION);
       break;
   }
 }
@@ -161,20 +163,26 @@ void LogProvisionalAborts(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSAbortCloseBeforeCommit,
                           time_to_abort);
       break;
-    case UserAbortType::ABORT_UNKNOWN_NAVIGATION:
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramFromGWSAbortUnknownNavigationBeforeCommit,
-          time_to_abort);
-      break;
     case UserAbortType::ABORT_OTHER:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSAbortOtherBeforeCommit,
                           time_to_abort);
       break;
+    case UserAbortType::ABORT_NEW_NAVIGATION:
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFromGWSAbortNewNavigationBeforeCommit,
+          time_to_abort);
+      break;
+    case UserAbortType::ABORT_RELOAD:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSAbortReloadBeforeCommit,
+                          time_to_abort);
+      break;
+    case UserAbortType::ABORT_FORWARD_BACK:
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFromGWSAbortForwardBackBeforeCommit,
+          time_to_abort);
+      break;
     default:
-      // There are other abort types that could be logged, but they occur in
-      // very small amounts that it isn't worth logging.
-      // TODO(csharrison): Once transitions can be acquired before commit, log
-      // the Reload/NewNavigation/ForwardBack variants here.
+      NOTREACHED();
       break;
   }
 }

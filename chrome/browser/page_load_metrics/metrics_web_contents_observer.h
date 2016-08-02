@@ -190,7 +190,7 @@ class PageLoadTracker {
   // delta to when it was aborted. Note that only provisional loads can be
   // aborted with ABORT_OTHER. While this heuristic is coarse, it works better
   // and is simpler than other feasible methods. See https://goo.gl/WKRG98.
-  bool IsLikelyProvisionalAbort(base::TimeTicks abort_cause_time);
+  bool IsLikelyProvisionalAbort(base::TimeTicks abort_cause_time) const;
 
   bool MatchesOriginalNavigation(content::NavigationHandle* navigation_handle);
 
@@ -203,6 +203,8 @@ class PageLoadTracker {
   base::TimeTicks navigation_start() const { return navigation_start_; }
 
   PageLoadExtraInfo ComputePageLoadExtraInfo();
+
+  ui::PageTransition page_transition() const { return page_transition_; }
 
  private:
   // This function converts a TimeTicks value taken in the browser process
@@ -259,6 +261,8 @@ class PageLoadTracker {
   PageLoadTiming timing_;
   PageLoadMetadata metadata_;
 
+  ui::PageTransition page_transition_;
+
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then
   // there exists an abort chain of length 2, starting at A's navigation_start.
@@ -299,8 +303,6 @@ class MetricsWebContentsObserver
   // content::WebContentsObserver implementation:
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
@@ -312,6 +314,9 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+
+  // This method is forwarded from the MetricsNavigationThrottle.
+  void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
 
   // Flush any buffered metrics, as part of the metrics subsystem persisting
   // metrics as the application goes into the background. The application may be

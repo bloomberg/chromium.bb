@@ -37688,6 +37688,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PageLoad.AbortTiming.UnknownNavigation" units="ms">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    We now have sufficient infrastructure to always characterize aborts that
+    resulted in new navigations.
+  </obsolete>
   <summary>
     This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was

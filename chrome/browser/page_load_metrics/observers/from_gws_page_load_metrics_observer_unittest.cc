@@ -443,14 +443,14 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   }
 }
 
-TEST_F(FromGWSPageLoadMetricsObserverTest, UnknownNavigationBeforeCommit) {
+TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforeCommit) {
   NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
   StartNavigation(GURL("http://example.test"));
 
   // Simulate the user performing another navigation before commit.
-  StartNavigation(GURL("https://www.example.com"));
+  NavigateAndCommit(GURL("https://www.example.com"));
   histogram_tester().ExpectTotalCount(
-      internal::kHistogramFromGWSAbortUnknownNavigationBeforeCommit, 1);
+      internal::kHistogramFromGWSAbortNewNavigationBeforeCommit, 1);
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforePaint) {

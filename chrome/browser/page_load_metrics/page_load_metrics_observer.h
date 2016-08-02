@@ -42,10 +42,6 @@ enum UserAbortType {
   // without committing, either without error or with net::ERR_ABORTED.
   ABORT_OTHER,
 
-  // The load aborted due to another navigation, but it isn't clear what type of
-  // navigation it was.
-  ABORT_UNKNOWN_NAVIGATION,
-
   // Add values before this final count.
   ABORT_LAST_ENTRY
 };
@@ -93,6 +89,7 @@ struct PageLoadExtraInfo {
   // The abort time and time to abort for this page load. If the page was not
   // aborted, |abort_type| will be |ABORT_NONE|.
   const UserAbortType abort_type;
+
   const base::Optional<base::TimeDelta> time_to_abort;
 
   // Extra information supplied to the page load metrics system from the

@@ -27,10 +27,10 @@ extern const char kHistogramFromGWSAbortStopBeforeCommit[];
 extern const char kHistogramFromGWSAbortCloseBeforePaint[];
 extern const char kHistogramFromGWSAbortCloseBeforeInteraction[];
 extern const char kHistogramFromGWSAbortCloseBeforeCommit[];
+extern const char kHistogramFromGWSAbortNewNavigationBeforeCommit[];
 extern const char kHistogramFromGWSAbortNewNavigationBeforePaint[];
 extern const char kHistogramFromGWSAbortNewNavigationBeforeInteraction[];
 extern const char kHistogramFromGWSAbortReloadBeforeInteraction[];
-extern const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[];
 
 }  // namespace internal
 

@@ -22,8 +22,6 @@ const char kHistogramAbortCloseBeforeCommit[] =
     "PageLoad.AbortTiming.Close.BeforeCommit";
 const char kHistogramAbortOtherBeforeCommit[] =
     "PageLoad.AbortTiming.Other.BeforeCommit";
-const char kHistogramAbortUnknownNavigationBeforeCommit[] =
-    "PageLoad.AbortTiming.UnknownNavigation.BeforeCommit";
 
 const char kHistogramAbortForwardBackBeforePaint[] =
     "PageLoad.AbortTiming.ForwardBackNavigation.AfterCommit.BeforePaint";
@@ -78,11 +76,6 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortOtherBeforeCommit,
                           time_to_abort);
       return;
-    case UserAbortType::ABORT_UNKNOWN_NAVIGATION:
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramAbortUnknownNavigationBeforeCommit,
-          time_to_abort);
-      return;
     case UserAbortType::ABORT_NONE:
     case UserAbortType::ABORT_LAST_ENTRY:
       NOTREACHED();
@@ -113,10 +106,6 @@ void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
     case UserAbortType::ABORT_CLOSE:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforePaint,
                           time_to_abort);
-      return;
-    case UserAbortType::ABORT_UNKNOWN_NAVIGATION:
-      NOTREACHED() << "Received UserAbortType::ABORT_UNKNOWN_NAVIGATION for "
-                      "committed load.";
       return;
     case UserAbortType::ABORT_OTHER:
       NOTREACHED() << "Received UserAbortType::ABORT_OTHER for committed load.";
@@ -151,10 +140,6 @@ void RecordAbortDuringParse(UserAbortType abort_type,
     case UserAbortType::ABORT_CLOSE:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseDuringParse,
                           time_to_abort);
-      return;
-    case UserAbortType::ABORT_UNKNOWN_NAVIGATION:
-      NOTREACHED() << "Received UserAbortType::ABORT_UNKNOWN_NAVIGATION for "
-                      "committed load.";
       return;
     case UserAbortType::ABORT_OTHER:
       NOTREACHED() << "Received UserAbortType::ABORT_OTHER for committed load.";

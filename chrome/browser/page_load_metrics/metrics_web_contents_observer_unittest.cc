@@ -12,6 +12,7 @@
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -127,8 +128,12 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void AttachObserver() {
     embedder_interface_ = new TestPageLoadMetricsEmbedderInterface();
-    observer_.reset(new MetricsWebContentsObserver(
-        web_contents(), base::WrapUnique(embedder_interface_)));
+    // Owned by the web_contents. Tests must be careful not to call
+    // SimulateTimingUpdate after they call DeleteContents() without also
+    // calling AttachObserver() again. Otherwise they will use-after-free the
+    // observer_.
+    observer_ = MetricsWebContentsObserver::CreateForWebContents(
+        web_contents(), base::WrapUnique(embedder_interface_));
     observer_->WasShown();
   }
 
@@ -168,7 +173,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
  protected:
   base::HistogramTester histogram_tester_;
   TestPageLoadMetricsEmbedderInterface* embedder_interface_;
-  std::unique_ptr<MetricsWebContentsObserver> observer_;
+  MetricsWebContentsObserver* observer_;
 
  private:
   int num_errors_;
@@ -362,8 +367,12 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
-  // Delete the observer for this test, add it once the navigation has started.
-  observer_.reset();
+  // Reset the state of the tests, and attach the MetricsWebContentsObserver in
+  // the middle of a navigation. This tests that the class is robust to only
+  // observing some of a navigation.
+  DeleteContents();
+  SetContents(CreateTestWebContents());
+
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
 
@@ -489,7 +498,7 @@ TEST_F(MetricsWebContentsObserverTest, FlushMetricsOnAppEnterBackground) {
   histogram_tester_.ExpectBucketCount(
       internal::kPageLoadCompletedAfterAppBackground, true, 0);
 
-  observer_.reset();
+  DeleteContents();
 
   histogram_tester_.ExpectTotalCount(
       internal::kPageLoadCompletedAfterAppBackground, 2);

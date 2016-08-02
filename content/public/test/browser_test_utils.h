@@ -61,6 +61,7 @@ namespace content {
 
 class BrowserContext;
 class MessageLoopRunner;
+class NavigationHandle;
 class RenderViewHost;
 class RenderWidgetHost;
 class WebContents;
@@ -590,6 +591,57 @@ class FrameFocusedObserver {
   std::unique_ptr<FrameTreeNodeObserverImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
+};
+
+// This class can be used to pause and resume navigations, based on a URL
+// match. Note that it only keeps track of one navigation at a time.
+// Navigations are paused automatically before hitting the network, and are
+// resumed automatically if a Wait method is called for a future event.
+// Note: This class is one time use only! After it successfully tracks a
+// navigation it will ignore all subsequent navigations. Explicitly create
+// mutliple instances of this class if you want to pause multiple navigations.
+class TestNavigationManager : public WebContentsObserver {
+ public:
+  // Monitors any frame in WebContents.
+  TestNavigationManager(WebContents* web_contents, const GURL& url);
+
+  ~TestNavigationManager() override;
+
+  // Waits until the navigation request is ready to be sent to the network
+  // stack. Returns false if the request was aborted before starting.
+  WARN_UNUSED_RESULT bool WaitForWillStartRequest();
+
+  // Waits until the navigation has been finished. Will automatically resume
+  // navigations paused before this point.
+  void WaitForNavigationFinished();
+
+ protected:
+  // Derived classes can override if they want to filter out navigations. This
+  // is called from DidStartNavigation.
+  virtual bool ShouldMonitorNavigation(NavigationHandle* handle);
+
+ private:
+  // WebContentsObserver:
+  void DidStartNavigation(NavigationHandle* handle) override;
+  void DidFinishNavigation(NavigationHandle* handle) override;
+
+  // Called when the NavigationThrottle pauses the navigation in
+  // WillStartRequest.
+  void OnWillStartRequest();
+
+  // Resumes the navigation.
+  void ResumeNavigation();
+
+  const GURL url_;
+  bool navigation_paused_;
+  NavigationHandle* handle_;
+  bool handled_navigation_;
+  scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
+  scoped_refptr<MessageLoopRunner> did_finish_loop_runner_;
+
+  base::WeakPtrFactory<TestNavigationManager> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNavigationManager);
 };
 
 }  // namespace content

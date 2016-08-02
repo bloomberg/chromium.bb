@@ -253,9 +253,9 @@ void TestWebContents::CommitPendingNavigation() {
     page_id = GetMaxPageIDForSiteInstance(rfh->GetSiteInstance()) + 1;
   }
 
-  rfh->SendNavigate(page_id, entry->GetUniqueID(),
-                    GetController().GetPendingEntryIndex() == -1,
-                    entry->GetURL());
+  rfh->SendNavigateWithTransition(page_id, entry->GetUniqueID(),
+                                  GetController().GetPendingEntryIndex() == -1,
+                                  entry->GetURL(), entry->GetTransitionType());
   // Simulate the SwapOut_ACK. This is needed when cross-site navigation
   // happens.
   if (old_rfh != rfh)

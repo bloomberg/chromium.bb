@@ -17,10 +17,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
 namespace cc {
@@ -117,57 +116,6 @@ class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
   GURL url_;
 };
 
-// This class can be used to pause and resume navigations, based on a URL
-// match. Note that it only keeps track of one navigation at a time.
-// Navigations are paused automatically before hitting the network, and are
-// resumed automatically if a Wait method is called for a future event.
-class TestNavigationManager : public WebContentsObserver {
- public:
-  // Monitors notifications within the given frame tree node. Use the other
-  // constructor if the manager should monitor all frames, which is equivalent
-  // to passing kFrameTreeNodeInvalidId for |frame_tree_node_id|.
-  TestNavigationManager(int frame_tree_node_id,
-                        WebContents* web_contents,
-                        const GURL& url);
-
-  // Monitors any frame in WebContents.
-  TestNavigationManager(WebContents* web_contents, const GURL& url);
-
-  ~TestNavigationManager() override;
-
-  // Waits until the navigation request is ready to be sent to the network
-  // stack.
-  void WaitForWillStartRequest();
-
-  // Waits until the navigation has been finished. Will automatically resume
-  // navigations paused before this point.
-  void WaitForNavigationFinished();
-
- private:
-  // WebContentsObserver:
-  void DidStartNavigation(NavigationHandle* handle) override;
-  void DidFinishNavigation(NavigationHandle* handle) override;
-
-  // Called when the NavigationThrottle pauses the navigation in
-  // WillStartRequest.
-  void OnWillStartRequest();
-
-  // Resumes the navigation.
-  void ResumeNavigation();
-
-  // If this member is not |kFrameTreeNodeInvalidId|, notifications are filtered
-  // so only this frame is monitored.
-  int filtering_frame_tree_node_id_;
-
-  const GURL url_;
-  bool navigation_paused_;
-  NavigationHandle* handle_;
-  scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
-  scoped_refptr<MessageLoopRunner> did_finish_loop_runner_;
-
-  base::WeakPtrFactory<TestNavigationManager> weak_factory_;
-};
-
 // Helper class to assist with hit testing surfaces in multiple processes.
 // WaitForSurfaceReady() will only return after a Surface from |target_view|
 // has been composited in the top-level frame's Surface. At that point,
@@ -206,6 +154,24 @@ class FileChooserDelegate : public WebContentsDelegate {
  private:
   base::FilePath file_;
   bool file_chosen_;
+};
+
+// This class is a TestNavigationManager that only monitors notifications within
+// the given frame tree node.
+class FrameTestNavigationManager : public TestNavigationManager {
+ public:
+  FrameTestNavigationManager(int frame_tree_node_id,
+                             WebContents* web_contents,
+                             const GURL& url);
+
+ private:
+  // TestNavigationManager:
+  bool ShouldMonitorNavigation(NavigationHandle* handle) override;
+
+  // Notifications are filtered so only this frame is monitored.
+  int filtering_frame_tree_node_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameTestNavigationManager);
 };
 
 }  // namespace content

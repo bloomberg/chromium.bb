@@ -1883,7 +1883,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                          "document.body.appendChild(iframe);";
     EXPECT_TRUE(ExecuteScript(root, script));
   }
-  subframe_delayer.WaitForWillStartRequest();
+  EXPECT_TRUE(subframe_delayer.WaitForWillStartRequest());
 
   // Stop the request so that we can wait for load stop below, without ending up
   // with a commit for this frame.
@@ -4074,7 +4074,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // second page, though, causes it to do a replaceState().
   TestNavigationManager manager(shell()->web_contents(), start_url);
   controller.GoBack();
-  manager.WaitForWillStartRequest();
+  EXPECT_TRUE(manager.WaitForWillStartRequest());
 
   // The navigation that just happened was the replaceState(), which should not
   // have changed the position into the navigation entry list. Make sure that
@@ -4992,14 +4992,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Go forward two times in a row, being careful that the subframe commits
   // after the second forward navigation begins but before the main frame
   // commits.
-  TestNavigationManager subframe_delayer(
+  FrameTestNavigationManager subframe_delayer(
       root->child_at(0)->frame_tree_node_id(), shell()->web_contents(),
       frame_url_a2);
   TestNavigationManager mainframe_delayer(shell()->web_contents(), url_b);
   controller.GoForward();
-  subframe_delayer.WaitForWillStartRequest();
+  EXPECT_TRUE(subframe_delayer.WaitForWillStartRequest());
   controller.GoForward();
-  mainframe_delayer.WaitForWillStartRequest();
+  EXPECT_TRUE(mainframe_delayer.WaitForWillStartRequest());
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
 
   // Let the subframe commit.
@@ -5042,7 +5042,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   TestNavigationManager delayer(shell()->web_contents(),
                                 embedded_test_server()->GetURL("/title3.html"));
   shell()->LoadURL(embedded_test_server()->GetURL("/title3.html"));
-  delayer.WaitForWillStartRequest();
+  EXPECT_TRUE(delayer.WaitForWillStartRequest());
 
   NavigationController& controller = shell()->web_contents()->GetController();
 
