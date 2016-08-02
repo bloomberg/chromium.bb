@@ -226,88 +226,18 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
     int misspellingOffset = 0;
-    GrammarDetail grammarDetail;
-    int grammarPhraseOffset = 0;
-    Position grammarSearchStart, grammarSearchEnd;
-    String badGrammarPhrase;
-    String misspelledWord;
+    String misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
 
-    bool isSpelling = true;
-    int foundOffset = 0;
-    String foundItem;
-    if (unifiedTextCheckerEnabled()) {
-        grammarSearchStart = spellingSearchStart;
-        grammarSearchEnd = spellingSearchEnd;
-        foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(isSpelling, foundOffset, grammarDetail);
-        if (isSpelling) {
-            misspelledWord = foundItem;
-            misspellingOffset = foundOffset;
-        } else {
-            badGrammarPhrase = foundItem;
-            grammarPhraseOffset = foundOffset;
-        }
-    } else {
-        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
-        grammarSearchStart = spellingSearchStart;
-        grammarSearchEnd = spellingSearchEnd;
-        if (!misspelledWord.isEmpty()) {
-            // Stop looking at start of next misspelled word
-            CharacterIterator chars(grammarSearchStart, grammarSearchEnd);
-            chars.advance(misspellingOffset);
-            grammarSearchEnd = chars.startPosition();
-        }
-
-        badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchStart, grammarSearchEnd).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
-    }
-
-    // If we found neither bad grammar nor a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
+    // If we did not find a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
-    if (startedWithSelection && !misspelledWord && !badGrammarPhrase) {
+    if (startedWithSelection && !misspelledWord) {
         spellingSearchStart = Position::editingPositionOf(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
         spellingSearchEnd = Position::editingPositionOf(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
-
-        if (unifiedTextCheckerEnabled()) {
-            grammarSearchStart = spellingSearchStart;
-            grammarSearchEnd = spellingSearchEnd;
-            foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(isSpelling, foundOffset, grammarDetail);
-            if (isSpelling) {
-                misspelledWord = foundItem;
-                misspellingOffset = foundOffset;
-            } else {
-                badGrammarPhrase = foundItem;
-                grammarPhraseOffset = foundOffset;
-            }
-        } else {
-            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
-            grammarSearchStart = spellingSearchStart;
-            grammarSearchEnd = spellingSearchEnd;
-            if (!misspelledWord.isEmpty()) {
-                // Stop looking at start of next misspelled word
-                CharacterIterator chars(grammarSearchStart, grammarSearchEnd);
-                chars.advance(misspellingOffset);
-                grammarSearchEnd = chars.startPosition();
-            }
-
-            badGrammarPhrase = TextCheckingHelper(spellCheckerClient(), grammarSearchStart, grammarSearchEnd).findFirstBadGrammar(grammarDetail, grammarPhraseOffset, false);
-        }
+        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
     }
 
-    if (!badGrammarPhrase.isEmpty()) {
-        // We found bad grammar. Since we only searched for bad grammar up to the first misspelled word, the bad grammar
-        // takes precedence and we ignore any potential misspelled word. Select the grammar detail, update the spelling
-        // panel, and store a marker so we draw the green squiggle later.
-
-        DCHECK_GT(badGrammarPhrase.length(), 0u);
-        DCHECK_NE(grammarDetail.location, -1);
-        DCHECK_GT(grammarDetail.length, 0);
-
-        // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
-        const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(grammarSearchStart, grammarSearchEnd), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
-        frame().selection().setSelection(VisibleSelection(badGrammarRange));
-        frame().selection().revealSelection();
-        frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, grammarDetail.userDescription);
-    } else if (!misspelledWord.isEmpty()) {
+    if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
         // a marker so we draw the red squiggle later.
 
@@ -543,7 +473,6 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     TextCheckingParagraph paragraph(request->checkingRange(), request->paragraphRange());
 
     bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
 
     // Expand the range to encompass entire paragraphs, since text checking needs that much context.
     int selectionOffset = 0;
@@ -589,18 +518,6 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
                 DCHECK_GE(resultLocation, 0);
                 const EphemeralRange misspellingRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation, resultLength);
                 frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
-            } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
-                DCHECK_GT(resultLength, 0);
-                DCHECK_GE(resultLocation, 0);
-                for (unsigned j = 0; j < result->details.size(); j++) {
-                    const GrammarDetail* detail = &result->details[j];
-                    DCHECK_GT(detail->length, 0);
-                    DCHECK_GE(detail->location, 0);
-                    if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
-                        const EphemeralRange badGrammarRange = calculateCharacterSubrange(paragraph.paragraphRange(), resultLocation + detail->location, detail->length);
-                        frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
-                    }
-                }
             } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
                 DCHECK_GT(resultLength, 0);
                 DCHECK_GE(resultLocation, 0);
@@ -733,8 +650,6 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     HTMLTextFormControlElement* textFormControlElement = toHTMLTextFormControlElement(e);
     HTMLElement* innerEditor = textFormControlElement->innerEditorElement();
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
-    if (unifiedTextCheckerEnabled())
-        markerTypes.add(DocumentMarker::Grammar);
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor))
         frame().document()->markers().removeMarkers(&node, markerTypes);
 }
@@ -775,7 +690,6 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
     // When continuous spell checking is off, existing markers disappear after the selection changes.
     if (!isContinuousSpellCheckingEnabled()) {
         frame().document()->markers().removeMarkers(DocumentMarker::Spelling);
-        frame().document()->markers().removeMarkers(DocumentMarker::Grammar);
         return;
     }
 
@@ -926,7 +840,7 @@ void SpellChecker::cancelCheck()
 void SpellChecker::requestTextChecking(const Element& element)
 {
     const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
-    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
 DEFINE_TRACE(SpellChecker)
