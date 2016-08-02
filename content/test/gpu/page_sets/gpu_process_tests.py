@@ -570,37 +570,6 @@ class NoTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
       super(NoTransparentVisualsGpuProcessPage, self).Validate(tab, results)
 
 
-class OnlyOneWorkaroundSharedPageState(GpuProcessSharedPageState):
-  def __init__(self, test, finder_options, story_set):
-    super(OnlyOneWorkaroundSharedPageState, self).__init__(
-      test, finder_options, story_set)
-    options = finder_options.browser_options
-    options.AppendExtraBrowserArgs('--disable-gpu-driver-bug-workarounds')
-    options.AppendExtraBrowserArgs('--use_gpu_driver_workaround_for_testing')
-
-class OnlyOneWorkaroundPage(gpu_test_base.PageBase):
-  def __init__(self, story_set, expectations):
-    super(OnlyOneWorkaroundPage, self).__init__(
-      url='chrome:gpu',
-      name='GpuProcess.only_one_workaround',
-      page_set=story_set,
-      shared_page_state_class=OnlyOneWorkaroundSharedPageState,
-      expectations=expectations)
-
-  def Validate(self, tab, results):
-    browser_list = tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
-    gpu_list = tab.EvaluateJavaScript( \
-      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
-
-    if browser_list != ['use_gpu_driver_workaround_for_testing'] or \
-       gpu_list != browser_list:
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('Browser or GPU process lists are not reduced ' \
-                              'to only use_gpu_driver_workaround_for_testing ' \
-                              'workaround: %s != %s' % (browser_list, gpu_list))
-
-
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -634,8 +603,6 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(DriverBugWorkaroundsUponGLRendererPage(self, expectations))
     self.AddStory(EqualBugWorkaroundsInBrowserAndGpuProcessPage(self,
                                                                 expectations))
-    self.AddStory(OnlyOneWorkaroundPage(self, expectations))
-
     if not is_platform_android:
       self.AddStory(SkipGpuProcessPage(self, expectations))
       self.AddStory(HasTransparentVisualsGpuProcessPage(self, expectations))
