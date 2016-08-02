@@ -33,7 +33,6 @@ static base::subtle::AtomicWord g_HashSet_dummy = 0;
 static void Java_HashSet_dummy(JNIEnv* env, jobject obj) __attribute__
     ((unused));
 static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       HashSet_clazz(env));
   jmethodID method_id =
@@ -52,6 +51,7 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
 
 // Step 3: RegisterNatives.
 
+static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
 static bool RegisterNativesImpl(JNIEnv* env) {
   if (base::android::IsManualJniRegistrationDisabled()) return true;
 

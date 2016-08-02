@@ -72,7 +72,6 @@ jint
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithParam = 0;
 static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, jobject obj,
     JniIntWrapper iParam) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env));
   jmethodID method_id =
@@ -98,7 +97,6 @@ static base::subtle::AtomicWord g_SampleForTests_testMethodWithParamAndReturn =
 static ScopedJavaLocalRef<jstring>
     Java_SampleForTests_testMethodWithParamAndReturn(JNIEnv* env, jobject obj,
     JniIntWrapper iParam) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env), NULL);
   jmethodID method_id =
@@ -123,7 +121,6 @@ static ScopedJavaLocalRef<jstring>
 static base::subtle::AtomicWord g_SampleForTests_testStaticMethodWithParam = 0;
 static jint Java_SampleForTests_testStaticMethodWithParam(JNIEnv* env,
     JniIntWrapper iParam) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, SampleForTests_clazz(env),
       SampleForTests_clazz(env), 0);
   jmethodID method_id =
@@ -147,7 +144,6 @@ static jint Java_SampleForTests_testStaticMethodWithParam(JNIEnv* env,
 
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithNoParam = 0;
 static jdouble Java_SampleForTests_testMethodWithNoParam(JNIEnv* env) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, SampleForTests_clazz(env),
       SampleForTests_clazz(env), 0);
   jmethodID method_id =
@@ -172,7 +168,6 @@ static base::subtle::AtomicWord g_SampleForTests_testStaticMethodWithNoParam =
     0;
 static ScopedJavaLocalRef<jstring>
     Java_SampleForTests_testStaticMethodWithNoParam(JNIEnv* env) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, SampleForTests_clazz(env),
       SampleForTests_clazz(env), NULL);
   jmethodID method_id =
@@ -195,6 +190,7 @@ static_cast<jstring>(env->CallStaticObjectMethod(SampleForTests_clazz(env),
 
 // Step 3: RegisterNatives.
 
+static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
 static bool RegisterNativesImpl(JNIEnv* env) {
 
   return true;

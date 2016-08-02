@@ -33,7 +33,6 @@ static base::subtle::AtomicWord g_InputStream_available = 0;
 static jint Java_InputStream_available(JNIEnv* env, jobject obj) __attribute__
     ((unused));
 static jint Java_InputStream_available(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -55,7 +54,6 @@ static base::subtle::AtomicWord g_InputStream_close = 0;
 static void Java_InputStream_close(JNIEnv* env, jobject obj) __attribute__
     ((unused));
 static void Java_InputStream_close(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env));
   jmethodID method_id =
@@ -76,7 +74,6 @@ static base::subtle::AtomicWord g_InputStream_mark = 0;
 static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0)
     __attribute__ ((unused));
 static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env));
   jmethodID method_id =
@@ -97,7 +94,6 @@ static base::subtle::AtomicWord g_InputStream_markSupported = 0;
 static jboolean Java_InputStream_markSupported(JNIEnv* env, jobject obj)
     __attribute__ ((unused));
 static jboolean Java_InputStream_markSupported(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), false);
   jmethodID method_id =
@@ -119,7 +115,6 @@ static base::subtle::AtomicWord g_InputStream_readI = 0;
 static jint Java_InputStream_readI(JNIEnv* env, jobject obj) __attribute__
     ((unused));
 static jint Java_InputStream_readI(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -141,7 +136,6 @@ static base::subtle::AtomicWord g_InputStream_readI_AB = 0;
 static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0)
     __attribute__ ((unused));
 static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -168,7 +162,6 @@ static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
     p0,
     JniIntWrapper p1,
     JniIntWrapper p2) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -190,7 +183,6 @@ static base::subtle::AtomicWord g_InputStream_reset = 0;
 static void Java_InputStream_reset(JNIEnv* env, jobject obj) __attribute__
     ((unused));
 static void Java_InputStream_reset(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env));
   jmethodID method_id =
@@ -211,7 +203,6 @@ static base::subtle::AtomicWord g_InputStream_skip = 0;
 static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0)
     __attribute__ ((unused));
 static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InputStream_clazz(env), 0);
   jmethodID method_id =
@@ -233,7 +224,6 @@ static base::subtle::AtomicWord g_InputStream_Constructor = 0;
 static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env)
     __attribute__ ((unused));
 static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, InputStream_clazz(env),
       InputStream_clazz(env), NULL);
   jmethodID method_id =
@@ -253,6 +243,7 @@ static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
 
 // Step 3: RegisterNatives.
 
+static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
 static bool RegisterNativesImpl(JNIEnv* env) {
   if (base::android::IsManualJniRegistrationDisabled()) return true;
 

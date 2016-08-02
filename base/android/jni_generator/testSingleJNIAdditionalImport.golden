@@ -39,7 +39,6 @@ void Java_org_chromium_foo_Foo_nativeDoSomething(JNIEnv* env, jclass jcaller,
 
 static base::subtle::AtomicWord g_Foo_calledByNative = 0;
 static void Java_Foo_calledByNative(JNIEnv* env, jobject callback) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, Foo_clazz(env),
       Foo_clazz(env));
   jmethodID method_id =

@@ -184,7 +184,6 @@ static base::subtle::AtomicWord g_SampleForTests_javaMethod = 0;
 static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj,
     JniIntWrapper foo,
     JniIntWrapper bar) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env), 0);
   jmethodID method_id =
@@ -209,7 +208,6 @@ static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj,
 
 static base::subtle::AtomicWord g_SampleForTests_staticJavaMethod = 0;
 static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, SampleForTests_clazz(env),
       SampleForTests_clazz(env), false);
   jmethodID method_id =
@@ -233,7 +231,6 @@ static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
 static base::subtle::AtomicWord g_SampleForTests_packagePrivateJavaMethod = 0;
 static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, jobject
     obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env));
   jmethodID method_id =
@@ -256,7 +253,6 @@ static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, jobject
 static base::subtle::AtomicWord g_SampleForTests_methodThatThrowsException = 0;
 static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
     obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env));
   jmethodID method_id =
@@ -280,7 +276,6 @@ static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
     l,
     JniIntWrapper i,
     jstring s) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, InnerStructA_clazz(env),
       InnerStructA_clazz(env), NULL);
   jmethodID method_id =
@@ -307,7 +302,6 @@ static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
 static base::subtle::AtomicWord g_SampleForTests_addStructA = 0;
 static void Java_SampleForTests_addStructA(JNIEnv* env, jobject obj, jobject a)
     {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env));
   jmethodID method_id =
@@ -331,7 +325,6 @@ static void Java_SampleForTests_addStructA(JNIEnv* env, jobject obj, jobject a)
 static base::subtle::AtomicWord g_SampleForTests_iterateAndDoSomething = 0;
 static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, jobject obj)
     {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       SampleForTests_clazz(env));
   jmethodID method_id =
@@ -353,7 +346,6 @@ static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, jobject obj)
 
 static base::subtle::AtomicWord g_InnerStructB_getKey = 0;
 static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InnerStructB_clazz(env), 0);
   jmethodID method_id =
@@ -377,7 +369,6 @@ static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
 static base::subtle::AtomicWord g_InnerStructB_getValue = 0;
 static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
     jobject obj) {
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InnerStructB_clazz(env), NULL);
   jmethodID method_id =

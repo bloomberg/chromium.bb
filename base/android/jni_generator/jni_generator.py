@@ -848,7 +848,14 @@ ${NATIVES}
               'EARLY_EXIT': early_exit,
               'NATIVES': natives,
              }
-    return template.substitute(values)
+
+    func_declaration = ''
+    if not natives:
+      func_declaration = Template("""\
+${REGISTER_NATIVES_SIGNATURE} __attribute__((unused));
+""").substitute(values)
+
+    return func_declaration + template.substitute(values)
 
   def GetRegisterNativesImplString(self):
     """Returns the shared implementation for RegisterNatives."""
@@ -1101,7 +1108,6 @@ ${FUNCTION_SIGNATURE} {""")
     template = Template("""
 static base::subtle::AtomicWord g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME} = 0;
 ${FUNCTION_HEADER}
-  /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, ${FIRST_PARAM_IN_CALL},
       ${JAVA_CLASS}_clazz(env)${OPTIONAL_ERROR_RETURN});
   jmethodID method_id =
