@@ -6,6 +6,7 @@
 #define V8InspectorClient_h
 
 #include "platform/inspector_protocol/Platform.h"
+#include "platform/inspector_protocol/String16.h"
 
 #include <v8.h>
 
