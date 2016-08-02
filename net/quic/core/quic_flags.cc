@@ -146,3 +146,5 @@ bool FLAGS_quic_require_handshake_confirmation_pre33 = false;
 // If true, use the interval form of iteration over a PacketNumberQueue instead
 // of iterating over the individual numbers.
 bool FLAGS_quic_use_packet_number_queue_intervals = false;
+
+bool FLAGS_quic_sequencer_buffer_retire_block_in_time = true;

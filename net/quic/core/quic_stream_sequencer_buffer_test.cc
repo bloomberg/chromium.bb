@@ -403,6 +403,10 @@ TEST_F(QuicStreamSequencerBufferTest, Readv100Bytes) {
   EXPECT_EQ(100u, buffer_->BytesConsumed());
   EXPECT_EQ(source, string(dest, read));
   EXPECT_EQ(1u, helper_->frame_arrival_time_map()->size());
+  if (FLAGS_quic_sequencer_buffer_retire_block_in_time) {
+    // The first block should be released as its data has been read out.
+    EXPECT_EQ(nullptr, helper_->GetBlock(0));
+  }
   EXPECT_TRUE(helper_->CheckBufferInvariants());
 }
 

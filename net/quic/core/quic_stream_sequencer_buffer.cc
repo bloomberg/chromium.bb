@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_bug_tracker.h"
+#include "net/quic/core/quic_flags.h"
 
 using std::min;
 using std::string;
@@ -431,10 +432,12 @@ void QuicStreamSequencerBuffer::RetireBlockIfEmpty(size_t block_index) {
     // Check where the next piece data is.
     // Not empty if next piece of data is still in this chunk.
     bool gap_extends_to_infinity =
-        (first_gap.end_offset != std::numeric_limits<QuicStreamOffset>::max());
+        (first_gap.end_offset == std::numeric_limits<QuicStreamOffset>::max());
     bool gap_ends_in_this_block =
         (GetBlockIndex(first_gap.end_offset) == block_index);
-    if (gap_extends_to_infinity || gap_ends_in_this_block) {
+    if ((!FLAGS_quic_sequencer_buffer_retire_block_in_time &&
+         !gap_extends_to_infinity) ||
+        gap_ends_in_this_block) {
       return;
     }
   }
