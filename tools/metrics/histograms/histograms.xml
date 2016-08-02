@@ -66773,8 +66773,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Unclassified failure"/>
   <int value="2" label="Network failure"/>
   <int value="3" label="GMS Services are not available"/>
-  <int value="4" label="Bad authentication returned by server"/>
-  <int value="5" label="GMS Core is not available"/>
+  <int value="4" label="DEPRECATED: Bad authentication returned by server"/>
+  <int value="5" label="DEPRECATED: GMS Core is not available"/>
   <int value="6" label="Cloud provision flow failed"/>
 </enum>
 
@@ -66782,11 +66782,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Defines Arc Provisioning success and failure reasons</summary>
   <int value="0" label="Success"/>
   <int value="1" label="Unclassified failure"/>
-  <int value="2" label="Network failure"/>
+  <int value="2" label="GMS Network failure"/>
   <int value="3" label="GMS Services are not available"/>
-  <int value="4" label="Bad authentication returned by server"/>
-  <int value="5" label="GMS Core is not available"/>
+  <int value="4" label="GMS Bad authentication returned by server"/>
+  <int value="5" label="GMS check-in was failed"/>
   <int value="6" label="Cloud provision flow failed"/>
+  <int value="7" label="Mojo version mistmached"/>
+  <int value="8" label="Mojo call timeout"/>
+  <int value="9" label="GMS check-in was timed out"/>
+  <int value="10" label="GMS check-in reported internal error"/>
+  <int value="11" label="GMS core sign in procedure was failed"/>
+  <int value="12" label="GMS core sign in procedure was timed out"/>
+  <int value="13" label="GMS core sign in procedure reporeted internal error"/>
+  <int value="14" label="Cloud provision flow was timed out"/>
+  <int value="15" label="Cloud provision flow reporeted internal error"/>
+  <int value="16" label="ARC instance is stopped before complete provisioning"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix" type="int">
