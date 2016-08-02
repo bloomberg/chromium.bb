@@ -13,7 +13,7 @@ import urllib
 import urllib2
 
 # Where all the data lives.
-ROOT_URL = "http://build.chromium.org/p/chromium.memory.fyi/builders"
+ROOT_URL = "http://build.chromium.org/p/chromium.memory.full/builders"
 
 # TODO(groby) - support multi-line search from the command line. Useful when
 # scanning for classes of failures, see below.
@@ -199,22 +199,22 @@ def main(argv):
   path = os.path.abspath(os.path.dirname(argv[0]))
   cache_path = os.path.join(path, CACHE_DIR)
 
-  fyi = Waterfall(ROOT_URL, cache_path)
+  full = Waterfall(ROOT_URL, cache_path)
 
   if args.update:
-    fyi.Update()
-    for builder in fyi.Builders():
+    full.Update()
+    for builder in full.Builders():
       print "Updating", builder.Name()
       builder.ScanLogs(lambda x:False)
 
   if args.find:
     result = []
     tester = MultiLineChange(args.find.splitlines())
-    fyi.FetchInfo()
+    full.FetchInfo()
 
     if not args.json:
       print "SCANNING FOR ", args.find
-    for builder in fyi.Builders():
+    for builder in full.Builders():
       if not args.json:
         print "Scanning", builder.Name()
       occurrences = builder.ScanLogs(tester)
@@ -243,4 +243,3 @@ def main(argv):
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv))
-

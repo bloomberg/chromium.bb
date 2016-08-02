@@ -13,7 +13,7 @@ set -e
 THISDIR=$(dirname "${0}")
 LOGS_DIR=$THISDIR/waterfall.tmp
 WATERFALL_PAGE="https://build.chromium.org/p/chromium.memory/builders"
-WATERFALL_FYI_PAGE="https://build.chromium.org/p/chromium.memory.fyi/builders"
+WATERFALL_FULL_PAGE="https://build.chromium.org/p/chromium.memory.full/builders"
 
 download() {
   # Download a file.
@@ -228,10 +228,10 @@ fi
 if [ "$CMD" = "fetch" ]; then
   echo "Fetching $NUMBUILDS builds"
   fetch_logs "$WATERFALL_PAGE"
-  fetch_logs "$WATERFALL_FYI_PAGE"
+  fetch_logs "$WATERFALL_FULL_PAGE"
 elif [ "$CMD" = "fetch_layout" ]; then
   echo "Fetching $NUMBUILDS builds"
-  fetch_logs "$WATERFALL_FYI_PAGE" layout_only
+  fetch_logs "$WATERFALL_FULL_PAGE" layout_only
 elif [ "$CMD" = "match" ]; then
   match_suppressions $@
   match_gtest_excludes

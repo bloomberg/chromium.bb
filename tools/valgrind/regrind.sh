@@ -14,7 +14,7 @@
 # TODO: extend script to handle more kinds of errors and more tests
 
 # where the valgrind layout bot results live
-LAYOUT_URL="http://build.chromium.org/p/chromium.memory.fyi/builders/Webkit%20Linux%20(valgrind%20layout)"
+LAYOUT_URL="http://build.chromium.org/p/chromium.memory.full/builders/Webkit%20Linux%20(valgrind%20layout)"
 # how many builds back to check
 LAYOUT_COUNT=250
 
