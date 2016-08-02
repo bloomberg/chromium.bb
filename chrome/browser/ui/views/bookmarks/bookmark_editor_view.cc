@@ -244,8 +244,9 @@ void BookmarkEditorView::ShowContextMenuForView(
        tree_model_->GetRoot());
 
   context_menu_runner_.reset(new views::MenuRunner(
-      GetMenuModel(),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+      GetMenuModel(), views::MenuRunner::HAS_MNEMONICS |
+                          views::MenuRunner::CONTEXT_MENU |
+                          views::MenuRunner::ASYNC));
 
   if (context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                       NULL,

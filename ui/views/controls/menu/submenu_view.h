@@ -21,6 +21,10 @@ class MenuHost;
 class MenuItemView;
 class MenuScrollViewContainer;
 
+namespace test {
+class MenuControllerTest;
+}  // test
+
 // SubmenuView is the parent of all menu items.
 //
 // SubmenuView has the following responsibilities:
@@ -168,6 +172,8 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   void ChildPreferredSizeChanged(View* child) override;
 
  private:
+  friend class test::MenuControllerTest;
+
   void SchedulePaintForDropIndicator(MenuItemView* item,
                                      MenuDelegate::DropPosition position);
 

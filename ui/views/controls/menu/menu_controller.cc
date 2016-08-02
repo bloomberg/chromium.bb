@@ -46,7 +46,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/views/controls/menu/menu_key_event_handler.h"
+#include "ui/views/controls/menu/menu_pre_target_handler.h"
 #endif
 
 using base::Time;
@@ -420,7 +420,8 @@ MenuItemView* MenuController::Run(Widget* parent,
     }
   }
 
-  bool nested_menu = showing_;
+  // If we are already showing, this new menu is being nested. Such as context
+  // menus on top of normal menus.
   if (showing_) {
     // Only support nesting of blocking_run menus, nesting of
     // blocking/non-blocking shouldn't be needed.
@@ -437,10 +438,16 @@ MenuItemView* MenuController::Run(Widget* parent,
   } else {
     showing_ = true;
 
+    if (owner_)
+      owner_->RemoveObserver(this);
+    owner_ = parent;
+    if (owner_)
+      owner_->AddObserver(this);
+
 #if defined(USE_AURA)
-    // Only create a MenuKeyEventHandler for non-nested menus. Nested menus will
-    // use the existing one.
-    key_event_handler_.reset(new MenuKeyEventHandler);
+    // Only create a MenuPreTargetHandler for non-nested menus. Nested menus
+    // will use the existing one.
+    menu_pre_target_handler_.reset(new MenuPreTargetHandler(this, owner_));
 #endif
   }
 
@@ -448,12 +455,6 @@ MenuItemView* MenuController::Run(Widget* parent,
   pending_state_ = State();
   state_ = State();
   UpdateInitialLocation(bounds, position, context_menu);
-
-  if (owner_)
-    owner_->RemoveObserver(this);
-  owner_ = parent;
-  if (owner_)
-    owner_->AddObserver(this);
 
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
@@ -483,7 +484,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   // appears totally broken.
   message_loop_depth_++;
   DCHECK_LE(message_loop_depth_, 2);
-  RunMessageLoop(nested_menu);
+  RunMessageLoop();
   message_loop_depth_--;
 
   if (ViewsDelegate::GetInstance())
@@ -1086,7 +1087,6 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(owner_, widget);
   owner_->RemoveObserver(this);
   owner_ = NULL;
-  message_loop_->ClearOwner();
 }
 
 bool MenuController::IsCancelAllTimerRunningForTest() {
@@ -1387,8 +1387,8 @@ MenuController::~MenuController() {
   StopCancelAllTimer();
 }
 
-void MenuController::RunMessageLoop(bool nested_menu) {
-  message_loop_->Run(this, owner_, nested_menu);
+void MenuController::RunMessageLoop() {
+  message_loop_->Run();
 }
 
 bool MenuController::SendAcceleratorToHotTrackedView() {
@@ -2610,7 +2610,7 @@ MenuItemView* MenuController::ExitMenuRun() {
     }
   } else {
 #if defined(USE_AURA)
-    key_event_handler_.reset();
+    menu_pre_target_handler_.reset();
 #endif
 
     showing_ = false;

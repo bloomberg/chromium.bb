@@ -28,9 +28,7 @@ MenuMessageLoopMac::MenuMessageLoopMac() {}
 
 MenuMessageLoopMac::~MenuMessageLoopMac() {}
 
-void MenuMessageLoopMac::Run(MenuController* controller,
-                             Widget* owner,
-                             bool nested_menu) {
+void MenuMessageLoopMac::Run() {
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow(loop);
   base::RunLoop run_loop;
@@ -41,9 +39,6 @@ void MenuMessageLoopMac::Run(MenuController* controller,
 void MenuMessageLoopMac::QuitNow() {
   DCHECK(run_loop_);
   run_loop_->Quit();
-}
-
-void MenuMessageLoopMac::ClearOwner() {
 }
 
 }  // namespace views

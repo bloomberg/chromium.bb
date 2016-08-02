@@ -39,8 +39,10 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
   menu_delegate_->Init(this, NULL, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
-  menu_runner_.reset(new views::MenuRunner(
-      menu_delegate_->menu(), for_drop ? views::MenuRunner::FOR_DROP : 0));
+  int run_type = views::MenuRunner::ASYNC;
+  if (for_drop)
+    run_type |= views::MenuRunner::FOR_DROP;
+  menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu(), run_type));
 }
 
 void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {

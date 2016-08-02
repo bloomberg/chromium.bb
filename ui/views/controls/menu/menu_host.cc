@@ -219,9 +219,13 @@ void MenuHost::OnDragWillStart() {
 }
 
 void MenuHost::OnDragComplete() {
+  // If we are being destroyed there is no guarantee that the menu items are
+  // available.
+  if (destroying_)
+    return;
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  if (destroying_ || !menu_controller)
+  if (!menu_controller)
     return;
 
   bool should_close = true;

@@ -40,7 +40,7 @@ class SubmenuView;
 class View;
 
 #if defined(USE_AURA)
-class MenuKeyEventHandler;
+class MenuPreTargetHandler;
 #endif
 
 namespace internal {
@@ -195,7 +195,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
   friend class test::MenuControllerTestApi;
-  friend class MenuKeyEventHandler;
   friend class MenuHostRootView;
   friend class MenuItemView;
   friend class SubmenuView;
@@ -318,10 +317,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   ~MenuController() override;
 
-  // Runs the platform specific bits of the message loop. If |nested_menu| is
-  // true we're being asked to run a menu from within a menu (eg a context
-  // menu).
-  void RunMessageLoop(bool nested_menu);
+  // Runs the platform specific bits of the message loop.
+  void RunMessageLoop();
 
   // Invokes AcceleratorPressed() on the hot tracked view if there is one.
   // Returns true if AcceleratorPressed() was invoked.
@@ -700,7 +697,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   std::unique_ptr<MenuMessageLoop> message_loop_;
 
 #if defined(USE_AURA)
-  std::unique_ptr<MenuKeyEventHandler> key_event_handler_;
+  std::unique_ptr<MenuPreTargetHandler> menu_pre_target_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);

@@ -26,6 +26,10 @@ class PreMenuEventDispatchHandler;
 
 }  // internal
 
+namespace test {
+class MenuControllerTest;
+}  // test
+
 // SubmenuView uses a MenuHost to house the SubmenuView.
 //
 // SubmenuView owns the MenuHost. When SubmenuView is done with the MenuHost
@@ -65,6 +69,8 @@ class MenuHost : public Widget {
   void ReleaseMenuHostCapture();
 
  private:
+  friend class test::MenuControllerTest;
+
   // Overridden from Widget:
   internal::RootView* CreateRootView() override;
   void OnMouseCaptureLost() override;

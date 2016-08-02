@@ -35,17 +35,11 @@ class MenuMessageLoop {
                                   gfx::NativeWindow window,
                                   const gfx::Point& screen_loc);
 
-  // Runs the platform specific bits of the message loop. If |nested_menu| is
-  // true we're being asked to run a menu from within a menu (eg a context
-  // menu).
-  virtual void Run(MenuController*, Widget* owner, bool nested_menu) = 0;
+  // Runs the platform specific bits of the message loop.
+  virtual void Run() = 0;
 
   // Quit an earlier call to Run().
   virtual void QuitNow() = 0;
-
-  // Clear any references to the owner widget that was passed into the previous
-  // call to Run().
-  virtual void ClearOwner() = 0;
 };
 
 }  // namespace views

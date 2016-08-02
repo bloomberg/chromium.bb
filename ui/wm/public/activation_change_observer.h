@@ -39,7 +39,6 @@ class AURA_EXPORT ActivationChangeObserver {
   virtual void OnAttemptToReactivateWindow(aura::Window* request_active,
                                            aura::Window* actual_active) {}
 
- protected:
   virtual ~ActivationChangeObserver() {}
 };
 

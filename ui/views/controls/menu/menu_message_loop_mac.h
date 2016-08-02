@@ -20,12 +20,9 @@ class MenuMessageLoopMac : public MenuMessageLoop {
   MenuMessageLoopMac();
   ~MenuMessageLoopMac() override;
 
-  // Overridden from MenuMessageLoop:
-  void Run(MenuController* controller,
-           Widget* owner,
-           bool nested_menu) override;
+  // MenuMessageLoop:
+  void Run() override;
   void QuitNow() override;
-  void ClearOwner() override;
 
  private:
   base::RunLoop* run_loop_ = nullptr;
