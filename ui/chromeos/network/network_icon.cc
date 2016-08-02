@@ -177,13 +177,9 @@ enum ImageType {
 // Amount to fade icons while connecting.
 const double kConnectingImageAlpha = 0.5;
 
-// Images for strength bars for wired networks.
-const int kNumBarsImages = 5;
-
-// Images for strength arcs for wireless networks.
-// TODO(estade): consolidate kNumBarsImages and kNumArcsImages; simplify
-// StrengthIndex(), etc.
-const int kNumArcsImages = 5;
+// Images for strength arcs for wireless networks or strength bars for cellular
+// networks.
+const int kNumNetworkImages = 5;
 
 // Number of discrete images to use for alpha fade animation
 const int kNumFadeImages = 10;
@@ -204,10 +200,6 @@ bool IconTypeIsDark(IconType icon_type) {
 
 bool IconTypeHasVPNBadge(IconType icon_type) {
   return (icon_type != ICON_TYPE_LIST);
-}
-
-int NumImagesForType(ImageType type) {
-  return (type == BARS) ? kNumBarsImages : kNumArcsImages;
 }
 
 //------------------------------------------------------------------------------
@@ -303,7 +295,7 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
       image_type_ = ARCS;
 
     DCHECK_GE(signal_strength, 0);
-    DCHECK_LT(signal_strength, NumImagesForType(image_type_));
+    DCHECK_LT(signal_strength, kNumNetworkImages);
   }
   ~NetworkIconImageSourceMd() override {}
 
@@ -339,7 +331,7 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
     paint.setStyle(SkPaint::kFill_Style);
     const SkColor base_color = GetBaseColorForIconType(icon_type_);
     // Background. Skip drawing for full signal.
-    if (signal_strength_ != kNumArcsImages - 1) {
+    if (signal_strength_ != kNumNetworkImages - 1) {
       paint.setColor(SkColorSetA(base_color, kBgAlpha));
       canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
                                    kSweepAngle, true, paint);
@@ -385,7 +377,7 @@ class NetworkIconImageSourceMd : public gfx::CanvasImageSource {
     paint.setStyle(SkPaint::kFill_Style);
     const SkColor base_color = GetBaseColorForIconType(icon_type_);
     // Background. Skip drawing for full signal.
-    if (signal_strength_ != kNumBarsImages - 1) {
+    if (signal_strength_ != kNumNetworkImages - 1) {
       paint.setColor(SkColorSetA(base_color, kBgAlpha));
       canvas->DrawPath(make_triangle(kFullTriangleSide), paint);
     }
@@ -454,12 +446,11 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
     return gfx::ImageSkia(source, source->size());
   }
 
-  int num_images = NumImagesForType(image_type);
-  if (index < 0 || index >= num_images)
+  if (index < 0 || index >= kNumNetworkImages)
     return gfx::ImageSkia();
   gfx::ImageSkia* images = BaseImageForType(image_type, icon_type);
   int width = images->width();
-  int height = images->height() / num_images;
+  int height = images->height() / kNumNetworkImages;
   return gfx::ImageSkiaOperations::ExtractSubset(*images,
       gfx::Rect(0, index * height, width, height));
 }
@@ -471,7 +462,7 @@ gfx::ImageSkia GetConnectedImage(IconType icon_type,
         IDR_AURA_UBER_TRAY_NETWORK_VPN);
   }
   ImageType image_type = ImageTypeForNetworkType(network_type);
-  const int connected_index = NumImagesForType(image_type) - 1;
+  const int connected_index = kNumNetworkImages - 1;
   return GetImageForIndex(image_type, icon_type, connected_index);
 }
 
@@ -490,13 +481,13 @@ const gfx::ImageSkia GetDisconnectedImage(IconType icon_type,
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
                                         IconType icon_type,
                                         double animation) {
-  static gfx::ImageSkia* s_bars_images_dark[kNumBarsImages - 1];
-  static gfx::ImageSkia* s_bars_images_light[kNumBarsImages - 1];
-  static gfx::ImageSkia* s_arcs_images_dark[kNumArcsImages - 1];
-  static gfx::ImageSkia* s_arcs_images_light[kNumArcsImages - 1];
-  int image_count = NumImagesForType(image_type) - 1;
-  int index = animation * nextafter(static_cast<float>(image_count), 0);
-  index = std::max(std::min(index, image_count - 1), 0);
+  static const int kImageCount = kNumNetworkImages - 1;
+  static gfx::ImageSkia* s_bars_images_dark[kImageCount];
+  static gfx::ImageSkia* s_bars_images_light[kImageCount];
+  static gfx::ImageSkia* s_arcs_images_dark[kImageCount];
+  static gfx::ImageSkia* s_arcs_images_light[kImageCount];
+  int index = animation * nextafter(static_cast<float>(kImageCount), 0);
+  index = std::max(std::min(index, kImageCount - 1), 0);
   gfx::ImageSkia** images;
   bool dark = IconTypeIsDark(icon_type);
   if (image_type == BARS)
@@ -550,22 +541,13 @@ gfx::ImageSkia* ConnectingVpnBadge(double animation) {
   return s_vpn_badges[index];
 }
 
-int StrengthIndex(int strength, int count) {
-  // Return an index in the range [1, count-1].
+int StrengthIndex(int strength) {
+  // Return an index in the range [1, kNumNetworkImages - 1].
   const float findex = (static_cast<float>(strength) / 100.0f) *
-      nextafter(static_cast<float>(count - 1), 0);
+                       nextafter(static_cast<float>(kNumNetworkImages - 1), 0);
   int index = 1 + static_cast<int>(findex);
-  index = std::max(std::min(index, count - 1), 1);
+  index = std::max(std::min(index, kNumNetworkImages - 1), 1);
   return index;
-}
-
-int GetStrengthIndex(const NetworkState* network) {
-  ImageType image_type = ImageTypeForNetworkType(network->type());
-  if (image_type == ARCS)
-    return StrengthIndex(network->signal_strength(), kNumArcsImages);
-  else if (image_type == BARS)
-    return StrengthIndex(network->signal_strength(), kNumBarsImages);
-  return 0;
 }
 
 const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
@@ -729,7 +711,7 @@ void NetworkIconImpl::Update(const NetworkState* network) {
 }
 
 bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
-  int index = GetStrengthIndex(network);
+  int index = StrengthIndex(network->signal_strength());
   if (index != strength_index_) {
     strength_index_ = index;
     return true;
