@@ -128,10 +128,15 @@ cast_test_group("cast_tests") {
       "//url:url_unittests",
     ]
 
+    use_gpu_switch = ""
+    if (!is_cast_desktop_build) {
+      use_gpu_switch = " --use-gpu-in-tests"
+    }
+
     # --enable-local-file-accesses => to load sample media files
     # --test-launcher-jobs=1 => so internal code can bind to port
     filters += [
-      "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1",
+      "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1" + use_gpu_switch,
       "cast_media_unittests --test-launcher-jobs=1",
       "ipc_tests --test-launcher-jobs=1",
     ]
