@@ -35,11 +35,16 @@ class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer {
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
   void OnAppRemoved(const std::string& app_id) override;
 
-  // Close Shelf item if it has ArcAppDeferredLauncherItemController controller
-  // and remove entry from the list of tracking items.
+  // Removes entry from the list of tracking items.
+  void Remove(const std::string& app_id);
+
+  // Closes Shelf item if it has ArcAppDeferredLauncherItemController controller
+  // and removes entry from the list of tracking items.
   void Close(const std::string& app_id);
 
  private:
+  // Defines mapping of a shelf app id to a corresponded controller. Shelf app
+  // id is optional mapping (for example, Play Store to Arc Host Support).
   using AppControllerMap =
       std::map<std::string, ArcAppDeferredLauncherItemController*>;
 

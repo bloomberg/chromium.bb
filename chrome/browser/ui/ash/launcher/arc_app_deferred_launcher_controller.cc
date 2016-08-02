@@ -86,6 +86,12 @@ void ArcAppDeferredLauncherController::MaybeApplySpinningEffect(
       image->size());
 }
 
+void ArcAppDeferredLauncherController::Remove(const std::string& app_id) {
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
+  app_controller_map_.erase(shelf_app_id);
+}
+
 void ArcAppDeferredLauncherController::Close(const std::string& app_id) {
   const std::string shelf_app_id =
       ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);

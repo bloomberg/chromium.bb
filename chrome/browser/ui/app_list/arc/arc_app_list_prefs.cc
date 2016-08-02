@@ -306,8 +306,8 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   }
   arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
   if (!app_instance) {
-    // AppInstance should be ready since we have app_id in ready_apps_.
-    NOTREACHED();
+    // AppInstance should be ready since we have app_id in ready_apps_. This
+    // can happen in browser_tests.
     return;
   }
 

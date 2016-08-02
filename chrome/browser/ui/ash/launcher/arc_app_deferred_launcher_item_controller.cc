@@ -21,7 +21,7 @@ ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
 
 ArcAppDeferredLauncherItemController::~ArcAppDeferredLauncherItemController() {
   if (host_)
-    host_->Close(app_id());
+    host_->Remove(app_id());
 }
 
 base::TimeDelta ArcAppDeferredLauncherItemController::GetActiveTime() const {

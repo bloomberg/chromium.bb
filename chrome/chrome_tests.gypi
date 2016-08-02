@@ -880,6 +880,7 @@
       'browser/drive/drive_notification_manager_factory_browsertest.cc',
       'browser/extensions/api/certificate_provider/certificate_provider_apitest.cc',
       'browser/extensions/api/vpn_provider/vpn_provider_apitest.cc',
+      'browser/ui/ash/launcher/arc_app_launcher_browsertest.cc',
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
