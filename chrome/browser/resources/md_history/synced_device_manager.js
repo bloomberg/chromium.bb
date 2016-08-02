@@ -57,6 +57,12 @@ Polymer({
     }
   },
 
+  /** @override */
+  attached: function() {
+    // Update the sign in state.
+    chrome.send('otherDevicesInitialized');
+  },
+
   /**
    * @param {!ForeignSession} session
    * @return {!ForeignDeviceInternal}
