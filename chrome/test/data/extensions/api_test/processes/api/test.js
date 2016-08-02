@@ -107,15 +107,13 @@ chrome.test.runTests([
 
           // Once the NTP finishes loading, create another one.  This ensures
           // both NTPs end up in the same process.
-          if (changedTabId == tabs[3].id) {
+          if (changedTabId == tabs[3].id)
             createTab(4, "chrome://newtab/");
-          }
         }
 
         // Once all tabs are done loading, continue with the next test.
-        if (completedCount == 4) {
+        if (completedCount == 5)
           onUpdatedCompleted();
-        }
       }
     );
 
@@ -169,9 +167,6 @@ chrome.test.runTests([
     }));
   },
 
-  // DISABLED: crbug.com/594318
-  // Fails in --site-per-process
-  /*
   function newTabPagesShareProcess() {
     getProcessId(tabs[3].id, pass(function(pid3) {
       getProcessId(tabs[4].id, pass(function(pid4) {
@@ -180,7 +175,6 @@ chrome.test.runTests([
       }));
     }));
   },
-  */
 
   function idsInUpdateEvent() {
     listenOnce(chrome.processes.onUpdated, function(processes) {
