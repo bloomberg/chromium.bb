@@ -340,22 +340,24 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
       break;
   }
 
-  if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED ||
-      result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
-      result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
-      result == ProvisioningResult::UNKNOWN_ERROR) {
-    clear_required_ = true;
-    // We'll delay shutting down the bridge in this case to allow people to send
-    // feedback.
-    ShowUI(UIPage::ERROR_WITH_FEEDBACK,
-           l10n_util::GetStringUTF16(error_message_id));
+  if (result == ProvisioningResult::ARC_STOPPED) {
+    if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
+      profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    ShutdownBridgeAndShowUI(UIPage::ERROR,
+                            l10n_util::GetStringUTF16(error_message_id));
     return;
   }
 
-  if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
-    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-  ShutdownBridgeAndShowUI(UIPage::ERROR,
-                          l10n_util::GetStringUTF16(error_message_id));
+  if (result == ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED ||
+      result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
+      result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
+      result == ProvisioningResult::UNKNOWN_ERROR)
+    clear_required_ = true;
+
+  // We'll delay shutting down the bridge in this case to allow people to send
+  // feedback.
+  ShowUI(UIPage::ERROR_WITH_FEEDBACK,
+         l10n_util::GetStringUTF16(error_message_id));
 }
 
 void ArcAuthService::GetIsAccountManaged(
