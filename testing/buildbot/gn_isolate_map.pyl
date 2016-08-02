@@ -602,6 +602,10 @@
     "type": "raw",
     "args": [],
   },
+  "ui_struct_traits_unittests": {
+    "label": "//services/ui/public/interfaces:ui_struct_traits_unittests",
+    "type": "console_test_launcher",
+  },
   "ui_touch_selection_unittests": {
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
     "type": "windowed_test_launcher",

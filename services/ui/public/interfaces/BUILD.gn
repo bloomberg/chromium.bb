@@ -52,6 +52,8 @@ mojom("interfaces") {
 }
 
 test("ui_struct_traits_unittests") {
+  testonly = true
+
   sources = [
     "display/display_struct_traits_unittest.cc",
   ]
