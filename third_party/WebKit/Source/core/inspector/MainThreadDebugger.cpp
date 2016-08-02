@@ -44,6 +44,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/events/ErrorEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -229,18 +230,22 @@ void MainThreadDebugger::quitMessageLoopOnPause()
 
 void MainThreadDebugger::muteWarningsAndDeprecations(int contextGroupId)
 {
-    UseCounter::muteForInspector();
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
-    if (frame && frame->host())
+    if (frame && frame->host()) {
         frame->host()->consoleMessageStorage().mute();
+        frame->host()->useCounter().muteForInspector();
+        frame->host()->deprecation().muteForInspector();
+    }
 }
 
 void MainThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
 {
-    UseCounter::unmuteForInspector();
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
-    if (frame && frame->host())
+    if (frame && frame->host()) {
         frame->host()->consoleMessageStorage().unmute();
+        frame->host()->useCounter().unmuteForInspector();
+        frame->host()->deprecation().unmuteForInspector();
+    }
 }
 
 v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)

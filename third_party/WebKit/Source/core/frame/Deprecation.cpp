@@ -65,6 +65,7 @@ String replacedWillBeRemoved(const char* feature, const char* replacement, int m
 namespace blink {
 
 Deprecation::Deprecation()
+    : m_muteCount(0)
 {
     m_cssPropertyDeprecationBits.ensureSize(lastUnresolvedCSSProperty + 1);
 }
@@ -78,12 +79,23 @@ void Deprecation::clearSuppression()
     m_cssPropertyDeprecationBits.clearAll();
 }
 
+void Deprecation::muteForInspector()
+{
+    m_muteCount++;
+}
+
+void Deprecation::unmuteForInspector()
+{
+    m_muteCount--;
+}
+
 void Deprecation::suppress(CSSPropertyID unresolvedProperty)
 {
     ASSERT(unresolvedProperty >= firstCSSProperty);
     ASSERT(unresolvedProperty <= lastUnresolvedCSSProperty);
     m_cssPropertyDeprecationBits.quickSet(unresolvedProperty);
 }
+
 bool Deprecation::isSuppressed(CSSPropertyID unresolvedProperty)
 {
     ASSERT(unresolvedProperty >= firstCSSProperty);
@@ -94,7 +106,7 @@ bool Deprecation::isSuppressed(CSSPropertyID unresolvedProperty)
 void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame, CSSPropertyID unresolvedProperty)
 {
     FrameHost* host = frame ? frame->host() : nullptr;
-    if (!host || host->deprecation().isSuppressed(unresolvedProperty))
+    if (!host || host->deprecation().m_muteCount || host->deprecation().isSuppressed(unresolvedProperty))
         return;
 
     String message = deprecationMessage(unresolvedProperty);
@@ -117,7 +129,7 @@ void Deprecation::countDeprecation(const LocalFrame* frame, UseCounter::Feature 
     if (!frame)
         return;
     FrameHost* host = frame->host();
-    if (!host)
+    if (!host || host->deprecation().m_muteCount)
         return;
 
     if (!host->useCounter().hasRecordedMeasurement(feature)) {

@@ -25,6 +25,9 @@ public:
     static void warnOnDeprecatedProperties(const LocalFrame*, CSSPropertyID unresolvedProperty);
     void clearSuppression();
 
+    void muteForInspector();
+    void unmuteForInspector();
+
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
     // warning to the console. Repeated calls are ignored.
     //
@@ -47,13 +50,16 @@ public:
     static void countDeprecationCrossOriginIframe(const Document&, UseCounter::Feature);
     static String deprecationMessage(UseCounter::Feature);
 
+    // Note: this is only public for tests.
+    bool isSuppressed(CSSPropertyID unresolvedProperty);
+
 protected:
     void suppress(CSSPropertyID unresolvedProperty);
-    bool isSuppressed(CSSPropertyID unresolvedProperty);
     // CSSPropertyIDs that aren't deprecated return an empty string.
     static String deprecationMessage(CSSPropertyID unresolvedProperty);
 
     BitVector m_cssPropertyDeprecationBits;
+    unsigned m_muteCount;
 };
 
 } // namespace blink

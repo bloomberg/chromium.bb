@@ -1329,10 +1329,14 @@ public:
 
     static int mapCSSPropertyIdToCSSSampleIdForHistogram(int id);
 
-    static void muteForInspector();
-    static void unmuteForInspector();
+    void muteForInspector();
+    void unmuteForInspector();
 
-    void recordMeasurement(Feature feature) { m_countBits.recordMeasurement(feature); }
+    void recordMeasurement(Feature feature)
+    {
+        if (!m_muteCount)
+            m_countBits.recordMeasurement(feature);
+    }
     void updateMeasurements();
 
     bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
@@ -1344,8 +1348,6 @@ public:
 
         bool hasRecordedMeasurement(Feature feature) const
         {
-            if (UseCounter::m_muteCount)
-                return false;
             ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
             ASSERT(feature < NumberOfFeatures);
 
@@ -1354,8 +1356,6 @@ public:
 
         void recordMeasurement(Feature feature)
         {
-            if (UseCounter::m_muteCount)
-                return;
             ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
             ASSERT(feature < NumberOfFeatures);
 
@@ -1370,7 +1370,7 @@ public:
 
 protected:
     friend class UseCounterTest;
-    static int m_muteCount;
+    unsigned m_muteCount;
 
     CountBits m_countBits;
     BitVector m_CSSFeatureBits;

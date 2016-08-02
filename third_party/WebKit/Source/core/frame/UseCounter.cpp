@@ -41,8 +41,6 @@ namespace blink {
 
 static int totalPagesMeasuredCSSSampleId() { return 1; }
 
-int UseCounter::m_muteCount = 0;
-
 int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
 {
     CSSPropertyID cssPropertyID = static_cast<CSSPropertyID>(id);
@@ -593,15 +591,16 @@ static EnumerationHistogram& featureObserverHistogram()
 
 void UseCounter::muteForInspector()
 {
-    UseCounter::m_muteCount++;
+    m_muteCount++;
 }
 
 void UseCounter::unmuteForInspector()
 {
-    UseCounter::m_muteCount--;
+    m_muteCount--;
 }
 
 UseCounter::UseCounter()
+    : m_muteCount(0)
 {
     m_CSSFeatureBits.ensureSize(lastUnresolvedCSSProperty + 1);
     m_CSSFeatureBits.clearAll();
@@ -749,7 +748,7 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID feature)
     ASSERT(feature >= firstCSSProperty);
     ASSERT(feature <= lastUnresolvedCSSProperty);
 
-    if (!isUseCounterEnabledForMode(cssParserMode))
+    if (!isUseCounterEnabledForMode(cssParserMode) || m_muteCount)
         return;
 
     m_CSSFeatureBits.quickSet(feature);
