@@ -347,6 +347,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
 
         recordSuccessFunnelHistograms("Shown");
+        PaymentRequestMetrics.recordRequestedInformationHistogram(requestPayerEmail,
+                requestPayerPhone, requestShipping);
     }
 
     private static Map<String, JSONObject> getValidatedMethodData(

@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -188,5 +189,23 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         mDismissed.waitForCallback(callCount);
 
         expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /**
+     * Test that starting a payment request that requires only the shipping address results in the
+     * appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
+     */
+    @MediumTest
+    public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
+            TimeoutException {
+        // Start the Payment Request.
+        triggerUIAndWait(mReadyToPay);
+
+        // Make sure that only the appropriate enum value was logged.
+        for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
+            assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING ? 1 : 0),
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "PaymentRequest.RequestedInformation", i));
+        }
     }
 }
