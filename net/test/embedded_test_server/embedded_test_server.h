@@ -63,7 +63,7 @@ struct HttpRequest;
 //     return std::unique_ptr<HttpResponse>();
 //
 //   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-//   http_response->set_code(test_server::SUCCESS);
+//   http_response->set_code(net::HTTP_OK);
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
 //   return http_response;
