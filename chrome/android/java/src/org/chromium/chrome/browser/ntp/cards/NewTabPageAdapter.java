@@ -43,6 +43,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final AboveTheFoldListItem mAboveTheFold;
     private final SnippetHeaderListItem mHeader;
     private final UiConfig mUiConfig;
+    private final ProgressListItem mProgressIndicator;
     private StatusListItem mStatusCard;
     private final SpacingListItem mBottomSpacer;
     private final List<NewTabPageListItem> mItems;
@@ -115,14 +116,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageLayout = newTabPageLayout;
         mAboveTheFold = new AboveTheFoldListItem();
         mHeader = new SnippetHeaderListItem();
+        mProgressIndicator = new ProgressListItem();
         mBottomSpacer = new SpacingListItem();
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mItems = new ArrayList<>();
-        mProviderStatus = CategoryStatus.INITIALIZING;
+        mProviderStatus = snippetsSource.getCategoryStatus();
         mSnippetsSource = snippetsSource;
         mUiConfig = uiConfig;
-        mStatusCard = StatusListItem.create(snippetsSource.getCategoryStatus(), this);
-
+        mStatusCard = StatusListItem.create(mProviderStatus, this);
         loadSnippets(new ArrayList<SnippetArticleListItem>());
         snippetsSource.setObserver(this);
     }
@@ -158,6 +159,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         mProviderStatus = categoryStatus;
         mStatusCard = StatusListItem.create(mProviderStatus, this);
+        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(mProviderStatus));
 
         // We had suggestions but we just got notified about the provider being enabled. Nothing to
         // do then.
@@ -171,8 +173,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             // If there are no suggestions there is an old status card that must be replaced.
             int firstCardPosition = getFirstCardPosition();
             mItems.set(firstCardPosition, mStatusCard);
-            // Update both the status card and the spacer after it.
-            notifyItemRangeChanged(firstCardPosition, 2);
+            // Update both the status card, the progress indicator and the spacer after it.
+            notifyItemRangeChanged(firstCardPosition, 3);
         }
     }
 
@@ -205,6 +207,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         if (viewType == NewTabPageListItem.VIEW_TYPE_STATUS) {
             return new StatusListItem.ViewHolder(mRecyclerView, mUiConfig);
+        }
+
+        if (viewType == NewTabPageListItem.VIEW_TYPE_PROGRESS) {
+            return new ProgressViewHolder(mRecyclerView);
         }
 
         return null;
@@ -268,6 +274,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mItems.addAll(snippets);
         } else {
             mItems.add(mStatusCard);
+            mItems.add(mProgressIndicator);
         }
 
         mItems.add(mBottomSpacer);
@@ -314,6 +321,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private void addStatusCardIfNecessary() {
         if (!hasSuggestions() && !mItems.contains(mStatusCard)) {
             mItems.add(getFirstCardPosition(), mStatusCard);
+            mItems.add(getFirstCardPosition() + 1, mProgressIndicator);
 
             // We also want to refresh the header and the bottom padding.
             mHeader.setVisible(false);

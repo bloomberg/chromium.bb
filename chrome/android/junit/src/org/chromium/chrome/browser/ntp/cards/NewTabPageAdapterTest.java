@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -66,11 +68,12 @@ public class NewTabPageAdapterTest {
         NewTabPageAdapter ntpa =
                 new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge, null);
 
-        assertEquals(4, ntpa.getItemCount());
+        assertEquals(5, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
         assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, ntpa.getItemViewType(2));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(3));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_PROGRESS, ntpa.getItemViewType(3));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(4));
 
         List<SnippetArticleListItem> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
@@ -101,11 +104,12 @@ public class NewTabPageAdapterTest {
 
         // If we don't get anything, we should be in the same situation as the initial one.
         mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticleListItem>());
-        assertEquals(4, ntpa.getItemCount());
+        assertEquals(5, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
         assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, ntpa.getItemViewType(2));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(3));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_PROGRESS, ntpa.getItemViewType(3));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(4));
 
         // We should load new snippets when we get notified about them.
         List<SnippetArticleListItem> snippets = createDummySnippets();
@@ -145,7 +149,7 @@ public class NewTabPageAdapterTest {
         // When snippets are disabled, we clear them and we should go back to
         // the situation with the status card.
         mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.SIGNED_OUT);
-        assertEquals(4, ntpa.getItemCount());
+        assertEquals(5, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
         mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
@@ -177,7 +181,7 @@ public class NewTabPageAdapterTest {
         // When snippets are disabled, we should not be able to load them
         mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.SIGNED_OUT);
         mSnippetsObserver.onSnippetsReceived(snippets);
-        assertEquals(4, ntpa.getItemCount());
+        assertEquals(5, ntpa.getItemCount());
 
         // INITIALIZING lets us load snippets still.
         mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.INITIALIZING);
@@ -188,6 +192,39 @@ public class NewTabPageAdapterTest {
         mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
         mSnippetsObserver.onSnippetsReceived(snippets);
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
+    }
+
+    /**
+     * Tests how the loading indicator reacts to status changes.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testProgressIndicatorDisplay() {
+        NewTabPageAdapter ntpa =
+                new NewTabPageAdapter(mNewTabPageManager, null, mSnippetsBridge, null);
+        int progressPos = ntpa.getBottomSpacerPosition() - 1;
+        ProgressListItem progress = (ProgressListItem) ntpa.getItemsForTesting().get(progressPos);
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.INITIALIZING);
+        assertTrue(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE);
+        assertFalse(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.AVAILABLE_LOADING);
+        assertTrue(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.NOT_PROVIDED);
+        assertFalse(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        assertFalse(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.SIGNED_OUT);
+        assertFalse(progress.isVisible());
+
+        mSnippetsObserver.onCategoryStatusChanged(CategoryStatus.LOADING_ERROR);
+        assertFalse(progress.isVisible());
     }
 
     private List<SnippetArticleListItem> createDummySnippets() {

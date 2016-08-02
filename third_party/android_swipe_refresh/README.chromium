@@ -11,8 +11,12 @@ pull-to-refresh styled layout for touch-activated refresh of view contents.
 
 Local Modifications:
 
-CircleImageView, MaterialProgressDrawable
+CircleImageView
   * The package has been changed, and most ViewCompat dependencies removed.
+
+MaterialProgressDrawable
+  * The package has been changed, and most ViewCompat dependencies removed.
+  * The class has been made visible outside of the package.
 
 SwipeRefreshLayout
   * MotionEvent-behavior has been changed to allow more abstract inputs.

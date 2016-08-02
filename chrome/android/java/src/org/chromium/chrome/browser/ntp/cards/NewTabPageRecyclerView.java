@@ -151,11 +151,11 @@ public class NewTabPageRecyclerView extends RecyclerView {
             return mMinBottomSpacing;
         }
 
-        ViewHolder lastCard = findLastCard();
+        ViewHolder lastContentItem = findLastContentItem();
         ViewHolder firstHeader = findHeader();
 
         int bottomSpacing = getHeight() - mToolbarHeight;
-        if (lastCard == null || firstHeader == null) {
+        if (lastContentItem == null || firstHeader == null) {
             // This can happen in several cases, where some elements are not visible and the
             // RecyclerView didn't already attach them. We handle it by just adding space to make
             // sure that we never run out and force the UI to jump around and get stuck in a
@@ -170,9 +170,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
             Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
                             + "height: snap=%s, last=%s. Using full height: %d ",
-                    firstHeader, lastCard, bottomSpacing);
+                    firstHeader, lastContentItem, bottomSpacing);
         } else {
-            int contentHeight = lastCard.itemView.getBottom() - firstHeader.itemView.getTop();
+            int contentHeight =
+                    lastContentItem.itemView.getBottom() - firstHeader.itemView.getTop();
             bottomSpacing -= contentHeight - mCompensationHeight;
         }
 
@@ -239,15 +240,16 @@ public class NewTabPageRecyclerView extends RecyclerView {
     }
 
     /**
-     * Finds the view holder for the last card.
-     * @return The {@link ViewHolder} of the last card, or null if it is not present.
+     * Finds the view holder for the last content item: a card or status indicator.
+     * @return The {@link ViewHolder} of the last content item, or null if it is not present.
      */
-    private CardViewHolder findLastCard() {
+    private ViewHolder findLastContentItem() {
         ViewHolder viewHolder =
                 findViewHolderForAdapterPosition(getNewTabPageAdapter().getLastCardPosition());
-        if (!(viewHolder instanceof CardViewHolder)) return null;
+        if (viewHolder instanceof CardViewHolder) return viewHolder;
+        if (viewHolder instanceof ProgressViewHolder) return viewHolder;
 
-        return (CardViewHolder) viewHolder;
+        return null;
     }
 
     /**

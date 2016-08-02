@@ -32,6 +32,10 @@ public class SnippetsBridge implements SnippetsSource {
         return status == CategoryStatus.INITIALIZING || isCategoryStatusAvailable(status);
     }
 
+    public static boolean isCategoryLoading(int status) {
+        return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.INITIALIZING;
+    }
+
     /**
      * Creates a SnippetsBridge for getting snippet data for the current user.
      *
