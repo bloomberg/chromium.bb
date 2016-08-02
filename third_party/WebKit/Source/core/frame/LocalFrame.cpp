@@ -293,7 +293,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
         frameView->setParentVisible(true);
 
     // FIXME: Not clear what the right thing for OOPI is here.
-    if (ownerLayoutObject()) {
+    if (!ownerLayoutItem().isNull()) {
         HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
         ASSERT(owner);
         // FIXME: OOPI might lead to us temporarily lying to a frame and telling it
