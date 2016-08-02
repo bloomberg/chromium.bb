@@ -14,7 +14,6 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.safejson.JsonSanitizer;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.payments.PaymentComplete;
@@ -41,7 +39,6 @@ import org.chromium.mojom.payments.PaymentRequest;
 import org.chromium.mojom.payments.PaymentRequestClient;
 import org.chromium.mojom.payments.PaymentResponse;
 import org.chromium.mojom.payments.PaymentShippingOption;
-import org.chromium.ui.base.WindowAndroid;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,6 +60,15 @@ import java.util.Set;
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
         PaymentApp.InstrumentsCallback, PaymentInstrument.DetailsCallback {
+    /**
+     * Observer to be notified when PaymentRequest UI has been dismissed.
+     */
+    public interface PaymentRequestDismissObserver {
+        /**
+         * Called when PaymentRequest UI has been dismissed.
+         */
+        void onPaymentRequestDismissed();
+    }
 
     /**
      * A test-only observer for the PaymentRequest service implementation.
@@ -103,12 +109,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static PaymentRequestServiceObserverForTest sObserverForTest;
 
     private final Handler mHandler = new Handler();
+    private final Activity mContext;
+    private final PaymentRequestDismissObserver mDismissObserver;
+    private final String mMerchantName;
+    private final String mOrigin;
+    private final List<PaymentApp> mApps;
+    private final AddressEditor mAddressEditor;
+    private final CardEditor mCardEditor;
 
-    private Activity mContext;
-    private String mMerchantName;
-    private String mOrigin;
     private Bitmap mFavicon;
-    private List<PaymentApp> mApps;
     private PaymentRequestClient mClient;
 
     /**
@@ -147,27 +156,23 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private boolean mMerchantNeedsShippingAddress;
     private boolean mPaymentAppRunning;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
-    private AddressEditor mAddressEditor;
-    private CardEditor mCardEditor;
     private ContactEditor mContactEditor;
 
     /**
      * Builds the PaymentRequest service implementation.
      *
-     * @param webContents The web contents that have invoked the PaymentRequest API.
+     * @param context         The context where PaymentRequest has been invoked.
+     * @param webContents     The web contents that have invoked the PaymentRequest API.
+     * @param dismissObserver The observer to notify when PaymentRequest UI has been dismissed.
      */
-    public PaymentRequestImpl(WebContents webContents) {
-        if (webContents == null) return;
+    public PaymentRequestImpl(Activity context, WebContents webContents,
+            PaymentRequestDismissObserver dismissObserver) {
+        assert context != null;
+        assert webContents != null;
+        assert dismissObserver != null;
 
-        ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
-        if (contentViewCore == null) return;
-
-        WindowAndroid window = contentViewCore.getWindowAndroid();
-        if (window == null) return;
-
-        mContext = window.getActivity().get();
-        if (mContext == null) return;
-
+        mContext = context;
+        mDismissObserver = dismissObserver;
         mMerchantName = webContents.getTitle();
         // The feature is available only in secure context, so it's OK to not show HTTPS.
         mOrigin = UrlUtilities.formatUrlForSecurityDisplay(webContents.getVisibleUrl(), false);
@@ -203,20 +208,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @Override
     public void setClient(PaymentRequestClient client) {
         assert mClient == null;
-
+        if (client == null) return;
         mClient = client;
-
-        if (mClient == null) return;
-
-        if (mContext == null) {
-            disconnectFromClientWithDebugMessage("Web contents don't have associated activity");
-            return;
-        }
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS)) {
-            disconnectFromClientWithDebugMessage(
-                    "Web payments API is disabled", PaymentErrorReason.NOT_SUPPORTED);
-        }
     }
 
     /**
@@ -1060,6 +1053,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void closeClient() {
         if (mClient != null) mClient.close();
         mClient = null;
+        mDismissObserver.onPaymentRequestDismissed();
     }
 
     @VisibleForTesting
@@ -1071,7 +1065,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Records specific histograms related to the different steps of a successful checkout.
      */
     private void recordSuccessFunnelHistograms(String funnelPart) {
-        RecordHistogram.recordBooleanHistogram(
-                "PaymentRequest.CheckoutFunnel." + funnelPart, true);
+        RecordHistogram.recordBooleanHistogram("PaymentRequest.CheckoutFunnel." + funnelPart, true);
     }
 }
