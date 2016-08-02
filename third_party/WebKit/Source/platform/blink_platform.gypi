@@ -1249,7 +1249,6 @@
       'text/BidiResolverTest.cpp',
       'text/CharacterTest.cpp',
       'text/DateTimeFormatTest.cpp',
-      'text/LocaleToScriptMappingTest.cpp',
       'text/HyphenationTest.cpp',
       'text/SegmentedStringTest.cpp',
       'text/TextBreakIteratorTest.cpp',

@@ -50,7 +50,7 @@ namespace blink {
 // the family is returned.
 PLATFORM_EXPORT const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType,
-    const LayoutLocale& contentLocale,
+    const LayoutLocale* contentLocale,
     UScriptCode* scriptChecked,
     FontFallbackPriority,
     SkFontMgr* fontManager);

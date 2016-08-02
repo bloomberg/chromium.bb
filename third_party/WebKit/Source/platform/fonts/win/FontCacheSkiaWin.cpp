@@ -126,7 +126,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(character,
         fontDescription.genericFamily(),
-        fontDescription.localeOrDefault(),
+        fontDescription.locale(),
         &script,
         fallbackPriority,
         m_fontManager.get());
@@ -139,14 +139,12 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     if ((!data || !data->fontContainsCharacter(character)) && s_useSkiaFontFallback) {
         const char* bcp47Locale = nullptr;
         int localeCount = 0;
-        CString fontLocale;
         // If the font description has a locale, use that. Otherwise, Skia will
         // fall back on the user's default locale.
         // TODO(kulshin): extract locale fallback logic from
         //   FontCacheAndroid.cpp and share that code
         if (fontDescription.locale()) {
-            fontLocale = fontDescription.locale()->localeForSkFontMgr();
-            bcp47Locale = fontLocale.data();
+            bcp47Locale = fontDescription.locale()->localeForSkFontMgr();
             localeCount = 1;
         }
 

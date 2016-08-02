@@ -36,18 +36,28 @@
 
 namespace blink {
 
+struct SubtagScript {
+    const char* subtag;
+    UScriptCode script;
+};
+
+using SubtagScriptMap = HashMap<String, UScriptCode, CaseFoldingHash>;
+
+static SubtagScriptMap createSubtagScriptMap(const SubtagScript list[], size_t size)
+{
+    SubtagScriptMap map;
+    for (size_t i = 0; i < size; ++i)
+        map.set(list[i].subtag, list[i].script);
+    return map;
+}
+
 UScriptCode scriptNameToCode(const String& scriptName)
 {
-    struct ScriptNameCode {
-        const char* name;
-        UScriptCode code;
-    };
-
     // This generally maps an ISO 15924 script code to its UScriptCode, but certain families of script codes are
     // treated as a single script for assigning a per-script font in Settings. For example, "hira" is mapped to
     // USCRIPT_KATAKANA_OR_HIRAGANA instead of USCRIPT_HIRAGANA, since we want all Japanese scripts to be rendered
     // using the same font setting.
-    static const ScriptNameCode scriptNameCodeList[] = {
+    static const SubtagScript scriptNameCodeList[] = {
         { "zyyy", USCRIPT_COMMON },
         { "qaai", USCRIPT_INHERITED },
         { "arab", USCRIPT_ARABIC },
@@ -155,15 +165,10 @@ UScriptCode scriptNameToCode(const String& scriptName)
         { "zxxx", USCRIPT_UNWRITTEN_LANGUAGES },
         { "zzzz", USCRIPT_UNKNOWN }
     };
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, scriptNameCodeMap,
+        (createSubtagScriptMap(scriptNameCodeList, WTF_ARRAY_LENGTH(scriptNameCodeList))));
 
-    typedef HashMap<String, UScriptCode> ScriptNameCodeMap;
-    DEFINE_STATIC_LOCAL(ScriptNameCodeMap, scriptNameCodeMap, ());
-    if (scriptNameCodeMap.isEmpty()) {
-        for (size_t i = 0; i < sizeof(scriptNameCodeList) / sizeof(scriptNameCodeList[0]); ++i)
-            scriptNameCodeMap.set(scriptNameCodeList[i].name, scriptNameCodeList[i].code);
-    }
-
-    HashMap<String, UScriptCode>::iterator it = scriptNameCodeMap.find(scriptName.lower());
+    const auto& it = scriptNameCodeMap.find(scriptName);
     if (it != scriptNameCodeMap.end())
         return it->value;
     return USCRIPT_INVALID_CODE;
@@ -171,12 +176,7 @@ UScriptCode scriptNameToCode(const String& scriptName)
 
 UScriptCode localeToScriptCodeForFontSelection(const String& locale)
 {
-    struct LocaleScript {
-        const char* locale;
-        UScriptCode script;
-    };
-
-    static const LocaleScript localeScriptList[] = {
+    static const SubtagScript localeScriptList[] = {
         { "aa", USCRIPT_LATIN },
         { "ab", USCRIPT_CYRILLIC },
         { "ady", USCRIPT_CYRILLIC },
@@ -415,73 +415,86 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
         { "za", USCRIPT_LATIN },
         { "zdj", USCRIPT_ARABIC },
         { "zh", USCRIPT_SIMPLIFIED_HAN },
-        { "zh_hk", USCRIPT_TRADITIONAL_HAN },
-        { "zh_tw", USCRIPT_TRADITIONAL_HAN },
-        { "zu", USCRIPT_LATIN }
+        { "zu", USCRIPT_LATIN },
+        // Encompassed languages within the Chinese macrolanguage.
+        // http://www-01.sil.org/iso639-3/documentation.asp?id=zho
+        // http://lists.w3.org/Archives/Public/public-i18n-cjk/2016JulSep/0022.html
+        { "cdo", USCRIPT_SIMPLIFIED_HAN },
+        { "cjy", USCRIPT_SIMPLIFIED_HAN },
+        { "cmn", USCRIPT_SIMPLIFIED_HAN },
+        { "cpx", USCRIPT_SIMPLIFIED_HAN },
+        { "czh", USCRIPT_SIMPLIFIED_HAN },
+        { "czo", USCRIPT_SIMPLIFIED_HAN },
+        { "gan", USCRIPT_SIMPLIFIED_HAN },
+        { "hsn", USCRIPT_SIMPLIFIED_HAN },
+        { "mnp", USCRIPT_SIMPLIFIED_HAN },
+        { "wuu", USCRIPT_SIMPLIFIED_HAN },
+        { "hak", USCRIPT_TRADITIONAL_HAN },
+        { "lzh", USCRIPT_TRADITIONAL_HAN },
+        { "nan", USCRIPT_TRADITIONAL_HAN },
+        { "yue", USCRIPT_TRADITIONAL_HAN },
+        { "zh-cdo", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-cjy", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-cmn", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-cpx", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-czh", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-czo", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-gan", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-hsn", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-mnp", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-wuu", USCRIPT_SIMPLIFIED_HAN },
+        { "zh-hak", USCRIPT_TRADITIONAL_HAN },
+        { "zh-lzh", USCRIPT_TRADITIONAL_HAN },
+        { "zh-nan", USCRIPT_TRADITIONAL_HAN },
+        { "zh-yue", USCRIPT_TRADITIONAL_HAN },
+        // Chinese with regions. Logically, regions should be handled
+        // separately, but this works for the current purposes.
+        { "zh-hk", USCRIPT_TRADITIONAL_HAN },
+        { "zh-mo", USCRIPT_TRADITIONAL_HAN },
+        { "zh-tw", USCRIPT_TRADITIONAL_HAN },
     };
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, localeScriptMap,
+        (createSubtagScriptMap(localeScriptList, WTF_ARRAY_LENGTH(localeScriptList))));
 
-    typedef HashMap<String, UScriptCode> LocaleScriptMap;
-    DEFINE_STATIC_LOCAL(LocaleScriptMap, localeScriptMap, ());
-    if (localeScriptMap.isEmpty()) {
-        for (size_t i = 0; i < sizeof(localeScriptList) / sizeof(localeScriptList[0]); ++i)
-            localeScriptMap.set(localeScriptList[i].locale, localeScriptList[i].script);
-    }
-
-    String canonicalLocale = locale.lower().replace('-', '_');
+    // BCP 47 uses '-' as the delimiter but ICU uses '_'.
+    // https://tools.ietf.org/html/bcp47
+    String canonicalLocale = locale;
+    canonicalLocale.replace('_', '-');
     while (!canonicalLocale.isEmpty()) {
-        HashMap<String, UScriptCode>::iterator it = localeScriptMap.find(canonicalLocale);
+        const auto& it = localeScriptMap.find(canonicalLocale);
         if (it != localeScriptMap.end())
             return it->value;
-        size_t pos = canonicalLocale.reverseFind('_');
+        size_t pos = canonicalLocale.reverseFind('-');
         if (pos == kNotFound)
             break;
-        UScriptCode code = scriptNameToCode(canonicalLocale.substring(pos + 1));
-        if (code != USCRIPT_INVALID_CODE && code != USCRIPT_UNKNOWN)
-            return code;
+        // script = 4ALPHA
+        if (canonicalLocale.length() - (pos + 1) == 4) {
+            UScriptCode code = scriptNameToCode(canonicalLocale.substring(pos + 1));
+            if (code != USCRIPT_INVALID_CODE && code != USCRIPT_UNKNOWN)
+                return code;
+        }
         canonicalLocale = canonicalLocale.substring(0, pos);
     }
     return USCRIPT_COMMON;
 }
 
-static bool isUnambiguousHanScript(UScriptCode script)
+static UScriptCode scriptCodeForHanFromRegion(const String& region)
 {
-    // localeToScriptCodeForFontSelection() does not return these values.
-    ASSERT(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
-    return script == USCRIPT_KATAKANA_OR_HIRAGANA
-        || script == USCRIPT_SIMPLIFIED_HAN
-        || script == USCRIPT_TRADITIONAL_HAN
-        || script == USCRIPT_HANGUL;
-}
-
-static UScriptCode scriptCodeForHanFromSubtag(const String& subtag)
-{
-    struct SubtagScript {
-        const char* subtag;
-        UScriptCode script;
-    };
-
-    static const SubtagScript subtagScriptList[] = {
-        { "cn", USCRIPT_SIMPLIFIED_HAN },
-        { "hans", USCRIPT_SIMPLIFIED_HAN },
-        { "hant", USCRIPT_TRADITIONAL_HAN },
+    static const SubtagScript regionScriptList[] = {
         { "hk", USCRIPT_TRADITIONAL_HAN },
         { "jp", USCRIPT_KATAKANA_OR_HIRAGANA },
         { "kr", USCRIPT_HANGUL },
+        { "mo", USCRIPT_TRADITIONAL_HAN },
         { "tw", USCRIPT_TRADITIONAL_HAN },
     };
+    DEFINE_STATIC_LOCAL(SubtagScriptMap, regionScriptMap,
+        (createSubtagScriptMap(regionScriptList, WTF_ARRAY_LENGTH(regionScriptList))));
 
-    typedef HashMap<String, UScriptCode> SubtagScriptMap;
-    DEFINE_STATIC_LOCAL(SubtagScriptMap, subtagScriptMap, ());
-    if (subtagScriptMap.isEmpty()) {
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(subtagScriptList); ++i)
-            subtagScriptMap.set(subtagScriptList[i].subtag, subtagScriptList[i].script);
-    }
-
-    const auto& it = subtagScriptMap.find(subtag.lower());
-    return it != subtagScriptMap.end() ? it->value : USCRIPT_COMMON;
+    const auto& it = regionScriptMap.find(region);
+    return it != regionScriptMap.end() ? it->value : USCRIPT_COMMON;
 }
 
-static UScriptCode scriptCodeForHanFromSubtags(const String& locale, char delimiter)
+UScriptCode scriptCodeForHanFromSubtags(const String& locale, char delimiter)
 {
     // Some sites emit lang="en-JP" when English is set as the preferred
     // language. Use script/region subtags of the content locale to pick the
@@ -489,30 +502,22 @@ static UScriptCode scriptCodeForHanFromSubtags(const String& locale, char delimi
     for (size_t end = locale.find(delimiter); end != kNotFound; ) {
         size_t begin = end + 1;
         end = locale.find(delimiter, begin);
-        UScriptCode script = scriptCodeForHanFromSubtag(
-            locale.substring(begin,
-                end == kNotFound ? UINT_MAX : end - begin));
-        if (script != USCRIPT_COMMON)
-            return script;
+        size_t len = (end == kNotFound ? locale.length() : end) - begin;
+        UScriptCode script;
+        switch (len) {
+        case 2: // region = 2ALPHA / 3DIGIT
+            script = scriptCodeForHanFromRegion(locale.substring(begin, len));
+            if (script != USCRIPT_COMMON)
+                return script;
+            break;
+        case 4: // script = 4ALPHA
+            script = scriptNameToCode(locale.substring(begin, len));
+            if (script != USCRIPT_INVALID_CODE)
+                return script;
+        }
     }
 
     return USCRIPT_COMMON;
-}
-
-UScriptCode scriptCodeForHanFromLocale(UScriptCode script, const String& locale, char delimiter)
-{
-    if (isUnambiguousHanScript(script))
-        return script;
-
-    // Identify the script for Han if the UScriptCode is ambiguous.
-    // Check subtags only, because the UScriptCode covers the language part.
-    return scriptCodeForHanFromSubtags(locale, delimiter);
-}
-
-UScriptCode scriptCodeForHanFromLocale(const String& locale, char delimiter)
-{
-    UScriptCode script = localeToScriptCodeForFontSelection(locale);
-    return scriptCodeForHanFromLocale(script, locale, delimiter);
 }
 
 } // namespace blink

@@ -23,7 +23,11 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 public:
     static const LayoutLocale* get(const AtomicString& locale);
     static const LayoutLocale& getDefault();
+    static const LayoutLocale& getSystem();
     static const LayoutLocale& valueOrDefault(const LayoutLocale* locale) { return locale ? *locale : getDefault(); }
+
+    bool operator==(const LayoutLocale& other) const { return m_string == other.m_string; }
+    bool operator!=(const LayoutLocale& other) const { return m_string != other.m_string; }
 
     const AtomicString& localeString() const { return m_string; }
     static const AtomicString& localeString(const LayoutLocale* locale) { return locale ? locale->m_string : nullAtom; }
@@ -31,17 +35,26 @@ public:
     CString ascii() const { return m_string.ascii(); }
 
     const hb_language_impl_t* harfbuzzLanguage() const { return m_harfbuzzLanguage; }
-    const CString& localeForSkFontMgr() const;
+    const char* localeForSkFontMgr() const;
     UScriptCode script() const { return m_script; }
+
+    // Disambiguation of the Unified Han Ideographs.
     UScriptCode scriptForHan() const;
+    bool hasScriptForHan() const;
+    static const LayoutLocale* localeForHan(const LayoutLocale*);
+    static void setLocaleForHan(const LayoutLocale*);
+    const char* localeForHanForSkFontMgr() const;
 
     Hyphenation* getHyphenation() const;
 
+    static PassRefPtr<LayoutLocale> createForTesting(const AtomicString&);
     static void clearForTesting();
     static void setHyphenationForTesting(const AtomicString&, PassRefPtr<Hyphenation>);
 
 private:
     explicit LayoutLocale(const AtomicString&);
+
+    void computeScriptForHan() const;
 
     AtomicString m_string;
     mutable CString m_stringForSkFontMgr;
@@ -53,9 +66,13 @@ private:
     UScriptCode m_script;
     mutable UScriptCode m_scriptForHan;
 
+    mutable unsigned m_hasScriptForHan : 1;
     mutable unsigned m_hyphenationComputed : 1;
 
     static const LayoutLocale* s_default;
+    static const LayoutLocale* s_system;
+    static const LayoutLocale* s_defaultForHan;
+    static bool s_defaultForHanComputed;
 };
 
 } // namespace blink

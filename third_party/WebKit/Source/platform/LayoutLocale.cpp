@@ -11,10 +11,14 @@
 #include "wtf/text/StringHash.h"
 
 #include <hb.h>
+#include <unicode/locid.h>
 
 namespace blink {
 
 const LayoutLocale* LayoutLocale::s_default = nullptr;
+const LayoutLocale* LayoutLocale::s_system = nullptr;
+const LayoutLocale* LayoutLocale::s_defaultForHan = nullptr;
+bool LayoutLocale::s_defaultForHanComputed = false;
 
 static hb_language_t toHarfbuzLanguage(const AtomicString& locale)
 {
@@ -24,37 +28,99 @@ static hb_language_t toHarfbuzLanguage(const AtomicString& locale)
 
 // SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
 // instead of "zh-CN" and "zh-TW".
-static CString toSkFontMgrLocale(const String& locale)
+static const char* toSkFontMgrLocale(UScriptCode script)
 {
-    if (!locale.startsWith("zh", TextCaseInsensitive))
-        return locale.ascii();
-
-    switch (localeToScriptCodeForFontSelection(locale)) {
+    switch (script) {
+    case USCRIPT_KATAKANA_OR_HIRAGANA:
+        return "ja-JP";
+    case USCRIPT_HANGUL:
+        return "ko-KR";
     case USCRIPT_SIMPLIFIED_HAN:
         return "zh-Hans";
     case USCRIPT_TRADITIONAL_HAN:
         return "zh-Hant";
     default:
-        return locale.ascii();
+        return nullptr;
     }
 }
 
-const CString& LayoutLocale::localeForSkFontMgr() const
+const char* LayoutLocale::localeForSkFontMgr() const
 {
-    if (m_stringForSkFontMgr.isNull())
-        m_stringForSkFontMgr = toSkFontMgrLocale(m_string);
-    return m_stringForSkFontMgr;
+    if (m_stringForSkFontMgr.isNull()) {
+        m_stringForSkFontMgr = toSkFontMgrLocale(m_script);
+        if (m_stringForSkFontMgr.isNull())
+            m_stringForSkFontMgr = m_string.ascii();
+    }
+    return m_stringForSkFontMgr.data();
+}
+
+static bool isUnambiguousHanScript(UScriptCode script)
+{
+    // localeToScriptCodeForFontSelection() does not return these values.
+    DCHECK(script != USCRIPT_HIRAGANA && script != USCRIPT_KATAKANA);
+    return script == USCRIPT_KATAKANA_OR_HIRAGANA
+        || script == USCRIPT_SIMPLIFIED_HAN
+        || script == USCRIPT_TRADITIONAL_HAN
+        || script == USCRIPT_HANGUL;
+}
+
+void LayoutLocale::computeScriptForHan() const
+{
+    if (isUnambiguousHanScript(m_script)) {
+        m_scriptForHan = m_script;
+        m_hasScriptForHan = true;
+        return;
+    }
+
+    m_scriptForHan = scriptCodeForHanFromSubtags(m_string);
+    if (m_scriptForHan == USCRIPT_COMMON)
+        m_scriptForHan = USCRIPT_SIMPLIFIED_HAN;
+    else
+        m_hasScriptForHan = true;
+    DCHECK(isUnambiguousHanScript(m_scriptForHan));
 }
 
 UScriptCode LayoutLocale::scriptForHan() const
 {
-    if (m_scriptForHan != USCRIPT_COMMON)
-        return m_scriptForHan;
-
-    m_scriptForHan = scriptCodeForHanFromLocale(script(), localeString());
     if (m_scriptForHan == USCRIPT_COMMON)
-        m_scriptForHan = USCRIPT_HAN;
+        computeScriptForHan();
     return m_scriptForHan;
+}
+
+bool LayoutLocale::hasScriptForHan() const
+{
+    if (m_scriptForHan == USCRIPT_COMMON)
+        computeScriptForHan();
+    return m_hasScriptForHan;
+}
+
+const LayoutLocale* LayoutLocale::localeForHan(const LayoutLocale* contentLocale)
+{
+    if (contentLocale && contentLocale->hasScriptForHan())
+        return contentLocale;
+    if (!s_defaultForHanComputed)
+        setLocaleForHan(nullptr);
+    return s_defaultForHan;
+}
+
+void LayoutLocale::setLocaleForHan(const LayoutLocale* locale)
+{
+    if (locale)
+        s_defaultForHan = locale;
+    else if (getDefault().hasScriptForHan())
+        s_defaultForHan = &getDefault();
+    else if (getSystem().hasScriptForHan())
+        s_defaultForHan = &getSystem();
+    else
+        s_defaultForHan = nullptr;
+    s_defaultForHanComputed = true;
+}
+
+const char* LayoutLocale::localeForHanForSkFontMgr() const
+{
+    const char* locale = toSkFontMgrLocale(scriptForHan());
+    DCHECK(locale);
+    return locale;
 }
 
 LayoutLocale::LayoutLocale(const AtomicString& locale)
@@ -62,6 +128,7 @@ LayoutLocale::LayoutLocale(const AtomicString& locale)
     , m_harfbuzzLanguage(toHarfbuzLanguage(locale))
     , m_script(localeToScriptCodeForFontSelection(locale))
     , m_scriptForHan(USCRIPT_COMMON)
+    , m_hasScriptForHan(false)
     , m_hyphenationComputed(false)
 {
 }
@@ -85,24 +152,39 @@ const LayoutLocale* LayoutLocale::get(const AtomicString& locale)
     return result.storedValue->value.get();
 }
 
-static const LayoutLocale* computeDefaultLocale()
-{
-    AtomicString locale = defaultLanguage();
-    if (!locale.isEmpty())
-        return LayoutLocale::get(locale);
-    return LayoutLocale::get("en");
-}
-
 const LayoutLocale& LayoutLocale::getDefault()
 {
-    if (!s_default)
-        s_default = computeDefaultLocale();
+    if (s_default)
+        return *s_default;
+
+    AtomicString locale = defaultLanguage();
+    s_default = get(!locale.isEmpty() ? locale : "en");
     return *s_default;
+}
+
+const LayoutLocale& LayoutLocale::getSystem()
+{
+    if (s_system)
+        return *s_system;
+
+    // Platforms such as Windows can give more information than the default
+    // locale, such as "en-JP" for English speakers in Japan.
+    String name = icu::Locale::getDefault().getName();
+    s_system = get(AtomicString(name.replace('_', '-')));
+    return *s_system;
+}
+
+PassRefPtr<LayoutLocale> LayoutLocale::createForTesting(const AtomicString& locale)
+{
+    return adoptRef(new LayoutLocale(locale));
 }
 
 void LayoutLocale::clearForTesting()
 {
     s_default = nullptr;
+    s_system = nullptr;
+    s_defaultForHan = nullptr;
+    s_defaultForHanComputed = false;
     getLocaleMap().clear();
 }
 

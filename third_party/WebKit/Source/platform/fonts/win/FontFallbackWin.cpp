@@ -30,7 +30,6 @@
 
 #include "platform/fonts/win/FontFallbackWin.h"
 
-#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/FontCache.h"
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
@@ -306,28 +305,10 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         }
     }
 
-    // Initialize the locale-dependent mapping.
-    // Since Chrome synchronizes the ICU default locale with its UI locale,
-    // this ICU locale tells the current UI locale of Chrome.
-    UScriptCode hanScript = scriptCodeForHanFromLocale(
-        icu::Locale::getDefault().getName(), '_');
-    // For other locales, use the simplified Chinese font for Han.
-    const UChar* localeFamily = scriptFontMap[hanScript == USCRIPT_COMMON
-        ? USCRIPT_SIMPLIFIED_HAN : hanScript];
-    if (localeFamily)
+    // Initialize the locale-dependent mapping from system locale.
+    UScriptCode hanScript = LayoutLocale::getSystem().scriptForHan();
+    if (const UChar* localeFamily = scriptFontMap[hanScript])
         scriptFontMap[USCRIPT_HAN] = localeFamily;
-}
-
-static UScriptCode scriptForHan(const LayoutLocale& contentLocale)
-{
-    UScriptCode script = contentLocale.scriptForHan();
-    if (script != USCRIPT_HAN)
-        return script;
-    script = AcceptLanguagesResolver::preferredHanScript();
-    if (script != USCRIPT_COMMON)
-        return script;
-    // Use UI locale. See initializeScriptFontMap().
-    return USCRIPT_HAN;
 }
 
 // There are a lot of characters in USCRIPT_COMMON that can be covered
@@ -480,7 +461,7 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //    font can cover) need to be taken into account
 const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType generic,
-    const LayoutLocale& contentLocale,
+    const LayoutLocale* contentLocale,
     UScriptCode* scriptChecked,
     FontFallbackPriority fallbackPriority,
     SkFontMgr* fontManager)
@@ -510,8 +491,12 @@ const UChar* getFallbackFamily(UChar32 character,
 
     // For unified-Han scripts, try the lang attribute, system, or
     // accept-languages.
-    if (script == USCRIPT_HAN)
-        script = scriptForHan(contentLocale);
+    if (script == USCRIPT_HAN) {
+        if (const LayoutLocale* localeForHan = LayoutLocale::localeForHan(contentLocale))
+            script = localeForHan->scriptForHan();
+        // If still unknown, USCRIPT_HAN uses UI locale.
+        // See initializeScriptFontMap().
+    }
 
     family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.
