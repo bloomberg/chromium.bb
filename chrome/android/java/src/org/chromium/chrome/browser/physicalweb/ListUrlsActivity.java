@@ -164,7 +164,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         // Only connect so that we can subscribe to Nearby if we have the location permission.
         LocationUtils locationUtils = LocationUtils.getInstance();
         if (locationUtils.hasAndroidLocationPermission()
-                && locationUtils.isSystemLocationSettingEnabled(this)) {
+                && locationUtils.isSystemLocationSettingEnabled()) {
             mNearbyForegroundSubscription.connect();
         }
     }

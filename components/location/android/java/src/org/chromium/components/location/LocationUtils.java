@@ -80,11 +80,6 @@ public class LocationUtils {
         }
     }
 
-    // TODO(cco3): Remove when no longer needed downstream.
-    public boolean isSystemLocationSettingEnabled(Context context) {
-        return isSystemLocationSettingEnabled();
-    }
-
     /**
      * Returns an intent to launch Android Location Settings.
      */
