@@ -499,10 +499,11 @@ template("framework_bundle") {
           "$bundle_root_dir/embedded.mobileprovision",
         ]
         code_signing_args = [
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
           "-b=" +
               rebase_path("$_shared_library_dir/$_output_name", root_build_dir),
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
         ]
       }

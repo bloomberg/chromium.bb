@@ -90,18 +90,18 @@ class ProvisioningProfile(object):
   def entitlements(self):
     return self._data.get('Entitlements', {})
 
-  def ValidToSignBundle(self, bundle):
+  def ValidToSignBundle(self, bundle_identifier):
     """Checks whether the provisioning profile can sign bundle_identifier.
 
     Args:
-      bundle: the Bundle object that needs to be signed.
+      bundle_identifier: the identifier of the bundle that needs to be signed.
 
     Returns:
       True if the mobile provisioning profile can be used to sign a bundle
       with the corresponding bundle_identifier, False otherwise.
     """
     return fnmatch.fnmatch(
-        '%s.%s' % (self.team_identifier, bundle.identifier),
+        '%s.%s' % (self.team_identifier, bundle_identifier),
         self.application_identifier_pattern)
 
   def Install(self, bundle):
@@ -151,11 +151,11 @@ class Entitlements(object):
     plistlib.writePlist(self._data, target_path)
 
 
-def FindProvisioningProfile(bundle, provisioning_profile_short_name):
+def FindProvisioningProfile(bundle_identifier, provisioning_profile_short_name):
   """Finds mobile provisioning profile to use to sign bundle.
 
   Args:
-    bundle: the Bundle object to sign.
+    bundle_identifier: the identifier of the bundle to sign.
     provisioning_profile_short_path: optional short name of the mobile
         provisioning profile file to use to sign (will still be checked
         to see if it can sign bundle).
@@ -191,13 +191,13 @@ def FindProvisioningProfile(bundle, provisioning_profile_short_name):
   valid_provisioning_profiles = []
   for provisioning_profile_path in provisioning_profile_paths:
     provisioning_profile = ProvisioningProfile(provisioning_profile_path)
-    if provisioning_profile.ValidToSignBundle(bundle):
+    if provisioning_profile.ValidToSignBundle(bundle_identifier):
       valid_provisioning_profiles.append(provisioning_profile)
 
   if not valid_provisioning_profiles:
     raise InstallationError(
         'no mobile provisioning profile for "%s"',
-        bundle.identifier)
+        bundle_identifier)
 
   # Select the most specific mobile provisioning profile, i.e. the one with
   # the longest application identifier pattern.
@@ -220,6 +220,24 @@ def InstallFramework(framework_path, bundle, args):
   CodeSignBundle(framework_bundle.binary_path, framework_bundle, args, True)
 
 
+def GenerateEntitlements(path, defaults, bundle_identifier, team_identifier):
+  """Generates an entitlements file.
+
+  Args:
+    path: path to the entitlements template file
+    defaults: dictionary with defaults to embeds in the generated entitlements
+    bundle_identifier: identifier of the bundle to sign.
+    team_identifier: identifier for the team (for code signing)
+  """
+  entitlements = Entitlements(path)
+  entitlements.LoadDefaults(defaults)
+  entitlements.ExpandVariables({
+      'CFBundleIdentifier': bundle_identifier,
+      'AppIdentifierPrefix': '%s.' % team_identifier,
+  })
+  return entitlements
+
+
 def CodeSignBundle(binary, bundle, args, preserve=False):
   """Cryptographically signs bundle.
 
@@ -230,7 +248,7 @@ def CodeSignBundle(binary, bundle, args, preserve=False):
         'deep_signature' and 'identify' keys.
   """
   provisioning_profile = FindProvisioningProfile(
-      bundle, args.provisioning_profile_short_name)
+      bundle.identifier, args.provisioning_profile_short_name)
   provisioning_profile.Install(bundle)
 
   if preserve:
@@ -256,12 +274,9 @@ def CodeSignBundle(binary, bundle, args, preserve=False):
       os.unlink(bundle.binary_path)
     shutil.copy(binary, bundle.binary_path)
 
-    entitlements = Entitlements(args.entitlements_path)
-    entitlements.LoadDefaults(provisioning_profile.entitlements)
-    entitlements.ExpandVariables({
-      'CFBundleIdentifier': bundle.identifier,
-      'AppIdentifierPrefix': '%s.' % (provisioning_profile.team_identifier,)
-    })
+    entitlements = GenerateEntitlements(
+        args.entitlements_path, provisioning_profile.entitlements,
+        bundle.identifier, provisioning_profile.team_identifier)
 
     with tempfile.NamedTemporaryFile(suffix='.xcent') as temporary_file_path:
       entitlements.WriteTo(temporary_file_path.name)
@@ -271,34 +286,78 @@ def CodeSignBundle(binary, bundle, args, preserve=False):
           bundle.path])
 
 
+def MainCodeSignBundle(args):
+  """Adapter to call CodeSignBundle from Main."""
+  bundle = Bundle(args.path)
+  for framework in args.frameworks:
+    InstallFramework(framework, bundle, args)
+  CodeSignBundle(args.binary, bundle, args)
+
+
+def MainGenerateEntitlements(args):
+  """Adapter to call GenerateEntitlements from Main."""
+  info_plist = LoadPlistFile(args.info_plist)
+  bundle_identifier = info_plist['CFBundleIdentifier']
+  try:
+    provisioning_profile = FindProvisioningProfile(
+        bundle_identifier, args.provisioning_profile_short_name)
+    default_entitlements, team_identifier = (
+        provisioning_profile.entitlements,
+        provisioning_profile.team_identifier)
+  except InstallationError:
+    # Do not fail if no mobile provisioning is available, but instead embeds
+    # fake entitlements into the binary. This is necessary as some of the bots
+    # do not have mobile provisioning but still need to run the tests. In that
+    # case, use dummy values.
+    default_entitlements, team_identifier = {}, '*'
+
+  entitlements = GenerateEntitlements(
+      args.entitlements_path, default_entitlements, bundle_identifier,
+      team_identifier)
+  entitlements.WriteTo(args.path)
+
+
 def Main():
   parser = argparse.ArgumentParser('codesign iOS bundles')
-  parser.add_argument(
-      'path', help='path to the iOS bundle to codesign')
-  parser.add_argument(
-      '--binary', '-b', required=True,
-      help='path to the iOS bundle binary')
   parser.add_argument(
       '--provisioning-profile', '-p', dest='provisioning_profile_short_name',
       help='short name of the mobile provisioning profile to use ('
            'if undefined, will autodetect the mobile provisioning '
            'to use)')
   parser.add_argument(
-      '--identity', '-i', required=True,
-      help='identity to use to codesign')
-  parser.add_argument(
       '--entitlements', '-e', dest='entitlements_path',
       help='path to the entitlements file to use')
-  parser.add_argument(
+  subparsers = parser.add_subparsers()
+
+  code_sign_bundle_parser = subparsers.add_parser(
+      'code-sign-bundle',
+      help='code sign a bundle')
+  code_sign_bundle_parser.add_argument(
+      'path', help='path to the iOS bundle to codesign')
+  code_sign_bundle_parser.add_argument(
+      '--identity', '-i', required=True,
+      help='identity to use to codesign')
+  code_sign_bundle_parser.add_argument(
+      '--binary', '-b', required=True,
+      help='path to the iOS bundle binary')
+  code_sign_bundle_parser.add_argument(
       '--framework', '-F', action='append', default=[], dest="frameworks",
       help='install and resign system framework')
+  code_sign_bundle_parser.set_defaults(func=MainCodeSignBundle)
+
+  generate_entitlements_parser = subparsers.add_parser(
+      'generate-entitlements',
+      help='generate entitlements file')
+  generate_entitlements_parser.add_argument(
+      'path', help='path to the entitlements file to generate')
+  generate_entitlements_parser.add_argument(
+      '--info-plist', '-p', required=True,
+      help='path to the bundle Info.plist')
+  generate_entitlements_parser.set_defaults(
+      func=MainGenerateEntitlements)
+
   args = parser.parse_args()
-
-  bundle = Bundle(args.path)
-  for framework in args.frameworks:
-    InstallFramework(framework, bundle, args)
-
-  CodeSignBundle(args.binary, bundle, args)
+  args.func(args)
 
 
 if __name__ == '__main__':

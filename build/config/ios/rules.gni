@@ -151,6 +151,53 @@ template("ios_app_bundle") {
     _is_fat_build_main_target = current_toolchain == default_toolchain
   }
 
+  _executable_extra_deps = []
+  _executable_extra_inputs = []
+  _executable_extra_ldflags = []
+
+  # Embeds the entitlements file if building for simulator. This is optional
+  # with Xcode 7 or older but required with Xcode 8. This is not necessary for
+  # device build as the entitlement is embedded via the codesigning step.
+  #
+  # As the generation of the entitlement depends on the
+  if (use_ios_simulator) {
+    _toolchain_suffix = ""
+    if (_is_fat_build && !_is_fat_build_main_target) {
+      _toolchain_suffix = "($default_toolchain)"
+    }
+
+    _generate_entitlements_target = _target_name + "_gen_entitlements"
+    _generate_entitlements_target_with_toolchain_suffix =
+        "$_generate_entitlements_target$_toolchain_suffix"
+
+    # TODO: the correct way to generate _generate_entitlements_output would
+    # be the following, but get_label_info() ignores the toolchain specifier
+    # so use a workaround.
+    #
+    # _generate_entitlements_output =
+    #     get_label_info(
+    #         _generate_entitlements_target_with_toolchain_suffix,
+    #         "target_gen_dir") +
+    #     "/$_output_name.xcent"
+    _generate_entitlements_output = "$root_build_dir/gen" + get_label_info(
+                                        _generate_entitlements_target,
+                                        "dir") + "/" + "$_output_name.xcent"
+
+    _executable_extra_inputs += [ _generate_entitlements_output ]
+    _executable_extra_deps +=
+        [ ":$_generate_entitlements_target_with_toolchain_suffix" ]
+    _executable_extra_ldflags += [
+      "-Xlinker",
+      "-sectcreate",
+      "-Xlinker",
+      "__TEXT",
+      "-Xlinker",
+      "__entitlements",
+      "-Xlinker",
+      rebase_path(_generate_entitlements_output, root_build_dir),
+    ]
+  }
+
   if (_is_fat_build && !_is_fat_build_main_target) {
     # For the non-default toolchain of a fat-build, the template expands to a
     # single "executable" target that creates "$root_out_dir/$_output_name".
@@ -173,6 +220,21 @@ template("ios_app_bundle") {
         visibility += [ ":*($default_toolchain)" ]
       }
 
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += _executable_extra_deps
+
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += _executable_extra_ldflags
+
+      if (!defined(inputs)) {
+        inputs = []
+      }
+      inputs += _executable_extra_inputs
+
       output_name = _output_name
       if (!defined(libs)) {
         libs = []
@@ -186,8 +248,23 @@ template("ios_app_bundle") {
     _generate_info_plist = target_name + "_generate_info_plist"
     _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
 
+    if (use_ios_simulator || ios_enable_code_signing) {
+      if (defined(invoker.entitlements_path)) {
+        _entitlements_path = invoker.entitlements_path
+      } else {
+        if (use_ios_simulator) {
+          _entitlements_path = "//build/config/ios/entitlements.plist"
+        } else {
+          _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+        }
+      }
+    }
+
     ios_info_plist(_generate_info_plist) {
       visibility = [ ":$_bundle_data_info_plist" ]
+      if (use_ios_simulator) {
+        visibility += [ ":$_generate_entitlements_target" ]
+      }
       executable_name = _output_name
       forward_variables_from(invoker,
                              [
@@ -207,6 +284,31 @@ template("ios_app_bundle") {
       public_deps = [
         ":$_generate_info_plist",
       ]
+    }
+
+    if (use_ios_simulator) {
+      action(_generate_entitlements_target) {
+        _gen_info_plist_target = ":$_generate_info_plist"
+        _gen_info_plist_outputs = get_target_outputs(_gen_info_plist_target)
+        _info_plist_path = _gen_info_plist_outputs[0]
+
+        script = "//build/config/ios/codesign.py"
+        deps = [
+          _gen_info_plist_target,
+        ]
+        sources = [
+          _entitlements_path,
+          _info_plist_path,
+        ]
+        outputs = [
+          _generate_entitlements_output,
+        ]
+        args = [
+                 "-e=" + rebase_path(_entitlements_path, root_build_dir),
+                 "generate-entitlements",
+                 "-p=" + rebase_path(_info_plist_path, root_build_dir),
+               ] + rebase_path(outputs, root_build_dir)
+      }
     }
 
     _link_executable = _target_name + "_executable"
@@ -257,6 +359,21 @@ template("ios_app_bundle") {
       } else {
         output_dir = target_out_dir
       }
+
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += _executable_extra_deps
+
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += _executable_extra_ldflags
+
+      if (!defined(inputs)) {
+        inputs = []
+      }
+      inputs += _executable_extra_inputs
 
       if (!defined(libs)) {
         libs = []
@@ -423,11 +540,6 @@ template("ios_app_bundle") {
       bundle_plugins_dir = "$bundle_root_dir/PlugIns"
 
       if (ios_enable_code_signing) {
-        _entitlements_path = "$ios_sdk_path/Entitlements.plist"
-        if (defined(invoker.entitlements_path)) {
-          _entitlements_path = invoker.entitlements_path
-        }
-
         code_signing_script = "//build/config/ios/codesign.py"
         code_signing_sources = [
           _entitlements_path,
@@ -445,9 +557,10 @@ template("ios_app_bundle") {
           }
         }
         code_signing_args = [
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
           "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
         ]
         if (defined(invoker.extra_system_frameworks)) {
@@ -1146,10 +1259,11 @@ template("ios_xctest_test") {
           "$bundle_root_dir/embedded.mobileprovision",
         ]
         code_signing_args = [
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          "code-sign-bundle",
           "-i=" + ios_code_signing_identity,
           "-b=" +
               rebase_path("$target_out_dir/$_xctest_output", root_build_dir),
-          "-e=" + rebase_path(_entitlements_path, root_build_dir),
           rebase_path(bundle_root_dir, root_build_dir),
         ]
       }
