@@ -25,43 +25,42 @@ base::FilePath GetFilePathFromCommandLine() {
   return command_line_file_path;
 }
 
-std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
-    const VideoCaptureDevice::Name& device_name) {
+std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::CreateDevice(
+    const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_WIN)
   return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
-      base::FilePath(base::SysUTF8ToWide(device_name.name()))));
+      base::FilePath(base::SysUTF8ToWide(device_descriptor.display_name))));
 #else
-  return std::unique_ptr<VideoCaptureDevice>(
-      new FileVideoCaptureDevice(base::FilePath(device_name.name())));
+  return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
+      base::FilePath(device_descriptor.display_name)));
 #endif
 }
 
-void FileVideoCaptureDeviceFactory::GetDeviceNames(
-    VideoCaptureDevice::Names* const device_names) {
+void FileVideoCaptureDeviceFactory::GetDeviceDescriptors(
+    VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(device_names->empty());
+  DCHECK(device_descriptors->empty());
   const base::FilePath command_line_file_path = GetFilePathFromCommandLine();
+  device_descriptors->emplace_back(
 #if defined(OS_WIN)
-  device_names->push_back(VideoCaptureDevice::Name(
       base::SysWideToUTF8(command_line_file_path.value()),
-      kFileVideoCaptureDeviceName, VideoCaptureDevice::Name::DIRECT_SHOW));
+      kFileVideoCaptureDeviceName, VideoCaptureApi::WIN_DIRECT_SHOW
 #elif defined(OS_MACOSX)
-  device_names->push_back(VideoCaptureDevice::Name(
       command_line_file_path.value(), kFileVideoCaptureDeviceName,
-      VideoCaptureDevice::Name::AVFOUNDATION));
+      VideoCaptureApi::MACOSX_AVFOUNDATION
 #elif defined(OS_LINUX)
-  device_names->push_back(VideoCaptureDevice::Name(
       command_line_file_path.value(), kFileVideoCaptureDeviceName,
-      VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
+      VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE
 #else
-  device_names->push_back(VideoCaptureDevice::Name(
-      command_line_file_path.value(), kFileVideoCaptureDeviceName));
+      command_line_file_path.value(), kFileVideoCaptureDeviceName,
+      VideoCaptureApi::UNKNOWN
 #endif
+      );
 }
 
-void FileVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
-    const VideoCaptureDevice::Name& device,
+void FileVideoCaptureDeviceFactory::GetSupportedFormats(
+    const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

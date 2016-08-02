@@ -69,9 +69,9 @@ public class VideoCaptureTango extends VideoCaptureCamera {
 
     static int getCaptureApiType(int index) {
         if (index >= CAM_PARAMS.length) {
-            return CaptureApiType.API1;
+            return VideoCaptureApi.ANDROID_API1;
         }
-        return CaptureApiType.TANGO;
+        return VideoCaptureApi.ANDROID_TANGO;
     }
 
     static String getName(int index) {

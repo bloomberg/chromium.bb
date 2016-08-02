@@ -31,16 +31,11 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-const std::string VideoCaptureDevice::Name::GetModel() const {
-  // Android cameras are not typically USB devices, and this method is currently
-  // only used for USB model identifiers, so this implementation just indicates
-  // an unknown device model.
-  return "";
-}
-
-VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
-    : state_(kIdle), got_first_frame_(false), device_name_(device_name) {
-}
+VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(
+    const VideoCaptureDeviceDescriptor& device_descriptor)
+    : state_(kIdle),
+      got_first_frame_(false),
+      device_descriptor_(device_descriptor) {}
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -49,7 +44,7 @@ VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
 
 bool VideoCaptureDeviceAndroid::Init() {
   int id;
-  if (!base::StringToInt(device_name_.id(), &id))
+  if (!base::StringToInt(device_descriptor_.device_id, &id))
     return false;
 
   j_capture_.Reset(VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(

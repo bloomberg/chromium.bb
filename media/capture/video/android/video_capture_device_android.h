@@ -42,10 +42,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     ANDROID_IMAGE_FORMAT_UNKNOWN = 0,
   };
 
-  explicit VideoCaptureDeviceAndroid(const Name& device_name);
+  explicit VideoCaptureDeviceAndroid(
+      const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceAndroid() override;
 
-  static VideoCaptureDevice* Create(const Name& device_name);
+  static VideoCaptureDevice* Create(
+      const VideoCaptureDeviceDescriptor& device_descriptor);
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
 
   // Registers the Java VideoCaptureDevice pointer, used by the rest of the
@@ -123,7 +125,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   gfx::Size next_photo_resolution_;
 
-  Name device_name_;
+  const VideoCaptureDeviceDescriptor device_descriptor_;
   VideoCaptureFormat capture_format_;
 
   // Java VideoCaptureAndroid instance.

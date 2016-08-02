@@ -12,17 +12,21 @@ namespace media {
 // Extension of VideoCaptureDeviceFactory to create and manipulate file-backed
 // fake devices. These devices play back video-only files as video capture
 // input.
+// The |device_descriptor.display_name| passed into the Create() method is
+// interpreted as a (platform-specific) file path to a video file to be used as
+// a source.
 class CAPTURE_EXPORT FileVideoCaptureDeviceFactory
     : public VideoCaptureDeviceFactory {
  public:
   FileVideoCaptureDeviceFactory() {}
   ~FileVideoCaptureDeviceFactory() override {}
 
-  std::unique_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) override;
-  void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
-  void GetDeviceSupportedFormats(
-      const VideoCaptureDevice::Name& device,
+  std::unique_ptr<VideoCaptureDevice> CreateDevice(
+      const VideoCaptureDeviceDescriptor& device_descriptor) override;
+  void GetDeviceDescriptors(
+      VideoCaptureDeviceDescriptors* device_descriptors) override;
+  void GetSupportedFormats(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats) override;
 };
 

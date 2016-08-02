@@ -9,7 +9,6 @@
 #include <list>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 
@@ -20,29 +19,6 @@
 #endif
 
 namespace media {
-
-// USB VID and PID are both 4 bytes long.
-static const size_t kVidPidSize = 4;
-
-// /sys/class/video4linux/video{N}/device is a symlink to the corresponding
-// USB device info directory.
-static const char kVidPathTemplate[] =
-    "/sys/class/video4linux/%s/device/../idVendor";
-static const char kPidPathTemplate[] =
-    "/sys/class/video4linux/%s/device/../idProduct";
-
-static bool ReadIdFile(const std::string& path, std::string* id) {
-  char id_buf[kVidPidSize];
-  FILE* file = fopen(path.c_str(), "rb");
-  if (!file)
-    return false;
-  const bool success = fread(id_buf, kVidPidSize, 1, file) == 1;
-  fclose(file);
-  if (!success)
-    return false;
-  id->append(id_buf, kVidPidSize);
-  return true;
-}
 
 // Translates Video4Linux pixel formats to Chromium pixel formats.
 // static
@@ -58,30 +34,10 @@ std::list<uint32_t> VideoCaptureDeviceLinux::GetListOfUsableFourCCs(
   return V4L2CaptureDelegate::GetListOfUsableFourCcs(favour_mjpeg);
 }
 
-const std::string VideoCaptureDevice::Name::GetModel() const {
-  // |unique_id| is of the form "/dev/video2".  |file_name| is "video2".
-  const std::string dev_dir = "/dev/";
-  DCHECK_EQ(0, unique_id_.compare(0, dev_dir.length(), dev_dir));
-  const std::string file_name =
-      unique_id_.substr(dev_dir.length(), unique_id_.length());
-
-  const std::string vidPath =
-      base::StringPrintf(kVidPathTemplate, file_name.c_str());
-  const std::string pidPath =
-      base::StringPrintf(kPidPathTemplate, file_name.c_str());
-
-  std::string usb_id;
-  if (!ReadIdFile(vidPath, &usb_id))
-    return "";
-  usb_id.append(":");
-  if (!ReadIdFile(pidPath, &usb_id))
-    return "";
-
-  return usb_id;
-}
-
-VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)
-    : v4l2_thread_("V4L2CaptureThread"), device_name_(device_name) {}
+VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(
+    const VideoCaptureDeviceDescriptor& device_descriptor)
+    : v4l2_thread_("V4L2CaptureThread"),
+      device_descriptor_(device_descriptor) {}
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   // Check if the thread is running.
@@ -101,7 +57,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   const int line_frequency =
       TranslatePowerLineFrequencyToV4L2(GetPowerLineFrequency(params));
   capture_impl_ = new V4L2CaptureDelegate(
-      device_name_, v4l2_thread_.task_runner(), line_frequency);
+      device_descriptor_, v4l2_thread_.task_runner(), line_frequency);
   if (!capture_impl_) {
     client->OnError(FROM_HERE, "Failed to create VideoCaptureDelegate");
     return;

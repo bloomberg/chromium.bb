@@ -210,8 +210,9 @@ void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
   }
 }
 
-VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
-    : device_name_(device_name), state_(kIdle) {
+VideoCaptureDeviceWin::VideoCaptureDeviceWin(
+    const VideoCaptureDeviceDescriptor& device_descriptor)
+    : device_descriptor_(device_descriptor), state_(kIdle) {
   // TODO(mcasas): Check that CoInitializeEx() has been called with the
   // appropriate Apartment model, i.e., Single Threaded.
 }
@@ -239,7 +240,7 @@ bool VideoCaptureDeviceWin::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   HRESULT hr;
 
-  hr = GetDeviceFilter(device_name_.id(), capture_filter_.Receive());
+  hr = GetDeviceFilter(device_descriptor_.device_id, capture_filter_.Receive());
 
   if (!capture_filter_.get()) {
     DLOG(ERROR) << "Failed to create capture filter: "

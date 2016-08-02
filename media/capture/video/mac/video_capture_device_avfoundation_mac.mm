@@ -165,12 +165,12 @@ void ExtractBaseAddressAndLength(
   return deviceNames;
 }
 
-+ (void)getDevice:(const media::VideoCaptureDevice::Name&)name
- supportedFormats:(media::VideoCaptureFormats*)formats {
++ (void)getDevice:(const media::VideoCaptureDeviceDescriptor&)descriptor
+    supportedFormats:(media::VideoCaptureFormats*)formats {
   NSArray* devices = [AVCaptureDeviceGlue devices];
   CrAVCaptureDevice* device = nil;
   for (device in devices) {
-    if ([[device uniqueID] UTF8String] == name.id())
+    if ([[device uniqueID] UTF8String] == descriptor.device_id)
       break;
   }
   if (device == nil)
@@ -192,7 +192,7 @@ void ExtractBaseAddressAndLength(
           gfx::Size(dimensions.width, dimensions.height),
           frameRate.maxFrameRate, pixelFormat);
       formats->push_back(format);
-      DVLOG(2) << name.name() << " "
+      DVLOG(2) << descriptor.display_name << " "
                << media::VideoCaptureFormat::ToString(format);
     }
   }

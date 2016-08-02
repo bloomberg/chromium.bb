@@ -22,11 +22,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   VideoCaptureDeviceFactoryWin();
   ~VideoCaptureDeviceFactoryWin() override {}
 
-  std::unique_ptr<VideoCaptureDevice> Create(
-      const VideoCaptureDevice::Name& device_name) override;
-  void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
-  void GetDeviceSupportedFormats(
-      const VideoCaptureDevice::Name& device,
+  std::unique_ptr<VideoCaptureDevice> CreateDevice(
+      const VideoCaptureDeviceDescriptor& device_descriptor) override;
+  void GetDeviceDescriptors(
+      VideoCaptureDeviceDescriptors* device_descriptors) override;
+  void GetSupportedFormats(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats) override;
 
  private:

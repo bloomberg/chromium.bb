@@ -34,20 +34,22 @@ namespace media {
 // us for sending back frames, logs and error messages.
 class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
  public:
-  // Gets the names of all DeckLink video capture devices connected to this
+  // Gets descriptors for all DeckLink video capture devices connected to this
   // computer, as enumerated by the DeckLink SDK. To allow the user to choose
   // exactly which capture format she wants, we enumerate as many cameras as
   // capture formats.
-  static void EnumerateDevices(VideoCaptureDevice::Names* device_names);
+  static void EnumerateDevices(
+      VideoCaptureDeviceDescriptors* device_descriptors);
 
   // Gets the supported formats of a particular device attached to the system,
   // identified by |device|. Formats are retrieved from the DeckLink SDK.
   // Following the enumeration, each camera will have only one capability.
   static void EnumerateDeviceCapabilities(
-      const VideoCaptureDevice::Name& device,
+      const VideoCaptureDeviceDescriptor& descriptor,
       VideoCaptureFormats* supported_formats);
 
-  explicit VideoCaptureDeviceDeckLinkMac(const Name& device_name);
+  explicit VideoCaptureDeviceDeckLinkMac(
+      const VideoCaptureDeviceDescriptor& descriptor);
   ~VideoCaptureDeviceDeckLinkMac() override;
 
   // Copy of VideoCaptureDevice::Client::OnIncomingCapturedData(). Used by

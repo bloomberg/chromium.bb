@@ -24,12 +24,6 @@ using base::win::ScopedComPtr;
 
 namespace media {
 
-// In Windows device identifiers, the USB VID and PID are preceded by the string
-// "vid_" or "pid_".  The identifiers are each 4 bytes long.
-const char kVidPrefix[] = "vid_";  // Also contains '\0'.
-const char kPidPrefix[] = "pid_";  // Also contains '\0'.
-const size_t kVidPidSize = 4;
-
 static bool GetFrameSize(IMFMediaType* type, gfx::Size* frame_size) {
   UINT32 width32, height32;
   if (FAILED(MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width32, &height32)))
@@ -188,28 +182,9 @@ bool VideoCaptureDeviceMFWin::FormatFromGuid(const GUID& guid,
   return false;
 }
 
-const std::string VideoCaptureDevice::Name::GetModel() const {
-  const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
-  const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
-  const size_t vid_location = unique_id_.find(kVidPrefix);
-  if (vid_location == std::string::npos ||
-      vid_location + vid_prefix_size + kVidPidSize > unique_id_.size()) {
-    return std::string();
-  }
-  const size_t pid_location = unique_id_.find(kPidPrefix);
-  if (pid_location == std::string::npos ||
-      pid_location + pid_prefix_size + kVidPidSize > unique_id_.size()) {
-    return std::string();
-  }
-  std::string id_vendor =
-      unique_id_.substr(vid_location + vid_prefix_size, kVidPidSize);
-  std::string id_product =
-      unique_id_.substr(pid_location + pid_prefix_size, kVidPidSize);
-  return id_vendor + ":" + id_product;
-}
-
-VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(const Name& device_name)
-    : name_(device_name), capture_(0) {
+VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
+    const VideoCaptureDeviceDescriptor& device_descriptor)
+    : descriptor_(device_descriptor), capture_(0) {
   DetachFromThread();
 }
 

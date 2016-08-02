@@ -24,10 +24,16 @@
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
-using Name = media::VideoCaptureDevice::Name;
-using Names = media::VideoCaptureDevice::Names;
+using Descriptor = media::VideoCaptureDeviceDescriptor;
+using Descriptors = media::VideoCaptureDeviceDescriptors;
 
 namespace media {
+
+// In Windows device identifiers, the USB VID and PID are preceded by the string
+// "vid_" or "pid_".  The identifiers are each 4 bytes long.
+const char kVidPrefix[] = "vid_";  // Also contains '\0'.
+const char kPidPrefix[] = "pid_";  // Also contains '\0'.
+const size_t kVidPidSize = 4;
 
 // Avoid enumerating and/or using certain devices due to they provoking crashes
 // or any other reason (http://crbug.com/378494). This enum is defined for the
@@ -48,9 +54,7 @@ static const char* const kBlacklistedCameraNames[] = {
     // Name of a fake DirectShow filter on computers with GTalk installed.
     "Google Camera Adapter",
     // The following software WebCams cause crashes.
-    "IP Camera [JPEG/MJPEG]",
-    "CyberLink Webcam Splitter",
-    "EpocCam",
+    "IP Camera [JPEG/MJPEG]", "CyberLink Webcam Splitter", "EpocCam",
 };
 static_assert(arraysize(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
               "kBlacklistedCameraNames should be same size as "
@@ -122,9 +126,29 @@ static bool IsDeviceBlackListed(const std::string& name) {
   return false;
 }
 
-static void GetDeviceNamesDirectShow(Names* device_names) {
-  DCHECK(device_names);
-  DVLOG(1) << " GetDeviceNamesDirectShow";
+static std::string GetDeviceModelId(const std::string& device_id) {
+  const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
+  const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
+  const size_t vid_location = device_id.find(kVidPrefix);
+  if (vid_location == std::string::npos ||
+      vid_location + vid_prefix_size + kVidPidSize > device_id.size()) {
+    return std::string();
+  }
+  const size_t pid_location = device_id.find(kPidPrefix);
+  if (pid_location == std::string::npos ||
+      pid_location + pid_prefix_size + kVidPidSize > device_id.size()) {
+    return std::string();
+  }
+  const std::string id_vendor =
+      device_id.substr(vid_location + vid_prefix_size, kVidPidSize);
+  const std::string id_product =
+      device_id.substr(pid_location + pid_prefix_size, kVidPidSize);
+  return id_vendor + ":" + id_product;
+}
+
+static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
+  DCHECK(device_descriptors);
+  DVLOG(1) << __FUNCTION__;
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr =
@@ -171,12 +195,17 @@ static void GetDeviceNamesDirectShow(Names* device_names) {
       DCHECK_EQ(name.type(), VT_BSTR);
       id = base::SysWideToUTF8(V_BSTR(name.ptr()));
     }
-    device_names->push_back(Name(device_name, id, Name::DIRECT_SHOW));
+
+    const std::string model_id = GetDeviceModelId(id);
+
+    device_descriptors->emplace_back(device_name, id, model_id,
+                                     VideoCaptureApi::WIN_DIRECT_SHOW);
   }
 }
 
-static void GetDeviceNamesMediaFoundation(Names* device_names) {
-  DVLOG(1) << " GetDeviceNamesMediaFoundation";
+static void GetDeviceDescriptorsMediaFoundation(
+    Descriptors* device_descriptors) {
+  DVLOG(1) << " GetDeviceDescriptorsMediaFoundation";
   ScopedCoMem<IMFActivate*> devices;
   UINT32 count;
   if (!EnumerateVideoDevicesMediaFoundation(&devices, &count))
@@ -194,10 +223,12 @@ static void GetDeviceNamesMediaFoundation(Names* device_names) {
           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id,
           &id_size);
       if (SUCCEEDED(hr)) {
-        device_names->push_back(
-            Name(base::SysWideToUTF8(std::wstring(name, name_size)),
-                 base::SysWideToUTF8(std::wstring(id, id_size)),
-                 Name::MEDIA_FOUNDATION));
+        const std::string device_id =
+            base::SysWideToUTF8(std::wstring(id, id_size));
+        const std::string model_id = GetDeviceModelId(device_id);
+        device_descriptors->emplace_back(
+            base::SysWideToUTF8(std::wstring(name, name_size)), device_id,
+            model_id, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
       }
     }
     DLOG_IF(ERROR, FAILED(hr)) << "GetAllocatedString failed: "
@@ -206,9 +237,10 @@ static void GetDeviceNamesMediaFoundation(Names* device_names) {
   }
 }
 
-static void GetDeviceSupportedFormatsDirectShow(const Name& device,
+static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
                                                 VideoCaptureFormats* formats) {
-  DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for " << device.name();
+  DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for "
+           << descriptor.display_name;
   ScopedComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr =
       dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC);
@@ -227,7 +259,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
   // that is anyway needed in GetDeviceFilter(). "google camera adapter" and old
   // VFW devices are already skipped previously in GetDeviceNames() enumeration.
   base::win::ScopedComPtr<IBaseFilter> capture_filter;
-  hr = VideoCaptureDeviceWin::GetDeviceFilter(device.capabilities_id(),
+  hr = VideoCaptureDeviceWin::GetDeviceFilter(descriptor.device_id,
                                               capture_filter.Receive());
   if (!capture_filter.get()) {
     DLOG(ERROR) << "Failed to create capture filter: "
@@ -288,17 +320,19 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
               ? kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame)
               : 0.0f;
       formats->push_back(format);
-      DVLOG(1) << device.name() << " " << VideoCaptureFormat::ToString(format);
+      DVLOG(1) << descriptor.display_name << " "
+               << VideoCaptureFormat::ToString(format);
     }
   }
 }
 
 static void GetDeviceSupportedFormatsMediaFoundation(
-    const Name& device,
+    const Descriptor& descriptor,
     VideoCaptureFormats* formats) {
-  DVLOG(1) << "GetDeviceSupportedFormatsMediaFoundation for " << device.name();
+  DVLOG(1) << "GetDeviceSupportedFormatsMediaFoundation for "
+           << descriptor.display_name;
   ScopedComPtr<IMFMediaSource> source;
-  if (!CreateVideoCaptureDeviceMediaFoundation(device.id().c_str(),
+  if (!CreateVideoCaptureDeviceMediaFoundation(descriptor.device_id.c_str(),
                                                source.Receive())) {
     return;
   }
@@ -349,7 +383,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     formats->push_back(capture_format);
     ++stream_index;
 
-    DVLOG(1) << device.name() << " "
+    DVLOG(1) << descriptor.display_name << " "
              << VideoCaptureFormat::ToString(capture_format);
   }
 }
@@ -376,41 +410,44 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
                             base::CommandLine::ForCurrentProcess()->HasSwitch(
                                 switches::kForceMediaFoundationVideoCapture)) {}
 
-std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
-    const Name& device_name) {
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
+    const Descriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<VideoCaptureDevice> device;
-  if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
+  if (device_descriptor.capture_api == VideoCaptureApi::WIN_MEDIA_FOUNDATION) {
     DCHECK(PlatformSupportsMediaFoundation());
-    device.reset(new VideoCaptureDeviceMFWin(device_name));
-    DVLOG(1) << " MediaFoundation Device: " << device_name.name();
+    device.reset(new VideoCaptureDeviceMFWin(device_descriptor));
+    DVLOG(1) << " MediaFoundation Device: " << device_descriptor.display_name;
     ScopedComPtr<IMFMediaSource> source;
-    if (!CreateVideoCaptureDeviceMediaFoundation(device_name.id().c_str(),
-                                                 source.Receive())) {
+    if (!CreateVideoCaptureDeviceMediaFoundation(
+            device_descriptor.device_id.c_str(), source.Receive())) {
       return std::unique_ptr<VideoCaptureDevice>();
     }
     if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
       device.reset();
-  } else {
-    DCHECK(device_name.capture_api_type() == Name::DIRECT_SHOW);
-    device.reset(new VideoCaptureDeviceWin(device_name));
-    DVLOG(1) << " DirectShow Device: " << device_name.name();
+  } else if (device_descriptor.capture_api ==
+             VideoCaptureApi::WIN_DIRECT_SHOW) {
+    device.reset(new VideoCaptureDeviceWin(device_descriptor));
+    DVLOG(1) << " DirectShow Device: " << device_descriptor.display_name;
     if (!static_cast<VideoCaptureDeviceWin*>(device.get())->Init())
       device.reset();
+  } else {
+    NOTREACHED();
   }
   return device;
 }
 
-void VideoCaptureDeviceFactoryWin::GetDeviceNames(Names* device_names) {
+void VideoCaptureDeviceFactoryWin::GetDeviceDescriptors(
+    VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_media_foundation_)
-    GetDeviceNamesMediaFoundation(device_names);
+    GetDeviceDescriptorsMediaFoundation(device_descriptors);
   else
-    GetDeviceNamesDirectShow(device_names);
+    GetDeviceDescriptorsDirectShow(device_descriptors);
 }
 
-void VideoCaptureDeviceFactoryWin::GetDeviceSupportedFormats(
-    const Name& device,
+void VideoCaptureDeviceFactoryWin::GetSupportedFormats(
+    const Descriptor& device,
     VideoCaptureFormats* formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_media_foundation_)

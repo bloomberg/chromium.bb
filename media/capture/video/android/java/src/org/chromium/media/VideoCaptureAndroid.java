@@ -50,9 +50,9 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
 
     static int getCaptureApiType(int id) {
         if (VideoCaptureCamera.getCameraInfo(id) == null) {
-            return CaptureApiType.API_TYPE_UNKNOWN;
+            return VideoCaptureApi.UNKNOWN;
         }
-        return CaptureApiType.API1;
+        return VideoCaptureApi.ANDROID_API1;
     }
 
     static String getName(int id) {

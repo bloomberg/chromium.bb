@@ -96,11 +96,10 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
 
 VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const Name& device_name)
-    : VideoCaptureDeviceLinux(device_name),
+    const VideoCaptureDeviceDescriptor& device_descriptor)
+    : VideoCaptureDeviceLinux(device_descriptor),
       screen_observer_delegate_(
-          new ScreenObserverDelegate(this, ui_task_runner)) {
-}
+          new ScreenObserverDelegate(this, ui_task_runner)) {}
 
 VideoCaptureDeviceChromeOS::~VideoCaptureDeviceChromeOS() {
   screen_observer_delegate_->RemoveObserver();

@@ -84,8 +84,8 @@ class VideoCaptureDeviceMac;
 // Returns a dictionary of capture devices with friendly name and unique id.
 + (NSDictionary*)deviceNames;
 
-// Retrieve the capture supported formats for a given device |name|.
-+ (void)getDevice:(const media::VideoCaptureDevice::Name&)name
+// Retrieve the capture supported formats for a given device |descriptor|.
++ (void)getDevice:(const media::VideoCaptureDeviceDescriptor&)descriptor
     supportedFormats:(media::VideoCaptureFormats*)formats;
 
 // Initializes the instance and the underlying capture session and registers the

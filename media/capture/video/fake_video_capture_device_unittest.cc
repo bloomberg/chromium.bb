@@ -121,11 +121,11 @@ class DeviceEnumerationListener
     : public base::RefCounted<DeviceEnumerationListener> {
  public:
   MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
-               void(VideoCaptureDevice::Names* names));
+               void(VideoCaptureDeviceDescriptors* descriptors));
   // GMock doesn't support move-only arguments, so we use this forward method.
   void OnEnumeratedDevicesCallback(
-      std::unique_ptr<VideoCaptureDevice::Names> names) {
-    OnEnumeratedDevicesCallbackPtr(names.release());
+      std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors) {
+    OnEnumeratedDevicesCallbackPtr(descriptors.release());
   }
 
  private:
@@ -198,21 +198,22 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
     run_loop_->Run();
   }
 
-  std::unique_ptr<VideoCaptureDevice::Names> EnumerateDevices() {
-    VideoCaptureDevice::Names* names;
+  std::unique_ptr<VideoCaptureDeviceDescriptors> EnumerateDevices() {
+    VideoCaptureDeviceDescriptors* descriptors;
     EXPECT_CALL(*device_enumeration_listener_.get(),
-                OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
+                OnEnumeratedDevicesCallbackPtr(_))
+        .WillOnce(SaveArg<0>(&descriptors));
 
-    video_capture_device_factory_->EnumerateDeviceNames(
+    video_capture_device_factory_->EnumerateDeviceDescriptors(
         base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
                    device_enumeration_listener_));
     base::RunLoop().RunUntilIdle();
-    return std::unique_ptr<VideoCaptureDevice::Names>(names);
+    return std::unique_ptr<VideoCaptureDeviceDescriptors>(descriptors);
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
-  VideoCaptureDevice::Names names_;
+  VideoCaptureDeviceDescriptors descriptors_;
   const std::unique_ptr<base::MessageLoop> loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockClient> client_;
@@ -240,8 +241,9 @@ class FakeVideoCaptureDeviceCommandLineTest
       public ::testing::WithParamInterface<CommandLineTestData> {};
 
 TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
-  const std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
-  ASSERT_FALSE(names->empty());
+  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
+      EnumerateDevices());
+  ASSERT_FALSE(descriptors->empty());
 
   std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
       testing::get<0>(GetParam()), testing::get<1>(GetParam())));
@@ -267,13 +269,13 @@ INSTANTIATE_TEST_CASE_P(
             Values(20, 29.97, 30, 50, 60)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
+  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
+      EnumerateDevices());
 
-  VideoCaptureFormats supported_formats;
-
-  for (const auto& names_iterator : *names) {
-    video_capture_device_factory_->GetDeviceSupportedFormats(
-        names_iterator, &supported_formats);
+  for (const auto& descriptors_iterator : *descriptors) {
+    VideoCaptureFormats supported_formats;
+    video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
+                                                       &supported_formats);
     ASSERT_EQ(supported_formats.size(), 4u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
@@ -397,12 +399,13 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
 TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseFakeDeviceForMediaStream, GetParam().argument);
-  const std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
-  ASSERT_FALSE(names->empty());
+  const std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
+      EnumerateDevices());
+  ASSERT_FALSE(descriptors->empty());
 
-  for (const auto& names_iterator : *names) {
+  for (const auto& descriptors_iterator : *descriptors) {
     std::unique_ptr<VideoCaptureDevice> device =
-        video_capture_device_factory_->Create(names_iterator);
+        video_capture_device_factory_->CreateDevice(descriptors_iterator);
     ASSERT_TRUE(device);
 
     VideoCaptureParams capture_params;

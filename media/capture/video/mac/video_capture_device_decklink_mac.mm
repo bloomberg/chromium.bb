@@ -47,8 +47,9 @@ class DeckLinkCaptureDelegate
     : public IDeckLinkInputCallback,
       public base::RefCountedThreadSafe<DeckLinkCaptureDelegate> {
  public:
-  DeckLinkCaptureDelegate(const media::VideoCaptureDevice::Name& device_name,
-                          media::VideoCaptureDeviceDeckLinkMac* frame_receiver);
+  DeckLinkCaptureDelegate(
+      const media::VideoCaptureDeviceDescriptor& device_descriptor,
+      media::VideoCaptureDeviceDeckLinkMac* frame_receiver);
 
   void AllocateAndStart(const media::VideoCaptureParams& params);
   void StopAndDeAllocate();
@@ -78,7 +79,7 @@ class DeckLinkCaptureDelegate
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendLogString().
   void SendLogString(const std::string& message);
 
-  const media::VideoCaptureDevice::Name device_name_;
+  const media::VideoCaptureDeviceDescriptor device_descriptor_;
 
   // Protects concurrent setting and using of |frame_receiver_|.
   base::Lock lock_;
@@ -123,10 +124,9 @@ static float GetDisplayModeFrameRate(
 }
 
 DeckLinkCaptureDelegate::DeckLinkCaptureDelegate(
-    const media::VideoCaptureDevice::Name& device_name,
+    const media::VideoCaptureDeviceDescriptor& device_descriptor,
     media::VideoCaptureDeviceDeckLinkMac* frame_receiver)
-    : device_name_(device_name), frame_receiver_(frame_receiver) {
-}
+    : device_descriptor_(device_descriptor), frame_receiver_(frame_receiver) {}
 
 DeckLinkCaptureDelegate::~DeckLinkCaptureDelegate() {
 }
@@ -144,7 +144,8 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
   while (decklink_iter->Next(decklink_local.Receive()) == S_OK) {
     CFStringRef device_model_name = NULL;
     if ((decklink_local->GetModelName(&device_model_name) == S_OK) ||
-        (device_name_.id() == base::SysCFStringRefToUTF8(device_model_name))) {
+        (device_descriptor_.device_id ==
+         base::SysCFStringRefToUTF8(device_model_name))) {
       break;
     }
   }
@@ -339,7 +340,7 @@ static std::string JoinDeviceNameAndFormat(CFStringRef name,
 
 // static
 void VideoCaptureDeviceDeckLinkMac::EnumerateDevices(
-    VideoCaptureDevice::Names* device_names) {
+    VideoCaptureDeviceDescriptors* device_descriptors) {
   scoped_refptr<IDeckLinkIterator> decklink_iter(
       CreateDeckLinkIteratorInstance());
   // At this point, not being able to create a DeckLink iterator means that
@@ -382,13 +383,15 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDevices(
     while (display_mode_iter->Next(display_mode.Receive()) == S_OK) {
       CFStringRef format_name = NULL;
       if (display_mode->GetName(&format_name) == S_OK) {
-        VideoCaptureDevice::Name name(
-            JoinDeviceNameAndFormat(device_display_name, format_name),
-            JoinDeviceNameAndFormat(device_model_name, format_name),
-            VideoCaptureDevice::Name::DECKLINK,
-            VideoCaptureDevice::Name::OTHER_TRANSPORT);
-        device_names->push_back(name);
-        DVLOG(1) << "Blackmagic camera enumerated: " << name.name();
+        VideoCaptureDeviceDescriptor descriptor;
+        descriptor.display_name =
+            JoinDeviceNameAndFormat(device_display_name, format_name);
+        descriptor.device_id =
+            JoinDeviceNameAndFormat(device_model_name, format_name);
+        descriptor.capture_api = VideoCaptureApi::MACOSX_DECKLINK;
+        descriptor.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
+        device_descriptors->push_back(descriptor);
+        DVLOG(1) << "Blackmagic camera enumerated: " << descriptor.display_name;
       }
       display_mode.Release();
     }
@@ -397,7 +400,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDevices(
 
 // static
 void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
-    const VideoCaptureDevice::Name& device,
+    const VideoCaptureDeviceDescriptor& device,
     VideoCaptureFormats* supported_formats) {
   scoped_refptr<IDeckLinkIterator> decklink_iter(
       CreateDeckLinkIteratorInstance());
@@ -431,7 +434,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
     while (display_mode_iter->Next(display_mode.Receive()) == S_OK) {
       CFStringRef format_name = NULL;
       if (display_mode->GetName(&format_name) == S_OK &&
-          device.id() !=
+          device.device_id !=
               JoinDeviceNameAndFormat(device_model_name, format_name)) {
         display_mode.Release();
         continue;
@@ -444,7 +447,8 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
           GetDisplayModeFrameRate(display_mode),
           PIXEL_FORMAT_UNKNOWN);
       supported_formats->push_back(format);
-      DVLOG(2) << device.name() << " " << VideoCaptureFormat::ToString(format);
+      DVLOG(2) << device.display_name << " "
+               << VideoCaptureFormat::ToString(format);
       display_mode.Release();
     }
     return;
@@ -452,10 +456,9 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
 }
 
 VideoCaptureDeviceDeckLinkMac::VideoCaptureDeviceDeckLinkMac(
-    const Name& device_name)
+    const VideoCaptureDeviceDescriptor& device_descriptor)
     : decklink_capture_delegate_(
-          new DeckLinkCaptureDelegate(device_name, this)) {
-}
+          new DeckLinkCaptureDelegate(device_descriptor, this)) {}
 
 VideoCaptureDeviceDeckLinkMac::~VideoCaptureDeviceDeckLinkMac() {
   decklink_capture_delegate_->ResetVideoCaptureDeviceReference();

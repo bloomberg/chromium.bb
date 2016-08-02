@@ -600,29 +600,33 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
 }
 
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
-    const media::VideoCaptureDeviceInfos& video_capture_device_infos) {
+    const std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
+                                 media::VideoCaptureFormats>>&
+        descriptors_and_formats) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   video_capture_capabilities_cached_data_.Clear();
 
-  for (const auto& video_capture_device_info : video_capture_device_infos) {
+  for (const auto& device_format_pair : descriptors_and_formats) {
     base::ListValue* format_list = new base::ListValue();
     // TODO(nisse): Representing format information as a string, to be
     // parsed by the javascript handler, is brittle. Consider passing
     // a list of mappings instead.
 
-    for (const auto& format : video_capture_device_info.supported_formats)
+    const media::VideoCaptureDeviceDescriptor& descriptor =
+        std::get<0>(device_format_pair);
+    const media::VideoCaptureFormats& supported_formats =
+        std::get<1>(device_format_pair);
+    for (const auto& format : supported_formats)
       format_list->AppendString(media::VideoCaptureFormat::ToString(format));
 
     std::unique_ptr<base::DictionaryValue> device_dict(
         new base::DictionaryValue());
-    device_dict->SetString("id", video_capture_device_info.name.id());
-    device_dict->SetString(
-        "name", video_capture_device_info.name.GetNameAndModel());
+    device_dict->SetString("id", descriptor.device_id);
+    device_dict->SetString("name", descriptor.GetNameAndModel());
     device_dict->Set("formats", format_list);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
-    device_dict->SetString(
-        "captureApi", video_capture_device_info.name.GetCaptureApiTypeString());
+    device_dict->SetString("captureApi", descriptor.GetCaptureApiTypeString());
 #endif
     video_capture_capabilities_cached_data_.Append(std::move(device_dict));
   }

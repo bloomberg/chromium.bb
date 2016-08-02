@@ -40,7 +40,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
  public:
   static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
 
-  explicit VideoCaptureDeviceMFWin(const Name& device_name);
+  explicit VideoCaptureDeviceMFWin(
+      const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceMFWin() override;
 
   // Opens the device driver for this device.
@@ -62,7 +63,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
  private:
   void OnError(const tracked_objects::Location& from_here, HRESULT hr);
 
-  Name name_;
+  VideoCaptureDeviceDescriptor descriptor_;
   base::win::ScopedComPtr<IMFActivate> device_;
   scoped_refptr<MFReaderCallback> callback_;
 

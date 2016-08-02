@@ -31,7 +31,8 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(uint32_t v4l2_fourcc);
   static std::list<uint32_t> GetListOfUsableFourCCs(bool favour_mjpeg);
 
-  explicit VideoCaptureDeviceLinux(const Name& device_name);
+  explicit VideoCaptureDeviceLinux(
+      const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceLinux() override;
 
   // VideoCaptureDevice implementation.
@@ -52,7 +53,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
 
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.
 
-  const Name device_name_;
+  const VideoCaptureDeviceDescriptor device_descriptor_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };

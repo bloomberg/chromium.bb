@@ -26,15 +26,15 @@ FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
       fake_vcd_ownership_(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS),
       frame_rate_(kFakeCaptureDefaultFrameRate) {}
 
-std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
-    const VideoCaptureDevice::Name& device_name) {
+std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::CreateDevice(
+    const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   parse_command_line();
 
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
-    if (device_name.id().compare(possible_id) == 0) {
+    if (device_descriptor.device_id.compare(possible_id) == 0) {
       return std::unique_ptr<VideoCaptureDevice>(
           new FakeVideoCaptureDevice(fake_vcd_ownership_, frame_rate_));
     }
@@ -42,33 +42,28 @@ std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
   return std::unique_ptr<VideoCaptureDevice>();
 }
 
-void FakeVideoCaptureDeviceFactory::GetDeviceNames(
-    VideoCaptureDevice::Names* const device_names) {
+void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
+    VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(device_names->empty());
+  DCHECK(device_descriptors->empty());
   for (int n = 0; n < number_of_devices_; ++n) {
-    VideoCaptureDevice::Name name(base::StringPrintf("fake_device_%d", n),
-                                  base::StringPrintf("/dev/video%d", n)
+    device_descriptors->emplace_back(base::StringPrintf("fake_device_%d", n),
+                                     base::StringPrintf("/dev/video%d", n),
 #if defined(OS_LINUX)
-                                      ,
-                                  VideoCaptureDevice::Name::V4L2_SINGLE_PLANE
+                                     VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE
 #elif defined(OS_MACOSX)
-                                      ,
-                                  VideoCaptureDevice::Name::AVFOUNDATION
+                                     VideoCaptureApi::MACOSX_AVFOUNDATION
 #elif defined(OS_WIN)
-                                      ,
-                                  VideoCaptureDevice::Name::DIRECT_SHOW
+                                     VideoCaptureApi::WIN_DIRECT_SHOW
 #elif defined(OS_ANDROID)
-                                      ,
-                                  VideoCaptureDevice::Name::API2_LEGACY
+                                     VideoCaptureApi::ANDROID_API2_LEGACY
 #endif
-                                  );
-    device_names->push_back(name);
+                                     );
   }
 }
 
-void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
-    const VideoCaptureDevice::Name& device,
+void FakeVideoCaptureDeviceFactory::GetSupportedFormats(
+    const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const gfx::Size supported_sizes[] = {gfx::Size(320, 240),

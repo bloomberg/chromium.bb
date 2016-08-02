@@ -168,12 +168,12 @@ class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
 class DeviceEnumerationListener
     : public base::RefCounted<DeviceEnumerationListener> {
  public:
-  MOCK_METHOD1(OnEnumeratedDevicesCallbackPtr,
-               void(VideoCaptureDevice::Names* names));
+  MOCK_METHOD1(OnEnumerateDeviceDescriptorsCallbackPtr,
+               void(VideoCaptureDeviceDescriptors* device_descriptors));
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void OnEnumeratedDevicesCallback(
-      std::unique_ptr<VideoCaptureDevice::Names> names) {
-    OnEnumeratedDevicesCallbackPtr(names.release());
+  void OnEnumerateDeviceDescriptorsCallback(
+      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors) {
+    OnEnumerateDeviceDescriptorsCallbackPtr(device_descriptors.release());
   }
 
  private:
@@ -226,50 +226,51 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
     run_loop_->Run();
   }
 
-  std::unique_ptr<VideoCaptureDevice::Names> EnumerateDevices() {
-    VideoCaptureDevice::Names* names;
+  std::unique_ptr<VideoCaptureDeviceDescriptors> EnumerateDeviceDescriptors() {
+    VideoCaptureDeviceDescriptors* device_descriptors;
     EXPECT_CALL(*device_enumeration_listener_.get(),
-                OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
+                OnEnumerateDeviceDescriptorsCallbackPtr(_))
+        .WillOnce(SaveArg<0>(&device_descriptors));
 
-    video_capture_device_factory_->EnumerateDeviceNames(
-        base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
-                   device_enumeration_listener_));
+    video_capture_device_factory_->EnumerateDeviceDescriptors(base::Bind(
+        &DeviceEnumerationListener::OnEnumerateDeviceDescriptorsCallback,
+        device_enumeration_listener_));
     base::RunLoop().RunUntilIdle();
-    return std::unique_ptr<VideoCaptureDevice::Names>(names);
+    return std::unique_ptr<VideoCaptureDeviceDescriptors>(device_descriptors);
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
-  std::unique_ptr<VideoCaptureDevice::Name>
-  GetFirstDeviceNameSupportingPixelFormat(
+  std::unique_ptr<VideoCaptureDeviceDescriptor>
+  GetFirstDeviceDescriptorSupportingPixelFormat(
       const VideoPixelFormat& pixel_format) {
-    names_ = EnumerateDevices();
-    if (names_->empty()) {
+    device_descriptors_ = EnumerateDeviceDescriptors();
+    if (device_descriptors_->empty()) {
       DVLOG(1) << "No camera available.";
-      return std::unique_ptr<VideoCaptureDevice::Name>();
+      return std::unique_ptr<VideoCaptureDeviceDescriptor>();
     }
-    for (const auto& names_iterator : *names_) {
+    for (const auto& descriptors_iterator : *device_descriptors_) {
       VideoCaptureFormats supported_formats;
-      video_capture_device_factory_->GetDeviceSupportedFormats(
-          names_iterator, &supported_formats);
+      video_capture_device_factory_->GetSupportedFormats(descriptors_iterator,
+                                                         &supported_formats);
       for (const auto& formats_iterator : supported_formats) {
         if (formats_iterator.pixel_format == pixel_format) {
-          return std::unique_ptr<VideoCaptureDevice::Name>(
-              new VideoCaptureDevice::Name(names_iterator));
+          return std::unique_ptr<VideoCaptureDeviceDescriptor>(
+              new VideoCaptureDeviceDescriptor(descriptors_iterator));
         }
       }
     }
     DVLOG_IF(1, pixel_format != PIXEL_FORMAT_MAX)
         << "No camera can capture the"
         << " format: " << VideoPixelFormatToString(pixel_format);
-    return std::unique_ptr<VideoCaptureDevice::Name>();
+    return std::unique_ptr<VideoCaptureDeviceDescriptor>();
   }
 
-  bool IsCaptureSizeSupported(const VideoCaptureDevice::Name& device,
+  bool IsCaptureSizeSupported(const VideoCaptureDeviceDescriptor& device,
                               const gfx::Size& size) {
     VideoCaptureFormats supported_formats;
-    video_capture_device_factory_->GetDeviceSupportedFormats(
-        device, &supported_formats);
+    video_capture_device_factory_->GetSupportedFormats(device,
+                                                       &supported_formats);
     const auto it = std::find_if(
         supported_formats.begin(), supported_formats.end(),
         [&size](VideoCaptureFormat const& f) { return f.frame_size == size; });
@@ -283,7 +284,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
-  std::unique_ptr<VideoCaptureDevice::Names> names_;
+  std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors_;
   const std::unique_ptr<base::MessageLoop> loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockVideoCaptureClient> video_capture_client_;
@@ -302,20 +303,19 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 #endif
 
 TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
+  VideoCaptureDeviceDescriptor invalid_descriptor;
+  invalid_descriptor.device_id = "jibberish";
+  invalid_descriptor.display_name = "jibberish";
 #if defined(OS_WIN)
-  VideoCaptureDevice::Name::CaptureApiType api_type =
+  invalid_descriptor.capture_api =
       VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation()
-          ? VideoCaptureDevice::Name::MEDIA_FOUNDATION
-          : VideoCaptureDevice::Name::DIRECT_SHOW;
-  VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
+          ? VideoCaptureApi::WIN_MEDIA_FOUNDATION
+          : VideoCaptureApi::WIN_DIRECT_SHOW;
 #elif defined(OS_MACOSX)
-  VideoCaptureDevice::Name device_name("jibberish", "jibberish",
-                                       VideoCaptureDevice::Name::AVFOUNDATION);
-#else
-  VideoCaptureDevice::Name device_name("jibberish", "jibberish");
+  invalid_descriptor.capture_api = VideoCaptureApi::MACOSX_AVFOUNDATION;
 #endif
   std::unique_ptr<VideoCaptureDevice> device =
-      video_capture_device_factory_->Create(device_name);
+      video_capture_device_factory_->CreateDevice(invalid_descriptor);
 
 #if !defined(OS_MACOSX)
   EXPECT_TRUE(device == NULL);
@@ -334,22 +334,23 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
 }
 
 TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
+  device_descriptors_ = EnumerateDeviceDescriptors();
+  if (device_descriptors_->empty()) {
     VLOG(1) << "No camera available. Exiting test.";
     return;
   }
 
   const gfx::Size& size = GetParam();
-  if (!IsCaptureSizeSupported(names_->front(), size))
+  if (!IsCaptureSizeSupported(device_descriptors_->front(), size))
     return;
   const int width = size.width();
   const int height = size.height();
 
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
+      video_capture_device_factory_->CreateDevice(
+          device_descriptors_->front()));
   ASSERT_TRUE(device);
-  DVLOG(1) << names_->front().id();
+  DVLOG(1) << device_descriptors_->front().device_id;
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
 
@@ -376,13 +377,14 @@ INSTANTIATE_TEST_CASE_P(VideoCaptureDeviceTests,
 #endif
 
 TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
+  device_descriptors_ = EnumerateDeviceDescriptors();
+  if (device_descriptors_->empty()) {
     VLOG(1) << "No camera available. Exiting test.";
     return;
   }
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
+      video_capture_device_factory_->CreateDevice(
+          device_descriptors_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
@@ -403,8 +405,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
 
 // Cause hangs on Windows, Linux. Fails Android. http://crbug.com/417824
 TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
+  device_descriptors_ = EnumerateDeviceDescriptors();
+  if (device_descriptors_->empty()) {
     VLOG(1) << "No camera available. Exiting test.";
     return;
   }
@@ -413,7 +415,8 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
   for (int i = 0; i <= 5; i++) {
     ResetWithNewClient();
     std::unique_ptr<VideoCaptureDevice> device(
-        video_capture_device_factory_->Create(names_->front()));
+        video_capture_device_factory_->CreateDevice(
+            device_descriptors_->front()));
     gfx::Size resolution;
     if (i % 2) {
       resolution = gfx::Size(640, 480);
@@ -436,7 +439,8 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
 
   ResetWithNewClient();
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
+      video_capture_device_factory_->CreateDevice(
+          device_descriptors_->front()));
 
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));
   WaitForCapturedFrame();
@@ -447,13 +451,14 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
 }
 
 TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
+  device_descriptors_ = EnumerateDeviceDescriptors();
+  if (device_descriptors_->empty()) {
     VLOG(1) << "No camera available. Exiting test.";
     return;
   }
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
+      video_capture_device_factory_->CreateDevice(
+          device_descriptors_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
@@ -473,9 +478,9 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
 
 // Start the camera in 720p to capture MJPEG instead of a raw format.
 TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
-  std::unique_ptr<VideoCaptureDevice::Name> name =
-      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
-  if (!name) {
+  std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
+      GetFirstDeviceDescriptorSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
+  if (!device_descriptor) {
     VLOG(1) << "No camera supports MJPEG format. Exiting test.";
     return;
   }
@@ -488,7 +493,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   }
 #endif
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(*name));
+      video_capture_device_factory_->CreateDevice(*device_descriptor));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
@@ -511,22 +516,23 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
 TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   // Use PIXEL_FORMAT_MAX to iterate all device names for testing
   // GetDeviceSupportedFormats().
-  std::unique_ptr<VideoCaptureDevice::Name> name =
-      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MAX);
+  std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
+      GetFirstDeviceDescriptorSupportingPixelFormat(PIXEL_FORMAT_MAX);
   // Verify no camera returned for PIXEL_FORMAT_MAX. Nothing else to test here
   // since we cannot forecast the hardware capabilities.
-  ASSERT_FALSE(name);
+  ASSERT_FALSE(device_descriptor);
 }
 
 // Start the camera and take a photo.
 TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
+  device_descriptors_ = EnumerateDeviceDescriptors();
+  if (device_descriptors_->empty()) {
     VLOG(1) << "No camera available. Exiting test.";
     return;
   }
   std::unique_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
+      video_capture_device_factory_->CreateDevice(
+          device_descriptors_->front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);

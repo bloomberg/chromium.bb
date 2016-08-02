@@ -295,7 +295,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   void SetUp() override {
-    video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
+    video_capture_device_factory_->GetDeviceDescriptors(
+        &physical_video_devices_);
     ASSERT_GT(physical_video_devices_.size(), 0u);
 
     media_stream_manager_->audio_input_device_manager()->GetFakeDeviceNames(
@@ -397,10 +398,10 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         if (audio_it->unique_id == devices[i].device.id)
           return true;
       }
-      media::VideoCaptureDevice::Names::const_iterator video_it =
+      media::VideoCaptureDeviceDescriptors::const_iterator video_it =
           physical_video_devices_.begin();
       for (; video_it != physical_video_devices_.end(); ++video_it) {
-        if (video_it->id() == devices[i].device.id)
+        if (video_it->device_id == devices[i].device.id)
           return true;
       }
     }
@@ -423,14 +424,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
           found_match = true;
         }
       }
-      media::VideoCaptureDevice::Names::const_iterator video_it =
+      media::VideoCaptureDeviceDescriptors::const_iterator video_it =
           physical_video_devices_.begin();
       for (; video_it != physical_video_devices_.end(); ++video_it) {
         if (content::DoesMediaDeviceIDMatchHMAC(
                 browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-                origin,
-                devices[i].device.id,
-                video_it->id())) {
+                origin, devices[i].device.id, video_it->device_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
@@ -469,7 +468,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   std::unique_ptr<ContentClient> content_client_;
   content::TestBrowserContext browser_context_;
   media::AudioDeviceNames physical_audio_devices_;
-  media::VideoCaptureDevice::Names physical_video_devices_;
+  media::VideoCaptureDeviceDescriptors physical_video_devices_;
   url::Origin origin_;
   media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
 };
@@ -654,13 +653,12 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
     EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
   }
 
-  media::VideoCaptureDevice::Names::const_iterator video_it =
+  media::VideoCaptureDeviceDescriptors::const_iterator video_it =
       physical_video_devices_.begin();
   for (; video_it != physical_video_devices_.end(); ++video_it) {
     std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-        origin_,
-        video_it->id());
+        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
+        video_it->device_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
     controls.video.device_ids.push_back(source_id);
@@ -693,13 +691,12 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithOptionalSourceId) {
     EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
   }
 
-  media::VideoCaptureDevice::Names::const_iterator video_it =
+  media::VideoCaptureDeviceDescriptors::const_iterator video_it =
       physical_video_devices_.begin();
   for (; video_it != physical_video_devices_.end(); ++video_it) {
     std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-        origin_,
-        video_it->id());
+        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
+        video_it->device_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
     controls.video.device_ids.push_back(source_id);
@@ -755,7 +752,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   physical_video_devices_.clear();
   video_capture_device_factory_->set_number_of_devices(0);
-  video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
+  video_capture_device_factory_->GetDeviceDescriptors(&physical_video_devices_);
   StreamControls controls(true, true);
 
   SetupFakeUI(false);

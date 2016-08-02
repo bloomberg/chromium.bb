@@ -64,7 +64,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   static VideoPixelFormat TranslateMediaSubtypeToPixelFormat(
       const GUID& sub_type);
 
-  explicit VideoCaptureDeviceWin(const Name& device_name);
+  explicit VideoCaptureDeviceWin(
+      const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceWin() override;
   // Opens the device driver for this device.
   bool Init();
@@ -93,7 +94,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   void SetErrorState(const tracked_objects::Location& from_here,
                      const std::string& reason);
 
-  const Name device_name_;
+  const VideoCaptureDeviceDescriptor device_descriptor_;
   InternalState state_;
   std::unique_ptr<VideoCaptureDevice::Client> client_;
 

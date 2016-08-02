@@ -42,18 +42,17 @@ VideoCaptureDeviceFactory::VideoCaptureDeviceFactory() {
   thread_checker_.DetachFromThread();
 }
 
-VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() {
-}
+VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() {}
 
-void VideoCaptureDeviceFactory::EnumerateDeviceNames(
-    const base::Callback<
-        void(std::unique_ptr<media::VideoCaptureDevice::Names>)>& callback) {
+void VideoCaptureDeviceFactory::EnumerateDeviceDescriptors(
+    const base::Callback<void(std::unique_ptr<VideoCaptureDeviceDescriptors>)>&
+        callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
-  std::unique_ptr<VideoCaptureDevice::Names> device_names(
-      new VideoCaptureDevice::Names());
-  GetDeviceNames(device_names.get());
-  callback.Run(std::move(device_names));
+  std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors(
+      new VideoCaptureDeviceDescriptors());
+  GetDeviceDescriptors(device_descriptors.get());
+  callback.Run(std::move(device_descriptors));
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_ANDROID) && \

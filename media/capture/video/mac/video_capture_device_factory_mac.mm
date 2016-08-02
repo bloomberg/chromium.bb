@@ -26,17 +26,19 @@ namespace media {
 // uniqueId. At the moment these are just Blackmagic devices.
 const char* kBlacklistedCamerasIdSignature[] = {"-01FDA82C8A9C"};
 
-static bool IsDeviceBlacklisted(const VideoCaptureDevice::Name& name) {
+static bool IsDeviceBlacklisted(
+    const VideoCaptureDeviceDescriptor& descriptor) {
   bool is_device_blacklisted = false;
   for (size_t i = 0;
        !is_device_blacklisted && i < arraysize(kBlacklistedCamerasIdSignature);
        ++i) {
     is_device_blacklisted =
-        base::EndsWith(name.id(), kBlacklistedCamerasIdSignature[i],
+        base::EndsWith(descriptor.device_id, kBlacklistedCamerasIdSignature[i],
                        base::CompareCase::INSENSITIVE_ASCII);
   }
-  DVLOG_IF(2, is_device_blacklisted) << "Blacklisted camera: " << name.name()
-                                     << ", id: " << name.id();
+  DVLOG_IF(2, is_device_blacklisted)
+      << "Blacklisted camera: " << descriptor.display_name
+      << ", id: " << descriptor.device_id;
   return is_device_blacklisted;
 }
 
@@ -47,19 +49,18 @@ VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac() {
 VideoCaptureDeviceFactoryMac::~VideoCaptureDeviceFactoryMac() {
 }
 
-std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
-    const VideoCaptureDevice::Name& device_name) {
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::CreateDevice(
+    const VideoCaptureDeviceDescriptor& descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(device_name.capture_api_type(),
-            VideoCaptureDevice::Name::API_TYPE_UNKNOWN);
+  DCHECK_NE(descriptor.capture_api, VideoCaptureApi::UNKNOWN);
 
   std::unique_ptr<VideoCaptureDevice> capture_device;
-  if (device_name.capture_api_type() == VideoCaptureDevice::Name::DECKLINK) {
-    capture_device.reset(new VideoCaptureDeviceDeckLinkMac(device_name));
+  if (descriptor.capture_api == VideoCaptureApi::MACOSX_DECKLINK) {
+    capture_device.reset(new VideoCaptureDeviceDeckLinkMac(descriptor));
   } else {
-    VideoCaptureDeviceMac* device = new VideoCaptureDeviceMac(device_name);
+    VideoCaptureDeviceMac* device = new VideoCaptureDeviceMac(descriptor);
     capture_device.reset(device);
-    if (!device->Init(device_name.capture_api_type())) {
+    if (!device->Init(descriptor.capture_api)) {
       LOG(ERROR) << "Could not initialize VideoCaptureDevice.";
       capture_device.reset();
     }
@@ -67,67 +68,61 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
   return std::unique_ptr<VideoCaptureDevice>(std::move(capture_device));
 }
 
-void VideoCaptureDeviceFactoryMac::GetDeviceNames(
-    VideoCaptureDevice::Names* device_names) {
+void VideoCaptureDeviceFactoryMac::GetDeviceDescriptors(
+    VideoCaptureDeviceDescriptors* device_descriptors) {
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458397 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458397 VideoCaptureDeviceFactoryMac::GetDeviceNames"));
+          "458397 VideoCaptureDeviceFactoryMac::GetDeviceDescriptors"));
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Loop through all available devices and add to |device_names|.
+  // Loop through all available devices and add to |device_descriptors|.
   NSDictionary* capture_devices;
   DVLOG(1) << "Enumerating video capture devices using AVFoundation";
   capture_devices = [VideoCaptureDeviceAVFoundation deviceNames];
   // Enumerate all devices found by AVFoundation, translate the info for each
   // to class Name and add it to |device_names|.
   for (NSString* key in capture_devices) {
+    const std::string device_id = [key UTF8String];
+    const VideoCaptureApi capture_api = VideoCaptureApi::MACOSX_AVFOUNDATION;
     int transport_type = [[capture_devices valueForKey:key] transportType];
     // Transport types are defined for Audio devices and reused for video.
-    VideoCaptureDevice::Name::TransportType device_transport_type =
+    VideoCaptureTransportType device_transport_type =
         (transport_type == kIOAudioDeviceTransportTypeBuiltIn ||
          transport_type == kIOAudioDeviceTransportTypeUSB)
-            ? VideoCaptureDevice::Name::USB_OR_BUILT_IN
-            : VideoCaptureDevice::Name::OTHER_TRANSPORT;
-    VideoCaptureDevice::Name name(
-        [[[capture_devices valueForKey:key] deviceName] UTF8String],
-        [key UTF8String], VideoCaptureDevice::Name::AVFOUNDATION,
-        device_transport_type);
-    if (IsDeviceBlacklisted(name))
+            ? VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN
+            : VideoCaptureTransportType::OTHER_TRANSPORT;
+    const std::string model_id = VideoCaptureDeviceMac::GetDeviceModelId(
+        device_id, capture_api, device_transport_type);
+    VideoCaptureDeviceDescriptor descriptor(
+        [[[capture_devices valueForKey:key] deviceName] UTF8String], device_id,
+        model_id, capture_api, device_transport_type);
+    if (IsDeviceBlacklisted(descriptor))
       continue;
-    device_names->push_back(name);
+    device_descriptors->push_back(descriptor);
   }
   // Also retrieve Blackmagic devices, if present, via DeckLink SDK API.
-  VideoCaptureDeviceDeckLinkMac::EnumerateDevices(device_names);
+  VideoCaptureDeviceDeckLinkMac::EnumerateDevices(device_descriptors);
 }
 
-void VideoCaptureDeviceFactoryMac::EnumerateDeviceNames(
-    const base::Callback<
-        void(std::unique_ptr<media::VideoCaptureDevice::Names>)>& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::unique_ptr<VideoCaptureDevice::Names> device_names(
-      new VideoCaptureDevice::Names());
-  GetDeviceNames(device_names.get());
-  callback.Run(std::move(device_names));
-}
-
-void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
-    const VideoCaptureDevice::Name& device,
+void VideoCaptureDeviceFactoryMac::GetSupportedFormats(
+    const VideoCaptureDeviceDescriptor& device,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  switch (device.capture_api_type()) {
-  case VideoCaptureDevice::Name::AVFOUNDATION:
-    DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
-    [VideoCaptureDeviceAVFoundation getDevice:device
-                             supportedFormats:supported_formats];
-    break;
-  case VideoCaptureDevice::Name::DECKLINK:
-    DVLOG(1) << "Enumerating video capture capabilities " << device.name();
-    VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
-        device, supported_formats);
-    break;
-  default:
-    NOTREACHED();
+  switch (device.capture_api) {
+    case VideoCaptureApi::MACOSX_AVFOUNDATION:
+      DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
+      [VideoCaptureDeviceAVFoundation getDevice:device
+                               supportedFormats:supported_formats];
+      break;
+    case VideoCaptureApi::MACOSX_DECKLINK:
+      DVLOG(1) << "Enumerating video capture capabilities "
+               << device.display_name;
+      VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
+          device, supported_formats);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

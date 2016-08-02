@@ -12,14 +12,14 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   AVFoundationGlue::InitializeAVFoundation();
   VideoCaptureDeviceFactoryMac video_capture_device_factory;
 
-  VideoCaptureDevice::Names names;
-  video_capture_device_factory.GetDeviceNames(&names);
-  if (names.empty()) {
+  VideoCaptureDeviceDescriptors descriptors;
+  video_capture_device_factory.GetDeviceDescriptors(&descriptors);
+  if (descriptors.empty()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
-  for (const auto& name : names)
-    EXPECT_EQ(VideoCaptureDevice::Name::AVFOUNDATION, name.capture_api_type());
+  for (const auto& descriptor : descriptors)
+    EXPECT_EQ(VideoCaptureApi::MACOSX_AVFOUNDATION, descriptor.capture_api);
 }
 
 };  // namespace media
