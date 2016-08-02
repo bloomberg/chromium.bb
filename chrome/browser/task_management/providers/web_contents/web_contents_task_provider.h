@@ -56,8 +56,8 @@ class WebContentsTaskProvider : public TaskProvider {
 
   // A map to associate a |WebContents| with its corresponding entry that we
   // create for it to be able to track it.
-  using EntryMap = std::map<content::WebContents*, WebContentsEntry*>;
-  EntryMap entries_map_;
+  std::map<content::WebContents*, std::unique_ptr<WebContentsEntry>>
+      entries_map_;
 
   // True if this provider is listening to WebContentsTags and updating its
   // observers, false otherwise.

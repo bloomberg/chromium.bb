@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "components/nacl/browser/nacl_browser.h"

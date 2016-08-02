@@ -5,7 +5,6 @@
 #include "chrome/browser/task_management/providers/child_process_task_provider.h"
 
 #include "base/process/process.h"
-#include "base/stl_util.h"
 #include "chrome/browser/task_management/providers/child_process_task.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,7 +103,7 @@ void ChildProcessTaskProvider::StopUpdating() {
   // StopUpdating() is called after the observer has been cleared.
 
   // Then delete all tasks (if any).
-  STLDeleteValues(&tasks_by_handle_);  // This will clear |tasks_by_handle_|.
+  tasks_by_handle_.clear();
   tasks_by_pid_.clear();
 }
 
@@ -122,18 +121,19 @@ void ChildProcessTaskProvider::ChildProcessDataCollected(
 
 void ChildProcessTaskProvider::CreateTask(
     const content::ChildProcessData& data) {
-  if (tasks_by_handle_.find(data.handle) != tasks_by_handle_.end()) {
-    // This case can happen when some of the child process data we collect upon
-    // StartUpdating() might be of BrowserChildProcessHosts whose process
-    // hadn't launched yet. So we just return.
+  std::unique_ptr<ChildProcessTask>& task = tasks_by_handle_[data.handle];
+  if (task) {
+    // This task is already known to us. This case can happen when some of the
+    // child process data we collect upon StartUpdating() might be of
+    // BrowserChildProcessHosts whose process hadn't launched yet. So we just
+    // return.
     return;
   }
 
   // Create the task and notify the observer.
-  ChildProcessTask* task = new ChildProcessTask(data);
-  tasks_by_handle_[data.handle] = task;
-  tasks_by_pid_[task->process_id()] = task;
-  NotifyObserverTaskAdded(task);
+  task.reset(new ChildProcessTask(data));
+  tasks_by_pid_[task->process_id()] = task.get();
+  NotifyObserverTaskAdded(task.get());
 }
 
 void ChildProcessTaskProvider::DeleteTask(base::ProcessHandle handle) {
@@ -151,14 +151,13 @@ void ChildProcessTaskProvider::DeleteTask(base::ProcessHandle handle) {
     return;
   }
 
-  ChildProcessTask* task = itr->second;
+  NotifyObserverTaskRemoved(itr->second.get());
 
-  NotifyObserverTaskRemoved(task);
+  // Clear from the pid index.
+  tasks_by_pid_.erase(itr->second->process_id());
 
   // Finally delete the task.
   tasks_by_handle_.erase(itr);
-  tasks_by_pid_.erase(task->process_id());
-  delete task;
 }
 
 }  // namespace task_management

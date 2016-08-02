@@ -125,8 +125,7 @@ class TaskManagerImpl :
   const base::Closure on_background_data_ready_callback_;
 
   // Map TaskGroups by the IDs of the processes they represent.
-  // Keys and values are unique (no duplicates).
-  std::map<base::ProcessId, TaskGroup*> task_groups_by_proc_id_;
+  std::map<base::ProcessId, std::unique_ptr<TaskGroup>> task_groups_by_proc_id_;
 
   // Map each task by its ID to the TaskGroup on which it resides.
   // Keys are unique but values will have duplicates (i.e. multiple tasks

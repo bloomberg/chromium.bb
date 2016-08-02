@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "chrome/browser/task_management/providers/web_contents/subframe_task.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -202,14 +201,14 @@ void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
-  DCHECK(!ContainsKey(tasks_by_frames_, render_frame_host));
+  DCHECK(!tasks_by_frames_.count(render_frame_host));
 
   content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->GetProcess()->HasConnection())
     return;
 
   bool site_instance_exists =
-      ContainsKey(frames_by_site_instance_, site_instance);
+      frames_by_site_instance_.count(site_instance) != 0;
   bool is_main_frame = (render_frame_host == web_contents()->GetMainFrame());
   bool site_instance_is_main = (site_instance == main_frame_site_instance_);
 
@@ -299,7 +298,8 @@ void WebContentsTaskProvider::OnWebContentsTagCreated(
 
   // TODO(afakhry): Check if we need this check. It seems that we no longer
   // need it in the new implementation.
-  if (HasWebContents(web_contents)) {
+  std::unique_ptr<WebContentsEntry>& entry = entries_map_[web_contents];
+  if (entry) {
     // This case may happen if we added a WebContents while collecting all the
     // pre-existing ones at the time |StartUpdating()| was called, but the
     // notification of its connection hasn't been fired yet. In this case we
@@ -307,8 +307,7 @@ void WebContentsTaskProvider::OnWebContentsTagCreated(
     return;
   }
 
-  WebContentsEntry* entry = new WebContentsEntry(web_contents, this);
-  entries_map_[web_contents] = entry;
+  entry.reset(new WebContentsEntry(web_contents, this));
   entry->CreateAllTasks();
 }
 
@@ -320,12 +319,10 @@ void WebContentsTaskProvider::OnWebContentsTagRemoved(
 
   auto itr = entries_map_.find(web_contents);
   DCHECK(itr != entries_map_.end());
-  WebContentsEntry* entry = itr->second;
 
   // Must manually clear the tasks and notify the observer.
-  entry->ClearAllTasks(true);
-  entries_map_.erase(itr);
-  delete entry;
+  itr->second->ClearAllTasks(true);
+  entries_map_.erase(itr);  // Deletes the WebContentsEntry.
 }
 
 Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int origin_pid,
@@ -353,7 +350,7 @@ Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int origin_pid,
 
 bool WebContentsTaskProvider::HasWebContents(
     content::WebContents* web_contents) const {
-  return ContainsKey(entries_map_, web_contents);
+  return entries_map_.count(web_contents) != 0;
 }
 
 void WebContentsTaskProvider::StartUpdating() {
@@ -375,22 +372,14 @@ void WebContentsTaskProvider::StopUpdating() {
   WebContentsTagsManager::GetInstance()->ClearProvider();
 
   // 2- Clear storage.
-  STLDeleteValues(&entries_map_);
+  entries_map_.clear();
 }
 
 void WebContentsTaskProvider::DeleteEntry(content::WebContents* web_contents) {
-  auto itr = entries_map_.find(web_contents);
-  if (itr == entries_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  WebContentsEntry* entry = itr->second;
-  entries_map_.erase(itr);
-
-  // The entry we're about to delete is our caller, however its' still fine to
-  // delete it.
-  delete entry;
+  // This erase() will delete the WebContentsEntry, which is actually our
+  // caller, but it's expecting us to delete it.
+  bool success = entries_map_.erase(web_contents) != 0;
+  DCHECK(success);
 }
 
 }  // namespace task_management

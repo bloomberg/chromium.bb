@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_management/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_management/providers/child_process_task_provider.h"
@@ -67,8 +66,6 @@ TaskManagerImpl::TaskManagerImpl()
 
 TaskManagerImpl::~TaskManagerImpl() {
   content::GpuDataManager::GetInstance()->RemoveObserver(this);
-
-  STLDeleteValues(&task_groups_by_proc_id_);
 }
 
 // static
@@ -380,24 +377,18 @@ TaskId TaskManagerImpl::GetTaskIdForWebContents(
 void TaskManagerImpl::TaskAdded(Task* task) {
   DCHECK(task);
 
-  TaskGroup* task_group = nullptr;
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
 
-  auto itr = task_groups_by_proc_id_.find(proc_id);
-  if (itr == task_groups_by_proc_id_.end()) {
-    task_group = new TaskGroup(task->process_handle(),
-                               proc_id,
-                               on_background_data_ready_callback_,
-                               blocking_pool_runner_);
-    task_groups_by_proc_id_[proc_id] = task_group;
-  } else {
-    task_group = itr->second;
-  }
+  std::unique_ptr<TaskGroup>& task_group = task_groups_by_proc_id_[proc_id];
+  if (!task_group)
+    task_group.reset(new TaskGroup(task->process_handle(), proc_id,
+                                   on_background_data_ready_callback_,
+                                   blocking_pool_runner_));
 
   task_group->AddTask(task);
 
-  task_groups_by_task_id_[task_id] = task_group;
+  task_groups_by_task_id_[task_id] = task_group.get();
 
   // Invalidate the cached sorted IDs by clearing the list.
   sorted_task_ids_.clear();
@@ -411,23 +402,19 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
 
-  DCHECK(ContainsKey(task_groups_by_proc_id_, proc_id));
-  DCHECK(ContainsKey(task_groups_by_task_id_, task_id));
+  DCHECK(task_groups_by_proc_id_.count(proc_id));
 
   NotifyObserversOnTaskToBeRemoved(task_id);
 
-  TaskGroup* task_group = task_groups_by_proc_id_[proc_id];
+  TaskGroup* task_group = GetTaskGroupByTaskId(task_id);
   task_group->RemoveTask(task);
-
   task_groups_by_task_id_.erase(task_id);
+
+  if (task_group->empty())
+    task_groups_by_proc_id_.erase(proc_id);  // Deletes |task_group|.
 
   // Invalidate the cached sorted IDs by clearing the list.
   sorted_task_ids_.clear();
-
-  if (task_group->empty()) {
-    task_groups_by_proc_id_.erase(proc_id);
-    delete task_group;
-  }
 }
 
 void TaskManagerImpl::TaskUnresponsive(Task* task) {
@@ -502,7 +489,7 @@ void TaskManagerImpl::StopUpdating() {
   for (const auto& provider : task_providers_)
     provider->ClearObserver();
 
-  STLDeleteValues(&task_groups_by_proc_id_);
+  task_groups_by_proc_id_.clear();
   task_groups_by_task_id_.clear();
   sorted_task_ids_.clear();
 }
