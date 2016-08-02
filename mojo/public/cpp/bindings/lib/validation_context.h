@@ -14,7 +14,6 @@
 
 namespace mojo {
 
-class Handle;
 class Message;
 
 namespace internal {
@@ -43,24 +42,52 @@ class ValidationContext {
   // the comments for IsValidRange().)
   // On success, the valid memory range is shrinked to begin right after the end
   // of the claimed range.
-  bool ClaimMemory(const void* position, uint32_t num_bytes);
+  bool ClaimMemory(const void* position, uint32_t num_bytes) {
+    uintptr_t begin = reinterpret_cast<uintptr_t>(position);
+    uintptr_t end = begin + num_bytes;
+
+    if (!InternalIsValidRange(begin, end))
+      return false;
+
+    data_begin_ = end;
+    return true;
+  }
 
   // Claims the specified encoded handle (which is basically a handle index).
   // The method succeeds if:
   // - |encoded_handle|'s value is |kEncodedInvalidHandleValue|.
   // - the handle is contained inside the valid range of handle indices. In this
   // case, the valid range is shinked to begin right after the claimed handle.
-  bool ClaimHandle(const Handle_Data& encoded_handle);
+  bool ClaimHandle(const Handle_Data& encoded_handle) {
+    uint32_t index = encoded_handle.value;
+    if (index == kEncodedInvalidHandleValue)
+      return true;
+
+    if (index < handle_begin_ || index >= handle_end_)
+      return false;
+
+    // |index| + 1 shouldn't overflow, because |index| is not the max value of
+    // uint32_t (it is less than |handle_end_|).
+    handle_begin_ = index + 1;
+    return true;
+  }
 
   // Returns true if the specified range is not empty, and the range is
   // contained inside the valid memory range.
-  bool IsValidRange(const void* position, uint32_t num_bytes) const;
+  bool IsValidRange(const void* position, uint32_t num_bytes) const {
+    uintptr_t begin = reinterpret_cast<uintptr_t>(position);
+    uintptr_t end = begin + num_bytes;
+
+    return InternalIsValidRange(begin, end);
+  }
 
   Message* message() const { return message_; }
   const base::StringPiece& description() const { return description_; }
 
  private:
-  bool InternalIsValidRange(uintptr_t begin, uintptr_t end) const;
+  bool InternalIsValidRange(uintptr_t begin, uintptr_t end) const {
+    return end > begin && begin >= data_begin_ && end <= data_end_;
+  }
 
   Message* const message_;
   const base::StringPiece description_;
