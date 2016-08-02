@@ -9,6 +9,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 BlimpClientContextFactory* BlimpClientContextFactory::GetInstance() {
@@ -32,7 +33,9 @@ BlimpClientContextFactory::~BlimpClientContextFactory() {}
 
 KeyedService* BlimpClientContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return blimp::client::BlimpClientContext::Create();
+  return blimp::client::BlimpClientContext::Create(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO));
 }
 
 content::BrowserContext* BlimpClientContextFactory::GetBrowserContextToUse(

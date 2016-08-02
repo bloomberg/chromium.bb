@@ -32,13 +32,13 @@ component("common") {
 
   deps = [
     "//base",
-    "//blimp/common/proto",
     "//cc",
     "//crypto",
   ]
 
   public_deps = [
     ":protocol_version",
+    "//blimp/common/proto",
   ]
 }
 

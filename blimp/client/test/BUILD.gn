@@ -14,4 +14,8 @@ source_set("test") {
     "//base",
     "//blimp/client/public:public_headers",
   ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
 }

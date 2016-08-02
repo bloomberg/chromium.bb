@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace blimp {
 namespace client {
@@ -19,17 +20,9 @@ class TestBlimpClientContextDelegate : public BlimpClientContextDelegate {
   ~TestBlimpClientContextDelegate() override;
 
   // BlimpClientContextDelegate implementation.
-  void AttachBlimpContentsHelpers(BlimpContents* blimp_contents) override;
-
-  // Returns the last value of the parameter given to a call to
-  // AttachBlimpContentsHelpers.
-  BlimpContents* GetBlimpContentsWithLastAttachedHelpers();
+  MOCK_METHOD1(AttachBlimpContentsHelpers, void(BlimpContents*));
 
  private:
-  // The last value of the parameter given to a call to
-  // AttachBlimpContentsHelpers.
-  BlimpContents* blimp_contents_with_last_attached_helpers_;
-
   DISALLOW_COPY_AND_ASSIGN(TestBlimpClientContextDelegate);
 };
 

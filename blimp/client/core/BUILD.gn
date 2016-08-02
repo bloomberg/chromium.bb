@@ -82,6 +82,7 @@ source_set("unit_tests") {
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",
     "//blimp/client/test",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
@@ -95,6 +96,7 @@ source_set("context") {
   public_deps = [
     "//base",
     "//blimp/client/core/contents",
+    "//blimp/client/core/session",
     "//blimp/client/public:public_headers",
   ]
 

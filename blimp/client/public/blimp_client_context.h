@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,7 +37,10 @@ class BlimpClientContext : public KeyedService {
   // Creates a BlimpClientContext. The implementation of this function
   // depends on whether the core or dummy implementation of Blimp has been
   // linked in.
-  static BlimpClientContext* Create();
+  // The |io_thread_task_runner| must be the task runner to use for IO
+  // operations.
+  static BlimpClientContext* Create(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
 
   // The delegate provides all the required functionality from the embedder.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;

@@ -5,6 +5,8 @@
 #include "blimp/client/core/dummy_blimp_client_context.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 
@@ -28,7 +30,8 @@ const char kDummyBlimpClientContextAndroidKey[] =
 // //blimp/client/core/blimp_client_context_impl.cc should be linked in to
 // any binary using BlimpClientContext::Create.
 // static
-BlimpClientContext* BlimpClientContext::Create() {
+BlimpClientContext* BlimpClientContext::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
   return new DummyBlimpClientContext();
 }
 

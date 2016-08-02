@@ -9,20 +9,9 @@
 namespace blimp {
 namespace client {
 
-TestBlimpClientContextDelegate::TestBlimpClientContextDelegate()
-    : blimp_contents_with_last_attached_helpers_() {}
+TestBlimpClientContextDelegate::TestBlimpClientContextDelegate() = default;
 
-TestBlimpClientContextDelegate::~TestBlimpClientContextDelegate() {}
-
-void TestBlimpClientContextDelegate::AttachBlimpContentsHelpers(
-    BlimpContents* blimp_contents) {
-  blimp_contents_with_last_attached_helpers_ = blimp_contents;
-}
-
-BlimpContents*
-TestBlimpClientContextDelegate::GetBlimpContentsWithLastAttachedHelpers() {
-  return blimp_contents_with_last_attached_helpers_;
-}
+TestBlimpClientContextDelegate::~TestBlimpClientContextDelegate() = default;
 
 }  // namespace client
 }  // namespace blimp
