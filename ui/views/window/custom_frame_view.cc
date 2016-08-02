@@ -57,11 +57,6 @@ const int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
 
-#if !defined(OS_WIN)
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
-#endif
-
 #if defined(OS_CHROMEOS)
 // Chrome OS uses a dark gray.
 const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
@@ -310,6 +305,8 @@ int CustomFrameView::IconSize() const {
   // size are increased.
   return display::win::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
+  // The icon never shrinks below 16 px on a side.
+  const int kIconMinimumSize = 16;
   return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
 }
