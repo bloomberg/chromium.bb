@@ -41,8 +41,6 @@ UI_BASE_EXPORT void SetLocalePaksStoredInApk(bool value);
 UI_BASE_EXPORT std::string GetPathForAndroidLocalePakWithinApk(
     const std::string& locale);
 
-bool RegisterResourceBundleAndroid(JNIEnv* env);
-
 }  // namespace ui
 
 #endif  // UI_BASE_RESOURCE_RESOURCE_BUNDLE_ANDROID_H_

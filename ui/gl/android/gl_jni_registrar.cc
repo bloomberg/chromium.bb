@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
-#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/android/surface_texture_listener.h"
 
 namespace ui {
@@ -15,8 +14,6 @@ namespace gl {
 namespace android {
 
 static base::android::RegistrationMethod kGLRegisteredMethods[] = {
-    {"SurfaceTexture",
-     ::gl::SurfaceTexture::RegisterSurfaceTexture},
     {"SurfaceTextureListener",
      ::gl::SurfaceTextureListener::RegisterSurfaceTextureListener},
 };

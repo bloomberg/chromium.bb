@@ -14,8 +14,6 @@ namespace ui {
 namespace events {
 namespace android {
 
-bool RegisterKeyEvent(JNIEnv* env);
-
 EVENTS_EXPORT base::android::ScopedJavaLocalRef<jobject>
 CreateKeyEvent(JNIEnv* env, int action, int key_code);
 

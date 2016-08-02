@@ -57,8 +57,4 @@ HoverType GetPrimaryHoverType() {
   return HOVER_TYPE_NONE;
 }
 
-bool RegisterTouchDeviceAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace ui

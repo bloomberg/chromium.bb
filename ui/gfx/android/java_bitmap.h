@@ -41,9 +41,6 @@ class GFX_EXPORT JavaBitmap {
   inline uint32_t stride() const { return stride_; }
   inline int byte_count() const { return byte_count_; }
 
-  // Registers methods with JNI and returns true if succeeded.
-  static bool RegisterJavaBitmap(JNIEnv* env);
-
  private:
   jobject bitmap_;
   void* pixels_;

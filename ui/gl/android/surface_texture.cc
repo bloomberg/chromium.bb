@@ -101,8 +101,4 @@ void SurfaceTexture::ReleaseSurfaceTexture() {
   Java_SurfaceTexturePlatformWrapper_release(env, j_surface_texture_.obj());
 }
 
-bool SurfaceTexture::RegisterSurfaceTexture(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace gl

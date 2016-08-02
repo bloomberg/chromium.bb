@@ -220,7 +220,6 @@
         'default_theme_provider_mac.mm',
         'device_form_factor.h',
         'device_form_factor_android.cc',
-        'device_form_factor_android.h',
         'device_form_factor_desktop.cc',
         'device_form_factor_ios.mm',
         'dragdrop/cocoa_dnd_util.h',

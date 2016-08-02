@@ -92,8 +92,6 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   int GetButtonState() const override;
   int GetFlags() const override;
 
-  static bool RegisterMotionEventAndroid(JNIEnv* env);
-
  private:
   struct CachedPointer;
 

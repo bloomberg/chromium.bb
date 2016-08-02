@@ -181,8 +181,6 @@
         }],
         ['OS=="android"', {
           'sources': [
-            'android/events_jni_registrar.cc',
-            'android/events_jni_registrar.h',
             'android/motion_event_android.cc',
             'android/motion_event_android.h',
             'android/key_event_utils.cc',

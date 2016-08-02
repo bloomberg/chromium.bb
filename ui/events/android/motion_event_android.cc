@@ -354,9 +354,4 @@ MotionEventAndroid::CachedPointer MotionEventAndroid::FromAndroidPointer(
   return result;
 }
 
-// static
-bool MotionEventAndroid::RegisterMotionEventAndroid(JNIEnv* env) {
-  return JNI_MotionEvent::RegisterNativesImpl(env);
-}
-
 }  // namespace content

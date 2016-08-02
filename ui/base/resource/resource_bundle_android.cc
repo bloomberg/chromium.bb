@@ -169,8 +169,4 @@ std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale) {
   return base::android::ConvertJavaStringToUTF8(env, ret.obj());
 }
 
-bool RegisterResourceBundleAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace ui

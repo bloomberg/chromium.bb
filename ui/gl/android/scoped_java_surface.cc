@@ -8,19 +8,6 @@
 #include "jni/Surface_jni.h"
 #include "ui/gl/android/surface_texture.h"
 
-namespace {
-
-bool g_jni_initialized = false;
-
-void RegisterNativesIfNeeded(JNIEnv* env) {
-  if (!g_jni_initialized) {
-    JNI_Surface::RegisterNativesImpl(env);
-    g_jni_initialized = true;
-  }
-}
-
-}  // anonymous namespace
-
 namespace gl {
 
 ScopedJavaSurface::ScopedJavaSurface() {
@@ -31,7 +18,6 @@ ScopedJavaSurface::ScopedJavaSurface(
     : auto_release_(true),
       is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  RegisterNativesIfNeeded(env);
   DCHECK(env->IsInstanceOf(surface.obj(), Surface_clazz(env)));
   j_surface_.Reset(surface);
 }
@@ -41,7 +27,6 @@ ScopedJavaSurface::ScopedJavaSurface(
     : auto_release_(true),
       is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  RegisterNativesIfNeeded(env);
   ScopedJavaLocalRef<jobject> tmp(JNI_Surface::Java_Surface_Constructor(
       env, surface_texture->j_surface_texture().obj()));
   DCHECK(!tmp.is_null());

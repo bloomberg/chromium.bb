@@ -15,8 +15,6 @@
 
 namespace ui {
 
-bool RegisterClipboardAndroid(JNIEnv* env);
-
 class ClipboardAndroid : public Clipboard {
  private:
   friend class Clipboard;

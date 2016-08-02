@@ -65,10 +65,6 @@ UI_BASE_EXPORT PointerType GetPrimaryPointerType();
 UI_BASE_EXPORT int GetAvailableHoverTypes();
 UI_BASE_EXPORT HoverType GetPrimaryHoverType();
 
-#if defined(OS_ANDROID)
-bool RegisterTouchDeviceAndroid(JNIEnv* env);
-#endif
-
 }  // namespace ui
 
 #endif  // UI_BASE_TOUCH_TOUCH_DEVICE_H_

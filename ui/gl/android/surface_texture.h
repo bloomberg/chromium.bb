@@ -66,8 +66,6 @@ class GL_EXPORT SurfaceTexture
     return j_surface_texture_;
   }
 
-  static bool RegisterSurfaceTexture(JNIEnv* env);
-
  protected:
   explicit SurfaceTexture(
       const base::android::ScopedJavaLocalRef<jobject>& j_surface_texture);

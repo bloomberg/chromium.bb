@@ -471,8 +471,4 @@ void ClipboardAndroid::WriteData(const Clipboard::FormatType& format,
   g_map.Get().Set(format.ToString(), std::string(data_data, data_len));
 }
 
-bool RegisterClipboardAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 } // namespace ui

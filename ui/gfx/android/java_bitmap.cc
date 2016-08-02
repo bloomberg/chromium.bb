@@ -37,11 +37,6 @@ JavaBitmap::~JavaBitmap() {
   DCHECK(!err);
 }
 
-// static
-bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static int SkColorTypeToBitmapFormat(SkColorType color_type) {
   switch (color_type) {
     case kAlpha_8_SkColorType:
