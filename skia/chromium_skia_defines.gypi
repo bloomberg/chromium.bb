@@ -19,7 +19,8 @@
     # made to remove these defines as soon as practical. This is in contrast to
     # defines in SkUserConfig.h which are normally more permanent.
     'chromium_skia_defines': [
-      'SK_IGNORE_DW_GRAY_FIX'
+      'SK_IGNORE_DW_GRAY_FIX',
+      'SK_SUPPORT_LEGACY_DATA_FACTORIES',
     ],
   },
 }
