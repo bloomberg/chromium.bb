@@ -33,12 +33,12 @@ public:
 private:
     CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return NAMESPACE_RULE; }
+    CSSRule::Type type() const override { return kNamespaceRule; }
 
     Member<StyleRuleNamespace> m_namespaceRule;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, NAMESPACE_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, kNamespaceRule);
 
 } // namespace blink
 

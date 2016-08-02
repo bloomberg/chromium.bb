@@ -147,8 +147,8 @@ void CueTimeline::updateActiveCues(double movieTime)
     CueList currentCues;
 
     // The user agent must synchronously unset [the text track cue active] flag
-    // whenever ... the media element's readyState is changed back to HAVE_NOTHING.
-    if (mediaElement.getReadyState() != HTMLMediaElement::HAVE_NOTHING && mediaElement.webMediaPlayer())
+    // whenever ... the media element's readyState is changed back to kHaveNothing.
+    if (mediaElement.getReadyState() != HTMLMediaElement::kHaveNothing && mediaElement.webMediaPlayer())
         currentCues = m_cueTree.allOverlaps(m_cueTree.createInterval(movieTime, movieTime));
 
     CueList previousCues;

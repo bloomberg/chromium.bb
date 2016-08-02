@@ -34,8 +34,8 @@ class WebGLDebugRendererInfo final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum EnumType {
-        UNMASKED_VENDOR_WEBGL = 0x9245,
-        UNMASKED_RENDERER_WEBGL = 0x9246
+        kUnmaskedVendorWebgl = 0x9245,
+        kUnmaskedRendererWebgl = 0x9246
     };
 
     static WebGLDebugRendererInfo* create(WebGLRenderingContextBase*);

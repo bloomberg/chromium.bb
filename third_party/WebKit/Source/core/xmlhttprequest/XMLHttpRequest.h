@@ -76,11 +76,11 @@ public:
 
     // These exact numeric values are important because JS expects them.
     enum State {
-        UNSENT = 0,
-        OPENED = 1,
-        HEADERS_RECEIVED = 2,
-        LOADING = 3,
-        DONE = 4
+        kUnsent = 0,
+        kOpened = 1,
+        kHeadersReceived = 2,
+        kLoading = 3,
+        kDone = 4
     };
 
     enum ResponseTypeCode {

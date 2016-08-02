@@ -36,10 +36,10 @@ class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>, public
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
-        MEDIA_ERR_ABORTED = 1,
-        MEDIA_ERR_NETWORK,
-        MEDIA_ERR_DECODE,
-        MEDIA_ERR_SRC_NOT_SUPPORTED,
+        kMediaErrAborted = 1,
+        kMediaErrNetwork,
+        kMediaErrDecode,
+        kMediaErrSrcNotSupported,
     };
 
     static MediaError* create(ErrorCode code)

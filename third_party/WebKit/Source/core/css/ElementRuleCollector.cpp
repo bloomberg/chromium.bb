@@ -229,11 +229,11 @@ CSSRule* ElementRuleCollector::findStyleRule(CSSRuleCollection* cssRules, StyleR
     for (unsigned i = 0; i < cssRules->length() && !result; ++i) {
         CSSRule* cssRule = cssRules->item(i);
         CSSRule::Type cssRuleType = cssRule->type();
-        if (cssRuleType == CSSRule::STYLE_RULE) {
+        if (cssRuleType == CSSRule::kStyleRule) {
             CSSStyleRule* cssStyleRule = toCSSStyleRule(cssRule);
             if (cssStyleRule->styleRule() == styleRule)
                 result = cssRule;
-        } else if (cssRuleType == CSSRule::IMPORT_RULE) {
+        } else if (cssRuleType == CSSRule::kImportRule) {
             CSSImportRule* cssImportRule = toCSSImportRule(cssRule);
             result = findStyleRule(cssImportRule->styleSheet(), styleRule);
         } else {

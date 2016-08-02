@@ -105,15 +105,15 @@ void logTouchTargetHistogram(EventTarget* eventTarget, unsigned short phase, boo
 
     switch (phase) {
     default:
-    case Event::NONE:
+    case Event::kNone:
         return;
-    case Event::CAPTURING_PHASE:
+    case Event::kCapturingPhase:
         result += kCapturingOffset;
         break;
-    case Event::AT_TARGET:
+    case Event::kAtTarget:
         result += kAtTargetOffset;
         break;
-    case Event::BUBBLING_PHASE:
+    case Event::kBubblingPhase:
         result += kBubblingOffset;
         break;
     }

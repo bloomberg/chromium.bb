@@ -52,12 +52,12 @@ static inline const AtomicString& eventTypeForKeyboardEventType(PlatformEvent::E
 static inline KeyboardEvent::KeyLocationCode keyLocationCode(const PlatformKeyboardEvent& key)
 {
     if (key.isKeypad())
-        return KeyboardEvent::DOM_KEY_LOCATION_NUMPAD;
+        return KeyboardEvent::kDomKeyLocationNumpad;
     if (key.getModifiers() & PlatformEvent::IsLeft)
-        return KeyboardEvent::DOM_KEY_LOCATION_LEFT;
+        return KeyboardEvent::kDomKeyLocationLeft;
     if (key.getModifiers() & PlatformEvent::IsRight)
-        return KeyboardEvent::DOM_KEY_LOCATION_RIGHT;
-    return KeyboardEvent::DOM_KEY_LOCATION_STANDARD;
+        return KeyboardEvent::kDomKeyLocationRight;
+    return KeyboardEvent::kDomKeyLocationStandard;
 }
 
 KeyboardEvent* KeyboardEvent::create(ScriptState* scriptState, const AtomicString& type, const KeyboardEventInit& initializer)
@@ -68,7 +68,7 @@ KeyboardEvent* KeyboardEvent::create(ScriptState* scriptState, const AtomicStrin
 }
 
 KeyboardEvent::KeyboardEvent()
-    : m_location(DOM_KEY_LOCATION_STANDARD)
+    : m_location(kDomKeyLocationStandard)
 {
 }
 
@@ -177,13 +177,13 @@ int KeyboardEvent::which() const
 void KeyboardEvent::initLocationModifiers(unsigned location)
 {
     switch (location) {
-    case KeyboardEvent::DOM_KEY_LOCATION_NUMPAD:
+    case KeyboardEvent::kDomKeyLocationNumpad:
         m_modifiers |= PlatformEvent::IsKeyPad;
         break;
-    case KeyboardEvent::DOM_KEY_LOCATION_LEFT:
+    case KeyboardEvent::kDomKeyLocationLeft:
         m_modifiers |= PlatformEvent::IsLeft;
         break;
-    case KeyboardEvent::DOM_KEY_LOCATION_RIGHT:
+    case KeyboardEvent::kDomKeyLocationRight:
         m_modifiers |= PlatformEvent::IsRight;
         break;
     }

@@ -86,7 +86,7 @@
 namespace blink {
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
-// which indicates page or subframe, or ContextNodeType::NONE if the URL could not
+// which indicates page or subframe, or ContextNodeType::kNone if the URL could not
 // be determined for some reason.
 static WebURL urlFromFrame(LocalFrame* frame)
 {

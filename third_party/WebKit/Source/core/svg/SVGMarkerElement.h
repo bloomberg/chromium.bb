@@ -45,15 +45,15 @@ class SVGMarkerElement final : public SVGElement,
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
-        SVG_MARKERUNITS_UNKNOWN = SVGMarkerUnitsUnknown,
-        SVG_MARKERUNITS_USERSPACEONUSE = SVGMarkerUnitsUserSpaceOnUse,
-        SVG_MARKERUNITS_STROKEWIDTH = SVGMarkerUnitsStrokeWidth
+        kSvgMarkerunitsUnknown = SVGMarkerUnitsUnknown,
+        kSvgMarkerunitsUserspaceonuse = SVGMarkerUnitsUserSpaceOnUse,
+        kSvgMarkerunitsStrokewidth = SVGMarkerUnitsStrokeWidth
     };
 
     enum {
-        SVG_MARKER_ORIENT_UNKNOWN = SVGMarkerOrientUnknown,
-        SVG_MARKER_ORIENT_AUTO = SVGMarkerOrientAuto,
-        SVG_MARKER_ORIENT_ANGLE = SVGMarkerOrientAngle
+        kSvgMarkerOrientUnknown = SVGMarkerOrientUnknown,
+        kSvgMarkerOrientAuto = SVGMarkerOrientAuto,
+        kSvgMarkerOrientAngle = SVGMarkerOrientAngle
     };
 
     DECLARE_NODE_FACTORY(SVGMarkerElement);

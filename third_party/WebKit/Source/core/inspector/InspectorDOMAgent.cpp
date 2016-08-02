@@ -858,7 +858,7 @@ void InspectorDOMAgent::setNodeValue(ErrorString* errorString, int nodeId, const
     if (!node)
         return;
 
-    if (node->getNodeType() != Node::TEXT_NODE) {
+    if (node->getNodeType() != Node::kTextNode) {
         *errorString = "Can only set value of text nodes";
         return;
     }
@@ -942,15 +942,15 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         // Manual plain text search.
         for (; node; node = nextNodeWithShadowDOMInMind(*node, documentElement, includeUserAgentShadowDOM)) {
             switch (node->getNodeType()) {
-            case Node::TEXT_NODE:
-            case Node::COMMENT_NODE:
-            case Node::CDATA_SECTION_NODE: {
+            case Node::kTextNode:
+            case Node::kCommentNode:
+            case Node::kCdataSectionNode: {
                 String text = node->nodeValue();
                 if (text.findIgnoringCase(whitespaceTrimmedQuery) != kNotFound)
                     resultCollector.add(node);
                 break;
             }
-            case Node::ELEMENT_NODE: {
+            case Node::kElementNode: {
                 if ((!startTagFound && !endTagFound && (node->nodeName().findIgnoringCase(tagNameQuery) != kNotFound))
                     || (startTagFound && endTagFound && equalIgnoringCase(node->nodeName(), tagNameQuery))
                     || (startTagFound && !endTagFound && node->nodeName().startsWith(tagNameQuery, TextCaseInsensitive))
@@ -986,7 +986,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (Document* document : docs) {
             ASSERT(document);
             TrackExceptionState exceptionState;
-            XPathResult* result = DocumentXPathEvaluator::evaluate(*document, whitespaceTrimmedQuery, document, nullptr, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, ScriptValue(), exceptionState);
+            XPathResult* result = DocumentXPathEvaluator::evaluate(*document, whitespaceTrimmedQuery, document, nullptr, XPathResult::kOrderedNodeSnapshotType, ScriptValue(), exceptionState);
             if (exceptionState.hadException() || !result)
                 continue;
 
@@ -996,7 +996,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 if (exceptionState.hadException())
                     break;
 
-                if (node->getNodeType() == Node::ATTRIBUTE_NODE)
+                if (node->getNodeType() == Node::kAttributeNode)
                     node = toAttr(node)->ownerElement();
                 resultCollector.add(node);
             }
@@ -1355,7 +1355,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     HitTestResult result(request, IntPoint(x, y));
     m_document->frame()->contentLayoutItem().hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
-    while (node && node->getNodeType() == Node::TEXT_NODE)
+    while (node && node->getNodeType() == Node::kTextNode)
         node = node->parentNode();
     if (!node) {
         *errorString = "No node found at given location";
@@ -1430,17 +1430,17 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node*
     String nodeValue;
 
     switch (node->getNodeType()) {
-    case Node::TEXT_NODE:
-    case Node::COMMENT_NODE:
-    case Node::CDATA_SECTION_NODE:
+    case Node::kTextNode:
+    case Node::kCommentNode:
+    case Node::kCdataSectionNode:
         nodeValue = node->nodeValue();
         if (nodeValue.length() > maxTextSize)
             nodeValue = nodeValue.left(maxTextSize) + ellipsisUChar;
         break;
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         localName = toAttr(node)->localName();
         break;
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         localName = toElement(node)->localName();
         break;
     default:
@@ -1563,7 +1563,7 @@ std::unique_ptr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildAr
     if (depth == 0) {
         // Special-case the only text child - pretend that container's children have been requested.
         Node* firstChild = container->firstChild();
-        if (firstChild && firstChild->getNodeType() == Node::TEXT_NODE && !firstChild->nextSibling()) {
+        if (firstChild && firstChild->getNodeType() == Node::kTextNode && !firstChild->nextSibling()) {
             children->addItem(buildObjectForNode(firstChild, 0, nodesMap));
             m_childrenRequested.add(bind(container, nodesMap));
         }
@@ -1660,7 +1660,7 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
 bool InspectorDOMAgent::isWhitespace(Node* node)
 {
     //TODO: pull ignoreWhitespace setting from the frontend and use here.
-    return node && node->getNodeType() == Node::TEXT_NODE && node->nodeValue().stripWhiteSpace().length() == 0;
+    return node && node->getNodeType() == Node::kTextNode && node->nodeValue().stripWhiteSpace().length() == 0;
 }
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)

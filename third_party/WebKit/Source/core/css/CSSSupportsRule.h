@@ -54,10 +54,10 @@ public:
 private:
     CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return SUPPORTS_RULE; }
+    CSSRule::Type type() const override { return kSupportsRule; }
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, SUPPORTS_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, kSupportsRule);
 
 } // namespace blink
 

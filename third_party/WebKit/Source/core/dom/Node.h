@@ -138,36 +138,35 @@ class CORE_EXPORT Node : public EventTarget {
     friend class TreeScopeAdopter;
 public:
     enum NodeType {
-        ELEMENT_NODE = 1,
-        ATTRIBUTE_NODE = 2,
-        TEXT_NODE = 3,
-        CDATA_SECTION_NODE = 4,
-        PROCESSING_INSTRUCTION_NODE = 7,
-        COMMENT_NODE = 8,
-        DOCUMENT_NODE = 9,
-        DOCUMENT_TYPE_NODE = 10,
-        DOCUMENT_FRAGMENT_NODE = 11,
+        kElementNode = 1,
+        kAttributeNode = 2,
+        kTextNode = 3,
+        kCdataSectionNode = 4,
+        kProcessingInstructionNode = 7,
+        kCommentNode = 8,
+        kDocumentNode = 9,
+        kDocumentTypeNode = 10,
+        kDocumentFragmentNode = 11,
     };
 
-    // Entity, EntityReference, Notation, and XPathNamespace nodes are impossible to create in Blink.
+    // Entity, EntityReference, and Notation nodes are impossible to create in Blink.
     // But for compatibility reasons we want these enum values exist in JS, and this enum makes the bindings
-    // generation not complain about ENTITY_REFERENCE_NODE being missing from the implementation
+    // generation not complain about kEntityReferenceNode being missing from the implementation
     // while not requiring all switch(NodeType) blocks to include this deprecated constant.
     enum DeprecatedNodeType {
-        ENTITY_REFERENCE_NODE = 5,
-        ENTITY_NODE = 6,
-        NOTATION_NODE = 12,
-        XPATH_NAMESPACE_NODE = 13,
+        kEntityReferenceNode = 5,
+        kEntityNode = 6,
+        kNotationNode = 12,
     };
 
     enum DocumentPosition {
-        DOCUMENT_POSITION_EQUIVALENT = 0x00,
-        DOCUMENT_POSITION_DISCONNECTED = 0x01,
-        DOCUMENT_POSITION_PRECEDING = 0x02,
-        DOCUMENT_POSITION_FOLLOWING = 0x04,
-        DOCUMENT_POSITION_CONTAINS = 0x08,
-        DOCUMENT_POSITION_CONTAINED_BY = 0x10,
-        DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20,
+        kDocumentPositionEquivalent = 0x00,
+        kDocumentPositionDisconnected = 0x01,
+        kDocumentPositionPreceding = 0x02,
+        kDocumentPositionFollowing = 0x04,
+        kDocumentPositionContains = 0x08,
+        kDocumentPositionContainedBy = 0x10,
+        kDocumentPositionImplementationSpecific = 0x20,
     };
 
     // Override operator new to allocate Node subtype objects onto
@@ -464,7 +463,7 @@ public:
     bool isChildOfV0ShadowHost() const;
     ShadowRoot* v1ShadowRootOfParent() const;
 
-    bool isDocumentTypeNode() const { return getNodeType() == DOCUMENT_TYPE_NODE; }
+    bool isDocumentTypeNode() const { return getNodeType() == kDocumentTypeNode; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
     unsigned countChildren() const;
 

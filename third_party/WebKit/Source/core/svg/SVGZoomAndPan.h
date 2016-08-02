@@ -39,9 +39,9 @@ class SVGZoomAndPan {
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
-        SVG_ZOOMANDPAN_UNKNOWN = SVGZoomAndPanUnknown,
-        SVG_ZOOMANDPAN_DISABLE = SVGZoomAndPanDisable,
-        SVG_ZOOMANDPAN_MAGNIFY = SVGZoomAndPanMagnify
+        kSvgZoomandpanUnknown = SVGZoomAndPanUnknown,
+        kSvgZoomandpanDisable = SVGZoomAndPanDisable,
+        kSvgZoomandpanMagnify = SVGZoomAndPanMagnify
     };
 
     virtual ~SVGZoomAndPan() { }

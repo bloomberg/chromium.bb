@@ -198,7 +198,7 @@ FileReader* FileReader::create(ExecutionContext* context)
 FileReader::FileReader(ExecutionContext* context)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
-    , m_state(EMPTY)
+    , m_state(kEmpty)
     , m_loadingState(LoadingStateNone)
     , m_stillFiringEvents(false)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
@@ -229,7 +229,7 @@ void FileReader::stop()
 
 bool FileReader::hasPendingActivity() const
 {
-    return m_state == LOADING || m_stillFiringEvents;
+    return m_state == kLoading || m_stillFiringEvents;
 }
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
@@ -272,8 +272,8 @@ void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, ExceptionState& exceptionState)
 {
-    // If multiple concurrent read methods are called on the same FileReader, InvalidStateError should be thrown when the state is LOADING.
-    if (m_state == LOADING) {
+    // If multiple concurrent read methods are called on the same FileReader, InvalidStateError should be thrown when the state is kLoading.
+    if (m_state == kLoading) {
         exceptionState.throwDOMException(InvalidStateError, "The object is already busy reading Blobs.");
         return;
     }
@@ -301,7 +301,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_blobDataHandle = blob->blobDataHandle();
     m_blobType = blob->type();
     m_readType = type;
-    m_state = LOADING;
+    m_state = kLoading;
     m_loadingState = LoadingStatePending;
     m_error = nullptr;
     ASSERT(ThrottlingController::from(context));
@@ -342,12 +342,12 @@ void FileReader::abort()
 
 void FileReader::doAbort()
 {
-    ASSERT(m_state != DONE);
+    DCHECK_NE(kDone, m_state);
     AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
     terminate();
 
-    m_error = FileError::createDOMException(FileError::ABORT_ERR);
+    m_error = FileError::createDOMException(FileError::kAbortErr);
 
     // Unregister the reader.
     ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
@@ -377,7 +377,7 @@ void FileReader::terminate()
         m_loader->cancel();
         m_loader = nullptr;
     }
-    m_state = DONE;
+    m_state = kDone;
     m_loadingState = LoadingStateNone;
 }
 
@@ -420,8 +420,8 @@ void FileReader::didFinishLoading()
 
     fireEvent(EventTypeNames::progress);
 
-    ASSERT(m_state != DONE);
-    m_state = DONE;
+    DCHECK_NE(kDone, m_state);
+    m_state = kDone;
 
     // Unregister the reader.
     ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
@@ -440,11 +440,11 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
 
     AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
-    ASSERT(m_loadingState == LoadingStateLoading);
+    DCHECK_EQ(LoadingStateLoading, m_loadingState);
     m_loadingState = LoadingStateNone;
 
-    ASSERT(m_state != DONE);
-    m_state = DONE;
+    DCHECK_NE(kDone, m_state);
+    m_state = kDone;
 
     m_error = FileError::createDOMException(static_cast<FileError::ErrorCode>(errorCode));
 

@@ -29,8 +29,8 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOp
 {
     DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
     if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVG_STITCHTYPE_STITCH, "stitch"));
-        entries.append(std::make_pair(SVG_STITCHTYPE_NOSTITCH, "noStitch"));
+        entries.append(std::make_pair(kSvgStitchtypeStitch, "stitch"));
+        entries.append(std::make_pair(kSvgStitchtypeNostitch, "noStitch"));
     }
     return entries;
 }
@@ -49,7 +49,7 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feTurbulenceTag, document)
     , m_baseFrequency(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::baseFrequencyAttr))
     , m_seed(SVGAnimatedNumber::create(this, SVGNames::seedAttr, SVGNumber::create(0)))
-    , m_stitchTiles(SVGAnimatedEnumeration<SVGStitchOptions>::create(this, SVGNames::stitchTilesAttr, SVG_STITCHTYPE_NOSTITCH))
+    , m_stitchTiles(SVGAnimatedEnumeration<SVGStitchOptions>::create(this, SVGNames::stitchTilesAttr, kSvgStitchtypeNostitch))
     , m_type(SVGAnimatedEnumeration<TurbulenceType>::create(this, SVGNames::typeAttr, FETURBULENCE_TYPE_TURBULENCE))
     , m_numOctaves(SVGAnimatedInteger::create(this, SVGNames::numOctavesAttr, SVGInteger::create(1)))
 {
@@ -78,7 +78,7 @@ bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, cons
     if (attrName == SVGNames::typeAttr)
         return turbulence->setType(m_type->currentValue()->enumValue());
     if (attrName == SVGNames::stitchTilesAttr)
-        return turbulence->setStitchTiles(m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
+        return turbulence->setStitchTiles(m_stitchTiles->currentValue()->enumValue() == kSvgStitchtypeStitch);
     if (attrName == SVGNames::baseFrequencyAttr) {
         bool baseFrequencyXChanged = turbulence->setBaseFrequencyX(baseFrequencyX()->currentValue()->value());
         bool baseFrequencyYChanged = turbulence->setBaseFrequencyY(baseFrequencyY()->currentValue()->value());
@@ -115,7 +115,7 @@ FilterEffect* SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
         baseFrequencyY()->currentValue()->value(),
         m_numOctaves->currentValue()->value(),
         m_seed->currentValue()->value(),
-        m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
+        m_stitchTiles->currentValue()->enumValue() == kSvgStitchtypeStitch);
 }
 
 } // namespace blink

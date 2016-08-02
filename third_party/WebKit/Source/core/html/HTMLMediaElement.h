@@ -125,7 +125,7 @@ public:
     void setSrcObject(MediaStreamDescriptor*);
     MediaStreamDescriptor* getSrcObject() const { return m_srcObject.get(); }
 
-    enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };
+    enum NetworkState { kNetworkEmpty, kNetworkIdle, kNetworkLoading, kNetworkNoSource };
     NetworkState getNetworkState() const;
 
     String preload() const;
@@ -139,7 +139,7 @@ public:
     String canPlayType(const String& mimeType) const;
 
     // ready state
-    enum ReadyState { HAVE_NOTHING, HAVE_METADATA, HAVE_CURRENT_DATA, HAVE_FUTURE_DATA, HAVE_ENOUGH_DATA };
+    enum ReadyState { kHaveNothing, kHaveMetadata, kHaveCurrentData, kHaveFutureData, kHaveEnoughData };
     ReadyState getReadyState() const;
     bool seeking() const;
 
@@ -459,7 +459,7 @@ private:
     void createPlaceholderTracksIfNecessary();
 
     // Sets the selected/enabled tracks if they aren't set before we initially
-    // transition to HAVE_METADATA.
+    // transition to kHaveMetadata.
     void selectInitialTracksIfNecessary();
 
     // Return true if and only if a user gesture is required to unlock this
@@ -570,7 +570,7 @@ private:
 
     Member<HTMLMediaSource> m_mediaSource;
 
-    // Cached time value. Only valid when ready state is HAVE_METADATA or
+    // Cached time value. Only valid when ready state is kHaveMetadata or
     // higher, otherwise the current time is assumed to be zero.
     mutable double m_cachedTime;
 

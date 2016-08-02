@@ -173,7 +173,7 @@ void HTMLTrackElement::loadTimerFired(TimerBase*)
     DVLOG(TRACK_LOG_LEVEL) << "loadTimerFired";
 
     // 6. [X] Set the text track readiness state to loading.
-    setReadyState(LOADING);
+    setReadyState(kLoading);
 
     // 7. [X] Let URL be the track URL of the track element.
     KURL url = getNonEmptyURLAttribute(srcAttr);
@@ -257,7 +257,7 @@ void HTMLTrackElement::didCompleteLoad(LoadStatus status)
     // task that is queued by the networking task source in which the aforementioned problem is found must change the
     // text track readiness state to failed to load and fire a simple event named error at the track element.
     if (status == Failure) {
-        setReadyState(TRACK_ERROR);
+        setReadyState(kError);
         dispatchEvent(Event::create(EventTypeNames::error));
         return;
     }
@@ -265,7 +265,7 @@ void HTMLTrackElement::didCompleteLoad(LoadStatus status)
     // If the fetching algorithm does not fail, and the file was successfully processed, then the final task that is
     // queued by the networking task source, after it has finished parsing the data, must change the text track
     // readiness state to loaded, and fire a simple event named load at the track element.
-    setReadyState(LOADED);
+    setReadyState(kLoaded);
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 
@@ -299,10 +299,10 @@ void HTMLTrackElement::cueLoadingCompleted(TextTrackLoader* loader, bool loading
 }
 
 // NOTE: The values in the TextTrack::ReadinessState enum must stay in sync with those in HTMLTrackElement::ReadyState.
-static_assert(HTMLTrackElement::NONE == static_cast<HTMLTrackElement::ReadyState>(TextTrack::NotLoaded), "HTMLTrackElement::NONE should be in sync with TextTrack::NotLoaded");
-static_assert(HTMLTrackElement::LOADING == static_cast<HTMLTrackElement::ReadyState>(TextTrack::Loading), "HTMLTrackElement::LOADING should be in sync with TextTrack::Loading");
-static_assert(HTMLTrackElement::LOADED == static_cast<HTMLTrackElement::ReadyState>(TextTrack::Loaded), "HTMLTrackElement::LOADED should be in sync with TextTrack::Loaded");
-static_assert(HTMLTrackElement::TRACK_ERROR == static_cast<HTMLTrackElement::ReadyState>(TextTrack::FailedToLoad), "HTMLTrackElement::TRACK_ERROR should be in sync with TextTrack::FailedToLoad");
+static_assert(HTMLTrackElement::kNone == static_cast<HTMLTrackElement::ReadyState>(TextTrack::NotLoaded), "HTMLTrackElement::kNone should be in sync with TextTrack::NotLoaded");
+static_assert(HTMLTrackElement::kLoading == static_cast<HTMLTrackElement::ReadyState>(TextTrack::Loading), "HTMLTrackElement::kLoading should be in sync with TextTrack::Loading");
+static_assert(HTMLTrackElement::kLoaded == static_cast<HTMLTrackElement::ReadyState>(TextTrack::Loaded), "HTMLTrackElement::kLoaded should be in sync with TextTrack::Loaded");
+static_assert(HTMLTrackElement::kError == static_cast<HTMLTrackElement::ReadyState>(TextTrack::FailedToLoad), "HTMLTrackElement::kError should be in sync with TextTrack::FailedToLoad");
 
 void HTMLTrackElement::setReadyState(ReadyState state)
 {

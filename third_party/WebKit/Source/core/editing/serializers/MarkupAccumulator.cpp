@@ -74,13 +74,13 @@ void MarkupAccumulator::appendEndTag(const Element& element)
 void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Namespaces* namespaces)
 {
     switch (node.getNodeType()) {
-    case Node::TEXT_NODE:
+    case Node::kTextNode:
         appendText(result, toText(node));
         break;
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         appendElement(result, toElement(node), namespaces);
         break;
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
         // false.
         m_formatter.appendAttributeValue(result, toAttr(node).value(), false);

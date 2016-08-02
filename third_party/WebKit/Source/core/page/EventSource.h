@@ -63,9 +63,9 @@ public:
     bool withCredentials() const;
 
     enum State : short {
-        CONNECTING = 0,
-        OPEN = 1,
-        CLOSED = 2
+        kConnecting = 0,
+        kOpen = 1,
+        kClosed = 2
     };
 
     State readyState() const;

@@ -357,7 +357,7 @@ bool Element::hasAnimations() const
 
 Node::NodeType Element::getNodeType() const
 {
-    return ELEMENT_NODE;
+    return kElementNode;
 }
 
 bool Element::hasAttribute(const QualifiedName& name) const
@@ -2107,11 +2107,11 @@ ShadowRoot& Element::ensureUserAgentShadowRoot()
 bool Element::childTypeAllowed(NodeType type) const
 {
     switch (type) {
-    case ELEMENT_NODE:
-    case TEXT_NODE:
-    case COMMENT_NODE:
-    case PROCESSING_INSTRUCTION_NODE:
-    case CDATA_SECTION_NODE:
+    case kElementNode:
+    case kTextNode:
+    case kCommentNode:
+    case kProcessingInstructionNode:
+    case kCdataSectionNode:
         return true;
     default:
         break;

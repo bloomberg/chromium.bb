@@ -309,7 +309,7 @@ Filter* FilterEffectBuilder::buildReferenceFilter(
     if (nodeMap && filterRegion.isEmpty())
         return nullptr;
 
-    bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
+    bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
     Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
     Filter* result = Filter::create(referenceBox, filterRegion, zoom, unitScaling);
     if (!previousEffect)

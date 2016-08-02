@@ -55,31 +55,31 @@ namespace {
 ExceptionCode errorCodeToExceptionCode(ErrorCode code)
 {
     switch (code) {
-    case OK:
+    case kOK:
         return 0;
-    case NOT_FOUND_ERR:
+    case kNotFoundErr:
         return NotFoundError;
-    case SECURITY_ERR:
+    case kSecurityErr:
         return SecurityError;
-    case ABORT_ERR:
+    case kAbortErr:
         return AbortError;
-    case NOT_READABLE_ERR:
+    case kNotReadableErr:
         return NotReadableError;
-    case ENCODING_ERR:
+    case kEncodingErr:
         return EncodingError;
-    case NO_MODIFICATION_ALLOWED_ERR:
+    case kNoModificationAllowedErr:
         return NoModificationAllowedError;
-    case INVALID_STATE_ERR:
+    case kInvalidStateErr:
         return InvalidStateError;
-    case SYNTAX_ERR:
+    case kSyntaxErr:
         return SyntaxError;
-    case INVALID_MODIFICATION_ERR:
+    case kInvalidModificationErr:
         return InvalidModificationError;
-    case QUOTA_EXCEEDED_ERR:
+    case kQuotaExceededErr:
         return QuotaExceededError;
-    case TYPE_MISMATCH_ERR:
+    case kTypeMismatchErr:
         return TypeMismatchError;
-    case PATH_EXISTS_ERR:
+    case kPathExistsErr:
         return PathExistsError;
     default:
         ASSERT_NOT_REACHED();
@@ -91,31 +91,31 @@ const char* errorCodeToMessage(ErrorCode code)
 {
     // Note that some of these do not set message. If message is 0 then the default message is used.
     switch (code) {
-    case OK:
+    case kOK:
         return 0;
-    case SECURITY_ERR:
+    case kSecurityErr:
         return securityErrorMessage;
-    case NOT_FOUND_ERR:
+    case kNotFoundErr:
         return notFoundErrorMessage;
-    case ABORT_ERR:
+    case kAbortErr:
         return abortErrorMessage;
-    case NOT_READABLE_ERR:
+    case kNotReadableErr:
         return notReadableErrorMessage;
-    case ENCODING_ERR:
+    case kEncodingErr:
         return encodingErrorMessage;
-    case NO_MODIFICATION_ALLOWED_ERR:
+    case kNoModificationAllowedErr:
         return noModificationAllowedErrorMessage;
-    case INVALID_STATE_ERR:
+    case kInvalidStateErr:
         return invalidStateErrorMessage;
-    case SYNTAX_ERR:
+    case kSyntaxErr:
         return syntaxErrorMessage;
-    case INVALID_MODIFICATION_ERR:
+    case kInvalidModificationErr:
         return 0;
-    case QUOTA_EXCEEDED_ERR:
+    case kQuotaExceededErr:
         return quotaExceededErrorMessage;
-    case TYPE_MISMATCH_ERR:
+    case kTypeMismatchErr:
         return 0;
-    case PATH_EXISTS_ERR:
+    case kPathExistsErr:
         return pathExistsErrorMessage;
     default:
         ASSERT_NOT_REACHED();
@@ -127,11 +127,11 @@ const char* errorCodeToMessage(ErrorCode code)
 
 void throwDOMException(ExceptionState& exceptionState, ErrorCode code)
 {
-    if (code == OK)
+    if (code == kOK)
         return;
 
     // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
-    if (code == SECURITY_ERR) {
+    if (code == kSecurityErr) {
         exceptionState.throwSecurityError(securityErrorMessage);
         return;
     }
@@ -141,7 +141,7 @@ void throwDOMException(ExceptionState& exceptionState, ErrorCode code)
 
 DOMException* createDOMException(ErrorCode code)
 {
-    DCHECK_NE(code, OK);
+    DCHECK_NE(code, kOK);
     return DOMException::create(errorCodeToExceptionCode(code), errorCodeToMessage(code));
 }
 

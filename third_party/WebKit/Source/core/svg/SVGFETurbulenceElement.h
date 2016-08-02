@@ -32,9 +32,9 @@
 namespace blink {
 
 enum SVGStitchOptions {
-    SVG_STITCHTYPE_UNKNOWN  = 0,
-    SVG_STITCHTYPE_STITCH   = 1,
-    SVG_STITCHTYPE_NOSTITCH = 2
+    kSvgStitchtypeUnknown  = 0,
+    kSvgStitchtypeStitch   = 1,
+    kSvgStitchtypeNostitch = 2
 };
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>();
 

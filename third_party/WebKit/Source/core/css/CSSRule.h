@@ -40,19 +40,19 @@ public:
     virtual ~CSSRule() { }
 
     enum Type {
-        STYLE_RULE = 1,
-        CHARSET_RULE = 2,
-        IMPORT_RULE = 3,
-        MEDIA_RULE = 4,
-        FONT_FACE_RULE = 5,
-        PAGE_RULE = 6,
-        KEYFRAMES_RULE = 7,
-        WEBKIT_KEYFRAMES_RULE = KEYFRAMES_RULE,
-        KEYFRAME_RULE = 8,
-        WEBKIT_KEYFRAME_RULE = KEYFRAME_RULE,
-        NAMESPACE_RULE = 10,
-        SUPPORTS_RULE = 12,
-        VIEWPORT_RULE = 15,
+        kStyleRule = 1,
+        kCharsetRule = 2,
+        kImportRule = 3,
+        kMediaRule = 4,
+        kFontFaceRule = 5,
+        kPageRule = 6,
+        kKeyframesRule = 7,
+        kWebkitKeyframesRule = kKeyframesRule,
+        kKeyframeRule = 8,
+        kWebkitKeyframeRule = kKeyframeRule,
+        kNamespaceRule = 10,
+        kSupportsRule = 12,
+        kViewportRule = 15,
     };
 
     virtual Type type() const = 0;

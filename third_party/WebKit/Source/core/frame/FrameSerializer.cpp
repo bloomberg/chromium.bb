@@ -340,11 +340,11 @@ void FrameSerializer::serializeCSSRule(CSSRule* rule)
     Document& document = *rule->parentStyleSheet()->ownerDocument();
 
     switch (rule->type()) {
-    case CSSRule::STYLE_RULE:
+    case CSSRule::kStyleRule:
         retrieveResourcesForProperties(&toCSSStyleRule(rule)->styleRule()->properties(), document);
         break;
 
-    case CSSRule::IMPORT_RULE: {
+    case CSSRule::kImportRule: {
         CSSImportRule* importRule = toCSSImportRule(rule);
         KURL sheetBaseURL = rule->parentStyleSheet()->baseURL();
         ASSERT(sheetBaseURL.isValid());
@@ -357,25 +357,25 @@ void FrameSerializer::serializeCSSRule(CSSRule* rule)
     }
 
     // Rules inheriting CSSGroupingRule
-    case CSSRule::MEDIA_RULE:
-    case CSSRule::SUPPORTS_RULE: {
+    case CSSRule::kMediaRule:
+    case CSSRule::kSupportsRule: {
         CSSRuleList* ruleList = rule->cssRules();
         for (unsigned i = 0; i < ruleList->length(); ++i)
             serializeCSSRule(ruleList->item(i));
         break;
     }
 
-    case CSSRule::FONT_FACE_RULE:
+    case CSSRule::kFontFaceRule:
         retrieveResourcesForProperties(&toCSSFontFaceRule(rule)->styleRule()->properties(), document);
         break;
 
     // Rules in which no external resources can be referenced
-    case CSSRule::CHARSET_RULE:
-    case CSSRule::PAGE_RULE:
-    case CSSRule::KEYFRAMES_RULE:
-    case CSSRule::KEYFRAME_RULE:
-    case CSSRule::NAMESPACE_RULE:
-    case CSSRule::VIEWPORT_RULE:
+    case CSSRule::kCharsetRule:
+    case CSSRule::kPageRule:
+    case CSSRule::kKeyframesRule:
+    case CSSRule::kKeyframeRule:
+    case CSSRule::kNamespaceRule:
+    case CSSRule::kViewportRule:
         break;
     }
 }

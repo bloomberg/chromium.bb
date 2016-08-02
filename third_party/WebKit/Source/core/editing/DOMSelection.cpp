@@ -445,8 +445,8 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    if (originalRange->compareBoundaryPoints(Range::START_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0
-        || newRange->compareBoundaryPoints(Range::START_TO_END, originalRange, ASSERT_NO_EXCEPTION) < 0) {
+    if (originalRange->compareBoundaryPoints(Range::kStartToEnd, newRange, ASSERT_NO_EXCEPTION) < 0
+        || newRange->compareBoundaryPoints(Range::kStartToEnd, originalRange, ASSERT_NO_EXCEPTION) < 0) {
         addConsoleError("Discontiguous selection is not supported.");
         return;
     }
@@ -456,8 +456,8 @@ void DOMSelection::addRange(Range* newRange)
     // do the same, since we don't support discontiguous selection. Further discussions at
     // <https://code.google.com/p/chromium/issues/detail?id=353069>.
 
-    Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange : newRange;
-    Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange;
+    Range* start = originalRange->compareBoundaryPoints(Range::kStartToStart, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange : newRange;
+    Range* end = originalRange->compareBoundaryPoints(Range::kEndToEnd, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange;
     Range* merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
     TextAffinity affinity = selection.selection().affinity();
     selection.setSelectedRange(merged, affinity);

@@ -433,7 +433,7 @@ DispatchEventResult EventTarget::dispatchEventInternal(Event* event)
 {
     event->setTarget(this);
     event->setCurrentTarget(this);
-    event->setEventPhase(Event::AT_TARGET);
+    event->setEventPhase(Event::kAtTarget);
     DispatchEventResult dispatchResult = fireEventListeners(event);
     event->setEventPhase(0);
     return dispatchResult;
@@ -614,9 +614,9 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // EventTarget::removeEventListener.
         ++i;
 
-        if (event->eventPhase() == Event::CAPTURING_PHASE && !registeredListener.capture())
+        if (event->eventPhase() == Event::kCapturingPhase && !registeredListener.capture())
             continue;
-        if (event->eventPhase() == Event::BUBBLING_PHASE && registeredListener.capture())
+        if (event->eventPhase() == Event::kBubblingPhase && registeredListener.capture())
             continue;
 
         // If stopImmediatePropagation has been called, we just break out immediately, without

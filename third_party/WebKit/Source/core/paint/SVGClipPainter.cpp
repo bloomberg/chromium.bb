@@ -49,7 +49,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
     // In this case, we need to apply the zoom scale explicitly - but only for clips with
     // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
-    if (!target.isSVG() && m_clip.clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    if (!target.isSVG() && m_clip.clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
         ASSERT(m_clip.style());
         animatedLocalTransform.scale(m_clip.style()->effectiveZoom());
     }
@@ -123,7 +123,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
 
         {
             AffineTransform contentTransform;
-            if (m_clip.clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+            if (m_clip.clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
                 contentTransform.translate(targetBoundingBox.x(), targetBoundingBox.y());
                 contentTransform.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
             }

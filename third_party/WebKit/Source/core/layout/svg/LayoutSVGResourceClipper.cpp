@@ -146,7 +146,7 @@ bool LayoutSVGResourceClipper::asPath(const AffineTransform& animatedLocalTransf
 
     // We are able to represent the clip as a path. Continue with direct clipping,
     // and transform the content to userspace if necessary.
-    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
         AffineTransform transform;
         transform.translate(referenceBox.x(), referenceBox.y());
         transform.scaleNonUniform(referenceBox.width(), referenceBox.height());
@@ -236,7 +236,7 @@ bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     if (!SVGLayoutSupport::pointInClippingArea(this, point))
         return false;
 
-    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
@@ -274,7 +274,7 @@ FloatRect LayoutSVGResourceClipper::resourceBoundingBox(const LayoutObject* obje
         calculateLocalClipBounds();
 
     AffineTransform transform = toSVGClipPathElement(element())->calculateAnimatedLocalTransform();
-    if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
         FloatRect objectBoundingBox = object->objectBoundingBox();
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());

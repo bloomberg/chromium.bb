@@ -170,7 +170,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
         toText(this)->updateTextLayoutObject(offsetOfReplacedData, oldLength);
 
     if (source != UpdateFromParser) {
-        if (getNodeType() == PROCESSING_INSTRUCTION_NODE)
+        if (getNodeType() == kProcessingInstructionNode)
             toProcessingInstruction(this)->didAttributeChanged();
 
         if (document().frame())

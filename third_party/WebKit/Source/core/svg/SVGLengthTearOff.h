@@ -43,17 +43,17 @@ class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength>, public Scri
 public:
     // Forward declare these enums in the w3c naming scheme, for IDL generation
     enum {
-        SVG_LENGTHTYPE_UNKNOWN = LengthTypeUnknown,
-        SVG_LENGTHTYPE_NUMBER = LengthTypeNumber,
-        SVG_LENGTHTYPE_PERCENTAGE = LengthTypePercentage,
-        SVG_LENGTHTYPE_EMS = LengthTypeEMS,
-        SVG_LENGTHTYPE_EXS = LengthTypeEXS,
-        SVG_LENGTHTYPE_PX = LengthTypePX,
-        SVG_LENGTHTYPE_CM = LengthTypeCM,
-        SVG_LENGTHTYPE_MM = LengthTypeMM,
-        SVG_LENGTHTYPE_IN = LengthTypeIN,
-        SVG_LENGTHTYPE_PT = LengthTypePT,
-        SVG_LENGTHTYPE_PC = LengthTypePC
+        kSvgLengthtypeUnknown = LengthTypeUnknown,
+        kSvgLengthtypeNumber = LengthTypeNumber,
+        kSvgLengthtypePercentage = LengthTypePercentage,
+        kSvgLengthtypeEms = LengthTypeEMS,
+        kSvgLengthtypeExs = LengthTypeEXS,
+        kSvgLengthtypePx = LengthTypePX,
+        kSvgLengthtypeCm = LengthTypeCM,
+        kSvgLengthtypeMm = LengthTypeMM,
+        kSvgLengthtypeIn = LengthTypeIN,
+        kSvgLengthtypePt = LengthTypePT,
+        kSvgLengthtypePc = LengthTypePC
     };
 
     static SVGLengthTearOff* create(SVGLength* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())

@@ -47,7 +47,7 @@ void DocumentOrderedList::add(Node* node)
         --it;
         Node* n = *it;
         unsigned short position = n->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed);
-        if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
+        if (position & Node::kDocumentPositionFollowing) {
             m_nodes.insertBefore(followingNode, node);
             return;
         }

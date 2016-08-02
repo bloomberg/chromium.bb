@@ -289,12 +289,12 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, Ev
         HostsUsingFeatures::countHostOrIsolatedWorldHumanReadableName(scriptState, *m_target, HostsUsingFeatures::Feature::EventPath);
 
     if (!m_currentTarget) {
-        ASSERT(m_eventPhase == Event::NONE);
+        DCHECK_EQ(Event::kNone, m_eventPhase);
         if (!m_eventPath) {
             // Before dispatching the event
             return HeapVector<Member<EventTarget>>();
         }
-        ASSERT(!m_eventPath->isEmpty());
+        DCHECK(!m_eventPath->isEmpty());
         // After dispatching the event
         if (mode == EmptyAfterDispatch)
             return HeapVector<Member<EventTarget>>();
@@ -302,7 +302,7 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, Ev
     }
 
     if (Node* node = m_currentTarget->toNode()) {
-        ASSERT(m_eventPath);
+        DCHECK(m_eventPath);
         size_t eventPathSize = m_eventPath->size();
         for (size_t i = 0; i < eventPathSize; ++i) {
             if (node == (*m_eventPath)[i].node()) {

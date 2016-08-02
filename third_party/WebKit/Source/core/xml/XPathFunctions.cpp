@@ -365,11 +365,11 @@ static inline String expandedNameLocalPart(Node* node)
     // The local part of an XPath expanded-name matches DOM local name for most node types, except for namespace nodes and processing instruction nodes.
     // But note that Blink does not support namespace nodes.
     switch (node->getNodeType()) {
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         return toElement(node)->localName();
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         return toAttr(node)->localName();
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kProcessingInstructionNode:
         return toProcessingInstruction(node)->target();
     default:
         return String();
@@ -379,9 +379,9 @@ static inline String expandedNameLocalPart(Node* node)
 static inline String expandedNamespaceURI(Node* node)
 {
     switch (node->getNodeType()) {
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         return toElement(node)->namespaceURI();
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         return toAttr(node)->namespaceURI();
     default:
         return String();
@@ -393,10 +393,10 @@ static inline String expandedName(Node* node)
     AtomicString prefix;
 
     switch (node->getNodeType()) {
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         prefix = toElement(node)->prefix();
         break;
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         prefix = toAttr(node)->prefix();
         break;
     default:

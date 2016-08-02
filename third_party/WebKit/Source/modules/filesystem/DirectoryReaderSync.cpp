@@ -92,7 +92,7 @@ private:
 DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_callbacksId(0)
-    , m_errorCode(FileError::OK)
+    , m_errorCode(FileError::kOK)
 {
 }
 
@@ -106,10 +106,10 @@ EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionSt
         m_callbacksId = filesystem()->readDirectory(this, m_fullPath, new EntriesCallbackHelper(this), new ErrorCallbackHelper(this), DOMFileSystemBase::Synchronous);
     }
 
-    if (m_errorCode == FileError::OK && m_hasMoreEntries && m_entries.isEmpty())
+    if (m_errorCode == FileError::kOK && m_hasMoreEntries && m_entries.isEmpty())
         m_fileSystem->waitForAdditionalResult(m_callbacksId);
 
-    if (m_errorCode != FileError::OK) {
+    if (m_errorCode != FileError::kOK) {
         FileError::throwDOMException(exceptionState, m_errorCode);
         return EntrySyncHeapVector();
     }

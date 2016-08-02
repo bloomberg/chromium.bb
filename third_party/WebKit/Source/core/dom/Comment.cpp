@@ -42,7 +42,7 @@ String Comment::nodeName() const
 
 Node::NodeType Comment::getNodeType() const
 {
-    return COMMENT_NODE;
+    return kCommentNode;
 }
 
 Node* Comment::cloneNode(bool /*deep*/)

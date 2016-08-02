@@ -217,7 +217,7 @@ File* DOMFileSystemBase::createFile(const FileMetadata& metadata, const KURL& fi
 void DOMFileSystemBase::getMetadata(const EntryBase* entry, MetadataCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
@@ -258,13 +258,13 @@ static bool verifyAndGetDestinationPathForCopyOrMove(const EntryBase* source, En
 void DOMFileSystemBase::move(const EntryBase* source, EntryBase* parent, const String& newName, EntryCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     String destinationPath;
     if (!verifyAndGetDestinationPathForCopyOrMove(source, parent, newName, destinationPath)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -277,13 +277,13 @@ void DOMFileSystemBase::move(const EntryBase* source, EntryBase* parent, const S
 void DOMFileSystemBase::copy(const EntryBase* source, EntryBase* parent, const String& newName, EntryCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     String destinationPath;
     if (!verifyAndGetDestinationPathForCopyOrMove(source, parent, newName, destinationPath)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -296,14 +296,14 @@ void DOMFileSystemBase::copy(const EntryBase* source, EntryBase* parent, const S
 void DOMFileSystemBase::remove(const EntryBase* entry, VoidCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     ASSERT(entry);
     // We don't allow calling remove() on the root directory.
     if (entry->fullPath() == String(DOMFilePath::root)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -316,14 +316,14 @@ void DOMFileSystemBase::remove(const EntryBase* entry, VoidCallback* successCall
 void DOMFileSystemBase::removeRecursively(const EntryBase* entry, VoidCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     ASSERT(entry && entry->isDirectory());
     // We don't allow calling remove() on the root directory.
     if (entry->fullPath() == String(DOMFilePath::root)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -336,7 +336,7 @@ void DOMFileSystemBase::removeRecursively(const EntryBase* entry, VoidCallback* 
 void DOMFileSystemBase::getParent(const EntryBase* entry, EntryCallback* successCallback, ErrorCallbackBase* errorCallback)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
@@ -349,13 +349,13 @@ void DOMFileSystemBase::getParent(const EntryBase* entry, EntryCallback* success
 void DOMFileSystemBase::getFile(const EntryBase* entry, const String& path, const FileSystemFlags& flags, EntryCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     String absolutePath;
     if (!pathToAbsolutePath(m_type, entry, path, absolutePath)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -371,13 +371,13 @@ void DOMFileSystemBase::getFile(const EntryBase* entry, const String& path, cons
 void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path, const FileSystemFlags& flags, EntryCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
     String absolutePath;
     if (!pathToAbsolutePath(m_type, entry, path, absolutePath)) {
-        reportError(errorCallback, FileError::INVALID_MODIFICATION_ERR);
+        reportError(errorCallback, FileError::kInvalidModificationErr);
         return;
     }
 
@@ -393,7 +393,7 @@ void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
 int DOMFileSystemBase::readDirectory(DirectoryReaderBase* reader, const String& path, EntriesCallback* successCallback, ErrorCallbackBase* errorCallback, SynchronousType synchronousType)
 {
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return 0;
     }
 

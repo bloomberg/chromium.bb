@@ -40,7 +40,7 @@ private:
     Text* cloneWithData(const String&) override;
 };
 
-DEFINE_NODE_TYPE_CASTS(CDATASection, getNodeType() == Node::CDATA_SECTION_NODE);
+DEFINE_NODE_TYPE_CASTS(CDATASection, getNodeType() == Node::kCdataSectionNode);
 
 } // namespace blink
 

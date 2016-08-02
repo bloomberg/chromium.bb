@@ -54,7 +54,7 @@ public:
 private:
     CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);
 
-    CSSRule::Type type() const override { return KEYFRAME_RULE; }
+    CSSRule::Type type() const override { return kKeyframeRule; }
 
     Member<StyleRuleKeyframe> m_keyframe;
     mutable Member<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
@@ -62,7 +62,7 @@ private:
     friend class CSSKeyframesRule;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, KEYFRAME_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, kKeyframeRule);
 
 } // namespace blink
 

@@ -75,7 +75,7 @@ Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, b
     HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
     frame->contentLayoutItem().hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
-    while (node && node->getNodeType() == Node::TEXT_NODE)
+    while (node && node->getNodeType() == Node::kTextNode)
         node = node->parentNode();
     return node;
 }

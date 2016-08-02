@@ -249,7 +249,7 @@ void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL,
 
     String absolutePath;
     if (!DOMFileSystemBase::pathToAbsolutePath(type, root, filePath, absolutePath)) {
-        invokeOrScheduleCallback(m_errorCallback.release(), FileError::INVALID_MODIFICATION_ERR);
+        invokeOrScheduleCallback(m_errorCallback.release(), FileError::kInvalidModificationErr);
         return;
     }
 

@@ -293,7 +293,7 @@ static bool findNodesSurroundingContext(DocumentFragment* fragment, Comment*& no
     if (!fragment->firstChild())
         return false;
     for (Node& node : NodeTraversal::startsAt(*fragment->firstChild())) {
-        if (node.getNodeType() == Node::COMMENT_NODE && toComment(node).data() == fragmentMarkerTag) {
+        if (node.getNodeType() == Node::kCommentNode && toComment(node).data() == fragmentMarkerTag) {
             if (!nodeBeforeContext) {
                 nodeBeforeContext = &toComment(node);
             } else {

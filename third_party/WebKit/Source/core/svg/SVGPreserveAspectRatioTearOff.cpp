@@ -38,7 +38,7 @@ namespace blink {
 
 void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align, ExceptionState& exceptionState)
 {
-    if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
+    if (align == kSvgPreserveaspectratioUnknown || align > kSvgPreserveaspectratioXmaxymax) {
         exceptionState.throwDOMException(NotSupportedError, "The alignment provided is invalid.");
         return;
     }
@@ -53,7 +53,7 @@ void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align, ExceptionStat
 
 void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
 {
-    if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
+    if (meetOrSlice == kSvgMeetorsliceUnknown || meetOrSlice > kSvgMeetorsliceSlice) {
         exceptionState.throwDOMException(NotSupportedError, "The meetOrSlice provided is invalid.");
         return;
     }

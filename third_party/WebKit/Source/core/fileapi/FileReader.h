@@ -58,9 +58,9 @@ public:
     ~FileReader() override;
 
     enum ReadyState {
-        EMPTY = 0,
-        LOADING = 1,
-        DONE = 2
+        kEmpty = 0,
+        kLoading = 1,
+        kDone = 2
     };
 
     void readAsArrayBuffer(Blob*, ExceptionState&);

@@ -2917,12 +2917,12 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
             return getUnsignedIntParameter(scriptState, GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_standard_derivatives not enabled");
         return ScriptValue::createNull(scriptState);
-    case WebGLDebugRendererInfo::UNMASKED_RENDERER_WEBGL:
+    case WebGLDebugRendererInfo::kUnmaskedRendererWebgl:
         if (extensionEnabled(WebGLDebugRendererInfoName))
             return WebGLAny(scriptState, String(contextGL()->GetString(GL_RENDERER)));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return ScriptValue::createNull(scriptState);
-    case WebGLDebugRendererInfo::UNMASKED_VENDOR_WEBGL:
+    case WebGLDebugRendererInfo::kUnmaskedVendorWebgl:
         if (extensionEnabled(WebGLDebugRendererInfoName))
             return WebGLAny(scriptState, String(contextGL()->GetString(GL_VENDOR)));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");

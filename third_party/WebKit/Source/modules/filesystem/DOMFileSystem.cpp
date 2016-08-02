@@ -159,7 +159,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback*
     ASSERT(fileEntry);
 
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 
@@ -173,7 +173,7 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry, BlobCallback* success
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     if (!fileSystem()) {
-        reportError(errorCallback, FileError::ABORT_ERR);
+        reportError(errorCallback, FileError::kAbortErr);
         return;
     }
 

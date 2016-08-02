@@ -79,8 +79,8 @@ void SVGViewSpec::reset()
     m_transform->baseValue()->clear();
     updateViewBox(FloatRect());
     ASSERT(preserveAspectRatio());
-    preserveAspectRatio()->baseValue()->setAlign(SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_XMIDYMID);
-    preserveAspectRatio()->baseValue()->setMeetOrSlice(SVGPreserveAspectRatio::SVG_MEETORSLICE_MEET);
+    preserveAspectRatio()->baseValue()->setAlign(SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid);
+    preserveAspectRatio()->baseValue()->setMeetOrSlice(SVGPreserveAspectRatio::kSvgMeetorsliceMeet);
     m_viewTargetString = emptyString();
 }
 

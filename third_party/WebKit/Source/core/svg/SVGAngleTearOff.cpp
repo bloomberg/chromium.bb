@@ -75,7 +75,7 @@ void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unitType, float valu
         return;
     }
 
-    if (unitType == SVGAngle::SVG_ANGLETYPE_UNKNOWN || unitType > SVGAngle::SVG_ANGLETYPE_GRAD) {
+    if (unitType == SVGAngle::kSvgAngletypeUnknown || unitType > SVGAngle::kSvgAngletypeGrad) {
         exceptionState.throwDOMException(NotSupportedError, "Cannot set value with unknown or invalid units (" + String::number(unitType) + ").");
         return;
     }
@@ -91,12 +91,12 @@ void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unitType, Exception
         return;
     }
 
-    if (unitType == SVGAngle::SVG_ANGLETYPE_UNKNOWN || unitType > SVGAngle::SVG_ANGLETYPE_GRAD) {
+    if (unitType == SVGAngle::kSvgAngletypeUnknown || unitType > SVGAngle::kSvgAngletypeGrad) {
         exceptionState.throwDOMException(NotSupportedError, "Cannot convert to unknown or invalid units (" + String::number(unitType) + ").");
         return;
     }
 
-    if (target()->unitType() == SVGAngle::SVG_ANGLETYPE_UNKNOWN) {
+    if (target()->unitType() == SVGAngle::kSvgAngletypeUnknown) {
         exceptionState.throwDOMException(NotSupportedError, "Cannot convert from unknown or invalid units.");
         return;
     }

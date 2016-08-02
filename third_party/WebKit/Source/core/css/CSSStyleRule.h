@@ -59,7 +59,7 @@ public:
 private:
     CSSStyleRule(StyleRule*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return STYLE_RULE; }
+    CSSRule::Type type() const override { return kStyleRule; }
 
     String generateSelectorText() const;
 
@@ -67,7 +67,7 @@ private:
     mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, STYLE_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, kStyleRule);
 
 } // namespace blink
 

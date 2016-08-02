@@ -46,8 +46,8 @@ public:
     // They are placed here and in all capital letters so they can be checked against the constants in the
     // IDL at compile time.
     enum {
-        TEMPORARY,
-        PERSISTENT,
+        kTemporary,
+        kPersistent,
     };
 };
 

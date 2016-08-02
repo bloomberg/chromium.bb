@@ -120,7 +120,7 @@ void DocumentXSLT::applyXSLTransform(Document& document, ProcessingInstruction* 
 ProcessingInstruction* DocumentXSLT::findXSLStyleSheet(Document& document)
 {
     for (Node* node = document.firstChild(); node; node = node->nextSibling()) {
-        if (node->getNodeType() != Node::PROCESSING_INSTRUCTION_NODE)
+        if (node->getNodeType() != Node::kProcessingInstructionNode)
             continue;
 
         ProcessingInstruction* pi = toProcessingInstruction(node);

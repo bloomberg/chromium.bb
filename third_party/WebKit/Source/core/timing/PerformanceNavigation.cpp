@@ -44,19 +44,19 @@ PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
 unsigned short PerformanceNavigation::type() const
 {
     if (!m_frame)
-        return TYPE_NAVIGATE;
+        return kTypeNavigate;
 
     DocumentLoader* documentLoader = m_frame->loader().documentLoader();
     if (!documentLoader)
-        return TYPE_NAVIGATE;
+        return kTypeNavigate;
 
     switch (documentLoader->getNavigationType()) {
     case NavigationTypeReload:
-        return TYPE_RELOAD;
+        return kTypeReload;
     case NavigationTypeBackForward:
-        return TYPE_BACK_FORWARD;
+        return kTypeBackForward;
     default:
-        return TYPE_NAVIGATE;
+        return kTypeNavigate;
     }
 }
 

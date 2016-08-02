@@ -72,7 +72,7 @@ private:
     void prepareForWrite();
 
     FileError::ErrorCode m_error;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool m_complete;
 #endif
 };

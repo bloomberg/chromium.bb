@@ -208,7 +208,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_timeoutMilliseconds(0)
-    , m_state(UNSENT)
+    , m_state(kUnsent)
     , m_lengthDownloadedToFile(0)
     , m_receivedLength(0)
     , m_exceptionCode(0)
@@ -254,7 +254,7 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "The value is only accessible if the object's 'responseType' is '' or 'text' (was '" + responseType() + "').");
         return ScriptString();
     }
-    if (m_error || (m_state != LOADING && m_state != DONE))
+    if (m_error || (m_state != kLoading && m_state != kDone))
         return ScriptString();
     return m_responseText;
 }
@@ -263,7 +263,7 @@ ScriptString XMLHttpRequest::responseJSONSource()
 {
     ASSERT(m_responseTypeCode == ResponseTypeJSON);
 
-    if (m_error || m_state != DONE)
+    if (m_error || m_state != kDone)
         return ScriptString();
     return m_responseText;
 }
@@ -299,7 +299,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    if (m_error || m_state != DONE)
+    if (m_error || m_state != kDone)
         return nullptr;
 
     if (!m_parsedResponse) {
@@ -321,8 +321,8 @@ Blob* XMLHttpRequest::responseBlob()
 {
     ASSERT(m_responseTypeCode == ResponseTypeBlob);
 
-    // We always return null before DONE.
-    if (m_error || m_state != DONE)
+    // We always return null before kDone.
+    if (m_error || m_state != kDone)
         return nullptr;
 
     if (!m_responseBlob) {
@@ -354,7 +354,7 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 {
     ASSERT(m_responseTypeCode == ResponseTypeArrayBuffer);
 
-    if (m_error || m_state != DONE)
+    if (m_error || m_state != kDone)
         return nullptr;
 
     if (!m_responseArrayBuffer) {
@@ -380,7 +380,7 @@ Stream* XMLHttpRequest::responseLegacyStream()
 {
     ASSERT(m_responseTypeCode == ResponseTypeLegacyStream);
 
-    if (m_error || (m_state != LOADING && m_state != DONE))
+    if (m_error || (m_state != kLoading && m_state != kDone))
         return nullptr;
 
     return m_responseLegacyStream;
@@ -408,7 +408,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout, ExceptionState& exceptionState
 
 void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& exceptionState)
 {
-    if (m_state >= LOADING) {
+    if (m_state >= kLoading) {
         exceptionState.throwDOMException(InvalidStateError, "The response type cannot be set if the object's state is LOADING or DONE.");
         return;
     }
@@ -482,7 +482,7 @@ void XMLHttpRequest::trackProgress(long long length)
 {
     m_receivedLength += length;
 
-    changeState(LOADING);
+    changeState(kLoading);
     if (m_async) {
         // readyStateChange event is fired as well.
         dispatchProgressEventFromSnapshot(EventTypeNames::progress);
@@ -503,10 +503,10 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
         return;
 
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
-    if (m_async || (m_state <= OPENED || m_state == DONE)) {
+    if (m_async || (m_state <= kOpened || m_state == kDone)) {
         TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(getExecutionContext(), this));
         XMLHttpRequestProgressEventThrottle::DeferredEventAction action = XMLHttpRequestProgressEventThrottle::Ignore;
-        if (m_state == DONE) {
+        if (m_state == kDone) {
             if (m_error)
                 action = XMLHttpRequestProgressEventThrottle::Clear;
             else
@@ -516,7 +516,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     }
 
-    if (m_state == DONE && !m_error) {
+    if (m_state == kDone && !m_error) {
         TRACE_EVENT1("devtools.timeline", "XHRLoad", "data", InspectorXhrLoadEvent::data(getExecutionContext(), this));
         dispatchProgressEventFromSnapshot(EventTypeNames::load);
         dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
@@ -526,7 +526,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
 
 void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionState)
 {
-    if (m_state > OPENED || m_loader) {
+    if (m_state > kOpened || m_loader) {
         exceptionState.throwDOMException(InvalidStateError,  "The value may only be set if the object's state is UNSENT or OPENED.");
         return;
     }
@@ -558,7 +558,7 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
         return;
 
     State previousState = m_state;
-    m_state = UNSENT;
+    m_state = kUnsent;
     m_error = false;
     m_uploadComplete = false;
 
@@ -615,10 +615,10 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
 
     // Check previous state to avoid dispatching readyState event
     // when calling open several times in a row.
-    if (previousState != OPENED)
-        changeState(OPENED);
+    if (previousState != kOpened)
+        changeState(kOpened);
     else
-        m_state = OPENED;
+        m_state = kOpened;
 }
 
 bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
@@ -626,7 +626,7 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
     if (!getExecutionContext())
         return false;
 
-    if (m_state != OPENED || m_loader) {
+    if (m_state != kOpened || m_loader) {
         exceptionState.throwDOMException(InvalidStateError, "The object's state must be OPENED.");
         return false;
     }
@@ -973,12 +973,12 @@ void XMLHttpRequest::abort()
     // becomes true by that. We should implement more reliable treatment for
     // nested method invocations at some point.
     if (m_async) {
-        if ((m_state == OPENED && sendFlag) || m_state == HEADERS_RECEIVED || m_state == LOADING) {
+        if ((m_state == kOpened && sendFlag) || m_state == kHeadersReceived || m_state == kLoading) {
             ASSERT(!m_loader);
             handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
         }
     }
-    m_state = UNSENT;
+    m_state = kUnsent;
 }
 
 void XMLHttpRequest::clearVariablesForLoading()
@@ -1008,7 +1008,7 @@ bool XMLHttpRequest::internalAbort()
 
     clearVariablesForLoading();
 
-    if (m_responseLegacyStream && m_state != DONE)
+    if (m_responseLegacyStream && m_state != kDone)
         m_responseLegacyStream->abort();
 
     clearResponse();
@@ -1122,7 +1122,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
 
     if (!m_async) {
         ASSERT(exceptionCode);
-        m_state = DONE;
+        m_state = kDone;
         m_exceptionCode = exceptionCode;
         return;
     }
@@ -1132,7 +1132,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
     // No new progress events dispatched; as required, that happens at
     // the end here.
     ASSERT(m_error);
-    changeState(DONE);
+    changeState(kDone);
 
     if (!m_uploadComplete) {
         m_uploadComplete = true;
@@ -1150,7 +1150,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
 
 void XMLHttpRequest::overrideMimeType(const AtomicString& mimeType, ExceptionState& exceptionState)
 {
-    if (m_state == LOADING || m_state == DONE) {
+    if (m_state == kLoading || m_state == kDone) {
         exceptionState.throwDOMException(InvalidStateError, "MimeType cannot be overridden when the state is LOADING or DONE.");
         return;
     }
@@ -1160,7 +1160,7 @@ void XMLHttpRequest::overrideMimeType(const AtomicString& mimeType, ExceptionSta
 
 void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
 {
-    if (m_state != OPENED || m_loader) {
+    if (m_state != kOpened || m_loader) {
         exceptionState.throwDOMException(InvalidStateError, "The object's state must be OPENED.");
         return;
     }
@@ -1221,7 +1221,7 @@ const AtomicString& XMLHttpRequest::getRequestHeader(const AtomicString& name) c
 
 String XMLHttpRequest::getAllResponseHeaders() const
 {
-    if (m_state < HEADERS_RECEIVED || m_error)
+    if (m_state < kHeadersReceived || m_error)
         return "";
 
     StringBuilder stringBuilder;
@@ -1255,7 +1255,7 @@ String XMLHttpRequest::getAllResponseHeaders() const
 
 const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name) const
 {
-    if (m_state < HEADERS_RECEIVED || m_error)
+    if (m_state < kHeadersReceived || m_error)
         return nullAtom;
 
     // See comment in getAllResponseHeaders above.
@@ -1309,7 +1309,7 @@ bool XMLHttpRequest::responseIsHTML() const
 
 int XMLHttpRequest::status() const
 {
-    if (m_state == UNSENT || m_state == OPENED || m_error)
+    if (m_state == kUnsent || m_state == kOpened || m_error)
         return 0;
 
     if (m_response.httpStatusCode())
@@ -1320,7 +1320,7 @@ int XMLHttpRequest::status() const
 
 String XMLHttpRequest::statusText() const
 {
-    if (m_state == UNSENT || m_state == OPENED || m_error)
+    if (m_state == kUnsent || m_state == kOpened || m_error)
         return String();
 
     if (!m_response.httpStatusText().isNull())
@@ -1375,11 +1375,11 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_error)
         return;
 
-    if (m_state < HEADERS_RECEIVED)
-        changeState(HEADERS_RECEIVED);
+    if (m_state < kHeadersReceived)
+        changeState(kHeadersReceived);
 
     if (m_downloadingToFile && m_responseTypeCode != ResponseTypeBlob && m_lengthDownloadedToFile) {
-        ASSERT(m_state == LOADING);
+        DCHECK_EQ(kLoading, m_state);
         // In this case, we have sent the request with DownloadToFile true,
         // but the user changed the response type after that. Hence we need to
         // read the response data and provide it to this object.
@@ -1482,7 +1482,7 @@ void XMLHttpRequest::endLoading()
     if (m_loader)
         m_loader = nullptr;
 
-    changeState(DONE);
+    changeState(kDone);
 
     if (!getExecutionContext()->isDocument() || !document() || !document()->frame() || !document()->frame()->page())
         return;
@@ -1576,8 +1576,8 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
     if (m_error)
         return;
 
-    if (m_state < HEADERS_RECEIVED)
-        changeState(HEADERS_RECEIVED);
+    if (m_state < kHeadersReceived)
+        changeState(kHeadersReceived);
 
     // We need to check for |m_error| again, because |changeState| may trigger
     // readystatechange, and user javascript can cause |abort()|.
@@ -1625,8 +1625,8 @@ void XMLHttpRequest::didDownloadData(int dataLength)
 
     ASSERT(m_downloadingToFile);
 
-    if (m_state < HEADERS_RECEIVED)
-        changeState(HEADERS_RECEIVED);
+    if (m_state < kHeadersReceived)
+        changeState(kHeadersReceived);
 
     if (!dataLength)
         return;

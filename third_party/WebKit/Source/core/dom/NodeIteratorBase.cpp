@@ -42,9 +42,9 @@ unsigned NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState
     // The bit twiddling here is done to map DOM node types, which are given as integers from
     // 1 through 14, to whatToShow bit masks.
     if (!(((1 << (node->getNodeType() - 1)) & m_whatToShow)))
-        return NodeFilter::FILTER_SKIP;
+        return NodeFilter::kFilterSkip;
     if (!m_filter)
-        return NodeFilter::FILTER_ACCEPT;
+        return NodeFilter::kFilterAccept;
     return m_filter->acceptNode(node, exceptionState);
 }
 

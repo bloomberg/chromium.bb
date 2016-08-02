@@ -39,7 +39,7 @@ DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member
     size_t size = eventTargets.size();
     ASSERT(size);
 
-    event->setEventPhase(Event::CAPTURING_PHASE);
+    event->setEventPhase(Event::kCapturingPhase);
     for (size_t i = size - 1; i; --i) { // Don't do the first element.
         event->setCurrentTarget(eventTargets[i].get());
         eventTargets[i]->fireEventListeners(event);
@@ -47,7 +47,7 @@ DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member
             goto doneDispatching;
     }
 
-    event->setEventPhase(Event::AT_TARGET);
+    event->setEventPhase(Event::kAtTarget);
     event->setCurrentTarget(eventTargets[0].get());
     eventTargets[0]->fireEventListeners(event);
     if (event->propagationStopped() || !event->bubbles())
@@ -60,7 +60,7 @@ DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member
         goto doneDispatching;
     }
 
-    event->setEventPhase(Event::BUBBLING_PHASE);
+    event->setEventPhase(Event::kBubblingPhase);
     for (size_t i = 1; i < size; ++i) { // Don't do the first element.
         event->setCurrentTarget(eventTargets[i].get());
         eventTargets[i]->fireEventListeners(event);
@@ -77,7 +77,7 @@ DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member
 
 doneDispatching:
     event->setCurrentTarget(nullptr);
-    event->setEventPhase(Event::NONE);
+    event->setEventPhase(Event::kNone);
     return EventTarget::dispatchEventResult(*event);
 }
 

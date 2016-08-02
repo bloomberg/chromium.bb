@@ -131,7 +131,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(Event* e
 void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(Event* progressEvent)
 {
     XMLHttpRequest::State state = m_target->readyState();
-    if (m_target->readyState() == XMLHttpRequest::LOADING && m_hasDispatchedProgressProgressEvent) {
+    if (m_target->readyState() == XMLHttpRequest::kLoading && m_hasDispatchedProgressProgressEvent) {
         TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(m_target->getExecutionContext(), m_target));
         InspectorInstrumentation::AsyncTask asyncTask(m_target->getExecutionContext(), m_target, m_target->isAsync());
         m_target->dispatchEvent(Event::create(EventTypeNames::readystatechange));

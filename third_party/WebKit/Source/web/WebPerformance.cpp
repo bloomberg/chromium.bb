@@ -52,13 +52,13 @@ void WebPerformance::assign(const WebPerformance& other)
 WebNavigationType WebPerformance::navigationType() const
 {
     switch (m_private->navigation()->type()) {
-    case PerformanceNavigation::TYPE_NAVIGATE:
+    case PerformanceNavigation::kTypeNavigate:
         return WebNavigationTypeOther;
-    case PerformanceNavigation::TYPE_RELOAD:
+    case PerformanceNavigation::kTypeReload:
         return WebNavigationTypeReload;
-    case PerformanceNavigation::TYPE_BACK_FORWARD:
+    case PerformanceNavigation::kTypeBackForward:
         return WebNavigationTypeBackForward;
-    case PerformanceNavigation::TYPE_RESERVED:
+    case PerformanceNavigation::kTypeReserved:
         return WebNavigationTypeOther;
     }
     NOTREACHED();

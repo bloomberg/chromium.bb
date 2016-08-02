@@ -135,9 +135,9 @@ bool SQLStatementBackend::execute(Database* db)
     if (result != SQLResultOk) {
         WTF_LOG(StorageAPI, "Unable to verify correctness of statement %s - error %i (%s)", m_statement.ascii().data(), result, database->lastErrorMsg());
         if (result == SQLResultInterrupt)
-            m_error = SQLErrorData::create(SQLError::DATABASE_ERR, "could not prepare statement", result, "interrupted");
+            m_error = SQLErrorData::create(SQLError::kDatabaseErr, "could not prepare statement", result, "interrupted");
         else
-            m_error = SQLErrorData::create(SQLError::SYNTAX_ERR, "could not prepare statement", result, database->lastErrorMsg());
+            m_error = SQLErrorData::create(SQLError::kSyntaxErr, "could not prepare statement", result, database->lastErrorMsg());
         db->reportExecuteStatementResult(1, m_error->code(), result);
         return false;
     }
@@ -146,7 +146,7 @@ bool SQLStatementBackend::execute(Database* db)
     // If this is the case, they might be trying to do something fishy or malicious
     if (statement.bindParameterCount() != m_arguments.size()) {
         WTF_LOG(StorageAPI, "Bind parameter count doesn't match number of question marks");
-        m_error = SQLErrorData::create(SQLError::SYNTAX_ERR, "number of '?'s in statement string does not match argument count");
+        m_error = SQLErrorData::create(SQLError::kSyntaxErr, "number of '?'s in statement string does not match argument count");
         db->reportExecuteStatementResult(2, m_error->code(), 0);
         return false;
     }
@@ -160,8 +160,8 @@ bool SQLStatementBackend::execute(Database* db)
 
         if (result != SQLResultOk) {
             WTF_LOG(StorageAPI, "Failed to bind value index %i to statement for query '%s'", i + 1, m_statement.ascii().data());
-            db->reportExecuteStatementResult(3, SQLError::DATABASE_ERR, result);
-            m_error = SQLErrorData::create(SQLError::DATABASE_ERR, "could not bind value", result, database->lastErrorMsg());
+            db->reportExecuteStatementResult(3, SQLError::kDatabaseErr, result);
+            m_error = SQLErrorData::create(SQLError::kDatabaseErr, "could not bind value", result, database->lastErrorMsg());
             return false;
         }
     }
@@ -183,8 +183,8 @@ bool SQLStatementBackend::execute(Database* db)
         } while (result == SQLResultRow);
 
         if (result != SQLResultDone) {
-            db->reportExecuteStatementResult(4, SQLError::DATABASE_ERR, result);
-            m_error = SQLErrorData::create(SQLError::DATABASE_ERR, "could not iterate results", result, database->lastErrorMsg());
+            db->reportExecuteStatementResult(4, SQLError::kDatabaseErr, result);
+            m_error = SQLErrorData::create(SQLError::kDatabaseErr, "could not iterate results", result, database->lastErrorMsg());
             return false;
         }
     } else if (result == SQLResultDone) {
@@ -196,12 +196,12 @@ bool SQLStatementBackend::execute(Database* db)
         setFailureDueToQuota(db);
         return false;
     } else if (result == SQLResultConstraint) {
-        db->reportExecuteStatementResult(6, SQLError::CONSTRAINT_ERR, result);
-        m_error = SQLErrorData::create(SQLError::CONSTRAINT_ERR, "could not execute statement due to a constaint failure", result, database->lastErrorMsg());
+        db->reportExecuteStatementResult(6, SQLError::kConstraintErr, result);
+        m_error = SQLErrorData::create(SQLError::kConstraintErr, "could not execute statement due to a constaint failure", result, database->lastErrorMsg());
         return false;
     } else {
-        db->reportExecuteStatementResult(5, SQLError::DATABASE_ERR, result);
-        m_error = SQLErrorData::create(SQLError::DATABASE_ERR, "could not execute statement", result, database->lastErrorMsg());
+        db->reportExecuteStatementResult(5, SQLError::kDatabaseErr, result);
+        m_error = SQLErrorData::create(SQLError::kDatabaseErr, "could not execute statement", result, database->lastErrorMsg());
         return false;
     }
 
@@ -217,15 +217,15 @@ bool SQLStatementBackend::execute(Database* db)
 void SQLStatementBackend::setVersionMismatchedError(Database* database)
 {
     ASSERT(!m_error && !m_resultSet->isValid());
-    database->reportExecuteStatementResult(7, SQLError::VERSION_ERR, 0);
-    m_error = SQLErrorData::create(SQLError::VERSION_ERR, "current version of the database and `oldVersion` argument do not match");
+    database->reportExecuteStatementResult(7, SQLError::kVersionErr, 0);
+    m_error = SQLErrorData::create(SQLError::kVersionErr, "current version of the database and `oldVersion` argument do not match");
 }
 
 void SQLStatementBackend::setFailureDueToQuota(Database* database)
 {
     ASSERT(!m_error && !m_resultSet->isValid());
-    database->reportExecuteStatementResult(8, SQLError::QUOTA_ERR, 0);
-    m_error = SQLErrorData::create(SQLError::QUOTA_ERR, "there was not enough remaining storage space, or the storage quota was reached and the user declined to allow more space");
+    database->reportExecuteStatementResult(8, SQLError::kQuotaErr, 0);
+    m_error = SQLErrorData::create(SQLError::kQuotaErr, "there was not enough remaining storage space, or the storage quota was reached and the user declined to allow more space");
 }
 
 void SQLStatementBackend::clearFailureDueToQuota()
@@ -236,7 +236,7 @@ void SQLStatementBackend::clearFailureDueToQuota()
 
 bool SQLStatementBackend::lastExecutionFailedDueToQuota() const
 {
-    return m_error && m_error->code() == SQLError::QUOTA_ERR;
+    return m_error && m_error->code() == SQLError::kQuotaErr;
 }
 
 } // namespace blink

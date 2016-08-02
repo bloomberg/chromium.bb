@@ -47,8 +47,8 @@ class DeprecatedStorageInfo final : public GarbageCollected<DeprecatedStorageInf
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum {
-        TEMPORARY,
-        PERSISTENT,
+        kTemporary,
+        kPersistent,
     };
 
     static DeprecatedStorageInfo* create()

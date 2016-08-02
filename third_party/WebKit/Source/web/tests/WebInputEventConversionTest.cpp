@@ -67,18 +67,18 @@ int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location)
 TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
 {
     // Test key location conversion.
-    int modifiers = getModifiersForKeyLocationCode(KeyboardEvent::DOM_KEY_LOCATION_STANDARD);
+    int modifiers = getModifiersForKeyLocationCode(KeyboardEvent::kDomKeyLocationStandard);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
 
-    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::DOM_KEY_LOCATION_LEFT);
+    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::kDomKeyLocationLeft);
     EXPECT_TRUE(modifiers & WebInputEvent::IsLeft);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsRight);
 
-    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::DOM_KEY_LOCATION_RIGHT);
+    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::kDomKeyLocationRight);
     EXPECT_TRUE(modifiers & WebInputEvent::IsRight);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsLeft);
 
-    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::DOM_KEY_LOCATION_NUMPAD);
+    modifiers = getModifiersForKeyLocationCode(KeyboardEvent::kDomKeyLocationNumpad);
     EXPECT_TRUE(modifiers & WebInputEvent::IsKeyPad);
     EXPECT_FALSE(modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
 }
@@ -907,7 +907,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     Document* document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     {
         WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
-            WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
+            WheelEvent::kDomDeltaPage, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
             PlatformEvent::CtrlKey, 0, 0, -1 /* null plugin id */,
             true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, true /*cancelable*/);
         WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
@@ -928,7 +928,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 
     {
         WheelEvent* event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
-            WheelEvent::DOM_DELTA_PAGE, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
+            WheelEvent::kDomDeltaPage, document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
             PlatformEvent::CtrlKey, 0, 0, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false);
         WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document->layoutViewItem(), *event);
         EXPECT_EQ(WebInputEvent::EventNonBlocking, webMouseWheel.dispatchType);

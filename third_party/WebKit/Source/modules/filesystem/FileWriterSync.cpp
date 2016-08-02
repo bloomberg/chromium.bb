@@ -85,9 +85,9 @@ void FileWriterSync::truncate(long long offset, ExceptionState& exceptionState)
 
 void FileWriterSync::didWrite(long long bytes, bool complete)
 {
-    ASSERT(m_error == FileError::OK);
-    ASSERT(!m_complete);
-#if ENABLE(ASSERT)
+    DCHECK_EQ(FileError::kOK, m_error);
+#if DCHECK_IS_ON()
+    DCHECK(!m_complete);
     m_complete = complete;
 #else
     ASSERT_UNUSED(complete, complete);
@@ -96,26 +96,26 @@ void FileWriterSync::didWrite(long long bytes, bool complete)
 
 void FileWriterSync::didTruncate()
 {
-    ASSERT(m_error == FileError::OK);
-    ASSERT(!m_complete);
-#if ENABLE(ASSERT)
+    DCHECK_EQ(FileError::kOK, m_error);
+#if DCHECK_IS_ON()
+    DCHECK(!m_complete);
     m_complete = true;
 #endif
 }
 
 void FileWriterSync::didFail(WebFileError error)
 {
-    ASSERT(m_error == FileError::OK);
+    DCHECK_EQ(FileError::kOK, m_error);
     m_error = static_cast<FileError::ErrorCode>(error);
-    ASSERT(!m_complete);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
+    DCHECK(!m_complete);
     m_complete = true;
 #endif
 }
 
 FileWriterSync::FileWriterSync()
-    : m_error(FileError::OK)
-#if ENABLE(ASSERT)
+    : m_error(FileError::kOK)
+#if DCHECK_IS_ON()
     , m_complete(true)
 #endif
 {
@@ -123,9 +123,11 @@ FileWriterSync::FileWriterSync()
 
 void FileWriterSync::prepareForWrite()
 {
-    ASSERT(m_complete);
-    m_error = FileError::OK;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
+    DCHECK(m_complete);
+#endif
+    m_error = FileError::kOK;
+#if DCHECK_IS_ON()
     m_complete = false;
 #endif
 }

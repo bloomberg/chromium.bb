@@ -74,7 +74,7 @@ FloatSize SVGImagePainter::computeImageViewportSize() const
 {
     ASSERT(m_layoutSVGImage.imageResource()->hasImage());
 
-    if (toSVGImageElement(m_layoutSVGImage.element())->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
+    if (toSVGImageElement(m_layoutSVGImage.element())->preserveAspectRatio()->currentValue()->align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
         return m_layoutSVGImage.objectBoundingBox().size();
 
     ImageResource* cachedImage = m_layoutSVGImage.imageResource()->cachedImage();

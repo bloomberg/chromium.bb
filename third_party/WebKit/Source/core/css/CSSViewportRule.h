@@ -59,13 +59,13 @@ public:
 private:
     CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return VIEWPORT_RULE; }
+    CSSRule::Type type() const override { return kViewportRule; }
 
     Member<StyleRuleViewport> m_viewportRule;
     mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, VIEWPORT_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, kViewportRule);
 
 } // namespace blink
 

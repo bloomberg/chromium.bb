@@ -836,7 +836,7 @@ void Database::runTransaction(
         SQLTransactionErrorCallback* callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);
         if (callback) {
-            std::unique_ptr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
+            std::unique_ptr<SQLErrorData> error = SQLErrorData::create(SQLError::kUnknownErr, "database has been closed");
             getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback, wrapPersistent(callback), passed(std::move(error))));
         }
     }

@@ -43,13 +43,13 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>, publi
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGTransformType {
-        SVG_TRANSFORM_UNKNOWN = blink::SVG_TRANSFORM_UNKNOWN,
-        SVG_TRANSFORM_MATRIX = blink::SVG_TRANSFORM_MATRIX,
-        SVG_TRANSFORM_TRANSLATE = blink::SVG_TRANSFORM_TRANSLATE,
-        SVG_TRANSFORM_SCALE = blink::SVG_TRANSFORM_SCALE,
-        SVG_TRANSFORM_ROTATE = blink::SVG_TRANSFORM_ROTATE,
-        SVG_TRANSFORM_SKEWX = blink::SVG_TRANSFORM_SKEWX,
-        SVG_TRANSFORM_SKEWY = blink::SVG_TRANSFORM_SKEWY,
+        kSvgTransformUnknown = blink::kSvgTransformUnknown,
+        kSvgTransformMatrix = blink::kSvgTransformMatrix,
+        kSvgTransformTranslate = blink::kSvgTransformTranslate,
+        kSvgTransformScale = blink::kSvgTransformScale,
+        kSvgTransformRotate = blink::kSvgTransformRotate,
+        kSvgTransformSkewx = blink::kSvgTransformSkewx,
+        kSvgTransformSkewy = blink::kSvgTransformSkewy,
     };
 
     static SVGTransformTearOff* create(SVGTransform* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())

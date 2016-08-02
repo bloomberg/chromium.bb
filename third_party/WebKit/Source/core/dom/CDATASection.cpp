@@ -42,7 +42,7 @@ String CDATASection::nodeName() const
 
 Node::NodeType CDATASection::getNodeType() const
 {
-    return CDATA_SECTION_NODE;
+    return kCdataSectionNode;
 }
 
 Text* CDATASection::cloneWithData(const String& data)

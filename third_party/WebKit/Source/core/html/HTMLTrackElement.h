@@ -46,10 +46,10 @@ public:
     void setKind(const AtomicString&);
 
     enum ReadyState {
-        NONE = 0,
-        LOADING = 1,
-        LOADED = 2,
-        TRACK_ERROR = 3
+        kNone = 0,
+        kLoading = 1,
+        kLoaded = 2,
+        kError = 3
     };
     ReadyState getReadyState();
     void scheduleLoad();

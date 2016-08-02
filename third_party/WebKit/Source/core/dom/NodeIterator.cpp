@@ -86,10 +86,10 @@ Node* NodeIterator::nextNode(ExceptionState& exceptionState)
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToNext(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
-        // In other words, FILTER_REJECT does not pass over descendants
-        // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
+        // In other words, kFilterReject does not pass over descendants
+        // of the rejected node. Hence, kFilterReject is the same as kFilterSkip.
         Node* provisionalResult = m_candidateNode.node;
-        bool nodeWasAccepted = acceptNode(provisionalResult, exceptionState) == NodeFilter::FILTER_ACCEPT;
+        bool nodeWasAccepted = acceptNode(provisionalResult, exceptionState) == NodeFilter::kFilterAccept;
         if (exceptionState.hadException())
             break;
         if (nodeWasAccepted) {
@@ -110,10 +110,10 @@ Node* NodeIterator::previousNode(ExceptionState& exceptionState)
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToPrevious(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
-        // In other words, FILTER_REJECT does not pass over descendants
-        // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
+        // In other words, kFilterReject does not pass over descendants
+        // of the rejected node. Hence, kFilterReject is the same as kFilterSkip.
         Node* provisionalResult = m_candidateNode.node;
-        bool nodeWasAccepted = acceptNode(provisionalResult, exceptionState) == NodeFilter::FILTER_ACCEPT;
+        bool nodeWasAccepted = acceptNode(provisionalResult, exceptionState) == NodeFilter::kFilterAccept;
         if (exceptionState.hadException())
             break;
         if (nodeWasAccepted) {

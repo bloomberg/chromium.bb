@@ -149,7 +149,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventPreProcess(EventD
 inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing()
 {
     // Trigger capturing event handlers, starting at the top and working our way down.
-    m_event->setEventPhase(Event::CAPTURING_PHASE);
+    m_event->setEventPhase(Event::kCapturingPhase);
 
     if (m_event->eventPath().windowEventContext().handleLocalEvents(*m_event) && m_event->propagationStopped())
         return DoneDispatching;
@@ -168,7 +168,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing()
 
 inline EventDispatchContinuation EventDispatcher::dispatchEventAtTarget()
 {
-    m_event->setEventPhase(Event::AT_TARGET);
+    m_event->setEventPhase(Event::kAtTarget);
     m_event->eventPath()[0].handleLocalEvents(*m_event);
     return m_event->propagationStopped() ? DoneDispatching : ContinueDispatching;
 }
@@ -180,9 +180,9 @@ inline void EventDispatcher::dispatchEventAtBubbling()
     for (size_t i = 1; i < size; ++i) {
         const NodeEventContext& eventContext = m_event->eventPath()[i];
         if (eventContext.currentTargetSameAsTarget()) {
-            m_event->setEventPhase(Event::AT_TARGET);
+            m_event->setEventPhase(Event::kAtTarget);
         } else if (m_event->bubbles() && !m_event->cancelBubble()) {
-            m_event->setEventPhase(Event::BUBBLING_PHASE);
+            m_event->setEventPhase(Event::kBubblingPhase);
         } else {
             if (m_event->bubbles() && m_event->cancelBubble() && eventContext.node() && eventContext.node()->hasEventListeners(m_event->type()))
                 UseCounter::count(eventContext.node()->document(), UseCounter::EventCancelBubbleAffected);
@@ -193,7 +193,7 @@ inline void EventDispatcher::dispatchEventAtBubbling()
             return;
     }
     if (m_event->bubbles() && !m_event->cancelBubble()) {
-        m_event->setEventPhase(Event::BUBBLING_PHASE);
+        m_event->setEventPhase(Event::kBubblingPhase);
         m_event->eventPath().windowEventContext().handleLocalEvents(*m_event);
     } else if (m_event->bubbles() && m_event->eventPath().windowEventContext().window() && m_event->eventPath().windowEventContext().window()->hasEventListeners(m_event->type())) {
         UseCounter::count(m_event->eventPath().windowEventContext().window()->getExecutionContext(), UseCounter::EventCancelBubbleAffected);

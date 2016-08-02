@@ -186,7 +186,7 @@ FloatSize SVGImage::concreteObjectSize(const FloatSize& defaultObjectSize) const
     if (intrinsicSizingInfo.hasWidth && intrinsicSizingInfo.hasHeight)
         return intrinsicSizingInfo.size;
 
-    if (svg->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
+    if (svg->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::kSvgPreserveaspectratioNone) {
         // TODO(davve): The intrinsic aspect ratio is not used to resolve a missing intrinsic width
         // or height when preserveAspectRatio is none. It's unclear whether this is correct. See
         // crbug.com/584172.

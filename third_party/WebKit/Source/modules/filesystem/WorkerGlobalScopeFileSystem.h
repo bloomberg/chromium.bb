@@ -43,8 +43,8 @@ class WorkerGlobalScopeFileSystem {
     STATIC_ONLY(WorkerGlobalScopeFileSystem);
 public:
     enum {
-        TEMPORARY,
-        PERSISTENT,
+        kTemporary,
+        kPersistent,
     };
 
     static void webkitRequestFileSystem(WorkerGlobalScope&, int type, long long size, FileSystemCallback* successCallback, ErrorCallback*);

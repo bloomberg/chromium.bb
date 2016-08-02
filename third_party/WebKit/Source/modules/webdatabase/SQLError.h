@@ -76,14 +76,14 @@ public:
     String message() const { return m_data.message(); }
 
     enum SQLErrorCode {
-        UNKNOWN_ERR = 0,
-        DATABASE_ERR = 1,
-        VERSION_ERR = 2,
-        TOO_LARGE_ERR = 3,
-        QUOTA_ERR = 4,
-        SYNTAX_ERR = 5,
-        CONSTRAINT_ERR = 6,
-        TIMEOUT_ERR = 7
+        kUnknownErr = 0,
+        kDatabaseErr = 1,
+        kVersionErr = 2,
+        kTooLargeErr = 3,
+        kQuotaErr = 4,
+        kSyntaxErr = 5,
+        kConstraintErr = 6,
+        kTimeoutErr = 7
     };
 
     static const char quotaExceededErrorMessage[];

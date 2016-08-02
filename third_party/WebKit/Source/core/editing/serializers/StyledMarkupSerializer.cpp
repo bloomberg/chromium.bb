@@ -406,7 +406,7 @@ void StyledMarkupTraverser<Strategy>::appendStartMarkup(Node& node)
     if (!m_accumulator)
         return;
     switch (node.getNodeType()) {
-    case Node::TEXT_NODE: {
+    case Node::kTextNode: {
         Text& text = toText(node);
         if (text.parentElement() && isHTMLTextAreaElement(text.parentElement())) {
             m_accumulator->appendText(text);
@@ -424,7 +424,7 @@ void StyledMarkupTraverser<Strategy>::appendStartMarkup(Node& node)
         m_accumulator->appendTextWithInlineStyle(text, inlineStyle);
         break;
     }
-    case Node::ELEMENT_NODE: {
+    case Node::kElementNode: {
         Element& element = toElement(node);
         if ((element.isHTMLElement() && shouldAnnotate()) || shouldApplyWrappingStyle(element)) {
             EditingStyle* inlineStyle = createInlineStyle(element);

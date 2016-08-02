@@ -76,7 +76,7 @@ XPathResult* XPathExpression::evaluate(Node* contextNode, unsigned short type, c
         return nullptr;
     }
 
-    if (type != XPathResult::ANY_TYPE) {
+    if (type != XPathResult::kAnyType) {
         result->convertTo(type, exceptionState);
         if (exceptionState.hadException())
             return nullptr;

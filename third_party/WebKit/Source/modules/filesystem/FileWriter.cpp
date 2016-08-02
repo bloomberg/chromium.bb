@@ -53,7 +53,7 @@ FileWriter* FileWriter::create(ExecutionContext* context)
 FileWriter::FileWriter(ExecutionContext* context)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
-    , m_readyState(INIT)
+    , m_readyState(kInit)
     , m_operationInProgress(OperationNone)
     , m_queuedOperation(OperationNone)
     , m_bytesWritten(0)
@@ -68,7 +68,7 @@ FileWriter::FileWriter(ExecutionContext* context)
 FileWriter::~FileWriter()
 {
     ASSERT(!m_recursionDepth);
-    if (m_readyState == WRITING)
+    if (m_readyState == kWriting)
         stop();
 }
 
@@ -80,15 +80,15 @@ const AtomicString& FileWriter::interfaceName() const
 void FileWriter::stop()
 {
     // Make sure we've actually got something to stop, and haven't already called abort().
-    if (!writer() || m_readyState != WRITING)
+    if (!writer() || m_readyState != kWriting)
         return;
     doOperation(OperationAbort);
-    m_readyState = DONE;
+    m_readyState = kDone;
 }
 
 bool FileWriter::hasPendingActivity() const
 {
-    return m_operationInProgress != OperationNone || m_queuedOperation != OperationNone || m_readyState == WRITING;
+    return m_operationInProgress != OperationNone || m_queuedOperation != OperationNone || m_readyState == kWriting;
 }
 
 void FileWriter::write(Blob* data, ExceptionState& exceptionState)
@@ -96,22 +96,22 @@ void FileWriter::write(Blob* data, ExceptionState& exceptionState)
     ASSERT(data);
     ASSERT(writer());
     ASSERT(m_truncateLength == -1);
-    if (m_readyState == WRITING) {
-        setError(FileError::INVALID_STATE_ERR, exceptionState);
+    if (m_readyState == kWriting) {
+        setError(FileError::kInvalidStateErr, exceptionState);
         return;
     }
     if (m_recursionDepth > kMaxRecursionDepth) {
-        setError(FileError::SECURITY_ERR, exceptionState);
+        setError(FileError::kSecurityErr, exceptionState);
         return;
     }
 
     m_blobBeingWritten = data;
-    m_readyState = WRITING;
+    m_readyState = kWriting;
     m_bytesWritten = 0;
     m_bytesToWrite = data->size();
     ASSERT(m_queuedOperation == OperationNone);
     if (m_operationInProgress != OperationNone) {
-        // We must be waiting for an abort to complete, since m_readyState wasn't WRITING.
+        // We must be waiting for an abort to complete, since m_readyState wasn't kWriting.
         ASSERT(m_operationInProgress == OperationAbort);
         m_queuedOperation = OperationWrite;
     } else
@@ -123,8 +123,8 @@ void FileWriter::write(Blob* data, ExceptionState& exceptionState)
 void FileWriter::seek(long long position, ExceptionState& exceptionState)
 {
     ASSERT(writer());
-    if (m_readyState == WRITING) {
-        setError(FileError::INVALID_STATE_ERR, exceptionState);
+    if (m_readyState == kWriting) {
+        setError(FileError::kInvalidStateErr, exceptionState);
         return;
     }
 
@@ -137,22 +137,22 @@ void FileWriter::truncate(long long position, ExceptionState& exceptionState)
 {
     ASSERT(writer());
     ASSERT(m_truncateLength == -1);
-    if (m_readyState == WRITING || position < 0) {
-        setError(FileError::INVALID_STATE_ERR, exceptionState);
+    if (m_readyState == kWriting || position < 0) {
+        setError(FileError::kInvalidStateErr, exceptionState);
         return;
     }
     if (m_recursionDepth > kMaxRecursionDepth) {
-        setError(FileError::SECURITY_ERR, exceptionState);
+        setError(FileError::kSecurityErr, exceptionState);
         return;
     }
 
-    m_readyState = WRITING;
+    m_readyState = kWriting;
     m_bytesWritten = 0;
     m_bytesToWrite = 0;
     m_truncateLength = position;
     ASSERT(m_queuedOperation == OperationNone);
     if (m_operationInProgress != OperationNone) {
-        // We must be waiting for an abort to complete, since m_readyState wasn't WRITING.
+        // We must be waiting for an abort to complete, since m_readyState wasn't kWriting.
         ASSERT(m_operationInProgress == OperationAbort);
         m_queuedOperation = OperationTruncate;
     } else
@@ -163,12 +163,12 @@ void FileWriter::truncate(long long position, ExceptionState& exceptionState)
 void FileWriter::abort(ExceptionState& exceptionState)
 {
     ASSERT(writer());
-    if (m_readyState != WRITING)
+    if (m_readyState != kWriting)
         return;
     ++m_numAborts;
 
     doOperation(OperationAbort);
-    signalCompletion(FileError::ABORT_ERR);
+    signalCompletion(FileError::kAbortErr);
 }
 
 void FileWriter::didWrite(long long bytes, bool complete)
@@ -177,13 +177,13 @@ void FileWriter::didWrite(long long bytes, bool complete)
         completeAbort();
         return;
     }
-    ASSERT(m_readyState == WRITING);
-    ASSERT(m_truncateLength == -1);
-    ASSERT(m_operationInProgress == OperationWrite);
-    ASSERT(!m_bytesToWrite || bytes + m_bytesWritten > 0);
-    ASSERT(bytes + m_bytesWritten <= m_bytesToWrite);
+    DCHECK_EQ(kWriting, m_readyState);
+    DCHECK_EQ(-1, m_truncateLength);
+    DCHECK_EQ(OperationWrite, m_operationInProgress);
+    DCHECK(!m_bytesToWrite || bytes + m_bytesWritten > 0);
+    DCHECK(bytes + m_bytesWritten <= m_bytesToWrite);
     m_bytesWritten += bytes;
-    ASSERT((m_bytesWritten == m_bytesToWrite) || !complete);
+    DCHECK((m_bytesWritten == m_bytesToWrite) || !complete);
     setPosition(position() + bytes);
     if (position() > length())
         setLength(position());
@@ -202,8 +202,8 @@ void FileWriter::didWrite(long long bytes, bool complete)
     }
 
     if (complete) {
-      if (numAborts == m_numAborts)
-          signalCompletion(FileError::OK);
+        if (numAborts == m_numAborts)
+            signalCompletion(FileError::kOK);
     }
 }
 
@@ -219,19 +219,19 @@ void FileWriter::didTruncate()
     if (position() > length())
         setPosition(length());
     m_operationInProgress = OperationNone;
-    signalCompletion(FileError::OK);
+    signalCompletion(FileError::kOK);
 }
 
 void FileWriter::didFail(WebFileError code)
 {
-    ASSERT(m_operationInProgress != OperationNone);
-    ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::OK);
+    DCHECK_NE(OperationNone, m_operationInProgress);
+    DCHECK_NE(FileError::kOK, static_cast<FileError::ErrorCode>(code));
     if (m_operationInProgress == OperationAbort) {
         completeAbort();
         return;
     }
-    ASSERT(m_queuedOperation == OperationNone);
-    ASSERT(m_readyState == WRITING);
+    DCHECK_EQ(OperationNone, m_queuedOperation);
+    DCHECK_EQ(kWriting, m_readyState);
     m_blobBeingWritten.clear();
     m_operationInProgress = OperationNone;
     signalCompletion(static_cast<FileError::ErrorCode>(code));
@@ -251,23 +251,23 @@ void FileWriter::doOperation(Operation operation)
     InspectorInstrumentation::asyncTaskScheduled(getExecutionContext(), "FileWriter", this);
     switch (operation) {
     case OperationWrite:
-        ASSERT(m_operationInProgress == OperationNone);
-        ASSERT(m_truncateLength == -1);
-        ASSERT(m_blobBeingWritten.get());
-        ASSERT(m_readyState == WRITING);
+        DCHECK_EQ(OperationNone, m_operationInProgress);
+        DCHECK_EQ(-1, m_truncateLength);
+        DCHECK(m_blobBeingWritten.get());
+        DCHECK_EQ(kWriting, m_readyState);
         writer()->write(position(), m_blobBeingWritten->uuid());
         break;
     case OperationTruncate:
-        ASSERT(m_operationInProgress == OperationNone);
-        ASSERT(m_truncateLength >= 0);
-        ASSERT(m_readyState == WRITING);
+        DCHECK_EQ(OperationNone, m_operationInProgress);
+        DCHECK_GE(m_truncateLength, 0);
+        DCHECK_EQ(kWriting, m_readyState);
         writer()->truncate(m_truncateLength);
         break;
     case OperationNone:
-        ASSERT(m_operationInProgress == OperationNone);
-        ASSERT(m_truncateLength == -1);
-        ASSERT(!m_blobBeingWritten.get());
-        ASSERT(m_readyState == DONE);
+        DCHECK_EQ(OperationNone, m_operationInProgress);
+        DCHECK_EQ(-1, m_truncateLength);
+        DCHECK(!m_blobBeingWritten.get());
+        DCHECK_EQ(kDone, m_readyState);
         break;
     case OperationAbort:
         if (m_operationInProgress == OperationWrite || m_operationInProgress == OperationTruncate)
@@ -285,11 +285,11 @@ void FileWriter::doOperation(Operation operation)
 
 void FileWriter::signalCompletion(FileError::ErrorCode code)
 {
-    m_readyState = DONE;
+    m_readyState = kDone;
     m_truncateLength = -1;
-    if (FileError::OK != code) {
+    if (FileError::kOK != code) {
         m_error = FileError::createDOMException(code);
-        if (FileError::ABORT_ERR == code)
+        if (FileError::kAbortErr == code)
             fireEvent(EventTypeNames::abort);
         else
             fireEvent(EventTypeNames::error);

@@ -45,7 +45,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& d
     , SVGURIReference(this)
     , m_gradientTransform(SVGAnimatedTransformList::create(this, SVGNames::gradientTransformAttr, SVGTransformList::create()))
     , m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(this, SVGNames::spreadMethodAttr, SVGSpreadMethodPad))
-    , m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
+    , m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::kSvgUnitTypeObjectboundingbox))
 {
     addToPropertyMap(m_gradientTransform);
     addToPropertyMap(m_spreadMethod);

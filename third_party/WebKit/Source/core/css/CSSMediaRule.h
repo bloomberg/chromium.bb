@@ -50,14 +50,14 @@ public:
 private:
     CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return MEDIA_RULE; }
+    CSSRule::Type type() const override { return kMediaRule; }
 
     MediaQuerySet* mediaQueries() const;
 
     mutable Member<MediaList> m_mediaCSSOMWrapper;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, MEDIA_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, kMediaRule);
 
 } // namespace blink
 

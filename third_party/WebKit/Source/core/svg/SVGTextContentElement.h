@@ -45,9 +45,9 @@ class SVGTextContentElement : public SVGGraphicsElement {
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
-        LENGTHADJUST_UNKNOWN = SVGLengthAdjustUnknown,
-        LENGTHADJUST_SPACING = SVGLengthAdjustSpacing,
-        LENGTHADJUST_SPACINGANDGLYPHS = SVGLengthAdjustSpacingAndGlyphs
+        kLengthadjustUnknown = SVGLengthAdjustUnknown,
+        kLengthadjustSpacing = SVGLengthAdjustSpacing,
+        kLengthadjustSpacingandglyphs = SVGLengthAdjustSpacingAndGlyphs
     };
 
     unsigned getNumberOfChars();

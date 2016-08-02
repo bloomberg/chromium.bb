@@ -84,8 +84,8 @@ static Image* platformResource(const char* currentName, const char* newName)
 
 static bool hasSource(const HTMLMediaElement* mediaElement)
 {
-    return mediaElement->getNetworkState() != HTMLMediaElement::NETWORK_EMPTY
-        && mediaElement->getNetworkState() != HTMLMediaElement::NETWORK_NO_SOURCE;
+    return mediaElement->getNetworkState() != HTMLMediaElement::kNetworkEmpty
+        && mediaElement->getNetworkState() != HTMLMediaElement::kNetworkNoSource;
 }
 
 static FloatRect adjustRectForPadding(IntRect rect, const LayoutObject* object)

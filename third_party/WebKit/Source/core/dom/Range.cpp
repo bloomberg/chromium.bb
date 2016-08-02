@@ -289,7 +289,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& exceptionSt
 
 short Range::compareBoundaryPoints(unsigned how, const Range* sourceRange, ExceptionState& exceptionState) const
 {
-    if (!(how == START_TO_START || how == START_TO_END || how == END_TO_END || how == END_TO_START)) {
+    if (!(how == kStartToStart || how == kStartToEnd || how == kEndToEnd || how == kEndToStart)) {
         exceptionState.throwDOMException(NotSupportedError, "The comparison method provided must be one of 'START_TO_START', 'START_TO_END', 'END_TO_END', or 'END_TO_START'.");
         return 0;
     }
@@ -313,13 +313,13 @@ short Range::compareBoundaryPoints(unsigned how, const Range* sourceRange, Excep
     }
 
     switch (how) {
-    case START_TO_START:
+    case kStartToStart:
         return compareBoundaryPoints(m_start, sourceRange->m_start, exceptionState);
-    case START_TO_END:
+    case kStartToEnd:
         return compareBoundaryPoints(m_end, sourceRange->m_start, exceptionState);
-    case END_TO_END:
+    case kEndToEnd:
         return compareBoundaryPoints(m_end, sourceRange->m_end, exceptionState);
-    case END_TO_START:
+    case kEndToStart:
         return compareBoundaryPoints(m_start, sourceRange->m_end, exceptionState);
     }
 
@@ -588,10 +588,10 @@ Node* Range::processContentsBetweenOffsets(ActionType action, DocumentFragment* 
     // This switch statement must be consistent with that of Node::lengthOfContents.
     Node* result = nullptr;
     switch (container->getNodeType()) {
-    case Node::TEXT_NODE:
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kTextNode:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kProcessingInstructionNode:
         endOffset = std::min(endOffset, toCharacterData(container)->length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             CharacterData* c = static_cast<CharacterData*>(container->cloneNode(true));
@@ -606,11 +606,11 @@ Node* Range::processContentsBetweenOffsets(ActionType action, DocumentFragment* 
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
             toCharacterData(container)->deleteData(startOffset, endOffset - startOffset, exceptionState);
         break;
-    case Node::ELEMENT_NODE:
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::kElementNode:
+    case Node::kAttributeNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentTypeNode:
+    case Node::kDocumentFragmentNode:
         // FIXME: Should we assert that some nodes never appear here?
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             if (fragment)
@@ -751,7 +751,7 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState)
 
     Node::NodeType newNodeType = newNode->getNodeType();
     int numNewChildren;
-    if (newNodeType == Node::DOCUMENT_FRAGMENT_NODE && !newNode->isShadowRoot()) {
+    if (newNodeType == Node::kDocumentFragmentNode && !newNode->isShadowRoot()) {
         // check each child node, not the DocumentFragment itself
         numNewChildren = 0;
         for (Node* c = toDocumentFragment(newNode)->firstChild(); c; c = c->nextSibling()) {
@@ -778,8 +778,8 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState)
 
     // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation, ShadowRoot or Document node.
     switch (newNodeType) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node to be inserted is a '" + newNode->nodeName() + "' node, which may not be inserted here.");
         return;
     default:
@@ -815,11 +815,11 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState)
             m_end.setToBeforeChild(*newText);
         }
     } else {
-        Node* lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->lastChild() : newNode;
+        Node* lastChild = (newNodeType == Node::kDocumentFragmentNode) ? toDocumentFragment(newNode)->lastChild() : newNode;
         if (lastChild && lastChild == m_start.childBefore()) {
             // The insertion will do nothing, but we need to extend the range to include
             // the inserted nodes.
-            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->firstChild() : newNode;
+            Node* firstChild = (newNodeType == Node::kDocumentFragmentNode) ? toDocumentFragment(newNode)->firstChild() : newNode;
             DCHECK(firstChild);
             m_start.setToBeforeChild(*firstChild);
             return;
@@ -844,7 +844,7 @@ String Range::toString() const
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
         Node::NodeType type = n->getNodeType();
-        if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
+        if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
             String data = toCharacterData(n)->data();
             int length = data.length();
             int start = (n == m_start.container()) ? std::min(std::max(0, m_start.offset()), length) : 0;
@@ -914,23 +914,23 @@ void Range::detach()
 Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionState) const
 {
     switch (n->getNodeType()) {
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kDocumentTypeNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
         return nullptr;
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::TEXT_NODE:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kTextNode:
         if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
             exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to the node's length (" + String::number(toCharacterData(n)->length()) + ").");
         return nullptr;
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kProcessingInstructionNode:
         if (static_cast<unsigned>(offset) > toProcessingInstruction(n)->data().length())
             exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to than the node's length (" + String::number(toProcessingInstruction(n)->data().length()) + ").");
         return nullptr;
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::ELEMENT_NODE: {
+    case Node::kAttributeNode:
+    case Node::kDocumentFragmentNode:
+    case Node::kDocumentNode:
+    case Node::kElementNode: {
         if (!offset)
             return nullptr;
         Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
@@ -961,17 +961,17 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
     }
 
     switch (n->getNodeType()) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentFragmentNode:
+    case Node::kDocumentNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
         return;
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
-    case Node::ELEMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
-    case Node::TEXT_NODE:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kDocumentTypeNode:
+    case Node::kElementNode:
+    case Node::kProcessingInstructionNode:
+    case Node::kTextNode:
         break;
     }
 
@@ -980,16 +980,16 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         root = parent;
 
     switch (root->getNodeType()) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::ELEMENT_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentFragmentNode:
+    case Node::kElementNode:
         break;
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
-    case Node::TEXT_NODE:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kDocumentTypeNode:
+    case Node::kProcessingInstructionNode:
+    case Node::kTextNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
         return;
     }
@@ -1041,16 +1041,16 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
     }
 
     switch (refNode->getNodeType()) {
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
-    case Node::ELEMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
-    case Node::TEXT_NODE:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kDocumentTypeNode:
+    case Node::kElementNode:
+    case Node::kProcessingInstructionNode:
+    case Node::kTextNode:
         break;
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentFragmentNode:
+    case Node::kDocumentNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
         return;
     }
@@ -1074,16 +1074,16 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
     // or DocumentType node.
     for (Node* n = refNode; n; n = n->parentNode()) {
         switch (n->getNodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::TEXT_NODE:
+        case Node::kAttributeNode:
+        case Node::kCdataSectionNode:
+        case Node::kCommentNode:
+        case Node::kDocumentFragmentNode:
+        case Node::kDocumentNode:
+        case Node::kElementNode:
+        case Node::kProcessingInstructionNode:
+        case Node::kTextNode:
             break;
-        case Node::DOCUMENT_TYPE_NODE:
+        case Node::kDocumentTypeNode:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
             return;
         }
@@ -1104,16 +1104,16 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end)
 
     for (Node* n = refNode; n; n = n->parentNode()) {
         switch (n->getNodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::TEXT_NODE:
+        case Node::kAttributeNode:
+        case Node::kCdataSectionNode:
+        case Node::kCommentNode:
+        case Node::kDocumentFragmentNode:
+        case Node::kDocumentNode:
+        case Node::kElementNode:
+        case Node::kProcessingInstructionNode:
+        case Node::kTextNode:
             break;
-        case Node::DOCUMENT_TYPE_NODE:
+        case Node::kDocumentTypeNode:
             return false;
         }
     }
@@ -1137,10 +1137,10 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState)
 
     // InvalidStateError: Raised if the Range partially selects a non-Text node.
     Node* startNonTextContainer = m_start.container();
-    if (startNonTextContainer->getNodeType() == Node::TEXT_NODE)
+    if (startNonTextContainer->getNodeType() == Node::kTextNode)
         startNonTextContainer = startNonTextContainer->parentNode();
     Node* endNonTextContainer = m_end.container();
-    if (endNonTextContainer->getNodeType() == Node::TEXT_NODE)
+    if (endNonTextContainer->getNodeType() == Node::kTextNode)
         endNonTextContainer = endNonTextContainer->parentNode();
     if (startNonTextContainer != endNonTextContainer) {
         exceptionState.throwDOMException(InvalidStateError, "The Range has partially selected a non-Text node.");
@@ -1150,17 +1150,17 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState)
     // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
     // Document, or DocumentFragment node.
     switch (newParent->getNodeType()) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentFragmentNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentTypeNode:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + newParent->nodeName() + "'.");
         return;
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::ELEMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
-    case Node::TEXT_NODE:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kElementNode:
+    case Node::kProcessingInstructionNode:
+    case Node::kTextNode:
         break;
     }
 

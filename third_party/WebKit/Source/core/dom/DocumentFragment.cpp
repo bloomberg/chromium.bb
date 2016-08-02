@@ -45,17 +45,17 @@ String DocumentFragment::nodeName() const
 
 Node::NodeType DocumentFragment::getNodeType() const
 {
-    return DOCUMENT_FRAGMENT_NODE;
+    return kDocumentFragmentNode;
 }
 
 bool DocumentFragment::childTypeAllowed(NodeType type) const
 {
     switch (type) {
-    case ELEMENT_NODE:
-    case PROCESSING_INSTRUCTION_NODE:
-    case COMMENT_NODE:
-    case TEXT_NODE:
-    case CDATA_SECTION_NODE:
+    case kElementNode:
+    case kProcessingInstructionNode:
+    case kCommentNode:
+    case kTextNode:
+    case kCdataSectionNode:
         return true;
     default:
         return false;

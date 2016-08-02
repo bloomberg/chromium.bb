@@ -49,12 +49,12 @@ class SVGTextPathElement final : public SVGTextContentElement,
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
-        TEXTPATH_METHODTYPE_UNKNOWN = SVGTextPathMethodUnknown,
-        TEXTPATH_METHODTYPE_ALIGN = SVGTextPathMethodAlign,
-        TEXTPATH_METHODTYPE_STRETCH = SVGTextPathMethodStretch,
-        TEXTPATH_SPACINGTYPE_UNKNOWN = SVGTextPathSpacingUnknown,
-        TEXTPATH_SPACINGTYPE_AUTO = SVGTextPathSpacingAuto,
-        TEXTPATH_SPACINGTYPE_EXACT = SVGTextPathSpacingExact
+        kTextpathMethodtypeUnknown = SVGTextPathMethodUnknown,
+        kTextpathMethodtypeAlign = SVGTextPathMethodAlign,
+        kTextpathMethodtypeStretch = SVGTextPathMethodStretch,
+        kTextpathSpacingtypeUnknown = SVGTextPathSpacingUnknown,
+        kTextpathSpacingtypeAuto = SVGTextPathSpacingAuto,
+        kTextpathSpacingtypeExact = SVGTextPathSpacingExact
     };
 
     DECLARE_NODE_FACTORY(SVGTextPathElement);

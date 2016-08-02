@@ -20,7 +20,7 @@ TEST(CSSPageRule, Serializing)
     if (helper.cssRules()) {
         EXPECT_EQ(1u, helper.cssRules()->length());
         EXPECT_EQ(String(cssRule), helper.cssRules()->item(0)->cssText());
-        EXPECT_EQ(CSSRule::PAGE_RULE, helper.cssRules()->item(0)->type());
+        EXPECT_EQ(CSSRule::kPageRule, helper.cssRules()->item(0)->type());
         if (CSSPageRule* pageRule = toCSSPageRule(helper.cssRules()->item(0)))
             EXPECT_EQ(":left", pageRule->selectorText());
     }

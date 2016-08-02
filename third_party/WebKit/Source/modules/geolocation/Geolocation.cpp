@@ -66,13 +66,13 @@ static Geoposition* createGeoposition(const mojom::blink::Geoposition& position)
 
 static PositionError* createPositionError(mojom::blink::Geoposition::ErrorCode mojomErrorCode, const String& error)
 {
-    PositionError::ErrorCode errorCode = PositionError::POSITION_UNAVAILABLE;
+    PositionError::ErrorCode errorCode = PositionError::kPositionUnavailable;
     switch (mojomErrorCode) {
     case mojom::blink::Geoposition::ErrorCode::PERMISSION_DENIED:
-        errorCode = PositionError::PERMISSION_DENIED;
+        errorCode = PositionError::kPermissionDenied;
         break;
     case mojom::blink::Geoposition::ErrorCode::POSITION_UNAVAILABLE:
-        errorCode = PositionError::POSITION_UNAVAILABLE;
+        errorCode = PositionError::kPositionUnavailable;
         break;
     case mojom::blink::Geoposition::ErrorCode::NONE:
     case mojom::blink::Geoposition::ErrorCode::TIMEOUT:
@@ -195,14 +195,14 @@ void Geolocation::startRequest(GeoNotifier *notifier)
     recordOriginTypeAccess();
     String errorMessage;
     if (!frame()->settings()->allowGeolocationOnInsecureOrigins() && !getExecutionContext()->isSecureContext(errorMessage)) {
-        notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, errorMessage));
+        notifier->setFatalError(PositionError::create(PositionError::kPermissionDenied, errorMessage));
         return;
     }
 
     // Check whether permissions have already been denied. Note that if this is the case,
     // the permission state can not change again in the lifetime of this page.
     if (isDenied())
-        notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, permissionDeniedErrorMessage));
+        notifier->setFatalError(PositionError::create(PositionError::kPermissionDenied, permissionDeniedErrorMessage));
     else if (haveSuitableCachedPosition(notifier->options()))
         notifier->setUseCachedPosition();
     else if (!notifier->options().timeout())
@@ -295,7 +295,7 @@ void Geolocation::onGeolocationPermissionUpdated(mojom::blink::PermissionStatus 
             startUpdating(notifier);
             notifier->startTimer();
         } else {
-            notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, permissionDeniedErrorMessage));
+            notifier->setFatalError(PositionError::create(PositionError::kPermissionDenied, permissionDeniedErrorMessage));
         }
     }
     m_pendingForPermissionNotifiers.clear();
@@ -344,7 +344,7 @@ void Geolocation::stopTimers()
 void Geolocation::cancelRequests(GeoNotifierVector& notifiers)
 {
     for (GeoNotifier* notifier : notifiers)
-        notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, framelessDocumentErrorMessage));
+        notifier->setFatalError(PositionError::create(PositionError::kPositionUnavailable, framelessDocumentErrorMessage));
 }
 
 void Geolocation::cancelAllRequests()
@@ -525,7 +525,7 @@ void Geolocation::pageVisibilityChanged()
 
 void Geolocation::onGeolocationConnectionError()
 {
-    PositionError* error = PositionError::create(PositionError::POSITION_UNAVAILABLE, failedToStartServiceErrorMessage);
+    PositionError* error = PositionError::create(PositionError::kPositionUnavailable, failedToStartServiceErrorMessage);
     error->setIsFatal(true);
     handleError(error);
 }

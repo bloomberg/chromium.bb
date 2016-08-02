@@ -132,30 +132,30 @@ String MarkupFormatter::resolveURLIfNeeded(const Element& element, const String&
 void MarkupFormatter::appendStartMarkup(StringBuilder& result, const Node& node, Namespaces* namespaces)
 {
     switch (node.getNodeType()) {
-    case Node::TEXT_NODE:
+    case Node::kTextNode:
         NOTREACHED();
         break;
-    case Node::COMMENT_NODE:
+    case Node::kCommentNode:
         appendComment(result, toComment(node).data());
         break;
-    case Node::DOCUMENT_NODE:
+    case Node::kDocumentNode:
         appendXMLDeclaration(result, toDocument(node));
         break;
-    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::kDocumentFragmentNode:
         break;
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kDocumentTypeNode:
         appendDocumentType(result, toDocumentType(node));
         break;
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kProcessingInstructionNode:
         appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
         break;
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         NOTREACHED();
         break;
-    case Node::CDATA_SECTION_NODE:
+    case Node::kCdataSectionNode:
         appendCDATASection(result, toCDATASection(node).data());
         break;
-    case Node::ATTRIBUTE_NODE:
+    case Node::kAttributeNode:
         NOTREACHED();
         break;
     }

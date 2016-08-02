@@ -567,7 +567,7 @@ void DocumentWebSocketChannel::didFinishLoadingBlob(DOMArrayBuffer* buffer)
 void DocumentWebSocketChannel::didFailLoadingBlob(FileError::ErrorCode errorCode)
 {
     m_blobLoader.clear();
-    if (errorCode == FileError::ABORT_ERR) {
+    if (errorCode == FileError::kAbortErr) {
         // The error is caused by cancel().
         return;
     }

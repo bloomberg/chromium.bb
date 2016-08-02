@@ -164,8 +164,8 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback()
     // Spec 4.3.2 5: If the transaction callback was null or raised an exception, jump to the error callback
     SQLTransactionState nextState = SQLTransactionState::RunStatements;
     if (shouldDeliverErrorCallback) {
-        m_database->reportStartTransactionResult(5, SQLError::UNKNOWN_ERR, 0);
-        m_transactionError = SQLErrorData::create(SQLError::UNKNOWN_ERR, "the SQLTransactionCallback was null or threw an exception");
+        m_database->reportStartTransactionResult(5, SQLError::kUnknownErr, 0);
+        m_transactionError = SQLErrorData::create(SQLError::kUnknownErr, "the SQLTransactionCallback was null or threw an exception");
         nextState = SQLTransactionState::DeliverTransactionErrorCallback;
     }
     m_database->reportStartTransactionResult(0, -1, 0); // OK
@@ -215,8 +215,8 @@ SQLTransactionState SQLTransaction::deliverStatementCallback()
     m_executeSqlAllowed = false;
 
     if (result) {
-        m_database->reportCommitTransactionResult(2, SQLError::UNKNOWN_ERR, 0);
-        m_transactionError = SQLErrorData::create(SQLError::UNKNOWN_ERR, "the statement callback raised an exception or statement error callback did not return false");
+        m_database->reportCommitTransactionResult(2, SQLError::kUnknownErr, 0);
+        m_transactionError = SQLErrorData::create(SQLError::kUnknownErr, "the statement callback raised an exception or statement error callback did not return false");
         return nextStateForTransactionError();
     }
     return SQLTransactionState::RunStatements;

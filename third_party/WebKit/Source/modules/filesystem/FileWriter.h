@@ -59,9 +59,9 @@ public:
     ~FileWriter() override;
 
     enum ReadyState {
-        INIT = 0,
-        WRITING = 1,
-        DONE = 2
+        kInit = 0,
+        kWriting = 1,
+        kDone = 2
     };
 
     void write(Blob*, ExceptionState&);

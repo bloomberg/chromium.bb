@@ -157,7 +157,7 @@ void Node::dumpStatistics()
             }
 
             switch (node->getNodeType()) {
-            case ELEMENT_NODE: {
+            case kElementNode: {
                 ++elementNodes;
 
                 // Tag stats
@@ -173,35 +173,35 @@ void Node::dumpStatistics()
                 }
                 break;
             }
-            case ATTRIBUTE_NODE: {
+            case kAttributeNode: {
                 ++attrNodes;
                 break;
             }
-            case TEXT_NODE: {
+            case kTextNode: {
                 ++textNodes;
                 break;
             }
-            case CDATA_SECTION_NODE: {
+            case kCdataSectionNode: {
                 ++cdataNodes;
                 break;
             }
-            case COMMENT_NODE: {
+            case kCommentNode: {
                 ++commentNodes;
                 break;
             }
-            case PROCESSING_INSTRUCTION_NODE: {
+            case kProcessingInstructionNode: {
                 ++piNodes;
                 break;
             }
-            case DOCUMENT_NODE: {
+            case kDocumentNode: {
                 ++documentNodes;
                 break;
             }
-            case DOCUMENT_TYPE_NODE: {
+            case kDocumentTypeNode: {
                 ++docTypeNodes;
                 break;
             }
-            case DOCUMENT_FRAGMENT_NODE: {
+            case kDocumentFragmentNode: {
                 if (node->isShadowRoot())
                     ++shadowRootNodes;
                 else
@@ -534,7 +534,7 @@ void Node::normalize()
         if (node == this)
             break;
 
-        if (node->getNodeType() == TEXT_NODE)
+        if (node->getNodeType() == kTextNode)
             node = toText(node)->mergeNextSiblingNodesIfPossible();
         else
             node = NodeTraversal::nextPostOrder(*node);
@@ -1130,7 +1130,7 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
     const AtomicString& namespaceURI = namespaceURIMaybeEmpty.isEmpty() ? nullAtom : namespaceURIMaybeEmpty;
 
     switch (getNodeType()) {
-    case ELEMENT_NODE: {
+    case kElementNode: {
         const Element& element = toElement(*this);
 
         if (element.prefix().isNull())
@@ -1147,14 +1147,14 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
 
         return false;
     }
-    case DOCUMENT_NODE:
+    case kDocumentNode:
         if (Element* de = toDocument(this)->documentElement())
             return de->isDefaultNamespace(namespaceURI);
         return false;
-    case DOCUMENT_TYPE_NODE:
-    case DOCUMENT_FRAGMENT_NODE:
+    case kDocumentTypeNode:
+    case kDocumentFragmentNode:
         return false;
-    case ATTRIBUTE_NODE: {
+    case kAttributeNode: {
         const Attr* attr = toAttr(this);
         if (attr->ownerElement())
             return attr->ownerElement()->isDefaultNamespace(namespaceURI);
@@ -1178,18 +1178,18 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
     const Element* context;
 
     switch (getNodeType()) {
-    case ELEMENT_NODE:
+    case kElementNode:
         context = toElement(this);
         break;
-    case DOCUMENT_NODE:
+    case kDocumentNode:
         context = toDocument(this)->documentElement();
         break;
-    case DOCUMENT_FRAGMENT_NODE:
-    case DOCUMENT_TYPE_NODE:
+    case kDocumentFragmentNode:
+    case kDocumentTypeNode:
         context = nullptr;
         break;
     // FIXME: Remove this when Attr no longer extends Node (CR305105)
-    case ATTRIBUTE_NODE:
+    case kAttributeNode:
         context = toAttr(this)->ownerElement();
         break;
     default:
@@ -1212,7 +1212,7 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
         return nullAtom;
 
     switch (getNodeType()) {
-    case ELEMENT_NODE: {
+    case kElementNode: {
         const Element& element = toElement(*this);
 
         if (!element.namespaceURI().isNull() && element.prefix() == prefix)
@@ -1236,14 +1236,14 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
             return parent->lookupNamespaceURI(prefix);
         return nullAtom;
     }
-    case DOCUMENT_NODE:
+    case kDocumentNode:
         if (Element* de = toDocument(this)->documentElement())
             return de->lookupNamespaceURI(prefix);
         return nullAtom;
-    case DOCUMENT_TYPE_NODE:
-    case DOCUMENT_FRAGMENT_NODE:
+    case kDocumentTypeNode:
+    case kDocumentFragmentNode:
         return nullAtom;
-    case ATTRIBUTE_NODE: {
+    case kAttributeNode: {
         const Attr *attr = toAttr(this);
         if (attr->ownerElement())
             return attr->ownerElement()->lookupNamespaceURI(prefix);
@@ -1283,14 +1283,14 @@ String Node::textContent(bool convertBRsToNewlines) const
 void Node::setTextContent(const String& text)
 {
     switch (getNodeType()) {
-    case TEXT_NODE:
-    case CDATA_SECTION_NODE:
-    case COMMENT_NODE:
-    case PROCESSING_INSTRUCTION_NODE:
+    case kTextNode:
+    case kCdataSectionNode:
+    case kCommentNode:
+    case kProcessingInstructionNode:
         setNodeValue(text);
         return;
-    case ELEMENT_NODE:
-    case DOCUMENT_FRAGMENT_NODE: {
+    case kElementNode:
+    case kDocumentFragmentNode: {
         // FIXME: Merge this logic into replaceChildrenWithText.
         ContainerNode* container = toContainerNode(this);
 
@@ -1311,9 +1311,9 @@ void Node::setTextContent(const String& text)
         }
         return;
     }
-    case ATTRIBUTE_NODE:
-    case DOCUMENT_NODE:
-    case DOCUMENT_TYPE_NODE:
+    case kAttributeNode:
+    case kDocumentNode:
+    case kDocumentTypeNode:
         // Do nothing.
         return;
     }
@@ -1328,10 +1328,10 @@ bool Node::offsetInCharacters() const
 unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesTreatment treatment) const
 {
     if (otherNode == this)
-        return DOCUMENT_POSITION_EQUIVALENT;
+        return kDocumentPositionEquivalent;
 
-    const Attr* attr1 = getNodeType() == ATTRIBUTE_NODE ? toAttr(this) : nullptr;
-    const Attr* attr2 = otherNode->getNodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : nullptr;
+    const Attr* attr1 = getNodeType() == kAttributeNode ? toAttr(this) : nullptr;
+    const Attr* attr2 = otherNode->getNodeType() == kAttributeNode ? toAttr(otherNode) : nullptr;
 
     const Node* start1 = attr1 ? attr1->ownerElement() : this;
     const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;
@@ -1339,8 +1339,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
     // If either of start1 or start2 is null, then we are disconnected, since one of the nodes is
     // an orphaned attribute node.
     if (!start1 || !start2) {
-        unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
-        return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
+        unsigned short direction = (this > otherNode) ? kDocumentPositionPreceding : kDocumentPositionFollowing;
+        return kDocumentPositionDisconnected | kDocumentPositionImplementationSpecific | direction;
     }
 
     HeapVector<Member<const Node>, 16> chain1;
@@ -1361,21 +1361,21 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
             // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
             if (attr1->getQualifiedName() == attr.name())
-                return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_FOLLOWING;
+                return kDocumentPositionImplementationSpecific | kDocumentPositionFollowing;
             if (attr2->getQualifiedName() == attr.name())
-                return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
+                return kDocumentPositionImplementationSpecific | kDocumentPositionPreceding;
         }
 
         ASSERT_NOT_REACHED();
-        return DOCUMENT_POSITION_DISCONNECTED;
+        return kDocumentPositionDisconnected;
     }
 
     // If one node is in the document and the other is not, we must be disconnected.
     // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
     // comparing Attr nodes here, since they return false from isConnected() all the time (which seems like a bug).
     if (start1->isConnected() != start2->isConnected() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
-        unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
-        return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
+        unsigned short direction = (this > otherNode) ? kDocumentPositionPreceding : kDocumentPositionFollowing;
+        return kDocumentPositionDisconnected | kDocumentPositionImplementationSpecific | direction;
     }
 
     // We need to find a common ancestor container, and then compare the indices of the two immediate children.
@@ -1390,11 +1390,11 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
 
     // If the two elements don't have a common root, they're not in the same tree.
     if (chain1[index1 - 1] != chain2[index2 - 1]) {
-        unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
-        return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
+        unsigned short direction = (this > otherNode) ? kDocumentPositionPreceding : kDocumentPositionFollowing;
+        return kDocumentPositionDisconnected | kDocumentPositionImplementationSpecific | direction;
     }
 
-    unsigned connection = start1->treeScope() != start2->treeScope() ? DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC : 0;
+    unsigned connection = start1->treeScope() != start2->treeScope() ? kDocumentPositionDisconnected | kDocumentPositionImplementationSpecific : 0;
 
     // Walk the two chains backwards and look for the first difference.
     for (unsigned i = std::min(index1, index2); i; --i) {
@@ -1402,46 +1402,46 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
         const Node* child2 = chain2[--index2];
         if (child1 != child2) {
             // If one of the children is an attribute, it wins.
-            if (child1->getNodeType() == ATTRIBUTE_NODE)
-                return DOCUMENT_POSITION_FOLLOWING | connection;
-            if (child2->getNodeType() == ATTRIBUTE_NODE)
-                return DOCUMENT_POSITION_PRECEDING | connection;
+            if (child1->getNodeType() == kAttributeNode)
+                return kDocumentPositionFollowing | connection;
+            if (child2->getNodeType() == kAttributeNode)
+                return kDocumentPositionPreceding | connection;
 
             // If one of the children is a shadow root,
             if (child1->isShadowRoot() || child2->isShadowRoot()) {
                 if (!child2->isShadowRoot())
-                    return Node::DOCUMENT_POSITION_FOLLOWING | connection;
+                    return Node::kDocumentPositionFollowing | connection;
                 if (!child1->isShadowRoot())
-                    return Node::DOCUMENT_POSITION_PRECEDING | connection;
+                    return Node::kDocumentPositionPreceding | connection;
 
                 for (const ShadowRoot* child = toShadowRoot(child2)->olderShadowRoot(); child; child = child->olderShadowRoot()) {
                     if (child == child1) {
-                        return Node::DOCUMENT_POSITION_FOLLOWING | connection;
+                        return Node::kDocumentPositionFollowing | connection;
                     }
                 }
 
-                return Node::DOCUMENT_POSITION_PRECEDING | connection;
+                return Node::kDocumentPositionPreceding | connection;
             }
 
             if (!child2->nextSibling())
-                return DOCUMENT_POSITION_FOLLOWING | connection;
+                return kDocumentPositionFollowing | connection;
             if (!child1->nextSibling())
-                return DOCUMENT_POSITION_PRECEDING | connection;
+                return kDocumentPositionPreceding | connection;
 
             // Otherwise we need to see which node occurs first.  Crawl backwards from child2 looking for child1.
             for (const Node* child = child2->previousSibling(); child; child = child->previousSibling()) {
                 if (child == child1)
-                    return DOCUMENT_POSITION_FOLLOWING | connection;
+                    return kDocumentPositionFollowing | connection;
             }
-            return DOCUMENT_POSITION_PRECEDING | connection;
+            return kDocumentPositionPreceding | connection;
         }
     }
 
     // There was no difference between the two parent chains, i.e., one was a subset of the other.  The shorter
     // chain is the ancestor.
     return index1 < index2 ?
-        DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY | connection :
-        DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS | connection;
+        kDocumentPositionFollowing | kDocumentPositionContainedBy | connection :
+        kDocumentPositionPreceding | kDocumentPositionContains | connection;
 }
 
 String Node::debugName() const
@@ -1532,7 +1532,7 @@ void Node::showNode(const char* prefix) const
         WTFLogAlways("%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
     } else if (isDocumentTypeNode()) {
         WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);
-    } else if (getNodeType() == PROCESSING_INSTRUCTION_NODE) {
+    } else if (getNodeType() == kProcessingInstructionNode) {
         WTFLogAlways("%s?%s\t%p\n", prefix, nodeName().utf8().data(), this);
     } else if (isShadowRoot()) {
         // nodeName of ShadowRoot is #document-fragment.  It's confused with
@@ -1580,7 +1580,7 @@ void Node::showNodePathForThis() const
         }
 
         switch (node->getNodeType()) {
-        case ELEMENT_NODE: {
+        case kElementNode: {
             WTFLogAlways("/%s", node->nodeName().utf8().data());
 
             const Element* element = toElement(node);
@@ -1602,10 +1602,10 @@ void Node::showNodePathForThis() const
             }
             break;
         }
-        case TEXT_NODE:
+        case kTextNode:
             WTFLogAlways("/text()");
             break;
-        case ATTRIBUTE_NODE:
+        case kAttributeNode:
             WTFLogAlways("/@%s", node->nodeName().utf8().data());
             break;
         default:
@@ -2346,17 +2346,17 @@ unsigned Node::lengthOfContents() const
 {
     // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.
     switch (getNodeType()) {
-    case Node::TEXT_NODE:
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kTextNode:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kProcessingInstructionNode:
         return toCharacterData(this)->length();
-    case Node::ELEMENT_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::kElementNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentFragmentNode:
         return toContainerNode(this)->countChildren();
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentTypeNode:
         return 0;
     }
     ASSERT_NOT_REACHED();

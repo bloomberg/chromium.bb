@@ -73,10 +73,10 @@ public:
     ~DOMWebSocket() override;
 
     enum State {
-        CONNECTING = 0,
-        OPEN = 1,
-        CLOSING = 2,
-        CLOSED = 3
+        kConnecting = 0,
+        kOpen = 1,
+        kClosing = 2,
+        kClosed = 3
     };
 
     void connect(const String& url, const Vector<String>& protocols, ExceptionState&);

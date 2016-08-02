@@ -115,7 +115,7 @@ public:
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
-    CSSRule::Type type() const override { return KEYFRAMES_RULE; }
+    CSSRule::Type type() const override { return kKeyframesRule; }
 
     Member<StyleRuleKeyframes> m_keyframesRule;
     mutable HeapVector<Member<CSSKeyframeRule>> m_childRuleCSSOMWrappers;
@@ -123,7 +123,7 @@ private:
     bool m_isPrefixed;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, KEYFRAMES_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, kKeyframesRule);
 
 } // namespace blink
 

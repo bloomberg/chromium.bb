@@ -40,7 +40,7 @@ private:
     Node* cloneNode(bool deep) override;
 };
 
-DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::COMMENT_NODE);
+DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);
 
 } // namespace blink
 

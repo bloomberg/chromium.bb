@@ -371,14 +371,14 @@ void MainThreadDebugger::xpathSelectorCallback(const v8::FunctionCallbackInfo<v8
         return;
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "$x", "CommandLineAPI", info.Holder(), info.GetIsolate());
-    XPathResult* result = XPathEvaluator::create()->evaluate(selector, node, nullptr, XPathResult::ANY_TYPE, ScriptValue(), exceptionState);
+    XPathResult* result = XPathEvaluator::create()->evaluate(selector, node, nullptr, XPathResult::kAnyType, ScriptValue(), exceptionState);
     if (exceptionState.throwIfNeeded() || !result)
         return;
-    if (result->resultType() == XPathResult::NUMBER_TYPE) {
+    if (result->resultType() == XPathResult::kNumberType) {
         info.GetReturnValue().Set(toV8(result->numberValue(exceptionState), info.Holder(), info.GetIsolate()));
-    } else if (result->resultType() == XPathResult::STRING_TYPE) {
+    } else if (result->resultType() == XPathResult::kStringType) {
         info.GetReturnValue().Set(toV8(result->stringValue(exceptionState), info.Holder(), info.GetIsolate()));
-    } else if (result->resultType() == XPathResult::BOOLEAN_TYPE) {
+    } else if (result->resultType() == XPathResult::kBooleanType) {
         info.GetReturnValue().Set(toV8(result->booleanValue(exceptionState), info.Holder(), info.GetIsolate()));
     } else {
         v8::Isolate* isolate = info.GetIsolate();

@@ -426,7 +426,7 @@ String InspectorAnimationAgent::createCSSId(blink::Animation& animation)
     for (CSSPropertyID property : cssProperties) {
         CSSStyleDeclaration* style = m_cssAgent->findEffectiveDeclaration(property, styles);
         // Ignore inline styles.
-        if (!style || !style->parentStyleSheet() || !style->parentRule() || style->parentRule()->type() != CSSRule::STYLE_RULE)
+        if (!style || !style->parentStyleSheet() || !style->parentRule() || style->parentRule()->type() != CSSRule::kStyleRule)
             continue;
         addStringToDigestor(digestor.get(), getPropertyNameString(property));
         addStringToDigestor(digestor.get(), m_cssAgent->styleSheetId(style->parentStyleSheet()));

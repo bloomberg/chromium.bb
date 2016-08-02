@@ -67,7 +67,7 @@ Node* Text::mergeNextSiblingNodesIfPossible()
 
     // Merge text nodes.
     while (Node* nextSibling = this->nextSibling()) {
-        if (nextSibling->getNodeType() != TEXT_NODE)
+        if (nextSibling->getNodeType() != kTextNode)
             break;
 
         Text* nextText = toText(nextSibling);
@@ -141,7 +141,7 @@ static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
 {
     for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
         Node::NodeType type = n->getNodeType();
-        if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
+        if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
             t = toText(n);
             continue;
         }
@@ -155,7 +155,7 @@ static const Text* latestLogicallyAdjacentTextNode(const Text* t)
 {
     for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
         Node::NodeType type = n->getNodeType();
-        if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
+        if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
             t = toText(n);
             continue;
         }
@@ -233,7 +233,7 @@ String Text::nodeName() const
 
 Node::NodeType Text::getNodeType() const
 {
-    return TEXT_NODE;
+    return kTextNode;
 }
 
 Node* Text::cloneNode(bool /*deep*/)

@@ -18,8 +18,8 @@ MediaSession* HTMLMediaElementMediaSession::session(HTMLMediaElement& mediaEleme
 void HTMLMediaElementMediaSession::setSession(HTMLMediaElement& mediaElement, MediaSession* session, ExceptionState& exceptionState)
 {
     HTMLMediaElement::NetworkState networkState = mediaElement.getNetworkState();
-    if (networkState == HTMLMediaElement::NETWORK_IDLE || networkState == HTMLMediaElement::NETWORK_LOADING) {
-        exceptionState.throwDOMException(InvalidStateError, "networkState must be NETWORK_EMPTY or NETWORK_NO_SOURCE.");
+    if (networkState == HTMLMediaElement::kNetworkIdle || networkState == HTMLMediaElement::kNetworkLoading) {
+        exceptionState.throwDOMException(InvalidStateError, "networkState must be kNetworkEmpty or kNetworkNoSource.");
         return;
     }
 

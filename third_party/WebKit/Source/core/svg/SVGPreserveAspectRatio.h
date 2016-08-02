@@ -33,23 +33,23 @@ class SVGPreserveAspectRatioTearOff;
 class SVGPreserveAspectRatio final : public SVGPropertyHelper<SVGPreserveAspectRatio> {
 public:
     enum SVGPreserveAspectRatioType {
-        SVG_PRESERVEASPECTRATIO_UNKNOWN = 0,
-        SVG_PRESERVEASPECTRATIO_NONE = 1,
-        SVG_PRESERVEASPECTRATIO_XMINYMIN = 2,
-        SVG_PRESERVEASPECTRATIO_XMIDYMIN = 3,
-        SVG_PRESERVEASPECTRATIO_XMAXYMIN = 4,
-        SVG_PRESERVEASPECTRATIO_XMINYMID = 5,
-        SVG_PRESERVEASPECTRATIO_XMIDYMID = 6,
-        SVG_PRESERVEASPECTRATIO_XMAXYMID = 7,
-        SVG_PRESERVEASPECTRATIO_XMINYMAX = 8,
-        SVG_PRESERVEASPECTRATIO_XMIDYMAX = 9,
-        SVG_PRESERVEASPECTRATIO_XMAXYMAX = 10
+        kSvgPreserveaspectratioUnknown = 0,
+        kSvgPreserveaspectratioNone = 1,
+        kSvgPreserveaspectratioXminymin = 2,
+        kSvgPreserveaspectratioXmidymin = 3,
+        kSvgPreserveaspectratioXmaxymin = 4,
+        kSvgPreserveaspectratioXminymid = 5,
+        kSvgPreserveaspectratioXmidymid = 6,
+        kSvgPreserveaspectratioXmaxymid = 7,
+        kSvgPreserveaspectratioXminymax = 8,
+        kSvgPreserveaspectratioXmidymax = 9,
+        kSvgPreserveaspectratioXmaxymax = 10
     };
 
     enum SVGMeetOrSliceType {
-        SVG_MEETORSLICE_UNKNOWN = 0,
-        SVG_MEETORSLICE_MEET = 1,
-        SVG_MEETORSLICE_SLICE = 2
+        kSvgMeetorsliceUnknown = 0,
+        kSvgMeetorsliceMeet = 1,
+        kSvgMeetorsliceSlice = 2
     };
 
     typedef SVGPreserveAspectRatioTearOff TearOffType;

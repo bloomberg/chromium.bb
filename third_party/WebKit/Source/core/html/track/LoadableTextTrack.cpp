@@ -50,7 +50,7 @@ bool LoadableTextTrack::isDefault() const
 void LoadableTextTrack::setMode(const AtomicString& mode)
 {
     TextTrack::setMode(mode);
-    if (m_trackElement->getReadyState() == HTMLTrackElement::NONE)
+    if (m_trackElement->getReadyState() == HTMLTrackElement::kNone)
         m_trackElement->scheduleLoad();
 }
 

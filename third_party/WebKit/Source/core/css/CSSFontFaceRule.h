@@ -53,13 +53,13 @@ public:
 private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
 
-    CSSRule::Type type() const override { return FONT_FACE_RULE; }
+    CSSRule::Type type() const override { return kFontFaceRule; }
 
     Member<StyleRuleFontFace> m_fontFaceRule;
     mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, FONT_FACE_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, kFontFaceRule);
 
 } // namespace blink
 

@@ -75,7 +75,7 @@ public:
     bool isPointInRange(Node* refNode, int offset, ExceptionState&) const;
     short comparePoint(Node* refNode, int offset, ExceptionState&) const;
     enum CompareResults { NODE_BEFORE, NODE_AFTER, NODE_BEFORE_AND_AFTER, NODE_INSIDE };
-    enum CompareHow { START_TO_START, START_TO_END, END_TO_END, END_TO_START };
+    enum CompareHow { kStartToStart, kStartToEnd, kEndToEnd, kEndToStart };
     short compareBoundaryPoints(unsigned how, const Range* sourceRange, ExceptionState&) const;
     static short compareBoundaryPoints(Node* containerA, int offsetA, Node* containerB, int offsetB, ExceptionState&);
     static short compareBoundaryPoints(const RangeBoundaryPoint& boundaryA, const RangeBoundaryPoint& boundaryB, ExceptionState&);

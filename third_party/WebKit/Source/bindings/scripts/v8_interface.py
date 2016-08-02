@@ -589,6 +589,18 @@ def interface_context(interface):
     return context
 
 
+def reflected_name(constant_name):
+    """Returns the name to use for the matching constant name in blink code.
+
+    Given an all-uppercase 'CONSTANT_NAME', returns a camel-case
+    'kConstantName'.
+    """
+    # Check for SHOUTY_CASE constants
+    if constant_name.upper() != constant_name:
+        return constant_name
+    return 'k' + ''.join(part.title() for part in constant_name.split('_'))
+
+
 # [DeprecateAs], [OriginTrialEnabled], [Reflect], [RuntimeEnabled]
 def constant_context(constant, interface):
     extended_attributes = constant.extended_attributes
@@ -602,7 +614,7 @@ def constant_context(constant, interface):
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(constant),  # [OriginTrialEnabled]
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
-        'reflected_name': extended_attributes.get('Reflect', constant.name),
+        'reflected_name': extended_attributes.get('Reflect', reflected_name(constant.name)),
         'runtime_enabled_function': runtime_enabled_function_name(constant),  # [RuntimeEnabled]
         'runtime_feature_name': v8_utilities.runtime_feature_name(constant),  # [RuntimeEnabled]
         'value': constant.value,

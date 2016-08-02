@@ -66,7 +66,7 @@ FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* cl
     , m_hasRange(false)
     , m_rangeStart(0)
     , m_rangeEnd(0)
-    , m_errorCode(FileError::OK)
+    , m_errorCode(FileError::kOK)
 {
 }
 
@@ -86,7 +86,7 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
     // The blob is read by routing through the request handling layer given a temporary public url.
     m_urlForReading = BlobURL::createPublicURL(executionContext.getSecurityOrigin());
     if (m_urlForReading.isEmpty()) {
-        failed(FileError::SECURITY_ERR);
+        failed(FileError::kSecurityErr);
         return;
     }
 
@@ -150,7 +150,7 @@ void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& s
 
 void FileReaderLoader::cancel()
 {
-    m_errorCode = FileError::ABORT_ERR;
+    m_errorCode = FileError::kAbortErr;
     cleanup();
 }
 
@@ -203,7 +203,7 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
         // so to call ArrayBuffer's create function.
         // FIXME: Support reading more than the current size limit of ArrayBuffer.
         if (initialBufferLength > std::numeric_limits<unsigned>::max()) {
-            failed(FileError::NOT_READABLE_ERR);
+            failed(FileError::kNotReadableErr);
             return;
         }
 
@@ -213,7 +213,7 @@ void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse&
             m_rawData = wrapUnique(new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));
 
         if (!m_rawData || !m_rawData->isValid()) {
-            failed(FileError::NOT_READABLE_ERR);
+            failed(FileError::kNotReadableErr);
             return;
         }
 
@@ -247,7 +247,7 @@ void FileReaderLoader::didReceiveData(const char* data, unsigned dataLength)
     if (!bytesAppended) {
         m_rawData.reset();
         m_bytesLoaded = 0;
-        failed(FileError::NOT_READABLE_ERR);
+        failed(FileError::kNotReadableErr);
         return;
     }
     m_bytesLoaded += bytesAppended;
@@ -281,10 +281,10 @@ void FileReaderLoader::didFail(const ResourceError& error)
     if (error.isCancellation())
         return;
     // If we're aborting, do not proceed with normal error handling since it is covered in aborting code.
-    if (m_errorCode == FileError::ABORT_ERR)
+    if (m_errorCode == FileError::kAbortErr)
         return;
 
-    failed(FileError::NOT_READABLE_ERR);
+    failed(FileError::kNotReadableErr);
 }
 
 void FileReaderLoader::failed(FileError::ErrorCode errorCode)
@@ -299,11 +299,11 @@ FileError::ErrorCode FileReaderLoader::httpStatusCodeToErrorCode(int httpStatusC
 {
     switch (httpStatusCode) {
     case 403:
-        return FileError::SECURITY_ERR;
+        return FileError::kSecurityErr;
     case 404:
-        return FileError::NOT_FOUND_ERR;
+        return FileError::kNotFoundErr;
     default:
-        return FileError::NOT_READABLE_ERR;
+        return FileError::kNotReadableErr;
     }
 }
 

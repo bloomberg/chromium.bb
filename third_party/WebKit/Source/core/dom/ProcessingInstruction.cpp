@@ -81,7 +81,7 @@ String ProcessingInstruction::nodeName() const
 
 Node::NodeType ProcessingInstruction::getNodeType() const
 {
-    return PROCESSING_INSTRUCTION_NODE;
+    return kProcessingInstructionNode;
 }
 
 Node* ProcessingInstruction::cloneNode(bool /*deep*/)

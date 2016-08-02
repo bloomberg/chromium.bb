@@ -159,7 +159,7 @@ bool WebNode::isTextNode() const
 
 bool WebNode::isCommentNode() const
 {
-    return m_private->getNodeType() == Node::COMMENT_NODE;
+    return m_private->getNodeType() == Node::kCommentNode;
 }
 
 bool WebNode::isFocusable() const
@@ -193,7 +193,7 @@ bool WebNode::isDocumentNode() const
 
 bool WebNode::isDocumentTypeNode() const
 {
-    return m_private->getNodeType() == Node::DOCUMENT_TYPE_NODE;
+    return m_private->getNodeType() == Node::kDocumentTypeNode;
 }
 
 void WebNode::simulateClick()

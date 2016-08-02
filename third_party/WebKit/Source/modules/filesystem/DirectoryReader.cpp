@@ -107,7 +107,7 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback, ErrorCallbac
 
     if (m_entriesCallback) {
         // Non-null m_entriesCallback means multiple readEntries() calls are made concurrently. We don't allow doing it.
-        filesystem()->reportError(ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_STATE_ERR);
+        filesystem()->reportError(ScriptErrorCallback::wrap(errorCallback), FileError::kInvalidStateErr);
         return;
     }
 

@@ -55,13 +55,13 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& windowArg, int type
         UseCounter::count(document, UseCounter::RequestFileSystemNonWebbyOrigin);
 
     if (!document->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::kSecurityErr);
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_MODIFICATION_ERR);
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::kInvalidModificationErr);
         return;
     }
 
@@ -81,19 +81,19 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, 
     SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     KURL completedURL = document->completeURL(url);
     if (!securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
-        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::kSecurityErr);
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::ENCODING_ERR);
+        DOMFileSystem::reportError(document, ScriptErrorCallback::wrap(errorCallback), FileError::kEncodingErr);
         return;
     }
 
     LocalFileSystem::from(*document)->resolveURL(document, completedURL, ResolveURICallbacks::create(successCallback, ScriptErrorCallback::wrap(errorCallback), document));
 }
 
-static_assert(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), "DOMWindowFileSystem::TEMPORARY should match FileSystemTypeTemporary");
-static_assert(static_cast<int>(DOMWindowFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), "DOMWindowFileSystem::PERSISTENT should match FileSystemTypePersistent");
+static_assert(static_cast<int>(DOMWindowFileSystem::kTemporary) == static_cast<int>(FileSystemTypeTemporary), "DOMWindowFileSystem::kTemporary should match FileSystemTypeTemporary");
+static_assert(static_cast<int>(DOMWindowFileSystem::kPersistent) == static_cast<int>(FileSystemTypePersistent), "DOMWindowFileSystem::kPersistent should match FileSystemTypePersistent");
 
 } // namespace blink

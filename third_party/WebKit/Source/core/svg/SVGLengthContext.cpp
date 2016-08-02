@@ -160,8 +160,8 @@ SVGLengthContext::SVGLengthContext(const SVGElement* context)
 
 FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, const SVGLength& x, const SVGLength& y, const SVGLength& width, const SVGLength& height)
 {
-    ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
-    if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    DCHECK_NE(SVGUnitTypes::kSvgUnitTypeUnknown, type);
+    if (type != SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
         const FloatSize& viewportSize = viewport.size();
         return FloatRect(
             convertValueFromPercentageToUserUnits(x, viewportSize) + viewport.x(),
@@ -176,8 +176,8 @@ FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitT
 
 FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const SVGLength& x, const SVGLength& y)
 {
-    ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
-    if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    DCHECK_NE(SVGUnitTypes::kSvgUnitTypeUnknown, type);
+    if (type == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
         SVGLengthContext lengthContext(context);
         return FloatPoint(x.value(lengthContext), y.value(lengthContext));
     }
@@ -188,8 +188,8 @@ FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitType
 
 float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const SVGLength& x)
 {
-    ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
-    if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
+    DCHECK_NE(SVGUnitTypes::kSvgUnitTypeUnknown, type);
+    if (type == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
         SVGLengthContext lengthContext(context);
         return x.value(lengthContext);
     }

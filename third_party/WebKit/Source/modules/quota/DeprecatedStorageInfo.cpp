@@ -71,11 +71,11 @@ void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext, int
 DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(int storageType)
 {
     switch (storageType) {
-    case TEMPORARY:
+    case kTemporary:
         if (!m_temporaryStorage)
             m_temporaryStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
         return m_temporaryStorage.get();
-    case PERSISTENT:
+    case kPersistent:
         if (!m_persistentStorage)
             m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
         return m_persistentStorage.get();

@@ -31,7 +31,7 @@ namespace blink {
 
 inline static unsigned convertDeltaMode(const PlatformWheelEvent& event)
 {
-    return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::DOM_DELTA_PAGE : WheelEvent::DOM_DELTA_PIXEL;
+    return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::kDomDeltaPage : WheelEvent::kDomDeltaPixel;
 }
 
 WheelEvent* WheelEvent::create(const PlatformWheelEvent& event, AbstractView* view)
@@ -49,7 +49,7 @@ WheelEvent::WheelEvent()
     : m_deltaX(0)
     , m_deltaY(0)
     , m_deltaZ(0)
-    , m_deltaMode(DOM_DELTA_PIXEL)
+    , m_deltaMode(kDomDeltaPixel)
     , m_resendingPluginId(-1)
     , m_hasPreciseScrollingDeltas(false)
     , m_railsMode(RailsModeFree)

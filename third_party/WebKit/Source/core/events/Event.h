@@ -43,29 +43,29 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,  public Scrip
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum PhaseType {
-        NONE                = 0,
-        CAPTURING_PHASE     = 1,
-        AT_TARGET           = 2,
-        BUBBLING_PHASE      = 3
+        kNone               = 0,
+        kCapturingPhase     = 1,
+        kAtTarget           = 2,
+        kBubblingPhase      = 3
     };
 
     enum EventType {
-        MOUSEDOWN           = 1,
-        MOUSEUP             = 2,
-        MOUSEOVER           = 4,
-        MOUSEOUT            = 8,
-        MOUSEMOVE           = 16,
-        MOUSEDRAG           = 32,
-        CLICK               = 64,
-        DBLCLICK            = 128,
-        KEYDOWN             = 256,
-        KEYUP               = 512,
-        KEYPRESS            = 1024,
-        DRAGDROP            = 2048,
-        FOCUS               = 4096,
-        BLUR                = 8192,
-        SELECT              = 16384,
-        CHANGE              = 32768
+        kMousedown           = 1,
+        kMouseup             = 2,
+        kMouseover           = 4,
+        kMouseout            = 8,
+        kMousemove           = 16,
+        kMousedrag           = 32,
+        kClick               = 64,
+        kDblclick            = 128,
+        kKeydown             = 256,
+        kKeyup               = 512,
+        kKeypress            = 1024,
+        kDragdrop            = 2048,
+        kFocus               = 4096,
+        kBlur                = 8192,
+        kSelect              = 16384,
+        kChange              = 32768
     };
 
     enum RailsMode {

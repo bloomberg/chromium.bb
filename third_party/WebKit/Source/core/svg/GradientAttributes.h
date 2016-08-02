@@ -29,7 +29,7 @@ struct GradientAttributes {
     DISALLOW_NEW();
     GradientAttributes()
         : m_spreadMethod(SVGSpreadMethodPad)
-        , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+        , m_gradientUnits(SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
         , m_spreadMethodSet(false)
         , m_gradientUnitsSet(false)
         , m_gradientTransformSet(false)

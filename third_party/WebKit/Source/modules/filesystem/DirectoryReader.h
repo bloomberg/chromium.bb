@@ -70,7 +70,7 @@ private:
 
     bool m_isReading;
     EntryHeapVector m_entries;
-    FileError::ErrorCode m_error = FileError::ErrorCode::OK;
+    FileError::ErrorCode m_error = FileError::ErrorCode::kOK;
     Member<EntriesCallback> m_entriesCallback;
     Member<ErrorCallback> m_errorCallback;
 };

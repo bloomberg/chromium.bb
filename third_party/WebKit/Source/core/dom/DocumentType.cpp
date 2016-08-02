@@ -42,7 +42,7 @@ String DocumentType::nodeName() const
 
 Node::NodeType DocumentType::getNodeType() const
 {
-    return DOCUMENT_TYPE_NODE;
+    return kDocumentTypeNode;
 }
 
 Node* DocumentType::cloneNode(bool /*deep*/)

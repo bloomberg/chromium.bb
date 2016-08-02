@@ -69,12 +69,12 @@ public:
     typedef SVGAngleTearOff TearOffType;
 
     enum SVGAngleType {
-        SVG_ANGLETYPE_UNKNOWN = 0,
-        SVG_ANGLETYPE_UNSPECIFIED = 1,
-        SVG_ANGLETYPE_DEG = 2,
-        SVG_ANGLETYPE_RAD = 3,
-        SVG_ANGLETYPE_GRAD = 4,
-        SVG_ANGLETYPE_TURN = 5
+        kSvgAngletypeUnknown = 0,
+        kSvgAngletypeUnspecified = 1,
+        kSvgAngletypeDeg = 2,
+        kSvgAngletypeRad = 3,
+        kSvgAngletypeGrad = 4,
+        kSvgAngletypeTurn = 5
     };
 
     static SVGAngle* create()

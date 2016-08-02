@@ -71,7 +71,7 @@ unsigned short ApplicationCache::status() const
     recordAPIUseType();
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost)
-        return ApplicationCacheHost::UNCACHED;
+        return ApplicationCacheHost::kUncached;
     return cacheHost->getStatus();
 }
 
@@ -113,21 +113,21 @@ ExecutionContext* ApplicationCache::getExecutionContext() const
 const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID id)
 {
     switch (id) {
-    case ApplicationCacheHost::CHECKING_EVENT:
+    case ApplicationCacheHost::kCheckingEvent:
         return EventTypeNames::checking;
-    case ApplicationCacheHost::ERROR_EVENT:
+    case ApplicationCacheHost::kErrorEvent:
         return EventTypeNames::error;
-    case ApplicationCacheHost::NOUPDATE_EVENT:
+    case ApplicationCacheHost::kNoupdateEvent:
         return EventTypeNames::noupdate;
-    case ApplicationCacheHost::DOWNLOADING_EVENT:
+    case ApplicationCacheHost::kDownloadingEvent:
         return EventTypeNames::downloading;
-    case ApplicationCacheHost::PROGRESS_EVENT:
+    case ApplicationCacheHost::kProgressEvent:
         return EventTypeNames::progress;
-    case ApplicationCacheHost::UPDATEREADY_EVENT:
+    case ApplicationCacheHost::kUpdatereadyEvent:
         return EventTypeNames::updateready;
-    case ApplicationCacheHost::CACHED_EVENT:
+    case ApplicationCacheHost::kCachedEvent:
         return EventTypeNames::cached;
-    case ApplicationCacheHost::OBSOLETE_EVENT:
+    case ApplicationCacheHost::kObsoleteEvent:
         return EventTypeNames::obsolete;
     }
     ASSERT_NOT_REACHED();

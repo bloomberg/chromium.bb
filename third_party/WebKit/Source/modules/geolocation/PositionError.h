@@ -36,9 +36,9 @@ class PositionError final : public GarbageCollectedFinalized<PositionError>, pub
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
-        PERMISSION_DENIED = 1,
-        POSITION_UNAVAILABLE = 2,
-        TIMEOUT = 3
+        kPermissionDenied = 1,
+        kPositionUnavailable = 2,
+        kTimeout = 3
     };
 
     static PositionError* create(ErrorCode code, const String& message) { return new PositionError(code, message); }

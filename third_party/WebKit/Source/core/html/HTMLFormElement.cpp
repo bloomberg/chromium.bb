@@ -185,7 +185,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 void HTMLFormElement::handleLocalEvents(Event& event)
 {
     Node* targetNode = event.target()->toNode();
-    if (event.eventPhase() != Event::CAPTURING_PHASE && targetNode && targetNode != this && (event.type() == EventTypeNames::submit || event.type() == EventTypeNames::reset)) {
+    if (event.eventPhase() != Event::kCapturingPhase && targetNode && targetNode != this && (event.type() == EventTypeNames::submit || event.type() == EventTypeNames::reset)) {
         event.stopPropagation();
         return;
     }

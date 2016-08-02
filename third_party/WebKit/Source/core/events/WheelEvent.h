@@ -40,9 +40,9 @@ public:
     enum { TickMultiplier = 120 };
 
     enum DeltaMode {
-        DOM_DELTA_PIXEL = 0,
-        DOM_DELTA_LINE,
-        DOM_DELTA_PAGE
+        kDomDeltaPixel = 0,
+        kDomDeltaLine,
+        kDomDeltaPage
     };
 
     static WheelEvent* create()

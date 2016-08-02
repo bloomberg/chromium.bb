@@ -46,16 +46,16 @@ public:
     }
 
     enum {
-        SVG_ANGLETYPE_UNKNOWN = SVGAngle::SVG_ANGLETYPE_UNKNOWN,
-        SVG_ANGLETYPE_UNSPECIFIED = SVGAngle::SVG_ANGLETYPE_UNSPECIFIED,
-        SVG_ANGLETYPE_DEG = SVGAngle::SVG_ANGLETYPE_DEG,
-        SVG_ANGLETYPE_RAD = SVGAngle::SVG_ANGLETYPE_RAD,
-        SVG_ANGLETYPE_GRAD = SVGAngle::SVG_ANGLETYPE_GRAD
+        kSvgAngletypeUnknown = SVGAngle::kSvgAngletypeUnknown,
+        kSvgAngletypeUnspecified = SVGAngle::kSvgAngletypeUnspecified,
+        kSvgAngletypeDeg = SVGAngle::kSvgAngletypeDeg,
+        kSvgAngletypeRad = SVGAngle::kSvgAngletypeRad,
+        kSvgAngletypeGrad = SVGAngle::kSvgAngletypeGrad
     };
 
     ~SVGAngleTearOff() override;
 
-    unsigned short unitType() { return hasExposedAngleUnit() ? target()->unitType() : SVGAngle::SVG_ANGLETYPE_UNKNOWN; }
+    unsigned short unitType() { return hasExposedAngleUnit() ? target()->unitType() : SVGAngle::kSvgAngletypeUnknown; }
 
     void setValue(float, ExceptionState&);
     float value() { return target()->value(); }
@@ -74,7 +74,7 @@ public:
 private:
     SVGAngleTearOff(SVGAngle*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 
-    bool hasExposedAngleUnit() { return target()->unitType() <= SVGAngle::SVG_ANGLETYPE_GRAD; }
+    bool hasExposedAngleUnit() { return target()->unitType() <= SVGAngle::kSvgAngletypeGrad; }
 };
 
 } // namespace blink

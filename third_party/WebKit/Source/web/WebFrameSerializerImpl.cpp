@@ -411,7 +411,7 @@ void WebFrameSerializerImpl::buildContentForNode(
     SerializeDomParam* param)
 {
     switch (node->getNodeType()) {
-    case Node::ELEMENT_NODE:
+    case Node::kElementNode:
         // Process open tag of element.
         openTagToString(toElement(node), param);
         // Walk through the children nodes and process it.
@@ -420,17 +420,17 @@ void WebFrameSerializerImpl::buildContentForNode(
         // Process end tag of element.
         endTagToString(toElement(node), param);
         break;
-    case Node::TEXT_NODE:
+    case Node::kTextNode:
         saveHTMLContentToBuffer(createMarkup(node), param);
         break;
-    case Node::ATTRIBUTE_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::kAttributeNode:
+    case Node::kDocumentNode:
+    case Node::kDocumentFragmentNode:
         // Should not exist.
         NOTREACHED();
         break;
     // Document type node can be in DOM?
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kDocumentTypeNode:
         param->haveSeenDocType = true;
     default:
         // For other type node, call default action.

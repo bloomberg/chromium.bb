@@ -68,7 +68,7 @@ private:
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     String nodeName() const override { return name(); }
-    NodeType getNodeType() const override { return ATTRIBUTE_NODE; }
+    NodeType getNodeType() const override { return kAttributeNode; }
 
     String nodeValue() const override { return value(); }
     void setNodeValue(const String&) override;

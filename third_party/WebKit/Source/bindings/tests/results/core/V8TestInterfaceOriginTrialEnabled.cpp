@@ -241,8 +241,8 @@ static void installV8TestInterfaceOriginTrialEnabledTemplate(v8::Isolate* isolat
         {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceOriginTrialEnabledConstants, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledConstants));
-    static_assert(0 == TestInterfaceOriginTrialEnabled::UNSIGNED_LONG, "the value of TestInterfaceOriginTrialEnabled_UNSIGNED_LONG does not match with implementation");
-    static_assert(1 == TestInterfaceOriginTrialEnabled::CONST_JAVASCRIPT, "the value of TestInterfaceOriginTrialEnabled_CONST_JAVASCRIPT does not match with implementation");
+    static_assert(0 == TestInterfaceOriginTrialEnabled::kUnsignedLong, "the value of TestInterfaceOriginTrialEnabled_kUnsignedLong does not match with implementation");
+    static_assert(1 == TestInterfaceOriginTrialEnabled::kConstJavascript, "the value of TestInterfaceOriginTrialEnabled_kConstJavascript does not match with implementation");
     V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledAccessors));
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledMethods, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledMethods));
 

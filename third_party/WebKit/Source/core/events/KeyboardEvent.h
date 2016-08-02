@@ -38,10 +38,10 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum KeyLocationCode {
-        DOM_KEY_LOCATION_STANDARD   = 0x00,
-        DOM_KEY_LOCATION_LEFT       = 0x01,
-        DOM_KEY_LOCATION_RIGHT      = 0x02,
-        DOM_KEY_LOCATION_NUMPAD     = 0x03
+        kDomKeyLocationStandard     = 0x00,
+        kDomKeyLocationLeft         = 0x01,
+        kDomKeyLocationRight        = 0x02,
+        kDomKeyLocationNumpad       = 0x03
     };
 
     static KeyboardEvent* create()

@@ -26,7 +26,7 @@ SVGPropertyBase* SVGAngleInterpolationType::appliedSVGValue(const InterpolableVa
 {
     double doubleValue = toInterpolableNumber(interpolableValue).value();
     SVGAngle* result = SVGAngle::create();
-    result->newValueSpecifiedUnits(SVGAngle::SVG_ANGLETYPE_DEG, doubleValue);
+    result->newValueSpecifiedUnits(SVGAngle::kSvgAngletypeDeg, doubleValue);
     return result;
 }
 

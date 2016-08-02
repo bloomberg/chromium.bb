@@ -190,7 +190,7 @@ void ApplicationCacheHost::detachFromDocumentLoader()
 
 void ApplicationCacheHost::notifyApplicationCache(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
-    if (id != PROGRESS_EVENT)
+    if (id != kProgressEvent)
         InspectorInstrumentation::updateApplicationCacheStatus(m_documentLoader->frame());
 
     if (m_defersEvents) {
@@ -244,9 +244,9 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
     if (eventType.isEmpty() || !m_domApplicationCache->getExecutionContext())
         return;
     Event* event = nullptr;
-    if (id == PROGRESS_EVENT)
+    if (id == kProgressEvent)
         event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
-    else if (id == ERROR_EVENT)
+    else if (id == kErrorEvent)
         event = ApplicationCacheErrorEvent::create(errorReason, errorURL, errorStatus, errorMessage);
     else
         event = Event::create(eventType);
@@ -255,7 +255,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
 
 ApplicationCacheHost::Status ApplicationCacheHost::getStatus() const
 {
-    return m_host ? static_cast<Status>(m_host->getStatus()) : UNCACHED;
+    return m_host ? static_cast<Status>(m_host->getStatus()) : kUncached;
 }
 
 bool ApplicationCacheHost::update()
@@ -295,12 +295,12 @@ void ApplicationCacheHost::notifyEventListener(WebApplicationCacheHost::EventID 
 
 void ApplicationCacheHost::notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone)
 {
-    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone, WebApplicationCacheHost::UnknownError, String(), 0, String());
+    notifyApplicationCache(kProgressEvent, progressTotal, progressDone, WebApplicationCacheHost::UnknownError, String(), 0, String());
 }
 
 void ApplicationCacheHost::notifyErrorEventListener(WebApplicationCacheHost::ErrorReason reason, const WebURL& url, int status, const WebString& message)
 {
-    notifyApplicationCache(ERROR_EVENT, 0, 0, reason, url.string(), status, message);
+    notifyApplicationCache(kErrorEvent, 0, 0, reason, url.string(), status, message);
 }
 
 DEFINE_TRACE(ApplicationCacheHost)

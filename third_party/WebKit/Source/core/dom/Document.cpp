@@ -835,19 +835,19 @@ bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, Cont
 Node* Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     switch (importedNode->getNodeType()) {
-    case TEXT_NODE:
+    case kTextNode:
         return createTextNode(importedNode->nodeValue());
-    case CDATA_SECTION_NODE:
+    case kCdataSectionNode:
         return CDATASection::create(*this, importedNode->nodeValue());
-    case PROCESSING_INSTRUCTION_NODE:
+    case kProcessingInstructionNode:
         return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), exceptionState);
-    case COMMENT_NODE:
+    case kCommentNode:
         return createComment(importedNode->nodeValue());
-    case DOCUMENT_TYPE_NODE: {
+    case kDocumentTypeNode: {
         DocumentType* doctype = toDocumentType(importedNode);
         return DocumentType::create(this, doctype->name(), doctype->publicId(), doctype->systemId());
     }
-    case ELEMENT_NODE: {
+    case kElementNode: {
         Element* oldElement = toElement(importedNode);
         // FIXME: The following check might be unnecessary. Is it possible that
         // oldElement has mismatched prefix/namespace?
@@ -871,9 +871,9 @@ Node* Document::importNode(Node* importedNode, bool deep, ExceptionState& except
 
         return newElement;
     }
-    case ATTRIBUTE_NODE:
+    case kAttributeNode:
         return Attr::create(*this, QualifiedName(nullAtom, AtomicString(toAttr(importedNode)->name()), nullAtom), toAttr(importedNode)->value());
-    case DOCUMENT_FRAGMENT_NODE: {
+    case kDocumentFragmentNode: {
         if (importedNode->isShadowRoot()) {
             // ShadowRoot nodes should not be explicitly importable.
             // Either they are imported along with their host node, or created implicitly.
@@ -887,7 +887,7 @@ Node* Document::importNode(Node* importedNode, bool deep, ExceptionState& except
 
         return newFragment;
     }
-    case DOCUMENT_NODE:
+    case kDocumentNode:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is a document, which may not be imported.");
         return nullptr;
     }
@@ -901,10 +901,10 @@ Node* Document::adoptNode(Node* source, ExceptionState& exceptionState)
     EventQueueScope scope;
 
     switch (source->getNodeType()) {
-    case DOCUMENT_NODE:
+    case kDocumentNode:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
         return nullptr;
-    case ATTRIBUTE_NODE: {
+    case kAttributeNode: {
         Attr* attr = toAttr(source);
         if (Element* ownerElement = attr->ownerElement())
             ownerElement->removeAttributeNode(attr, exceptionState);
@@ -1350,7 +1350,7 @@ String Document::nodeName() const
 
 Node::NodeType Document::getNodeType() const
 {
-    return DOCUMENT_NODE;
+    return kDocumentNode;
 }
 
 FormController& Document::formController()
@@ -3190,17 +3190,17 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
 bool Document::childTypeAllowed(NodeType type) const
 {
     switch (type) {
-    case ATTRIBUTE_NODE:
-    case CDATA_SECTION_NODE:
-    case DOCUMENT_FRAGMENT_NODE:
-    case DOCUMENT_NODE:
-    case TEXT_NODE:
+    case kAttributeNode:
+    case kCdataSectionNode:
+    case kDocumentFragmentNode:
+    case kDocumentNode:
+    case kTextNode:
         return false;
-    case COMMENT_NODE:
-    case PROCESSING_INSTRUCTION_NODE:
+    case kCommentNode:
+    case kProcessingInstructionNode:
         return true;
-    case DOCUMENT_TYPE_NODE:
-    case ELEMENT_NODE:
+    case kDocumentTypeNode:
+    case kElementNode:
         // Documents may contain no more than one of each of these.
         // (One Element and one DocumentType.)
         for (Node& c : NodeTraversal::childrenOf(*this)) {
@@ -3227,10 +3227,10 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
             continue;
 
         switch (child.getNodeType()) {
-        case DOCUMENT_TYPE_NODE:
+        case kDocumentTypeNode:
             numDoctypes++;
             break;
-        case ELEMENT_NODE:
+        case kElementNode:
             numElements++;
             break;
         default:
@@ -3242,42 +3242,42 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
     if (newChild.isDocumentFragment()) {
         for (Node& child : NodeTraversal::childrenOf(toDocumentFragment(newChild))) {
             switch (child.getNodeType()) {
-            case ATTRIBUTE_NODE:
-            case CDATA_SECTION_NODE:
-            case DOCUMENT_FRAGMENT_NODE:
-            case DOCUMENT_NODE:
-            case TEXT_NODE:
+            case kAttributeNode:
+            case kCdataSectionNode:
+            case kDocumentFragmentNode:
+            case kDocumentNode:
+            case kTextNode:
                 exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild.nodeName() +
                     "' may not be inserted inside nodes of type '#document'.");
                 return false;
-            case COMMENT_NODE:
-            case PROCESSING_INSTRUCTION_NODE:
+            case kCommentNode:
+            case kProcessingInstructionNode:
                 break;
-            case DOCUMENT_TYPE_NODE:
+            case kDocumentTypeNode:
                 numDoctypes++;
                 break;
-            case ELEMENT_NODE:
+            case kElementNode:
                 numElements++;
                 break;
             }
         }
     } else {
         switch (newChild.getNodeType()) {
-        case ATTRIBUTE_NODE:
-        case CDATA_SECTION_NODE:
-        case DOCUMENT_FRAGMENT_NODE:
-        case DOCUMENT_NODE:
-        case TEXT_NODE:
+        case kAttributeNode:
+        case kCdataSectionNode:
+        case kDocumentFragmentNode:
+        case kDocumentNode:
+        case kTextNode:
             exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild.nodeName() +
                 "' may not be inserted inside nodes of type '#document'.");
             return false;
-        case COMMENT_NODE:
-        case PROCESSING_INSTRUCTION_NODE:
+        case kCommentNode:
+        case kProcessingInstructionNode:
             return true;
-        case DOCUMENT_TYPE_NODE:
+        case kDocumentTypeNode:
             numDoctypes++;
             break;
-        case ELEMENT_NODE:
+        case kElementNode:
             numElements++;
             break;
         }

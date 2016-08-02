@@ -152,14 +152,14 @@ void Step::evaluate(EvaluationContext& evaluationContext, Node* context, NodeSet
     }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static inline Node::NodeType primaryNodeType(Step::Axis axis)
 {
     switch (axis) {
     case Step::AttributeAxis:
-        return Node::ATTRIBUTE_NODE;
+        return Node::kAttributeNode;
     default:
-        return Node::ELEMENT_NODE;
+        return Node::kElementNode;
     }
 }
 #endif
@@ -170,13 +170,13 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
     switch (nodeTest.getKind()) {
     case Step::NodeTest::TextNodeTest: {
         Node::NodeType type = node->getNodeType();
-        return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
+        return type == Node::kTextNode || type == Node::kCdataSectionNode;
     }
     case Step::NodeTest::CommentNodeTest:
-        return node->getNodeType() == Node::COMMENT_NODE;
+        return node->getNodeType() == Node::kCommentNode;
     case Step::NodeTest::ProcessingInstructionNodeTest: {
         const AtomicString& name = nodeTest.data();
-        return node->getNodeType() == Node::PROCESSING_INSTRUCTION_NODE && (name.isEmpty() || node->nodeName() == name);
+        return node->getNodeType() == Node::kProcessingInstructionNode && (name.isEmpty() || node->nodeName() == name);
     }
     case Step::NodeTest::AnyNodeTest:
         return true;
@@ -200,10 +200,12 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
 
         // Node test on the namespace axis is not implemented yet, the caller
         // has a check for it.
-        ASSERT(axis != Step::NamespaceAxis);
+        DCHECK_NE(Step::NamespaceAxis, axis);
 
         // For other axes, the principal node type is element.
-        ASSERT(primaryNodeType(axis) == Node::ELEMENT_NODE);
+#if DCHECK_IS_ON()
+        DCHECK_EQ(Node::kElementNode, primaryNodeType(axis));
+#endif
         if (!node->isElementNode())
             return false;
         Element& element = toElement(*node);
@@ -307,7 +309,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
     }
 
     case FollowingSiblingAxis:
-        if (context->getNodeType() == Node::ATTRIBUTE_NODE)
+        if (context->getNodeType() == Node::kAttributeNode)
             return;
 
         for (Node* n = context->nextSibling(); n; n = n->nextSibling()) {
@@ -317,7 +319,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         return;
 
     case PrecedingSiblingAxis:
-        if (context->getNodeType() == Node::ATTRIBUTE_NODE)
+        if (context->getNodeType() == Node::kAttributeNode)
             return;
 
         for (Node* n = context->previousSibling(); n; n = n->previousSibling()) {

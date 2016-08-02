@@ -41,11 +41,11 @@ bool isRootDomNode(Node* node)
 String stringValue(Node* node)
 {
     switch (node->getNodeType()) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::TEXT_NODE:
-    case Node::CDATA_SECTION_NODE:
+    case Node::kAttributeNode:
+    case Node::kProcessingInstructionNode:
+    case Node::kCommentNode:
+    case Node::kTextNode:
+    case Node::kCdataSectionNode:
         return node->nodeValue();
     default:
         if (isRootDomNode(node) || node->isElementNode()) {
@@ -71,17 +71,17 @@ bool isValidContextNode(Node* node)
     if (!node)
         return false;
     switch (node->getNodeType()) {
-    case Node::ATTRIBUTE_NODE:
-    case Node::CDATA_SECTION_NODE:
-    case Node::COMMENT_NODE:
-    case Node::DOCUMENT_NODE:
-    case Node::ELEMENT_NODE:
-    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::kAttributeNode:
+    case Node::kCdataSectionNode:
+    case Node::kCommentNode:
+    case Node::kDocumentNode:
+    case Node::kElementNode:
+    case Node::kProcessingInstructionNode:
         return true;
-    case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::DOCUMENT_TYPE_NODE:
+    case Node::kDocumentFragmentNode:
+    case Node::kDocumentTypeNode:
         return false;
-    case Node::TEXT_NODE:
+    case Node::kTextNode:
         return !(node->parentNode() && node->parentNode()->isAttributeNode());
     }
     ASSERT_NOT_REACHED();

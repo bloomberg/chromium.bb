@@ -333,7 +333,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
             // Handle the current node according to its type.
             if (m_iterationProgress < HandledNode) {
                 bool handledNode = false;
-                if (layoutObject->isText() && m_node->getNodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
+                if (layoutObject->isText() && m_node->getNodeType() == Node::kTextNode) { // FIXME: What about kCdataSectionNode?
                     if (!m_fullyClippedStack.top() || ignoresStyleVisibility())
                         handledNode = handleTextNode();
                 } else if (layoutObject && (layoutObject->isImage() || layoutObject->isLayoutPart()

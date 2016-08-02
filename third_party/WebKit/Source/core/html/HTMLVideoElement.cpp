@@ -330,11 +330,11 @@ IntSize HTMLVideoElement::bitmapSourceSize() const
 ScriptPromise HTMLVideoElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     DCHECK(eventTarget.toLocalDOMWindow());
-    if (getNetworkState() == HTMLMediaElement::NETWORK_EMPTY) {
+    if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();
     }
-    if (getReadyState() <= HTMLMediaElement::HAVE_METADATA) {
+    if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
         return ScriptPromise();
     }

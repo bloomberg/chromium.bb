@@ -52,14 +52,14 @@ public:
 private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
-    CSSRule::Type type() const override { return IMPORT_RULE; }
+    CSSRule::Type type() const override { return kImportRule; }
 
     Member<StyleRuleImport> m_importRule;
     mutable Member<MediaList> m_mediaCSSOMWrapper;
     mutable Member<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, IMPORT_RULE);
+DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, kImportRule);
 
 } // namespace blink
 

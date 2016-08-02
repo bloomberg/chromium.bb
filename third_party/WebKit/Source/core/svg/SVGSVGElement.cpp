@@ -424,7 +424,7 @@ SVGRectTearOff* SVGSVGElement::createSVGRect()
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransform()
 {
-    return SVGTransformTearOff::create(SVGTransform::create(SVG_TRANSFORM_MATRIX), 0, PropertyIsNotAnimVal);
+    return SVGTransformTearOff::create(SVGTransform::create(kSvgTransformMatrix), 0, PropertyIsNotAnimVal);
 }
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(SVGMatrixTearOff* matrix)

@@ -139,14 +139,14 @@ void LocalFileSystem::fileSystemNotAvailable(
     ExecutionContext* context,
     CallbackWrapper* callbacks)
 {
-    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, passed(callbacks->release()), FileError::ABORT_ERR));
+    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, passed(callbacks->release()), FileError::kAbortErr));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
     ExecutionContext* context,
     CallbackWrapper* callbacks)
 {
-    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, passed(callbacks->release()), FileError::ABORT_ERR));
+    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, passed(callbacks->release()), FileError::kAbortErr));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(

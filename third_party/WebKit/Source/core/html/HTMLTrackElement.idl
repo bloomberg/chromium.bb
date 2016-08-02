@@ -35,8 +35,7 @@ interface HTMLTrackElement : HTMLElement {
     const unsigned short NONE = 0;
     const unsigned short LOADING = 1;
     const unsigned short LOADED = 2;
-    // Reflect is used for ERROR because it conflicts with a windows define.
-    [Reflect=TRACK_ERROR] const unsigned short ERROR = 3;
+    const unsigned short ERROR = 3;
     [ImplementedAs=getReadyState] readonly attribute unsigned short readyState;
 
     readonly attribute TextTrack track;

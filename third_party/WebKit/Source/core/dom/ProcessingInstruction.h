@@ -104,11 +104,11 @@ private:
     Member<DetachableEventListener> m_listenerForXSLT;
 };
 
-DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, getNodeType() == Node::PROCESSING_INSTRUCTION_NODE);
+DEFINE_NODE_TYPE_CASTS(ProcessingInstruction, getNodeType() == Node::kProcessingInstructionNode);
 
 inline bool isXSLStyleSheet(const Node& node)
 {
-    return node.getNodeType() == Node::PROCESSING_INSTRUCTION_NODE && toProcessingInstruction(node).isXSL();
+    return node.getNodeType() == Node::kProcessingInstructionNode && toProcessingInstruction(node).isXSL();
 }
 
 } // namespace blink

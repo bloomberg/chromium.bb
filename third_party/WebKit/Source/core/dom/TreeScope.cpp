@@ -407,7 +407,7 @@ Element* TreeScope::adjustedElement(const Element& target) const
 unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 {
     if (otherScope == this)
-        return Node::DOCUMENT_POSITION_EQUIVALENT;
+        return Node::kDocumentPositionEquivalent;
 
     HeapVector<Member<const TreeScope>, 16> chain1;
     HeapVector<Member<const TreeScope>, 16> chain2;
@@ -420,7 +420,7 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
     unsigned index1 = chain1.size();
     unsigned index2 = chain2.size();
     if (chain1[index1 - 1] != chain2[index2 - 1])
-        return Node::DOCUMENT_POSITION_DISCONNECTED | Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+        return Node::kDocumentPositionDisconnected | Node::kDocumentPositionImplementationSpecific;
 
     for (unsigned i = std::min(index1, index2); i; --i) {
         const TreeScope* child1 = chain1[--index1];
@@ -433,18 +433,18 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 
             for (const ShadowRoot* child = toShadowRoot(child2->rootNode()).olderShadowRoot(); child; child = child->olderShadowRoot()) {
                 if (child == child1)
-                    return Node::DOCUMENT_POSITION_FOLLOWING;
+                    return Node::kDocumentPositionFollowing;
             }
 
-            return Node::DOCUMENT_POSITION_PRECEDING;
+            return Node::kDocumentPositionPreceding;
         }
     }
 
     // There was no difference between the two parent chains, i.e., one was a subset of the other. The shorter
     // chain is the ancestor.
     return index1 < index2 ?
-        Node::DOCUMENT_POSITION_FOLLOWING | Node::DOCUMENT_POSITION_CONTAINED_BY :
-        Node::DOCUMENT_POSITION_PRECEDING | Node::DOCUMENT_POSITION_CONTAINS;
+        Node::kDocumentPositionFollowing | Node::kDocumentPositionContainedBy :
+        Node::kDocumentPositionPreceding | Node::kDocumentPositionContains;
 }
 
 const TreeScope* TreeScope::commonAncestorTreeScope(const TreeScope& other) const

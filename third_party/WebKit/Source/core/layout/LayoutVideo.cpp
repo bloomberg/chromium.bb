@@ -90,7 +90,7 @@ LayoutSize LayoutVideo::calculateIntrinsicSize()
     // of the video resource, if that is available; otherwise it is the intrinsic
     // height of the poster frame, if that is available; otherwise it is 150 CSS pixels.
     WebMediaPlayer* webMediaPlayer = mediaElement()->webMediaPlayer();
-    if (webMediaPlayer && video->getReadyState() >= HTMLVideoElement::HAVE_METADATA) {
+    if (webMediaPlayer && video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
         IntSize size = webMediaPlayer->naturalSize();
         if (!size.isEmpty())
             return LayoutSize(size);

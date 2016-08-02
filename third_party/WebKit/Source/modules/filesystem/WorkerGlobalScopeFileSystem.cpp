@@ -49,13 +49,13 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& wor
 {
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem()) {
-        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::kSecurityErr);
         return;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::INVALID_MODIFICATION_ERR);
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::kInvalidModificationErr);
         return;
     }
 
@@ -72,7 +72,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(Work
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        exceptionState.throwDOMException(InvalidModificationError, "the type must be TEMPORARY or PERSISTENT.");
+        exceptionState.throwDOMException(InvalidModificationError, "the type must be kTemporary or kPersistent.");
         return 0;
     }
 
@@ -89,12 +89,12 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.getExecutionContext();
     if (!secureContext->getSecurityOrigin()->canAccessFileSystem() || !secureContext->getSecurityOrigin()->canRequest(completedURL)) {
-        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::SECURITY_ERR);
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::kSecurityErr);
         return;
     }
 
     if (!completedURL.isValid()) {
-        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::ENCODING_ERR);
+        DOMFileSystem::reportError(&worker, ScriptErrorCallback::wrap(errorCallback), FileError::kEncodingErr);
         return;
     }
 
@@ -124,7 +124,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(Work
     return resolveURLHelper->getResult(exceptionState);
 }
 
-static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), "WorkerGlobalScopeFileSystem::TEMPORARY should match FileSystemTypeTemporary");
-static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), "WorkerGlobalScopeFileSystem::PERSISTENT should match FileSystemTypePersistent");
+static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::kTemporary) == static_cast<int>(FileSystemTypeTemporary), "WorkerGlobalScopeFileSystem::kTemporary should match FileSystemTypeTemporary");
+static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::kPersistent) == static_cast<int>(FileSystemTypePersistent), "WorkerGlobalScopeFileSystem::kPersistent should match FileSystemTypePersistent");
 
 } // namespace blink

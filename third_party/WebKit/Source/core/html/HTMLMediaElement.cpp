@@ -406,9 +406,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_playbackRate(1.0f)
     , m_defaultPlaybackRate(1.0f)
-    , m_networkState(NETWORK_EMPTY)
-    , m_readyState(HAVE_NOTHING)
-    , m_readyStateMaximum(HAVE_NOTHING)
+    , m_networkState(kNetworkEmpty)
+    , m_readyState(kHaveNothing)
+    , m_readyStateMaximum(kHaveNothing)
     , m_volume(1.0f)
     , m_lastSeekTime(0)
     , m_previousProgressTime(std::numeric_limits<double>::max())
@@ -599,7 +599,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->isConnected()) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementInDocument);
-        if ((!getAttribute(srcAttr).isEmpty() || m_srcObject) && m_networkState == NETWORK_EMPTY) {
+        if ((!getAttribute(srcAttr).isEmpty() || m_srcObject) && m_networkState == kNetworkEmpty) {
             m_ignorePreloadNone = false;
             invokeLoadAlgorithm();
         }
@@ -620,7 +620,7 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
     if (insertionPoint->inActiveDocument()) {
         configureMediaControls();
-        if (m_networkState > NETWORK_EMPTY)
+        if (m_networkState > kNetworkEmpty)
             pauseInternal();
     }
 }
@@ -769,25 +769,25 @@ void HTMLMediaElement::invokeLoadAlgorithm()
 
     // 3 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
     // a task to fire a simple event named abort at the media element.
-    if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
+    if (m_networkState == kNetworkLoading || m_networkState == kNetworkIdle)
         scheduleEvent(EventTypeNames::abort);
 
     resetMediaPlayerAndMediaSource();
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
-    if (m_networkState != NETWORK_EMPTY) {
+    if (m_networkState != kNetworkEmpty) {
         // 4.1 - Queue a task to fire a simple event named emptied at the media element.
         scheduleEvent(EventTypeNames::emptied);
 
         // 4.2 - If a fetching process is in progress for the media element, the user agent should stop it.
-        setNetworkState(NETWORK_EMPTY);
+        setNetworkState(kNetworkEmpty);
 
         // 4.3 - Forget the media element's media-resource-specific tracks.
         forgetResourceSpecificTracks();
 
         // 4.4 - If readyState is not set to HAVE_NOTHING, then set it to that state.
-        m_readyState = HAVE_NOTHING;
-        m_readyStateMaximum = HAVE_NOTHING;
+        m_readyState = kHaveNothing;
+        m_readyStateMaximum = kHaveNothing;
 
         // 4.5 - If the paused attribute is false, then set it to true.
         m_paused = true;
@@ -801,7 +801,7 @@ void HTMLMediaElement::invokeLoadAlgorithm()
         // FIXME: Add support for firing this event.
 
         // 4.8 - Set the initial playback position to 0.
-        // FIXME: Make this less subtle. The position only becomes 0 because the ready state is HAVE_NOTHING.
+        // FIXME: Make this less subtle. The position only becomes 0 because the ready state is kHaveNothing.
         invalidateCachedTime();
 
         // 4.9 - Set the timeline offset to Not-a-Number (NaN).
@@ -835,14 +835,14 @@ void HTMLMediaElement::invokeResourceSelectionAlgorithm()
     BLINK_MEDIA_LOG << "invokeResourceSelectionAlgorithm(" << (void*)this << ")";
     // The resource selection algorithm
     // 1 - Set the networkState to NETWORK_NO_SOURCE
-    setNetworkState(NETWORK_NO_SOURCE);
+    setNetworkState(kNetworkNoSource);
 
     // 2 - Set the element's show poster flag to true
     // TODO(srirama.m): Introduce show poster flag and update it as per spec
 
     m_playedTimeRanges = TimeRanges::create();
 
-    // FIXME: Investigate whether these can be moved into m_networkState != NETWORK_EMPTY block above
+    // FIXME: Investigate whether these can be moved into m_networkState != kNetworkEmpty block above
     // so they are closer to the relevant spec steps.
     m_lastSeekTime = 0;
     m_duration = std::numeric_limits<double>::quiet_NaN();
@@ -900,11 +900,11 @@ void HTMLMediaElement::selectMediaResource()
     } else {
         // Otherwise the media element has no assigned media provider object and
         // has neither a src attribute nor a source element child: set the
-        // networkState to NETWORK_EMPTY, and abort these steps; the synchronous
+        // networkState to kNetworkEmpty, and abort these steps; the synchronous
         // section ends.
         m_loadState = WaitingForSource;
         setShouldDelayLoadEvent(false);
-        setNetworkState(NETWORK_EMPTY);
+        setNetworkState(kNetworkEmpty);
         updateDisplayState();
 
         BLINK_MEDIA_LOG << "selectMediaResource(" << (void*)this << "), nothing to load";
@@ -912,7 +912,7 @@ void HTMLMediaElement::selectMediaResource()
     }
 
     // 7 - Set the media element's networkState to NETWORK_LOADING.
-    setNetworkState(NETWORK_LOADING);
+    setNetworkState(kNetworkLoading);
 
     // 8 - Queue a task to fire a simple event named loadstart at the media element.
     scheduleEvent(EventTypeNames::loadstart);
@@ -1002,7 +1002,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, const Co
     }
 
     // The resource fetch algorithm
-    setNetworkState(NETWORK_LOADING);
+    setNetworkState(kNetworkLoading);
 
     m_autoplayHelper->loadingStarted();
 
@@ -1175,7 +1175,7 @@ void HTMLMediaElement::executeDeferredLoad()
     // delays the load event again, in case it hasn't been fired yet).
     setShouldDelayLoadEvent(true);
     // 7. Set the networkState to NETWORK_LOADING.
-    setNetworkState(NETWORK_LOADING);
+    setNetworkState(kNetworkLoading);
 
     startProgressEventTimer();
 
@@ -1317,7 +1317,7 @@ void HTMLMediaElement::waitForSourceChange()
     m_loadState = WaitingForSource;
 
     // 6.17 - Waiting: Set the element's networkState attribute to the NETWORK_NO_SOURCE value
-    setNetworkState(NETWORK_NO_SOURCE);
+    setNetworkState(kNetworkNoSource);
 
     // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1341,13 +1341,13 @@ void HTMLMediaElement::noneSupported()
 
     // 1 - Set the error attribute to a new MediaError object whose code attribute is set to
     // MEDIA_ERR_SRC_NOT_SUPPORTED.
-    m_error = MediaError::create(MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED);
+    m_error = MediaError::create(MediaError::kMediaErrSrcNotSupported);
 
     // 2 - Forget the media element's media-resource-specific text tracks.
     forgetResourceSpecificTracks();
 
     // 3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
-    setNetworkState(NETWORK_NO_SOURCE);
+    setNetworkState(kNetworkNoSource);
 
     // 4 - Set the element's show poster flag to true.
     updateDisplayState();
@@ -1369,7 +1369,7 @@ void HTMLMediaElement::noneSupported()
 
 void HTMLMediaElement::mediaEngineError(MediaError* err)
 {
-    DCHECK_GE(m_readyState, HAVE_METADATA);
+    DCHECK_GE(m_readyState, kHaveMetadata);
     BLINK_MEDIA_LOG << "mediaEngineError(" << (void*)this << ", " << static_cast<int>(err->code()) << ")";
 
     // 1 - The user agent should cancel the fetching process.
@@ -1384,7 +1384,7 @@ void HTMLMediaElement::mediaEngineError(MediaError* err)
     scheduleEvent(EventTypeNames::error);
 
     // 4 - Set the element's networkState attribute to the NETWORK_IDLE value.
-    setNetworkState(NETWORK_IDLE);
+    setNetworkState(kNetworkIdle);
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1418,7 +1418,7 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
 
     // If we failed while trying to load a <source> element, the movie was never parsed, and there are more
     // <source> children, schedule the next one
-    if (m_readyState < HAVE_METADATA && m_loadState == LoadingFromSourceElement) {
+    if (m_readyState < kHaveMetadata && m_loadState == LoadingFromSourceElement) {
 
         // resource selection algorithm
         // Step 9.Otherwise.9 - Failed with elements: Queue a task, using the DOM manipulation task source, to fire a simple event named error at the candidate element.
@@ -1443,10 +1443,10 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         return;
     }
 
-    if (error == WebMediaPlayer::NetworkStateNetworkError && m_readyState >= HAVE_METADATA)
-        mediaEngineError(MediaError::create(MediaError::MEDIA_ERR_NETWORK));
+    if (error == WebMediaPlayer::NetworkStateNetworkError && m_readyState >= kHaveMetadata)
+        mediaEngineError(MediaError::create(MediaError::kMediaErrNetwork));
     else if (error == WebMediaPlayer::NetworkStateDecodeError)
-        mediaEngineError(MediaError::create(MediaError::MEDIA_ERR_DECODE));
+        mediaEngineError(MediaError::create(MediaError::kMediaErrDecode));
     else if ((error == WebMediaPlayer::NetworkStateFormatError
         || error == WebMediaPlayer::NetworkStateNetworkError)
         && m_loadState == LoadingFromSrcAttr)
@@ -1463,7 +1463,7 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
 
     if (state == WebMediaPlayer::NetworkStateEmpty) {
         // Just update the cached state and leave, we can't do anything.
-        setNetworkState(NETWORK_EMPTY);
+        setNetworkState(kNetworkEmpty);
         return;
     }
 
@@ -1475,22 +1475,22 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
     }
 
     if (state == WebMediaPlayer::NetworkStateIdle) {
-        if (m_networkState > NETWORK_IDLE) {
+        if (m_networkState > kNetworkIdle) {
             changeNetworkStateFromLoadingToIdle();
             setShouldDelayLoadEvent(false);
         } else {
-            setNetworkState(NETWORK_IDLE);
+            setNetworkState(kNetworkIdle);
         }
     }
 
     if (state == WebMediaPlayer::NetworkStateLoading) {
-        if (m_networkState < NETWORK_LOADING || m_networkState == NETWORK_NO_SOURCE)
+        if (m_networkState < kNetworkLoading || m_networkState == kNetworkNoSource)
             startProgressEventTimer();
-        setNetworkState(NETWORK_LOADING);
+        setNetworkState(kNetworkLoading);
     }
 
     if (state == WebMediaPlayer::NetworkStateLoaded) {
-        if (m_networkState != NETWORK_IDLE)
+        if (m_networkState != kNetworkIdle)
             changeNetworkStateFromLoadingToIdle();
     }
 }
@@ -1504,7 +1504,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
     if (webMediaPlayer() && webMediaPlayer()->didLoadingProgress())
         scheduleEvent(EventTypeNames::progress);
     scheduleEvent(EventTypeNames::suspend);
-    setNetworkState(NETWORK_IDLE);
+    setNetworkState(kNetworkIdle);
 }
 
 void HTMLMediaElement::readyStateChanged()
@@ -1532,39 +1532,39 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     if (tracksAreReady) {
         m_readyState = newState;
     } else {
-        // If a media file has text tracks the readyState may not progress beyond HAVE_FUTURE_DATA until
+        // If a media file has text tracks the readyState may not progress beyond kHaveFutureData until
         // the text tracks are ready, regardless of the state of the media file.
-        if (newState <= HAVE_METADATA)
+        if (newState <= kHaveMetadata)
             m_readyState = newState;
         else
-            m_readyState = HAVE_CURRENT_DATA;
+            m_readyState = kHaveCurrentData;
     }
 
     if (oldState > m_readyStateMaximum)
         m_readyStateMaximum = oldState;
 
-    if (m_networkState == NETWORK_EMPTY)
+    if (m_networkState == kNetworkEmpty)
         return;
 
     if (m_seeking) {
         // 4.8.10.9, step 9 note: If the media element was potentially playing immediately before
         // it started seeking, but seeking caused its readyState attribute to change to a value
-        // lower than HAVE_FUTURE_DATA, then a waiting will be fired at the element.
-        if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA)
+        // lower than kHaveFutureData, then a waiting will be fired at the element.
+        if (wasPotentiallyPlaying && m_readyState < kHaveFutureData)
             scheduleEvent(EventTypeNames::waiting);
 
         // 4.8.10.9 steps 12-14
-        if (m_readyState >= HAVE_CURRENT_DATA)
+        if (m_readyState >= kHaveCurrentData)
             finishSeek();
     } else {
-        if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA) {
+        if (wasPotentiallyPlaying && m_readyState < kHaveFutureData) {
             // 4.8.10.8
             scheduleTimeupdateEvent(false);
             scheduleEvent(EventTypeNames::waiting);
         }
     }
 
-    if (m_readyState >= HAVE_METADATA && oldState < HAVE_METADATA) {
+    if (m_readyState >= kHaveMetadata && oldState < kHaveMetadata) {
         createPlaceholderTracksIfNecessary();
 
         selectInitialTracksIfNecessary();
@@ -1604,7 +1604,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
     bool shouldUpdateDisplayState = false;
 
-    if (m_readyState >= HAVE_CURRENT_DATA && oldState < HAVE_CURRENT_DATA && !m_haveFiredLoadedData) {
+    if (m_readyState >= kHaveCurrentData && oldState < kHaveCurrentData && !m_haveFiredLoadedData) {
         m_haveFiredLoadedData = true;
         shouldUpdateDisplayState = true;
         scheduleEvent(EventTypeNames::loadeddata);
@@ -1612,15 +1612,15 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     }
 
     bool isPotentiallyPlaying = potentiallyPlaying();
-    if (m_readyState == HAVE_FUTURE_DATA && oldState <= HAVE_CURRENT_DATA && tracksAreReady) {
+    if (m_readyState == kHaveFutureData && oldState <= kHaveCurrentData && tracksAreReady) {
         scheduleEvent(EventTypeNames::canplay);
         if (isPotentiallyPlaying)
             scheduleNotifyPlaying();
         shouldUpdateDisplayState = true;
     }
 
-    if (m_readyState == HAVE_ENOUGH_DATA && oldState < HAVE_ENOUGH_DATA && tracksAreReady) {
-        if (oldState <= HAVE_CURRENT_DATA) {
+    if (m_readyState == kHaveEnoughData && oldState < kHaveEnoughData && tracksAreReady) {
+        if (oldState <= kHaveCurrentData) {
             scheduleEvent(EventTypeNames::canplay);
             if (isPotentiallyPlaying)
                 scheduleNotifyPlaying();
@@ -1668,7 +1668,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
 void HTMLMediaElement::progressEventTimerFired(TimerBase*)
 {
-    if (m_networkState != NETWORK_LOADING)
+    if (m_networkState != kNetworkLoading)
         return;
 
     double time = WTF::currentTime();
@@ -1715,7 +1715,7 @@ void HTMLMediaElement::seek(double time)
     // FIXME: remove m_webMediaPlayer check once we figure out how
     // m_webMediaPlayer is going out of sync with readystate.
     // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
-    if (!m_webMediaPlayer || m_readyState == HAVE_NOTHING)
+    if (!m_webMediaPlayer || m_readyState == kHaveNothing)
         return;
 
     // Ignore preload none and start load if necessary.
@@ -1818,7 +1818,7 @@ bool HTMLMediaElement::seeking() const
 
 void HTMLMediaElement::refreshCachedTime() const
 {
-    if (!webMediaPlayer() || m_readyState < HAVE_METADATA)
+    if (!webMediaPlayer() || m_readyState < kHaveMetadata)
         return;
 
     m_cachedTime = webMediaPlayer()->currentTime();
@@ -1836,7 +1836,7 @@ double HTMLMediaElement::currentTime() const
     if (m_defaultPlaybackStartPosition)
         return m_defaultPlaybackStartPosition;
 
-    if (m_readyState == HAVE_NOTHING)
+    if (m_readyState == kHaveNothing)
         return 0;
 
     if (m_seeking) {
@@ -1861,9 +1861,9 @@ double HTMLMediaElement::currentTime() const
 
 void HTMLMediaElement::setCurrentTime(double time)
 {
-    // If the media element's readyState is HAVE_NOTHING, then set the default
+    // If the media element's readyState is kHaveNothing, then set the default
     // playback start position to that time.
-    if (m_readyState == HAVE_NOTHING) {
+    if (m_readyState == kHaveNothing) {
         m_defaultPlaybackStartPosition = time;
         return;
     }
@@ -1875,13 +1875,13 @@ double HTMLMediaElement::duration() const
 {
     // FIXME: remove m_webMediaPlayer check once we figure out how
     // m_webMediaPlayer is going out of sync with readystate.
-    // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
-    if (!m_webMediaPlayer || m_readyState < HAVE_METADATA)
+    // m_webMediaPlayer is cleared but readystate is not set to kHaveNothing.
+    if (!m_webMediaPlayer || m_readyState < kHaveMetadata)
         return std::numeric_limits<double>::quiet_NaN();
 
     // FIXME: Refactor so m_duration is kept current (in both MSE and
-    // non-MSE cases) once we have transitioned from HAVE_NOTHING ->
-    // HAVE_METADATA. Currently, m_duration may be out of date for at least MSE
+    // non-MSE cases) once we have transitioned from kHaveNothing ->
+    // kHaveMetadata. Currently, m_duration may be out of date for at least MSE
     // case because MediaSource and SourceBuffer do not notify the element
     // directly upon duration changes caused by endOfStream, remove, or append
     // operations; rather the notification is triggered by the WebMediaPlayer
@@ -1941,7 +1941,7 @@ void HTMLMediaElement::updatePlaybackRate()
 {
     // FIXME: remove m_webMediaPlayer check once we figure out how
     // m_webMediaPlayer is going out of sync with readystate.
-    // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
+    // m_webMediaPlayer is cleared but readystate is not set to kHaveNothing.
     if (m_webMediaPlayer && potentiallyPlaying())
         webMediaPlayer()->setRate(playbackRate());
 }
@@ -2105,7 +2105,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
         m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByPlayMethod);
     }
 
-    if (m_error && m_error->code() == MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED)
+    if (m_error && m_error->code() == MediaError::kMediaErrSrcNotSupported)
         return NotSupportedError;
 
     playInternal();
@@ -2124,7 +2124,7 @@ void HTMLMediaElement::playInternal()
         webMediaPlayer()->setBufferingStrategy(WebMediaPlayer::BufferingStrategy::Normal);
 
     // 4.8.10.9. Playing the media resource
-    if (m_networkState == NETWORK_EMPTY)
+    if (m_networkState == kNetworkEmpty)
         invokeResourceSelectionAlgorithm();
 
     // Generally "ended" and "looping" are exclusive. Here, the loop attribute
@@ -2138,11 +2138,11 @@ void HTMLMediaElement::playInternal()
         invalidateCachedTime();
         scheduleEvent(EventTypeNames::play);
 
-        if (m_readyState <= HAVE_CURRENT_DATA)
+        if (m_readyState <= kHaveCurrentData)
             scheduleEvent(EventTypeNames::waiting);
-        else if (m_readyState >= HAVE_FUTURE_DATA)
+        else if (m_readyState >= kHaveFutureData)
             scheduleNotifyPlaying();
-    } else if (m_readyState >= HAVE_FUTURE_DATA) {
+    } else if (m_readyState >= kHaveFutureData) {
         scheduleResolvePlayPromises();
     }
 
@@ -2168,7 +2168,7 @@ void HTMLMediaElement::pauseInternal()
 {
     BLINK_MEDIA_LOG << "pauseInternal(" << (void*)this << ")";
 
-    if (m_networkState == NETWORK_EMPTY)
+    if (m_networkState == kNetworkEmpty)
         invokeResourceSelectionAlgorithm();
 
     m_autoplayHelper->pauseMethodCalled();
@@ -2800,7 +2800,7 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     // 4.8.8 - If a source element is inserted as a child of a media element that has no src
     // attribute and whose networkState has the value NETWORK_EMPTY, the user agent must invoke
     // the media element's resource selection algorithm.
-    if (getNetworkState() == HTMLMediaElement::NETWORK_EMPTY) {
+    if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
         invokeResourceSelectionAlgorithm();
         // Ignore current |m_nextChildNodeToConsider| and consider |source|.
         m_nextChildNodeToConsider = source;
@@ -2829,7 +2829,7 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     setShouldDelayLoadEvent(true);
 
     // 24. Set the networkState back to NETWORK_LOADING.
-    setNetworkState(NETWORK_LOADING);
+    setNetworkState(kNetworkLoading);
 
     // 25. Jump back to the find next candidate step above.
     m_nextChildNodeToConsider = source;
@@ -2868,7 +2868,7 @@ void HTMLMediaElement::timeChanged()
     invalidateCachedTime();
 
     // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the seek.
-    if (m_seeking && m_readyState >= HAVE_CURRENT_DATA && !webMediaPlayer()->seeking())
+    if (m_seeking && m_readyState >= kHaveCurrentData && !webMediaPlayer()->seeking())
         finishSeek();
 
     // Always call scheduleTimeupdateEvent when the media engine reports a time discontinuity,
@@ -3010,7 +3010,7 @@ void HTMLMediaElement::sizeChanged()
     BLINK_MEDIA_LOG << "sizeChanged(" << (void*)this << ")";
 
     DCHECK(hasVideo()); // "resize" makes no sense in absence of video.
-    if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
+    if (m_readyState > kHaveNothing && isHTMLVideoElement())
         scheduleEvent(EventTypeNames::resize);
 
     if (layoutObject())
@@ -3058,8 +3058,8 @@ bool HTMLMediaElement::potentiallyPlaying() const
     // "pausedToBuffer" means the media engine's rate is 0, but only because it had to stop playing
     // when it ran out of buffered data. A movie in this state is "potentially playing", modulo the
     // checks in couldPlayIfEnoughData().
-    bool pausedToBuffer = m_readyStateMaximum >= HAVE_FUTURE_DATA && m_readyState < HAVE_FUTURE_DATA;
-    return (pausedToBuffer || m_readyState >= HAVE_FUTURE_DATA) && couldPlayIfEnoughData();
+    bool pausedToBuffer = m_readyStateMaximum >= kHaveFutureData && m_readyState < kHaveFutureData;
+    return (pausedToBuffer || m_readyState >= kHaveFutureData) && couldPlayIfEnoughData();
 }
 
 bool HTMLMediaElement::couldPlayIfEnoughData() const
@@ -3077,7 +3077,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 
     // A media element is said to have ended playback when the element's
     // readyState attribute is HAVE_METADATA or greater,
-    if (m_readyState < HAVE_METADATA)
+    if (m_readyState < kHaveMetadata)
         return false;
 
     // and the current playback position is the end of the media resource and the direction
@@ -3094,7 +3094,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 
 bool HTMLMediaElement::stoppedDueToErrors() const
 {
-    if (m_readyState >= HAVE_METADATA && m_error) {
+    if (m_readyState >= kHaveMetadata && m_error) {
         TimeRanges* seekableRanges = seekable();
         if (!seekableRanges->contain(currentTime()))
             return true;
@@ -3205,9 +3205,9 @@ void HTMLMediaElement::stop()
 
     // Clear everything in the Media Element
     clearMediaPlayer();
-    m_readyState = HAVE_NOTHING;
-    m_readyStateMaximum = HAVE_NOTHING;
-    setNetworkState(NETWORK_EMPTY);
+    m_readyState = kHaveNothing;
+    m_readyStateMaximum = kHaveNothing;
+    setNetworkState(kNetworkEmpty);
     setShouldDelayLoadEvent(false);
     m_currentSourceNode = nullptr;
     invalidateCachedTime();
@@ -3229,12 +3229,12 @@ void HTMLMediaElement::stop()
 bool HTMLMediaElement::hasPendingActivity() const
 {
     // The delaying-the-load-event flag is set by resource selection algorithm when looking for a
-    // resource to load, before networkState has reached to NETWORK_LOADING.
+    // resource to load, before networkState has reached to kNetworkLoading.
     if (m_shouldDelayLoadEvent)
         return true;
 
-    // When networkState is NETWORK_LOADING, progress and stalled events may be fired.
-    if (m_networkState == NETWORK_LOADING)
+    // When networkState is kNetworkLoading, progress and stalled events may be fired.
+    if (m_networkState == kNetworkLoading)
         return true;
 
     // When playing or if playback may continue, timeupdate events may be fired.

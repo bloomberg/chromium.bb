@@ -55,7 +55,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     GraphicsContext& context)
 {
     SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
-    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (contentUnits == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
         contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
     }
@@ -120,7 +120,7 @@ FloatRect LayoutSVGResourceMasker::resourceBoundingBox(const LayoutObject* objec
         calculateMaskContentPaintInvalidationRect();
 
     FloatRect maskRect = m_maskContentBoundaries;
-    if (maskElement->maskContentUnits()->currentValue()->value() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+    if (maskElement->maskContentUnits()->currentValue()->value() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
         AffineTransform transform;
         transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
         transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());

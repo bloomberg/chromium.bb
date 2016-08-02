@@ -70,7 +70,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
     FloatRect objectBoundingBox = object.objectBoundingBox();
-    if (gradientUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
+    if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
     std::unique_ptr<GradientData>& gradientData = m_gradientMap.add(&object, nullptr).storedValue->value;
@@ -82,7 +82,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
         gradientData->gradient = buildGradient();
 
         // We want the text bounding box applied to the gradient space transform now, so the gradient shader can use it.
-        if (gradientUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && !objectBoundingBox.isEmpty()) {
+        if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox && !objectBoundingBox.isEmpty()) {
             gradientData->userspaceTransform.translate(objectBoundingBox.x(), objectBoundingBox.y());
             gradientData->userspaceTransform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
         }

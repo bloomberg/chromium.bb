@@ -35,9 +35,9 @@ public:
     ~MutationEvent() override;
 
     enum AttrChangeType {
-        MODIFICATION    = 1, // NOLINT
-        ADDITION        = 2, // NOLINT
-        REMOVAL         = 3  // NOLINT
+        kModification   = 1,
+        kAddition       = 2,
+        kRemoval        = 3
     };
 
     static MutationEvent* create()

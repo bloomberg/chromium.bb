@@ -30,9 +30,9 @@ class SVGUnitTypes final : public GarbageCollected<SVGUnitTypes>, public ScriptW
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGUnitType {
-        SVG_UNIT_TYPE_UNKNOWN               = 0,
-        SVG_UNIT_TYPE_USERSPACEONUSE        = 1,
-        SVG_UNIT_TYPE_OBJECTBOUNDINGBOX     = 2
+        kSvgUnitTypeUnknown                 = 0,
+        kSvgUnitTypeUserspaceonuse          = 1,
+        kSvgUnitTypeObjectboundingbox       = 2
     };
 
     DEFINE_INLINE_TRACE() { }

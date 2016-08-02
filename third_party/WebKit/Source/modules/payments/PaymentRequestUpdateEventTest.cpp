@@ -39,7 +39,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create();
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::CAPTURING_PHASE);
+    event->setEventPhase(Event::kCapturingPhase);
     ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
     event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
@@ -56,7 +56,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled)
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::CAPTURING_PHASE);
+    event->setEventPhase(Event::kCapturingPhase);
     ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
     event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
@@ -84,7 +84,7 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice)
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     MockPaymentUpdater* updater = new MockPaymentUpdater;
     event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::CAPTURING_PHASE);
+    event->setEventPhase(Event::kCapturingPhase);
     event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
     EXPECT_FALSE(scope.getExceptionState().hadException());
 

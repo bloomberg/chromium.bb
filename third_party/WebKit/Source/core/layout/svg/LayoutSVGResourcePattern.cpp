@@ -105,7 +105,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::buildPatternData(const La
             attributes.preserveAspectRatio(), tileBounds.width(), tileBounds.height());
     } else {
         // A viewbox overrides patternContentUnits, per spec.
-        if (attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+        if (attributes.patternContentUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
             tileTransform.scale(clientBoundingBox.width(), clientBoundingBox.height());
     }
 
@@ -138,7 +138,7 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& 
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
     FloatRect objectBoundingBox = object.objectBoundingBox();
-    if (attributes().patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
+    if (attributes().patternUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
     PatternData* patternData = patternForLayoutObject(object);
@@ -179,7 +179,7 @@ PassRefPtr<SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect& tileB
     ASSERT(!m_shouldCollectPatternAttributes);
 
     AffineTransform contentTransform;
-    if (attributes().patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    if (attributes().patternContentUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
         contentTransform = tileTransform;
 
     FloatRect bounds(FloatPoint(), tileBounds.size());

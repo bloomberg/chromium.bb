@@ -154,8 +154,8 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
         // Don't handle node if we start iterating at [node, 0].
         if (!m_handledNode && !(m_node == m_endNode && !m_endOffset)) {
             LayoutObject* layoutObject = m_node->layoutObject();
-            if (layoutObject && layoutObject->isText() && m_node->getNodeType() == Node::TEXT_NODE) {
-                // FIXME: What about CDATA_SECTION_NODE?
+            if (layoutObject && layoutObject->isText() && m_node->getNodeType() == Node::kTextNode) {
+                // FIXME: What about kCdataSectionNode?
                 if (layoutObject->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleTextNode();
             } else if (layoutObject && (layoutObject->isLayoutPart() || TextIterator::supportsAltText(m_node))) {

@@ -84,10 +84,10 @@ InspectorHighlightConfig affectedNodesHighlightConfig()
 void collectMediaQueriesFromRule(CSSRule* rule, Vector<String>& mediaArray)
 {
     MediaList* mediaList;
-    if (rule->type() == CSSRule::MEDIA_RULE) {
+    if (rule->type() == CSSRule::kMediaRule) {
         CSSMediaRule* mediaRule = toCSSMediaRule(rule);
         mediaList = mediaRule->media();
-    } else if (rule->type() == CSSRule::IMPORT_RULE) {
+    } else if (rule->type() == CSSRule::kImportRule) {
         CSSImportRule* importRule = toCSSImportRule(rule);
         mediaList = importRule->media();
     } else {

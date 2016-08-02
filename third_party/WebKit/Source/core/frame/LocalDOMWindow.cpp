@@ -1416,7 +1416,7 @@ DispatchEventResult LocalDOMWindow::dispatchEvent(Event* event, EventTarget* tar
     event->setTrusted(true);
     event->setTarget(target ? target : this);
     event->setCurrentTarget(this);
-    event->setEventPhase(Event::AT_TARGET);
+    event->setEventPhase(Event::kAtTarget);
 
     TRACE_EVENT1("devtools.timeline", "EventDispatch", "data", InspectorEventDispatchEvent::data(*event));
     return fireEventListeners(event);

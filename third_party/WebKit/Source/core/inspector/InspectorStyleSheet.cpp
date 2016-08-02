@@ -550,13 +550,13 @@ CSSRuleList* asCSSRuleList(CSSRule* rule)
     if (!rule)
         return nullptr;
 
-    if (rule->type() == CSSRule::MEDIA_RULE)
+    if (rule->type() == CSSRule::kMediaRule)
         return toCSSMediaRule(rule)->cssRules();
 
-    if (rule->type() == CSSRule::SUPPORTS_RULE)
+    if (rule->type() == CSSRule::kSupportsRule)
         return toCSSSupportsRule(rule)->cssRules();
 
-    if (rule->type() == CSSRule::KEYFRAMES_RULE)
+    if (rule->type() == CSSRule::kKeyframesRule)
         return toCSSKeyframesRule(rule)->cssRules();
 
     return nullptr;
@@ -573,18 +573,18 @@ void collectFlatRules(RuleList ruleList, CSSRuleVector* result)
 
         // The result->append()'ed types should be exactly the same as in flattenSourceData().
         switch (rule->type()) {
-        case CSSRule::STYLE_RULE:
-        case CSSRule::IMPORT_RULE:
-        case CSSRule::CHARSET_RULE:
-        case CSSRule::PAGE_RULE:
-        case CSSRule::FONT_FACE_RULE:
-        case CSSRule::VIEWPORT_RULE:
-        case CSSRule::KEYFRAME_RULE:
+        case CSSRule::kStyleRule:
+        case CSSRule::kImportRule:
+        case CSSRule::kCharsetRule:
+        case CSSRule::kPageRule:
+        case CSSRule::kFontFaceRule:
+        case CSSRule::kViewportRule:
+        case CSSRule::kKeyframeRule:
             result->append(rule);
             break;
-        case CSSRule::MEDIA_RULE:
-        case CSSRule::SUPPORTS_RULE:
-        case CSSRule::KEYFRAMES_RULE:
+        case CSSRule::kMediaRule:
+        case CSSRule::kSupportsRule:
+        case CSSRule::kKeyframesRule:
             result->append(rule);
             collectFlatRules(asCSSRuleList(rule), result);
             break;
@@ -694,7 +694,7 @@ void diff(const Vector<String>& listA, const Vector<String>& listB, IndexMap* aT
 
 String canonicalCSSText(CSSRule* rule)
 {
-    if (rule->type() != CSSRule::STYLE_RULE)
+    if (rule->type() != CSSRule::kStyleRule)
         return rule->cssText();
     CSSStyleRule* styleRule = toCSSStyleRule(rule);
 
@@ -1060,7 +1060,7 @@ CSSStyleRule* InspectorStyleSheet::setRuleSelector(const SourceRange& range, con
     }
 
     CSSRule* rule = ruleForSourceData(sourceData);
-    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::STYLE_RULE) {
+    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::kStyleRule) {
         exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
         return nullptr;
     }
@@ -1088,7 +1088,7 @@ CSSKeyframeRule* InspectorStyleSheet::setKeyframeKey(const SourceRange& range, c
     }
 
     CSSRule* rule = ruleForSourceData(sourceData);
-    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::KEYFRAME_RULE) {
+    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::kKeyframeRule) {
         exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
         return nullptr;
     }
@@ -1116,15 +1116,15 @@ CSSRule* InspectorStyleSheet::setStyleText(const SourceRange& range, const Strin
     }
 
     CSSRule* rule = ruleForSourceData(sourceData);
-    if (!rule || !rule->parentStyleSheet() || (rule->type() != CSSRule::STYLE_RULE && rule->type() != CSSRule::KEYFRAME_RULE)) {
+    if (!rule || !rule->parentStyleSheet() || (rule->type() != CSSRule::kStyleRule && rule->type() != CSSRule::kKeyframeRule)) {
         exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
         return nullptr;
     }
 
     CSSStyleDeclaration* style = nullptr;
-    if (rule->type() == CSSRule::STYLE_RULE)
+    if (rule->type() == CSSRule::kStyleRule)
         style = toCSSStyleRule(rule)->style();
-    else if (rule->type() == CSSRule::KEYFRAME_RULE)
+    else if (rule->type() == CSSRule::kKeyframeRule)
         style = toCSSKeyframeRule(rule)->style();
     style->setCSSText(text, exceptionState);
 
@@ -1148,7 +1148,7 @@ CSSMediaRule* InspectorStyleSheet::setMediaRuleText(const SourceRange& range, co
     }
 
     CSSRule* rule = ruleForSourceData(sourceData);
-    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::MEDIA_RULE) {
+    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::kMediaRule) {
         exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
         return nullptr;
     }
@@ -1238,7 +1238,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
         return insertCSSOMRuleInStyleSheet(insertBeforeRule, ruleText, exceptionState);
 
     CSSRule* rule = ruleForSourceData(containingRuleSourceData);
-    if (!rule || rule->type() != CSSRule::MEDIA_RULE) {
+    if (!rule || rule->type() != CSSRule::kMediaRule) {
         exceptionState.throwDOMException(NotFoundError, "Cannot insert rule in non-media rule.");
         return nullptr;
     }
@@ -1308,7 +1308,7 @@ bool InspectorStyleSheet::deleteRule(const SourceRange& range, ExceptionState& e
     }
     CSSRule* parentRule = rule->parentRule();
     if (parentRule) {
-        if (parentRule->type() != CSSRule::MEDIA_RULE) {
+        if (parentRule->type() != CSSRule::kMediaRule) {
             exceptionState.throwDOMException(NotFoundError, "Cannot remove rule from non-media rule.");
             return false;
         }

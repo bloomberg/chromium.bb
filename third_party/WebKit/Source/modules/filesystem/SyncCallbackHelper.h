@@ -76,7 +76,7 @@ public:
 
 private:
     SyncCallbackHelper()
-        : m_errorCode(FileError::OK)
+        : m_errorCode(FileError::kOK)
         , m_completed(false)
     {
     }
@@ -90,7 +90,7 @@ private:
 
         virtual void handleEvent()
         {
-            m_helper->setError(FileError::OK);
+            m_helper->setError(FileError::kOK);
         }
 
         virtual void handleEvent(CallbackArg arg)

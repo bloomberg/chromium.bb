@@ -66,7 +66,7 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
 
     ASSERT(filter.IsEmpty() || filter->IsObject());
     if (filter.IsEmpty())
-        return NodeFilter::FILTER_ACCEPT;
+        return NodeFilter::kFilterAccept;
 
     v8::TryCatch exceptionCatcher(isolate);
 
@@ -80,12 +80,12 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
         v8::Local<v8::Object> filterObject;
         if (!filter->ToObject(m_scriptState->context()).ToLocal(&filterObject)) {
             exceptionState.throwTypeError("NodeFilter is not an object");
-            return NodeFilter::FILTER_REJECT;
+            return NodeFilter::kFilterReject;
         }
         v8::Local<v8::Value> value;
         if (!filterObject->Get(m_scriptState->context(), v8AtomicString(isolate, "acceptNode")).ToLocal(&value) || !value->IsFunction()) {
             exceptionState.throwTypeError("NodeFilter object does not have an acceptNode function");
-            return NodeFilter::FILTER_REJECT;
+            return NodeFilter::kFilterReject;
         }
         UseCounter::countIfNotPrivateScript(isolate, currentExecutionContext(isolate), UseCounter::NodeFilterIsObject);
         callback = v8::Local<v8::Function>::Cast(value);
@@ -96,14 +96,14 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
     if (nodeWrapper.IsEmpty()) {
         if (exceptionCatcher.HasCaught())
             exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
-        return NodeFilter::FILTER_REJECT;
+        return NodeFilter::kFilterReject;
     }
 
     v8::Local<v8::Value> result;
     v8::Local<v8::Value> args[] = { nodeWrapper };
     if (!V8ScriptRunner::callFunction(callback, m_scriptState->getExecutionContext(), receiver, 1, args, isolate).ToLocal(&result)) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
-        return NodeFilter::FILTER_REJECT;
+        return NodeFilter::kFilterReject;
     }
 
     ASSERT(!result.IsEmpty());
@@ -111,7 +111,7 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
     uint32_t uint32Value;
     if (!v8Call(result->Uint32Value(m_scriptState->context()), uint32Value, exceptionCatcher)) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
-        return NodeFilter::FILTER_REJECT;
+        return NodeFilter::kFilterReject;
     }
     return uint32Value;
 }

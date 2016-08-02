@@ -636,7 +636,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     deltaY = -event.deltaY();
     wheelTicksX = event.ticksX();
     wheelTicksY = event.ticksY();
-    scrollByPage = event.deltaMode() == WheelEvent::DOM_DELTA_PAGE;
+    scrollByPage = event.deltaMode() == WheelEvent::kDomDeltaPage;
     resendingPluginId = event.resendingPluginId();
     railsMode = static_cast<RailsMode>(event.getRailsMode());
     hasPreciseScrollingDeltas = event.hasPreciseScrollingDeltas();

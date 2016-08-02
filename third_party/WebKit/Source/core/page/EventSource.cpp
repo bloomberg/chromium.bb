@@ -68,7 +68,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_url(url)
     , m_currentURL(url)
     , m_withCredentials(eventSourceInit.withCredentials())
-    , m_state(CONNECTING)
+    , m_state(kConnecting)
     , m_connectTimer(this, &EventSource::connectTimerFired)
     , m_reconnectDelay(defaultReconnectDelay)
 {
@@ -108,23 +108,23 @@ EventSource* EventSource::create(ExecutionContext* context, const String& url, c
 
 EventSource::~EventSource()
 {
-    ASSERT(m_state == CLOSED);
-    ASSERT(!m_loader);
+    DCHECK_EQ(kClosed, m_state);
+    DCHECK(!m_loader);
 }
 
 void EventSource::scheduleInitialConnect()
 {
-    ASSERT(m_state == CONNECTING);
-    ASSERT(!m_loader);
+    DCHECK_EQ(kConnecting, m_state);
+    DCHECK(!m_loader);
 
     m_connectTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void EventSource::connect()
 {
-    ASSERT(m_state == CONNECTING);
-    ASSERT(!m_loader);
-    ASSERT(getExecutionContext());
+    DCHECK_EQ(kConnecting, m_state);
+    DCHECK(!m_loader);
+    DCHECK(getExecutionContext());
 
     ExecutionContext& executionContext = *this->getExecutionContext();
     ResourceRequest request(m_currentURL);
@@ -165,13 +165,13 @@ void EventSource::networkRequestEnded()
 
     m_loader = nullptr;
 
-    if (m_state != CLOSED)
+    if (m_state != kClosed)
         scheduleReconnect();
 }
 
 void EventSource::scheduleReconnect()
 {
-    m_state = CONNECTING;
+    m_state = kConnecting;
     m_connectTimer.startOneShot(m_reconnectDelay / 1000.0, BLINK_FROM_HERE);
     dispatchEvent(Event::create(EventTypeNames::error));
 }
@@ -198,8 +198,8 @@ EventSource::State EventSource::readyState() const
 
 void EventSource::close()
 {
-    if (m_state == CLOSED) {
-        ASSERT(!m_loader);
+    if (m_state == kClosed) {
+        DCHECK(!m_loader);
         return;
     }
     if (m_parser)
@@ -215,7 +215,7 @@ void EventSource::close()
         m_loader = nullptr;
     }
 
-    m_state = CLOSED;
+    m_state = kClosed;
 }
 
 const AtomicString& EventSource::interfaceName() const
@@ -231,8 +231,8 @@ ExecutionContext* EventSource::getExecutionContext() const
 void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
-    ASSERT(m_state == CONNECTING);
-    ASSERT(m_loader);
+    DCHECK_EQ(kConnecting, m_state);
+    DCHECK(m_loader);
 
     m_currentURL = response.url();
     m_eventStreamOrigin = SecurityOrigin::create(response.url())->toString();
@@ -264,7 +264,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
     }
 
     if (responseIsValid) {
-        m_state = OPEN;
+        m_state = kOpen;
         AtomicString lastEventId;
         if (m_parser) {
             // The new parser takes over the event ID.
@@ -280,34 +280,34 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 
 void EventSource::didReceiveData(const char* data, unsigned length)
 {
-    ASSERT(m_state == OPEN);
-    ASSERT(m_loader);
-    ASSERT(m_parser);
+    DCHECK_EQ(kOpen, m_state);
+    DCHECK(m_loader);
+    DCHECK(m_parser);
 
     m_parser->addBytes(data, length);
 }
 
 void EventSource::didFinishLoading(unsigned long, double)
 {
-    ASSERT(m_state == OPEN);
-    ASSERT(m_loader);
+    DCHECK_EQ(kOpen, m_state);
+    DCHECK(m_loader);
 
     networkRequestEnded();
 }
 
 void EventSource::didFail(const ResourceError& error)
 {
-    ASSERT(m_state != CLOSED);
-    ASSERT(m_loader);
+    DCHECK_NE(kClosed, m_state);
+    DCHECK(m_loader);
 
     if (error.isCancellation())
-        m_state = CLOSED;
+        m_state = kClosed;
     networkRequestEnded();
 }
 
 void EventSource::didFailAccessControlCheck(const ResourceError& error)
 {
-    ASSERT(m_loader);
+    DCHECK(m_loader);
 
     String message = "EventSource cannot load " + error.failingURL() + ". " + error.localizedDescription();
     getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
@@ -317,7 +317,7 @@ void EventSource::didFailAccessControlCheck(const ResourceError& error)
 
 void EventSource::didFailRedirectCheck()
 {
-    ASSERT(m_loader);
+    DCHECK(m_loader);
 
     abortConnectionAttempt();
 }
@@ -338,10 +338,10 @@ void EventSource::onReconnectionTimeSet(unsigned long long reconnectionTime)
 
 void EventSource::abortConnectionAttempt()
 {
-    ASSERT(m_state == CONNECTING);
+    DCHECK_EQ(kConnecting, m_state);
 
     m_loader = nullptr;
-    m_state = CLOSED;
+    m_state = kClosed;
     networkRequestEnded();
 
     dispatchEvent(Event::create(EventTypeNames::error));
@@ -354,7 +354,7 @@ void EventSource::stop()
 
 bool EventSource::hasPendingActivity() const
 {
-    return m_state != CLOSED;
+    return m_state != kClosed;
 }
 
 DEFINE_TRACE(EventSource)
