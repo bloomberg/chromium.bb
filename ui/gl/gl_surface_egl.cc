@@ -746,11 +746,7 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
-  TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
-      "width", GetSize().width(),
-      "height", GetSize().height());
-
+void NativeViewGLSurfaceEGL::UpdateSwapInterval() {
 #if defined(OS_WIN)
   if (swap_interval_ != 0) {
     // This code is a simple way of enforcing that we only vsync if one surface
@@ -785,6 +781,14 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
     swaps_this_generation_++;
   }
 #endif
+}
+
+gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
+  TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
+      "width", GetSize().width(),
+      "height", GetSize().height());
+
+  UpdateSwapInterval();
 
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
@@ -871,6 +875,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
                                                       int width,
                                                       int height) {
   DCHECK(supports_post_sub_buffer_);
+  UpdateSwapInterval();
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;

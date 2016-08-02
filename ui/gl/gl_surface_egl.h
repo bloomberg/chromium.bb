@@ -129,6 +129,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   // Commit the |pending_overlays_| and clear the vector. Returns false if any
   // fail to be committed.
   bool CommitAndClearPendingOverlays();
+  void UpdateSwapInterval();
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
