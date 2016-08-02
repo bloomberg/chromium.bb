@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/test/material_design_controller_test_api.h"
+#include "ash/common/test/material_design_controller_test_api.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

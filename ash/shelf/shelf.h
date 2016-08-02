@@ -56,7 +56,7 @@ class ASH_EXPORT Shelf {
   Shelf(ShelfModel* model,
         WmShelf* wm_shelf,
         ShelfWidget* widget);
-  virtual ~Shelf();
+  ~Shelf();
 
   // Return the shelf for the primary display. NULL if no user is logged in yet.
   // Useful for tests. For production code use ForWindow() because the user may
@@ -151,6 +151,9 @@ class ASH_EXPORT Shelf {
 
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
+
+  // Updates the background for the shelf items.
+  void UpdateShelfItemBackground(int alpha);
 
   ShelfLockingManager* shelf_locking_manager_for_testing() {
     return &shelf_locking_manager_;

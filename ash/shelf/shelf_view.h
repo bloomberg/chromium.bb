@@ -159,6 +159,9 @@ class ASH_EXPORT ShelfView : public views::View,
                                Pointer pointer,
                                bool canceled);
 
+  // Updates the background for the shelf items.
+  void UpdateShelfItemBackground(int alpha);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();

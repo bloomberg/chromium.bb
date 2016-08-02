@@ -216,4 +216,8 @@ app_list::ApplicationDragAndDropHost* Shelf::GetDragAndDropHostForAppList() {
   return shelf_view_;
 }
 
+void Shelf::UpdateShelfItemBackground(int alpha) {
+  shelf_view_->UpdateShelfItemBackground(alpha);
+}
+
 }  // namespace ash

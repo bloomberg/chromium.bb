@@ -10,9 +10,11 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
@@ -81,10 +83,12 @@ class DimmerView : public views::View,
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   // BackgroundAnimatorDelegate overrides:
-  void UpdateBackground(int alpha) override {
+  void UpdateBackground(BackgroundAnimator* animator, int alpha) override {
     alpha_ = alpha;
     SchedulePaint();
   }
+
+  void BackgroundAnimationEnded(BackgroundAnimator* animator) override {}
 
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override;
@@ -298,8 +302,8 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
 // sizes it to the width of the shelf minus the size of the status area.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
-                                  public BackgroundAnimatorDelegate,
-                                  public aura::WindowObserver {
+                                  public aura::WindowObserver,
+                                  public ShelfBackgroundAnimatorObserver {
  public:
   explicit DelegateView(ShelfWidget* shelf);
   ~DelegateView() override;
@@ -339,8 +343,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  // BackgroundAnimatorDelegate overrides:
-  void UpdateBackground(int alpha) override;
+  // ShelfBackgroundAnimatorObserver:
+  void UpdateShelfOpaqueBackground(int alpha) override;
+  void UpdateShelfAssetBackground(int alpha) override;
 
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);
@@ -363,7 +368,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   ShelfWidget* shelf_;
   std::unique_ptr<views::Widget> dimmer_;
   FocusCycler* focus_cycler_;
-  int alpha_;
+  int asset_background_alpha_;
+  // TODO(bruthig): Remove opaque_background_ (see https://crbug.com/621551).
   // A black background layer which is shown when a maximized window is visible.
   ui::Layer opaque_background_;
   // A black foreground layer which is shown while transitioning between users.
@@ -383,7 +389,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
     : shelf_(shelf),
       focus_cycler_(NULL),
-      alpha_(0),
+      asset_background_alpha_(0),
       opaque_background_(ui::LAYER_SOLID_COLOR),
       opaque_foreground_(ui::LAYER_SOLID_COLOR),
       dimmer_view_(NULL),
@@ -446,62 +452,59 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (MaterialDesignController::IsShelfMaterial()) {
-    canvas->FillRect(bounds(), SkColorSetA(kShelfBaseColor, alpha_));
-  } else {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia shelf_background =
-        *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-    const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
-    if (!horizontal) {
-      shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-          shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
-                                ? SkBitmapOperations::ROTATION_90_CW
-                                : SkBitmapOperations::ROTATION_270_CW);
-    }
-    const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
-    SkPaint paint;
-    paint.setAlpha(alpha_);
-    canvas->DrawImageInt(
-        shelf_background, 0, 0, shelf_background.width(),
-        shelf_background.height(),
-        (horizontal && dock_bounds.x() == 0 && dock_bounds.width() > 0)
-            ? dock_bounds.width()
-            : 0,
-        0, horizontal ? width() - dock_bounds.width() : width(), height(),
-        false, paint);
-    if (horizontal && dock_bounds.width() > 0) {
-      // The part of the shelf background that is in the corner below the docked
-      // windows close to the work area is an arched gradient that blends
-      // vertically oriented docked background and horizontal shelf.
-      gfx::ImageSkia shelf_corner =
-          *rb->GetImageSkiaNamed(IDR_ASH_SHELF_CORNER);
-      if (dock_bounds.x() == 0) {
-        shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
-            shelf_corner, SkBitmapOperations::ROTATION_90_CW);
-      }
-      canvas->DrawImageInt(shelf_corner, 0, 0, shelf_corner.width(),
-                           shelf_corner.height(),
-                           dock_bounds.x() > 0 ? dock_bounds.x()
-                                               : dock_bounds.width() - height(),
-                           0, height(), height(), false, paint);
-      // The part of the shelf background that is just below the docked windows
-      // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
-      // This avoids showing the border 3D shadow between the shelf and the
-      // dock.
-      canvas->DrawImageInt(shelf_background, 0, shelf_background.height() - 1,
-                           shelf_background.width(), 1,
-                           dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
-                           0, dock_bounds.width() - height(), height(), false,
-                           paint);
-    }
-    gfx::Rect black_rect =
-        shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
-            gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
-            gfx::Rect(0, 0, kNumBlackPixels, height()),
-            gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
-    canvas->FillRect(black_rect, SK_ColorBLACK);
+  if (MaterialDesignController::IsShelfMaterial())
+    return;
+
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia shelf_background =
+      *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  if (!horizontal) {
+    shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
+        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
+                              ? SkBitmapOperations::ROTATION_90_CW
+                              : SkBitmapOperations::ROTATION_270_CW);
   }
+  const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
+  SkPaint paint;
+  paint.setAlpha(asset_background_alpha_);
+  canvas->DrawImageInt(
+      shelf_background, 0, 0, shelf_background.width(),
+      shelf_background.height(),
+      (horizontal && dock_bounds.x() == 0 && dock_bounds.width() > 0)
+          ? dock_bounds.width()
+          : 0,
+      0, horizontal ? width() - dock_bounds.width() : width(), height(), false,
+      paint);
+  if (horizontal && dock_bounds.width() > 0) {
+    // The part of the shelf background that is in the corner below the docked
+    // windows close to the work area is an arched gradient that blends
+    // vertically oriented docked background and horizontal shelf.
+    gfx::ImageSkia shelf_corner = *rb->GetImageSkiaNamed(IDR_ASH_SHELF_CORNER);
+    if (dock_bounds.x() == 0) {
+      shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
+          shelf_corner, SkBitmapOperations::ROTATION_90_CW);
+    }
+    canvas->DrawImageInt(
+        shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
+        dock_bounds.x() > 0 ? dock_bounds.x() : dock_bounds.width() - height(),
+        0, height(), height(), false, paint);
+    // The part of the shelf background that is just below the docked windows
+    // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
+    // This avoids showing the border 3D shadow between the shelf and the
+    // dock.
+    canvas->DrawImageInt(shelf_background, 0, shelf_background.height() - 1,
+                         shelf_background.width(), 1,
+                         dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
+                         0, dock_bounds.width() - height(), height(), false,
+                         paint);
+  }
+  gfx::Rect black_rect =
+      shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
+          gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
+          gfx::Rect(0, 0, kNumBlackPixels, height()),
+          gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
+  canvas->FillRect(black_rect, SK_ColorBLACK);
 }
 
 bool ShelfWidget::DelegateView::CanActivate() const {
@@ -555,8 +558,13 @@ gfx::Rect ShelfWidget::DelegateView::GetDimmerBoundsForTest() {
   return gfx::Rect();
 }
 
-void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
-  alpha_ = alpha;
+void ShelfWidget::DelegateView::UpdateShelfOpaqueBackground(int alpha) {
+  const float kMaxAlpha = 255.0f;
+  opaque_background_.SetOpacity(alpha / kMaxAlpha);
+}
+
+void ShelfWidget::DelegateView::UpdateShelfAssetBackground(int alpha) {
+  asset_background_alpha_ = alpha;
   SchedulePaint();
 }
 
@@ -564,11 +572,13 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
                          WmWindow* wm_status_container,
                          WmShelfAura* wm_shelf_aura,
                          WorkspaceController* workspace_controller)
-    : delegate_view_(new DelegateView(this)),
-      background_animator_(delegate_view_,
-                           0,
-                           GetShelfConstant(SHELF_BACKGROUND_ALPHA)),
+    : wm_shelf_aura_(wm_shelf_aura),
+      delegate_view_(new DelegateView(this)),
+      background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_aura_),
       activating_as_fallback_(false) {
+  background_animator_.AddObserver(this);
+  background_animator_.AddObserver(delegate_view_);
+
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -591,15 +601,19 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
-  wm_shelf_aura->SetShelfLayoutManager(shelf_layout_manager_);
+  background_animator_.PaintBackground(
+      shelf_layout_manager_->GetShelfBackgroundType(),
+      BACKGROUND_CHANGE_IMMEDIATE);
+  wm_shelf_aura_->SetShelfLayoutManager(shelf_layout_manager_);
 
   // TODO(jamescook): Move ownership to RootWindowController.
   status_area_widget_ =
-      new StatusAreaWidget(wm_status_container, wm_shelf_aura);
+      new StatusAreaWidget(wm_status_container, wm_shelf_aura_);
   status_area_widget_->CreateTrayViews();
   if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
+  background_animator_.AddObserver(status_area_widget_);
 
   aura::Window* status_container =
       WmWindowAura::GetAuraWindow(wm_status_container);
@@ -620,37 +634,18 @@ ShelfWidget::~ShelfWidget() {
   WmShell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
   RemoveObserver(this);
+  background_animator_.RemoveObserver(delegate_view_);
+  background_animator_.RemoveObserver(this);
 }
 
 void ShelfWidget::SetPaintsBackground(
     ShelfBackgroundType background_type,
     BackgroundAnimatorChangeType change_type) {
-  ui::Layer* opaque_background = delegate_view_->opaque_background();
-  float target_opacity =
-      (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
-  if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
-    opaque_background_animation.reset(
-        new ui::ScopedLayerAnimationSettings(opaque_background->GetAnimator()));
-    opaque_background_animation->SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
-  }
-  opaque_background->SetOpacity(target_opacity);
-
-  // TODO(mukai): use ui::Layer on both opaque_background and normal background
-  // retire background_animator_ at all. It would be simpler.
-  // See also DockedBackgroundWidget::SetPaintsBackground.
-  background_animator_.SetPaintsBackground(
-      background_type != SHELF_BACKGROUND_DEFAULT, change_type);
+  background_animator_.PaintBackground(background_type, change_type);
 }
 
 ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
-  if (delegate_view_->opaque_background()->GetTargetOpacity() == 1.0f)
-    return SHELF_BACKGROUND_MAXIMIZED;
-  if (background_animator_.paints_background())
-    return SHELF_BACKGROUND_OVERLAP;
-
-  return SHELF_BACKGROUND_DEFAULT;
+  return background_animator_.target_background_type();
 }
 
 void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
@@ -724,16 +719,19 @@ bool ShelfWidget::GetDimsShelf() const {
   return delegate_view_->GetDimmed();
 }
 
-void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
+void ShelfWidget::CreateShelf() {
   DCHECK(!shelf_);
 
-  shelf_.reset(new Shelf(WmShell::Get()->shelf_model(), wm_shelf_aura, this));
+  shelf_.reset(new Shelf(WmShell::Get()->shelf_model(), wm_shelf_aura_, this));
   // Must be initialized before the delegate is notified because the delegate
   // may try to access the WmShelf.
-  wm_shelf_aura->SetShelf(shelf_.get());
+  wm_shelf_aura_->SetShelf(shelf_.get());
   WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
 
   SetFocusCycler(WmShell::Get()->focus_cycler());
+
+  // Ensure the newly created |shelf_| gets current values.
+  background_animator_.Initialize(this);
 }
 
 void ShelfWidget::PostCreateShelf() {
@@ -772,6 +770,7 @@ void ShelfWidget::Shutdown() {
     shelf_layout_manager_->PrepareForShutdown();
 
   if (status_area_widget_) {
+    background_animator_.RemoveObserver(status_area_widget_);
     WmShell::Get()->focus_cycler()->RemoveWidget(status_area_widget_);
     status_area_widget_->Shutdown();
     status_area_widget_ = nullptr;
@@ -806,6 +805,11 @@ gfx::Rect ShelfWidget::GetDimmerBoundsForTest() {
 void ShelfWidget::DisableDimmingAnimationsForTest() {
   DCHECK(delegate_view_);
   return delegate_view_->disable_dimming_animations_for_test();
+}
+
+void ShelfWidget::UpdateShelfItemBackground(int alpha) {
+  if (shelf_)
+    shelf_->UpdateShelfItemBackground(alpha);
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

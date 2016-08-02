@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/test/material_design_controller_test_api.h"
+#include "ash/common/test/material_design_controller_test_api.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

@@ -805,6 +805,11 @@ void ShelfView::LayoutToIdealBounds() {
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
+void ShelfView::UpdateShelfItemBackground(int alpha) {
+  GetAppListButton()->SetBackgroundAlpha(alpha);
+  overflow_button_->SetBackgroundAlpha(alpha);
+}
+
 void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
   // The overflow button is not shown in overflow mode.
   overflow_button_->SetVisible(false);

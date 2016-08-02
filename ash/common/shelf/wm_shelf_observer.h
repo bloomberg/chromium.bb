@@ -14,8 +14,9 @@ namespace ash {
 // Used to observe changes to the shelf.
 class ASH_EXPORT WmShelfObserver {
  public:
-  virtual void OnBackgroundUpdated(ShelfBackgroundType background_type,
-                                   BackgroundAnimatorChangeType change_type) {}
+  virtual void OnBackgroundTypeChanged(
+      ShelfBackgroundType background_type,
+      BackgroundAnimatorChangeType change_type) {}
   virtual void WillChangeVisibilityState(ShelfVisibilityState new_state) {}
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
   virtual void OnShelfIconPositionsChanged() {}
