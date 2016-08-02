@@ -41,7 +41,7 @@ WindowManagerConnection::~WindowManagerConnection() {
   // we are still valid.
   client_.reset();
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  gpu_service_.reset();
+  ui::GpuService::Terminate();
   lazy_tls_ptr.Pointer()->Set(nullptr);
 
   if (ViewsDelegate::GetInstance()) {
@@ -150,7 +150,8 @@ WindowManagerConnection::WindowManagerConnection(
     : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
 
-  gpu_service_ = ui::GpuService::Initialize(connector);
+  ui::GpuService::Initialize(connector);
+
   client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 

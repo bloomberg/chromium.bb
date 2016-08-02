@@ -88,10 +88,6 @@ namespace scheduler {
 class WebThreadBase;
 }
 
-namespace ui {
-class GpuService;
-}
-
 namespace v8 {
 class Extension;
 }
@@ -659,10 +655,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<MemoryObserver> memory_observer_;
   std::unique_ptr<memory_coordinator::ChildMemoryCoordinatorImpl>
       memory_coordinator_;
-
-#if defined(MOJO_SHELL_CLIENT)
-  std::unique_ptr<ui::GpuService> gpu_service_;
-#endif
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

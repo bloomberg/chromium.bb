@@ -78,7 +78,7 @@ WindowManagerApplication::~WindowManagerApplication() {
   // Destroy the WindowManager while still valid. This way we ensure
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
-  gpu_service_.reset();
+
   ShutdownComponents();
 }
 
@@ -96,7 +96,7 @@ void WindowManagerApplication::InitWindowManager(
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
-  gpu_service_ = ui::GpuService::Initialize(connector());
+  ui::GpuService::Initialize(connector());
   window_manager_.reset(new WindowManager(connector()));
 
   aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
