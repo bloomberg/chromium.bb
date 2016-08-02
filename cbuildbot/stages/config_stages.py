@@ -10,6 +10,7 @@ import os
 import re
 import traceback
 from chromite.cbuildbot.stages import generic_stages
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_logging as logging
@@ -222,6 +223,15 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
   def _UpdateConfigDump(self):
     """Generate and dump configs base on the new template_file"""
+    # Clear the cached SiteConfig, if there was one.
+    config_lib.ClearConfigCache()
+
+    view_config_path = os.path.join(
+        self.chromite_dir, 'bin', 'cbuildbot_view_config')
+    cmd = [view_config_path, '--update']
+
+    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+
     show_waterfall_path = os.path.join(
         self.chromite_dir, 'bin', 'cros_show_waterfall_layout')
     cmd = [show_waterfall_path]
@@ -231,12 +241,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
 
     logging.info("waterfall_layout_dump %s" % output.GetStdout())
-
-    view_config_path = os.path.join(
-        self.chromite_dir, 'bin', 'cbuildbot_view_config')
-    cmd = [view_config_path, '--update']
-
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
 
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
