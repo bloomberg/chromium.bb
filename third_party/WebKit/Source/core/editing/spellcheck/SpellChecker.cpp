@@ -394,7 +394,7 @@ void SpellChecker::markAllMisspellingsInRange(const EphemeralRange& spellingRang
         return;
 
     TextCheckingParagraph fullParagraphToCheck(spellingRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeSpelling, fullParagraphToCheck);
+    chunkAndMarkAllMisspellings(fullParagraphToCheck);
 }
 
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
@@ -422,10 +422,10 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const Ep
         return;
     EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
     TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
+    chunkAndMarkAllMisspellings(textToCheck);
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck)
+void SpellChecker::chunkAndMarkAllMisspellings(const TextCheckingParagraph& fullParagraphToCheck)
 {
     if (fullParagraphToCheck.isEmpty())
         return;
@@ -437,7 +437,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
     if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling, TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
@@ -448,7 +448,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
 
-        SpellCheckRequest* request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingTypeSpelling, TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
 
@@ -793,20 +793,6 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
 bool SpellChecker::selectionStartHasSpellingMarkerFor(int from, int length) const
 {
     return selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
-}
-
-TextCheckingTypeMask SpellChecker::resolveTextCheckingTypeMask(TextCheckingTypeMask textCheckingOptions)
-{
-    bool shouldMarkSpelling = textCheckingOptions & TextCheckingTypeSpelling;
-    bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
-
-    TextCheckingTypeMask checkingTypes = 0;
-    if (shouldMarkSpelling)
-        checkingTypes |= TextCheckingTypeSpelling;
-    if (shouldMarkGrammar)
-        checkingTypes |= TextCheckingTypeGrammar;
-
-    return checkingTypes;
 }
 
 void SpellChecker::removeMarkers(const VisibleSelection& selection, DocumentMarker::MarkerTypes markerTypes)

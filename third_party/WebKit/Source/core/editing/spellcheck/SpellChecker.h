@@ -105,12 +105,10 @@ private:
     void markAllMisspellingsInRange(const EphemeralRange& spellingRange);
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 
-    TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
-
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
     bool unifiedTextCheckerEnabled() const;
 
-    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck);
+    void chunkAndMarkAllMisspellings(const TextCheckingParagraph& fullParagraphToCheck);
 
     Member<LocalFrame> m_frame;
     const Member<SpellCheckRequester> m_spellCheckRequester;
