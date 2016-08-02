@@ -1251,10 +1251,8 @@ void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
 
   // Set the callback target when a frame is produced. Need to do this before
   // StopUsingProvider to ensure we really stop using the client.
-  if (stream_texture_proxy_) {
-    stream_texture_proxy_->BindToLoop(stream_id_, client,
-                                      compositor_task_runner_);
-  }
+  if (stream_texture_proxy_)
+    UpdateStreamTextureProxyCallback(client);
 
   if (video_frame_provider_client_ && video_frame_provider_client_ != client)
     video_frame_provider_client_->StopUsingProvider();
@@ -1310,6 +1308,25 @@ void WebMediaPlayerAndroid::RemoveSurfaceTextureAndProxy() {
                           (hasVideo() || IsHLSStream());
 }
 
+void WebMediaPlayerAndroid::UpdateStreamTextureProxyCallback(
+    cc::VideoFrameProvider::Client* client) {
+  base::Closure frame_received_cb;
+
+  if (client) {
+    // Unretained is safe here because:
+    // - |client| is valid until we receive a call to
+    // SetVideoFrameProviderClient(nullptr).
+    // - SetVideoFrameProviderClient(nullptr) clears proxy's callback
+    // guaranteeing it will no longer be run.
+    frame_received_cb =
+        base::Bind(&cc::VideoFrameProvider::Client::DidReceiveFrame,
+                   base::Unretained(client));
+  }
+
+  stream_texture_proxy_->BindToTaskRunner(stream_id_, frame_received_cb,
+                                          compositor_task_runner_);
+}
+
 void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Already created.
@@ -1328,10 +1345,8 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   if (stream_texture_proxy_) {
     DoCreateStreamTexture();
     ReallocateVideoFrame();
-    if (video_frame_provider_client_) {
-      stream_texture_proxy_->BindToLoop(
-          stream_id_, video_frame_provider_client_, compositor_task_runner_);
-    }
+    if (video_frame_provider_client_)
+      UpdateStreamTextureProxyCallback(video_frame_provider_client_);
   }
 }
 

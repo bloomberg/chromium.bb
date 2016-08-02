@@ -15,50 +15,47 @@
 
 namespace content {
 
-StreamTextureProxy::StreamTextureProxy(StreamTextureHost* host)
-    : host_(host), client_(NULL) {}
+StreamTextureProxy::StreamTextureProxy(StreamTextureHost* host) : host_(host) {}
 
 StreamTextureProxy::~StreamTextureProxy() {}
 
 void StreamTextureProxy::Release() {
   {
-    // Cannot call into |client_| anymore (from any thread) after returning
-    // from here.
+    // Cannot call |received_frame_cb_| after returning from here.
     base::AutoLock lock(lock_);
-    client_ = NULL;
+    received_frame_cb_.Reset();
   }
   // Release is analogous to the destructor, so there should be no more external
   // calls to this object in Release. Therefore there is no need to acquire the
-  // lock to access |loop_|.
-  if (!loop_.get() || loop_->BelongsToCurrentThread() ||
-      !loop_->DeleteSoon(FROM_HERE, this)) {
+  // lock to access |task_runner_|.
+  if (!task_runner_.get() || task_runner_->BelongsToCurrentThread() ||
+      !task_runner_->DeleteSoon(FROM_HERE, this)) {
     delete this;
   }
 }
 
-void StreamTextureProxy::BindToLoop(
+void StreamTextureProxy::BindToTaskRunner(
     int32_t stream_id,
-    cc::VideoFrameProvider::Client* client,
-    scoped_refptr<base::SingleThreadTaskRunner> loop) {
-  DCHECK(loop.get());
+    const base::Closure& received_frame_cb,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(task_runner.get());
 
   {
     base::AutoLock lock(lock_);
-    DCHECK(!loop_.get() || (loop.get() == loop_.get()));
-    loop_ = loop;
-    client_ = client;
+    DCHECK(!task_runner_.get() || (task_runner.get() == task_runner_.get()));
+    task_runner_ = task_runner;
+    received_frame_cb_ = received_frame_cb;
   }
 
-  if (loop->BelongsToCurrentThread()) {
+  if (task_runner->BelongsToCurrentThread()) {
     BindOnThread(stream_id);
     return;
   }
   // Unretained is safe here only because the object is deleted on |loop_|
   // thread.
-  loop->PostTask(FROM_HERE,
-                 base::Bind(&StreamTextureProxy::BindOnThread,
-                            base::Unretained(this),
-                            stream_id));
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&StreamTextureProxy::BindOnThread,
+                                   base::Unretained(this), stream_id));
 }
 
 void StreamTextureProxy::BindOnThread(int32_t stream_id) {
@@ -67,8 +64,8 @@ void StreamTextureProxy::BindOnThread(int32_t stream_id) {
 
 void StreamTextureProxy::OnFrameAvailable() {
   base::AutoLock lock(lock_);
-  if (client_)
-    client_->DidReceiveFrame();
+  if (!received_frame_cb_.is_null())
+    received_frame_cb_.Run();
 }
 
 // static

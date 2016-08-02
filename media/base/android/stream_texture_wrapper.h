@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BLINK_STREAM_TEXTURE_WRAPPER_H_
-#define MEDIA_BLINK_STREAM_TEXTURE_WRAPPER_H_
+#ifndef MEDIA_BASE_ANDROID_STREAM_TEXTURE_WRAPPER_H_
+#define MEDIA_BASE_ANDROID_STREAM_TEXTURE_WRAPPER_H_
 
-#include "cc/layers/video_frame_provider.h"
 #include "media/base/video_frame.h"
 
 namespace media {
@@ -23,7 +22,7 @@ class MEDIA_EXPORT StreamTextureWrapper {
   // Initialize the underlying StreamTexture.
   // See StreamTextureWrapperImpl.
   virtual void Initialize(
-      cc::VideoFrameProvider::Client* client,
+      const base::Closure& received_frame_cb,
       const gfx::Size& natural_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       const base::Closure& init_cb) = 0;
@@ -53,4 +52,4 @@ typedef std::unique_ptr<StreamTextureWrapper, StreamTextureWrapper::Deleter>
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_STREAM_TEXTURE_WRAPPER_H_
+#endif  // MEDIA_BASE_ANDROID_STREAM_TEXTURE_WRAPPER_H_

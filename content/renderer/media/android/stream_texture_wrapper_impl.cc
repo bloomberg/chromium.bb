@@ -130,7 +130,7 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
 }
 
 void StreamTextureWrapperImpl::Initialize(
-    cc::VideoFrameProvider::Client* client,
+    const base::Closure& received_frame_cb,
     const gfx::Size& natural_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     const base::Closure& init_cb) {
@@ -141,12 +141,12 @@ void StreamTextureWrapperImpl::Initialize(
 
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&StreamTextureWrapperImpl::InitializeOnMainThread,
-                            weak_factory_.GetWeakPtr(), client,
+                            weak_factory_.GetWeakPtr(), received_frame_cb,
                             media::BindToCurrentLoop(init_cb)));
 }
 
 void StreamTextureWrapperImpl::InitializeOnMainThread(
-    cc::VideoFrameProvider::Client* client,
+    const base::Closure& received_frame_cb,
     const base::Closure& init_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
@@ -157,8 +157,8 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
                                              &texture_id_, &texture_mailbox_);
   ReallocateVideoFrame(natural_size_);
 
-  stream_texture_proxy_->BindToLoop(stream_id_, client,
-                                    compositor_task_runner_);
+  stream_texture_proxy_->BindToTaskRunner(stream_id_, received_frame_cb,
+                                          compositor_task_runner_);
 
   // TODO(tguilbert): Register the surface properly. See crbug.com/627658.
 
@@ -167,8 +167,8 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
 }
 
 void StreamTextureWrapperImpl::Destroy() {
-  // Note: StreamTextureProxy will release its reference to |client|
-  // immediately (and stop calling back DidReceiveFrame()).
+  // Note: StreamTextureProxy stop calling back the provided frame received
+  // callback immediately, and delete itself on the right thread.
   stream_texture_proxy_.reset();
 
   if (!main_task_runner_->BelongsToCurrentThread()) {

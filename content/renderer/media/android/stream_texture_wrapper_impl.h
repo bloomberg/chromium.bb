@@ -10,8 +10,8 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "media/base/android/stream_texture_wrapper.h"
 #include "media/base/video_frame.h"
-#include "media/blink/stream_texture_wrapper.h"
 
 namespace content {
 
@@ -63,7 +63,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   //   - New frames will be signaled on |compositor_task_runner| via |client|'s
   //     DidReceiveFrame() method.
   void Initialize(
-      cc::VideoFrameProvider::Client* client,
+      const base::Closure& received_frame_cb,
       const gfx::Size& natural_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       const base::Closure& init_cb) override;
@@ -87,7 +87,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   // Destroys |this| safely on |main_task_runner_|.
   void Destroy() override;
 
-  void InitializeOnMainThread(cc::VideoFrameProvider::Client* client,
+  void InitializeOnMainThread(const base::Closure& received_frame_cb,
                               const base::Closure& init_cb);
 
   void ReallocateVideoFrame(const gfx::Size& natural_size);

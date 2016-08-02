@@ -92,7 +92,6 @@ component("blink") {
     ]
     if (is_android) {
       sources += [
-        "stream_texture_wrapper.h",
         "webmediaplayer_cast_android.cc",
         "webmediaplayer_cast_android.h",
       ]

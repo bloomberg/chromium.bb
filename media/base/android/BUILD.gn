@@ -66,6 +66,7 @@ source_set("android") {
     "provision_fetcher.h",
     "sdk_media_codec_bridge.cc",
     "sdk_media_codec_bridge.h",
+    "stream_texture_wrapper.h",
     "video_decoder_job.cc",
     "video_decoder_job.h",
     "video_media_codec_decoder.cc",

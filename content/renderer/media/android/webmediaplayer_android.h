@@ -285,6 +285,13 @@ class WebMediaPlayerAndroid
   bool IsKeySystemSupported(const std::string& key_system);
   bool IsLocalResource();
 
+  // Called whenever we create a new StreamTextureProxy and had a VFP::Client,
+  // or when we get a new VFP::Client and had a StreamTextureProxy.
+  // Sets |stream_texture_proxy_|'s OnFrameAvailable() to call |client|'s
+  // DidReceiveFrame().
+  // Passing nullptr to this method will clear the previous callback.
+  void UpdateStreamTextureProxyCallback(cc::VideoFrameProvider::Client* client);
+
   // Called when |cdm_context| is ready.
   void OnCdmContextReady(media::CdmContext* cdm_context);
 
