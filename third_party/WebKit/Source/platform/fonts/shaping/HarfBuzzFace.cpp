@@ -181,7 +181,7 @@ static hb_position_t harfBuzzGetGlyphHorizontalAdvance(hb_font_t* hbFont, void* 
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
     hb_position_t advance = 0;
 
-    SkiaTextMetrics(&hbFontData->m_paint).getGlyphWidthAndExtentsForHarfBuzz(glyph, &advance, 0);
+    SkiaTextMetrics(&hbFontData->m_paint).getGlyphWidthForHarfBuzz(glyph, &advance);
     return advance;
 }
 
@@ -238,7 +238,7 @@ static hb_bool_t harfBuzzGetGlyphExtents(hb_font_t* hbFont, void* fontData, hb_c
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
-    SkiaTextMetrics(&hbFontData->m_paint).getGlyphWidthAndExtentsForHarfBuzz(glyph, 0, extents);
+    SkiaTextMetrics(&hbFontData->m_paint).getGlyphExtentsForHarfBuzz(glyph, extents);
     return true;
 }
 
