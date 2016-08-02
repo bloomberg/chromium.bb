@@ -37,14 +37,8 @@ class SchedulerServiceThread;
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
  public:
-  // Returns the index of the worker pool in which a task with |traits| should
-  // run. This should be coded in a future-proof way: new traits should
-  // gracefully map to a default pool.
-  using WorkerPoolIndexForTraitsCallback =
-      Callback<size_t(const TaskTraits& traits)>;
-
   // Creates and returns an initialized TaskSchedulerImpl. CHECKs on failure.
-  // |worker_pools| describes the worker pools to create.
+  // |worker_pool_params_vector| describes the worker pools to create.
   // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
   // of the worker pool in which a task with given traits should run.
   static std::unique_ptr<TaskSchedulerImpl> Create(

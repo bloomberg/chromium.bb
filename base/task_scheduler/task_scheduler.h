@@ -6,6 +6,7 @@
 #define BASE_TASK_SCHEDULER_TASK_SCHEDULER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
@@ -19,10 +20,18 @@ class Location;
 
 namespace base {
 
+class SchedulerWorkerPoolParams;
+
 // Interface for a task scheduler and static methods to manage the instance used
 // by the post_task.h API.
 class BASE_EXPORT TaskScheduler {
  public:
+  // Returns the index of the worker pool in which a task with |traits| should
+  // run. This should be coded in a future-proof way: new traits should
+  // gracefully map to a default pool.
+  using WorkerPoolIndexForTraitsCallback =
+      Callback<size_t(const TaskTraits& traits)>;
+
   virtual ~TaskScheduler() = default;
 
   // Posts |task| with specific |traits|.
@@ -48,17 +57,30 @@ class BASE_EXPORT TaskScheduler {
   // called once.
   virtual void Shutdown() = 0;
 
+  // CreateAndSetDefaultTaskScheduler() and SetInstance() register a
+  // TaskScheduler to handle tasks posted through the post_task.h API for this
+  // process. The registered TaskScheduler will only be deleted when a new
+  // TaskScheduler is registered and is leaked on shutdown. The methods must
+  // not be called when TaskRunners created by the previous TaskScheduler are
+  // still alive. The methods are not thread-safe; proper synchronization is
+  // required to use the post_task.h API after registering a new TaskScheduler.
+
+  // Creates and sets a default task scheduler. CHECKs on failure.
+  // |worker_pool_params_vector| describes the worker pools to create.
+  // |worker_pool_index_for_traits_callback| returns the index in |worker_pools|
+  // of the worker pool in which a task with given traits should run.
+  static void CreateAndSetDefaultTaskScheduler(
+      const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector,
+      const WorkerPoolIndexForTraitsCallback&
+          worker_pool_index_for_traits_callback);
+
   // Registers |task_scheduler| to handle tasks posted through the post_task.h
-  // API for this process. The registered TaskScheduler will only be deleted
-  // when a new TaskScheduler is registered (i.e. otherwise leaked on shutdown).
-  // This must not be called when TaskRunners created by the previous
-  // TaskScheduler are still alive. This method is not thread-safe; proper
-  // synchronization is required to use the post_task.h API after registering a
-  // new TaskScheduler.
+  // API for this process.
   static void SetInstance(std::unique_ptr<TaskScheduler> task_scheduler);
 
-  // Retrieve the TaskScheduler set via SetInstance(). This should be used very
-  // rarely; most users of TaskScheduler should use the post_task.h API.
+  // Retrieve the TaskScheduler set via CreateAndSetDefaultTaskScheduler() or
+  // SetInstance(). This should be used very rarely; most users of TaskScheduler
+  // should use the post_task.h API.
   static TaskScheduler* GetInstance();
 };
 
