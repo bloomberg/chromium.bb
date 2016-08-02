@@ -49,7 +49,8 @@ class AbstractRebaseliningCommand(Command):
     # Not overriding execute() - pylint: disable=abstract-method
 
     no_optimize_option = optparse.make_option('--no-optimize', dest='optimize', action='store_false', default=True,
-                                              help=('Do not optimize/de-dup the expectations after rebaselining (default is to de-dup automatically). '
+                                              help=('Do not optimize (de-duplicate) the expectations after rebaselining '
+                                                    '(default is to de-dup automatically). '
                                                     'You can use "webkit-patch optimize-baselines" to optimize separately.'))
 
     platform_options = factory.platform_options(use_globs=True)
@@ -104,12 +105,13 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
 
 class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
     name = "copy-existing-baselines-internal"
-    help_text = "Copy existing baselines down one level in the baseline order to ensure new baselines don't break existing passing platforms."
+    help_text = ("Copy existing baselines down one level in the baseline order to ensure "
+                 "new baselines don't break existing passing platforms.")
 
     @memoized
     def _immediate_predecessors_in_fallback(self, path_to_rebaseline):
         port_names = self._tool.port_factory.all_port_names()
-        immediate_predecessors_in_fallback = []
+        immediate_predecessors = []
         for port_name in port_names:
             port = self._tool.port_factory.get(port_name)
             if not port.buildbot_archives_baselines():
@@ -118,11 +120,11 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             try:
                 index = baseline_search_path.index(path_to_rebaseline)
                 if index:
-                    immediate_predecessors_in_fallback.append(self._tool.filesystem.basename(baseline_search_path[index - 1]))
+                    immediate_predecessors.append(self._tool.filesystem.basename(baseline_search_path[index - 1]))
             except ValueError:
                 # baseline_search_path.index() throws a ValueError if the item isn't in the list.
                 pass
-        return immediate_predecessors_in_fallback
+        return immediate_predecessors
 
     def _port_for_primary_baseline(self, baseline):
         for port in [self._tool.port_factory.get(port_name) for port_name in self._tool.port_factory.all_port_names()]:
@@ -347,7 +349,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                         tuple([[self._tool.executable, path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
         return copy_baseline_commands, rebaseline_commands, lines_to_remove
 
-    def _serial_commands(self, command_results):
+    @staticmethod
+    def _serial_commands(command_results):
         files_to_add = set()
         files_to_delete = set()
         lines_to_remove = {}
@@ -431,11 +434,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         port = self._tool.port_factory.get()
         expectations = TestExpectations(port, include_overrides=False)
-        expectationsString = expectations.remove_configurations(to_remove)
+        expectations_string = expectations.remove_configurations(to_remove)
         path = port.path_to_generic_test_expectations_file()
-        self._tool.filesystem.write_text_file(path, expectationsString)
+        self._tool.filesystem.write_text_file(path, expectations_string)
 
-    def _port_skips_test(self, port, test, generic_expectations, full_expectations):
+    @staticmethod
+    def _port_skips_test(port, test, generic_expectations, full_expectations):
         fs = port.host.filesystem
         if port.default_smoke_test_only():
             smoke_test_filename = fs.join(port.layout_tests_dir(), 'SmokeTests')
@@ -556,7 +560,8 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
         ] + self.platform_options)
         self._test_prefix_list = None
 
-    def _tests_to_rebaseline(self, port):
+    @staticmethod
+    def _tests_to_rebaseline(port):
         tests_to_rebaseline = {}
         for path, value in port.expectations_dict().items():
             expectations = TestExpectations(port, include_overrides=False, expectations_dict={path: value})
@@ -565,7 +570,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
                 tests_to_rebaseline[test] = suffixes or BASELINE_SUFFIX_LIST
         return tests_to_rebaseline
 
-    def _add_tests_to_rebaseline_for_port(self, port_name):
+    def _add_tests_to_rebaseline(self, port_name):
         builder_name = self._tool.builders.builder_name_for_port_name(port_name)
         if not builder_name:
             return
@@ -585,7 +590,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
         self._test_prefix_list = {}
         port_names = tool.port_factory.all_port_names(options.platform)
         for port_name in port_names:
-            self._add_tests_to_rebaseline_for_port(port_name)
+            self._add_tests_to_rebaseline(port_name)
         if not self._test_prefix_list:
             _log.warning("Did not find any tests marked Rebaseline.")
             return
@@ -606,7 +611,8 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             self.suffixes_option,
             self.results_directory_option,
             optparse.make_option("--builders", default=None, action="append",
-                                 help="Comma-separated-list of builders to pull new baselines from (can also be provided multiple times)."),
+                                 help=("Comma-separated-list of builders to pull new baselines from "
+                                       "(can also be provided multiple times).")),
         ])
 
     def _builders_to_pull_from(self):
