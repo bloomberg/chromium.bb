@@ -67,7 +67,6 @@ InspectorTest.dumpResourcesTree = function()
     dump(WebInspector.panels.resources.resourcesListTreeElement, "");
     if (!InspectorTest._testSourceNavigator) {
         InspectorTest._testSourceNavigator = new WebInspector.SourcesNavigatorView();
-        InspectorTest._testSourceNavigator.setWorkspace(WebInspector.workspace);
         InspectorTest._testSourceNavigator.show(WebInspector.inspectorView.element);
     }
     InspectorTest.dumpNavigatorViewInAllModes(InspectorTest._testSourceNavigator);

@@ -10,7 +10,7 @@ function test()
     function createNavigatorView(constructor)
     {
         var navigatorView = new constructor();
-        navigatorView.setWorkspace(InspectorTest.testWorkspace);
+        navigatorView._resetWorkspace(InspectorTest.testWorkspace);
         navigatorView.show(WebInspector.inspectorView.element);
         return navigatorView;
     }

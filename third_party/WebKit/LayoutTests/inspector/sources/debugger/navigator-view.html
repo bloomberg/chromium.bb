@@ -21,10 +21,10 @@ function test()
     var networkProject2 = InspectorTest.testNetworkProject;
 
     var sourcesNavigatorView = new WebInspector.SourcesNavigatorView();
-    sourcesNavigatorView.setWorkspace(InspectorTest.testWorkspace);
+    sourcesNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
     sourcesNavigatorView.show(WebInspector.inspectorView.element);
     var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
-    contentScriptsNavigatorView.setWorkspace(InspectorTest.testWorkspace);
+    contentScriptsNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
     contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
 
     var uiSourceCodes = [];

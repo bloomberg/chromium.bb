@@ -7,7 +7,6 @@
 function test()
 {
     var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
-    contentScriptsNavigatorView.setWorkspace(WebInspector.workspace);
     contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
 
     var mockExecutionContext = {

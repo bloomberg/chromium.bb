@@ -68,8 +68,7 @@ function test()
 
     function selectSourceCode(uiSourceCode)
     {
-        WebInspector.SourcesPanel.instance()._sourceSelected({ data: { uiSourceCode: uiSourceCode }});
-        return uiSourceCode;
+        return WebInspector.Revealer.revealPromise(uiSourceCode).then(() => uiSourceCode);
     }
 
     function dumpLineMessage(level, text, lineNumber, columnNumber)
