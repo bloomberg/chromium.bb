@@ -14,9 +14,9 @@ potentially dangerous operations, helping you to produce JavaScript that is less
 buggy and easier to maintain.
 
 Local modifications:
-- The compiler is run via a custom mechanism (see: runner/) that sets the
-  compiler to "IDE mode" (single-file checks, doesn't stop on first error).
-- Chrome-specific coding conventions to understand cr.addSingletonGetter().
+- A custom runner (see: runner/) to continue on errors, understand and enforce
+  Chrome-specific code, and do checks only (i.e. throw away output).  See:
+  --enable-chrome-pass in runner.jar's arguments.
 - third_party/closure_compiler/runner/src/com/google/javascript/jscomp/ChromePass.java
   Added pass to handle namespace definition with cr.define(), object chain
   creation with cr.exportPath(), property definition with

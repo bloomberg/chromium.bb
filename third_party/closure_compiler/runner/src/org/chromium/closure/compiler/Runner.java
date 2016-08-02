@@ -99,8 +99,7 @@ public class Runner {
         if (descriptors == null) {
             return;
         }
-        ExecutorService executor = Executors.newFixedThreadPool(
-                Math.min(descriptors.size(), Runtime.getRuntime().availableProcessors() / 2 + 1));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             runWithExecutor(descriptors, executor);
         } finally {
@@ -112,20 +111,16 @@ public class Runner {
             List<CompilerInstanceDescriptor> descriptors, ExecutorService executor) {
         List<Future<CompilerRunner>> futures = new ArrayList<>(descriptors.size());
         for (CompilerInstanceDescriptor descriptor : descriptors) {
-            CompilerRunner task = new CompilerRunner(descriptor, new ByteArrayOutputStream(512));
+            CompilerRunner task = new CompilerRunner(descriptor, new ByteArrayOutputStream(512),
+                    flags.enableChromePass);
             futures.add(executor.submit(task));
         }
 
         for (Future<CompilerRunner> future : futures) {
             try {
                 CompilerRunner task = future.get();
-
                 task.errStream.flush();
-
-                //System.err.println("@@ START_MODULE:" + task.descriptor.moduleName + " @@");
                 System.err.println(task.errStream.toString("UTF-8"));
-                //System.err.println("@@ END_MODULE @@");
-
                 if (task.result != 0) {
                     System.exit(task.result);
                 }
@@ -179,14 +174,21 @@ public class Runner {
     }
 
     private static class LocalCommandLineRunner extends CommandLineRunner {
-        protected LocalCommandLineRunner(String[] args, PrintStream out, PrintStream err) {
+        boolean enableChromePass;
+
+        protected LocalCommandLineRunner(String[] args, PrintStream out, PrintStream err,
+                boolean enableChromePass) {
             super(args, out, err);
+            this.enableChromePass = enableChromePass;
         }
 
         @Override
         protected CompilerOptions createOptions() {
             CompilerOptions options = super.createOptions();
-            options.setIdeMode(true);
+            if (enableChromePass) {
+                options.setChecksOnly(true);  // For speed. Remove when output matters.
+                options.setContinueAfterErrors(true);
+            }
             return options;
         }
 
@@ -194,8 +196,10 @@ public class Runner {
         protected void setRunOptions(CompilerOptions options)
                 throws FlagUsageException, IOException {
             super.setRunOptions(options);
-            options.setCodingConvention(new ChromeCodingConvention());
-            getCompiler().setPassConfig(new ChromePassConfig(options));
+            if (enableChromePass) {
+                options.setCodingConvention(new ChromeCodingConvention());
+                getCompiler().setPassConfig(new ChromePassConfig(options));
+            }
         }
 
         int execute() {
@@ -216,19 +220,22 @@ public class Runner {
     private static class CompilerRunner implements Callable<CompilerRunner> {
         private final CompilerInstanceDescriptor descriptor;
         private final ByteArrayOutputStream errStream;
+        private final boolean enableChromePass;
         private int result;
 
         public CompilerRunner(
-                CompilerInstanceDescriptor descriptor, ByteArrayOutputStream errStream) {
+                CompilerInstanceDescriptor descriptor, ByteArrayOutputStream errStream,
+                boolean enableChromePass) {
             this.descriptor = descriptor;
             this.errStream = errStream;
+            this.enableChromePass = enableChromePass;
         }
 
         @Override
         public CompilerRunner call() throws Exception {
             PrintStream errPrintStream = new PrintStream(errStream, false, "UTF-8");
-            LocalCommandLineRunner runner =
-                    new LocalCommandLineRunner(prepareArgs(), System.out, errPrintStream);
+            LocalCommandLineRunner runner = new LocalCommandLineRunner(
+                    prepareArgs(), System.out, errPrintStream, enableChromePass);
             if (!runner.shouldRunCompiler()) {
                 this.result = -1;
             }
@@ -267,6 +274,10 @@ public class Runner {
         @Option(name = "--compiler-args-file",
                 usage = "Full path to file containing compiler arguments (one line per instance)")
         private String compilerArgsFile = null;
+
+        @Option(name = "--enable-chrome-pass",
+                usage = "Whether to add Chrome-specific compiler passes")
+        private boolean enableChromePass = false;
     }
 
     private static class CompilerInstanceDescriptor {
