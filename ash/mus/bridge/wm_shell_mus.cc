@@ -155,6 +155,9 @@ WmShellMus* WmShellMus::Get() {
 void WmShellMus::AddRootWindowController(
     WmRootWindowControllerMus* controller) {
   root_window_controllers_.push_back(controller);
+  // The first root window will be the initial root for new windows.
+  if (!GetRootWindowForNewWindows())
+    set_root_window_for_new_windows(controller->GetWindow());
 }
 
 void WmShellMus::RemoveRootWindowController(
@@ -204,11 +207,6 @@ WmWindow* WmShellMus::GetPrimaryRootWindow() {
 
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
   return GetRootWindowControllerWithDisplayId(display_id)->GetWindow();
-}
-
-WmWindow* WmShellMus::GetRootWindowForNewWindows() {
-  NOTIMPLEMENTED();
-  return root_window_controllers_[0]->GetWindow();
 }
 
 const DisplayInfo& WmShellMus::GetDisplayInfo(int64_t display_id) const {
@@ -357,8 +355,11 @@ bool WmShellMus::IsActivationParent(ui::Window* window) {
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
 void WmShellMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
                                           ui::Window* lost_focus) {
-  WmWindowMus* gained_active = GetToplevelAncestor(gained_focus);
-  WmWindowMus* lost_active = GetToplevelAncestor(gained_focus);
+  WmWindow* gained_active = GetToplevelAncestor(gained_focus);
+  if (gained_active)
+    set_root_window_for_new_windows(gained_active->GetRootWindow());
+
+  WmWindow* lost_active = GetToplevelAncestor(gained_focus);
   if (gained_active == lost_active)
     return;
 

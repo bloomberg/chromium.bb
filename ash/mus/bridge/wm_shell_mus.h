@@ -60,7 +60,6 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   WmWindow* GetActiveWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
-  WmWindow* GetRootWindowForNewWindows() override;
   const DisplayInfo& GetDisplayInfo(int64_t display_id) const override;
   bool IsActiveDisplayId(int64_t display_id) const override;
   bool IsForceMaximizeOnFirstRun() override;

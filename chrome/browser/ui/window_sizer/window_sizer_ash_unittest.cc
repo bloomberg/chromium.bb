@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/scoped_target_root_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -561,9 +563,6 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect secondary_bounds = ash::ScreenUtil::GetSecondaryDisplay().bounds();
 
-  ash::Shell::GetInstance()->set_target_root_window(
-      ash::Shell::GetPrimaryRootWindow());
-
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   // Create browser windows that are used as reference.
@@ -821,24 +820,20 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   if (!SupportsMultipleDisplays() || !chrome::ShouldOpenAshOnStartup())
     return;
   UpdateDisplay("500x500,600x600");
+
+  // By default windows are placed on the primary display.
+  ash::WmWindow* first_root = ash::WmShell::Get()->GetAllRootWindows()[0];
+  EXPECT_EQ(first_root, ash::WmShell::Get()->GetRootWindowForNewWindows());
+  gfx::Rect bounds;
+  ui::WindowShowState show_state;
+  WindowSizer::GetBrowserWindowBoundsAndShowState(std::string(), gfx::Rect(),
+                                                  NULL, &bounds, &show_state);
+  EXPECT_TRUE(first_root->GetBoundsInScreen().Contains(bounds));
+
   {
-    aura::Window* first_root =
-        ash::Shell::GetAllRootWindows()[0];
-    ash::ScopedTargetRootWindow tmp(first_root);
-    gfx::Rect bounds;
-    ui::WindowShowState show_state;
-    WindowSizer::GetBrowserWindowBoundsAndShowState(
-        std::string(),
-        gfx::Rect(),
-        NULL,
-        &bounds,
-        &show_state);
-    EXPECT_TRUE(first_root->GetBoundsInScreen().Contains(bounds));
-  }
-  {
-    aura::Window* second_root =
-        ash::Shell::GetAllRootWindows()[1];
-    ash::ScopedTargetRootWindow tmp(second_root);
+    // When the second display is active new windows are placed there.
+    ash::WmWindow* second_root = ash::WmShell::Get()->GetAllRootWindows()[1];
+    ash::ScopedRootWindowForNewWindows tmp(second_root);
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(

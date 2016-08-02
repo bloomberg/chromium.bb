@@ -4,8 +4,11 @@
 
 #include "ash/display/screen_position_controller.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -212,8 +215,8 @@ void ScreenPositionController::SetBounds(aura::Window* window,
       if (tracker.Contains(focused)) {
         aura::client::GetFocusClient(window)->FocusWindow(focused);
         // TODO(beng): replace with GetRootWindow().
-        ash::Shell::GetInstance()->set_target_root_window(
-            focused->GetRootWindow());
+        WmShell::Get()->set_root_window_for_new_windows(
+            WmWindowAura::Get(focused->GetRootWindow()));
       } else if (tracker.Contains(active)) {
         activation_client->ActivateWindow(active);
       }

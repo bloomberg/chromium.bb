@@ -10,6 +10,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
@@ -22,9 +23,9 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/scoped_target_root_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_widget.h"
@@ -32,9 +33,7 @@
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1706,8 +1705,11 @@ void ShelfView::ButtonPressed(views::Button* sender,
   last_pressed_index_ = view_model_->GetIndexOfView(sender);
   DCHECK_LT(-1, last_pressed_index_);
 
-  scoped_target_root_window_.reset(new ScopedTargetRootWindow(
-      sender->GetWidget()->GetNativeView()->GetRootWindow()));
+  // Place new windows on the same display as the button.
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(sender->GetWidget());
+  scoped_root_window_for_new_windows_.reset(
+      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
+
   // Slow down activation animations if shift key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
   if (event.IsShiftDown()) {
@@ -1754,9 +1756,10 @@ void ShelfView::ButtonPressed(views::Button* sender,
                             ink_drop))) {
     ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
   }
-  // Allow the menu to clear |scoped_target_root_window_| during OnMenuClosed.
+  // Allow the menu to clear |scoped_root_window_for_new_windows_| during
+  // OnMenuClosed.
   if (!IsShowingMenu())
-    scoped_target_root_window_.reset();
+    scoped_root_window_for_new_windows_.reset();
 }
 
 bool ShelfView::ShowListMenuForView(const ShelfItem& item,
@@ -1818,9 +1821,10 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
-  aura::Window* window = source->GetWidget()->GetNativeWindow();
-  scoped_target_root_window_.reset(
-      new ScopedTargetRootWindow(window->GetRootWindow()));
+  // Place new windows on the same display as the button that spawned the menu.
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(source->GetWidget());
+  scoped_root_window_for_new_windows_.reset(
+      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
 
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
@@ -1829,8 +1833,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     // Application lists use a bubble.
     // It is possible to invoke the menu while it is sliding into view. To cover
     // that case, the screen coordinates are offsetted by the animation delta.
-    anchor = source->GetBoundsInScreen() +
-             (window->GetTargetBounds().origin() - window->bounds().origin());
+    anchor = source->GetBoundsInScreen() + (window->GetTargetBounds().origin() -
+                                            window->GetBounds().origin());
 
     // Adjust the anchor location for shelf items with asymmetrical borders.
     if (source->border())
@@ -1864,7 +1868,7 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
   launcher_menu_runner_.reset();
   menu_model_adapter_.reset();
   menu_model_.reset();
-  scoped_target_root_window_.reset();
+  scoped_root_window_for_new_windows_.reset();
 
   // Auto-hide or alignment might have changed, but only for this shelf.
   wm_shelf_->UpdateVisibilityState();

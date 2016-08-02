@@ -236,11 +236,9 @@ aura::Window* Shell::GetPrimaryRootWindow() {
 
 // static
 aura::Window* Shell::GetTargetRootWindow() {
-  CHECK(HasInstance());
-  Shell* shell = GetInstance();
-  if (shell->scoped_target_root_window_)
-    return shell->scoped_target_root_window_;
-  return shell->target_root_window_;
+  CHECK(WmShell::HasInstance());
+  return WmWindowAura::GetAuraWindow(
+      WmShell::Get()->GetRootWindowForNewWindows());
 }
 
 // static
@@ -541,8 +539,6 @@ void Shell::DoInitialWorkspaceAnimation() {
 
 Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
     : wm_shell_(new WmShellAura(base::WrapUnique(delegate))),
-      target_root_window_(nullptr),
-      scoped_target_root_window_(nullptr),
       link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
@@ -828,7 +824,6 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ::wm::FocusController(focus_rules);
   focus_client_.reset(focus_controller);
   activation_client_ = focus_controller;
-  activation_client_->AddObserver(this);
 
   screen_position_controller_.reset(new ScreenPositionController);
 
@@ -836,7 +831,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   window_tree_host_manager_->CreatePrimaryHost(
       ShellInitParamsToAshWindowTreeHostInitParams(init_params));
   aura::Window* root_window = window_tree_host_manager_->GetPrimaryRootWindow();
-  target_root_window_ = root_window;
+  wm_shell_->set_root_window_for_new_windows(WmWindowAura::Get(root_window));
 
 #if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset(
@@ -1081,17 +1076,6 @@ std::unique_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
 ui::EventTargeter* Shell::GetEventTargeter() {
   NOTREACHED();
   return nullptr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shell, aura::client::ActivationChangeObserver implementation:
-
-void Shell::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  if (gained_active)
-    target_root_window_ = gained_active->GetRootWindow();
 }
 
 }  // namespace ash

@@ -9,6 +9,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/focus_cycler.h"
+#include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_cycle_list.h"
@@ -377,8 +378,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
 
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
 
-  Shell::GetInstance()->set_target_root_window(root_windows[0]);
-
   // Create two windows in the primary root.
   std::unique_ptr<Window> window0(CreateTestWindowInShellWithId(0));
   EXPECT_EQ(root_windows[0], window0->GetRootWindow());
@@ -387,8 +386,9 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   std::unique_ptr<Window> window1(CreateTestWindowWithId(1, top_container0));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
 
-  // And two on the secondary root.
-  Shell::GetInstance()->set_target_root_window(root_windows[1]);
+  // Move the active root window to the secondary root and create two windows.
+  ScopedRootWindowForNewWindows root_for_new_windows(
+      WmWindowAura::Get(root_windows[1]));
   std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
@@ -396,9 +396,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
       Shell::GetContainer(root_windows[1], kShellWindowId_AlwaysOnTopContainer);
   std::unique_ptr<Window> window3(CreateTestWindowWithId(3, top_container1));
   EXPECT_EQ(root_windows[1], window3->GetRootWindow());
-
-  // Move the active root window to the secondary.
-  Shell::GetInstance()->set_target_root_window(root_windows[1]);
 
   wm::ActivateWindow(window2.get());
 

@@ -111,6 +111,11 @@ class ASH_EXPORT WmShell {
     return new_window_delegate_.get();
   }
 
+  // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
+  void set_root_window_for_new_windows(WmWindow* root) {
+    root_window_for_new_windows_ = root;
+  }
+
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
   ShelfModel* shelf_model() { return shelf_model_.get(); }
@@ -146,9 +151,10 @@ class ASH_EXPORT WmShell {
   virtual WmWindow* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Returns the root window that newly created windows should be added to.
+  // Value can be temporarily overridden using ScopedRootWindowForNewWindows.
   // NOTE: this returns the root, newly created window should be added to the
   // appropriate container in the returned window.
-  virtual WmWindow* GetRootWindowForNewWindows() = 0;
+  WmWindow* GetRootWindowForNewWindows();
 
   // Retuns the display info associated with |display_id|.
   // TODO(msw): Remove this when DisplayManager has been moved. crbug.com/622480
@@ -321,6 +327,7 @@ class ASH_EXPORT WmShell {
 
  private:
   friend class AcceleratorControllerTest;
+  friend class ScopedRootWindowForNewWindows;
   friend class Shell;
 
   static WmShell* instance_;
@@ -348,6 +355,10 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
+
+  // See comment for GetRootWindowForNewWindows().
+  WmWindow* root_window_for_new_windows_ = nullptr;
+  WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   bool simulate_modal_window_open_for_testing_ = false;
 

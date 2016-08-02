@@ -87,10 +87,6 @@ WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
                                ->GetRootWindowForDisplayId(display_id));
 }
 
-WmWindow* WmShellAura::GetRootWindowForNewWindows() {
-  return WmWindowAura::Get(Shell::GetTargetRootWindow());
-}
-
 const DisplayInfo& WmShellAura::GetDisplayInfo(int64_t display_id) const {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(display_id);
 }
@@ -230,9 +226,12 @@ void WmShellAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
+  WmWindow* gained_active_wm = WmWindowAura::Get(gained_active);
+  WmWindow* lost_active_wm = WmWindowAura::Get(lost_active);
+  if (gained_active_wm)
+    set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
   FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
-                    OnWindowActivated(WmWindowAura::Get(gained_active),
-                                      WmWindowAura::Get(lost_active)));
+                    OnWindowActivated(gained_active_wm, lost_active_wm));
 }
 
 void WmShellAura::OnAttemptToReactivateWindow(aura::Window* request_active,

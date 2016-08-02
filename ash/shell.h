@@ -25,7 +25,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/wm/core/cursor_manager.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class EventFilter;
@@ -111,7 +110,6 @@ class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
 class ScopedOverviewAnimationSettingsFactoryAura;
-class ScopedTargetRootWindow;
 class ScreenAsh;
 class ScreenOrientationController;
 class ScreenshotController;
@@ -154,8 +152,7 @@ class ShellTestApi;
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
 class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
-                         public ui::EventTarget,
-                         public aura::client::ActivationChangeObserver {
+                         public ui::EventTarget {
  public:
   typedef std::vector<RootWindowController*> RootWindowControllerList;
 
@@ -186,7 +183,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Returns a root Window when used as a target when creating a new window.
   // The root window of the active window is used in most cases, but can
-  // be overridden by using ScopedTargetRootWindow().
+  // be overridden by using ScopedRootWindowForNewWindows.
   // If you want to get the root Window of the active window, just use
   // |wm::GetActiveWindow()->GetRootWindow()|.
   static aura::Window* GetTargetRootWindow();
@@ -209,10 +206,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   static std::vector<aura::Window*> GetContainersFromAllRootWindows(
       int container_id,
       aura::Window* priority_root);
-
-  void set_target_root_window(aura::Window* target_root_window) {
-    target_root_window_ = target_root_window;
-  }
 
   // Shows the context menu for the background and launcher at
   // |location_in_screen| (in screen coordinates).
@@ -480,7 +473,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class RootWindowController;
-  friend class ScopedTargetRootWindow;
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
 
@@ -510,12 +502,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
 
-  // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
-
   static Shell* instance_;
 
   // If set before the Shell is initialized, the mouse cursor will be hidden
@@ -525,13 +511,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
   std::unique_ptr<WmShellAura> wm_shell_;
-
-  // When no explicit target display/RootWindow is given, new windows are
-  // created on |scoped_target_root_window_| , unless NULL in
-  // which case they are created on |target_root_window_|.
-  // |target_root_window_| never becomes NULL during the session.
-  aura::Window* target_root_window_;
-  aura::Window* scoped_target_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;

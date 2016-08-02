@@ -386,15 +386,18 @@ void RootWindowController::Shutdown() {
   wallpaper_controller_.reset();
   animating_wallpaper_controller_.reset();
   aura::Window* root_window = GetRootWindow();
-  Shell* shell = Shell::GetInstance();
+  WmWindow* root_shutting_down = WmWindowAura::Get(root_window);
+  WmShell* shell = WmShell::Get();
   // Change the target root window before closing child windows. If any child
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (Shell::GetTargetRootWindow() == root_window) {
-    shell->set_target_root_window(Shell::GetPrimaryRootWindow() == root_window
-                                      ? NULL
-                                      : Shell::GetPrimaryRootWindow());
+  if (shell->GetRootWindowForNewWindows() == root_shutting_down) {
+    // The root window for new windows is being destroyed. Switch to the primary
+    // root window if possible.
+    WmWindow* primary_root = shell->GetPrimaryRootWindow();
+    shell->set_root_window_for_new_windows(
+        primary_root == root_shutting_down ? nullptr : primary_root);
   }
 
   CloseChildWindows();

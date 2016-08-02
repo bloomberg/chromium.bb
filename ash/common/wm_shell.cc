@@ -144,6 +144,12 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
 
 WmShell::~WmShell() {}
 
+WmWindow* WmShell::GetRootWindowForNewWindows() {
+  if (scoped_root_window_for_new_windows_)
+    return scoped_root_window_for_new_windows_;
+  return root_window_for_new_windows_;
+}
+
 bool WmShell::IsSystemModalWindowOpen() {
   if (simulate_modal_window_open_for_testing_)
     return true;

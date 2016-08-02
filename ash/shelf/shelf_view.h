@@ -42,7 +42,7 @@ class AppListButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
-class ScopedTargetRootWindow;
+class ScopedRootWindowForNewWindows;
 class Shelf;
 class ShelfButton;
 class ShelfDelegate;
@@ -400,7 +400,8 @@ class ASH_EXPORT ShelfView : public views::View,
   std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
-  std::unique_ptr<ScopedTargetRootWindow> scoped_target_root_window_;
+  std::unique_ptr<ScopedRootWindowForNewWindows>
+      scoped_root_window_for_new_windows_;
 
   base::ObserverList<ShelfIconObserver> observers_;
 

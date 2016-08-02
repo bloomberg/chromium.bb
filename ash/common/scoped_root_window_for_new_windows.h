@@ -2,32 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SCOPED_TARGET_ROOT_WINDOW_H_
-#define ASH_SCOPED_TARGET_ROOT_WINDOW_H_
+#ifndef ASH_COMMON_SCOPED_ROOT_WINDOW_FOR_NEW_WINDOWS_H_
+#define ASH_COMMON_SCOPED_ROOT_WINDOW_FOR_NEW_WINDOWS_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
-// Constructing a ScopedTargetRootWindow allows temporarily
+class WmWindow;
+
+// Constructing a ScopedRootWindowForNewWindows allows temporarily
 // switching a target root window so that a new window gets created
 // in the same window where a user interaction happened.
 // An example usage is to specify the target root window when creating
 // a new window using launcher's icon.
-class ASH_EXPORT ScopedTargetRootWindow {
+class ASH_EXPORT ScopedRootWindowForNewWindows {
  public:
-  explicit ScopedTargetRootWindow(aura::Window* root_window);
-  ~ScopedTargetRootWindow();
+  explicit ScopedRootWindowForNewWindows(WmWindow* new_root);
+  ~ScopedRootWindowForNewWindows();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedTargetRootWindow);
+  DISALLOW_COPY_AND_ASSIGN(ScopedRootWindowForNewWindows);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SCOPED_TARGET_ROOT_WINDOW_H_
+#endif  // ASH_COMMON_SCOPED_ROOT_WINDOW_FOR_NEW_WINDOWS_H_
