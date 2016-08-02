@@ -52,9 +52,10 @@ class ChromeConfigurator : public update_client::Configurator {
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
       const override;
-  bool DeltasEnabled() const override;
-  bool UseBackgroundDownloader() const override;
-  bool UseCupSigning() const override;
+  bool EnabledDeltas() const override;
+  bool EnabledComponentUpdates() const override;
+  bool EnabledBackgroundDownloader() const override;
+  bool EnabledCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
   PrefService* GetPrefService() const override;
@@ -151,16 +152,20 @@ ChromeConfigurator::CreateOutOfProcessPatcher() const {
   return make_scoped_refptr(new ChromeOutOfProcessPatcher);
 }
 
-bool ChromeConfigurator::DeltasEnabled() const {
-  return configurator_impl_.DeltasEnabled();
+bool ChromeConfigurator::EnabledDeltas() const {
+  return configurator_impl_.EnabledDeltas();
 }
 
-bool ChromeConfigurator::UseBackgroundDownloader() const {
-  return configurator_impl_.UseBackgroundDownloader();
+bool ChromeConfigurator::EnabledComponentUpdates() const {
+  return configurator_impl_.EnabledComponentUpdates();
 }
 
-bool ChromeConfigurator::UseCupSigning() const {
-  return configurator_impl_.UseCupSigning();
+bool ChromeConfigurator::EnabledBackgroundDownloader() const {
+  return configurator_impl_.EnabledBackgroundDownloader();
+}
+
+bool ChromeConfigurator::EnabledCupSigning() const {
+  return configurator_impl_.EnabledCupSigning();
 }
 
 // Returns a task runner to run blocking tasks. The task runner continues to run

@@ -173,7 +173,7 @@ bool UpdateCheckerImpl::CheckForUpdates(
     ids_checked->push_back(crx->id);
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
-      config_->UseCupSigning(),
+      config_->EnabledCupSigning(),
       BuildUpdateCheckRequest(*config_, items_to_check, metadata_,
                               additional_attributes),
       urls, base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,

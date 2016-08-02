@@ -43,9 +43,10 @@ class IOSConfigurator : public update_client::Configurator {
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
       const override;
-  bool DeltasEnabled() const override;
-  bool UseBackgroundDownloader() const override;
-  bool UseCupSigning() const override;
+  bool EnabledDeltas() const override;
+  bool EnabledComponentUpdates() const override;
+  bool EnabledBackgroundDownloader() const override;
+  bool EnabledCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
   PrefService* GetPrefService() const override;
@@ -133,16 +134,20 @@ IOSConfigurator::CreateOutOfProcessPatcher() const {
   return nullptr;
 }
 
-bool IOSConfigurator::DeltasEnabled() const {
-  return configurator_impl_.DeltasEnabled();
+bool IOSConfigurator::EnabledDeltas() const {
+  return configurator_impl_.EnabledDeltas();
 }
 
-bool IOSConfigurator::UseBackgroundDownloader() const {
-  return configurator_impl_.UseBackgroundDownloader();
+bool IOSConfigurator::EnabledComponentUpdates() const {
+  return configurator_impl_.EnabledComponentUpdates();
 }
 
-bool IOSConfigurator::UseCupSigning() const {
-  return configurator_impl_.UseCupSigning();
+bool IOSConfigurator::EnabledBackgroundDownloader() const {
+  return configurator_impl_.EnabledBackgroundDownloader();
+}
+
+bool IOSConfigurator::EnabledCupSigning() const {
+  return configurator_impl_.EnabledCupSigning();
 }
 
 scoped_refptr<base::SequencedTaskRunner>

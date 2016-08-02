@@ -91,16 +91,20 @@ ChromeUpdateClientConfig::CreateOutOfProcessPatcher() const {
   return make_scoped_refptr(new component_updater::ChromeOutOfProcessPatcher);
 }
 
-bool ChromeUpdateClientConfig::DeltasEnabled() const {
-  return impl_.DeltasEnabled();
+bool ChromeUpdateClientConfig::EnabledDeltas() const {
+  return impl_.EnabledDeltas();
 }
 
-bool ChromeUpdateClientConfig::UseBackgroundDownloader() const {
-  return impl_.UseBackgroundDownloader();
+bool ChromeUpdateClientConfig::EnabledComponentUpdates() const {
+  return impl_.EnabledComponentUpdates();
 }
 
-bool ChromeUpdateClientConfig::UseCupSigning() const {
-  return impl_.UseCupSigning();
+bool ChromeUpdateClientConfig::EnabledBackgroundDownloader() const {
+  return impl_.EnabledBackgroundDownloader();
+}
+
+bool ChromeUpdateClientConfig::EnabledCupSigning() const {
+  return impl_.EnabledCupSigning();
 }
 
 PrefService* ChromeUpdateClientConfig::GetPrefService() const {

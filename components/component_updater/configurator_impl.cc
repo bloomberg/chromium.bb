@@ -180,15 +180,19 @@ net::URLRequestContextGetter* ConfiguratorImpl::RequestContext() const {
   return url_request_getter_;
 }
 
-bool ConfiguratorImpl::DeltasEnabled() const {
+bool ConfiguratorImpl::EnabledDeltas() const {
   return deltas_enabled_;
 }
 
-bool ConfiguratorImpl::UseBackgroundDownloader() const {
+bool ConfiguratorImpl::EnabledComponentUpdates() const {
+  return true;
+}
+
+bool ConfiguratorImpl::EnabledBackgroundDownloader() const {
   return background_downloads_enabled_;
 }
 
-bool ConfiguratorImpl::UseCupSigning() const {
+bool ConfiguratorImpl::EnabledCupSigning() const {
   return true;
 }
 

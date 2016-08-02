@@ -295,7 +295,7 @@ bool ActionUpdateFull::IsBackgroundDownload(const CrxUpdateItem* item) {
 
   // On demand component updates are always downloaded in foreground.
   return !item->on_demand && item->component.allows_background_download &&
-         update_context_->config->UseBackgroundDownloader();
+         update_context_->config->EnabledBackgroundDownloader();
 }
 
 std::vector<GURL> ActionUpdateFull::GetUrls(const CrxUpdateItem* item) {

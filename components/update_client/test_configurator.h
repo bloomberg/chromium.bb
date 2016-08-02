@@ -73,9 +73,10 @@ class TestConfigurator : public Configurator {
   std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
-  bool DeltasEnabled() const override;
-  bool UseBackgroundDownloader() const override;
-  bool UseCupSigning() const override;
+  bool EnabledDeltas() const override;
+  bool EnabledComponentUpdates() const override;
+  bool EnabledBackgroundDownloader() const override;
+  bool EnabledCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
   PrefService* GetPrefService() const override;
@@ -84,7 +85,7 @@ class TestConfigurator : public Configurator {
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(int seconds);
   void SetDownloadPreference(const std::string& download_preference);
-  void SetUseCupSigning(bool use_cup_signing);
+  void SetEnabledCupSigning(bool use_cup_signing);
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
 

@@ -76,14 +76,17 @@ class ConfiguratorImpl {
   net::URLRequestContextGetter* RequestContext() const;
 
   // True means that this client can handle delta updates.
-  bool DeltasEnabled() const;
+  bool EnabledDeltas() const;
+
+  // True is the component updates are enabled.
+  bool EnabledComponentUpdates() const;
 
   // True means that the background downloader can be used for downloading
   // non on-demand components.
-  bool UseBackgroundDownloader() const;
+  bool EnabledBackgroundDownloader() const;
 
   // True if signing of update checks is enabled.
-  bool UseCupSigning() const;
+  bool EnabledCupSigning() const;
 
  private:
   net::URLRequestContextGetter* url_request_getter_;

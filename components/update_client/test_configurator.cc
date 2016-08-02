@@ -107,15 +107,19 @@ scoped_refptr<OutOfProcessPatcher> TestConfigurator::CreateOutOfProcessPatcher()
   return NULL;
 }
 
-bool TestConfigurator::DeltasEnabled() const {
+bool TestConfigurator::EnabledDeltas() const {
   return true;
 }
 
-bool TestConfigurator::UseBackgroundDownloader() const {
+bool TestConfigurator::EnabledComponentUpdates() const {
+  return true;
+}
+
+bool TestConfigurator::EnabledBackgroundDownloader() const {
   return false;
 }
 
-bool TestConfigurator::UseCupSigning() const {
+bool TestConfigurator::EnabledCupSigning() const {
   return use_cup_signing_;
 }
 
@@ -131,7 +135,7 @@ void TestConfigurator::SetInitialDelay(int seconds) {
   initial_time_ = seconds;
 }
 
-void TestConfigurator::SetUseCupSigning(bool use_cup_signing) {
+void TestConfigurator::SetEnabledCupSigning(bool use_cup_signing) {
   use_cup_signing_ = use_cup_signing;
 }
 

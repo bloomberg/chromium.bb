@@ -99,14 +99,20 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   CreateOutOfProcessPatcher() const = 0;
 
   // True means that this client can handle delta updates.
-  virtual bool DeltasEnabled() const = 0;
+  virtual bool EnabledDeltas() const = 0;
+
+  // True if component updates are enabled. Updates for all components are
+  // enabled by default. This method allows enabling or disabling
+  // updates for certain components such as the plugins. Updates for some
+  // components are always enabled and can't be disabled programatically.
+  virtual bool EnabledComponentUpdates() const = 0;
 
   // True means that the background downloader can be used for downloading
   // non on-demand components.
-  virtual bool UseBackgroundDownloader() const = 0;
+  virtual bool EnabledBackgroundDownloader() const = 0;
 
   // True if signing of update checks is enabled.
-  virtual bool UseCupSigning() const = 0;
+  virtual bool EnabledCupSigning() const = 0;
 
   // Gets a task runner to a blocking pool of threads suitable for worker jobs.
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()

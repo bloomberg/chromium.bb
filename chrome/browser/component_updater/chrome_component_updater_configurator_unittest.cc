@@ -77,11 +77,11 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
   EXPECT_TRUE(urls.front().SchemeIsCryptographic());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestUseCupSigning) {
+TEST(ChromeComponentUpdaterConfiguratorTest, TestEnabledCupSigning) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
 
-  EXPECT_TRUE(config->UseCupSigning());
+  EXPECT_TRUE(config->EnabledCupSigning());
 }
 
 TEST(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
@@ -113,6 +113,12 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
     ASSERT_STREQ(kUpdaterFallbackUrl, urls[1].spec().c_str());
     ASSERT_EQ(config.UpdateUrl(), config.PingUrl());
   }
+}
+
+TEST(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
+  base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  EXPECT_TRUE(config->EnabledComponentUpdates());
 }
 
 }  // namespace component_updater

@@ -220,6 +220,12 @@ struct CrxComponent {
   // note, the confidentiality of the downloads is enforced by the server,
   // which only returns secure download URLs in this case.
   bool requires_network_encryption;
+
+  // True if the component allows enabling or disabling updates by group policy.
+  // This member should be set to |false| for data, non-binary components, such
+  // as CRLSet, Supervised User Whitelists, STH Set, Origin Trials, and File
+  // Type Policies.
+  bool supports_group_policy_enable_component_updates;
 };
 
 // All methods are safe to call only from the browser's main thread. Once an

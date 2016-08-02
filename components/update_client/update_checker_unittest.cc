@@ -324,7 +324,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  config_->SetUseCupSigning(true);
+  config_->SetEnabledCupSigning(true);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());

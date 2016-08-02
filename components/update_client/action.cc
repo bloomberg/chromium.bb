@@ -31,7 +31,7 @@ namespace {
 bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
                       const scoped_refptr<Configurator>& config) {
   return HasDiffUpdate(update_item) && !update_item->diff_update_failed &&
-         config->DeltasEnabled();
+         config->EnabledDeltas();
 }
 
 }  // namespace
