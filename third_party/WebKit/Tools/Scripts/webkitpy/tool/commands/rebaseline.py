@@ -339,7 +339,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                     suffixes = ','.join(actual_failures_suffixes)
                     cmd_line = ['--suffixes', suffixes, '--builder', builder, '--test', test]
                     if build_number:
-                        cmd_line.extend(['--build-number', build_number])
+                        cmd_line.extend(['--build-number', str(build_number)])
                     if options.results_directory:
                         cmd_line.extend(['--results-directory', options.results_directory])
                     if options.verbose:
