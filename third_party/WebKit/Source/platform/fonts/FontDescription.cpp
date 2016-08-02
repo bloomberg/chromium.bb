@@ -301,8 +301,8 @@ SkFontStyle FontDescription::skiaFontStyle() const
         static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
         "FontStretchNormal should map to kNormal_Width");
     static_assert(
-        static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
-        "FontStretchUltraExpanded should map to kUltaExpanded_Width");
+        static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltraExpanded_Width),
+        "FontStretchUltraExpanded should map to kUltraExpanded_Width");
 }
 
 } // namespace blink
