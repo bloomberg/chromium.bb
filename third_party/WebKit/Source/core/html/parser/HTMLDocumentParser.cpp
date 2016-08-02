@@ -763,10 +763,11 @@ void HTMLDocumentParser::stopBackgroundParser()
 {
     ASSERT(shouldUseThreading());
     ASSERT(m_haveBackgroundParser);
-    m_haveBackgroundParser = false;
 
-    if (document()->frame() && document()->frame()->frameScheduler())
+    if (m_haveBackgroundParser && document()->frame() && document()->frame()->frameScheduler())
         document()->frame()->frameScheduler()->setDocumentParsingInBackground(false);
+
+    m_haveBackgroundParser = false;
 
     // Make this sync, as lsan triggers on some unittests if the task runner is
     // used. Note that these lifetimes will be much more concrete if
