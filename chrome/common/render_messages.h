@@ -41,6 +41,7 @@ enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kOutdatedBlocked,
   kOutdatedDisallowed,
   kPlayImportantContent,
+  kComponentUpdateRequired,
   kUnauthorized,
 };
 
@@ -408,6 +409,18 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_ErrorDownloadingPlugin,
                     std::string /* message */)
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
+// Notifies a missing plugin placeholder that we have finished component-
+// updating the plug-in.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateSuccess)
+
+// Notifies a missing plugin placeholder that we have failed to component-update
+// the plug-in.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateFailure)
+
+// Notifies a missing plugin placeholder that we have started the component
+// download.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateDownloading)
+
 // Notifies a missing plugin placeholder that the user cancelled downloading
 // the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
@@ -444,6 +457,12 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageHasOSDD,
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
+                    int /* placeholder ID */,
+                    std::string /* plugin group identifier */)
+
+// Notifies when a plugin couldn't be loaded because it requires a component
+// update.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedComponentUpdatedPlugin,
                     int /* placeholder ID */,
                     std::string /* plugin group identifier */)
 

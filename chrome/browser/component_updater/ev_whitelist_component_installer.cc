@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -134,6 +135,11 @@ std::string EVWhitelistComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 EVWhitelistComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string> EVWhitelistComponentInstallerTraits::GetMimeTypes()
+    const {
+  return std::vector<std::string>();
 }
 
 void RegisterEVWhitelistComponent(ComponentUpdateService* cus,

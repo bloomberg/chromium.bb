@@ -861,6 +861,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kComponentUpdateRequired: {
+        placeholder = create_blocked_plugin(
+            IDR_BLOCKED_PLUGIN_HTML,
+            l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
+        placeholder->AllowLoading();
+        render_frame->Send(new ChromeViewHostMsg_BlockedComponentUpdatedPlugin(
+            render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
+            identifier));
+        break;
+      }
     }
   }
   placeholder->SetStatus(status);

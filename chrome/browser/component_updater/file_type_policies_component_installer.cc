@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -116,6 +117,11 @@ std::string FileTypePoliciesComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 FileTypePoliciesComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string>
+FileTypePoliciesComponentInstallerTraits::GetMimeTypes() const {
+  return std::vector<std::string>();
 }
 
 void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus,

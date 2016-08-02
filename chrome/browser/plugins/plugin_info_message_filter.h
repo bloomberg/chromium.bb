@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,10 @@ class PluginFinder;
 class PluginMetadata;
 class Profile;
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 class ResourceContext;
 struct WebPluginInfo;
@@ -33,6 +38,10 @@ struct WebPluginInfo;
 
 namespace extensions {
 class ExtensionRegistry;
+}
+
+namespace component_updater {
+struct ComponentInfo;
 }
 
 // This class filters out incoming IPC messages requesting plugin information.
@@ -109,6 +118,19 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   void PluginsLoaded(const GetPluginInfo_Params& params,
                      IPC::Message* reply_msg,
                      const std::vector<content::WebPluginInfo>& plugins);
+
+  void ComponentPluginLookupDone(
+      const GetPluginInfo_Params& params,
+      std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
+      std::unique_ptr<PluginMetadata> plugin_metadata,
+      IPC::Message* reply_msg,
+      std::unique_ptr<component_updater::ComponentInfo> cus_plugin_info);
+
+  void GetPluginInfoReply(
+      const GetPluginInfo_Params& params,
+      std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
+      std::unique_ptr<PluginMetadata> plugin_metadata,
+      IPC::Message* reply_msg);
 
 #if defined(ENABLE_PEPPER_CDMS)
   // Returns whether any internal plugin supporting |mime_type| is registered

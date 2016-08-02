@@ -43,6 +43,8 @@ class CrxUpdateService : public ComponentUpdateService,
   bool RegisterComponent(const CrxComponent& component) override;
   bool UnregisterComponent(const std::string& id) override;
   std::vector<std::string> GetComponentIDs() const override;
+  std::unique_ptr<ComponentInfo> GetComponentForMimeType(
+      const std::string& id) const override;
   OnDemandUpdater& GetOnDemandUpdater() override;
   void MaybeThrottle(const std::string& id,
                      const base::Closure& callback) override;
@@ -106,6 +108,11 @@ class CrxUpdateService : public ComponentUpdateService,
   // Contains the state of the component.
   using ComponentStates = std::map<std::string, CrxUpdateItem>;
   ComponentStates component_states_;
+
+  // Contains a map of media types to the component that implements a handler
+  // for that media type. Only the most recently-registered component is
+  // tracked. May include the IDs of un-registered components.
+  std::map<std::string, std::string> component_ids_by_mime_type_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

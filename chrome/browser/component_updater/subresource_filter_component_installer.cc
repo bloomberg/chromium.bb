@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -106,6 +108,11 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 SubresourceFilterComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string>
+SubresourceFilterComponentInstallerTraits::GetMimeTypes() const {
+  return std::vector<std::string>();
 }
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {

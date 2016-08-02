@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -142,6 +143,9 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   update_client::InstallerAttributes GetInstallerAttributes() const override {
     return update_client::InstallerAttributes();
+  }
+  std::vector<std::string> GetMimeTypes() const override {
+    return std::vector<std::string>();
   }
 
   static std::string ID() {

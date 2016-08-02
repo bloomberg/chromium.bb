@@ -335,6 +335,7 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.installer_attributes = installer_traits_->GetInstallerAttributes();
     crx.requires_network_encryption =
         installer_traits_->RequiresNetworkEncryption();
+    crx.handled_mime_types = installer_traits_->GetMimeTypes();
     if (!cus->RegisterComponent(crx)) {
       LOG(ERROR) << "Component registration failed for "
                  << installer_traits_->GetName();

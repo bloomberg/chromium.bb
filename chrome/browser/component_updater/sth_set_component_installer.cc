@@ -106,6 +106,10 @@ STHSetComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
+std::vector<std::string> STHSetComponentInstallerTraits::GetMimeTypes() const {
+  return std::vector<std::string>();
+}
+
 void STHSetComponentInstallerTraits::LoadSTHsFromDisk(
     const base::FilePath& sths_path,
     const base::Version& version) {

@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -48,6 +49,10 @@ enum UpdateType {
 }  // namespace
 
 namespace component_updater {
+
+ComponentInfo::ComponentInfo(const std::string& id, const base::string16& name)
+    : id(id), name(name) {}
+ComponentInfo::~ComponentInfo() {}
 
 CrxUpdateService::CrxUpdateService(
     const scoped_refptr<Configurator>& config,
@@ -122,6 +127,8 @@ bool CrxUpdateService::RegisterComponent(const CrxComponent& component) {
 
   components_.insert(std::make_pair(id, component));
   components_order_.push_back(id);
+  for (const auto& mime_type : component.handled_mime_types)
+    component_ids_by_mime_type_[mime_type] = id;
 
   // Create an initial state for this component. The state is mutated in
   // response to events from the UpdateClient instance.
@@ -183,6 +190,19 @@ std::vector<std::string> CrxUpdateService::GetComponentIDs() const {
   for (const auto& it : components_)
     ids.push_back(it.first);
   return ids;
+}
+
+std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
+    const std::string& mime_type) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const auto it = component_ids_by_mime_type_.find(mime_type);
+  if (it == component_ids_by_mime_type_.end())
+    return nullptr;
+  const auto component = GetComponent(it->second);
+  if (!component)
+    return nullptr;
+  return base::MakeUnique<ComponentInfo>(GetCrxComponentID(*component),
+                                         base::UTF8ToUTF16(component->name));
 }
 
 OnDemandUpdater& CrxUpdateService::GetOnDemandUpdater() {

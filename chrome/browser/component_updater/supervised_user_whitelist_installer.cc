@@ -261,6 +261,7 @@ class SupervisedUserWhitelistComponentInstallerTraits
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
+  std::vector<std::string> GetMimeTypes() const override;
 
   std::string crx_id_;
   std::string name_;
@@ -324,6 +325,11 @@ update_client::InstallerAttributes
 SupervisedUserWhitelistComponentInstallerTraits::GetInstallerAttributes()
     const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string>
+SupervisedUserWhitelistComponentInstallerTraits::GetMimeTypes() const {
+  return std::vector<std::string>();
 }
 
 class SupervisedUserWhitelistInstallerImpl

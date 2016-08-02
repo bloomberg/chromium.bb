@@ -74,10 +74,10 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   if (context_menu_request_id_ && render_frame())
     render_frame()->CancelContextMenu(context_menu_request_id_);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   if (placeholder_routing_id_ == MSG_ROUTING_NONE)
     return;
   RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   if (has_host_) {
     RenderThread::Get()->Send(new ChromeViewHostMsg_RemovePluginPlaceholderHost(
         routing_id(), placeholder_routing_id_));
@@ -175,18 +175,16 @@ void ChromePluginPlaceholder::SetStatus(
   status_ = status;
 }
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
 int32_t ChromePluginPlaceholder::CreateRoutingId() {
   placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
   RenderThread::Get()->AddRoute(placeholder_routing_id_, this);
   return placeholder_routing_id_;
 }
-#endif
 
 bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
+#if defined(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin, OnFoundMissingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
                         OnDidNotFindMissingPlugin)
@@ -198,12 +196,18 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
                         OnErrorDownloadingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
                         OnCancelledDownloadingPlugin)
+#endif
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateDownloading,
+                        OnPluginComponentUpdateDownloading)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateSuccess,
+                        OnPluginComponentUpdateSuccess)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateFailure,
+                        OnPluginComponentUpdateFailure)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   if (handled)
     return true;
-#endif
 
   // We don't swallow these messages because multiple blocked plugins and other
   // objects have an interest in them.
@@ -256,6 +260,19 @@ void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
       l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED, plugin_name_));
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
+
+void ChromePluginPlaceholder::OnPluginComponentUpdateDownloading() {
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));
+}
+
+void ChromePluginPlaceholder::OnPluginComponentUpdateSuccess() {
+  PluginListChanged();
+}
+
+void ChromePluginPlaceholder::OnPluginComponentUpdateFailure() {
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
+                                        plugin_name_));
+}
 
 void ChromePluginPlaceholder::PluginListChanged() {
   if (!GetFrame() || !plugin())

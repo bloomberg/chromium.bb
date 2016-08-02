@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -187,6 +188,7 @@ class FlashComponentInstallerTraits : public ComponentInstallerTraits {
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
+  std::vector<std::string> GetMimeTypes() const override;
 
   DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerTraits);
 };
@@ -259,6 +261,13 @@ std::string FlashComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 FlashComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string> FlashComponentInstallerTraits::GetMimeTypes() const {
+  std::vector<std::string> mime_types;
+  mime_types.push_back("application/x-shockwave-flash");
+  mime_types.push_back("application/futuresplash");
+  return mime_types;
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

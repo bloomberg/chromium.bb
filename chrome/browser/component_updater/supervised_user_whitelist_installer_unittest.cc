@@ -136,6 +136,11 @@ class MockComponentUpdateService : public ComponentUpdateService,
     return false;
   }
 
+  std::unique_ptr<ComponentInfo> GetComponentForMimeType(
+      const std::string& mime_type) const override {
+    return nullptr;
+  }
+
   // OnDemandUpdater implementation:
   bool OnDemandUpdate(const std::string& crx_id) override {
     on_demand_update_called_ = true;

@@ -4,6 +4,7 @@
 
 #include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -100,6 +101,10 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
     installer_attributes["ap"] = "fake-ap";
     installer_attributes["is-enterprise"] = "1";
     return installer_attributes;
+  }
+
+  std::vector<std::string> GetMimeTypes() const override {
+    return std::vector<std::string>();
   }
 
  private:

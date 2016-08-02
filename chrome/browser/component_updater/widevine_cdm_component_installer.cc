@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -261,6 +262,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
+  std::vector<std::string> GetMimeTypes() const override;
 
   // Checks and updates CDM adapter if necessary to make sure the latest CDM
   // adapter is always used.
@@ -338,6 +340,11 @@ std::string WidevineCdmComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 WidevineCdmComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string> WidevineCdmComponentInstallerTraits::GetMimeTypes()
+    const {
+  return std::vector<std::string>();
 }
 
 static bool HasValidAdapter(const base::FilePath& adapter_version_path,

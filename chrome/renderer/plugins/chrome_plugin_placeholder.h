@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_PLUGINS_CHROME_PLUGIN_PLACEHOLDER_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
@@ -45,9 +46,7 @@ class ChromePluginPlaceholder final
 
   void SetStatus(ChromeViewHostMsg_GetPluginInfo_Status status);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   int32_t CreateRoutingId();
-#endif
 
  private:
   ChromePluginPlaceholder(content::RenderFrame* render_frame,
@@ -92,16 +91,19 @@ class ChromePluginPlaceholder final
   void OnErrorDownloadingPlugin(const std::string& error);
   void OnCancelledDownloadingPlugin();
 #endif
+  void OnPluginComponentUpdateDownloading();
+  void OnPluginComponentUpdateSuccess();
+  void OnPluginComponentUpdateFailure();
 
   ChromeViewHostMsg_GetPluginInfo_Status status_;
 
   base::string16 title_;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
   int32_t placeholder_routing_id_ = MSG_ROUTING_NONE;
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   bool has_host_ = false;
 #endif
 

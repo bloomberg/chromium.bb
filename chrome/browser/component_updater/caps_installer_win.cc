@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/caps_installer_win.h"
 
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -109,6 +110,10 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
 
   update_client::InstallerAttributes GetInstallerAttributes() const override {
     return update_client::InstallerAttributes();
+  }
+
+  std::vector<std::string> GetMimeTypes() const override {
+    return std::vector<std::string>();
   }
 };
 

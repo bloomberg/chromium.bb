@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -105,6 +107,11 @@ std::string OriginTrialsComponentInstallerTraits::GetName() const {
 update_client::InstallerAttributes
 OriginTrialsComponentInstallerTraits::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
+}
+
+std::vector<std::string> OriginTrialsComponentInstallerTraits::GetMimeTypes()
+    const {
+  return std::vector<std::string>();
 }
 
 void RegisterOriginTrialsComponent(ComponentUpdateService* cus,

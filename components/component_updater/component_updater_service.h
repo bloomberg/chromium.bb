@@ -19,6 +19,7 @@
 #include "url/gurl.h"
 
 class ComponentsUI;
+class PluginObserver;
 class SupervisedUserWhitelistService;
 
 namespace base {
@@ -50,6 +51,14 @@ class OnDemandUpdater;
 using Configurator = update_client::Configurator;
 using CrxComponent = update_client::CrxComponent;
 using CrxUpdateItem = update_client::CrxUpdateItem;
+
+struct ComponentInfo {
+  ComponentInfo(const std::string& id, const base::string16& name);
+  ~ComponentInfo();
+
+  const std::string id;
+  const base::string16 name;
+};
 
 // The component update service is in charge of installing or upgrading
 // select parts of chrome. Each part is called a component and managed by
@@ -96,6 +105,13 @@ class ComponentUpdateService {
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
 
+  // Returns a ComponentInfo describing a registered component that implements a
+  // handler for the specified |mime_type|. If multiple such components exist,
+  // returns information for the one that was most recently registered. If no
+  // such components exist, returns nullptr.
+  virtual std::unique_ptr<ComponentInfo> GetComponentForMimeType(
+      const std::string& mime_type) const = 0;
+
   // Returns an interface for on-demand updates. On-demand updates are
   // proactively triggered outside the normal component update service schedule.
   virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
@@ -140,6 +156,7 @@ class OnDemandUpdater {
   friend class OnDemandTester;
   friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsUI;
+  friend class ::PluginObserver;
 
   // Triggers an update check for a component. |id| is a value
   // returned by GetCrxComponentID(). If an update for this component is already

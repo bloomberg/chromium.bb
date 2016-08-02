@@ -11,6 +11,9 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_MOCK_COMPONENT_UPDATER_SERVICE_H_
 #define COMPONENTS_COMPONENT_UPDATER_MOCK_COMPONENT_UPDATER_SERVICE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
 #include "components/component_updater/component_updater_service.h"
@@ -33,6 +36,9 @@ class MockComponentUpdateService : public ComponentUpdateService {
       bool(const std::string& id));
   MOCK_CONST_METHOD0(GetComponentIDs,
       std::vector<std::string>());
+  MOCK_CONST_METHOD1(
+      GetComponentForMimeType,
+      std::unique_ptr<ComponentInfo>(const std::string& mime_type));
   MOCK_METHOD0(GetOnDemandUpdater,
       OnDemandUpdater&());
   MOCK_METHOD2(MaybeThrottle,
