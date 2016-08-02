@@ -110,7 +110,7 @@ static inline void list_delinit(struct list_head *item)
 #ifndef container_of
 #define container_of(ptr, sample, member)				\
     (void *)((char *)(ptr)						\
-	     - ((char *)&(sample)->member - (char *)(sample)))
+	     - ((char *)&((typeof(sample))0)->member))
 #endif
 
 #define LIST_FOR_EACH_ENTRY(pos, head, member)				\
