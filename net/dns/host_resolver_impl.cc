@@ -1775,8 +1775,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     bool did_complete = (entry.error() != ERR_NETWORK_CHANGED) &&
                         (entry.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    if (did_complete)
+    if (did_complete) {
       resolver_->CacheResult(key_, entry, ttl);
+      // Erase any previous cache hit callbacks, since a new DNS request went
+      // out since they were set.
+      resolver_->cache_hit_callbacks_.erase(key_);
+    }
 
     // Complete all of the requests that were attached to the job and
     // detach them.
@@ -1787,6 +1791,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       // Update the net log and notify registered observers.
       LogFinishRequest(req->source_net_log(), req->info(), entry.error());
       if (did_complete) {
+        resolver_->MaybeAddCacheHitCallback(key_, req->info());
         // Record effective total time from creation to completion.
         RecordTotalTime(had_dns_config_, req->info().is_speculative(),
                         base::TimeTicks::Now() - req->request_time());
@@ -1933,6 +1938,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   int rv = ResolveHelper(key, info, ip_address_ptr, addresses, false, nullptr,
                          source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
+    MaybeAddCacheHitCallback(key, info);
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
     return rv;
@@ -2061,6 +2067,7 @@ int HostResolverImpl::ResolveHelper(const Key& key,
                      stale_info)) {
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_CACHE_HIT);
     // |ServeFromCache()| will set |*stale_info| as needed.
+    RunCacheHitCallbacks(key, info);
     return net_error;
   }
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
@@ -2418,8 +2425,10 @@ void HostResolverImpl::OnIPAddressChanged() {
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
-  if (cache_.get())
+  if (cache_.get()) {
     cache_->clear();
+    cache_hit_callbacks_.clear();
+  }
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   RunLoopbackProbeJob();
 #endif
@@ -2478,8 +2487,10 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     // have to drop our internal cache :( Note that OS level DNS caches, such
     // as NSCD's cache should be dropped automatically by the OS when
     // resolv.conf changes so we don't need to do anything to clear that cache.
-    if (cache_.get())
+    if (cache_.get()) {
       cache_->clear();
+      cache_hit_callbacks_.clear();
+    }
 
     // Life check to bail once |this| is deleted.
     base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
@@ -2525,6 +2536,28 @@ void HostResolverImpl::OnDnsTaskResolve(int net_error) {
                               std::abs(net_error));
 }
 
+void HostResolverImpl::OnCacheEntryEvicted(const HostCache::Key& key,
+                                           const HostCache::Entry& entry) {
+  cache_hit_callbacks_.erase(key);
+}
+
+void HostResolverImpl::MaybeAddCacheHitCallback(const HostCache::Key& key,
+                                                const RequestInfo& info) {
+  const RequestInfo::CacheHitCallback& callback = info.cache_hit_callback();
+  if (callback.is_null())
+    return;
+  cache_hit_callbacks_[key].push_back(callback);
+}
+
+void HostResolverImpl::RunCacheHitCallbacks(const HostCache::Key& key,
+                                            const RequestInfo& info) {
+  auto it = cache_hit_callbacks_.find(key);
+  if (it == cache_hit_callbacks_.end())
+    return;
+  for (auto& callback : it->second)
+    callback.Run(info);
+}
+
 void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   // DnsClient and config must be updated before aborting DnsTasks, since doing
   // so may start new jobs.
@@ -2552,6 +2585,13 @@ void HostResolverImpl::InitializePersistence(
     ApplyPersistentData(std::move(old_data));
 }
 
+void HostResolverImpl::ApplyPersistentData(
+    std::unique_ptr<const base::Value> data) {}
+
+std::unique_ptr<const base::Value> HostResolverImpl::GetPersistentData() {
+  return std::unique_ptr<const base::Value>();
+}
+
 void HostResolverImpl::SchedulePersist() {
   if (!persist_initialized_ || persist_timer_.IsRunning())
     return;
@@ -2563,13 +2603,6 @@ void HostResolverImpl::SchedulePersist() {
 void HostResolverImpl::DoPersist() {
   DCHECK(persist_initialized_);
   persist_callback_.Run(GetPersistentData());
-}
-
-void HostResolverImpl::ApplyPersistentData(
-    std::unique_ptr<const base::Value> data) {}
-
-std::unique_ptr<const base::Value> HostResolverImpl::GetPersistentData() {
-  return std::unique_ptr<const base::Value>();
 }
 
 HostResolverImpl::RequestImpl::~RequestImpl() {

@@ -299,11 +299,18 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
-  void SchedulePersist();
-  void DoPersist();
+  void OnCacheEntryEvicted(const HostCache::Key& key,
+                           const HostCache::Entry& entry);
+  void ClearCacheHitCallbacks(const HostCache::Key& key);
+  void MaybeAddCacheHitCallback(const HostCache::Key& key,
+                                const RequestInfo& info);
+  void RunCacheHitCallbacks(const HostCache::Key& key, const RequestInfo& info);
 
   void ApplyPersistentData(std::unique_ptr<const base::Value>);
   std::unique_ptr<const base::Value> GetPersistentData();
+
+  void SchedulePersist();
+  void DoPersist();
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
@@ -360,6 +367,9 @@ class NET_EXPORT HostResolverImpl
   // blocking operations. Usually just the WorkerPool's task runner for slow
   // tasks, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> worker_task_runner_;
+
+  std::map<const HostCache::Key, std::vector<RequestInfo::CacheHitCallback>>
+      cache_hit_callbacks_;
 
   bool persist_initialized_;
   PersistCallback persist_callback_;

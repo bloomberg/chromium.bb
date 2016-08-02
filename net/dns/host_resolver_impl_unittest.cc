@@ -2398,4 +2398,63 @@ TEST_F(HostResolverImplTest, ResolveLocalHostname) {
       ResolveLocalHostname("foo.localhoste", kLocalhostLookupPort, &addresses));
 }
 
+void TestCacheHitCallback(int* callback_count,
+                          HostResolver::RequestInfo* last_request_info,
+                          const HostResolver::RequestInfo& request_info) {
+  ++*callback_count;
+  *last_request_info = request_info;
+}
+
+TEST_F(HostResolverImplTest, CacheHitCallback) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(5u);
+
+  HostResolver::RequestInfo last_request_info(HostPortPair("unassigned", 80));
+
+  // Set a cache hit callback.
+  int count1 = 0;
+  HostResolver::RequestInfo info_callback1(HostPortPair("just.testing", 80));
+  info_callback1.set_cache_hit_callback(
+      base::Bind(&TestCacheHitCallback, &count1, &last_request_info));
+  Request* req = CreateRequest(info_callback1, MEDIUM);
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
+  EXPECT_EQ(0, count1);
+
+  // Make sure the cache hit callback is called, and set another one.
+  // Future requests should call *both* callbacks.
+  int count2 = 0;
+  HostResolver::RequestInfo info_callback2(HostPortPair("just.testing", 80));
+  info_callback2.set_cache_hit_callback(
+      base::Bind(&TestCacheHitCallback, &count2, &last_request_info));
+  req = CreateRequest(info_callback2, MEDIUM);
+  EXPECT_THAT(req->Resolve(), IsOk());
+  EXPECT_EQ(1, count1);
+  EXPECT_EQ(0, count2);
+
+  // Make another request to make sure both callbacks are called.
+  req = CreateRequest("just.testing", 80);
+  EXPECT_THAT(req->Resolve(), IsOk());
+  EXPECT_EQ(2, count1);
+  EXPECT_EQ(1, count2);
+
+  // Make an uncached request to clear the cache hit callbacks.
+  // (They should be cleared because the uncached request will write a new
+  // result into the cache.)
+  // It should not call the callbacks itself, since it doesn't hit the cache.
+  HostResolver::RequestInfo info_uncached(HostPortPair("just.testing", 80));
+  info_uncached.set_allow_cached_response(false);
+  req = CreateRequest(info_uncached, MEDIUM);
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(req->WaitForResult(), IsOk());
+  EXPECT_EQ(2, count1);
+  EXPECT_EQ(1, count2);
+
+  // Make another request to make sure both callbacks were cleared.
+  req = CreateRequest("just.testing", 80);
+  EXPECT_THAT(req->Resolve(), IsOk());
+  EXPECT_EQ(2, count1);
+  EXPECT_EQ(1, count2);
+}
+
 }  // namespace net

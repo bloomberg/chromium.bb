@@ -76,6 +76,8 @@ class NET_EXPORT HostResolver {
   class NET_EXPORT RequestInfo {
    public:
     explicit RequestInfo(const HostPortPair& host_port_pair);
+    RequestInfo(const RequestInfo& request_info);
+    ~RequestInfo();
 
     const HostPortPair& host_port_pair() const { return host_port_pair_; }
     void set_host_port_pair(const HostPortPair& host_port_pair) {
@@ -106,7 +108,17 @@ class NET_EXPORT HostResolver {
     bool is_my_ip_address() const { return is_my_ip_address_; }
     void set_is_my_ip_address(bool b) { is_my_ip_address_ = b; }
 
+    using CacheHitCallback = base::Callback<void(const RequestInfo&)>;
+    const CacheHitCallback& cache_hit_callback() const {
+      return cache_hit_callback_;
+    }
+    void set_cache_hit_callback(const CacheHitCallback& callback) {
+      cache_hit_callback_ = callback;
+    }
+
    private:
+    RequestInfo();
+
     // The hostname to resolve, and the port to use in resulting sockaddrs.
     HostPortPair host_port_pair_;
 
@@ -125,6 +137,10 @@ class NET_EXPORT HostResolver {
     // Indicates a request for myIpAddress (to differentiate from other requests
     // for localhost, currently used by Chrome OS).
     bool is_my_ip_address_;
+
+    // A callback that will be called when another request reads the cache data
+    // returned (and possibly written) by this request.
+    CacheHitCallback cache_hit_callback_;
   };
 
   // Set Options.max_concurrent_resolves to this to select a default level
