@@ -4563,9 +4563,13 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
     return;
   }
   bool simulated = false;
-  if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
-      "glDrawArrays", this, helper_, first + count, 0, &simulated)) {
-    return;
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    GLsizei num_elements;
+    SafeAddInt32(first, count, &num_elements);
+    if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
+            "glDrawArrays", this, helper_, num_elements, 0, &simulated)) {
+      return;
+    }
   }
   helper_->DrawArrays(mode, first, count);
   RestoreArrayBuffer(simulated);
@@ -5589,10 +5593,14 @@ void GLES2Implementation::DrawArraysInstancedANGLE(
     return;
   }
   bool simulated = false;
-  if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
-      "glDrawArraysInstancedANGLE", this, helper_, first + count, primcount,
-      &simulated)) {
-    return;
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    GLsizei num_elements;
+    SafeAddInt32(first, count, &num_elements);
+    if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
+            "glDrawArraysInstancedANGLE", this, helper_, num_elements,
+            primcount, &simulated)) {
+      return;
+    }
   }
   helper_->DrawArraysInstancedANGLE(mode, first, count, primcount);
   RestoreArrayBuffer(simulated);

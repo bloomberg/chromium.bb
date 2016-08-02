@@ -52,6 +52,9 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   // Returns false if array is an unknown id.
   bool BindVertexArray(GLuint array, bool* changed);
 
+  // Whether client side buffers are supported.
+  bool SupportsClientSideBuffers();
+
   // simulated will be set to true if buffers were simulated.
   // Returns true service should be called.
   bool SetupSimulatedClientSideBuffers(

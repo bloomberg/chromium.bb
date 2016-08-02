@@ -486,6 +486,11 @@ bool VertexArrayObjectManager::IsDefaultVAOBound() const {
   return bound_vertex_array_object_ == default_vertex_array_object_;
 }
 
+bool VertexArrayObjectManager::SupportsClientSideBuffers() {
+  return support_client_side_arrays_ &&
+         bound_vertex_array_object_->HaveEnabledClientSideBuffers();
+}
+
 // Returns true if buffers were setup.
 bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     const char* function_name,
@@ -495,11 +500,9 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     GLsizei primcount,
     bool* simulated) {
   *simulated = false;
-  if (!support_client_side_arrays_)
-    return true;
-  if (!bound_vertex_array_object_->HaveEnabledClientSideBuffers()) {
-    return true;
-  }
+  if (!SupportsClientSideBuffers())
+    return false;
+
   if (!IsDefaultVAOBound()) {
     gl->SetGLError(
         GL_INVALID_OPERATION, function_name,
