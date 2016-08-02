@@ -78,6 +78,22 @@ Polymer({
 
   /** @private */
   currentRouteChanged_: function(newRoute, oldRoute) {
+    if (newRoute.section == this.section && newRoute.subpage.length > 0) {
+      this.switchToSubpage_(newRoute, oldRoute);
+    } else {
+      this.$.animatedPages.exitAnimation = 'fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'fade-in-animation';
+      this.$.animatedPages.selected = 'main';
+    }
+  },
+
+  /**
+   * Selects the subpage specified by |newRoute|.
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   * @private
+   */
+  switchToSubpage_: function(newRoute, oldRoute) {
     // Don't manipulate the light DOM until it's ready.
     if (!this.lightDomReady_) {
       this.queuedRouteChange_ = this.queuedRouteChange_ || {oldRoute: oldRoute};
@@ -85,44 +101,37 @@ Polymer({
       return;
     }
 
-    var newRouteIsSubpage = newRoute && newRoute.subpage.length;
-    var oldRouteIsSubpage = oldRoute && oldRoute.subpage.length;
+    this.ensureSubpageInstance_();
 
-    if (newRouteIsSubpage)
-      this.ensureSubpageInstance_();
-
-    if (!newRouteIsSubpage || !oldRouteIsSubpage ||
-        newRoute.subpage.length == oldRoute.subpage.length) {
-      // If two routes are at the same level, or if either the new or old route
-      // is not a subpage, fade in and out.
-      this.$.animatedPages.exitAnimation = 'fade-out-animation';
-      this.$.animatedPages.entryAnimation = 'fade-in-animation';
-    } else {
-      // For transitioning between subpages at different levels, slide.
-      if (newRoute.subpage.length > oldRoute.subpage.length) {
+    if (oldRoute) {
+      var oldRouteIsSubpage = oldRoute.subpage.length > 0;
+      if (oldRouteIsSubpage && oldRoute.contains(newRoute)) {
+        // Slide left for a descendant subpage.
         this.$.animatedPages.exitAnimation = 'slide-left-animation';
         this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
-      } else {
+      } else if (newRoute.contains(oldRoute)) {
+        // Slide right for an ancestor subpage.
         this.$.animatedPages.exitAnimation = 'slide-right-animation';
         this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
+      } else {
+        // The old route is not a subpage or is at the same level, so just fade.
+        this.$.animatedPages.exitAnimation = 'fade-out-animation';
+        this.$.animatedPages.entryAnimation = 'fade-in-animation';
+
+        if (!oldRouteIsSubpage) {
+          // Set the height the expand animation should start at before
+          // beginning the transition to the new subpage.
+          // TODO(michaelpg): Remove MainPageBehavior's dependency on this
+          // height being set.
+          this.style.height = this.clientHeight + 'px';
+          this.async(function() {
+            this.style.height = '';
+          });
+        }
       }
     }
 
-    if (newRouteIsSubpage && newRoute.section == this.section) {
-      if (!oldRouteIsSubpage) {
-        // Set the height the expand animation should start at before beginning
-        // the transition to the new sub-page.
-        // TODO(michaelpg): Remove MainPageBehavior's dependency on this height
-        // being set.
-        this.style.height = this.clientHeight + 'px';
-        this.async(function() {
-          this.style.height = '';
-        });
-      }
-      this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
-    } else {
-      this.$.animatedPages.selected = 'main';
-    }
+    this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
   },
 
   /**
