@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 namespace blimp {
@@ -17,6 +18,8 @@ class BlimpGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
   BlimpGpuMemoryBufferManager();
   ~BlimpGpuMemoryBufferManager() override;
+
+  static cc::BufferToTextureTargetMap GetDefaultBufferToTextureTargetMap();
 
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(

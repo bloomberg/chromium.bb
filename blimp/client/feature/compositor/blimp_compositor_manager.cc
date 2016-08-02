@@ -133,6 +133,8 @@ cc::LayerTreeSettings* BlimpCompositorManager::GetLayerTreeSettings() {
     GenerateLayerTreeSettings(settings_.get());
     settings_
       ->abort_commit_before_output_surface_creation = false;
+    settings_->renderer_settings.buffer_to_texture_target_map =
+        BlimpGpuMemoryBufferManager::GetDefaultBufferToTextureTargetMap();
   }
 
   return settings_.get();

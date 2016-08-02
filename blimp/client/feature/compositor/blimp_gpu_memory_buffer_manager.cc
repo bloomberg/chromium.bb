@@ -4,6 +4,7 @@
 
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 
+#include <GLES2/gl2.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -100,6 +101,24 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 BlimpGpuMemoryBufferManager::BlimpGpuMemoryBufferManager() {}
 
 BlimpGpuMemoryBufferManager::~BlimpGpuMemoryBufferManager() {}
+
+// static
+cc::BufferToTextureTargetMap
+BlimpGpuMemoryBufferManager::GetDefaultBufferToTextureTargetMap() {
+  cc::BufferToTextureTargetMap image_targets;
+  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
+       ++usage_idx) {
+    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
+    for (int format_idx = 0;
+         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
+         ++format_idx) {
+      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
+      image_targets.insert(cc::BufferToTextureTargetMap::value_type(
+          cc::BufferToTextureTargetKey(usage, format), GL_TEXTURE_2D));
+    }
+  }
+  return image_targets;
+}
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
 BlimpGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
