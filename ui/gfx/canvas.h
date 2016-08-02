@@ -193,8 +193,9 @@ class GFX_EXPORT Canvas {
   // call Restore() more times than Save*().
   void Restore();
 
-  // Adds |rect| to the current clip.
-  void ClipRect(const Rect& rect);
+  // Applies |rect| to the current clip using the specified region |op|.
+  void ClipRect(const Rect& rect, SkRegion::Op op = SkRegion::kIntersect_Op);
+  void ClipRect(const RectF& rect, SkRegion::Op op = SkRegion::kIntersect_Op);
 
   // Adds |path| to the current clip. |do_anti_alias| is true if the clip
   // should be antialiased.

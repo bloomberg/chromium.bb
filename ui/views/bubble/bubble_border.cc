@@ -256,8 +256,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 
   // Clip the arrow bounds out to avoid painting the overlapping edge area.
   canvas->Save();
-  SkRect arrow_rect(gfx::RectToSkRect(arrow_bounds));
-  canvas->sk_canvas()->clipRect(arrow_rect, SkRegion::kDifference_Op);
+  canvas->ClipRect(arrow_bounds, SkRegion::kDifference_Op);
   Painter::PaintPainterAt(canvas, images_->border_painter.get(), bounds);
   canvas->Restore();
 

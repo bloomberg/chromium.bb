@@ -1529,8 +1529,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
     if (!is_active) {
       // Clip out the bottom line; this will be drawn for us by
       // TabStrip::PaintChildren().
-      canvas->sk_canvas()->clipRect(
-          SkRect::MakeWH(width() * scale, height() * scale - 1));
+      canvas->ClipRect(gfx::RectF(width() * scale, height() * scale - 1));
     }
     paint.setColor(controller_->GetToolbarTopSeparatorColor());
     canvas->DrawPath(stroke, paint);
