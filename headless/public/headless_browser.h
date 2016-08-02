@@ -18,14 +18,11 @@
 #include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class MessagePump;
 class SingleThreadTaskRunner;
-}
-
-namespace gfx {
-class Size;
 }
 
 namespace headless {
@@ -126,6 +123,10 @@ struct HeadlessBrowser::Options {
   // string can be used to disable GL rendering (e.g., WebGL support).
   std::string gl_implementation;
 
+  // Default window size. This is also used to create the window tree host and
+  // as initial screen size. Defaults to 800x600.
+  gfx::Size window_size;
+
  private:
   Options(int argc, const char** argv);
 
@@ -147,6 +148,7 @@ class HeadlessBrowser::Options::Builder {
   Builder& SetDisableSandbox(bool disable_sandbox);
   Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
   Builder& SetGLImplementation(const std::string& gl_implementation);
+  Builder& SetWindowSize(const gfx::Size& window_size);
 
   Options Build();
 

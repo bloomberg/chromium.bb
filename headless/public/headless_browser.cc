@@ -13,6 +13,7 @@ namespace headless {
 // Product name for building the default user agent string.
 namespace {
 const char kProductName[] = "HeadlessChrome";
+constexpr gfx::Size kDefaultWindowSize(800, 600);
 }
 
 Options::Options(int argc, const char** argv)
@@ -22,7 +23,8 @@ Options::Options(int argc, const char** argv)
       message_pump(nullptr),
       single_process_mode(false),
       disable_sandbox(false),
-      gl_implementation("osmesa") {}
+      gl_implementation("osmesa"),
+      window_size(kDefaultWindowSize) {}
 
 Options::Options(Options&& options) = default;
 
@@ -78,6 +80,11 @@ Builder& Builder::SetProtocolHandlers(ProtocolHandlerMap protocol_handlers) {
 
 Builder& Builder::SetGLImplementation(const std::string& gl_implementation) {
   options_.gl_implementation = gl_implementation;
+  return *this;
+}
+
+Builder& Builder::SetWindowSize(const gfx::Size& window_size) {
+  options_.window_size = window_size;
   return *this;
 }
 

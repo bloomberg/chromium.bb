@@ -30,8 +30,7 @@ bool IsRotationPortrait(display::Display::Rotation rotation) {
 
 // static
 HeadlessScreen* HeadlessScreen::Create(const gfx::Size& size) {
-  const gfx::Size kDefaultSize(800, 600);
-  return new HeadlessScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
+  return new HeadlessScreen(gfx::Rect(size));
 }
 
 HeadlessScreen::~HeadlessScreen() {}

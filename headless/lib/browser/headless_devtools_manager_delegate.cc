@@ -59,8 +59,8 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
   std::string url;
   std::string browser_context_id;
-  int width = 800;
-  int height = 600;
+  int width = browser_->options()->window_size.width();
+  int height = browser_->options()->window_size.height();
   params->GetString("url", &url);
   params->GetString("browserContextId", &browser_context_id);
   params->GetInteger("width", &width);

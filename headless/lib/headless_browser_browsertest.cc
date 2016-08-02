@@ -164,14 +164,49 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
       browser()->CreateWebContentsBuilder().Build();
 
   bool webgl_supported;
-  EXPECT_TRUE(EvaluateScript(
-      web_contents,
-      "(document.createElement('canvas').getContext('webgl')"
-      "    instanceof WebGLRenderingContext)")
+  EXPECT_TRUE(
+      EvaluateScript(web_contents,
+                     "(document.createElement('canvas').getContext('webgl')"
+                     "    instanceof WebGLRenderingContext)")
+          ->GetResult()
+          ->GetValue()
+          ->GetAsBoolean(&webgl_supported));
+  EXPECT_TRUE(webgl_supported);
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
+  HeadlessWebContents* web_contents =
+      browser()->CreateWebContentsBuilder().Build();
+
+  HeadlessBrowser::Options::Builder builder;
+  const HeadlessBrowser::Options kDefaultOptions = builder.Build();
+
+  int screen_width;
+  int screen_height;
+  int window_width;
+  int window_height;
+
+  EXPECT_TRUE(EvaluateScript(web_contents, "screen.width")
                   ->GetResult()
                   ->GetValue()
-                  ->GetAsBoolean(&webgl_supported));
-  EXPECT_TRUE(webgl_supported);
+                  ->GetAsInteger(&screen_width));
+  EXPECT_TRUE(EvaluateScript(web_contents, "screen.height")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsInteger(&screen_height));
+  EXPECT_TRUE(EvaluateScript(web_contents, "window.innerWidth")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsInteger(&window_width));
+  EXPECT_TRUE(EvaluateScript(web_contents, "window.innerHeight")
+                  ->GetResult()
+                  ->GetValue()
+                  ->GetAsInteger(&window_height));
+
+  EXPECT_EQ(kDefaultOptions.window_size.width(), screen_width);
+  EXPECT_EQ(kDefaultOptions.window_size.height(), screen_height);
+  EXPECT_EQ(kDefaultOptions.window_size.width(), window_width);
+  EXPECT_EQ(kDefaultOptions.window_size.height(), window_height);
 }
 
 }  // namespace headless

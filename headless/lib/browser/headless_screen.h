@@ -27,8 +27,7 @@ namespace headless {
 
 class HeadlessScreen : public display::Screen, public aura::WindowObserver {
  public:
-  // Creates a display::Screen of the specified size. If no size is specified,
-  // then creates a 800x600 screen. |size| is in physical pixels.
+  // Creates a display::Screen of the specified size (physical pixels).
   static HeadlessScreen* Create(const gfx::Size& size);
   ~HeadlessScreen() override;
 

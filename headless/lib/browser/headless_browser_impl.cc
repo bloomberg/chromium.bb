@@ -127,10 +127,8 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
   DCHECK(aura::Env::GetInstance());
-  // TODO(eseckler): allow configuration of window (viewport) size by embedder.
-  const gfx::Size kDefaultSize(800, 600);
   window_tree_host_.reset(
-      aura::WindowTreeHost::Create(gfx::Rect(kDefaultSize)));
+      aura::WindowTreeHost::Create(gfx::Rect(options()->window_size)));
   window_tree_host_->InitHost();
 
   window_tree_client_.reset(

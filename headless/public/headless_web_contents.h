@@ -76,7 +76,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   // about:blank.
   Builder& SetInitialURL(const GURL& initial_url);
 
-  // Specify the initial window size (default is 800x600).
+  // Specify the initial window size (default is configured in browser options).
   Builder& SetWindowSize(const gfx::Size& size);
 
   // Set a browser context for storing session data (e.g., cookies, cache, local
@@ -135,7 +135,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
 
   HeadlessBrowserImpl* browser_;
   GURL initial_url_ = GURL("about:blank");
-  gfx::Size window_size_ = gfx::Size(800, 600);
+  gfx::Size window_size_;
   HeadlessBrowserContext* browser_context_;
   std::list<MojoService> mojo_services_;
 

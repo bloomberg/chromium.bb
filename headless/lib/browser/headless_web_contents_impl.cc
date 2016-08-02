@@ -202,6 +202,7 @@ content::WebContents* HeadlessWebContentsImpl::web_contents() const {
 
 HeadlessWebContents::Builder::Builder(HeadlessBrowserImpl* browser)
     : browser_(browser),
+      window_size_(browser_->options()->window_size),
       browser_context_(
           browser->browser_main_parts()->default_browser_context()) {}
 
