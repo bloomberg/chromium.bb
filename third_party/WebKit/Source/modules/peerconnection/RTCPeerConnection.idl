@@ -108,7 +108,7 @@ enum RTCIceConnectionState {
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
     // argument.
-    [CallWith=ScriptState] Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
+    [CallWith=ScriptState, LegacyInterfaceTypeChecking] Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
     [CallWith=ScriptState, RuntimeEnabled=RTCPeerConnectionNewGetStats] Promise<RTCStatsReport> getStats(optional MediaStreamTrack? selector);
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api

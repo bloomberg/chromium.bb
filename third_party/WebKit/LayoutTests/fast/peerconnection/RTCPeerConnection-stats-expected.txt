@@ -33,6 +33,17 @@ PASS res.names().indexOf("type") is >= 0
 PASS res.stat("type") is "audio"
 PASS status_g.namedItem(res.id) is non-null.
 PASS status_g[res.id] is non-null.
+PASS pc.getStats(statsHandler4, 42) did not throw exception.
+PASS statsHandler4 was called
+PASS result.length is >= 2
+PASS timediff is >= 0
+PASS res.id is non-null.
+PASS res.type is non-null.
+PASS res.names().length is >= 1
+PASS res.names().indexOf("type") is >= 0
+PASS res.stat("type") is "audio"
+PASS status_g.namedItem(res.id) is non-null.
+PASS status_g[res.id] is non-null.
 PASS successfullyParsed is true
 
 TEST COMPLETE

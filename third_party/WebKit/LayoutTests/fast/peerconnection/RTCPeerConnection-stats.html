@@ -78,6 +78,13 @@ function statsHandler3(status)
 {
     testPassed("statsHandler3 was called");
     verifyStats(status);
+    // Silly non-MediaStreamTrack second argument should be interpreted as undefined.
+    shouldNotThrow('pc.getStats(statsHandler4, 42)');
+}
+
+function statsHandler4(status) {
+    testPassed("statsHandler4 was called");
+    verifyStats(status);
     finishJSTest();
 }
 
