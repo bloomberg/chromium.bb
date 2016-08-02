@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <initializer_list>
 #include <memory>
 #include <vector>
 
@@ -96,14 +97,41 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     return item;
   }
 
-  MockTRS::Tab CreateSessionTab(const std::string& url,
-                                const std::string& title) {
-    MockTRS::Tab tab;
-    tab.current_navigation_index = 0;
-    tab.navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            url, title));
+  MockTRS::Entries CreateSessionEntries(
+      std::vector<std::unique_ptr<MockTRS::Entry>>* out,
+      std::initializer_list<MockTRS::Entry*> entries) {
+    MockTRS::Entries ret;
+    out->reserve(out->size() + entries.size());
+    for (auto* entry : entries) {
+      ret.emplace_back(entry);
+      out->emplace_back(entry);
+    }
+    return ret;
+  }
+
+  MockTRS::Tab* CreateSessionTab(SessionID::id_type id,
+                                 const std::string& url,
+                                 const std::string& title) {
+    auto tab = new MockTRS::Tab;
+    tab->id = id;
+    tab->current_navigation_index = 0;
+    tab->navigations.push_back(
+        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(url,
+                                                                        title));
     return tab;
+  }
+
+  MockTRS::Window* CreateSessionWindow(
+      SessionID::id_type id,
+      std::initializer_list<MockTRS::Tab*> tabs) {
+    auto window = new MockTRS::Window;
+    window->id = id;
+    window->tabs.reserve(tabs.size());
+    for (auto* tab : tabs) {
+      window->tabs.emplace_back(std::move(*tab));
+      delete tab;
+    }
+    return window;
   }
 
   void GetFaviconForHistoryItem(HistoryMenuBridge::HistoryItem* item) {
@@ -213,15 +241,11 @@ TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
 // Test that the menu is created for a set of simple tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
   std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
-  MockTRS::Entries entries;
-
-  MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");
-  tab1.id = 24;
-  entries.push_back(&tab1);
-
-  MockTRS::Tab tab2 = CreateSessionTab("http://apple.com", "Apple");
-  tab2.id = 42;
-  entries.push_back(&tab2);
+  std::vector<std::unique_ptr<MockTRS::Entry>> hold_entries;
+  auto entries{CreateSessionEntries(&hold_entries, {
+    CreateSessionTab(24, "http://google.com", "Google"),
+    CreateSessionTab(42, "http://apple.com", "Apple"),
+  })};
 
   using ::testing::ReturnRef;
   EXPECT_CALL(*trs.get(), entries()).WillOnce(ReturnRef(entries));
@@ -247,37 +271,20 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
 // Test that the menu is created for a mix of windows and tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   std::unique_ptr<MockTRS> trs(new MockTRS(profile()));
-  MockTRS::Entries entries;
-
-  MockTRS::Tab tab1 = CreateSessionTab("http://google.com", "Google");
-  tab1.id = 24;
-  entries.push_back(&tab1);
-
-  // TODO(sdy): The tab ids below *must* be set after all of them have been
-  // pushed onto window.tabs. Otherwise, the ids will change when push_back
-  // reallocates the vector's storage and calls each tabs' copy ctor. Ugh.
-
-  MockTRS::Window win1;
-  win1.id = 30;
-  win1.tabs.push_back(CreateSessionTab("http://foo.com", "foo"));
-  win1.tabs.push_back(CreateSessionTab("http://bar.com", "bar"));
-  win1.tabs[0].id = 31;
-  win1.tabs[1].id = 32;
-  entries.push_back(&win1);
-
-  MockTRS::Tab tab2 = CreateSessionTab("http://apple.com", "Apple");
-  tab2.id = 42;
-  entries.push_back(&tab2);
-
-  MockTRS::Window win2;
-  win2.id = 50;
-  win2.tabs.push_back(CreateSessionTab("http://magic.com", "magic"));
-  win2.tabs.push_back(CreateSessionTab("http://goats.com", "goats"));
-  win2.tabs.push_back(CreateSessionTab("http://teleporter.com", "teleporter"));
-  win2.tabs[0].id = 51;
-  win2.tabs[1].id = 52;
-  win2.tabs[2].id = 53;
-  entries.push_back(&win2);
+  std::vector<std::unique_ptr<MockTRS::Entry>> hold_entries;
+  auto entries{CreateSessionEntries(&hold_entries, {
+    CreateSessionTab(24, "http://google.com", "Google"),
+    CreateSessionWindow(30, {
+      CreateSessionTab(31, "http://foo.com", "foo"),
+      CreateSessionTab(32, "http://bar.com", "bar"),
+    }),
+    CreateSessionTab(42, "http://apple.com", "Apple"),
+    CreateSessionWindow(50, {
+      CreateSessionTab(51, "http://magic.com", "magic"),
+      CreateSessionTab(52, "http://goats.com", "goats"),
+      CreateSessionTab(53, "http://teleporter.com", "teleporter"),
+    }),
+  })};
 
   using ::testing::ReturnRef;
   EXPECT_CALL(*trs.get(), entries()).WillOnce(ReturnRef(entries));
