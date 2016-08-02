@@ -4,13 +4,13 @@
 
 import json
 
+from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline_from_try_jobs import RebaselineFromTryJobs
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 from webkitpy.tool.mock_tool import MockOptions
-from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 
 
@@ -59,6 +59,7 @@ class RebaselineFromTryJobsTest(BaseTestCase):
             'dry_run': False,
             'optimize': True,
             'verbose': False,
+            'results_directory': None,
         }
         options.update(kwargs)
         return MockOptions(**options)
@@ -106,3 +107,28 @@ class RebaselineFromTryJobsTest(BaseTestCase):
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'
              'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))
+
+    def test_rebaseline_calls(self):
+        """Tests the list of commands that are invoked when rebaseline is called."""
+        # First write test contents to the mock filesystem so that
+        # fast/dom/prototype-taco.html is considered a real test to rebaseline.
+        # TODO(qyearsley): Change this to avoid accessing protected methods.
+        # pylint: disable=protected-access
+        port = self.tool.port_factory.get('test-win-win7')
+        self._write(
+            port._filesystem.join(port.layout_tests_dir(), 'fast/dom/prototype-taco.html'),
+            'test contents')
+
+        self.command._rebaseline(
+            self.command_options(issue=11112222),
+            {"fast/dom/prototype-taco.html": {Build("MOCK Try Win", 5000): ["txt", "png"]}},
+            skip_checking_actual_results=True)
+
+        self.assertEqual(
+            self.tool.executive.calls,
+            [
+                [['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
+                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
+                [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
+                  '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']]
+            ])

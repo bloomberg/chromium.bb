@@ -136,6 +136,7 @@ class MockExecutive(object):
         pass
 
     def popen(self, args, cwd=None, env=None, **kwargs):
+        assert all(isinstance(arg, basestring) for arg in args)
         self.calls.append(args)
         if self._should_log:
             cwd_string = ""
@@ -150,6 +151,7 @@ class MockExecutive(object):
         return self._proc
 
     def call(self, args, **kwargs):
+        assert all(isinstance(arg, basestring) for arg in args)
         self.calls.append(args)
         _log.info('Mock call: %s', args)
 
@@ -159,6 +161,7 @@ class MockExecutive(object):
         num_previous_calls = len(self.calls)
         command_outputs = []
         for cmd_line, cwd in commands:
+            assert all(isinstance(arg, basestring) for arg in cmd_line)
             command_outputs.append([0, self.run_command(cmd_line, cwd=cwd), ''])
 
         new_calls = self.calls[num_previous_calls:]
@@ -196,6 +199,7 @@ class MockExecutive2(MockExecutive):
                     debug_logging=False):
         self.calls.append(args)
         assert isinstance(args, list) or isinstance(args, tuple)
+        assert all(isinstance(arg, basestring) for arg in args)
         if self._exception:
             raise self._exception  # pylint: disable=E0702
         if self._run_command_fn:
