@@ -52,23 +52,18 @@ private:
     void consoleTime(const String16& title) override { }
     void consoleTimeEnd(const String16& title) override { }
     void consoleTimeStamp(const String16& title) override { }
-    void consoleAPIMessage(int contextGroupId, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override { }
+    void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override { }
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override
     {
         return v8::MaybeLocal<v8::Value>();
     }
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override { }
-    void enableAsyncInstrumentation() override { }
-    void disableAsyncInstrumentation() override { }
     void startRepeatingTimer(double, TimerCallback, void* data) override { }
     void cancelTimer(void* data) override { }
 
     // V8InspectorSessionClient
-    void resumeStartup() override { };
-    bool canExecuteScripts() override;
-    void profilingStarted() override { };
-    void profilingStopped() override { };
-    void consoleCleared() override { };
+    void resumeStartup() override { }
+    bool canExecuteScripts(int) override { return true; }
 
     std::unique_ptr<V8Inspector> m_inspector;
     std::unique_ptr<V8InspectorSession> m_session;

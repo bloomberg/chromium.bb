@@ -61,11 +61,6 @@ bool SimpleInspector::isExecutionAllowed()
     return true;
 }
 
-bool SimpleInspector::canExecuteScripts()
-{
-    return true;
-}
-
 void SimpleInspector::notifyContextDestroyed()
 {
     m_inspector->contextDestroyed(m_context);
