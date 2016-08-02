@@ -267,7 +267,9 @@ err_status_t aes_gcm_openssl_set_aad (aes_gcm_ctx_t *c, unsigned char *aad,
      * Set dummy tag, OpenSSL requires the Tag to be set before
      * processing AAD
      */
-    EVP_CIPHER_CTX_ctrl(&c->ctx, EVP_CTRL_GCM_SET_TAG, c->tag_len, aad);
+    unsigned char dummy_tag[GCM_AUTH_TAG_LEN];
+    memset(dummy_tag, 0x0, GCM_AUTH_TAG_LEN);
+    EVP_CIPHER_CTX_ctrl(&c->ctx, EVP_CTRL_GCM_SET_TAG, c->tag_len, &dummy_tag);
 
     rv = EVP_Cipher(&c->ctx, NULL, aad, aad_len);
     if (rv != aad_len) {
