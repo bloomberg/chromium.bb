@@ -50,7 +50,8 @@
             ],
             "group_name": "DocumentWriteEvaluatorGroup",
             "params": {
-                "disallowFetchForDocWrittenScriptsInMainFrame": "false"
+                "disallowFetchForDocWrittenScriptsInMainFrame": "false",
+                "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "false"
             }
         }
     ],
