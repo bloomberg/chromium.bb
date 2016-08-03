@@ -206,8 +206,18 @@ void MdTextButton::SetEnabledTextColors(SkColor color) {
   UpdateColors();
 }
 
+void MdTextButton::AdjustFontSize(int size_delta) {
+  LabelButton::AdjustFontSize(size_delta);
+  UpdatePaddingForFont();
+}
+
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
   UpdateColors();
+}
+
+void MdTextButton::SetFontList(const gfx::FontList& font_list) {
+  NOTREACHED()
+      << "Don't call MdTextButton::SetFontList (it will soon be protected)";
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener)
@@ -221,12 +231,16 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   SetMinSize(gfx::Size(kMinWidth, 0));
   SetFocusPainter(nullptr);
   label()->SetAutoColorReadabilityEnabled(false);
-  SetFontList(GetMdFontList());
-
   AddChildView(focus_ring_);
   focus_ring_->SetVisible(false);
   set_request_focus_on_press(false);
+  LabelButton::SetFontList(GetMdFontList());
+  UpdatePaddingForFont();
+}
 
+MdTextButton::~MdTextButton() {}
+
+void MdTextButton::UpdatePaddingForFont() {
   // Top and bottom padding depend on the font. Example: if font cap height is
   // 9dp, use 8dp bottom padding and 7dp top padding to total 24dp.
   const gfx::FontList& font = label()->font_list();
@@ -246,8 +260,6 @@ MdTextButton::MdTextButton(ButtonListener* listener)
       top_padding - inbuilt_top_padding, kHorizontalPadding,
       bottom_padding - inbuilt_bottom_padding, kHorizontalPadding));
 }
-
-MdTextButton::~MdTextButton() {}
 
 void MdTextButton::UpdateColors() {
   ui::NativeTheme::ColorId fg_color_id =

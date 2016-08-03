@@ -62,7 +62,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Gets or sets the font list used by this button.
   const gfx::FontList& GetFontList() const;
-  void SetFontList(const gfx::FontList& font_list);
+  // TODO(estade): make this function protected.
+  virtual void SetFontList(const gfx::FontList& font_list);
+
+  // Adjusts the font size up or down by the given amount.
+  virtual void AdjustFontSize(int font_size_delta);
 
   // Sets the elide behavior of this button.
   void SetElideBehavior(gfx::ElideBehavior elide_behavior);

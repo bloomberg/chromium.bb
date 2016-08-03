@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -19,11 +20,13 @@
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -53,6 +56,8 @@ const int kLogoutButtonPushedImages[] = {
     IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM,
     IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT};
 
+// TODO(estade): LogoutButton is not used in MD; remove it when possible.
+// See crbug.com/614453
 class LogoutButton : public views::LabelButton {
  public:
   LogoutButton(views::ButtonListener* listener);
@@ -95,10 +100,23 @@ LogoutButton::~LogoutButton() {}
 
 LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
-      button_(NULL),
+      button_(nullptr),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       show_logout_button_in_tray_(false) {
-  button_ = new LogoutButton(this);
+  if (MaterialDesignController::IsShelfMaterial()) {
+    views::MdTextButton* button =
+        views::MdTextButton::CreateMdButton(this, base::string16());
+    button->SetCallToAction(true);
+    button->set_bg_color_override(gfx::kGoogleRed700);
+    // Base font size + 2 = 14.
+    // TODO(estade): should this 2 be shared with other tray views? See
+    // crbug.com/623987
+    button->AdjustFontSize(2);
+    button->SetMinSize(gfx::Size(0, kTrayItemSize));
+    button_ = button;
+  } else {
+    button_ = new LogoutButton(this);
+  }
   tray_container()->AddChildView(button_);
   tray_container()->SetBorder(views::Border::NullBorder());
   WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);

@@ -192,6 +192,10 @@ void LabelButton::SetFontList(const gfx::FontList& font_list) {
   label_->SetFontList(cached_normal_font_list_);
 }
 
+void LabelButton::AdjustFontSize(int font_size_delta) {
+  LabelButton::SetFontList(GetFontList().DeriveWithSizeDelta(font_size_delta));
+}
+
 void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   label_->SetElideBehavior(elide_behavior);
 }
