@@ -67,7 +67,9 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   data_.AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
                            base::UTF16ToUTF8(state.placeholder));
 
-  if (state.description.empty() &&
+  // General expectation is that GetTooltipText() is only asked for
+  // while on screen and in a widget.
+  if (view_->GetWidget() && state.description.empty() &&
       view_->GetTooltipText(gfx::Point(), &state.description))
     data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
                              base::UTF16ToUTF8(state.description));
