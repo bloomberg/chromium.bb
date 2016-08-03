@@ -1,11 +1,12 @@
 # Android Test Instructions
 
-Device Setup Tests are runnable on physical devices or emulators. See the
-instructions below for setting up either a physical device or an emulator.
-
 [TOC]
 
-## Physical Device Setup **ADB Debugging**
+## Device Setup
+
+### Physical Device Setup
+
+#### ADB Debugging
 
 In order to allow the ADB to connect to the device, you must enable USB
 debugging:
@@ -15,14 +16,14 @@ debugging:
     *   Go to "Developer options"
     *   Check "USB debugging".
     *   Un-check "Verify apps over USB".
-*   On Jelly Bean, developer options are hidden by default. To unhide them:
+*   On Jelly Bean and above, developer options are hidden by default. To unhide them:
     *   Go to "About phone"
     *   Tap 10 times on "Build number"
     *   The "Developer options" menu will now be available.
     *   Check "USB debugging".
     *   Un-check "Verify apps over USB".
 
-### Screen
+#### Screen
 
 You MUST ensure that the screen stays on while testing: `adb shell svc power
 stayon usb` Or do this manually on the device: Settings -> Developer options
@@ -32,11 +33,11 @@ If this option is greyed out, stay awake is probably disabled by policy. In that
 case, get another device or log in with a normal, unmanaged account (because the
 tests will break in exciting ways if stay awake is off).
 
-### Enable Asserts!
+#### Enable Asserts
 
     adb shell setprop debug.assert 1
 
-### Disable Verify Apps
+#### Disable Verify Apps
 
 You may see a dialog like
 [this one](http://www.samsungmobileusa.com/simulators/ATT_GalaxyMega/mobile/screens/06-02_12.jpg),
@@ -44,9 +45,9 @@ which states, _Google may regularly check installed apps for potentially harmful
 behavior._ This can interfere with the test runner. To disable this dialog, run:
 `adb shell settings put global package_verifier_enable 0`
 
-## Emulator Setup
+### Emulator Setup
 
-### Option 1:
+#### Option 1
 
 Use an emulator (i.e. Android Virtual Device, AVD): Enabling Intel's
 Virtualizaton support provides the fastest, most reliable emulator configuration
@@ -72,7 +73,7 @@ will fail with `INSTALL_FAILED_NO_MATCHING_ABIS`.
     android\_tools in the same parent directory as your chromium checkout. It
     will also download the system-images for the emulators (i.e. arm and x86).
     Note that this is a different SDK download than the Android SDK in the
-    chromium source checkout (i.e. src/third\_party/android\_emulator\_sdk).
+    chromium source checkout (i.e. `src/third_party/android_emulator_sdk`).
 
 4.  Run the avd.py script. To start up _num_ emulators use -n. For non-x86 use
     --abi.
@@ -85,59 +86,67 @@ will fail with `INSTALL_FAILED_NO_MATCHING_ABIS`.
     emulators in an environment with hardware rendering available. See
     `avd.py --help` for more details.
 
-### Option 2:
+#### Option 2
 
-Alternatively, you can create an run your own emulator using the tools provided
+Alternatively, you can create and run your own emulator using the tools provided
 by the Android SDK. When doing so, be sure to enable GPU emulation in hardware
 settings, since Chromium requires it to render.
 
 ## Building Tests
 
-It may not be immediately obvious where your test code gets compiled to, so here
-are some general rules:
+If you're adding a new test file, you'll need to explicitly add it to a gn
+target. If you're adding a test to an existing file, you won't to make gn
+changes, but you may be interested in where your test winds up. In either case,
+here are some guidelines for where a test belongs:
 
-*  If your test code lives under /base, it will be built as part of the
-   base_unittests_apk.
-*  If your test code lives under /content, it will probably be built as part of
-   the content_shell_test_apk
-*  If your test code lives under /chrome (or higher), it will probably be built
-   as part of the chrome_public_test_apk
-*  (Please fill in more details here if you know them).
+### C++
 
-   NB: We used to call the chrome_public_test_apk the
-   chromium_shell_test_apk. There may still be references to this kicking
-   around, but wherever you see chromium_shell_test you should replace with
-   chrome_public_test.
+C++ test files typically belong in `<top-level directory>_unittests` (e.g.
+`base_unittests` for `//base`). There are a few exceptions -- browser tests are
+typically their own target (e.g. `content_browsertests` for `//content`, or
+`browser_tests` for `//chrome`), and some unit test suites are broken at the
+second directory rather than the top-level one.
+
+### Java
+
+Java test files vary a bit more widely than their C++ counterparts:
+
+   - Instrumentation test files -- i.e., tests that will run on a device --
+typically belong in either `<top-level directory>_javatests` or
+`<top-level directory>_test_java`. Regardless, they'll wind up getting packaged
+into one of a few test APKs:
+     - `android_webview_test_apk` for anything in `//android_webview`
+     - `content_shell_test_apk` for anything in `//content` or below
+     - `chrome_public_test_apk` for most things in `//chrome`
+     - `chrome_sync_shell_test_apk` in a few exceptional cases
+   - JUnit or Robolectric test files -- i.e., tests that will run on the host --
+typically belong in `<top-level directory>_junit_tests` (e.g. `base_junit_tests`
+for `//base`), though here again there are cases (particularly in
+`//components`) where suites are split at the second directory rather than the
+top-level one.
 
 Once you know what to build, just do it like you normally would build anything
 else, e.g.: `ninja -C out/Release chrome_public_test_apk`
 
 ## Running Tests
 
-All functional tests are run using `build/android/test_runner.py`, either
-directly or via a generated wrapper script in `<output directory>/bin/`.
-Tests are sharded across all attached devices. In order to run tests, call:
-`build/android/test_runner.py <test_type> [options]`
-(or `<generated wrapper script> [options]`).
-For a list of valid test types, see `test_runner.py --help`. For
-help on a specific test type, run `test_runner.py <test_type> --help`.
+All functional tests should be runnable via the wrapper scripts generated at
+build time:
+
+```sh
+<output directory>/bin/run_<target_name> [options]
+```
+
+Note that tests are sharded across all attached devices unless explicitly told
+to do otherwise by `-d/--device`.
 
 The commands used by the buildbots are printed in the logs. Look at
 http://build.chromium.org/ to duplicate the same test command as a particular
 builder.
 
-If you build in an output directory other than "out", you may have to tell
-test\_runner.py where you place it. Say you build your android code in
-out\_android, then do `export CHROMIUM_OUT_DIR=out_android` before running the
-command below. You have to do this even if your "out" directory is a symlink
-pointing to "out_android". You can also use `--output-directory` to point to the
-path of your output directory, for example,
-`--output-directory=out_android/Debug`. (The generated wrapper scripts handle
-this automatically.)
+### INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
 
-## INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
-
-If you see this error when test\_runner.py is attempting to deploy the test
+If you see this error when the test runner is attempting to deploy the test
 binaries to the AVD emulator, you may need to resize your userdata partition
 with the following commands:
 
@@ -205,7 +214,7 @@ build/android/test_runner.py junit -s chrome_junit_tests --release -vvv
 
 ```shell
 # Build a test suite
-ninja -C out/Release content_unittests_apk
+ninja -C out/Release content_unittests
 
 # Run a test suite
 out/Release/bin/run_content_unittests [-vv]
@@ -297,5 +306,5 @@ https://sites.google.com/a/chromium.org/dev/developers/testing/webkit-layout-tes
 (e.g. the "Android Debug (Nexus 7)" bot on the chromium.gpu waterfall)
 
 See http://www.chromium.org/developers/testing/gpu-testing for details. Use
---browser=android-content-shell. Examine the stdio from the test invocation on
-the bots to see arguments to pass to src/content/test/gpu/run\_gpu\_test.py.
+`--browser=android-content-shell`. Examine the stdio from the test invocation on
+the bots to see arguments to pass to `src/content/test/gpu/run_gpu_test.py`.
