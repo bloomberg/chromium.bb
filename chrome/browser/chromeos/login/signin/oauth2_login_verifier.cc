@@ -11,6 +11,9 @@
 
 using content::BrowserThread;
 
+// String used for source parameter in GAIA cookie manager calls.
+const char kCookieManagerSource[] = "ChromiumOAuth2LoginVerifier";
+
 namespace chromeos {
 
 OAuth2LoginVerifier::OAuth2LoginVerifier(
@@ -35,7 +38,8 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts)) {
+  if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts,
+                                            kCookieManagerSource)) {
     OnGaiaAccountsInCookieUpdated(
         accounts, signed_out_accounts,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
@@ -45,10 +49,11 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 void OAuth2LoginVerifier::VerifyProfileTokens() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (access_token_.empty()) {
-    cookie_manager_service_->AddAccountToCookie(primary_account_id_);
+    cookie_manager_service_->AddAccountToCookie(primary_account_id_,
+                                                kCookieManagerSource);
   } else {
-    cookie_manager_service_->AddAccountToCookieWithToken(primary_account_id_,
-                                                         access_token_);
+    cookie_manager_service_->AddAccountToCookieWithToken(
+        primary_account_id_, access_token_, kCookieManagerSource);
   }
 }
 

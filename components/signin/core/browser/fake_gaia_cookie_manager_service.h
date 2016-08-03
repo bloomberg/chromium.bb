@@ -43,6 +43,10 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
                                                     bool account2_expired);
 
  private:
+  std::string GetSourceForRequest(
+      const GaiaCookieManagerService::GaiaCookieRequest& request,
+      const std::string& source_default) override;
+
   // Provide a fake response for calls to /ListAccounts.
   net::FakeURLFetcherFactory* url_fetcher_factory_;
 

@@ -107,3 +107,12 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccountsWithExpiry(
           account2_expired ? 0 : 1, gaia_id2),
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 }
+
+std::string FakeGaiaCookieManagerService::GetSourceForRequest(
+    const GaiaCookieManagerService::GaiaCookieRequest& request,
+    const std::string& source_default) {
+  // Always return the default.  This value must match the source used in the
+  // SetXXXResponseYYY methods above so that the test URLFetcher factory will
+  // be able to find the URLs.
+  return GaiaConstants::kChromeSource;
+}

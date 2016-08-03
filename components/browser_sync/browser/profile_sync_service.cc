@@ -971,7 +971,7 @@ void ProfileSyncService::PostBackendInitialization() {
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
   if (gaia_cookie_manager_service_ &&
       gaia_cookie_manager_service_->ListAccounts(
-          &accounts, &signed_out_accounts)) {
+          &accounts, &signed_out_accounts, "ChromiumProfileSyncService")) {
     OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
   }
 

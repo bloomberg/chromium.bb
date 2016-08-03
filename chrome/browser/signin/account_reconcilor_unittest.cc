@@ -343,7 +343,7 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
   ASSERT_TRUE(cookie_manager_service()->ListAccounts(
-      &accounts, &signed_out_accounts));
+      &accounts, &signed_out_accounts, GaiaConstants::kChromeSource));
   ASSERT_EQ(1u, accounts.size());
   ASSERT_EQ(account_id, accounts[0].id);
   ASSERT_EQ(0u, signed_out_accounts.size());
@@ -366,7 +366,7 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
   ASSERT_FALSE(cookie_manager_service()->ListAccounts(
-      &accounts, &signed_out_accounts));
+      &accounts, &signed_out_accounts, GaiaConstants::kChromeSource));
   ASSERT_EQ(0u, accounts.size());
   ASSERT_EQ(0u, signed_out_accounts.size());
 
@@ -417,7 +417,7 @@ TEST_P(AccountReconcilorTest, StartReconcileCookiesDisabled) {
   std::vector<gaia::ListedAccount> accounts;
   // This will be the first call to ListAccounts.
   ASSERT_FALSE(cookie_manager_service()->ListAccounts(
-      &accounts, nullptr));
+      &accounts, nullptr, GaiaConstants::kChromeSource));
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
