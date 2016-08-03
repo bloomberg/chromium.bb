@@ -134,7 +134,11 @@ static void RegisterExternalExperiment(
     const JavaParamRef<jintArray>& jexperiment_ids) {
   const std::string trial_name_utf8(ConvertJavaStringToUTF8(env, jtrial_name));
   std::vector<int> experiment_ids;
-  base::android::JavaIntArrayToIntVector(env, jexperiment_ids, &experiment_ids);
+  // A null |jexperiment_ids| is the same as an empty list.
+  if (jexperiment_ids) {
+    base::android::JavaIntArrayToIntVector(env, jexperiment_ids,
+                                           &experiment_ids);
+  }
 
   std::vector<uint32_t> group_name_hashes;
   group_name_hashes.reserve(experiment_ids.size());
