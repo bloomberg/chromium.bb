@@ -16,7 +16,7 @@ var initialize_Animations = function() {
 function test()
 {
     InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
-    WebInspector.inspectorView.showViewInDrawer("animations", true);
+    WebInspector.viewManager.showView("animations");
     var timeline;
 
     function onChangeTabView(id, view)

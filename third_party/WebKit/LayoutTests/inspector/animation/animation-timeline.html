@@ -62,7 +62,7 @@ function test()
     WebInspector.AnimationUI.Color = function() { return "black"; }
     var timeline;
     InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
-    WebInspector.inspectorView.showViewInDrawer("animations", true);
+    WebInspector.viewManager.showView("animations");
 
     function onChangeTabView(id, view)
     {

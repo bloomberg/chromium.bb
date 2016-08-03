@@ -9,18 +9,18 @@ var test = function()
         InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedPaneController._closeableTabSetting.get()));
     }
 
-    var tabbedPaneController = WebInspector.inspectorView._drawer._extensibleTabbedPane;
+    var tabbedPaneController = WebInspector.inspectorView._drawerTabbedPane;
     logPersistenceSetting();
     // Show a closeable tab.
-    tabbedPaneController.showTab("sensors");
+    tabbedPaneController.showView("sensors");
     logPersistenceSetting();
-    tabbedPaneController.showTab("sensors");
+    tabbedPaneController.showView("sensors");
     logPersistenceSetting();
     // Show a permanent tab.
-    tabbedPaneController.showTab("console");
+    tabbedPaneController.showView("console");
     logPersistenceSetting();
     // Show temporary tab.
-    tabbedPaneController.showTab("sources.history");
+    tabbedPaneController.showView("sources.history");
     logPersistenceSetting();
     // Close closeable tab.
     tabbedPaneController._tabbedPane.closeTab("sensors");

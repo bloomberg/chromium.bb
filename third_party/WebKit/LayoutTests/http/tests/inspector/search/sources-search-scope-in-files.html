@@ -29,7 +29,7 @@ function test()
 
     function onAllResourcesLoaded()
     {
-        WebInspector.inspectorView.showViewInDrawer("sources.search");
+        WebInspector.viewManager.showView("sources.search");
         fs.reportCreated(fileSystemCreated);
 
         function fileSystemCreated()
