@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -125,6 +126,23 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
+                           NewRuleset_HistogramsOnSuccess);
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
+                           NewRuleset_HistogramsOnFailure);
+
+  // Enumerates the possible outcomes of writing the ruleset to disk. Used in
+  // UMA histograms, so the ordering of enumerators should not be changed.
+  enum class WriteRulesetResult {
+    SUCCESS,
+    FAILED_CREATING_SCRATCH_DIR,
+    FAILED_WRITING_RULESET_DATA,
+    FAILED_WRITING_LICENSE,
+    FAILED_REPLACE_FILE,
+
+    // Insert new values before this line.
+    MAX,
+  };
 
   using WriteRulesetCallback =
       base::Callback<void(const IndexedRulesetVersion&)>;
@@ -151,11 +169,12 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   //
   // Writing is factored out into this separate function so it can be
   // independently exercised in tests.
-  static bool WriteRuleset(const base::FilePath& indexed_ruleset_base_dir,
-                           const IndexedRulesetVersion& indexed_version,
-                           const base::FilePath& license_path,
-                           const uint8_t* indexed_ruleset_data,
-                           size_t indexed_ruleset_size);
+  static WriteRulesetResult WriteRuleset(
+      const base::FilePath& indexed_ruleset_base_dir,
+      const IndexedRulesetVersion& indexed_version,
+      const base::FilePath& license_path,
+      const uint8_t* indexed_ruleset_data,
+      size_t indexed_ruleset_size);
 
   // Posts a task to the |blocking_task_runner_| to index and persist the given
   // unindexed ruleset. Then, on success, updates the most recently indexed

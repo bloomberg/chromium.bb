@@ -56846,6 +56846,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.WriteRuleset.ReplaceFileError"
+    enum="PlatformFileError">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Records the exact error whenever writing a ruleset fails at the step where
+    the ruleset would be moved from the scratch directory to its final location.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.WriteRuleset.Result"
+    enum="SubresourceFilterWriteRulesetResult">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whether writing a version of the indexed ruleset succeeded, or failed at a
+    particular step. Recorded every time the RulesetService kicks off a ruleset
+    indexing process and it reaches the point when the ruleset is ready to be
+    written.
+  </summary>
+</histogram>
+
 <histogram name="Suggestions.FailedRequestErrorCode" enum="NetErrorCodes">
   <owner>mathp@chromium.org</owner>
   <summary>
@@ -92856,6 +92876,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Disabled"/>
   <int value="1" label="DryRun"/>
   <int value="2" label="Enabled"/>
+</enum>
+
+<enum name="SubresourceFilterWriteRulesetResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="FailedCreatingScratchDir"/>
+  <int value="2" label="FailedWritingRulesetData"/>
+  <int value="3" label="FailedWritingLicense"/>
+  <int value="4" label="FailedReplaceFile"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">

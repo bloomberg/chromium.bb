@@ -19,8 +19,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_distributor.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -133,9 +135,10 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
                     const IndexedRulesetVersion& indexed_version,
                     const base::FilePath& license_path = base::FilePath()) {
     return RulesetService::WriteRuleset(
-        base_dir(), indexed_version, license_path,
-        test_ruleset_pair.indexed.contents.data(),
-        test_ruleset_pair.indexed.contents.size());
+               base_dir(), indexed_version, license_path,
+               test_ruleset_pair.indexed.contents.data(),
+               test_ruleset_pair.indexed.contents.size()) ==
+           RulesetService::WriteRulesetResult::SUCCESS;
   }
 
   base::FilePath GetExpectedRulesetDataFilePath(
@@ -372,6 +375,45 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
   ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
       &mock_distributor()->published_rulesets()[0],
       test_ruleset_1().indexed.contents));
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnSuccess) {
+  base::HistogramTester histogram_tester;
+  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
+  RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.WriteRuleset.ReplaceFileError", 0);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.Result",
+      static_cast<int>(RulesetService::WriteRulesetResult::SUCCESS), 1);
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnFailure) {
+  // Create a file in place of where the version directory is supposed to go.
+  // This makes base::ReplaceFile fail on all platforms, and without interfering
+  // with clean-up even if the test was interrupted.
+  IndexedRulesetVersion indexed_version(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+  base::FilePath version_dir =
+      indexed_version.GetSubdirectoryPathForVersion(base_dir());
+  ASSERT_TRUE(base::CreateDirectory(version_dir.DirName()));
+  ASSERT_EQ(0, base::WriteFile(version_dir, 0, 0));
+
+  base::HistogramTester histogram_tester;
+  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
+  RunUntilIdle();
+
+#if defined(OS_WIN)
+  base::File::Error expected_error = base::File::FILE_ERROR_ACCESS_DENIED;
+#else
+  base::File::Error expected_error = base::File::FILE_ERROR_NOT_A_DIRECTORY;
+#endif
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.ReplaceFileError", -expected_error, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.Result",
+      static_cast<int>(RulesetService::WriteRulesetResult::FAILED_REPLACE_FILE),
+      1);
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest,

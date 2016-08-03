@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -175,18 +176,22 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
   IndexedRulesetVersion indexed_version(
       unindexed_ruleset_info.content_version,
       IndexedRulesetVersion::CurrentFormatVersion());
-  if (!WriteRuleset(indexed_ruleset_base_dir, indexed_version,
-                    unindexed_ruleset_info.license_path, indexer.data(),
-                    indexer.size())) {
+  WriteRulesetResult result = WriteRuleset(
+      indexed_ruleset_base_dir, indexed_version,
+      unindexed_ruleset_info.license_path, indexer.data(), indexer.size());
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.Result",
+                            static_cast<int>(result),
+                            static_cast<int>(WriteRulesetResult::MAX));
+
+  if (result != WriteRulesetResult::SUCCESS)
     return IndexedRulesetVersion();
-  }
 
   DCHECK(indexed_version.IsValid());
   return indexed_version;
 }
 
 // static
-bool RulesetService::WriteRuleset(
+RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const IndexedRulesetVersion& indexed_version,
     const base::FilePath& license_path,
@@ -197,7 +202,7 @@ bool RulesetService::WriteRuleset(
   base::ScopedTempDir scratch_dir;
   if (!scratch_dir.CreateUniqueTempDirUnderPath(
           indexed_ruleset_version_dir.DirName())) {
-    return false;
+    return WriteRulesetResult::FAILED_CREATING_SCRATCH_DIR;
   }
 
   static_assert(sizeof(uint8_t) == sizeof(char), "Expected char = byte.");
@@ -205,12 +210,12 @@ bool RulesetService::WriteRuleset(
   if (base::WriteFile(GetRulesetDataFilePath(scratch_dir.path()),
                       reinterpret_cast<const char*>(indexed_ruleset_data),
                       data_size_in_chars) != data_size_in_chars) {
-    return false;
+    return WriteRulesetResult::FAILED_WRITING_RULESET_DATA;
   }
 
-  if (base::PathExists(license_path)) {
-    if (!base::CopyFile(license_path, GetLicenseFilePath(scratch_dir.path())))
-      return false;
+  if (base::PathExists(license_path) &&
+      !base::CopyFile(license_path, GetLicenseFilePath(scratch_dir.path()))) {
+    return WriteRulesetResult::FAILED_WRITING_LICENSE;
   }
 
   // Creating a temporary directory also makes sure the path (except for the
@@ -224,13 +229,18 @@ bool RulesetService::WriteRuleset(
   // that case, however, due to the same-version check above. Even if we do, the
   // worst-case scenario is that a slightly-older ruleset version will be used
   // until next restart/ruleset update.
-  if (base::ReplaceFile(scratch_dir.path(), indexed_ruleset_version_dir,
-                        nullptr)) {
-    scratch_dir.Take();
-    return true;
+  base::File::Error error;
+  if (!base::ReplaceFile(scratch_dir.path(), indexed_ruleset_version_dir,
+                         &error)) {
+    // While enumerators of base::File::Error all have negative values, the
+    // histogram records the absolute values.
+    UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",
+                              -error, -base::File::FILE_ERROR_MAX);
+    return WriteRulesetResult::FAILED_REPLACE_FILE;
   }
 
-  return false;
+  scratch_dir.Take();
+  return WriteRulesetResult::SUCCESS;
 }
 
 void RulesetService::IndexAndStoreRuleset(
