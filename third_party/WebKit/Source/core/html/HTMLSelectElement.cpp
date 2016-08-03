@@ -429,12 +429,13 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
         before.setHTMLElement(options()->item(index + 1));
         remove(index);
     }
+    if (exceptionState.hadException())
+        return;
     // Finally add the new element.
-    if (!exceptionState.hadException()) {
-        add(element, before, exceptionState);
-        if (diff >= 0 && option->selected())
-            optionSelectionStateChanged(option, true);
-    }
+    EventQueueScope scope;
+    add(element, before, exceptionState);
+    if (diff >= 0 && option->selected())
+        optionSelectionStateChanged(option, true);
 }
 
 void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionState)
