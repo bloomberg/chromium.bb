@@ -243,13 +243,6 @@ static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
-static bool RegisterNativesImpl(JNIEnv* env) {
-  if (base::android::IsManualJniRegistrationDisabled()) return true;
-
-  return true;
-}
-
 }  // namespace JNI_InputStream
 
 #endif  // java_io_InputStream_JNI

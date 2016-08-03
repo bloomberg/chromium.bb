@@ -59,11 +59,6 @@ bool CrashHandler::GetCrashDumpLocation(base::FilePath* crash_dir) {
       crash_dir);
 }
 
-// static
-bool CrashHandler::RegisterCastCrashJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 CrashHandler::CrashHandler(const std::string& process_type,
                            const base::FilePath& log_file_path)
     : log_file_path_(log_file_path),

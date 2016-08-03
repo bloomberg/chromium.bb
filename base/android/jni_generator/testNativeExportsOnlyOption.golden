@@ -190,10 +190,4 @@ static_cast<jstring>(env->CallStaticObjectMethod(SampleForTests_clazz(env),
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
-static bool RegisterNativesImpl(JNIEnv* env) {
-
-  return true;
-}
-
 #endif  // org_chromium_example_jni_generator_SampleForTests_JNI

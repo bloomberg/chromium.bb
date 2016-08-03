@@ -16,7 +16,6 @@ namespace chromecast {
 // JNI wrapper for DumpstateWriter.java.
 class DumpstateWriter {
  public:
-  static bool RegisterJni(JNIEnv* env);
   static void AddDumpValue(const std::string& name, const std::string& value);
 
  private:

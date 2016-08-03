@@ -760,6 +760,8 @@ $CLOSE_NAMESPACE
         'HEADER_GUARD': self.header_guard,
         'INCLUDES': self.GetIncludesString(),
     }
+    assert ((values['JNI_NATIVE_METHODS'] == '') ==
+            (values['REGISTER_NATIVES'] == ''))
     return WrapOutput(template.substitute(values))
 
   def GetClassPathDefinitionsString(self):
@@ -829,6 +831,10 @@ ${KMETHODS}
 
   def GetRegisterNativesString(self):
     """Returns the code for RegisterNatives."""
+    natives = self.GetRegisterNativesImplString()
+    if not natives:
+      return ''
+
     template = Template("""\
 ${REGISTER_NATIVES_SIGNATURE} {
 ${EARLY_EXIT}
@@ -843,19 +849,12 @@ ${NATIVES}
   if (base::android::IsManualJniRegistrationDisabled()) return true;
 """
 
-    natives = self.GetRegisterNativesImplString()
     values = {'REGISTER_NATIVES_SIGNATURE': signature,
               'EARLY_EXIT': early_exit,
               'NATIVES': natives,
              }
 
-    func_declaration = ''
-    if not natives:
-      func_declaration = Template("""\
-${REGISTER_NATIVES_SIGNATURE} __attribute__((unused));
-""").substitute(values)
-
-    return func_declaration + template.substitute(values)
+    return template.substitute(values)
 
   def GetRegisterNativesImplString(self):
     """Returns the shared implementation for RegisterNatives."""

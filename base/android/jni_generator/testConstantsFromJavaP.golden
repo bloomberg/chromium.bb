@@ -2129,13 +2129,6 @@ static void Java_MotionEvent_writeToParcel(JNIEnv* env, jobject obj, jobject p0,
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) __attribute__((unused));
-static bool RegisterNativesImpl(JNIEnv* env) {
-  if (base::android::IsManualJniRegistrationDisabled()) return true;
-
-  return true;
-}
-
 }  // namespace JNI_MotionEvent
 
 #endif  // android_view_MotionEvent_JNI

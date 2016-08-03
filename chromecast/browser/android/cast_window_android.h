@@ -54,9 +54,6 @@ class CastWindowAndroid : public content::WebContentsDelegate,
   // Destroys this window immediately.
   void Destroy();
 
-  // Registers the JNI methods for CastWindowAndroid.
-  static bool RegisterJni(JNIEnv* env);
-
   // content::WebContentsDelegate implementation:
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,

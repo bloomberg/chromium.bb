@@ -11,11 +11,6 @@
 namespace chromecast {
 
 // static
-bool DumpstateWriter::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void DumpstateWriter::AddDumpValue(const std::string& name,
                                    const std::string& value) {
   JNIEnv* env = base::android::AttachCurrentThread();

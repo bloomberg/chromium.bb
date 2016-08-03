@@ -38,7 +38,6 @@ class InputStreamTest : public Test {
   void SetUp() override {
     env_ = AttachCurrentThread();
     ASSERT_THAT(env_, NotNull());
-    ASSERT_TRUE(RegisterNativesImpl(env_));
   }
 
   scoped_refptr<IOBuffer> DoReadCountedStreamTest(int stream_size,

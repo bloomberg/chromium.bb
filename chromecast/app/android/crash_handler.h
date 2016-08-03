@@ -27,9 +27,6 @@ class CrashHandler {
   // Returns the directory location for crash dumps.
   static bool GetCrashDumpLocation(base::FilePath* crash_dir);
 
-  // Registers JNI methods for this module.
-  static bool RegisterCastCrashJni(JNIEnv* env);
-
  private:
   CrashHandler(const std::string& process_type,
                const base::FilePath& log_file_path);

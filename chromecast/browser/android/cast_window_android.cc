@@ -31,11 +31,6 @@ const int kWebContentsDestructionDelayInMs = 50;
 }  // namespace
 
 // static
-bool CastWindowAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 CastWindowAndroid* CastWindowAndroid::CreateNewWindow(
     content::BrowserContext* browser_context,
     const GURL& url) {

@@ -21,11 +21,6 @@ const char kBuildTypeUser[] = "user";
 }  // namespace
 
 // static
-bool CastSysInfoAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 std::unique_ptr<CastSysInfo> CreateSysInfo() {
   return base::WrapUnique(new CastSysInfoAndroid());
 }
