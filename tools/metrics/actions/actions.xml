@@ -936,6 +936,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.MergeState.ColdStart">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Tab state was merged for Android N+ multi-instance during an application
+    cold start.
+  </description>
+</action>
+
+<action name="Android.MergeState.Live">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Tab state was merged for Android N+ multi-instance while Chrome was running
+    (e.g. user exited multi-window mode and focused one of the Chrome
+    activities).
+  </description>
+</action>
+
 <action name="Android.MultiWindowMode.Enter">
   <owner>twellington@chromium.org</owner>
   <description>The activity entered Android N multi-window mode.</description>

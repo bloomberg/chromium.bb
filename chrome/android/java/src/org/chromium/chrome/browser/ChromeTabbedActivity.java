@@ -1544,6 +1544,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
 
         // 4. Ask TabPersistentStore to merge state.
+        RecordUserAction.record("Android.MergeState.Live");
         mTabModelSelectorImpl.mergeState();
     }
 }

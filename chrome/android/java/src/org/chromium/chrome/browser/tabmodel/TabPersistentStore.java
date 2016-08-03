@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
@@ -218,6 +219,11 @@ public class TabPersistentStore extends TabPersister {
 
     // Tracks whether this TabPersistentStore's tabs are being loaded.
     private boolean mLoadInProgress;
+    // The number of tabs being merged. Used for logging time to restore per tab.
+    private int mMergeTabCount;
+    // Set when restoreTabs() is called during a non-cold-start merge. Used for logging time to
+    // restore per tab.
+    private long mRestoreMergedTabsStartTime;
 
     @VisibleForTesting
     AsyncTask<Void, Void, TabState> mPrefetchActiveTabTask;
@@ -421,7 +427,7 @@ public class TabPersistentStore extends TabPersister {
         mNormalTabsRestored = new SparseIntArray();
         mIncognitoTabsRestored = new SparseIntArray();
         try {
-            time = SystemClock.uptimeMillis();
+            long timeLoadingState = SystemClock.uptimeMillis();
             assert mTabModelSelector.getModel(true).getCount() == 0;
             assert mTabModelSelector.getModel(false).getCount() == 0;
             checkAndUpdateMaxTabId();
@@ -439,22 +445,28 @@ public class TabPersistentStore extends TabPersister {
                             stream,
                             createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
                                     false),
-                            null);
-                    logExecutionTime("LoadStateInternalTime", time);
+                            null,
+                            false);
+                    logExecutionTime("LoadStateInternalTime", timeLoadingState);
                 }
             }
 
             // Restore the tabs for the other TabPeristentStore instance if its tab metadata file
             // exists.
             if (mPrefetchTabListToMergeTask != null) {
+                long timeMergingState = SystemClock.uptimeMillis();
                 stream = mPrefetchTabListToMergeTask.get();
                 if (stream != null) {
+                    logExecutionTime("MergeStateInternalFetchTime", timeMergingState);
                     sMergeInProgress.set(true);
                     readSavedStateFile(
                             stream,
                             createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
                                     mTabsToRestore.size() == 0 ? false : true),
-                            null);
+                            null,
+                            true);
+                    logExecutionTime("MergeStateInternalTime", timeMergingState);
+                    RecordUserAction.record("Android.MergeState.ColdStart");
                 }
             }
         } catch (Exception e) {
@@ -475,8 +487,6 @@ public class TabPersistentStore extends TabPersister {
      * If there is currently a merge or load in progress then this method will return early.
      */
     public void mergeState() {
-        // TODO(twellington): Add UMA metrics to determine merging performance.
-
         if (mLoadInProgress || sMergeInProgress.get() || !mTabsToRestore.isEmpty()) {
             Log.e(TAG, "Tab load still in progress when merge was attempted.");
             return;
@@ -489,6 +499,7 @@ public class TabPersistentStore extends TabPersister {
         mIncognitoTabsRestored = new SparseIntArray();
 
         try {
+            long time = SystemClock.uptimeMillis();
             // Read the tab state metadata file.
             DataInputStream stream = startFetchTabListTask(
                     AsyncTask.SERIAL_EXECUTOR, mOtherSelectorIndex).get();
@@ -496,15 +507,13 @@ public class TabPersistentStore extends TabPersister {
             // Return early if the stream is null, which indicates there isn't a second instance
             // to merge.
             if (stream == null) return;
+            logExecutionTime("MergeStateInternalFetchTime", time);
             sMergeInProgress.set(true);
             readSavedStateFile(stream,
                     createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(), true),
-                    null);
-            // TODO(twellington): The original plan was to delete the other metadata file
-            // synchronously before loading tabs asynchronously. Right now the tabs are loaded
-            // first then the metadata file for this instance is written out and the other metadata
-            // file is deleted. This should probably be changed to update the metadata file for
-            // this instance before loading the tabs.
+                    null,
+                    true);
+            logExecutionTime("MergeStateInternalTime", time);
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing app.
             Log.d(TAG, "meregeState exception: " + e.toString(), e);
@@ -514,6 +523,8 @@ public class TabPersistentStore extends TabPersister {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
+                mMergeTabCount = mTabsToRestore.size();
+                mRestoreMergedTabsStartTime = SystemClock.uptimeMillis();
                 restoreTabs(false);
                 return null;
             }
@@ -990,7 +1001,7 @@ public class TabPersistentStore extends TabPersister {
                 try {
                     stream = new DataInputStream(new BufferedInputStream(new FileInputStream(
                             stateFile)));
-                    maxId = Math.max(maxId, readSavedStateFile(stream, null, null));
+                    maxId = Math.max(maxId, readSavedStateFile(stream, null, null, false));
                 } finally {
                     StreamUtil.closeQuietly(stream);
                 }
@@ -1003,7 +1014,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private int readSavedStateFile(DataInputStream stream, OnTabStateReadCallback callback,
-            SparseArray<Boolean> tabIds) throws IOException {
+            SparseArray<Boolean> tabIds, boolean forMerge) throws IOException {
         if (stream == null) return 0;
         long time = SystemClock.uptimeMillis();
         int nextId = 0;
@@ -1038,7 +1049,17 @@ public class TabPersistentStore extends TabPersister {
                         i == standardActiveIndex, i == incognitoActiveIndex);
             }
         }
+
+        if (forMerge) {
+            logExecutionTime("ReadMergedStateTime", time);
+            int tabCount = count + ((incognitoCount > 0) ? incognitoCount : 0);
+            RecordHistogram.recordLinearCountHistogram(
+                    "Android.TabPersistentStore.MergeStateTabCount",
+                    tabCount, 1, 200, 200);
+        }
+
         logExecutionTime("ReadSavedStateTime", time);
+
         return nextId;
     }
 
@@ -1144,6 +1165,15 @@ public class TabPersistentStore extends TabPersister {
             // TabPersistentStore and delete the metadata file for the other instance, then notify
             // observers.
             if (sMergeInProgress.get()) {
+                if (mMergeTabCount != 0) {
+                    long timePerTab = (SystemClock.uptimeMillis() - mRestoreMergedTabsStartTime)
+                            / mMergeTabCount;
+                    RecordHistogram.recordTimesHistogram(
+                            "Android.TabPersistentStore.MergeStateTimePerTab",
+                            timePerTab,
+                            TimeUnit.MILLISECONDS);
+                }
+
                 ThreadUtils.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1298,7 +1328,7 @@ public class TabPersistentStore extends TabPersister {
                 try {
                     stream = new DataInputStream(
                             new BufferedInputStream(new FileInputStream(metadataFile)));
-                    readSavedStateFile(stream, null, tabIds);
+                    readSavedStateFile(stream, null, tabIds, false);
                 } catch (Exception e) {
                     Log.e(TAG, "Unable to read state for " + metadataFile.getName() + ": " + e);
                 } finally {
@@ -1532,6 +1562,11 @@ public class TabPersistentStore extends TabPersister {
             protected DataInputStream doInBackground(Void... params) {
                 File stateFile = new File(getStateDirectory(), getStateFileName(stateFileIndex));
                 if (!stateFile.exists()) return null;
+                if (LibraryLoader.isInitialized()) {
+                    RecordHistogram.recordCountHistogram(
+                            "Android.TabPersistentStore.MergeStateMetadataFileSize",
+                            (int) stateFile.length());
+                }
                 FileInputStream stream = null;
                 byte[] data;
                 try {

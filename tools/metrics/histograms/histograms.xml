@@ -595,6 +595,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.TabPersistentStore.MergeStateMetadataFileSize"
+    units="bytes">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of bytes read for the other tab state's metadata file when
+    merging tab states in Android N+.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabPersistentStore.MergeStateTabCount" units="tabs">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of normal and incognito tabs merged (for Android N+
+    multi-instance). This will be logged for both cold-start and non-cold-start
+    merging assuming that the native library is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabPersistentStore.MergeStateTimePerTab" units="ms">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes to restore state for each merged tab
+    (for Android N+ multi-instance). This will only be logged for non-cold-start
+    merging, because restoring merged tabs is not distingushed from restoring
+    regular tabs on cold start.
+  </summary>
+</histogram>
+
 <histogram name="Android.TabPersistentStore.MetadataFileSize">
   <owner>wnwen@chromium.org</owner>
   <owner>dfalcantara@chromium.org</owner>
@@ -95557,6 +95585,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="LoadStateInternalPrefetchTime"/>
   <suffix name="LoadStateInternalTime"/>
   <suffix name="LoadStateTime"/>
+  <suffix name="MergeStateInternalTime"/>
+  <suffix name="MergeStateInternalFetchTime"/>
+  <suffix name="ReadMergedStateTime"/>
   <suffix name="ReadSavedStateTime"/>
   <suffix name="RestoreTabPrefetchTime"/>
   <suffix name="RestoreTabTime"/>
