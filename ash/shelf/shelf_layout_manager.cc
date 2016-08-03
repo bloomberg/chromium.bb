@@ -809,6 +809,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 
   gfx::Rect available_bounds =
       ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
+  available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
   int bottom_shelf_vertical_offset = available_bounds.bottom();
