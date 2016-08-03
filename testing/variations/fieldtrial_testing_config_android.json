@@ -230,10 +230,12 @@
                 "HalfLifeSeconds": "60",
                 "None.DefaultMedianKbps": "567",
                 "None.DefaultMedianRTTMsec": "272",
+                "Slow2G.ThresholdMedianHttpRTTMsec": "2000",
                 "Unknown.DefaultMedianKbps": "1916",
                 "Unknown.DefaultMedianRTTMsec": "121",
                 "WiFi.DefaultMedianKbps": "2736",
-                "WiFi.DefaultMedianRTTMsec": "168"
+                "WiFi.DefaultMedianRTTMsec": "168",
+                "correlation_logging_probability": "0.001"
             }
         }
     ],
