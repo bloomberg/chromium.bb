@@ -17,8 +17,6 @@ StringPrintfTest.StringPrintfBounds
 FieldTrialTest.*
 # Flaky?
 ScopedJavaRefTest.RefCounts
-# Death tests are not supported with apks.
-*DeathTest*
 FileTest.MemoryCorruption
 MessagePumpLibeventTest.QuitOutsideOfRun
 ScopedFD.ScopedFDCrashesOnCloseFailure

@@ -82,13 +82,11 @@ TEST(MemoryTest, AllocatorShimWorking) {
   ASSERT_TRUE(base::allocator::IsAllocatorInitialized());
 }
 
-// Android doesn't implement set_new_handler, so we can't use the
-// OutOfMemoryTest cases. OpenBSD does not support these tests either.
-// Don't test these on ASan/TSan/MSan configurations: only test the real
-// allocator.
+// OpenBSD does not support these tests. Don't test these on ASan/TSan/MSan
+// configurations: only test the real allocator.
 // Windows only supports these tests with the allocator shim in place.
-#if !defined(OS_ANDROID) && !defined(OS_OPENBSD) && \
-    BUILDFLAG(ENABLE_WIN_ALLOCATOR_SHIM_TESTS) &&   \
+#if !defined(OS_OPENBSD) && \
+    BUILDFLAG(ENABLE_WIN_ALLOCATOR_SHIM_TESTS) && \
     !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
@@ -187,9 +185,9 @@ TEST_F(OutOfMemoryDeathTest, AlignedRealloc) {
 }
 #endif  // defined(OS_WIN)
 
-// OS X has no 2Gb allocation limit.
+// OS X and Android have no 2Gb allocation limit.
 // See https://crbug.com/169327.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 TEST_F(OutOfMemoryDeathTest, SecurityNew) {
   ASSERT_EXIT({
       SetUpInDeathAssert();
@@ -241,7 +239,7 @@ TEST_F(OutOfMemoryDeathTest, SecurityAlignedRealloc) {
     }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 #endif  // defined(OS_WIN)
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
 
@@ -413,9 +411,6 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
 
 // TODO(b.kelemen): make UncheckedMalloc and UncheckedCalloc work
 // on Windows as well.
-// UncheckedMalloc() and UncheckedCalloc() work as regular malloc()/calloc()
-// under sanitizer tools.
-#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
   EXPECT_TRUE(base::UncheckedMalloc(kSafeMallocSize, &value_));
   EXPECT_TRUE(value_ != NULL);
@@ -444,6 +439,5 @@ TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
   EXPECT_FALSE(base::UncheckedCalloc(1, test_size_, &value_));
   EXPECT_TRUE(value_ == NULL);
 }
-#endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-#endif  // !defined(OS_ANDROID) && !defined(OS_OPENBSD) && !(defined(OS_WIN) &&
-        // !defined(ALLOCATOR_SHIM)) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#endif  // !defined(OS_OPENBSD) && BUILDFLAG(ENABLE_WIN_ALLOCATOR_SHIM_TESTS) &&
+        // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
