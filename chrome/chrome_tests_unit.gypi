@@ -128,6 +128,7 @@
       'browser/install_verification/win/module_list_unittest.cc',
       'browser/install_verification/win/module_verification_test.cc',
       'browser/install_verification/win/module_verification_test.h',
+      'browser/installable/installable_manager_unittest.cc',
       'browser/internal_auth_unittest.cc',
       'browser/io_thread_unittest.cc',
       'browser/logging_chrome_unittest.cc',

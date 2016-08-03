@@ -1,0 +1,189 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/installable/installable_manager.h"
+
+#include "base/strings/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
+
+class InstallableManagerUnitTest : public testing::Test {
+ public:
+  InstallableManagerUnitTest() : manager_(new InstallableManager(nullptr)) { }
+
+ protected:
+  static base::NullableString16 ToNullableUTF16(const std::string& str) {
+    return base::NullableString16(base::UTF8ToUTF16(str), false);
+  }
+
+  static content::Manifest GetValidManifest() {
+    content::Manifest manifest;
+    manifest.name = ToNullableUTF16("foo");
+    manifest.short_name = ToNullableUTF16("bar");
+    manifest.start_url = GURL("http://example.com");
+    manifest.display = blink::WebDisplayModeStandalone;
+
+    content::Manifest::Icon icon;
+    icon.type = ToNullableUTF16("image/png");
+    icon.sizes.push_back(gfx::Size(144, 144));
+    manifest.icons.push_back(icon);
+
+    return manifest;
+  }
+
+  bool IsManifestValid(const content::Manifest& manifest) {
+    // Explicitly reset the error code before running the method.
+    manager_->set_installable_error(NO_ERROR_DETECTED);
+    return manager_->IsManifestValidForWebApp(manifest);
+  }
+
+  InstallableErrorCode GetErrorCode() {
+    return manager_->installable_error();
+  }
+
+ private:
+  std::unique_ptr<InstallableManager> manager_;
+};
+
+TEST_F(InstallableManagerUnitTest, EmptyManifestIsInvalid) {
+  content::Manifest manifest;
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_EMPTY, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, CheckMinimalValidManifest) {
+  content::Manifest manifest = GetValidManifest();
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestRequiresNameOrShortName) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.name = base::NullableString16();
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.name = ToNullableUTF16("foo");
+  manifest.short_name = base::NullableString16();
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.name = base::NullableString16();
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_NAME_OR_SHORT_NAME, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestRequiresNonEmptyNameORShortName) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.name = ToNullableUTF16("");
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.name = ToNullableUTF16("foo");
+  manifest.short_name = ToNullableUTF16("");
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.name = ToNullableUTF16("");
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_NAME_OR_SHORT_NAME, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestRequiresValidStartURL) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.start_url = GURL();
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(START_URL_NOT_VALID, GetErrorCode());
+
+  manifest.start_url = GURL("/");
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(START_URL_NOT_VALID, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.icons[0].type = ToNullableUTF16("image/gif");
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  manifest.icons[0].type = base::NullableString16();
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  // If the type is null, the icon src will be checked instead.
+  manifest.icons[0].src = GURL("http://example.com/icon.png");
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // Capital file extension is also permissible.
+  manifest.icons[0].src = GURL("http://example.com/icon.PNG");
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // Non-png extensions are rejected.
+  manifest.icons[0].src = GURL("http://example.com/icon.gif");
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
+  content::Manifest manifest = GetValidManifest();
+
+  // The icon MUST be 144x144 size at least.
+  manifest.icons[0].sizes[0] = gfx::Size(1, 1);
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  manifest.icons[0].sizes[0] = gfx::Size(143, 143);
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  // If one of the sizes match the requirement, it should be accepted.
+  manifest.icons[0].sizes.push_back(gfx::Size(144, 144));
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // Higher than the required size is okay.
+  manifest.icons[0].sizes[1] = gfx::Size(200, 200);
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // Non-square is okay.
+  manifest.icons[0].sizes[1] = gfx::Size(144, 200);
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // The representation of the keyword 'any' should be recognized.
+  manifest.icons[0].sizes[1] = gfx::Size(0, 0);
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestDisplayStandaloneFullscreen) {
+  content::Manifest manifest = GetValidManifest();
+
+  manifest.display = blink::WebDisplayModeUndefined;
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
+
+  manifest.display = blink::WebDisplayModeBrowser;
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
+
+  manifest.display = blink::WebDisplayModeMinimalUi;
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_DISPLAY_NOT_SUPPORTED, GetErrorCode());
+
+  manifest.display = blink::WebDisplayModeStandalone;
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.display = blink::WebDisplayModeFullscreen;
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+}
