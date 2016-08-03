@@ -23,7 +23,9 @@ namespace base {
 class SchedulerWorkerPoolParams;
 
 // Interface for a task scheduler and static methods to manage the instance used
-// by the post_task.h API.
+// by the post_task.h API. Note: all base/task_scheduler users should go through
+// post_task.h instead of TaskScheduler except for the one callsite per process
+// which manages the process' instance.
 class BASE_EXPORT TaskScheduler {
  public:
   // Returns the index of the worker pool in which a task with |traits| should
