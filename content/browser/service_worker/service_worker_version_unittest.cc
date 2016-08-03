@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -1327,6 +1328,29 @@ TEST_F(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(ServiceWorkerFailToStartTest, RestartStalledWorker) {
+  ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                        CreateReceiverOnCurrentThread(&status1));
+  base::RunLoop().RunUntilIdle();
+  // The default start mode is StartMode::STALL. So the callback of StartWorker
+  // is not called yet.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status1);
+
+  // Set StartMode::SUCCEED. So the next start worker will be successful.
+  set_start_mode(MessageReceiverDisallowStart::StartMode::SUCCEED);
+
+  // StartWorker message will be sent again because OnStopped is called before
+  // OnStarted.
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status2));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status2);
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+}
+
 TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
@@ -1543,6 +1567,159 @@ TEST_F(ServiceWorkerVersionTest, DispatchEvent_MultipleResponse) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(version_->FinishRequest(request_id1, true));
   EXPECT_TRUE(version_->FinishRequest(request_id2, true));
+}
+
+class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerNavigationHintUMATest() : ServiceWorkerVersionTest() {}
+
+  void StartWorker(ServiceWorkerMetrics::EventType purpose) {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    version_->StartWorker(purpose, CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+  }
+
+  void StopWorker() {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+  }
+
+  void SimpleNavigationHintTest(
+      ServiceWorkerMetrics::EventType purpose,
+      const char* changed_historam_name,
+      const std::vector<const char*>& unchanged_historam_names) {
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    StartWorker(purpose);
+    StopWorker();
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, true, 0);
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 1);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, true, 0);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, false, 1);
+    for (const char* unchanged_historam_name : unchanged_historam_names)
+      histogram_tester_.ExpectTotalCount(unchanged_historam_name, 0);
+
+    StartWorker(purpose);
+    SimulateDispatchEvent(ServiceWorkerMetrics::EventType::MESSAGE);
+    StopWorker();
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, true, 0);
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 2);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, true, 0);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, false, 2);
+    for (const char* unchanged_historam_name : unchanged_historam_names)
+      histogram_tester_.ExpectTotalCount(unchanged_historam_name, 0);
+
+    StartWorker(purpose);
+    SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
+    StopWorker();
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, true, 1);
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 2);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, true, 1);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, false, 2);
+    for (const char* unchanged_historam_name : unchanged_historam_names)
+      histogram_tester_.ExpectTotalCount(unchanged_historam_name, 0);
+
+    StartWorker(purpose);
+    SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_SUB_FRAME);
+    StopWorker();
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, true, 2);
+    histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 2);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, true, 2);
+    histogram_tester_.ExpectBucketCount(changed_historam_name, false, 2);
+    for (const char* unchanged_historam_name : unchanged_historam_names)
+      histogram_tester_.ExpectTotalCount(unchanged_historam_name, 0);
+  }
+
+  static const char kNavigationHintPrecision[];
+  static const char kLinkMouseDown[];
+  static const char kLinkTapUnconfirmed[];
+  static const char kLinkTapDown[];
+
+  base::HistogramTester histogram_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHintUMATest);
+};
+
+const char ServiceWorkerNavigationHintUMATest::kNavigationHintPrecision[] =
+    "ServiceWorker.NavigationHintPrecision";
+const char ServiceWorkerNavigationHintUMATest::kLinkMouseDown[] =
+    "ServiceWorker.NavigationHintPrecision.LINK_MOUSE_DOWN";
+const char ServiceWorkerNavigationHintUMATest::kLinkTapUnconfirmed[] =
+    "ServiceWorker.NavigationHintPrecision.LINK_TAP_UNCONFIRMED";
+const char ServiceWorkerNavigationHintUMATest::kLinkTapDown[] =
+    "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN";
+
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkMouseDown) {
+  SimpleNavigationHintTest(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN,
+      kLinkMouseDown, {kLinkTapUnconfirmed, kLinkTapDown});
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkTapUnconfirmed) {
+  SimpleNavigationHintTest(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED,
+      kLinkTapUnconfirmed, {kLinkMouseDown, kLinkTapDown});
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkTapDown) {
+  SimpleNavigationHintTest(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN,
+      kLinkTapDown, {kLinkMouseDown, kLinkTapUnconfirmed});
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                        CreateReceiverOnCurrentThread(&status1));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN,
+      CreateReceiverOnCurrentThread(&status2));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status2);
+  StopWorker();
+  // The first purpose of starting worker was not a navigation hint.
+  histogram_tester_.ExpectTotalCount(kNavigationHintPrecision, 0);
+
+  status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN,
+      CreateReceiverOnCurrentThread(&status2));
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                        CreateReceiverOnCurrentThread(&status1));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status2);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
+  StopWorker();
+  // The first purpose of starting worker was a navigation hint.
+  histogram_tester_.ExpectTotalCount(kNavigationHintPrecision, 1);
+  histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, true, 1);
+  histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 0);
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN);
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
+  histogram_tester_.ExpectTotalCount(kLinkMouseDown, 0);
+
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN);
+  // The UMA for kLinkMouseDown must be recorded while restarting.
+  histogram_tester_.ExpectTotalCount(kLinkMouseDown, 1);
+  histogram_tester_.ExpectTotalCount(kLinkTapDown, 0);
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  StopWorker();
+  // The UMA for kLinkMouseDown must be recorded when the worker stopped.
+  histogram_tester_.ExpectTotalCount(kLinkMouseDown, 1);
+  histogram_tester_.ExpectTotalCount(kLinkTapDown, 1);
 }
 
 }  // namespace content

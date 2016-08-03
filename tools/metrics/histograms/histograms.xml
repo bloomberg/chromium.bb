@@ -51994,6 +51994,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.NavigationHintPrecision" enum="BooleanEnabled">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The precision of the speculative launch of Service Workers for navigation
+    hints. Recorded when the worker is stopped. If there was no main/sub frame
+    fetch event fired on the worker, this value is false. This means that the
+    speculative launch wasn't helpful.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.NotificationClickEvent.Time" units="ms">
   <owner>peter@chromium.org</owner>
   <summary>
@@ -101202,6 +101212,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="1" label="Failed one time."/>
   <suffix name="2" label="Failed two times."/>
   <suffix name="3" label="Failed three times."/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.NavigationHint" separator=".">
+  <suffix name="LINK_MOUSE_DOWN" label="LINK_MOUSE_DOWN"/>
+  <suffix name="LINK_TAP_UNCONFIRMED" label="LINK_TAP_UNCONFIRMED"/>
+  <suffix name="LINK_TAP_DOWN" label="LINK_TAP_DOWN"/>
+  <affected-histogram name="ServiceWorker.NavigationHintPrecision"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker.ShutdownStatus">

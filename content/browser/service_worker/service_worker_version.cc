@@ -203,13 +203,20 @@ const int ServiceWorkerVersion::kStopWorkerTimeoutSeconds = 5;
 class ServiceWorkerVersion::Metrics {
  public:
   using EventType = ServiceWorkerMetrics::EventType;
-  explicit Metrics(ServiceWorkerVersion* owner) : owner_(owner) {}
+  explicit Metrics(ServiceWorkerVersion* owner, EventType start_worker_purpose)
+      : owner_(owner), start_worker_purpose_(start_worker_purpose) {}
   ~Metrics() {
     if (owner_->should_exclude_from_uma_)
       return;
     for (const auto& ev : event_stats_) {
       ServiceWorkerMetrics::RecordEventHandledRatio(
           ev.first, ev.second.handled_events, ev.second.fired_events);
+    }
+    if (ServiceWorkerMetrics::IsNavigationHintEvent(start_worker_purpose_)) {
+      ServiceWorkerMetrics::RecordNavigationHintPrecision(
+          start_worker_purpose_,
+          event_stats_[EventType::FETCH_MAIN_FRAME].fired_events != 0 ||
+              event_stats_[EventType::FETCH_SUB_FRAME].fired_events != 0);
     }
   }
 
@@ -227,6 +234,7 @@ class ServiceWorkerVersion::Metrics {
 
   ServiceWorkerVersion* owner_;
   std::map<EventType, EventStat> event_stats_;
+  const EventType start_worker_purpose_;
 
   DISALLOW_COPY_AND_ASSIGN(Metrics);
 };
@@ -780,7 +788,7 @@ void ServiceWorkerVersion::OnStarted() {
 
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
+  FinishStartWorker(SERVICE_WORKER_OK);
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 }
 
@@ -889,8 +897,7 @@ void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
     scoped_refptr<ServiceWorkerVersion> protect(this);
-    RunCallbacks(this, &start_callbacks_,
-                 DeduceStartWorkerFailureReason(status));
+    FinishStartWorker(DeduceStartWorkerFailureReason(status));
   }
 }
 
@@ -1330,6 +1337,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
             "ServiceWorker", "ServiceWorkerVersion::StartWorker", trace_id,
             "Script", script_url_.spec(), "Purpose",
             ServiceWorkerMetrics::EventTypeToString(purpose));
+        DCHECK(!start_worker_first_purpose_);
+        start_worker_first_purpose_ = purpose;
         start_callbacks_.push_back(
             base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
                        weak_factory_.GetWeakPtr(), purpose, prestart_status,
@@ -1351,7 +1360,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
 
   DCHECK(!metrics_);
-  metrics_.reset(new Metrics(this));
+  DCHECK(start_worker_first_purpose_);
+  metrics_.reset(new Metrics(this, start_worker_first_purpose_.value()));
+
+  // We don't clear |start_worker_first_purpose_| here but clear in
+  // FinishStartWorker. This is because StartWorkerInternal may be called
+  // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
 
@@ -1466,7 +1480,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
            running_status() == EmbeddedWorkerStatus::STOPPING)
         << static_cast<int>(running_status());
     scoped_refptr<ServiceWorkerVersion> protect(this);
-    RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_ERROR_TIMEOUT);
+    FinishStartWorker(SERVICE_WORKER_ERROR_TIMEOUT);
     if (running_status() == EmbeddedWorkerStatus::STARTING)
       embedded_worker_->Stop();
     return;
@@ -1698,9 +1712,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
   if (!should_restart) {
     // Let all start callbacks fail.
-    RunCallbacks(this, &start_callbacks_,
-                 DeduceStartWorkerFailureReason(
-                     SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    FinishStartWorker(DeduceStartWorkerFailureReason(
+        SERVICE_WORKER_ERROR_START_WORKER_FAILED));
   }
 
   // Let all message callbacks fail (this will also fire and clear all
@@ -1743,6 +1756,11 @@ void ServiceWorkerVersion::OnBeginEvent() {
   }
   ServiceWorkerMetrics::RecordTimeBetweenEvents(base::TimeTicks::Now() -
                                                 idle_time_);
+}
+
+void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {
+  start_worker_first_purpose_ = base::nullopt;
+  RunCallbacks(this, &start_callbacks_, status);
 }
 
 }  // namespace content

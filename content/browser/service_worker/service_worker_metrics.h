@@ -136,6 +136,9 @@ class ServiceWorkerMetrics {
   // Converts an event type to a string. Used for tracing.
   static const char* EventTypeToString(EventType event_type);
 
+  // Returns true when the event is for a navigation hint.
+  static bool IsNavigationHintEvent(EventType event_type);
+
   // Excludes NTP scope from UMA for now as it tends to dominate the stats and
   // makes the results largely skewed. Some metrics don't follow this policy
   // and hence don't call this function.
@@ -197,6 +200,13 @@ class ServiceWorkerMetrics {
   static void RecordEventHandledRatio(EventType event,
                                       size_t handled_events,
                                       size_t fired_events);
+
+  // Records the precision of the speculative launch of Service Workers for
+  // each navigation hint type when the worker is stopped. If there was no
+  // main/sub frame fetch event fired on the worker, |frame_fetch_event_fired|
+  // is false. This means that the speculative launch wasn't helpful.
+  static void RecordNavigationHintPrecision(EventType start_worker_purpose,
+                                            bool frame_fetch_event_fired);
 
   // Records how often a dispatched event times out.
   static void RecordEventTimeout(EventType event);

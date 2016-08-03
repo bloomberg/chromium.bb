@@ -24,6 +24,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -651,6 +652,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // event ended).
   void OnBeginEvent();
 
+  // Resets |start_worker_first_purpose_| and fires and clears all start
+  // callbacks.
+  void FinishStartWorker(ServiceWorkerStatusCode status);
+
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
@@ -726,6 +731,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const bool should_exclude_from_uma_ = false;
 
   bool stop_when_devtools_detached_ = false;
+
+  // Keeps the first purpose of starting the worker for UMA. Cleared in
+  // FinishStartWorker().
+  base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

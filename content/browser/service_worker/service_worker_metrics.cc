@@ -213,6 +213,12 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
   return "error";
 }
 
+bool ServiceWorkerMetrics::IsNavigationHintEvent(EventType event_type) {
+  return event_type == EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN ||
+         event_type == EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED ||
+         event_type == EventType::NAVIGATION_HINT_LINK_TAP_DOWN;
+}
+
 bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
   return site == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
 }
@@ -405,6 +411,34 @@ void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
       break;
     default:
       // Do nothing.
+      break;
+  }
+}
+
+void ServiceWorkerMetrics::RecordNavigationHintPrecision(
+    EventType start_worker_purpose,
+    bool frame_fetch_event_fired) {
+  DCHECK(IsNavigationHintEvent(start_worker_purpose));
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavigationHintPrecision",
+                        frame_fetch_event_fired);
+  switch (start_worker_purpose) {
+    case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_MOUSE_DOWN",
+          frame_fetch_event_fired);
+      break;
+    case EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_TAP_UNCONFIRMED",
+          frame_fetch_event_fired);
+      break;
+    case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
+      UMA_HISTOGRAM_BOOLEAN(
+          "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN",
+          frame_fetch_event_fired);
+      break;
+    default:
+      NOTREACHED();
       break;
   }
 }
