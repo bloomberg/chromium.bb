@@ -14,7 +14,6 @@
       '../../../../browser/extensions/browsertest_util.h',
       '../../../../browser/ui/webui/web_ui_test_handler.cc',
       '../../../../browser/ui/webui/web_ui_test_handler.h',
-      '../../../../test/base/browser_tests_main.cc',
       '../../../../test/base/extension_js_browser_test.cc',
       '../../../../test/base/extension_js_browser_test.h',
       '../../../../test/base/extension_load_waiter_one_shot.cc',

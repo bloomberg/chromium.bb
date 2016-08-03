@@ -1529,7 +1529,6 @@
       'browser/sync/test/integration/two_client_themes_sync_test.cc',
       'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',
       'browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc',
-      'test/base/browser_tests_main.cc',
       'test/data/resource.rc',
     ],
     'test_support_sync_integration_sources': [

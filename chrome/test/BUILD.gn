@@ -873,13 +873,42 @@ if (!is_android) {
   }
 }
 
-test("browser_tests") {
+static_library("browser_tests_runner") {
+  testonly = true
   sources = [
     "base/browser_tests_main.cc",
   ]
-  sources += rebase_path(chrome_tests_gypi_values.chrome_browser_tests_sources,
-                         ".",
-                         "//chrome")
+
+  deps = [
+    ":test_support",
+  ]
+
+  if (use_aura) {
+    sources += [
+      "base/mash_browser_tests_main.cc",
+      "base/mash_browser_tests_main.h",
+      "base/mojo_test_connector.cc",
+      "base/mojo_test_connector.h",
+    ]
+
+    deps += [
+      "//services/shell/background:lib",
+      "//services/shell/background/tests:test_support",
+    ]
+
+    data_deps = [
+      "//chrome/app:mojo_manifests",
+      "//mash/session",
+    ]
+
+    defines = [ "MOJO_SHELL_CLIENT" ]
+  }
+}
+
+test("browser_tests") {
+  sources = rebase_path(chrome_tests_gypi_values.chrome_browser_tests_sources,
+                        ".",
+                        "//chrome")
 
   configs += [
     "//build/config:precompiled_headers",
@@ -887,6 +916,7 @@ test("browser_tests") {
   ]
 
   deps = [
+    ":browser_tests_runner",
     ":test_support",
     "//base",
     "//components/sync:test_support_sync_api",
@@ -1489,25 +1519,6 @@ test("browser_tests") {
     }
 
     if (use_aura) {
-      sources += [
-        "base/mash_browser_tests_main.cc",
-        "base/mash_browser_tests_main.h",
-        "base/mojo_test_connector.cc",
-        "base/mojo_test_connector.h",
-      ]
-
-      deps += [
-        "//services/shell/background:lib",
-        "//services/shell/background/tests:test_support",
-      ]
-
-      data_deps += [
-        "//chrome/app:mojo_manifests",
-        "//mash/session",
-      ]
-
-      defines += [ "MOJO_SHELL_CLIENT" ]
-
       if (enable_wifi_display) {
         sources += rebase_path(
                 chrome_tests_gypi_values.chrome_browser_tests_display_source_apitest,
@@ -1547,6 +1558,7 @@ if (!is_android) {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     deps = [
+      ":browser_tests_runner",
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
