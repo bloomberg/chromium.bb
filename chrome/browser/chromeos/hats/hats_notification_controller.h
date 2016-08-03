@@ -11,9 +11,18 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Profile;
 class NetworkState;
+
+namespace gfx {
+class Image;
+}
+
+namespace image_fetcher {
+class ImageFetcher;
+}
 
 namespace chromeos {
 
@@ -30,8 +39,14 @@ class HatsNotificationController : public NotificationDelegate,
   static const int kHatsNewDeviceThresholdDays;
   static const char kDelegateId[];
   static const char kNotificationId[];
+  static const char kImageFetcher1xId[];
+  static const char kImageFetcher2xId[];
+  static const char kGoogleIcon1xUrl[];
+  static const char kGoogleIcon2xUrl[];
 
-  explicit HatsNotificationController(Profile* profile);
+  explicit HatsNotificationController(
+      Profile* profile,
+      image_fetcher::ImageFetcher* image_fetcher = nullptr);
 
   // Returns true if the survey needs to be displayed for the given |profile|.
   static bool ShouldShowSurveyToProfile(Profile* profile);
@@ -57,6 +72,8 @@ class HatsNotificationController : public NotificationDelegate,
   void Close(bool by_user) override;
   std::string id() const override;
 
+  void OnImageFetched(const std::string& id, const gfx::Image& image);
+
   // NetworkPortalDetector::Observer override:
   void OnPortalDetectionCompleted(
       const NetworkState* network,
@@ -66,6 +83,11 @@ class HatsNotificationController : public NotificationDelegate,
   void UpdateLastInteractionTime();
 
   Profile* profile_;
+  // A count of requests that have been completed so far. This includes requests
+  // that may have failed as well.
+  int completed_requests_;
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  gfx::ImageSkia icon_;
   base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);
