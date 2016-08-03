@@ -1527,6 +1527,7 @@
             'base_java_memory_pressure_level',
             'base_build_config_gen',
             'base_native_libraries_gen',
+            '../third_party/android_tools/android_tools.gyp:android_support_annotations_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_multidex_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
           ],
