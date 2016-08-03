@@ -217,14 +217,11 @@ public:
     Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
 
-    template<size_t inlineCapacity>
-    void appendTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
-
     template<typename BufferType>
     void appendTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
-    template<size_t inlineCapacity>
-    void prependTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
+    template<typename BufferType>
+    void prependTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
     UChar32 characterStartingAt(unsigned) const;
     template<typename CharacterType>
@@ -567,23 +564,6 @@ inline bool String::isAllSpecialCharacters() const
     return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(characters16(), len);
 }
 
-template<size_t inlineCapacity>
-inline void String::appendTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
-{
-    unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (!numberOfCharactersToCopy)
-        return;
-    result.reserveCapacity(result.size() + numberOfCharactersToCopy);
-    if (is8Bit()) {
-        const LChar* characters8 = m_impl->characters8();
-        for (size_t i = 0; i < numberOfCharactersToCopy; ++i)
-            result.uncheckedAppend(characters8[pos + i]);
-    } else {
-        const UChar* characters16 = m_impl->characters16();
-        result.append(characters16 + pos, numberOfCharactersToCopy);
-    }
-}
-
 template<typename BufferType>
 inline void String::appendTo(BufferType& result, unsigned pos, unsigned len) const
 {
@@ -596,20 +576,16 @@ inline void String::appendTo(BufferType& result, unsigned pos, unsigned len) con
         result.append(m_impl->characters16() + pos, numberOfCharactersToCopy);
 }
 
-template<size_t inlineCapacity>
-inline void String::prependTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
+template<typename BufferType>
+inline void String::prependTo(BufferType& result, unsigned pos, unsigned len) const
 {
     unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
     if (!numberOfCharactersToCopy)
         return;
-    if (is8Bit()) {
-        size_t oldSize = result.size();
-        result.resize(oldSize + numberOfCharactersToCopy);
-        memmove(result.data() + numberOfCharactersToCopy, result.data(), oldSize * sizeof(UChar));
-        StringImpl::copyChars(result.data(), m_impl->characters8() + pos, numberOfCharactersToCopy);
-    } else {
+    if (is8Bit())
+        result.prepend(m_impl->characters8() + pos, numberOfCharactersToCopy);
+    else
         result.prepend(m_impl->characters16() + pos, numberOfCharactersToCopy);
-    }
 }
 
 // StringHash is the default hash for String
