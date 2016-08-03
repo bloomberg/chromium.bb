@@ -30,7 +30,6 @@
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/GlyphMetricsMap.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
@@ -39,6 +38,10 @@
 #include "wtf/text/StringHash.h"
 #include <SkPaint.h>
 #include <memory>
+
+#if OS(MACOSX)
+#include "platform/fonts/GlyphMetricsMap.h"
+#endif
 
 namespace blink {
 
@@ -144,8 +147,6 @@ private:
     float m_avgCharWidth;
 
     FontPlatformData m_platformData;
-    mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
-    mutable GlyphMetricsMap<float> m_glyphToWidthMap;
     SkPaint m_paint;
 
     bool m_isTextOrientationFallback;
@@ -181,11 +182,23 @@ private:
     mutable std::unique_ptr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;
+
+    // See discussion on crbug.com/631032 and Skiaissue
+    // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
+    // On Mac we're still using path based glyph metrics, and they seem to be
+    // too slow to be able to remove the caching layer we have here.
+#if OS(MACOSX)
+    mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
+    mutable GlyphMetricsMap<float> m_glyphToWidthMap;
+#endif
 };
 
 
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
 {
+#if !OS(MACOSX)
+    return platformBoundsForGlyph(glyph);
+#else
     FloatRect boundsResult;
     if (m_glyphToBoundsMap) {
         boundsResult = m_glyphToBoundsMap->metricsForGlyph(glyph);
@@ -199,10 +212,14 @@ ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
     m_glyphToBoundsMap->setMetricsForGlyph(glyph, boundsResult);
 
     return boundsResult;
+#endif
 }
 
 ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
 {
+#if !OS(MACOSX)
+    return platformWidthForGlyph(glyph);
+#else
     float width = m_glyphToWidthMap.metricsForGlyph(glyph);
     if (width != cGlyphSizeUnknown)
         return width;
@@ -211,6 +228,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
 
     m_glyphToWidthMap.setMetricsForGlyph(glyph, width);
     return width;
+#endif
 }
 
 DEFINE_FONT_DATA_TYPE_CASTS(SimpleFontData, false);
