@@ -54,7 +54,10 @@ enum {
   AKEYCODE_TV_CONTENTS_MENU = 256,
   AKEYCODE_TV_MEDIA_CONTEXT_MENU = 257,
   AKEYCODE_TV_TIMER_PROGRAMMING = 258,
-  AKEYCODE_HELP = 259
+  AKEYCODE_HELP = 259,
+  AKEYCODE_CUT = 277,
+  AKEYCODE_COPY = 278,
+  AKEYCODE_PASTE = 279,
 };
 
 DomKey GetDomKeyFromAndroidKeycode(int keycode) {
@@ -254,6 +257,12 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::ZOOM_TOGGLE;
     case AKEYCODE_HELP:
       return DomKey::HELP;
+    case AKEYCODE_CUT:
+      return DomKey::CUT;
+    case AKEYCODE_COPY:
+      return DomKey::COPY;
+    case AKEYCODE_PASTE:
+      return DomKey::PASTE;
 
     // The following codes should already be handled as printable
     // character mapping.

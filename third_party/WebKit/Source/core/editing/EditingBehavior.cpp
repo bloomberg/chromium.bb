@@ -32,37 +32,49 @@
 
 namespace blink {
 
+namespace {
+
 //
 // The below code was adapted from the WebKit file webview.cpp
 //
 
-static const unsigned CtrlKey = 1 << 0;
-static const unsigned AltKey = 1 << 1;
-static const unsigned ShiftKey = 1 << 2;
-static const unsigned MetaKey = 1 << 3;
+const unsigned CtrlKey = 1 << 0;
+const unsigned AltKey = 1 << 1;
+const unsigned ShiftKey = 1 << 2;
+const unsigned MetaKey = 1 << 3;
 #if OS(MACOSX)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
-static const unsigned OptionKey  = AltKey;
+const unsigned OptionKey  = AltKey;
 
 // Do not use this constant for anything but cursor movement commands. Keys
 // with cmd set have their |isSystemKey| bit set, so chances are the shortcut
 // will not be executed. Another, less important, reason is that shortcuts
 // defined in the layoutObject do not blink the menu item that they triggered. See
 // http://crbug.com/25856 and the bugs linked from there for details.
-static const unsigned CommandKey = MetaKey;
+const unsigned CommandKey = MetaKey;
 #endif
 
 // Keys with special meaning. These will be delegated to the editor using
 // the execCommand() method
-struct KeyDownEntry {
+struct KeyboardCodeKeyDownEntry {
     unsigned virtualKey;
     unsigned modifiers;
     const char* name;
 };
 
-struct KeyPressEntry {
+struct KeyboardCodeKeyPressEntry {
     unsigned charCode;
+    unsigned modifiers;
+    const char* name;
+};
+
+// DomKey has a broader range than KeyboardCode, we need DomKey to handle some
+// special keys.
+// Note: We cannot use DomKey for printable keys since it may vary based on
+// locale.
+struct DomKeyKeyDownEntry {
+    const char* key;
     unsigned modifiers;
     const char* name;
 };
@@ -70,7 +82,7 @@ struct KeyPressEntry {
 // Key bindings with command key on Mac and alt key on other platforms are
 // marked as system key events and will be ignored (with the exception
 // of Command-B and Command-I) so they shouldn't be added here.
-static const KeyDownEntry keyDownEntries[] = {
+const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     { VKEY_LEFT,   0,                  "MoveLeft"                             },
     { VKEY_LEFT,   ShiftKey,           "MoveLeftAndModifySelection"           },
 #if OS(MACOSX)
@@ -169,12 +181,30 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_INSERT, 0,                  "OverWrite"                            },
 };
 
-static const KeyPressEntry keyPressEntries[] = {
+const KeyboardCodeKeyPressEntry kKeyboardCodeKeyPressEntries[] = {
     { '\t',   0,                  "InsertTab"                                 },
     { '\t',   ShiftKey,           "InsertBacktab"                             },
     { '\r',   0,                  "InsertNewline"                             },
     { '\r',   ShiftKey,           "InsertLineBreak"                           },
 };
+
+const DomKeyKeyDownEntry kDomKeyKeyDownEntries[] = {
+    { "Copy", 0, "Copy" },
+    { "Cut", 0, "Cut" },
+    { "Paste", 0, "Paste" },
+};
+
+const char* lookupCommandNameFromDomKeyKeyDown(const String& key, unsigned modifiers)
+{
+    // This table is not likely to grow, so sequential search is fine here.
+    for (const auto& entry : kDomKeyKeyDownEntries) {
+        if (key == entry.key && modifiers == entry.modifiers)
+            return entry.name;
+    }
+    return nullptr;
+}
+
+} // anonymous namespace
 
 const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
 {
@@ -189,12 +219,12 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
         keyDownCommandsMap = new HashMap<int, const char*>;
         keyPressCommandsMap = new HashMap<int, const char*>;
 
-        for (unsigned i = 0; i < WTF_ARRAY_LENGTH(keyDownEntries); i++) {
-            keyDownCommandsMap->set(keyDownEntries[i].modifiers << 16 | keyDownEntries[i].virtualKey, keyDownEntries[i].name);
+        for (const auto& entry : kKeyboardCodeKeyDownEntries) {
+            keyDownCommandsMap->set(entry.modifiers << 16 | entry.virtualKey, entry.name);
         }
 
-        for (unsigned i = 0; i < WTF_ARRAY_LENGTH(keyPressEntries); i++) {
-            keyPressCommandsMap->set(keyPressEntries[i].modifiers << 16 | keyPressEntries[i].charCode, keyPressEntries[i].name);
+        for (const auto& entry : kKeyboardCodeKeyPressEntries) {
+            keyPressCommandsMap->set(entry.modifiers << 16 | entry.charCode, entry.name);
         }
     }
 
@@ -210,7 +240,10 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
 
     if (keyEvent->type() == PlatformEvent::RawKeyDown) {
         int mapKey = modifiers << 16 | event.keyCode();
-        return mapKey ? keyDownCommandsMap->get(mapKey) : 0;
+        const char* name = mapKey ? keyDownCommandsMap->get(mapKey) : nullptr;
+        if (!name)
+            name = lookupCommandNameFromDomKeyKeyDown(keyEvent->key(), modifiers);
+        return name;
     }
 
     int mapKey = modifiers << 16 | event.charCode();

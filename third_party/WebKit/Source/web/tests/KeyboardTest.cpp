@@ -44,30 +44,36 @@ namespace blink {
 class KeyboardTest : public testing::Test {
 public:
 
-    // Pass a WebKeyboardEvent into the EditorClient and get back the string
+    // Pass a PlatformKeyboardEvent into the EditorClient and get back the string
     // name of which editing event that key causes.
     // E.g., sending in the enter key gives back "InsertNewline".
-    const char* interpretKeyEvent(
-        const WebKeyboardEvent& webKeyboardEvent,
-        PlatformEvent::EventType keyType)
+    const char* interpretKeyEvent(const PlatformKeyboardEvent& platformKeyboardEvent)
     {
-        PlatformKeyboardEventBuilder evt(webKeyboardEvent);
-        evt.setKeyType(keyType);
-        KeyboardEvent* keyboardEvent = KeyboardEvent::create(evt, 0);
+        KeyboardEvent* keyboardEvent = KeyboardEvent::create(platformKeyboardEvent, 0);
         std::unique_ptr<Settings> settings = Settings::create();
         EditingBehavior behavior(settings->editingBehaviorType());
         return behavior.interpretKeyEvent(*keyboardEvent);
     }
 
-    // Set up a WebKeyboardEvent KEY_DOWN event with key code and modifiers.
-    void setupKeyDownEvent(WebKeyboardEvent* keyboardEvent,
-                           char keyCode,
-                           int modifiers)
+    PlatformKeyboardEvent createFakeKeyboardEvent(
+        char keyCode,
+        int modifiers,
+        PlatformEvent::EventType type,
+        const String& key = emptyString())
     {
-        keyboardEvent->windowsKeyCode = keyCode;
-        keyboardEvent->modifiers = modifiers;
-        keyboardEvent->type = WebInputEvent::KeyDown;
-        keyboardEvent->text[0] = keyCode;
+        String text = emptyString();
+        text.append(keyCode);
+        return PlatformKeyboardEvent(
+            type, /* EventType */
+            text,
+            emptyString(), /* unmodifiedText*/
+            emptyString(), /* DomCode */
+            key, /* DomKey */
+            keyCode, /* windowsVirtualKeyCode */
+            0, /* nativeVirtualKeyCode */
+            false, /* isSystemKey */
+            static_cast<PlatformEvent::Modifiers>(modifiers),
+            0 /* timestamp */);
     }
 
     // Like interpretKeyEvent, but with pressing down OSModifier+|keyCode|.
@@ -75,38 +81,35 @@ public:
     // platforms, but meta (command) on Mac.
     const char* interpretOSModifierKeyPress(char keyCode)
     {
-        WebKeyboardEvent keyboardEvent;
 #if OS(MACOSX)
         WebInputEvent::Modifiers osModifier = WebInputEvent::MetaKey;
 #else
         WebInputEvent::Modifiers osModifier = WebInputEvent::ControlKey;
 #endif
-        setupKeyDownEvent(&keyboardEvent, keyCode, osModifier);
-        return interpretKeyEvent(keyboardEvent, PlatformEvent::RawKeyDown);
+        return interpretKeyEvent(createFakeKeyboardEvent(keyCode, osModifier, PlatformEvent::RawKeyDown));
     }
 
     // Like interpretKeyEvent, but with pressing down ctrl+|keyCode|.
     const char* interpretCtrlKeyPress(char keyCode)
     {
-        WebKeyboardEvent keyboardEvent;
-        setupKeyDownEvent(&keyboardEvent, keyCode, WebInputEvent::ControlKey);
-        return interpretKeyEvent(keyboardEvent, PlatformEvent::RawKeyDown);
+        return interpretKeyEvent(createFakeKeyboardEvent(keyCode, WebInputEvent::ControlKey, PlatformEvent::RawKeyDown));
     }
 
     // Like interpretKeyEvent, but with typing a tab.
     const char* interpretTab(int modifiers)
     {
-        WebKeyboardEvent keyboardEvent;
-        setupKeyDownEvent(&keyboardEvent, '\t', modifiers);
-        return interpretKeyEvent(keyboardEvent, PlatformEvent::Char);
+        return interpretKeyEvent(createFakeKeyboardEvent('\t', modifiers, PlatformEvent::Char));
     }
 
     // Like interpretKeyEvent, but with typing a newline.
     const char* interpretNewLine(int modifiers)
     {
-        WebKeyboardEvent keyboardEvent;
-        setupKeyDownEvent(&keyboardEvent, '\r', modifiers);
-        return interpretKeyEvent(keyboardEvent, PlatformEvent::Char);
+        return interpretKeyEvent(createFakeKeyboardEvent('\r', modifiers, PlatformEvent::Char));
+    }
+
+    const char* interpretDomKey(const char* key)
+    {
+        return interpretKeyEvent(createFakeKeyboardEvent(0, noModifiers, PlatformEvent::RawKeyDown, key));
     }
 
     // A name for "no modifiers set".
@@ -162,11 +165,7 @@ TEST_F(KeyboardTest, TestOSModifierV)
 
 TEST_F(KeyboardTest, TestEscape)
 {
-    WebKeyboardEvent keyboardEvent;
-    setupKeyDownEvent(&keyboardEvent, VKEY_ESCAPE, noModifiers);
-
-    const char* result = interpretKeyEvent(keyboardEvent,
-                                           PlatformEvent::RawKeyDown);
+    const char* result = interpretKeyEvent(createFakeKeyboardEvent(VKEY_ESCAPE, noModifiers, PlatformEvent::RawKeyDown));
     EXPECT_STREQ("Cancel", result);
 }
 
@@ -188,6 +187,21 @@ TEST_F(KeyboardTest, TestInsertNewline)
 TEST_F(KeyboardTest, TestInsertLineBreak)
 {
     EXPECT_STREQ("InsertLineBreak", interpretNewLine(WebInputEvent::ShiftKey));
+}
+
+TEST_F(KeyboardTest, TestDomKeyMap)
+{
+    struct TestCase {
+        const char* key;
+        const char* command;
+    } kDomKeyTestCases[] = {
+        { "Copy", "Copy" },
+        { "Cut", "Cut" },
+        { "Paste", "Paste" },
+    };
+
+    for (const auto& test_case : kDomKeyTestCases)
+        EXPECT_STREQ(test_case.command, interpretDomKey(test_case.key));
 }
 
 } // namespace blink

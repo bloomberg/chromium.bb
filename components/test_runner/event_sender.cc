@@ -1581,6 +1581,13 @@ void EventSender::KeyDown(const std::string& code_str,
     code = ui::VKEY_TAB;
     domKeyString.assign("Tab");
     domCodeString.assign("Tab");
+  } else if ("Cut" == code_str || "Copy" == code_str || "Paste" == code_str) {
+    // No valid KeyboardCode for Cut/Copy/Paste.
+    code = 0;
+    domKeyString.assign(code_str);
+    // It's OK to assign the same string as the DomCode strings happens to be
+    // the same for these keys.
+    domCodeString.assign(code_str);
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key

@@ -167,3 +167,30 @@ TEST(WebInputEventBuilderAndroidTest, DomKeySyntheticEvent) {
   EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.domCode);
   EXPECT_EQ(ui::DomKey::UNIDENTIFIED, web_event.domKey);
 }
+
+// Testing new Android keycode introduced in API 24.
+TEST(WebInputEventBuilderAndroidTest, CutCopyPasteKey) {
+  JNIEnv* env = AttachCurrentThread();
+
+  // The minimum Android NDK does not provide values for these yet:
+  enum {
+    AKEYCODE_CUT = 277,
+    AKEYCODE_COPY = 278,
+    AKEYCODE_PASTE = 279,
+  };
+
+  struct DomKeyTestCase {
+    int key_code;
+    ui::DomKey key;
+  } test_cases[] = {
+      {AKEYCODE_CUT, ui::DomKey::CUT},
+      {AKEYCODE_COPY, ui::DomKey::COPY},
+      {AKEYCODE_PASTE, ui::DomKey::PASTE},
+  };
+
+  for (const auto& entry : test_cases) {
+    WebKeyboardEvent web_event =
+        CreateFakeWebKeyboardEvent(env, entry.key_code, 0, 0);
+    EXPECT_EQ(entry.key, web_event.domKey);
+  }
+}
