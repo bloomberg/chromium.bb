@@ -3165,7 +3165,7 @@ void GetFragDataIndexEXT(GLuint program,
 void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
     GLint location,
     GLboolean transpose,
-    const GLfloat* default_value) {
+    const GLfloat* transform) {
   const uint32_t size = gles2::cmds::
       UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate::ComputeSize();
   gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate* c =
@@ -3173,7 +3173,7 @@ void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
           gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate>(
           size);
   if (c) {
-    c->Init(location, transpose, default_value);
+    c->Init(location, transpose, transform);
   }
 }
 

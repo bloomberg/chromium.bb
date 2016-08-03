@@ -231,6 +231,7 @@ void AVDACodecImage::GetTextureMatrix(float matrix[16]) {
   if (surface_texture_)
     UpdateSurface(UpdateMode::RENDER_TO_FRONT_BUFFER);
   memcpy(matrix, gl_matrix_, sizeof(gl_matrix_));
+  YInvertMatrix(matrix);
 }
 
 bool AVDACodecImage::IsCodecBufferOutstanding() const {

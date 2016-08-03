@@ -45,8 +45,6 @@ class CC_EXPORT VideoFrameProviderClientImpl
   void ReleaseLock();
   bool HasCurrentFrame();
 
-  const gfx::Transform& StreamTextureMatrix() const;
-
   // VideoFrameController implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void DidDrawFrame() override;
@@ -83,8 +81,6 @@ class CC_EXPORT VideoFrameProviderClientImpl
   // from returning until the frame controller is done using the frame.
   base::Lock provider_lock_;
   base::ThreadChecker thread_checker_;
-
-  gfx::Transform stream_texture_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameProviderClientImpl);
 };
