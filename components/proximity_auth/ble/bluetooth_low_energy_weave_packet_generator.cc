@@ -20,22 +20,22 @@ namespace proximity_auth {
 namespace weave {
 
 // static.
-BluetoothLowEnergyWeavePacketGenerator::Factory*
+std::shared_ptr<BluetoothLowEnergyWeavePacketGenerator::Factory>
     BluetoothLowEnergyWeavePacketGenerator::Factory::factory_instance_ =
         nullptr;
 
 // static.
 std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
 BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance() {
-  if (factory_instance_ == nullptr) {
-    factory_instance_ = new Factory();
+  if (!factory_instance_) {
+    factory_instance_.reset(new Factory());
   }
   return factory_instance_->BuildInstance();
 }
 
 // static.
 void BluetoothLowEnergyWeavePacketGenerator::Factory::SetInstanceForTesting(
-    Factory* factory) {
+    std::shared_ptr<Factory> factory) {
   factory_instance_ = factory;
 }
 

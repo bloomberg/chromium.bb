@@ -14,6 +14,8 @@ static_library("ble") {
     "bluetooth_low_energy_connection_finder.h",
     "bluetooth_low_energy_device_whitelist.cc",
     "bluetooth_low_energy_device_whitelist.h",
+    "bluetooth_low_energy_weave_client_connection.cc",
+    "bluetooth_low_energy_weave_client_connection.h",
     "bluetooth_low_energy_weave_defines.h",
     "bluetooth_low_energy_weave_packet_generator.cc",
     "bluetooth_low_energy_weave_packet_generator.h",
@@ -51,6 +53,7 @@ source_set("unit_tests") {
     "bluetooth_low_energy_connection_finder_unittest.cc",
     "bluetooth_low_energy_connection_unittest.cc",
     "bluetooth_low_energy_device_whitelist_unittest.cc",
+    "bluetooth_low_energy_weave_client_connection_unittest.cc",
     "bluetooth_low_energy_weave_packet_generator_unittest.cc",
     "bluetooth_low_energy_weave_packet_receiver_unittest.cc",
   ]

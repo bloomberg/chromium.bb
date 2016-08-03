@@ -27,7 +27,7 @@ class BluetoothLowEnergyWeavePacketGenerator {
     NewInstance();
 
     // Exposed for testing.
-    static void SetInstanceForTesting(Factory* factory);
+    static void SetInstanceForTesting(std::shared_ptr<Factory> factory);
 
    protected:
     // Exposed for testing.
@@ -35,7 +35,7 @@ class BluetoothLowEnergyWeavePacketGenerator {
     BuildInstance();
 
    private:
-    static Factory* factory_instance_;
+    static std::shared_ptr<Factory> factory_instance_;
   };
 
   virtual Packet CreateConnectionRequest();
