@@ -29,7 +29,7 @@ public class BrowsingDataCounterBridge {
      * Initializes BrowsingDataCounterBridge.
      * @param callback A callback to call with the result when the counter finishes.
      * @param dataType The browsing data type to be counted (from the shared enum
-     *      {@link org.chromium.chrome.browser.BrowsingDataType}).
+     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
      */
     public BrowsingDataCounterBridge(BrowsingDataCounterCallback callback, int dataType) {
         mCallback = callback;

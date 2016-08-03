@@ -15,7 +15,7 @@ namespace browsing_data {
 // user-facing browsing data types in the Desktop UI as well.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browsing_data
 enum BrowsingDataType {
   HISTORY,
   CACHE,
@@ -29,7 +29,7 @@ enum BrowsingDataType {
 // Time period ranges available when doing browsing data removals.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browsing_data
 enum TimePeriod {
   LAST_HOUR = 0,
   LAST_DAY,

@@ -690,7 +690,7 @@ public final class PrefServiceBridge {
     /**
      * Checks the state of deletion preference for a certain browsing data type.
      * @param dataType The requested browsing data type (from the shared enum
-     *      {@link org.chromium.chrome.browser.BrowsingDataType}).
+     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
      * @return The state of the corresponding deletion preference.
      */
     public boolean getBrowsingDataDeletionPreference(int dataType) {
@@ -700,7 +700,7 @@ public final class PrefServiceBridge {
     /**
      * Sets the state of deletion preference for a certain browsing data type.
      * @param dataType The requested browsing data type (from the shared enum
-     *      {@link org.chromium.chrome.browser.BrowsingDataType}).
+     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
      * @param value The state to be set.
      */
     public void setBrowsingDataDeletionPreference(int dataType, boolean value) {
@@ -710,7 +710,7 @@ public final class PrefServiceBridge {
     /**
      * Gets the time period for which browsing data will be deleted.
      * @return The currently selected browsing data deletion time period (from the shared enum
-     *      {@link org.chromium.chrome.browser.TimePeriod}).
+     *      {@link org.chromium.chrome.browser.browsing_data.TimePeriod}).
      */
     public int getBrowsingDataDeletionTimePeriod() {
         return nativeGetBrowsingDataDeletionTimePeriod();
@@ -719,7 +719,7 @@ public final class PrefServiceBridge {
     /**
      * Sets the time period for which browsing data will be deleted.
      * @param timePeriod The selected browsing data deletion time period (from the shared enum
-     *      {@link org.chromium.chrome.browser.TimePeriod}).
+     *      {@link org.chromium.chrome.browser.browsing_data.TimePeriod}).
      */
     public void setBrowsingDataDeletionTimePeriod(int timePeriod) {
         nativeSetBrowsingDataDeletionTimePeriod(timePeriod);
@@ -732,9 +732,9 @@ public final class PrefServiceBridge {
      * ill-advised while browsing data is being cleared.
      * @param listener A listener to call back when the clearing is finished.
      * @param dataTypes An array of browsing data types to delete, represented as values from
-     *      the shared enum {@link org.chromium.chrome.browser.BrowsingDataType}.
+     *      the shared enum {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}.
      * @param timePeriod The time period for which to delete the data, represented as a value from
-     *      the shared enum {@link org.chromium.chrome.browser.TimePeriod}.
+     *      the shared enum {@link org.chromium.chrome.browser.browsing_data.TimePeriod}.
      */
     public void clearBrowsingData(
             OnClearBrowsingDataListener listener, int[] dataTypes, int timePeriod) {
@@ -748,9 +748,9 @@ public final class PrefServiceBridge {
      * yet, and more data than expected could be deleted. See crbug.com/113621.
      * @param listener A listener to call back when the clearing is finished.
      * @param dataTypes An array of browsing data types to delete, represented as values from
-     *      the shared enum {@link org.chromium.chrome.browser.BrowsingDataType}.
+     *      the shared enum {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}.
      * @param timePeriod The time period for which to delete the data, represented as a value from
-     *      the shared enum {@link org.chromium.chrome.browser.TimePeriod}.
+     *      the shared enum {@link org.chromium.chrome.browser.browsing_data.TimePeriod}.
      * @param blacklistDomains A list of registerable domains that we don't clear data for.
      */
     public void clearBrowsingDataExcludingDomains(OnClearBrowsingDataListener listener,

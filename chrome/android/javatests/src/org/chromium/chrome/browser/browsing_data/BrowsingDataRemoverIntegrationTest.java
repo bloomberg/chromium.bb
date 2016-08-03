@@ -7,10 +7,8 @@ package org.chromium.chrome.browser.browsing_data;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.TimePeriod;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
