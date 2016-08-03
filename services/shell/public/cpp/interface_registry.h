@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <set>
 #include <utility>
 
 #include "base/callback.h"
@@ -122,6 +123,9 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
   // Resumes incoming interface request binding.
   void ResumeBinding();
+
+  // Populates a set with the interface names this registry can bind.
+  void GetInterfaceNames(std::set<std::string>* interface_names);
 
  private:
   using NameToInterfaceBinderMap =

@@ -45,6 +45,8 @@ class MojoShellConnectionImpl : public MojoShellConnection {
       shell::InterfaceRegistry* registry,
       shell::InterfaceProvider* provider) override;
   void AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;
+  std::unique_ptr<ConnectionFilter> RemoveConnectionFilter(
+      ConnectionFilter* filter) override;
   void AddEmbeddedService(const std::string& name,
                           const MojoApplicationInfo& info) override;
   void AddServiceRequestHandler(

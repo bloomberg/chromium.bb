@@ -1074,8 +1074,6 @@
       'browser/message_port_service.h',
       'browser/mime_registry_impl.cc',
       'browser/mime_registry_impl.h',
-      'browser/mojo/constants.cc',
-      'browser/mojo/constants.h',
       'browser/mojo/interface_registrar_android.cc',
       'browser/mojo/interface_registrar_android.h',
       'browser/mojo/mojo_child_connection.cc',

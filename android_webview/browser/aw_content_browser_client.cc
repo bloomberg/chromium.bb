@@ -167,18 +167,22 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
 AwContentBrowserClient::AwContentBrowserClient(
     JniDependencyFactory* native_factory)
     : native_factory_(native_factory) {
-  base::FilePath user_data_dir;
-  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-  browser_context_.reset(
-      new AwBrowserContext(user_data_dir, native_factory_));
   g_locale_manager = native_factory->CreateAwLocaleManager();
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
   delete g_locale_manager;
   g_locale_manager = NULL;
+}
+
+AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
+  base::FilePath user_data_dir;
+  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
+    NOTREACHED() << "Failed to get app data directory for Android WebView";
+  }
+  browser_context_.reset(
+      new AwBrowserContext(user_data_dir, native_factory_));
+  return browser_context_.get();
 }
 
 void AwContentBrowserClient::AddCertificate(net::CertificateMimeType cert_type,
@@ -192,7 +196,7 @@ void AwContentBrowserClient::AddCertificate(net::CertificateMimeType cert_type,
 
 content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  return new AwBrowserMainParts(browser_context_.get());
+  return new AwBrowserMainParts(this);
 }
 
 content::WebContentsViewDelegate*

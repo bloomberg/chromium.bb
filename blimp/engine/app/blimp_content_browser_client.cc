@@ -6,6 +6,7 @@
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
 namespace blimp {
@@ -42,9 +43,13 @@ BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
 void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
     shell::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI);
   registry->AddInterface<mojom::BlobChannel>(
       base::Bind(&BlobChannelService::Create,
-                 blimp_browser_main_parts_->GetBlobChannelSender()));
+                 blimp_browser_main_parts_->GetBlobChannelSender()),
+      ui_task_runner);
 }
 
 }  // namespace engine

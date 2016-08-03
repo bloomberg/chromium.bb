@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequenced_task_runner.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
@@ -52,6 +53,10 @@ class MojoChildConnection {
     return &remote_interfaces_;
   }
 
+  const shell::Identity& child_identity() const {
+    return child_identity_;
+  }
+
   // A token which must be passed to the child process via
   // |switches::kPrimordialPipeToken| in order for the child to initialize its
   // end of the shell connection pipe.
@@ -62,12 +67,6 @@ class MojoChildConnection {
   // functional until this is called.
   void SetProcessHandle(base::ProcessHandle handle);
 
-#if defined(OS_ANDROID)
-  InterfaceRegistryAndroid* interface_registry_android() {
-    return interface_registry_android_.get();
-  }
-#endif
-
  private:
   class IOThreadContext;
 
@@ -75,7 +74,7 @@ class MojoChildConnection {
                     mojo::ScopedMessagePipeHandle request_handle);
 
   scoped_refptr<IOThreadContext> context_;
-
+  shell::Identity child_identity_;
   const std::string service_token_;
 
   shell::InterfaceRegistry interface_registry_;

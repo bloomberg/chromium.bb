@@ -114,6 +114,11 @@ class CONTENT_EXPORT MojoShellConnection {
   virtual void AddConnectionFilter(
       std::unique_ptr<ConnectionFilter> filter) = 0;
 
+  // Returns ownership of |filter|, added via AddConnectionFilter(), to the
+  // caller.
+  virtual std::unique_ptr<ConnectionFilter> RemoveConnectionFilter(
+      ConnectionFilter* filter) = 0;
+
   // Adds an embedded service to this connection's ServiceFactory.
   // |info| provides details on how to construct new instances of the
   // service when an incoming connection is made to |name|.

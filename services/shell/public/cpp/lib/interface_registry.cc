@@ -54,6 +54,13 @@ void InterfaceRegistry::ResumeBinding() {
   }
 }
 
+void InterfaceRegistry::GetInterfaceNames(
+    std::set<std::string>* interface_names) {
+  DCHECK(interface_names);
+  for (auto& entry : name_to_binder_)
+    interface_names->insert(entry.first);
+}
+
 // mojom::InterfaceProvider:
 void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {

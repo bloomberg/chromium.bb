@@ -54,6 +54,7 @@ class BrowserPluginGuestManager;
 class DownloadManager;
 class DownloadManagerDelegate;
 class IndexedDBContext;
+class MojoShellConnection;
 class PermissionManager;
 class PushMessagingService;
 class ResourceContext;
@@ -165,6 +166,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns a Connector associated with this BrowserContext, which can be used
   // to connect to service instances bound as this user.
   static shell::Connector* GetShellConnectorFor(
+      BrowserContext* browser_context);
+  static MojoShellConnection* GetMojoShellConnectionFor(
       BrowserContext* browser_context);
 
   ~BrowserContext() override;

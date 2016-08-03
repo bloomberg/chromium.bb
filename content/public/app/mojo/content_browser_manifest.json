@@ -4,6 +4,10 @@
   "process-group": "browser",
   "display_name": "Content Browser",
   "capabilities": {
+    // Remove this once http://crbug.com/632818 is fixed.
+    "provided": {
+      "all_interfaces": [ "*" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] },
 
@@ -24,7 +28,7 @@
         "interfaces": [
           "leveldb::mojom::LevelDBService",
           "user_service::UserService"
-         ]
+        ]
       }
     }
   }

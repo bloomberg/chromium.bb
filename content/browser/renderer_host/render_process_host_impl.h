@@ -33,6 +33,10 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/interface_registry_android.h"
+#endif
+
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -296,6 +300,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
+  class ConnectionFilterImpl;
 
   std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy(
       const std::string& channel_id);
@@ -364,7 +369,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::string child_token_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
+  ConnectionFilterImpl* connection_filter_ = nullptr;
   shell::mojom::ServicePtr test_service_;
+#if defined(OS_ANDROID)
+  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
+#endif
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

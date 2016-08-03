@@ -34,6 +34,10 @@ class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
 
+namespace shell {
+class Connection;
+}  // namespace shell
+
 namespace mojo {
 namespace edk {
 class ScopedIPCSupport;
@@ -255,6 +259,7 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
+  std::unique_ptr<shell::Connection> browser_connection_;
 
   std::string channel_name_;
   std::unique_ptr<IPC::SyncChannel> channel_;
@@ -325,6 +330,7 @@ struct ChildThreadImpl::Options {
   std::string channel_name;
   bool use_mojo_channel;
   bool auto_start_mojo_shell_connection;
+  bool connect_to_browser;
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
   std::string in_process_ipc_token;
@@ -341,6 +347,7 @@ class ChildThreadImpl::Options::Builder {
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
   Builder& UseMojoChannel(bool use_mojo_channel);
   Builder& AutoStartMojoShellConnection(bool auto_start);
+  Builder& ConnectToBrowser(bool connect_to_browser);
   Builder& WithChannelName(const std::string& channel_name);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
 

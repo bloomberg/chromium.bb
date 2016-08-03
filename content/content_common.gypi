@@ -429,6 +429,8 @@
       'common/media/video_capture_messages.h',
       'common/memory_messages.h',
       'common/message_port_messages.h',
+      'common/mojo/constants.cc',
+      'common/mojo/constants.h',
       'common/mojo/embedded_application_runner.cc',
       'common/mojo/embedded_application_runner.h',
       'common/mojo/mojo_shell_connection_impl.cc',

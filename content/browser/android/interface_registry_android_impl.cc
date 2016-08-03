@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "jni/InterfaceRegistry_jni.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/interface_provider.h"
@@ -87,10 +88,14 @@ void InterfaceRegistryAndroidImpl::AddInterface(
   ScopedJavaGlobalRef<jobject> j_scoped_factory;
   j_scoped_factory.Reset(env, j_factory);
 
+  // All Java interfaces must be bound on the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   interface_registry_->AddInterface(
-      name, base::Bind(&CreateImplAndAttach, j_scoped_interface_registry,
-                        j_scoped_manager, j_scoped_factory),
-      nullptr);
+      name,
+      base::Bind(&CreateImplAndAttach, j_scoped_interface_registry,
+                 j_scoped_manager, j_scoped_factory),
+      ui_task_runner);
 }
 
 void InterfaceRegistryAndroidImpl::RemoveInterface(

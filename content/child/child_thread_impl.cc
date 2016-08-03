@@ -53,6 +53,7 @@
 #include "content/child/websocket_message_filter.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/mojo/constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/mojo_shell_connection.h"
@@ -68,6 +69,7 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/runner/common/client_util.h"
@@ -266,7 +268,8 @@ ChildThreadImpl::Options::Options()
           switches::kProcessChannelID)),
       use_mojo_channel(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoChannelToken)),
-      auto_start_mojo_shell_connection(true) {
+      auto_start_mojo_shell_connection(true),
+      connect_to_browser(false) {
 }
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
@@ -297,6 +300,13 @@ ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::AutoStartMojoShellConnection(
     bool auto_start) {
   options_.auto_start_mojo_shell_connection = auto_start;
+  return *this;
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::ConnectToBrowser(
+  bool connect_to_browser) {
+  options_.connect_to_browser = connect_to_browser;
   return *this;
 }
 
@@ -432,12 +442,23 @@ void ChildThreadImpl::Init(const Options& options) {
         mojo::MakeRequest<shell::mojom::Service>(std::move(handle)),
         GetIOTaskRunner());
 
+    // When connect_to_browser is true, we obtain interfaces from the browser
+    // process by connecting to it, rather than from the incoming interface
+    // provider. Exposed interfaces are subject to manifest capability spec.
+    shell::InterfaceProvider* remote_interfaces = nullptr;
+    if (options.connect_to_browser) {
+      browser_connection_ = mojo_shell_connection_->GetConnector()->Connect(
+          kBrowserMojoApplicationName);
+    } else {
+      remote_interfaces = GetRemoteInterfaces();
+    }
+
     // TODO(rockot): Remove this once all child-to-browser interface connections
     // are made via a Connector rather than directly through an
     // InterfaceProvider, and all exposed interfaces are exposed via a
     // ConnectionFilter.
     mojo_shell_connection_->SetupInterfaceRequestProxies(
-        GetInterfaceRegistry(), GetRemoteInterfaces());
+        GetInterfaceRegistry(), remote_interfaces);
 
     if (options.auto_start_mojo_shell_connection)
       StartMojoShellConnection();
@@ -626,6 +647,9 @@ shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
 }
 
 shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
+  if (browser_connection_)
+    return browser_connection_->GetRemoteInterfaces();
+
   if (!remote_interfaces_.get())
     remote_interfaces_.reset(new shell::InterfaceProvider);
   return remote_interfaces_.get();

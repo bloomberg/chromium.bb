@@ -92,7 +92,10 @@ class TestContentBrowserClient : public ContentBrowserClient {
   void ExposeInterfacesToRenderer(
       shell::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) override {
-    registry->AddInterface(base::Bind(&FakeBatteryMonitor::Create));
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+    registry->AddInterface(base::Bind(&FakeBatteryMonitor::Create),
+                           ui_task_runner);
   }
 
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

@@ -2768,12 +2768,17 @@ bool ChromeContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     shell::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI);
   registry->AddInterface(
-      base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create));
+      base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create),
+      ui_task_runner);
 
 #if defined(OS_CHROMEOS)
   registry->AddInterface<metrics::mojom::LeakDetector>(
-      base::Bind(&metrics::LeakDetectorRemoteController::Create));
+      base::Bind(&metrics::LeakDetectorRemoteController::Create),
+      ui_task_runner);
 #endif
 }
 

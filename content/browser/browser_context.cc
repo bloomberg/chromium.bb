@@ -23,10 +23,10 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/mojo/constants.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/mojo/constants.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -473,12 +473,17 @@ BrowserContext* BrowserContext::GetBrowserContextForShellUserId(
 // static
 shell::Connector* BrowserContext::GetShellConnectorFor(
     BrowserContext* browser_context) {
+  MojoShellConnection* connection = GetMojoShellConnectionFor(browser_context);
+  return connection ? connection->GetConnector() : nullptr;
+}
+
+// static
+MojoShellConnection* BrowserContext::GetMojoShellConnectionFor(
+    BrowserContext* browser_context) {
   BrowserContextShellConnectionHolder* connection_holder =
       static_cast<BrowserContextShellConnectionHolder*>(
           browser_context->GetUserData(kMojoShellConnection));
-  if (!connection_holder)
-    return nullptr;
-  return connection_holder->shell_connection()->GetConnector();
+  return connection_holder ? connection_holder->shell_connection() : nullptr;
 }
 
 BrowserContext::~BrowserContext() {

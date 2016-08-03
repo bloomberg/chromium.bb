@@ -18,10 +18,11 @@ class MessageLoop;
 namespace android_webview {
 
 class AwBrowserContext;
+class AwContentBrowserClient;
 
 class AwBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit AwBrowserMainParts(AwBrowserContext* browser_context);
+  explicit AwBrowserMainParts(AwContentBrowserClient* browser_client);
   ~AwBrowserMainParts() override;
 
   // Overriding methods from content::BrowserMainParts.
@@ -34,7 +35,7 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   // Android specific UI MessageLoop.
   std::unique_ptr<base::MessageLoop> main_message_loop_;
 
-  AwBrowserContext* browser_context_;  // weak
+  AwContentBrowserClient* browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserMainParts);
 };

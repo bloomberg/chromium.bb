@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_dev_tools_discovery_provider.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
@@ -76,8 +77,8 @@ class AwGeolocationDelegate : public device::GeolocationDelegate {
 
 }  // anonymous namespace
 
-AwBrowserMainParts::AwBrowserMainParts(AwBrowserContext* browser_context)
-    : browser_context_(browser_context) {
+AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
+    : browser_client_(browser_client) {
 }
 
 AwBrowserMainParts::~AwBrowserMainParts() {
@@ -125,7 +126,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_->PreMainMessageLoopRun();
+  browser_client_->InitBrowserContext()->PreMainMessageLoopRun();
 
   device::GeolocationProvider::SetGeolocationDelegate(
       new AwGeolocationDelegate());

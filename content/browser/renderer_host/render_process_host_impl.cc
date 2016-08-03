@@ -85,7 +85,6 @@
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_impl.h"
-#include "content/browser/mojo/constants.h"
 #include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -129,6 +128,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/mojo/constants.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
@@ -148,6 +148,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -172,6 +173,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/runner/common/switches.h"
@@ -453,14 +455,73 @@ RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
 
 base::MessageLoop* g_in_process_thread;
 
+// Stores the maximum number of renderer processes the content module can
+// create.
+static size_t g_max_renderer_count_override = 0;
+
+// static
+bool g_run_renderer_in_process_ = false;
+
+// Held by the RPH's BrowserContext's MojoShellConnection, ownership transferred
+// back to RPH upon RPH destruction.
+class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
+ public:
+  ConnectionFilterImpl(
+      const shell::Identity& child_identity,
+      std::unique_ptr<shell::InterfaceRegistry> registry)
+      : child_identity_(child_identity),
+        registry_(std::move(registry)) {}
+  ~ConnectionFilterImpl() override {
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner =
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+    io_task_runner->DeleteSoon(FROM_HERE, weak_factory_.release());
+  }
+
+ private:
+  // ConnectionFilter:
+  bool OnConnect(shell::Connection* connection,
+                 shell::Connector* connector) override {
+    if (!weak_factory_)
+      weak_factory_.reset(new base::WeakPtrFactory<ConnectionFilterImpl>(this));
+
+    // We only fulfill connections from the renderer we host.
+    const shell::Identity& remote_identity = connection->GetRemoteIdentity();
+    if (child_identity_.name() != remote_identity.name() ||
+        child_identity_.instance() != remote_identity.instance()) {
+      return false;
+    }
+
+    std::set<std::string> interface_names;
+    registry_->GetInterfaceNames(&interface_names);
+    for (auto& interface_name : interface_names) {
+      // Note that the added callbacks may outlive this object, which is
+      // destroyed in RPH::Cleanup().
+      connection->GetInterfaceRegistry()->AddInterface(
+          interface_name,
+          base::Bind(&ConnectionFilterImpl::GetInterface,
+                     weak_factory_->GetWeakPtr(),
+                     interface_name));
+    }
+    return true;
+  }
+
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle handle) {
+    shell::mojom::InterfaceProvider* provider = registry_.get();
+    provider->GetInterface(interface_name, std::move(handle));
+  }
+
+  shell::Identity child_identity_;
+  std::unique_ptr<shell::InterfaceRegistry> registry_;
+  std::unique_ptr<base::WeakPtrFactory<ConnectionFilterImpl>> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
+};
+
 base::MessageLoop*
 RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
   return g_in_process_thread;
 }
-
-// Stores the maximum number of renderer processes the content module can
-// create.
-static size_t g_max_renderer_count_override = 0;
 
 // static
 size_t RenderProcessHost::GetMaxRendererProcessCount() {
@@ -507,9 +568,6 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   }
   return max_count;
 }
-
-// static
-bool g_run_renderer_in_process_ = false;
 
 // static
 void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
@@ -1048,73 +1106,80 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
-#if !defined(OS_ANDROID)
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&device::BatteryMonitorImpl::Create));
+  std::unique_ptr<shell::InterfaceRegistry> registry(
+      new shell::InterfaceRegistry(nullptr));
+#if defined(OS_ANDROID)
+  interface_registry_android_ =
+      InterfaceRegistryAndroid::Create(registry.get());
+  InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
+      interface_registry_android_.get());
 #endif
 
-  GetInterfaceRegistry()->AddInterface(
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+#if !defined(OS_ANDROID)
+  registry->AddInterface(base::Bind(&device::BatteryMonitorImpl::Create),
+                         ui_task_runner);
+#endif
+  registry->AddInterface(
       base::Bind(&PermissionServiceContext::CreateService,
-                 base::Unretained(permission_service_context_.get())));
-
+                 base::Unretained(permission_service_context_.get())),
+      ui_task_runner);
   // TODO(mcasas): finalize arguments.
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&ImageCaptureImpl::Create));
-
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&OffscreenCanvasSurfaceImpl::Create));
-
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &BackgroundSyncContext::CreateService,
-      base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
-
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &PlatformNotificationContextImpl::CreateService,
-      base::Unretained(
-          storage_partition_impl_->GetPlatformNotificationContext()), GetID()));
-
-  GetInterfaceRegistry()->AddInterface(
+  registry->AddInterface(base::Bind(&ImageCaptureImpl::Create),
+                         ui_task_runner);
+  registry->AddInterface(base::Bind(&OffscreenCanvasSurfaceImpl::Create),
+                         ui_task_runner);
+  registry->AddInterface(
+      base::Bind(&BackgroundSyncContext::CreateService,
+                 base::Unretained(
+                     storage_partition_impl_->GetBackgroundSyncContext())),
+      ui_task_runner);
+  registry->AddInterface(
+      base::Bind(&PlatformNotificationContextImpl::CreateService,
+                 base::Unretained(
+                     storage_partition_impl_->GetPlatformNotificationContext()),
+                 GetID()),
+      ui_task_runner);
+  registry->AddInterface(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
-                 base::Unretained(this)));
-
-  GetInterfaceRegistry()->AddInterface(
+                 base::Unretained(this)),
+      ui_task_runner);
+  registry->AddInterface(
       base::Bind(&BroadcastChannelProvider::Connect,
                  base::Unretained(
-                     storage_partition_impl_->GetBroadcastChannelProvider())));
+                     storage_partition_impl_->GetBroadcastChannelProvider())),
+      ui_task_runner);
+  if (memory_coordinator::IsEnabled()) {
+    registry->AddInterface(base::Bind(&CreateMemoryCoordinatorHandle, GetID()),
+                           ui_task_runner);
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&MimeRegistryImpl::Create), file_task_runner);
-
+  registry->AddInterface(base::Bind(&MimeRegistryImpl::Create),
+                         file_task_runner);
 #if defined(USE_MINIKIN_HYPHENATION)
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&hyphenation::HyphenationImpl::Create), file_task_runner);
+  registry->AddInterface(base::Bind(&hyphenation::HyphenationImpl::Create),
+                         file_task_runner);
 #endif
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceLightHost::Create),
-                                       io_task_runner);
-  GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceMotionHost::Create),
-                                       io_task_runner);
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&DeviceOrientationHost::Create), io_task_runner);
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&DeviceOrientationAbsoluteHost::Create), io_task_runner);
+  // These callbacks will be run immediately on the IO thread.
+  registry->AddInterface(base::Bind(&DeviceLightHost::Create));
+  registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
+  registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
+  registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
 
-  if (memory_coordinator::IsEnabled()) {
-    GetInterfaceRegistry()->AddInterface(
-        base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
-  }
+  GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
+                                                            this);
 
-#if defined(OS_ANDROID)
-  InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
-      mojo_child_connection_->interface_registry_android());
-#endif
-
-  GetContentClient()->browser()->ExposeInterfacesToRenderer(
-      GetInterfaceRegistry(), this);
+  MojoShellConnection* mojo_shell_connection =
+      BrowserContext::GetMojoShellConnectionFor(browser_context_);
+  std::unique_ptr<ConnectionFilterImpl> connection_filter(
+      new ConnectionFilterImpl(mojo_child_connection_->child_identity(),
+                               std::move(registry)));
+  connection_filter_ = connection_filter.get();
+  mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -1921,6 +1986,13 @@ void RenderProcessHostImpl::Cleanup() {
     NotificationService::current()->Notify(
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
+
+    if (connection_filter_) {
+      MojoShellConnection* mojo_shell_connection =
+          BrowserContext::GetMojoShellConnectionFor(browser_context_);
+      // Throw the result away, so the connection filter is deleted.
+      mojo_shell_connection->RemoveConnectionFilter(connection_filter_);
+    }
 
 #ifndef NDEBUG
     is_self_deleted_ = true;

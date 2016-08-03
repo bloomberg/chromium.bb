@@ -68,10 +68,18 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       partition->GetQuotaManager(),
       partition->GetURLRequestContext()));
 
-  host->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &LayoutTestBluetoothFakeAdapterSetterImpl::Create));
-
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
+}
+
+void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
+    shell::InterfaceRegistry* registry,
+    RenderProcessHost* render_process_host) {
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI);
+  registry->AddInterface(
+      base::Bind(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
+      ui_task_runner);
 }
 
 void LayoutTestContentBrowserClient::OverrideWebkitPrefs(

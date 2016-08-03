@@ -36,8 +36,7 @@ class MojoChildConnection::IOThreadContext
  public:
   IOThreadContext() {}
 
-  void Initialize(const std::string& application_name,
-                  const std::string& instance_id,
+  void Initialize(const shell::Identity& child_identity,
                   shell::Connector* connector,
                   mojo::ScopedMessagePipeHandle service_pipe,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner,
@@ -50,7 +49,7 @@ class MojoChildConnection::IOThreadContext
     io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&IOThreadContext::InitializeOnIOThread, this,
-                   application_name, instance_id,
+                   child_identity,
                    base::Passed(&io_thread_connector),
                    base::Passed(&service_pipe),
                    base::Bind(&CallBinderOnTaskRunner, default_binder,
@@ -88,8 +87,7 @@ class MojoChildConnection::IOThreadContext
   virtual ~IOThreadContext() {}
 
   void InitializeOnIOThread(
-      const std::string& application_name,
-      const std::string& instance_id,
+      const shell::Identity& child_identity,
       std::unique_ptr<shell::Connector> connector,
       mojo::ScopedMessagePipeHandle service_pipe,
       const shell::InterfaceRegistry::Binder& default_binder) {
@@ -99,9 +97,7 @@ class MojoChildConnection::IOThreadContext
     shell::mojom::PIDReceiverRequest pid_receiver_request =
         mojo::GetProxy(&pid_receiver_);
 
-    shell::Identity target(application_name, shell::mojom::kInheritUserID,
-                           instance_id);
-    shell::Connector::ConnectParams params(target);
+    shell::Connector::ConnectParams params(child_identity);
     params.set_client_process_connection(std::move(service),
                                          std::move(pid_receiver_request));
 
@@ -132,12 +128,13 @@ class MojoChildConnection::IOThreadContext
 };
 
 MojoChildConnection::MojoChildConnection(
-    const std::string& application_name,
+    const std::string& service_name,
     const std::string& instance_id,
     const std::string& child_token,
     shell::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : context_(new IOThreadContext),
+      child_identity_(service_name, shell::mojom::kInheritUserID, instance_id),
       service_token_(mojo::edk::GenerateRandomToken()),
       interface_registry_(nullptr),
       weak_factory_(this) {
@@ -146,7 +143,7 @@ MojoChildConnection::MojoChildConnection(
 
   context_ = new IOThreadContext;
   context_->Initialize(
-      application_name, instance_id, connector, std::move(service_pipe),
+      child_identity_, connector, std::move(service_pipe),
       io_task_runner,
       base::Bind(&MojoChildConnection::GetInterface,
                  weak_factory_.GetWeakPtr()));
@@ -154,11 +151,6 @@ MojoChildConnection::MojoChildConnection(
       base::Bind(&CallBinderOnTaskRunner,
                  base::Bind(&IOThreadContext::GetRemoteInterfaceOnIOThread,
                             context_), io_task_runner));
-
-#if defined(OS_ANDROID)
-  interface_registry_android_ =
-      InterfaceRegistryAndroid::Create(&interface_registry_);
-#endif
 }
 
 MojoChildConnection::~MojoChildConnection() {

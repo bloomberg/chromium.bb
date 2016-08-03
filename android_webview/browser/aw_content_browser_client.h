@@ -30,6 +30,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   AwContentBrowserClient(JniDependencyFactory* native_factory);
   ~AwContentBrowserClient() override;
 
+  // Allows AwBrowserMainParts to initialize a BrowserContext at the right
+  // moment during startup. AwContentBrowserClient owns the result.
+  AwBrowserContext* InitBrowserContext();
+
   // Overriden methods from ContentBrowserClient.
   void AddCertificate(net::CertificateMimeType cert_type,
                       const void* cert_data,

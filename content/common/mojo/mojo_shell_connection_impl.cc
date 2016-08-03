@@ -84,10 +84,25 @@ class MojoShellConnectionImpl::IOThreadContext
     DCHECK(posted);
   }
 
-  // Safe to call any time before Start() is called.
+  // Safe to call any time before a message is received from a process.
+  // i.e. can be called when starting the process but not afterwards.
   void AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) {
-    DCHECK(!started_);
+    base::AutoLock lock(lock_);
     connection_filters_.emplace_back(std::move(filter));
+  }
+
+  std::unique_ptr<ConnectionFilter> RemoveConnectionFilter(
+      ConnectionFilter* filter) {
+    base::AutoLock lock(lock_);
+    for (auto it = connection_filters_.begin(); it != connection_filters_.end();
+         ++it) {
+      if (it->get() == filter) {
+        std::unique_ptr<ConnectionFilter> taken = std::move(*it);
+        connection_filters_.erase(it);
+        return taken;
+      }
+    }
+    return nullptr;
   }
 
   // Safe to call any time before Start() is called.
@@ -285,6 +300,8 @@ class MojoShellConnectionImpl::IOThreadContext
   mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
   std::vector<std::unique_ptr<ConnectionFilter>> connection_filters_;
 
+  base::Lock lock_;
+
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
 
@@ -388,15 +405,24 @@ void MojoShellConnectionImpl::SetupInterfaceRequestProxies(
       base::Bind(&MojoShellConnectionImpl::GetInterface,
                  weak_factory_.GetWeakPtr(), registry));
 
+  if (!provider)
+    return;
+
   // Forward all remote interface requests on |provider| to our IO-thread
   // context. This will ensure they're forwarded to the provider on the
   // incoming browser connection.
-  provider->Forward(base::Bind(&IOThreadContext::GetRemoteInterface, context_));
+  provider->Forward(base::Bind(&IOThreadContext::GetRemoteInterface,
+                                context_));
 }
 
 void MojoShellConnectionImpl::AddConnectionFilter(
     std::unique_ptr<ConnectionFilter> filter) {
   context_->AddConnectionFilter(std::move(filter));
+}
+
+std::unique_ptr<ConnectionFilter>
+MojoShellConnectionImpl::RemoveConnectionFilter(ConnectionFilter* filter) {
+  return context_->RemoveConnectionFilter(filter);
 }
 
 void MojoShellConnectionImpl::AddEmbeddedService(

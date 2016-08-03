@@ -644,7 +644,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context);
 
   // Allows to register browser Mojo interfaces exposed through the
-  // RenderProcessHost.
+  // RenderProcessHost. Note that interface factory callbacks added to
+  // |registry| will by default be run immediately on the IO thread, unless a
+  // task runner is provided.
   virtual void ExposeInterfacesToRenderer(
       shell::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) {}
