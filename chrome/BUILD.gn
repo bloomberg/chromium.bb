@@ -17,10 +17,6 @@ import("//chrome/version.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
 
-if (enable_resource_whitelist_generation) {
-  android_resource_whitelist = "$target_gen_dir/resource_whitelist.txt"
-}
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 } else if (is_mac) {
@@ -1486,11 +1482,6 @@ repack("packed_extra_resources") {
   } else {
     output = "$root_out_dir/resources.pak"
   }
-
-  if (enable_resource_whitelist_generation) {
-    repack_whitelist = android_resource_whitelist
-    deps += [ "//chrome:resource_whitelist" ]
-  }
 }
 
 # GYP version: chrome/chrome_resources.gyp:browser_tests_pak
@@ -1605,11 +1596,6 @@ template("chrome_repack_percent") {
     }
 
     output = repack_output_file
-
-    if (enable_resource_whitelist_generation) {
-      repack_whitelist = android_resource_whitelist
-      deps += [ "//chrome:resource_whitelist" ]
-    }
   }
 
   copy(copy_name) {
@@ -1773,33 +1759,6 @@ if (is_android) {
       "//chrome/utility",
       "//components/safe_browsing_db:safe_browsing_db_mobile",
       "//content/public/app:both",
-    ]
-  }
-}
-
-if (enable_resource_whitelist_generation) {
-  action("resource_whitelist") {
-    deps = [
-      "//chrome/android:chrome",
-    ]
-    script = "//tools/resources/generate_resource_whitelist.py"
-
-    _infile = "$root_out_dir/libchrome.cr.so.whitelist"
-    inputs = [
-      _infile,
-    ]
-
-    _outfile = android_resource_whitelist
-    outputs = [
-      _outfile,
-    ]
-
-    args = [
-      "-i",
-      rebase_path(_infile, root_build_dir),
-      "-o",
-      rebase_path(_outfile, root_build_dir),
-      "--out-dir=.",
     ]
   }
 }
