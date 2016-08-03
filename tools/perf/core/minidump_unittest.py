@@ -41,6 +41,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
   @decorators.Isolated
   @decorators.Enabled('mac')
+  @decorators.Disabled('mac')  # crbug.com/634156
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
