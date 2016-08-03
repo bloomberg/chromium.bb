@@ -462,6 +462,13 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
         return;
     m_willValidateInitialized = true;
     m_willValidate = newWillValidate;
+    // Needs to force setNeedsValidityCheck() to invalidate validity state of
+    // FORM/FIELDSET. If this element updates willValidate twice and
+    // isValidElement() is not called between them, the second call of this
+    // function still has m_validityIsDirty==true, which means
+    // setNeedsValidityCheck() doesn't invalidate validity state of
+    // FORM/FIELDSET.
+    m_validityIsDirty = false;
     setNeedsValidityCheck();
     // No need to trigger style recalculation here because
     // setNeedsValidityCheck() does it in the right away. This relies on
@@ -531,6 +538,8 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
 
 bool HTMLFormControlElement::checkValidity(HeapVector<Member<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
+    if (!willValidate())
+        return true;
     if (isValidElement())
         return true;
     if (eventBehavior != CheckValidityDispatchInvalidEvent)

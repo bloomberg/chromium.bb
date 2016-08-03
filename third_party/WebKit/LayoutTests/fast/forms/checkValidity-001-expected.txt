@@ -4,9 +4,11 @@ This test checks if checkValidity() returns correctly a true (meaning no error) 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+
  lorem ipsum     
 PASS document.getElementsByTagName("fieldset")[0].checkValidity() is true
-PASS document.getElementsByTagName("input")[0].checkValidity() is true
+PASS document.getElementsByTagName("fieldset")[1].checkValidity() is true
+PASS document.getElementsByTagName("input")[1].checkValidity() is true
 PASS document.getElementsByTagName("button")[0].checkValidity() is true
 PASS document.getElementsByTagName("select")[0].checkValidity() is true
 PASS document.getElementsByTagName("textarea")[0].checkValidity() is true

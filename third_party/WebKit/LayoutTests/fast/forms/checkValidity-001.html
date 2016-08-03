@@ -7,6 +7,7 @@
 <p id="description"></p>
 <form method="get">
 <fieldset name="victim"></fieldset>
+<fieldset name="victim"><input required></fieldset>
 <input name="victim" type="text" value="lorem ipsum"/>
 <button name="victim">lorem ipsum</button>
 <select name="victim"></select>
@@ -20,7 +21,8 @@
 description("This test checks if checkValidity() returns correctly a true (meaning no error) result.");
 
 shouldBe('document.getElementsByTagName("fieldset")[0].checkValidity()', 'true');
-shouldBe('document.getElementsByTagName("input")[0].checkValidity()', 'true');
+shouldBe('document.getElementsByTagName("fieldset")[1].checkValidity()', 'true');
+shouldBe('document.getElementsByTagName("input")[1].checkValidity()', 'true');
 shouldBe('document.getElementsByTagName("button")[0].checkValidity()', 'true');
 shouldBe('document.getElementsByTagName("select")[0].checkValidity()', 'true');
 shouldBe('document.getElementsByTagName("textarea")[0].checkValidity()', 'true');
