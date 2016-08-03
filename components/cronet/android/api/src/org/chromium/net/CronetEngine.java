@@ -958,6 +958,13 @@ public abstract class CronetEngine {
     public abstract byte[] getGlobalMetricsDeltas();
 
     /**
+     * Returns the effective connection type computed by the network quality
+     * estimator.
+     * @hide as it's a prototype.
+     */
+    public abstract int getEffectiveConnectionType();
+
+    /**
      * Configures the network quality estimator for testing. This must be called
      * before round trip time and throughput listeners are added, and after the
      * network quality estimator has been enabled.

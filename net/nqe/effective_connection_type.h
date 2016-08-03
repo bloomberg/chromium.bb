@@ -15,6 +15,12 @@ namespace net {
 // EffectiveConnectionType of a network is independent of if the current
 // connection is metered or not. For example, an unmetered slow connection may
 // have EFFECTIVE_CONNECTION_TYPE_SLOW_2G as its effective connection type.
+// An invalid Java prefix to strip is specified to prevent the Java class
+// generator from automatically stripping off the common prefix
+// ("EFFECTIVE_CONNECTION_TYPE_").
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ChromiumEffectiveConnectionType
+// GENERATED_JAVA_PREFIX_TO_STRIP: PREFIX_NOT_PRESENT_
 enum EffectiveConnectionType {
   // The connection types should be in increasing order of quality.
   EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0,

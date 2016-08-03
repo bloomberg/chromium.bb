@@ -51,7 +51,6 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
@@ -416,6 +415,7 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   if (network_quality_estimator_) {
     network_quality_estimator_->RemoveRTTObserver(this);
     network_quality_estimator_->RemoveThroughputObserver(this);
+    network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
   }
   // Stop |write_to_file_observer_| if there is one.
   StopNetLogHelper();
@@ -597,13 +597,23 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   if (config->enable_network_quality_estimator) {
     DCHECK(!network_quality_estimator_);
+    std::map<std::string, std::string> variation_params;
+    // Configure network quality estimator: Specify the algorithm that should
+    // be used for computing the effective connection type. The algorithm
+    // is specified using the key-value pairs defined in
+    // //net/nqe/network_quality_estimator.cc.
+    // TODO(tbansal): Investigate a more robust way of configuring the network
+    // quality estimator.
+    variation_params["effective_connection_type_algorithm"] =
+        "TransportRTTOrDownstreamThroughput";
     network_quality_estimator_.reset(new net::NetworkQualityEstimator(
-        std::unique_ptr<net::ExternalEstimateProvider>(),
-        std::map<std::string, std::string>(), false, false));
+        std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
+        false, false));
     // Set the socket performance watcher factory so that network quality
     // estimator is notified of socket performance metrics from TCP and QUIC.
     context_builder.set_socket_performance_watcher_factory(
         network_quality_estimator_->GetSocketPerformanceWatcherFactory());
+    network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
   }
 
   context_ = context_builder.Build();
@@ -820,6 +830,14 @@ base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
     file_thread_->Start();
   }
   return file_thread_.get();
+}
+
+void CronetURLRequestContextAdapter::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType effective_connection_type) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  Java_CronetUrlRequestContext_onEffectiveConnectionTypeChanged(
+      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      effective_connection_type);
 }
 
 void CronetURLRequestContextAdapter::OnRTTObservation(
