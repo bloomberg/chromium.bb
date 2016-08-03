@@ -1479,8 +1479,10 @@ void XMLHttpRequest::endLoading()
 {
     InspectorInstrumentation::didFinishXHRLoading(getExecutionContext(), this, this, m_method, m_url);
 
-    if (m_loader)
+    if (m_loader) {
+        m_loader->cancel();
         m_loader = nullptr;
+    }
 
     changeState(kDone);
 
