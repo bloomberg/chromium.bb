@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "ui/views/background.h"
@@ -180,7 +180,7 @@ class Login : public shell::Service,
   void StartWindowManager();
 
   shell::Identity identity_;
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;
   ui::mojom::UserAccessManagerPtr user_access_manager_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/tracing/tracing_app.h"
+#include "services/tracing/service.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,78 +15,77 @@
 
 namespace tracing {
 
-TracingApp::TracingApp() : collector_binding_(this), tracing_active_(false) {
-}
+Service::Service() : collector_binding_(this), tracing_active_(false) {}
+Service::~Service() {}
 
-TracingApp::~TracingApp() {
-}
-
-bool TracingApp::OnConnect(shell::Connection* connection) {
-  connection->AddInterface<TraceCollector>(this);
-  connection->AddInterface<StartupPerformanceDataCollector>(this);
-
-  // If someone connects to us they may want to use the TraceCollector
-  // interface and/or they may want to expose themselves to be traced. Attempt
-  // to connect to the TraceProvider interface to see if the application
-  // connecting to us wants to be traced. They can refuse the connection or
-  // close the pipe if not.
-  TraceProviderPtr provider_ptr;
-  connection->GetInterface(&provider_ptr);
-  if (tracing_active_) {
-    TraceRecorderPtr recorder_ptr;
-    recorder_impls_.push_back(
-        new TraceRecorderImpl(GetProxy(&recorder_ptr), sink_.get()));
-    provider_ptr->StartTracing(tracing_categories_, std::move(recorder_ptr));
-  }
-  provider_ptrs_.AddPtr(std::move(provider_ptr));
+bool Service::OnConnect(shell::Connection* connection) {
+  connection->AddInterface<mojom::Factory>(this);
+  connection->AddInterface<mojom::Collector>(this);
+  connection->AddInterface<mojom::StartupPerformanceDataCollector>(this);
   return true;
 }
 
-bool TracingApp::OnStop() {
-  // TODO(beng): This is only required because TracingApp isn't run by
+bool Service::OnStop() {
+  // TODO(beng): This is only required because Service isn't run by
   // ServiceRunner - instead it's launched automatically by the standalone
   // shell. It shouldn't be.
   base::MessageLoop::current()->QuitWhenIdle();
   return false;
 }
 
-void TracingApp::Create(const shell::Identity& remote_identity,
-                        mojo::InterfaceRequest<TraceCollector> request) {
+void Service::Create(const shell::Identity& remote_identity,
+                     mojom::FactoryRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void Service::Create(const shell::Identity& remote_identity,
+                     mojom::CollectorRequest request) {
   collector_binding_.Bind(std::move(request));
 }
 
-void TracingApp::Create(
+void Service::Create(
     const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
+    mojom::StartupPerformanceDataCollectorRequest request) {
   startup_performance_data_collector_bindings_.AddBinding(this,
                                                           std::move(request));
 }
 
-void TracingApp::Start(mojo::ScopedDataPipeProducerHandle stream,
-                       const mojo::String& categories) {
-  tracing_categories_ = categories;
-  sink_.reset(new TraceDataSink(std::move(stream)));
-  provider_ptrs_.ForAllPtrs([categories, this](TraceProvider* controller) {
-    TraceRecorderPtr ptr;
+void Service::CreateRecorder(mojom::ProviderPtr provider) {
+  if (tracing_active_) {
+    mojom::RecorderPtr recorder_ptr;
     recorder_impls_.push_back(
-        new TraceRecorderImpl(GetProxy(&ptr), sink_.get()));
-    controller->StartTracing(categories, std::move(ptr));
-  });
+        new Recorder(GetProxy(&recorder_ptr), sink_.get()));
+    provider->StartTracing(tracing_categories_, std::move(recorder_ptr));
+  }
+  provider_ptrs_.AddPtr(std::move(provider));
+}
+
+void Service::Start(mojo::ScopedDataPipeProducerHandle stream,
+                    const std::string& categories) {
+  tracing_categories_ = categories;
+  sink_.reset(new DataSink(std::move(stream)));
+  provider_ptrs_.ForAllPtrs(
+    [categories, this](mojom::Provider* controller) {
+      mojom::RecorderPtr ptr;
+      recorder_impls_.push_back(
+          new Recorder(GetProxy(&ptr), sink_.get()));
+      controller->StartTracing(categories, std::move(ptr));
+    });
   tracing_active_ = true;
 }
 
-void TracingApp::StopAndFlush() {
+void Service::StopAndFlush() {
   // Remove any collectors that closed their message pipes before we called
   // StopTracing().
   for (int i = static_cast<int>(recorder_impls_.size()) - 1; i >= 0; --i) {
-    if (!recorder_impls_[i]->TraceRecorderHandle().is_valid()) {
+    if (!recorder_impls_[i]->RecorderHandle().is_valid()) {
       recorder_impls_.erase(recorder_impls_.begin() + i);
     }
   }
 
   tracing_active_ = false;
   provider_ptrs_.ForAllPtrs(
-      [](TraceProvider* controller) { controller->StopTracing(); });
+      [](mojom::Provider* controller) { controller->StopTracing(); });
 
   // Sending the StopTracing message to registered controllers will request that
   // they send trace data back via the collector interface and, when they are
@@ -108,7 +107,7 @@ void TracingApp::StopAndFlush() {
     std::vector<mojo::Handle> handles;
     std::vector<MojoHandleSignals> signals;
     for (auto* it : recorder_impls_) {
-      handles.push_back(it->TraceRecorderHandle());
+      handles.push_back(it->RecorderHandle());
       signals.push_back(MOJO_HANDLE_SIGNAL_READABLE |
                         MOJO_HANDLE_SIGNAL_PEER_CLOSED);
     }
@@ -138,47 +137,47 @@ void TracingApp::StopAndFlush() {
   AllDataCollected();
 }
 
-void TracingApp::SetShellProcessCreationTime(int64_t time) {
+void Service::SetShellProcessCreationTime(int64_t time) {
   if (startup_performance_times_.shell_process_creation_time == 0)
     startup_performance_times_.shell_process_creation_time = time;
 }
 
-void TracingApp::SetShellMainEntryPointTime(int64_t time) {
+void Service::SetShellMainEntryPointTime(int64_t time) {
   if (startup_performance_times_.shell_main_entry_point_time == 0)
     startup_performance_times_.shell_main_entry_point_time = time;
 }
 
-void TracingApp::SetBrowserMessageLoopStartTicks(int64_t ticks) {
+void Service::SetBrowserMessageLoopStartTicks(int64_t ticks) {
   if (startup_performance_times_.browser_message_loop_start_ticks == 0)
     startup_performance_times_.browser_message_loop_start_ticks = ticks;
 }
 
-void TracingApp::SetBrowserWindowDisplayTicks(int64_t ticks) {
+void Service::SetBrowserWindowDisplayTicks(int64_t ticks) {
   if (startup_performance_times_.browser_window_display_ticks == 0)
     startup_performance_times_.browser_window_display_ticks = ticks;
 }
 
-void TracingApp::SetBrowserOpenTabsTimeDelta(int64_t delta) {
+void Service::SetBrowserOpenTabsTimeDelta(int64_t delta) {
   if (startup_performance_times_.browser_open_tabs_time_delta == 0)
     startup_performance_times_.browser_open_tabs_time_delta = delta;
 }
 
-void TracingApp::SetFirstWebContentsMainFrameLoadTicks(int64_t ticks) {
+void Service::SetFirstWebContentsMainFrameLoadTicks(int64_t ticks) {
   if (startup_performance_times_.first_web_contents_main_frame_load_ticks == 0)
     startup_performance_times_.first_web_contents_main_frame_load_ticks = ticks;
 }
 
-void TracingApp::SetFirstVisuallyNonEmptyLayoutTicks(int64_t ticks) {
+void Service::SetFirstVisuallyNonEmptyLayoutTicks(int64_t ticks) {
   if (startup_performance_times_.first_visually_non_empty_layout_ticks == 0)
     startup_performance_times_.first_visually_non_empty_layout_ticks = ticks;
 }
 
-void TracingApp::GetStartupPerformanceTimes(
+void Service::GetStartupPerformanceTimes(
     const GetStartupPerformanceTimesCallback& callback) {
   callback.Run(startup_performance_times_.Clone());
 }
 
-void TracingApp::AllDataCollected() {
+void Service::AllDataCollected() {
   recorder_impls_.clear();
   sink_.reset();
 }

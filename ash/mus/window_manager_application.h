@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
@@ -89,7 +89,7 @@ class WindowManagerApplication
   void OnWillDestroyRootWindowController(
       RootWindowController* controller) override;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 

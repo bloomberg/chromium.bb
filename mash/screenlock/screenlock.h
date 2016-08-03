@@ -12,7 +12,7 @@
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 
 namespace views {
 class AuraInit;
@@ -35,7 +35,7 @@ class Screenlock : public shell::Service,
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
   mojo::BindingSet<session::mojom::ScreenlockStateListener> bindings_;

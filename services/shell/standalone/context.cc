@@ -39,9 +39,8 @@
 #include "services/shell/runner/host/out_of_process_native_runner.h"
 #include "services/shell/standalone/tracer.h"
 #include "services/shell/switches.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/tracing/public/cpp/switches.h"
-#include "services/tracing/public/cpp/trace_provider_impl.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -72,9 +71,10 @@ class TracingInterfaceProvider : public mojom::InterfaceProvider {
   // mojom::InterfaceProvider:
   void GetInterface(const mojo::String& interface_name,
                     mojo::ScopedMessagePipeHandle client_handle) override {
-    if (tracer_ && interface_name == tracing::TraceProvider::Name_) {
+    if (tracer_ && interface_name == tracing::mojom::Provider::Name_) {
       tracer_->ConnectToProvider(
-          mojo::MakeRequest<tracing::TraceProvider>(std::move(client_handle)));
+          mojo::MakeRequest<tracing::mojom::Provider>(
+              std::move(client_handle)));
     }
   }
 
@@ -184,19 +184,20 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   service_manager_->Connect(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
-    tracing::TraceCollectorPtr coordinator;
+    tracing::mojom::CollectorPtr coordinator;
     auto coordinator_request = GetProxy(&coordinator);
     tracing_remote_interfaces->GetInterface(
-        tracing::TraceCollector::Name_, coordinator_request.PassMessagePipe());
+        tracing::mojom::Collector::Name_,
+        coordinator_request.PassMessagePipe());
     tracer_.StartCollectingFromTracingService(std::move(coordinator));
   }
 
   // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
-    tracing::StartupPerformanceDataCollectorPtr collector;
+    tracing::mojom::StartupPerformanceDataCollectorPtr collector;
     tracing_remote_interfaces->GetInterface(
-        tracing::StartupPerformanceDataCollector::Name_,
+        tracing::mojom::StartupPerformanceDataCollector::Name_,
         mojo::GetProxy(&collector).PassMessagePipe());
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
     // CurrentProcessInfo::CreationTime is only defined on some platforms.

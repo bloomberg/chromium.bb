@@ -11,7 +11,7 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 
 namespace views {
 class AuraInit;
@@ -48,7 +48,7 @@ class Webtest
   mojo::BindingSet<mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 

@@ -17,7 +17,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/aura/mus/mus_util.h"

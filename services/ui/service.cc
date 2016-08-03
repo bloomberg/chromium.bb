@@ -16,7 +16,7 @@
 #include "services/shell/public/c/main.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/platform_screen.h"

@@ -50,7 +50,7 @@ void Tracer::Start(const std::string& categories,
 }
 
 void Tracer::StartCollectingFromTracingService(
-    tracing::TraceCollectorPtr coordinator) {
+    tracing::mojom::CollectorPtr coordinator) {
   coordinator_ = std::move(coordinator);
   mojo::DataPipe data_pipe;
   coordinator_->Start(std::move(data_pipe.producer_handle), categories_);
@@ -63,9 +63,8 @@ void Tracer::StopAndFlushToFile() {
     StopTracingAndFlushToDisk();
 }
 
-void Tracer::ConnectToProvider(
-    mojo::InterfaceRequest<tracing::TraceProvider> request) {
-  trace_provider_impl_.Bind(std::move(request));
+void Tracer::ConnectToProvider(tracing::mojom::ProviderRequest request) {
+  provider_.Bind(std::move(request));
 }
 
 void Tracer::StopTracingAndFlushToDisk() {

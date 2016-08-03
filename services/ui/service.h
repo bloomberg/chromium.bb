@@ -17,7 +17,7 @@
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
@@ -157,7 +157,7 @@ class Service
   ws::PlatformDisplayInitParams platform_display_init_params_;
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   using PendingRequests = std::vector<std::unique_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
 

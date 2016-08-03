@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
@@ -45,7 +45,7 @@ class FontServiceApp : public shell::Service,
 
   mojo::BindingSet<mojom::FontService> bindings_;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
 
   // We don't want to leak paths to our callers; we thus enumerate the paths of
   // fonts.

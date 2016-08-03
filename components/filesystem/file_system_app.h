@@ -12,7 +12,7 @@
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 
 namespace mojo {
 class Connector;
@@ -38,7 +38,7 @@ class FileSystemApp : public shell::Service,
   void Create(const shell::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::FileSystem> request) override;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
 
   scoped_refptr<LockTable> lock_table_;
 

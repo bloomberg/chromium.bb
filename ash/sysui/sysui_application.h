@@ -12,7 +12,7 @@
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 
 namespace ash {
@@ -41,7 +41,7 @@ class SysUIApplication
   void Create(const shell::Identity& remote_identity,
               mojom::WallpaperControllerRequest request) override;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<AshInit> ash_init_;
 
   mojo::BindingSet<mash::shelf::mojom::ShelfController>

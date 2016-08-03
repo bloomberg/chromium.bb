@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/tracing/trace_data_sink.h"
+#include "services/tracing/data_sink.h"
 
 #include <utility>
 
@@ -13,16 +13,16 @@ using mojo::common::BlockingCopyFromString;
 
 namespace tracing {
 
-TraceDataSink::TraceDataSink(mojo::ScopedDataPipeProducerHandle pipe)
+DataSink::DataSink(mojo::ScopedDataPipeProducerHandle pipe)
     : pipe_(std::move(pipe)), empty_(true) {}
 
-TraceDataSink::~TraceDataSink() {
+DataSink::~DataSink() {
   if (pipe_.is_valid())
     pipe_.reset();
   DCHECK(!pipe_.is_valid());
 }
 
-void TraceDataSink::AddChunk(const std::string& json) {
+void DataSink::AddChunk(const std::string& json) {
   if (!empty_)
     BlockingCopyFromString(",", pipe_);
   empty_ = false;

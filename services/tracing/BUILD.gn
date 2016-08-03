@@ -30,12 +30,12 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
-    "trace_data_sink.cc",
-    "trace_data_sink.h",
-    "trace_recorder_impl.cc",
-    "trace_recorder_impl.h",
-    "tracing_app.cc",
-    "tracing_app.h",
+    "data_sink.cc",
+    "data_sink.h",
+    "recorder.cc",
+    "recorder.h",
+    "service.cc",
+    "service.h",
   ]
 
   deps = [

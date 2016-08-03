@@ -16,7 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/event_matcher_util.h"
 #include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/window.h"

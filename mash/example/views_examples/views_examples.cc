@@ -12,7 +12,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/mus/aura_init.h"
@@ -59,7 +59,7 @@ class ViewsExamples
 
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 

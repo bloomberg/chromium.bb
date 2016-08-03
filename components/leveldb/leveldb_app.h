@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
+#include "services/tracing/public/cpp/provider.h"
 
 namespace leveldb {
 
@@ -30,7 +30,7 @@ class LevelDBApp : public shell::Service,
   void Create(const shell::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
-  mojo::TracingImpl tracing_;
+  tracing::Provider tracing_;
   std::unique_ptr<mojom::LevelDBService> service_;
   mojo::BindingSet<mojom::LevelDBService> bindings_;
 
