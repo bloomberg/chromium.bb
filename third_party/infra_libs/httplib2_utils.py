@@ -165,16 +165,19 @@ def get_authenticated_http(credentials_filename,
 class RetriableHttp(object):
   """A httplib2.Http object that retries on failure."""
 
-  def __init__(self, http, max_tries=5, retrying_statuses_fn=None):
+  def __init__(self, http, max_tries=5, backoff_time=1,
+               retrying_statuses_fn=None):
     """
     Args:
       http: an httplib2.Http instance
       max_tries: a number of maximum tries
+      backoff_time: a number of seconds to sleep between retries
       retrying_statuses_fn: a function that returns True if a given status
                             should be retried
     """
     self._http = http
     self._max_tries = max_tries
+    self._backoff_time = backoff_time
     self._retrying_statuses_fn = retrying_statuses_fn or \
                                  set(range(500,599)).__contains__
 
@@ -199,6 +202,7 @@ class RetriableHttp(object):
                      'will retry')
         if i == self._max_tries:
           raise
+      time.sleep(self._backoff_time)
 
     return response, content
 
@@ -206,7 +210,8 @@ class RetriableHttp(object):
     return getattr(self._http, name)
 
   def __setattr__(self, name, value):
-    if name in ('request', '_http', '_max_tries', '_retrying_statuses_fn'):
+    if name in ('request', '_http', '_max_tries', '_backoff_time',
+                '_retrying_statuses_fn'):
       self.__dict__[name] = value
     else:
       setattr(self._http, name, value)

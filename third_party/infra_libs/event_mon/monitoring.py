@@ -272,7 +272,8 @@ def get_build_event(event_type,
                     goma_error=None,
                     goma_crash_report_id=None,
                     patch_url=None,
-                    bbucket_id=None):
+                    bbucket_id=None,
+                    category=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
   Arguments are identical to those in send_build_event(), please refer
@@ -344,6 +345,14 @@ def get_build_event(event_type,
       event.build_event.bbucket_id = int(bbucket_id)
     except (ValueError, TypeError):
       pass
+
+  if category:
+    event.build_event.category = {
+      'cq': BuildEvent.CATEGORY_CQ,
+      'cq_experimental': BuildEvent.CATEGORY_CQ_EXPERIMENTAL,
+      'git_cl_try': BuildEvent.CATEGORY_GIT_CL_TRY,
+    }.get(category.lower(), BuildEvent.CATEGORY_UNKNOWN)
+    
 
   if event.build_event.step_name:
     if event_type != 'STEP':
@@ -439,7 +448,8 @@ def send_build_event(event_type,
                      goma_error=None,
                      goma_crash_report_id=None,
                      patch_url=None,
-                     bbucket_id=None):
+                     bbucket_id=None,
+                     category=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
   Args:
@@ -468,6 +478,7 @@ def send_build_event(event_type,
     goma_crash_report_id (string): id of goma crash report.
     patch_url (string): URL of the patch that triggered build
     bbucket_id (long): Buildbucket ID of the build.
+    category (string): Build category, e.g. cq or git_cl_try.
 
   Returns:
     success (bool): False if some error happened.
@@ -488,7 +499,8 @@ def send_build_event(event_type,
                          goma_error=goma_error,
                          goma_crash_report_id=goma_crash_report_id,
                          patch_url=patch_url,
-                         bbucket_id=bbucket_id).send()
+                         bbucket_id=bbucket_id,
+                         category=category).send()
 
 
 def send_events(events):
