@@ -162,11 +162,7 @@ def FindProvisioningProfile(bundle_identifier, provisioning_profile_short_name):
 
   Returns:
     The ProvisioningProfile object that can be used to sign the Bundle
-    object.
-
-  Raises:
-    InstallationError if no mobile provisioning profile can be used to
-    sign the Bundle object.
+    object or None if no matching provisioning profile was found.
   """
   provisioning_profiles_dir = GetProvisioningProfilesDir()
 
@@ -195,9 +191,7 @@ def FindProvisioningProfile(bundle_identifier, provisioning_profile_short_name):
       valid_provisioning_profiles.append(provisioning_profile)
 
   if not valid_provisioning_profiles:
-    raise InstallationError(
-        'no mobile provisioning profile for "%s"',
-        bundle_identifier)
+    return None
 
   # Select the most specific mobile provisioning profile, i.e. the one with
   # the longest application identifier pattern.
@@ -220,20 +214,23 @@ def InstallFramework(framework_path, bundle, args):
   CodeSignBundle(framework_bundle.binary_path, framework_bundle, args, True)
 
 
-def GenerateEntitlements(path, defaults, bundle_identifier, team_identifier):
+def GenerateEntitlements(path, provisioning_profile, bundle_identifier):
   """Generates an entitlements file.
 
   Args:
     path: path to the entitlements template file
-    defaults: dictionary with defaults to embeds in the generated entitlements
+    provisioning_profile: ProvisioningProfile object to use, may be None
     bundle_identifier: identifier of the bundle to sign.
-    team_identifier: identifier for the team (for code signing)
   """
   entitlements = Entitlements(path)
-  entitlements.LoadDefaults(defaults)
+  if provisioning_profile:
+    entitlements.LoadDefaults(provisioning_profile.entitlements)
+    app_identifier_prefix = provisioning_profile.team_identifier + '.'
+  else:
+    app_identifier_prefix = '*.'
   entitlements.ExpandVariables({
       'CFBundleIdentifier': bundle_identifier,
-      'AppIdentifierPrefix': '%s.' % team_identifier,
+      'AppIdentifierPrefix': app_identifier_prefix,
   })
   return entitlements
 
@@ -249,11 +246,17 @@ def CodeSignBundle(binary, bundle, args, preserve=False):
   """
   provisioning_profile = FindProvisioningProfile(
       bundle.identifier, args.provisioning_profile_short_name)
-  provisioning_profile.Install(bundle)
+  if provisioning_profile:
+    provisioning_profile.Install(bundle)
+  else:
+    sys.stderr.write(
+        'Warning: no mobile provisioning profile found for "%s", some features '
+        'may not be functioning properly.\n' % bundle.identifier)
 
   if preserve:
     process = subprocess.Popen([
-        'xcrun', 'codesign', '--force', '--sign', args.identity,
+        'xcrun', 'codesign', '--force',
+        '--sign', args.identity if args.identity else '-',
         '--deep', '--preserve-metadata=identifier,entitlements',
         '--timestamp=none', bundle.path], stderr=subprocess.PIPE)
     _, stderr = process.communicate()
@@ -274,16 +277,19 @@ def CodeSignBundle(binary, bundle, args, preserve=False):
       os.unlink(bundle.binary_path)
     shutil.copy(binary, bundle.binary_path)
 
-    entitlements = GenerateEntitlements(
-        args.entitlements_path, provisioning_profile.entitlements,
-        bundle.identifier, provisioning_profile.team_identifier)
+    codesign_command = [
+        'xcrun', 'codesign', '--force', '--sign',
+        args.identity if args.identity else '-',
+        '--timestamp=none', bundle.path,
+    ]
 
     with tempfile.NamedTemporaryFile(suffix='.xcent') as temporary_file_path:
-      entitlements.WriteTo(temporary_file_path.name)
-      subprocess.check_call([
-          'xcrun', 'codesign', '--force', '--sign', args.identity,
-          '--entitlements', temporary_file_path.name, '--timestamp=none',
-          bundle.path])
+      if provisioning_profile and args.identity:
+        entitlements = GenerateEntitlements(
+            args.entitlements_path, provisioning_profile, bundle.identifier)
+        entitlements.WriteTo(temporary_file_path.name)
+        codesign_command.extend(['--entitlements', temporary_file_path.name])
+      subprocess.check_call(codesign_command)
 
 
 def MainCodeSignBundle(args):
@@ -298,22 +304,11 @@ def MainGenerateEntitlements(args):
   """Adapter to call GenerateEntitlements from Main."""
   info_plist = LoadPlistFile(args.info_plist)
   bundle_identifier = info_plist['CFBundleIdentifier']
-  try:
-    provisioning_profile = FindProvisioningProfile(
-        bundle_identifier, args.provisioning_profile_short_name)
-    default_entitlements, team_identifier = (
-        provisioning_profile.entitlements,
-        provisioning_profile.team_identifier)
-  except InstallationError:
-    # Do not fail if no mobile provisioning is available, but instead embeds
-    # fake entitlements into the binary. This is necessary as some of the bots
-    # do not have mobile provisioning but still need to run the tests. In that
-    # case, use dummy values.
-    default_entitlements, team_identifier = {}, '*'
+  provisioning_profile = FindProvisioningProfile(
+      bundle_identifier, args.provisioning_profile_short_name)
 
   entitlements = GenerateEntitlements(
-      args.entitlements_path, default_entitlements, bundle_identifier,
-      team_identifier)
+      args.entitlements_path, provisioning_profile, bundle_identifier)
   entitlements.WriteTo(args.path)
 
 

@@ -90,13 +90,7 @@ if (ios_sdk_path == "") {
   }
 }
 
-if (use_ios_simulator) {
-  # Always disable code signing on the simulator
-  ios_enable_code_signing = false
-  ios_code_signing_identity = ""
-}
-
-if (ios_enable_code_signing) {
+if (ios_enable_code_signing && !use_ios_simulator) {
   # If an identity is not provided, look for one on the host
   if (ios_code_signing_identity == "") {
     _ios_identities = exec_script("find_signing_identity.py", [], "list lines")

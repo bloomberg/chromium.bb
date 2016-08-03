@@ -483,7 +483,7 @@ template("framework_bundle") {
           deps += [ ":$_link_shared_library_target" ]
         }
 
-        _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+        _entitlements_path = "//build/config/ios/entitlements.plist"
         if (defined(invoker.entitlements_path)) {
           _entitlements_path = invoker.entitlements_path
         }
