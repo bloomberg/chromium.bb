@@ -142,6 +142,7 @@ class CronetPerfTestAndroidStory(android.AndroidStory):
     device.RunShellCommand('rm %s' % DONE_FILE)
     config = BENCHMARK_CONFIG
     config['HOST_IP'] = GetServersHost(device)
+    self.url ='http://dummy/?'+urllib.urlencode(config)
     start_intent = intent.Intent(
         package=APP_PACKAGE,
         activity=APP_ACTIVITY,
@@ -149,7 +150,7 @@ class CronetPerfTestAndroidStory(android.AndroidStory):
         # |config| maps from configuration value names to the configured values.
         # |config| is encoded as URL parameter names and values and passed to
         # the Cronet perf test app via the Intent data field.
-        data='http://dummy/?'+urllib.urlencode(config),
+        data=self.url,
         extras=None,
         category=None)
     super(CronetPerfTestAndroidStory, self).__init__(
