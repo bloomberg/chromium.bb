@@ -2618,23 +2618,10 @@ int TabStrip::GetStartXForNormalTabs() const {
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {
-  if (touch_layout_) {
-    int active_tab_index = touch_layout_->active_index();
-    if (active_tab_index != -1) {
-      Tab* tab = FindTabForEventFrom(point, active_tab_index, -1);
-      if (!tab)
-        tab = FindTabForEventFrom(point, active_tab_index + 1, 1);
-      return tab;
-    }
-    if (tab_count())
-      return FindTabForEventFrom(point, 0, 1);
-  } else {
-    for (int i = 0; i < tab_count(); ++i) {
-      if (IsPointInTab(tab_at(i), point))
-        return tab_at(i);
-    }
-  }
-  return NULL;
+  DCHECK(touch_layout_);
+  int active_tab_index = touch_layout_->active_index();
+  Tab* tab = FindTabForEventFrom(point, active_tab_index, -1);
+  return tab ? tab : FindTabForEventFrom(point, active_tab_index + 1, 1);
 }
 
 Tab* TabStrip::FindTabForEventFrom(const gfx::Point& point,
@@ -2650,20 +2637,32 @@ Tab* TabStrip::FindTabForEventFrom(const gfx::Point& point,
   return NULL;
 }
 
-views::View* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
-  // The display order doesn't necessarily match the child list order, so we
-  // walk the display list hit-testing Tabs. Since the active tab always
-  // renders on top of adjacent tabs, it needs to be hit-tested before any
-  // left-adjacent Tab, so we look ahead for it as we walk.
+Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
+  // The display order doesn't necessarily match the child order, so we iterate
+  // in display order.
   for (int i = 0; i < tab_count(); ++i) {
-    Tab* next_tab = i < (tab_count() - 1) ? tab_at(i + 1) : NULL;
-    if (next_tab && next_tab->IsActive() && IsPointInTab(next_tab, point))
+    // If we don't first exclude points outside the current tab, the code below
+    // will return the wrong tab if the next tab is selected, the following tab
+    // is active, and |point| is in the overlap region between the two.
+    Tab* tab = tab_at(i);
+    if (!IsPointInTab(tab, point))
+      continue;
+
+    // Selected tabs render atop unselected ones, and active tabs render atop
+    // everything.  Check whether the next tab renders atop this one and |point|
+    // is in the overlap region.
+    Tab* next_tab = i < (tab_count() - 1) ? tab_at(i + 1) : nullptr;
+    if (next_tab &&
+        (next_tab->IsActive() ||
+         (next_tab->IsSelected() && !tab->IsSelected())) &&
+        IsPointInTab(next_tab, point))
       return next_tab;
-    if (IsPointInTab(tab_at(i), point))
-      return tab_at(i);
+
+    // This is the topmost tab for this point.
+    return tab;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 std::vector<int> TabStrip::GetTabXCoordinates() {
@@ -2829,7 +2828,8 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_LONG_TAP: {
       EndDrag(END_DRAG_CANCEL);
       gfx::Point local_point = event->location();
-      Tab* tab = FindTabForEvent(local_point);
+      Tab* tab = touch_layout_ ? FindTabForEvent(local_point)
+                               : FindTabHitByPoint(local_point);
       if (tab) {
         ConvertPointToScreen(this, &local_point);
         ShowContextMenuForTab(tab, local_point, ui::MENU_SOURCE_TOUCH);

@@ -511,19 +511,21 @@ class TabStrip : public views::View,
   int GetStartXForNormalTabs() const;
 
   // Returns the tab to use for event handling. This uses FindTabForEventFrom()
-  // to do the actual searching.
+  // to do the actual searching.  This method should be called when
+  // |touch_layout_| is set.
   Tab* FindTabForEvent(const gfx::Point& point);
 
-  // Returns the tab to use for event handling starting at index |start| and
-  // iterating by |delta|.
+  // Helper for FindTabForEvent().  Returns the tab to use for event handling
+  // starting at index |start| and iterating by |delta|.
   Tab* FindTabForEventFrom(const gfx::Point& point, int start, int delta);
 
   // For a given point, finds a tab that is hit by the point. If the point hits
   // an area on which two tabs are overlapping, the tab is selected as follows:
   // - If one of the tabs is active, select it.
   // - Select the left one.
-  // If no tabs are hit, returns NULL.
-  views::View* FindTabHitByPoint(const gfx::Point& point);
+  // If no tabs are hit, returns null.  This method should be called when
+  // |touch_layout_| is not set.
+  Tab* FindTabHitByPoint(const gfx::Point& point);
 
   // Returns the x-coordinates of the tabs.
   std::vector<int> GetTabXCoordinates();
