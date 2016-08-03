@@ -930,10 +930,10 @@ PaintLayer* PaintLayer::enclosingLayerForPaintInvalidationCrossingFrameBoundarie
         compositedLayer = layer->enclosingLayerForPaintInvalidation();
         if (!compositedLayer) {
             RELEASE_ASSERT(layer->layoutObject()->frame());
-            LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
-            if (!owner)
+            LayoutItem owner = layer->layoutObject()->frame()->ownerLayoutItem();
+            if (owner.isNull())
                 break;
-            layer = owner->enclosingLayer();
+            layer = owner.enclosingLayer();
         }
     }
     return compositedLayer;
@@ -2865,10 +2865,10 @@ void PaintLayer::markCompositingContainerChainForNeedsRepaint()
 
         PaintLayer* container = layer->compositingContainer();
         if (!container) {
-            LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
-            if (!owner)
+            LayoutItem owner = layer->layoutObject()->frame()->ownerLayoutItem();
+            if (owner.isNull())
                 break;
-            container = owner->enclosingLayer();
+            container = owner.enclosingLayer();
         }
 
         if (container->m_needsRepaint)
