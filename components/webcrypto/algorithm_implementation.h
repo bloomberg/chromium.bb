@@ -38,65 +38,80 @@ class Status;
 //     to Encrypt()/Decrypt() the corresponding key usages may not be present
 //     (when wrapping/unwrapping).
 //
-// An AlgorithmImplementation can also assume that
-// crypto::EnsureOpenSSLInit() will be called before any of its
-// methods are invoked (except the constructor).
+// An AlgorithmImplementation can also assume that crypto::EnsureOpenSSLInit()
+// will be called before any of its methods are invoked (except the
+// constructor).
 class AlgorithmImplementation {
  public:
   virtual ~AlgorithmImplementation();
 
-  // This method corresponds to Web Crypto's crypto.subtle.encrypt().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the encrypt operation"
+  //
+  // (crypto.subtle.encrypt() dispatches to this)
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
                          std::vector<uint8_t>* buffer) const;
 
-  // This method corresponds to Web Crypto's crypto.subtle.decrypt().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the decrypt operation"
+  //
+  // (crypto.subtle.decrypt() dispatches to this)
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
                          std::vector<uint8_t>* buffer) const;
 
-  // This method corresponds to Web Crypto's crypto.subtle.sign().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the sign operation"
+  //
+  // (crypto.subtle.sign() dispatches to this)
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
                       std::vector<uint8_t>* buffer) const;
 
-  // This method corresponds to Web Crypto's crypto.subtle.verify().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the verify operation"
+  //
+  // (crypto.subtle.verify() dispatches to this)
   virtual Status Verify(const blink::WebCryptoAlgorithm& algorithm,
                         const blink::WebCryptoKey& key,
                         const CryptoData& signature,
                         const CryptoData& data,
                         bool* signature_match) const;
 
-  // This method corresponds to Web Crypto's crypto.subtle.digest().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the digest operation"
+  //
+  // (crypto.subtle.digest() dispatches to this)
   virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                         const CryptoData& data,
                         std::vector<uint8_t>* buffer) const;
 
-  // This method corresponds to Web Crypto's crypto.subtle.generateKey().
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of executing the generate key operation"
   //
-  // Implementations MUST verify |usages| and return an error if it is not
-  // appropriate.
+  // (crypto.subtle.generateKey() dispatches to this)
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
                              blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const;
 
-  // This method corresponds to Web Crypto's "derive bits" operation. It is
-  // essentially crypto.subtle.deriveBits() with the exception that the length
-  // can be "null" (|has_length_bits = true|).
+  // This is what is run whenever the spec says:
+  //    "Let result be a new ArrayBuffer containing the result of executing the
+  //    derive bits operation"
   //
-  // In cases where the length was not specified, an appropriate default for the
-  // algorithm should be used (as described by the spec).
+  // (crypto.subtle.deriveBits() dispatches to this)
   virtual Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& base_key,
                             bool has_optional_length_bits,
                             unsigned int optional_length_bits,
                             std::vector<uint8_t>* derived_bytes) const;
 
-  // This method corresponds with Web Crypto's "Get key length" operation.
+  // This is what is run whenever the spec says:
+  //    "Let length be the result of executing the get key length algorithm"
   //
   // In the Web Crypto spec the operation returns either "null" or an
   // "Integer". In this code "null" is represented by setting
@@ -106,86 +121,24 @@ class AlgorithmImplementation {
       bool* has_length_bits,
       unsigned int* length_bits) const;
 
-  // -----------------------------------------------
-  // Key import
-  // -----------------------------------------------
-
-  // VerifyKeyUsagesBeforeImportKey() must be called before either
-  // importing a key, or unwrapping a key.
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the import key operation"
   //
-  // Implementations should return an error if the requested usages are invalid
-  // when importing for the specified format.
+  // (crypto.subtle.importKey() dispatches to this).
+  virtual Status ImportKey(blink::WebCryptoKeyFormat format,
+                           const CryptoData& key_data,
+                           const blink::WebCryptoAlgorithm& algorithm,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usages,
+                           blink::WebCryptoKey* key) const;
+
+  // This is what is run whenever the spec says:
+  //    "Let result be the result of performing the export key operation"
   //
-  // For instance, importing an RSA-SSA key with 'spki' format and Sign usage
-  // is invalid. The 'spki' format implies it will be a public key, and public
-  // keys do not support signing.
-  //
-  // When called with format=JWK the key type may be unknown. The
-  // ImportKeyJwk() must do the final usage check.
-  virtual Status VerifyKeyUsagesBeforeImportKey(
-      blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usages) const;
-
-  // Dispatches to the format-specific ImportKey* method.
-  Status ImportKey(blink::WebCryptoKeyFormat format,
-                   const CryptoData& key_data,
-                   const blink::WebCryptoAlgorithm& algorithm,
-                   bool extractable,
-                   blink::WebCryptoKeyUsageMask usages,
-                   blink::WebCryptoKey* key) const;
-
-  // This method corresponds to Web Crypto's
-  // crypto.subtle.importKey(format='raw').
-  virtual Status ImportKeyRaw(const CryptoData& key_data,
-                              const blink::WebCryptoAlgorithm& algorithm,
-                              bool extractable,
-                              blink::WebCryptoKeyUsageMask usages,
-                              blink::WebCryptoKey* key) const;
-
-  // This method corresponds to Web Crypto's
-  // crypto.subtle.importKey(format='pkcs8').
-  virtual Status ImportKeyPkcs8(const CryptoData& key_data,
-                                const blink::WebCryptoAlgorithm& algorithm,
-                                bool extractable,
-                                blink::WebCryptoKeyUsageMask usages,
-                                blink::WebCryptoKey* key) const;
-
-  // This method corresponds to Web Crypto's
-  // crypto.subtle.importKey(format='spki').
-  virtual Status ImportKeySpki(const CryptoData& key_data,
-                               const blink::WebCryptoAlgorithm& algorithm,
-                               bool extractable,
-                               blink::WebCryptoKeyUsageMask usages,
-                               blink::WebCryptoKey* key) const;
-
-  // This method corresponds to Web Crypto's
-  // crypto.subtle.importKey(format='jwk').
-  virtual Status ImportKeyJwk(const CryptoData& key_data,
-                              const blink::WebCryptoAlgorithm& algorithm,
-                              bool extractable,
-                              blink::WebCryptoKeyUsageMask usages,
-                              blink::WebCryptoKey* key) const;
-
-  // -----------------------------------------------
-  // Key export
-  // -----------------------------------------------
-
-  // Dispatches to the format-specific ExportKey* method.
-  Status ExportKey(blink::WebCryptoKeyFormat format,
-                   const blink::WebCryptoKey& key,
-                   std::vector<uint8_t>* buffer) const;
-
-  virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                              std::vector<uint8_t>* buffer) const;
-
-  virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                std::vector<uint8_t>* buffer) const;
-
-  virtual Status ExportKeySpki(const blink::WebCryptoKey& key,
-                               std::vector<uint8_t>* buffer) const;
-
-  virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8_t>* buffer) const;
+  // (crypto.subtle.exportKey() dispatches to this).
+  virtual Status ExportKey(blink::WebCryptoKeyFormat format,
+                           const blink::WebCryptoKey& key,
+                           std::vector<uint8_t>* buffer) const;
 
   // -----------------------------------------------
   // Structured clone

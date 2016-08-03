@@ -27,12 +27,15 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
  public:
   Pbkdf2Implementation() {}
 
-  Status VerifyKeyUsagesBeforeImportKey(
-      blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usages) const override {
+  Status ImportKey(blink::WebCryptoKeyFormat format,
+                   const CryptoData& key_data,
+                   const blink::WebCryptoAlgorithm& algorithm,
+                   bool extractable,
+                   blink::WebCryptoKeyUsageMask usages,
+                   blink::WebCryptoKey* key) const override {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
-        return CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
+        return ImportKeyRaw(key_data, algorithm, extractable, usages, key);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
     }
@@ -42,7 +45,11 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usages,
-                      blink::WebCryptoKey* key) const override {
+                      blink::WebCryptoKey* key) const {
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
+    if (status.IsError())
+      return status;
+
     const blink::WebCryptoKeyAlgorithm key_algorithm =
         blink::WebCryptoKeyAlgorithm::createWithoutParams(
             blink::WebCryptoAlgorithmIdPbkdf2);

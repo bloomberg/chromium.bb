@@ -118,7 +118,7 @@ class HmacImplementation : public AlgorithmImplementation {
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usages,
                      GenerateKeyResult* result) const override {
-    Status status = CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
     if (status.IsError())
       return status;
 
@@ -142,15 +142,32 @@ class HmacImplementation : public AlgorithmImplementation {
                                       extractable, usages, keylen_bits, result);
   }
 
-  Status VerifyKeyUsagesBeforeImportKey(
-      blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usages) const override {
+  Status ImportKey(blink::WebCryptoKeyFormat format,
+                   const CryptoData& key_data,
+                   const blink::WebCryptoAlgorithm& algorithm,
+                   bool extractable,
+                   blink::WebCryptoKeyUsageMask usages,
+                   blink::WebCryptoKey* key) const override {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
+        return ImportKeyRaw(key_data, algorithm, extractable, usages, key);
       case blink::WebCryptoKeyFormatJwk:
-        return CheckSecretKeyCreationUsages(kAllKeyUsages, usages);
+        return ImportKeyJwk(key_data, algorithm, extractable, usages, key);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
+    }
+  }
+
+  Status ExportKey(blink::WebCryptoKeyFormat format,
+                   const blink::WebCryptoKey& key,
+                   std::vector<uint8_t>* buffer) const override {
+    switch (format) {
+      case blink::WebCryptoKeyFormatRaw:
+        return ExportKeyRaw(key, buffer);
+      case blink::WebCryptoKeyFormatJwk:
+        return ExportKeyJwk(key, buffer);
+      default:
+        return Status::ErrorUnsupportedExportKeyFormat();
     }
   }
 
@@ -158,13 +175,17 @@ class HmacImplementation : public AlgorithmImplementation {
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usages,
-                      blink::WebCryptoKey* key) const override {
+                      blink::WebCryptoKey* key) const {
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
+    if (status.IsError())
+      return status;
+
     const blink::WebCryptoHmacImportParams* params =
         algorithm.hmacImportParams();
 
     unsigned int keylen_bits = 0;
-    Status status = GetHmacImportKeyLengthBits(params, key_data.byte_length(),
-                                               &keylen_bits);
+    status = GetHmacImportKeyLengthBits(params, key_data.byte_length(),
+                                        &keylen_bits);
     if (status.IsError())
       return status;
 
@@ -190,7 +211,11 @@ class HmacImplementation : public AlgorithmImplementation {
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usages,
-                      blink::WebCryptoKey* key) const override {
+                      blink::WebCryptoKey* key) const {
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
+    if (status.IsError())
+      return status;
+
     const char* algorithm_name =
         GetJwkHmacAlgorithmName(algorithm.hmacImportParams()->hash().id());
     if (!algorithm_name)
@@ -198,8 +223,8 @@ class HmacImplementation : public AlgorithmImplementation {
 
     std::vector<uint8_t> raw_data;
     JwkReader jwk;
-    Status status = ReadSecretKeyNoExpectedAlgJwk(key_data, extractable, usages,
-                                                  &raw_data, &jwk);
+    status = ReadSecretKeyNoExpectedAlgJwk(key_data, extractable, usages,
+                                           &raw_data, &jwk);
     if (status.IsError())
       return status;
     status = jwk.VerifyAlg(algorithm_name);
@@ -211,13 +236,13 @@ class HmacImplementation : public AlgorithmImplementation {
   }
 
   Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                      std::vector<uint8_t>* buffer) const override {
+                      std::vector<uint8_t>* buffer) const {
     *buffer = GetSymmetricKeyData(key);
     return Status::Success();
   }
 
   Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                      std::vector<uint8_t>* buffer) const override {
+                      std::vector<uint8_t>* buffer) const {
     const std::vector<uint8_t>& raw_data = GetSymmetricKeyData(key);
 
     const char* algorithm_name =

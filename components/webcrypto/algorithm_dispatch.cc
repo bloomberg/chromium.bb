@@ -103,6 +103,20 @@ Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
+  // The Web Crypto spec says to reject secret and private keys generated with
+  // empty usages:
+  //
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-generateKey
+  //
+  // (14.3.6.8):
+  // If result is a CryptoKey object:
+  //     If the [[type]] internal slot of result is "secret" or "private"
+  //     and usages is empty, then throw a SyntaxError.
+  //
+  // (14.3.6.9)
+  // If result is a CryptoKeyPair object:
+  //     If the [[usages]] internal slot of the privateKey attribute of
+  //     result is the empty sequence, then throw a SyntaxError.
   const blink::WebCryptoKey* key = NULL;
   if (result->type() == GenerateKeyResult::TYPE_SECRET_KEY)
     key = &result->secret_key();
@@ -111,13 +125,11 @@ Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (key == NULL)
     return Status::ErrorUnexpected();
 
-  // This should only fail if an algorithm is implemented incorrectly and
-  // does not do its own check of the usages.
   if (key->usages() == 0) {
-    DCHECK(false) << "Key usages for generateKey() must not be empty";
     return Status::ErrorCreateKeyEmptyUsages();
   }
-  return status;
+
+  return Status::Success();
 }
 
 Status ImportKey(blink::WebCryptoKeyFormat format,
@@ -131,11 +143,24 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  status = impl->VerifyKeyUsagesBeforeImportKey(format, usages);
+  status =
+      impl->ImportKey(format, key_data, algorithm, extractable, usages, key);
   if (status.IsError())
     return status;
 
-  return impl->ImportKey(format, key_data, algorithm, extractable, usages, key);
+  // The Web Crypto spec says to reject secret and private keys imported with
+  // empty usages:
+  //
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-importKey
+  //
+  // 14.3.9.9: If the [[type]] internal slot of result is "secret" or "private"
+  //           and usages is empty, then throw a SyntaxError.
+  if (key->usages() == 0 && (key->type() == blink::WebCryptoKeyTypeSecret ||
+                             key->type() == blink::WebCryptoKeyTypePrivate)) {
+    return Status::ErrorCreateKeyEmptyUsages();
+  }
+
+  return Status::Success();
 }
 
 Status ExportKey(blink::WebCryptoKeyFormat format,
@@ -210,19 +235,9 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
 
-  // Fail fast if the import is doomed to fail.
-  const AlgorithmImplementation* import_impl = NULL;
-  Status status = GetAlgorithmImplementation(algorithm.id(), &import_impl);
-  if (status.IsError())
-    return status;
-
-  status = import_impl->VerifyKeyUsagesBeforeImportKey(format, usages);
-  if (status.IsError())
-    return status;
-
   std::vector<uint8_t> buffer;
-  status = DecryptDontCheckKeyUsage(wrapping_algorithm, wrapping_key,
-                                    wrapped_key_data, &buffer);
+  Status status = DecryptDontCheckKeyUsage(wrapping_algorithm, wrapping_key,
+                                           wrapped_key_data, &buffer);
   if (status.IsError())
     return status;
 
@@ -273,12 +288,6 @@ Status DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
   const AlgorithmImplementation* import_impl = NULL;
   Status status =
       GetAlgorithmImplementation(import_algorithm.id(), &import_impl);
-  if (status.IsError())
-    return status;
-
-  // Fail fast if the requested key usages are incorect.
-  status = import_impl->VerifyKeyUsagesBeforeImportKey(
-      blink::WebCryptoKeyFormatRaw, usages);
   if (status.IsError())
     return status;
 

@@ -965,21 +965,15 @@ TEST_F(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
 }
 
 // Try importing an RSA-SSA key from JWK format, having specified both Sign and
-// Verify usage, and an invalid JWK.
+// Verify usage, AND an invalid JWK.
 //
-// The test must fail with a usage error BEFORE attempting to read the JWK data.
-// Although both Sign and Verify are valid usages for RSA-SSA keys, it is
-// invalid to have them both at the same time for one key (since Sign applies to
-// private keys, whereas Verify applies to public keys).
-//
-// If the implementation does not fail fast, this test will crash dereferencing
-// invalid memory.
-TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
-  CryptoData bad_data(NULL, 128);  // Invalid buffer of length 128.
+// Parsing the invalid JWK will fail before the usage check is done.
+TEST_F(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageAndData) {
+  std::string bad_data = "hello";
 
   blink::WebCryptoKey key;
-  ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
-            ImportKey(blink::WebCryptoKeyFormatJwk, bad_data,
+  ASSERT_EQ(Status::ErrorJwkNotDictionary(),
+            ImportKey(blink::WebCryptoKeyFormatJwk, CryptoData(bad_data),
                       CreateRsaHashedImportAlgorithm(
                           blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                           blink::WebCryptoAlgorithmIdSha256),

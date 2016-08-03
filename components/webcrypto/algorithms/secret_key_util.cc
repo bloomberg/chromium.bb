@@ -50,13 +50,6 @@ Status CreateWebCryptoSecretKey(const CryptoData& key_data,
   return Status::Success();
 }
 
-Status CheckSecretKeyCreationUsages(
-    blink::WebCryptoKeyUsageMask all_possible_usages,
-    blink::WebCryptoKeyUsageMask actual_usages) {
-  return CheckKeyCreationUsages(all_possible_usages, actual_usages,
-                                EmptyUsagePolicy::REJECT_EMPTY);
-}
-
 void WriteSecretKeyJwk(const CryptoData& raw_key_data,
                        const std::string& algorithm,
                        bool extractable,

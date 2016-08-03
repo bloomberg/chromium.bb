@@ -75,12 +75,6 @@ Status AlgorithmImplementation::GetKeyLength(
   return Status::ErrorUnsupported();
 }
 
-Status AlgorithmImplementation::VerifyKeyUsagesBeforeImportKey(
-    blink::WebCryptoKeyFormat format,
-    blink::WebCryptoKeyUsageMask usages) const {
-  return Status::ErrorUnsupportedImportKeyFormat();
-}
-
 Status AlgorithmImplementation::ImportKey(
     blink::WebCryptoKeyFormat format,
     const CryptoData& key_data,
@@ -88,95 +82,13 @@ Status AlgorithmImplementation::ImportKey(
     bool extractable,
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      return ImportKeyRaw(key_data, algorithm, extractable, usages, key);
-    case blink::WebCryptoKeyFormatSpki:
-      return ImportKeySpki(key_data, algorithm, extractable, usages, key);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return ImportKeyPkcs8(key_data, algorithm, extractable, usages, key);
-    case blink::WebCryptoKeyFormatJwk:
-      return ImportKeyJwk(key_data, algorithm, extractable, usages, key);
-    default:
-      return Status::ErrorUnsupported();
-  }
-}
-
-Status AlgorithmImplementation::ImportKeyRaw(
-    const CryptoData& key_data,
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usages,
-    blink::WebCryptoKey* key) const {
-  return Status::ErrorUnsupportedImportKeyFormat();
-}
-
-Status AlgorithmImplementation::ImportKeyPkcs8(
-    const CryptoData& key_data,
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usages,
-    blink::WebCryptoKey* key) const {
-  return Status::ErrorUnsupportedImportKeyFormat();
-}
-
-Status AlgorithmImplementation::ImportKeySpki(
-    const CryptoData& key_data,
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usages,
-    blink::WebCryptoKey* key) const {
-  return Status::ErrorUnsupportedImportKeyFormat();
-}
-
-Status AlgorithmImplementation::ImportKeyJwk(
-    const CryptoData& key_data,
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usages,
-    blink::WebCryptoKey* key) const {
-  return Status::ErrorUnsupportedImportKeyFormat();
+  return Status::ErrorUnsupported();
 }
 
 Status AlgorithmImplementation::ExportKey(blink::WebCryptoKeyFormat format,
                                           const blink::WebCryptoKey& key,
                                           std::vector<uint8_t>* buffer) const {
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      return ExportKeyRaw(key, buffer);
-    case blink::WebCryptoKeyFormatSpki:
-      return ExportKeySpki(key, buffer);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return ExportKeyPkcs8(key, buffer);
-    case blink::WebCryptoKeyFormatJwk:
-      return ExportKeyJwk(key, buffer);
-    default:
-      return Status::ErrorUnsupported();
-  }
-}
-
-Status AlgorithmImplementation::ExportKeyRaw(
-    const blink::WebCryptoKey& key,
-    std::vector<uint8_t>* buffer) const {
-  return Status::ErrorUnsupportedExportKeyFormat();
-}
-
-Status AlgorithmImplementation::ExportKeyPkcs8(
-    const blink::WebCryptoKey& key,
-    std::vector<uint8_t>* buffer) const {
-  return Status::ErrorUnsupportedExportKeyFormat();
-}
-
-Status AlgorithmImplementation::ExportKeySpki(
-    const blink::WebCryptoKey& key,
-    std::vector<uint8_t>* buffer) const {
-  return Status::ErrorUnsupportedExportKeyFormat();
-}
-
-Status AlgorithmImplementation::ExportKeyJwk(
-    const blink::WebCryptoKey& key,
-    std::vector<uint8_t>* buffer) const {
-  return Status::ErrorUnsupportedExportKeyFormat();
+  return Status::ErrorUnsupported();
 }
 
 Status AlgorithmImplementation::SerializeKeyForClone(

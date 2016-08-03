@@ -32,19 +32,6 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
                                  blink::WebCryptoKeyUsageMask usages,
                                  blink::WebCryptoKey* key);
 
-// Checks that a private key can be created using |actual_usages|, where
-// |all_possible_usages| is the full set of allowed private key usages. Note
-// that private keys are not allowed to have empty usages.
-Status CheckPrivateKeyCreationUsages(
-    blink::WebCryptoKeyUsageMask all_possible_usages,
-    blink::WebCryptoKeyUsageMask actual_usages);
-
-// Checks that a public key can be created using |actual_usages|, where
-// |all_possible_usages| is the full set of allowed public key usages
-Status CheckPublicKeyCreationUsages(
-    blink::WebCryptoKeyUsageMask all_possible_usages,
-    blink::WebCryptoKeyUsageMask actual_usages);
-
 // Imports SPKI bytes to an EVP_PKEY for a public key. The resulting asymmetric
 // key may be invalid, and should be verified using something like
 // RSA_check_key(). The only validation performed by this function is to ensure
@@ -60,13 +47,6 @@ Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
 Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
                                      crypto::ScopedEVP_PKEY* pkey);
-
-// Verifies that |usages| is valid when importing a key of the given format.
-Status VerifyUsagesBeforeImportAsymmetricKey(
-    blink::WebCryptoKeyFormat format,
-    blink::WebCryptoKeyUsageMask all_public_key_usages,
-    blink::WebCryptoKeyUsageMask all_private_key_usages,
-    blink::WebCryptoKeyUsageMask usages);
 
 // Splits the combined usages given to GenerateKey() into the respective usages
 // for the public key and private key. Returns an error if the usages are

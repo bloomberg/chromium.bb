@@ -51,13 +51,7 @@ void TruncateToBitLength(size_t length_bits, std::vector<uint8_t>* bytes) {
 }
 
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
-                              blink::WebCryptoKeyUsageMask actual_usages,
-                              EmptyUsagePolicy empty_usage_policy) {
-  if (actual_usages == 0 &&
-      empty_usage_policy == EmptyUsagePolicy::REJECT_EMPTY) {
-    return Status::ErrorCreateKeyEmptyUsages();
-  }
-
+                              blink::WebCryptoKeyUsageMask actual_usages) {
   if (!ContainsKeyUsages(all_possible_usages, actual_usages))
     return Status::ErrorCreateKeyBadUsages();
   return Status::Success();

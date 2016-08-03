@@ -33,27 +33,16 @@ class AesAlgorithm : public AlgorithmImplementation {
                      blink::WebCryptoKeyUsageMask usages,
                      GenerateKeyResult* result) const override;
 
-  Status VerifyKeyUsagesBeforeImportKey(
-      blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usages) const override;
+  Status ImportKey(blink::WebCryptoKeyFormat format,
+                   const CryptoData& key_data,
+                   const blink::WebCryptoAlgorithm& algorithm,
+                   bool extractable,
+                   blink::WebCryptoKeyUsageMask usages,
+                   blink::WebCryptoKey* key) const override;
 
-  Status ImportKeyRaw(const CryptoData& key_data,
-                      const blink::WebCryptoAlgorithm& algorithm,
-                      bool extractable,
-                      blink::WebCryptoKeyUsageMask usages,
-                      blink::WebCryptoKey* key) const override;
-
-  Status ImportKeyJwk(const CryptoData& key_data,
-                      const blink::WebCryptoAlgorithm& algorithm,
-                      bool extractable,
-                      blink::WebCryptoKeyUsageMask usages,
-                      blink::WebCryptoKey* key) const override;
-
-  Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                      std::vector<uint8_t>* buffer) const override;
-
-  Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                      std::vector<uint8_t>* buffer) const override;
+  Status ExportKey(blink::WebCryptoKeyFormat format,
+                   const blink::WebCryptoKey& key,
+                   std::vector<uint8_t>* buffer) const override;
 
   Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 blink::WebCryptoKeyType type,
@@ -67,6 +56,24 @@ class AesAlgorithm : public AlgorithmImplementation {
                       unsigned int* length_bits) const override;
 
  private:
+  Status ImportKeyRaw(const CryptoData& key_data,
+                      const blink::WebCryptoAlgorithm& algorithm,
+                      bool extractable,
+                      blink::WebCryptoKeyUsageMask usages,
+                      blink::WebCryptoKey* key) const;
+
+  Status ImportKeyJwk(const CryptoData& key_data,
+                      const blink::WebCryptoAlgorithm& algorithm,
+                      bool extractable,
+                      blink::WebCryptoKeyUsageMask usages,
+                      blink::WebCryptoKey* key) const;
+
+  Status ExportKeyRaw(const blink::WebCryptoKey& key,
+                      std::vector<uint8_t>* buffer) const;
+
+  Status ExportKeyJwk(const blink::WebCryptoKey& key,
+                      std::vector<uint8_t>* buffer) const;
+
   const blink::WebCryptoKeyUsageMask all_key_usages_;
   const std::string jwk_suffix_;
 };

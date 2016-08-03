@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
+#include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/jwk.h"
@@ -59,7 +60,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                                  bool extractable,
                                  blink::WebCryptoKeyUsageMask usages,
                                  GenerateKeyResult* result) const {
-  Status status = CheckSecretKeyCreationUsages(all_key_usages_, usages);
+  Status status = CheckKeyCreationUsages(all_key_usages_, usages);
   if (status.IsError())
     return status;
 
@@ -77,15 +78,32 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
       extractable, usages, keylen_bits, result);
 }
 
-Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(
-    blink::WebCryptoKeyFormat format,
-    blink::WebCryptoKeyUsageMask usages) const {
+Status AesAlgorithm::ImportKey(blink::WebCryptoKeyFormat format,
+                               const CryptoData& key_data,
+                               const blink::WebCryptoAlgorithm& algorithm,
+                               bool extractable,
+                               blink::WebCryptoKeyUsageMask usages,
+                               blink::WebCryptoKey* key) const {
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
+      return ImportKeyRaw(key_data, algorithm, extractable, usages, key);
     case blink::WebCryptoKeyFormatJwk:
-      return CheckSecretKeyCreationUsages(all_key_usages_, usages);
+      return ImportKeyJwk(key_data, algorithm, extractable, usages, key);
     default:
       return Status::ErrorUnsupportedImportKeyFormat();
+  }
+}
+
+Status AesAlgorithm::ExportKey(blink::WebCryptoKeyFormat format,
+                               const blink::WebCryptoKey& key,
+                               std::vector<uint8_t>* buffer) const {
+  switch (format) {
+    case blink::WebCryptoKeyFormatRaw:
+      return ExportKeyRaw(key, buffer);
+    case blink::WebCryptoKeyFormatJwk:
+      return ExportKeyJwk(key, buffer);
+    default:
+      return Status::ErrorUnsupportedExportKeyFormat();
   }
 }
 
@@ -94,6 +112,10 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
                                   bool extractable,
                                   blink::WebCryptoKeyUsageMask usages,
                                   blink::WebCryptoKey* key) const {
+  Status status = CheckKeyCreationUsages(all_key_usages_, usages);
+  if (status.IsError())
+    return status;
+
   const unsigned int keylen_bytes = key_data.byte_length();
 
   // 192-bit AES is intentionally unsupported (http://crbug.com/533699).
@@ -117,10 +139,14 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
                                   bool extractable,
                                   blink::WebCryptoKeyUsageMask usages,
                                   blink::WebCryptoKey* key) const {
+  Status status = CheckKeyCreationUsages(all_key_usages_, usages);
+  if (status.IsError())
+    return status;
+
   std::vector<uint8_t> raw_data;
   JwkReader jwk;
-  Status status = ReadSecretKeyNoExpectedAlgJwk(key_data, extractable, usages,
-                                                &raw_data, &jwk);
+  status = ReadSecretKeyNoExpectedAlgJwk(key_data, extractable, usages,
+                                         &raw_data, &jwk);
   if (status.IsError())
     return status;
 

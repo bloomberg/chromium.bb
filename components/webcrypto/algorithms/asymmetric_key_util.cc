@@ -94,20 +94,6 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
   return Status::Success();
 }
 
-Status CheckPrivateKeyCreationUsages(
-    blink::WebCryptoKeyUsageMask all_possible_usages,
-    blink::WebCryptoKeyUsageMask actual_usages) {
-  return CheckKeyCreationUsages(all_possible_usages, actual_usages,
-                                EmptyUsagePolicy::REJECT_EMPTY);
-}
-
-Status CheckPublicKeyCreationUsages(
-    blink::WebCryptoKeyUsageMask all_possible_usages,
-    blink::WebCryptoKeyUsageMask actual_usages) {
-  return CheckKeyCreationUsages(all_possible_usages, actual_usages,
-                                EmptyUsagePolicy::ALLOW_EMPTY);
-}
-
 Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
                                     int expected_pkey_id,
                                     crypto::ScopedEVP_PKEY* out_pkey) {
@@ -144,33 +130,6 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
   return Status::Success();
 }
 
-Status VerifyUsagesBeforeImportAsymmetricKey(
-    blink::WebCryptoKeyFormat format,
-    blink::WebCryptoKeyUsageMask all_public_key_usages,
-    blink::WebCryptoKeyUsageMask all_private_key_usages,
-    blink::WebCryptoKeyUsageMask usages) {
-  switch (format) {
-    case blink::WebCryptoKeyFormatSpki:
-      return CheckPublicKeyCreationUsages(all_public_key_usages, usages);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return CheckPrivateKeyCreationUsages(all_private_key_usages, usages);
-    case blink::WebCryptoKeyFormatJwk: {
-      // The JWK could represent either a public key or private key. The usages
-      // must make sense for one of the two. The usages will be checked again by
-      // ImportKeyJwk() once the key type has been determined.
-      if (CheckPublicKeyCreationUsages(all_public_key_usages, usages)
-              .IsError() &&
-          CheckPrivateKeyCreationUsages(all_private_key_usages, usages)
-              .IsError()) {
-        return Status::ErrorCreateKeyBadUsages();
-      }
-      return Status::Success();
-    }
-    default:
-      return Status::ErrorUnsupportedImportKeyFormat();
-  }
-}
-
 Status GetUsagesForGenerateAsymmetricKey(
     blink::WebCryptoKeyUsageMask combined_usages,
     blink::WebCryptoKeyUsageMask all_public_usages,
@@ -178,17 +137,18 @@ Status GetUsagesForGenerateAsymmetricKey(
     blink::WebCryptoKeyUsageMask* public_usages,
     blink::WebCryptoKeyUsageMask* private_usages) {
   // Ensure that the combined usages is a subset of the total possible usages.
-  Status status =
-      CheckKeyCreationUsages(all_public_usages | all_private_usages,
-                             combined_usages, EmptyUsagePolicy::ALLOW_EMPTY);
+  Status status = CheckKeyCreationUsages(all_public_usages | all_private_usages,
+                                         combined_usages);
   if (status.IsError())
     return status;
 
   *public_usages = combined_usages & all_public_usages;
   *private_usages = combined_usages & all_private_usages;
 
-  // Ensure that the private key has non-empty usages.
-  return CheckPrivateKeyCreationUsages(all_private_usages, *private_usages);
+  // NOTE: empty private_usages is allowed at this layer. Such keys will be
+  // rejected at a higher layer.
+
+  return Status::Success();
 }
 
 }  // namespace webcrypto
