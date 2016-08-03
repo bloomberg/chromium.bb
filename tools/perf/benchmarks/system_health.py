@@ -16,47 +16,6 @@ import page_sets
 _IGNORED_STATS_RE = re.compile(r'_(std|count|max|min|sum|pct_\d{4}(_\d+)?)$')
 
 
-class _SystemHealthBenchmark(perf_benchmark.PerfBenchmark):
-  TRACING_CATEGORIES = [
-    'benchmark',
-    'navigation',
-    'blink.user_timing',
-  ]
-
-  def CreateTimelineBasedMeasurementOptions(self):
-    options = timeline_based_measurement.Options()
-    options.config.chrome_trace_config.SetCategoryFilter(
-        chrome_trace_category_filter.ChromeTraceCategoryFilter(','.join(
-            self.TRACING_CATEGORIES)))
-    options.SetTimelineBasedMetrics(['systemHealthMetrics'])
-    return options
-
-  @classmethod
-  def ShouldDisable(cls, browser):
-    # http://crbug.com/600463
-    galaxy_s5_type_name = 'SM-G900H'
-    return browser.platform.GetDeviceTypeName() == galaxy_s5_type_name
-
-
-@benchmark.Disabled('all')  # crbug.com/613050
-class SystemHealthTop25(_SystemHealthBenchmark):
-  page_set = page_sets.Top25PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'system_health.top25'
-
-
-@benchmark.Disabled('android')  # crbug.com/601953
-@benchmark.Disabled('all')  # crbug.com/613050
-class SystemHealthKeyMobileSites(_SystemHealthBenchmark):
-  page_set = page_sets.KeyMobileSitesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'system_health.key_mobile_sites'
-
-
 class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Chrome Memory System Health Benchmark.
 

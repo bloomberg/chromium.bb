@@ -5,9 +5,9 @@
 """For all the benchmarks that set options, test that the options are valid."""
 
 from collections import defaultdict
-import os
 import unittest
 
+from core import path_util
 from core import perf_benchmark
 
 from telemetry import benchmark as benchmark_module
@@ -16,15 +16,10 @@ from telemetry.internal.browser import browser_options
 from telemetry.testing import progress_reporter
 
 
-def _GetPerfDir(*subdirs):
-  perf_dir = os.path.dirname(os.path.dirname(__file__))
-  return os.path.join(perf_dir, *subdirs)
-
-
 def _GetAllPerfBenchmarks():
   return discover.DiscoverClasses(
-      _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark,
-      index_by_class_name=True).values()
+      path_util.GetPerfBenchmarksDir(), path_util.GetPerfDir(),
+      benchmark_module.Benchmark, index_by_class_name=True).values()
 
 
 def _BenchmarkOptionsTestGenerator(benchmark):
@@ -81,12 +76,12 @@ def _AddBenchmarkOptionsTests(suite):
     setattr(BenchmarkOptionsTest, benchmark.Name(),
             _BenchmarkOptionsTestGenerator(benchmark))
     suite.addTest(BenchmarkOptionsTest(benchmark.Name()))
-  suite.addTest(TestNoBenchmarkNamesDuplication())
-  suite.addTest(TestNoOverrideCustomizeBrowserOptions())
 
 
 def load_tests(loader, standard_tests, pattern):
-  del loader, standard_tests, pattern  # unused
+  del loader, pattern  # unused
   suite = progress_reporter.TestSuite()
+  for t in standard_tests:
+    suite.addTests(t)
   _AddBenchmarkOptionsTests(suite)
   return suite
