@@ -250,7 +250,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 }
             }
             for (UsbInfo usbInfo : other.getUsbInfo()) {
-                if (origin.equals(usbInfo.getOrigin())) merged.addUsbInfo(usbInfo);
+                if (origin.equals(usbInfo.getOrigin())
+                        && (usbInfo.getEmbedder() == null || usbInfo.getEmbedder().equals("*"))) {
+                    merged.addUsbInfo(usbInfo);
+                }
             }
 
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
@@ -336,7 +339,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             preference.getExtras().putSerializable(EXTRA_USB_INFO, info);
             preference.setIcon(R.drawable.settings_usb);
             preference.setOnPreferenceClickListener(this);
-            preference.setOrder(maxPermissionOrder++);
+            preference.setOrder(maxPermissionOrder);
             preference.setTitle(info.getName());
             preference.setWidgetLayoutResource(R.layout.usb_permission);
             getPreferenceScreen().addPreference(preference);

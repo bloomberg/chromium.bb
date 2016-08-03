@@ -455,11 +455,12 @@ static void GetUsbOrigins(JNIEnv* env,
     origin.pop_back();
     ScopedJavaLocalRef<jstring> jorigin = ConvertUTF8ToJavaString(env, origin);
 
-    std::string embedder = object->requesting_origin.spec();
+    std::string embedder = object->embedding_origin.spec();
     DCHECK_EQ('/', embedder.back());
     embedder.pop_back();
-    ScopedJavaLocalRef<jstring> jembedder =
-        ConvertUTF8ToJavaString(env, embedder);
+    ScopedJavaLocalRef<jstring> jembedder;
+    if (embedder != origin)
+      jembedder = ConvertUTF8ToJavaString(env, embedder);
 
     std::string name;
     bool found = object->object.GetString("name", &name);
@@ -487,7 +488,10 @@ static void RevokeUsbPermission(JNIEnv* env,
   UsbChooserContext* context = UsbChooserContextFactory::GetForProfile(profile);
   GURL origin(ConvertJavaStringToUTF8(env, jorigin));
   DCHECK(origin.is_valid());
-  GURL embedder(ConvertJavaStringToUTF8(env, jembedder));
+  // If embedder == origin above then a null embedder was sent to Java instead
+  // of a duplicated string.
+  GURL embedder(
+      ConvertJavaStringToUTF8(env, jembedder.is_null() ? jorigin : jembedder));
   DCHECK(embedder.is_valid());
   std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
       base::JSONReader::Read(ConvertJavaStringToUTF8(env, jobject)));
