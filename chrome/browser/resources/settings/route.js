@@ -292,26 +292,36 @@ cr.define('settings', function() {
   };
 
   /**
-   * The current active route. This may only be updated via the global
-   * function settings.navigateTo.
+   * The current active route. This updated only by settings.navigateTo.
    * @private {!settings.Route}
    */
-  var currentRoute_ = (function() {
-    var route = getRouteForPath(window.location.pathname);
-    if (route)
-      return route;
+  var currentRoute_ = Route.BASIC;
 
-    // Reset the URL path to '/' if the user navigates to a nonexistent URL.
-    window.history.replaceState(undefined, '', Route.BASIC.path);
-    return Route.BASIC;
+  /**
+   * The current query parameters. This updated only by settings.navigateTo.
+   * @private {!URLSearchParams}
+   */
+  var currentQueryParameters_ = new URLSearchParams();
+
+  // Initialize the route and query params from the URL.
+  (function() {
+    var route = getRouteForPath(window.location.pathname);
+    if (route) {
+      currentRoute_ = route;
+      currentQueryParameters_ = new URLSearchParams(window.location.search);
+    } else {
+      window.history.pushState(undefined, '', Route.BASIC.path);
+    }
   })();
 
   /**
    * Helper function to set the current route and notify all observers.
    * @param {!settings.Route} route
+   * @param {!URLSearchParams} queryParameters
    */
-  var setCurrentRoute = function(route) {
+  var setCurrentRoute = function(route, queryParameters) {
     currentRoute_ = route;
+    currentQueryParameters_ = queryParameters;
     for (var observer of routeObservers_)
       observer.currentRouteChanged();
   };
@@ -319,22 +329,40 @@ cr.define('settings', function() {
   /** @return {!settings.Route} */
   var getCurrentRoute = function() { return currentRoute_; };
 
+  /** @return {!URLSearchParams} */
+  var getQueryParameters = function() {
+    return new URLSearchParams(currentQueryParameters_);  // Defensive copy.
+  };
+
   /**
    * Navigates to a canonical route and pushes a new history entry.
    * @param {!settings.Route} route
+   * @param {URLSearchParams=} opt_dynamicParameters Navigations to the same
+   *     search parameters in a different order will still push to history.
    * @private
    */
-  var navigateTo = function(route) {
-    if (assert(route) == currentRoute_)
+  var navigateTo = function(route, opt_dynamicParameters) {
+    var params = opt_dynamicParameters || new URLSearchParams();
+    if (assert(route) == currentRoute_ &&
+        params.toString() == currentQueryParameters_.toString()) {
       return;
+    }
 
-    window.history.pushState(undefined, '', route.path);
-    setCurrentRoute(route);
+    var url = route.path;
+    if (opt_dynamicParameters) {
+      var queryString = opt_dynamicParameters.toString();
+      if (queryString)
+        url += '?' + queryString;
+    }
+
+    setCurrentRoute(route, params);
+    window.history.pushState(undefined, '', url);
   };
 
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
-    setCurrentRoute(getRouteForPath(window.location.pathname) || Route.BASIC);
+    setCurrentRoute(getRouteForPath(window.location.pathname) || Route.BASIC,
+                    new URLSearchParams(window.location.search));
   });
 
   return {
@@ -342,6 +370,7 @@ cr.define('settings', function() {
     RouteObserverBehavior: RouteObserverBehavior,
     getRouteForPath: getRouteForPath,
     getCurrentRoute: getCurrentRoute,
+    getQueryParameters: getQueryParameters,
     navigateTo: navigateTo,
   };
 });
