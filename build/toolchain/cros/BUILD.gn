@@ -7,13 +7,6 @@ import("//build/config/sysroot.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 import("//build/toolchain/cros_toolchain.gni")
 
-# TODO(dpranke): Delete this after we get rid of the reference to
-# build/toolchain/cros:clang_target in BUILDCONFIG.gn
-clang_toolchain("clang_target") {
-  toolchain_cpu = target_cpu
-  toolchain_os = "linux"
-}
-
 template("cros_target_toolchain") {
   if (defined(invoker.use_debug_fission)) {
     use_debug_fission = invoker.use_debug_fission

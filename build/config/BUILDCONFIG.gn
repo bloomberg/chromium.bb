@@ -203,23 +203,15 @@ if (target_os == "android") {
   } else {
     _default_toolchain = "//build/toolchain/android:$target_cpu"
   }
-} else if (target_os == "chromeos") {
+} else if (target_os == "chromeos" || target_os == "linux") {
   # See comments in build/toolchain/cros/BUILD.gn about board compiles.
-  assert(host_os == "linux",
-         "ChromeOS builds are only supported on Linux hosts.")
-  if (is_clang) {
-    _default_toolchain = "//build/toolchain/cros:clang_target"
-  } else {
-    _default_toolchain = "//build/toolchain/cros:target"
-  }
-} else if (target_os == "ios") {
-  _default_toolchain = "//build/toolchain/mac:ios_clang_$target_cpu"
-} else if (target_os == "linux") {
   if (is_clang) {
     _default_toolchain = "//build/toolchain/linux:clang_$target_cpu"
   } else {
     _default_toolchain = "//build/toolchain/linux:$target_cpu"
   }
+} else if (target_os == "ios") {
+  _default_toolchain = "//build/toolchain/mac:ios_clang_$target_cpu"
 } else if (target_os == "mac") {
   assert(host_os == "mac", "Mac cross-compiles are unsupported.")
   _default_toolchain = host_toolchain
