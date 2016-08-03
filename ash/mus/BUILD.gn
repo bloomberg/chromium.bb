@@ -183,8 +183,12 @@ source_set("unittests") {
   testonly = true
 
   sources = [
+    "accelerators/accelerator_controller_registrar_test_api.cc",
+    "accelerators/accelerator_controller_registrar_test_api.h",
+    "accelerators/accelerator_controller_unittest.cc",
     "accelerators/accelerator_registrar_unittest.cc",
     "app_launch_unittest.cc",
+    "bridge/wm_shell_mus_test_api.h",
     "layout_manager_unittest.cc",
     "root_window_controller_unittest.cc",
     "test/wm_test_base.cc",
@@ -202,6 +206,7 @@ source_set("unittests") {
     ":lib",
     ":resources",
     "//ash",
+    "//ash:test_support",
     "//ash/public/interfaces",
     "//base",
     "//base/test:test_config",
@@ -216,11 +221,14 @@ source_set("unittests") {
     "//testing/gtest",
     "//ui/aura",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/display",
     "//ui/events",
+    "//ui/events:test_support",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
+    "//ui/message_center",
     "//ui/views/mus",
   ]
 

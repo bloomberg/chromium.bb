@@ -30,6 +30,7 @@ class AcceleratorControllerDelegateMus;
 class AcceleratorControllerRegistrar;
 class WindowManager;
 class WmRootWindowControllerMus;
+class WmShellMusTestApi;
 class WmWindowMus;
 
 // WmShell implementation for mus.
@@ -96,6 +97,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
 #endif
 
  private:
+  friend class WmShellMusTestApi;
+
   ui::WindowTreeClient* window_tree_client();
 
   // Returns true if |window| is a window that can have active children.

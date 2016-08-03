@@ -4,6 +4,8 @@
 
 #include "ash/mus/test/wm_test_helper.h"
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_screen.h"
 #include "ash/mus/window_manager.h"
@@ -13,6 +15,8 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/display/display.h"
 
 namespace ash {
@@ -20,9 +24,15 @@ namespace mus {
 
 WmTestHelper::WmTestHelper() {}
 
-WmTestHelper::~WmTestHelper() {}
+WmTestHelper::~WmTestHelper() {
+  ash::test::MaterialDesignControllerTestAPI::Uninitialize();
+  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
+}
 
 void WmTestHelper::Init() {
+  ui::MaterialDesignController::Initialize();
+  ash::MaterialDesignController::Initialize();
+
   message_loop_.reset(new base::MessageLoopForUI());
   window_manager_app_.window_manager_.reset(new WindowManager(nullptr));
   screen_ = new WmTestScreen;

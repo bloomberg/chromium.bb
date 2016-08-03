@@ -564,15 +564,19 @@ bool WmWindowMus::HasRestoreBounds() const {
 }
 
 bool WmWindowMus::CanMaximize() const {
-  return widget_ ? widget_->widget_delegate()->CanMaximize() : false;
+  return (GetResizeBehavior(window_) &
+          ::ui::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool WmWindowMus::CanMinimize() const {
-  return widget_ ? widget_->widget_delegate()->CanMinimize() : false;
+  return (GetResizeBehavior(window_) &
+          ::ui::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool WmWindowMus::CanResize() const {
-  return widget_ ? widget_->widget_delegate()->CanResize() : false;
+  return window_ &&
+         (GetResizeBehavior(window_) & ::ui::mojom::kResizeBehaviorCanResize) !=
+             0;
 }
 
 bool WmWindowMus::CanActivate() const {

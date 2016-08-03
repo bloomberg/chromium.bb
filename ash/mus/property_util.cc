@@ -82,6 +82,12 @@ bool GetRequestedContainer(const ui::Window* window,
   return true;
 }
 
+void SetResizeBehavior(ui::Window::SharedProperties* properties,
+                       int32_t resize_behavior) {
+  (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(resize_behavior);
+}
+
 int32_t GetResizeBehavior(const ui::Window* window) {
   if (window->HasSharedProperty(
           ui::mojom::WindowManager::kResizeBehavior_Property)) {

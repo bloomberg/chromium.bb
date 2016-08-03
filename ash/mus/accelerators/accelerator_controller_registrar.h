@@ -21,6 +21,7 @@ class AcceleratorRouter;
 
 namespace mus {
 
+class AcceleratorControllerRegistrarTestApi;
 class WindowManager;
 
 // Responsible for registering accelerators created by AcceleratorController
@@ -42,6 +43,8 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   void OnAcceleratorUnregistered(const ui::Accelerator& accelerator) override;
 
  private:
+  friend class AcceleratorControllerRegistrarTestApi;
+
   // The flow of accelerators in ash is:
   // . wm::AcceleratorFilter() sees events first as it's a pre-target handler.
   // . AcceleratorFilter forwards to its delegate, which indirectly is

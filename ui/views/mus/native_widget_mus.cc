@@ -648,9 +648,13 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
           mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
-  (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          ResizeBehaviorFromDelegate(init_params.delegate));
+  if (!init_params.delegate &&
+      properties->count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
+          0) {
+    (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            ResizeBehaviorFromDelegate(init_params.delegate));
+  }
   SkBitmap app_icon = AppIconFromDelegate(init_params.delegate);
   if (!app_icon.isNull()) {
     (*properties)[ui::mojom::WindowManager::kWindowAppIcon_Property] =

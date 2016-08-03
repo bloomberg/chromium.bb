@@ -122,7 +122,8 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
           ->GetChildByShellWindowId(shell_container_id));
   DCHECK(init_params->parent_mus);
   ui::Window* new_window =
-      root_window_controller_->root()->window_tree()->NewWindow();
+      root_window_controller_->root()->window_tree()->NewWindow(
+          &(init_params->mus_properties));
   WmWindowMus::Get(new_window)
       ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
   init_params->native_widget = new views::NativeWidgetMus(

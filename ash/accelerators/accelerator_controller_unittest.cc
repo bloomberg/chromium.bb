@@ -205,10 +205,6 @@ class AcceleratorControllerTest : public test::AshTestBase {
   ~AcceleratorControllerTest() override {}
 
  protected:
-  void EnableInternalDisplay() {
-    test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
-  }
-
   static AcceleratorController* GetController();
 
   static bool ProcessInController(const ui::Accelerator& accelerator) {

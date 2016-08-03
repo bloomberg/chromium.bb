@@ -45,6 +45,8 @@ bool GetRequestedContainer(const ui::Window* window,
 
 // Returns a bitfield of kResizeBehavior* values from
 // window_manager_constants.mojom.
+void SetResizeBehavior(ui::Window::SharedProperties* properties,
+                       int32_t resize_behavior);
 int32_t GetResizeBehavior(const ui::Window* window);
 
 void SetRestoreBounds(ui::Window* window, const gfx::Rect& bounds);

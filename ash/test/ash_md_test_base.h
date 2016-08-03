@@ -6,6 +6,7 @@
 #define ASH_TEST_ASH_MD_TEST_BASE_H_
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
