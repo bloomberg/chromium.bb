@@ -12,7 +12,8 @@ BASE_TOKENS = [
     'TRANSFORM_BASIC_BASE',
     'TRANSFORM_DEVICE_DISCOVERY_BASE',
     'TRANSFORM_CONNECTABLE_BASE',
-    'TRANSFORM_SERVICE_RETRIEVED_BASE',
+    'TRANSFORM_SERVICES_RETRIEVED_BASE',
+    'TRANSFORM_CHARACTERISTICS_RETRIEVED_BASE',
 ]
 
 # Contains strings that represent calls to the Web Bluetooth API. These
@@ -53,20 +54,95 @@ TOKENS = [
     ],
     # GetPrimaryService(s) Tokens
     [
-        '  device.gatt.getPrimaryServices();',
+        '  device.gatt.TRANSFORM_GET_PRIMARY_SERVICES;',
     ],
     [
-        '  gatt.getPrimaryServices();',
+        '  gatt.TRANSFORM_GET_PRIMARY_SERVICES;',
     ],
     [
-        '  return device.gatt.getPrimaryServices();',
+        '  return device.gatt.TRANSFORM_GET_PRIMARY_SERVICES;',
         '})'
         '.then(services => {',
     ],
     [
-        '  return gatt.getPrimaryServices();',
+        '  return gatt.TRANSFORM_GET_PRIMARY_SERVICES;',
         '})'
         '.then(services => {',
+    ],
+    # GetCharacteristic(s) Tokens
+    [
+        '  TRANSFORM_PICK_A_SERVICE;',
+        '  service.TRANSFORM_GET_CHARACTERISTICS;',
+    ],
+    [
+        '  TRANSFORM_PICK_A_SERVICE;',
+        '  return service.TRANSFORM_GET_CHARACTERISTICS;',
+    ],
+    # ReadValue Tokens
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  characteristic.readValue();',
+    ],
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  return characteristic.readValue().then(_ => characteristics);',
+        '})',
+        '.then(characteristics => {',
+    ],
+    # WriteValue Tokens
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  characteristic.writeValue(TRANSFORM_VALUE);',
+    ],
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  return characteristic.writeValue(TRANSFORM_VALUE).then(_ => characteristics);',
+        '})',
+        '.then(characteristics => {',
+    ],
+    # Start Notifications Tokens
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  characteristic.startNotifications();',
+    ],
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  return characteristic.startNotitications().then(_ => characteristics);',
+        '})',
+        '.then(characteristics => {',
+    ],
+    # Stop Notifications Tokens
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  characteristic.stopNotifications();',
+    ],
+    [
+        '  TRANSFORM_PICK_A_CHARACTERISTIC;',
+        '  return characteristic.stopNotitications().then(() => characteristics);',
+        '})',
+        '.then(characteristics => {',
+    ],
+    # Garbage Collection
+    [
+        '  runGarbageCollection();',
+    ],
+    [
+        '})',
+        '.then(runGarbageCollection)',
+        '.then(() => {',
+    ],
+    # Reload Tokens
+    # We generate a unique id for each reload and save it in sessionStorage.
+    # This ensures that the reload is only executed once and that if test cases
+    # share the same sessionStorage all their reloads are executed.
+    [
+        '  (() => {',
+        '    let reload_id = TRANSFORM_RELOAD_ID;',
+        '    if (!sessionStorage.getItem(reload_id)) {',
+        '      sessionStorage.setItem(reload_id, true);',
+        '      location.reload();',
+        '    }',
+        '  })();',
     ],
 ]
 

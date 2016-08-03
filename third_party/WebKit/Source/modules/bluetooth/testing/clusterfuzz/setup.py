@@ -102,7 +102,7 @@ def main():
             compressed_file_path,
             format='bztar',
             root_dir=os.path.join(current_path, os.pardir),
-            base_dir='web_bluetooth_fuzzer')
+            base_dir='clusterfuzz')
         print 'File wrote to: ' + compressed_file_path + '.tar.bz2'
 
 if __name__ == '__main__':

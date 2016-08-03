@@ -40,6 +40,39 @@ ADVERTISED_SERVICES = [
     GATT_ERROR_UUID,
 ]
 
+# List of services inside devices.
+SERVICES = [
+    'generic_access',
+    'heart_rate',
+    'device_information',
+    'generic_access',
+    'heart_rate',
+    'human_interface_device',
+    BLACKLISTED_UUID,
+    DISCONNECTION_UUID,
+    GATT_ERROR_UUID,
+]
+
+# List of characteristics inside devices.
+CHARACTERISTICS = [
+    'bad1c9a2-9a5b-4015-8b60-1579bbbf2135',
+    '01d7d88a-7451-419f-aeb8-d65e7b9277af',
+    'body_sensor_location',
+    'gap.device_name',
+    'heart_rate_measurement',
+    'serial_number_string',
+    'gap.peripheral_privacy_flag',
+]
+
+# Tuples of common service uuid and their characteristics uuids.
+GENERIC_ACCESS_SERVICE = (
+    'generic_access', ['gap.device_name', 'gap.peripheral_privacy_flag']
+)
+
+HEART_RATE_SERVICE = (
+    'heart_rate', ['heart_rate_measurement', 'body_sensor_location']
+)
+
 # List of available fake adapters.
 ALL_ADAPTERS = [
     'NotPresentAdapter',
@@ -134,5 +167,42 @@ ADAPTERS_WITH_SERVICES = [
     (
         'DelayedServicesDiscoveryAdapter',
         ['heart_rate']
+    ),
+]
+
+ADAPTERS_WITH_CHARACTERISTICS = [
+    (
+        'HeartRateAdapter',
+        [GENERIC_ACCESS_SERVICE, HEART_RATE_SERVICE],
+    ),
+    (
+        'TwoHeartRateServicesAdapter',
+        [HEART_RATE_SERVICE],
+    ),
+    (
+        'DisconnectingHeartRateAdapter',
+        [GENERIC_ACCESS_SERVICE, HEART_RATE_SERVICE,
+         (DISCONNECTION_UUID, ['01d7d88a-7451-419f-aeb8-d65e7b9277af'])]
+    ),
+    (
+        'BlacklistTestAdapter',
+        [GENERIC_ACCESS_SERVICE, HEART_RATE_SERVICE, (
+            BLACKLISTED_UUID, ['bad1c9a2-9a5b-4015-8b60-1579bbbf2135'],
+        ), (
+            'device_information', ['serial_number_string'],
+        )]
+    ),
+    (
+        'FailingGATTOperationsAdapter',
+        [(GATT_ERROR_UUID, [
+            '000000a1-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a2-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a3-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a4-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a5-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a6-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a7-97e5-4cd7-b9f1-f5a427670c59',
+            '000000a8-97e5-4cd7-b9f1-f5a427670c59',
+        ])],
     ),
 ]

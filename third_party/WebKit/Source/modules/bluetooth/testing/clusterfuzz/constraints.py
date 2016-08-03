@@ -8,6 +8,7 @@
    templates to generate test cases.
 """
 
+import math
 import random
 import sys
 import uuid
@@ -44,11 +45,32 @@ CONNECTABLE_BASE = DEVICE_DISCOVERY_BASE + \
 SERVICE_RETRIEVED_BASE = CONNECTABLE_BASE + \
     '      return gatt.getPrimaryService({service_uuid});\n'\
     '    }})\n'\
-    '    .then(service => {{\n'
+    '    .then(services => {{\n'
+
+SERVICES_RETRIEVED_BASE = CONNECTABLE_BASE + \
+    '      return gatt.getPrimaryServices({optional_service_uuid});\n'\
+    '    }})\n'\
+    '    .then(services => {{\n'
+
+CHARACTERISTIC_RETRIEVED_BASE = \
+    '      TRANSFORM_PICK_A_SERVICE;\n'\
+    '      return service.getCharacteristic({characteristic_uuid});\n'\
+    '    }})\n'\
+    '    .then(characteristics => {{\n'
+
+CHARACTERISTICS_RETRIEVED_BASE = \
+    '      TRANSFORM_PICK_A_SERVICE;\n'\
+    '      return service.getCharacteristics({optional_characteristic_uuid});\n'\
+    '    }})\n'\
+    '    .then(characteristics => {{\n'
 
 
 def _ToJsStr(s):
     return u'\'{}\''.format(s)
+
+
+def _get_random_number():
+    return utils.UniformExpoInteger(0, sys.maxsize.bit_length() + 1)
 
 
 def _GetFuzzedJsString(s):
@@ -66,9 +88,72 @@ def _GetFuzzedJsString(s):
         except UnicodeDecodeError:
             print 'Can\'t decode fuzzed string. Trying again.'
         else:
-            fuzzed_string = '\\n'.join(fuzzed_string.split())
+            # Escape 'escape' characters.
+            fuzzed_string = fuzzed_string.replace('\\', r'\\')
+            # Escape quote characters.
             fuzzed_string = fuzzed_string.replace('\'', r'\'')
+            # Put everything in a single line.
+            fuzzed_string = '\\n'.join(fuzzed_string.split())
             return _ToJsStr(fuzzed_string)
+
+
+def _get_array_of_random_ints(max_length, max_value):
+    """Returns an string with an array of random integer."""
+    length = utils.UniformExpoInteger(0, math.log(max_length, 2))
+    exp_max_value = math.log(max_value, 2)
+    return '[{}]'.format(', '.join(
+        str(utils.UniformExpoInteger(0, exp_max_value)) for _ in xrange(length))
+    )
+
+
+def _get_typed_array():
+    """Generates a TypedArray constructor.
+
+    There are nine types of TypedArrays and TypedArray has four constructors.
+
+    Types:
+      * Int8Array
+      * Int16Array
+      * Int32Array
+      * Uint8Array
+      * Uint16Array
+      * Uint32Array
+      * Uint8ClampedArray
+      * Float32Array
+      * Float64Array
+
+    Constructors:
+
+     * new TypedArray(length)
+     * new TypedArray(typedArray)
+     * new TypedArray(object)
+     * new TypedArray(buffer)
+
+    Returns:
+      A string made up of a randomly chosen type and argument type from the
+      lists above.
+    """
+    array_type = random.choice(['Int8Array', 'Int16Array', 'Int32Array',
+                                'Uint8Array', 'Uint16Array', 'Uint32Array',
+                                'Uint8ClampedArray', 'Float32Array',
+                                'Float64Array'])
+
+    # Choose an argument type at random.
+    arguments = random.choice([
+        # length e.g. 293
+        # We choose 2**10 as the upper boundry because the max length allowed
+        # by WebBluetooth is 2**10.
+        lambda: utils.UniformExpoInteger(0, 10),
+        # typedArray e.g. new Uint8Array([1,2,3])
+        _get_typed_array,
+        # object e.g. [1,2,3]
+        lambda: _get_array_of_random_ints(max_length=1000, max_value=2 ** 64),
+        # buffer e.g. new Uint8Array(10).buffer
+        lambda: _get_typed_array() + '.buffer',
+    ])
+
+    return 'new {array_type}({arguments})'.format(array_type=array_type,
+                                                  arguments=arguments())
 
 
 def GetAdvertisedServiceUUIDFromFakes():
@@ -76,9 +161,24 @@ def GetAdvertisedServiceUUIDFromFakes():
     return _ToJsStr(random.choice(wbt_fakes.ADVERTISED_SERVICES))
 
 
+def get_service_uuid_from_fakes():
+    """Returns a random service string from a list of fake services."""
+    return _ToJsStr(random.choice(wbt_fakes.SERVICES))
+
+
+def get_characteristic_uuid_from_fakes():
+    """Returns a random characteristic string from a fake characteristics list."""
+    return _ToJsStr(random.choice(wbt_fakes.CHARACTERISTICS))
+
+
 def GetValidServiceAlias():
     """Returns a valid service alias from the list of services aliases."""
     return _ToJsStr(random.choice(gatt_aliases.SERVICES))
+
+
+def get_valid_characteristic_alias():
+    """Returns a valid service alias from the list of services aliases."""
+    return _ToJsStr(random.choice(gatt_aliases.CHARACTERISTICS))
 
 
 def GetRandomUUID():
@@ -87,7 +187,7 @@ def GetRandomUUID():
     if choice == 'uuid':
         return _ToJsStr(uuid.uuid4())
     elif choice == 'number':
-        return utils.UniformExpoInteger(0, sys.maxsize.bit_length() + 1)
+        return _get_random_number()
     elif choice == 'fuzzed string':
         choice2 = random.choice(['uuid', 'alias'])
         if choice2 == 'uuid':
@@ -101,10 +201,10 @@ def GetRandomUUID():
 def GetAdvertisedServiceUUID():
     """Generates a random Service UUID from a set of functions.
 
-    See GetServiceUUIDFromFakes(), GetValidServiceAlias() and GetRandomUUID()
+    See get_service_uuid_from_fakes(), GetValidServiceAlias() and GetRandomUUID()
     for the different values this function can return.
 
-    This function weights GetServiceUUIDFromFakes() more heavily to increase the
+    This function weights get_service_uuid_from_fakes() more heavily to increase the
     probability of generating test pages that can interact with the fake
     adapters.
 
@@ -117,6 +217,52 @@ def GetAdvertisedServiceUUID():
         return GetAdvertisedServiceUUIDFromFakes()
     elif roll < 0.9:
         return GetValidServiceAlias()
+    else:
+        return GetRandomUUID()
+
+
+def get_service_uuid():
+    """Generates a random Service UUID from a set of functions.
+
+    Similar to GetAdvertisedServiceUUID() but weights get_service_uuid_from_fakes()
+    more heavily to increase the  probability of generating test pages that can
+    interact with the fake adapters.
+
+    See get_service_uuid_from_fakes(), GetValidServiceAlias() and
+    GetRandomUUID() for the different values this function can return.
+
+    Returns:
+      A string or a number that can be used as a Service UUID by the Web
+      Bluetooth API.
+    """
+    roll = random.random()
+    if roll < 0.8:
+        return get_service_uuid_from_fakes()
+    elif roll < 0.9:
+        return GetValidServiceAlias()
+    else:
+        return GetRandomUUID()
+
+
+def get_characteristic_uuid():
+    """Generates a random Characteristic UUID from a set of functions.
+
+    Similar to get_service_uuid() but weights get_characteristic_uuid_from_fakes()
+    more heavily to increase the  probability of generating test pages that can
+    interact with the fake adapters.
+
+    See get_characteristic_uuid_from_fakes(), get_valid_characteristic_alias() and
+    GetRandomUUID() for the different values this function can return.
+
+    Returns:
+      A string or a number that can be used as a Service UUID by the Web
+      Bluetooth API.
+    """
+    roll = random.random()
+    if roll < 0.8:
+        return get_characteristic_uuid_from_fakes()
+    elif roll < 0.9:
+        return get_valid_characteristic_alias()
     else:
         return GetRandomUUID()
 
@@ -156,7 +302,7 @@ def GetConnectableBase():
         service_uuid=_ToJsStr(random.choice(services)))
 
 
-def GetServiceRetrievedBase():
+def get_services_retrieved_base():
     """Returns a string that contains all steps to retrieve a service.
 
     Returns: A string that:
@@ -167,6 +313,115 @@ def GetServiceRetrievedBase():
       4. Retrieve the device's service used in 2.
     """
     adapter, services = random.choice(wbt_fakes.ADAPTERS_WITH_SERVICES)
-    return SERVICE_RETRIEVED_BASE.format(
+    service_uuid = _ToJsStr(random.choice(services))
+
+    base = random.choice([SERVICE_RETRIEVED_BASE, SERVICES_RETRIEVED_BASE])
+    return base.format(
         fake_adapter_name=_ToJsStr(adapter),
-        service_uuid=_ToJsStr(random.choice(services)))
+        service_uuid=service_uuid,
+        optional_service_uuid=random.choice(['', service_uuid]))
+
+
+def get_characteristics_retrieved_base():
+    """Returns a string that contains all steps to retrieve a characteristic.
+
+      Returns: A string that:
+        1. Sets an adapter to a fake adapter with a connectable device with
+           services.
+        2. Use one of the device's services to look for that device.
+        3. Connects to it.
+        4. Retrieve the device's service used in 2.
+        5. Retrieve a characteristic from that service.
+    """
+    adapter, services = random.choice(wbt_fakes.ADAPTERS_WITH_CHARACTERISTICS)
+
+    service_uuid, characteristics = random.choice(services)
+    service_uuid = _ToJsStr(service_uuid)
+
+    characteristic_uuid = _ToJsStr(random.choice(characteristics))
+
+    optional_service_uuid = random.choice(['', service_uuid])
+    optional_characteristic_uuid = random.choice(['', characteristic_uuid])
+
+    services_base = random.choice([SERVICE_RETRIEVED_BASE,
+                                   SERVICES_RETRIEVED_BASE])
+
+    characteristics_base = services_base + random.choice([
+        CHARACTERISTIC_RETRIEVED_BASE,
+        CHARACTERISTICS_RETRIEVED_BASE,
+    ])
+
+    return characteristics_base.format(
+        fake_adapter_name=_ToJsStr(adapter),
+        service_uuid=service_uuid,
+        optional_service_uuid=optional_service_uuid,
+        characteristic_uuid=characteristic_uuid,
+        optional_characteristic_uuid=optional_characteristic_uuid)
+
+
+def get_get_primary_services_call():
+    call = random.choice([u'getPrimaryService({service_uuid})',
+                          u'getPrimaryServices({optional_service_uuid})'])
+
+    return call.format(
+        service_uuid=get_service_uuid(),
+        optional_service_uuid=random.choice(['', get_service_uuid()]))
+
+
+def get_characteristics_call():
+    call = random.choice([
+        u'getCharacteristic({characteristic_uuid})',
+        u'getCharacteristics({optional_characteristic_uuid})'
+    ])
+
+    return call.format(
+        characteristic_uuid=get_characteristic_uuid(),
+        optional_characteristic_uuid=random.choice(
+            ['', get_characteristic_uuid()]))
+
+
+def get_pick_a_service():
+    """Returns a string that picks a service from 'services'."""
+    # 'services' may be defined by the GetPrimaryService(s) tokens.
+    string = \
+        'var service; '\
+        'if (typeof services !== \'undefined\') '\
+        ' service = Array.isArray(services)'\
+        ' ? services[{} % services.length]'\
+        ' : services'
+    return string.format(random.randint(0, sys.maxint))
+
+
+def get_pick_a_characteristic():
+    """Returns a string that picks a characteristic from 'characteristics'."""
+    # 'characteristics' maybe be defined by the GetCharacteristic(s) tokens.
+    string = \
+        'var characteristic; '\
+        'if (typeof characteristics !== \'undefined\') '\
+        ' characteristic = Array.isArray(characteristics)'\
+        ' ? characteristics[{} % characteristics.length]'\
+        ' : characteristics'
+    return string.format(random.randint(0, sys.maxint))
+
+
+def get_reload_id():
+    return _ToJsStr(_get_random_number())
+
+
+def get_buffer_source():
+    """Returns a new BufferSource.
+    https://heycam.github.io/webidl/#BufferSource
+    """
+
+    choice = random.choice(['ArrayBuffer', 'DataView', 'TypedArray'])
+
+    if choice == 'ArrayBuffer':
+        # We choose 2**10 as the upper boundry because the max length allowed
+        # by WebBluetooth is 2**10.
+        return 'new ArrayBuffer({length})'.format(
+            length=utils.UniformExpoInteger(0, 10))
+    if choice == 'DataView':
+        return 'new DataView({typed_array}.buffer)'.format(
+            typed_array=_get_typed_array())
+    if choice == 'TypedArray':
+        return _get_typed_array()

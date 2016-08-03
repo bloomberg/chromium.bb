@@ -37,5 +37,8 @@ class WebBluetoothFuzzerTest(unittest.TestCase):
         self.assertEquals(100, len(written_files), 'Should have written 100 '
                           'test files.')
 
+        for test_case in written_files:
+            self.assertFalse('TRANSFORM' in open(test_case).read())
+
 if __name__ == '__main__':
     unittest.main()
