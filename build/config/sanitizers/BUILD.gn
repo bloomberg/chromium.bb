@@ -248,6 +248,9 @@ config("asan_flags") {
     }
 
     if (is_win) {
+      # In the static-library build, libraries are different for executables
+      # and dlls, see link_executable and link_shared_library below.
+      # This here handles only the component build.
       if (target_cpu == "x64") {
         # Windows 64-bit.
         if (is_component_build) {
@@ -255,10 +258,6 @@ config("asan_flags") {
             "clang_rt.asan_dynamic-x86_64.lib",
             "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
           ]
-        } else {
-          # TODO(etienneb): DLLs in the non-component build should link against
-          # clang_rt.asan_dll_thunk-x86_64.lib instead.
-          libs = [ "clang_rt.asan-x86_64.lib" ]
         }
       } else {
         assert(target_cpu == "x86", "WinASan unsupported architecture")
@@ -267,12 +266,32 @@ config("asan_flags") {
             "clang_rt.asan_dynamic-i386.lib",
             "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
           ]
-        } else {
-          # TODO(etienneb): DLLs in the non-component build should link against
-          # clang_rt.asan_dll_thunk-i386.lib instead.
-          libs = [ "clang_rt.asan-i386.lib" ]
         }
       }
+    }
+  }
+}
+
+config("link_executable") {
+  if (is_asan && is_win && !is_component_build) {
+    if (target_cpu == "x64") {
+      # Windows 64-bit.
+      libs = [ "clang_rt.asan-x86_64.lib" ]
+    } else {
+      assert(target_cpu == "x86", "WinASan unsupported architecture")
+      libs = [ "clang_rt.asan-i386.lib" ]
+    }
+  }
+}
+
+config("link_shared_library") {
+  if (is_asan && is_win && !is_component_build) {
+    if (target_cpu == "x64") {
+      # Windows 64-bit.
+      libs = [ "clang_rt.asan_dll_thunk-x86_64.lib" ]
+    } else {
+      assert(target_cpu == "x86", "WinASan unsupported architecture")
+      libs = [ "clang_rt.asan_dll_thunk-i386.lib" ]
     }
   }
 }
