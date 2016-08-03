@@ -37,7 +37,7 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, InstrumentingAgents*, int sessionId, bool autoFlush, V8Inspector*, int contextGroupId, const String* savedState);
+    InspectorSession(Client*, InstrumentingAgents*, int sessionId, V8Inspector*, int contextGroupId, const String* savedState);
     ~InspectorSession() override;
     int sessionId() { return m_sessionId; }
     V8InspectorSession* v8Session() { return m_v8Session.get(); }
@@ -62,7 +62,6 @@ private:
     Client* m_client;
     std::unique_ptr<V8InspectorSession> m_v8Session;
     int m_sessionId;
-    bool m_autoFlush;
     bool m_disposed;
     Member<InstrumentingAgents> m_instrumentingAgents;
     std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;

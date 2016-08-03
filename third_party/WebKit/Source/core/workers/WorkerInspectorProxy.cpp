@@ -102,11 +102,8 @@ void WorkerInspectorProxy::addConsoleMessageFromWorker(ConsoleMessage* consoleMe
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
-    if (globalScope->isWorkerGlobalScope()) {
-        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
-            inspector->connectFrontend();
-    }
+    if (WorkerInspectorController* inspector = workerThread->workerInspectorController())
+        inspector->connectFrontend();
 }
 
 void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspector* pageInspector)
@@ -120,11 +117,8 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
-    if (globalScope->isWorkerGlobalScope()) {
-        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
-            inspector->disconnectFrontend();
-    }
+    if (WorkerInspectorController* inspector = workerThread->workerInspectorController())
+        inspector->disconnectFrontend();
 }
 
 void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageInspector* pageInspector)
@@ -137,11 +131,8 @@ void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageIns
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
 {
-    WorkerOrWorkletGlobalScope* globalScope = workerThread->globalScope();
-    if (globalScope->isWorkerGlobalScope()) {
-        if (WorkerInspectorController* inspector = toWorkerGlobalScope(globalScope)->workerInspectorController())
-            inspector->dispatchMessageFromFrontend(message);
-    }
+    if (WorkerInspectorController* inspector = workerThread->workerInspectorController())
+        inspector->dispatchMessageFromFrontend(message);
 }
 
 void WorkerInspectorProxy::sendMessageToInspector(const String& message)

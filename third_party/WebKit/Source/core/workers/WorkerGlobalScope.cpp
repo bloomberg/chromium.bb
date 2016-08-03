@@ -43,7 +43,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerClients.h"
@@ -75,7 +74,6 @@ void removeURLFromMemoryCacheInternal(const KURL& url)
 WorkerGlobalScope::~WorkerGlobalScope()
 {
     DCHECK(!m_scriptController);
-    DCHECK(!m_workerInspectorController);
 }
 
 void WorkerGlobalScope::countFeature(UseCounter::Feature) const
@@ -130,10 +128,6 @@ void WorkerGlobalScope::dispose()
 
     m_scriptController->dispose();
     m_scriptController.clear();
-    if (m_workerInspectorController) {
-        m_workerInspectorController->dispose();
-        m_workerInspectorController.clear();
-    }
     m_eventQueue->close();
     m_thread = nullptr;
 }
@@ -298,7 +292,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_v8CacheOptions(V8CacheOptionsDefault)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))
     , m_thread(thread)
-    , m_workerInspectorController(WorkerInspectorController::create(thread))
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
@@ -359,7 +352,6 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_location);
     visitor->trace(m_navigator);
     visitor->trace(m_scriptController);
-    visitor->trace(m_workerInspectorController);
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
     visitor->trace(m_timers);

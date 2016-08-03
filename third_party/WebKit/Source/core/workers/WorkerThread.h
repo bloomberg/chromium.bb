@@ -135,9 +135,10 @@ public:
     void startRunningDebuggerTasksOnPauseOnWorkerThread();
     void stopRunningDebuggerTasksOnPauseOnWorkerThread();
 
-    // Can be called only on the worker thread, WorkerOrWorkletGlobalScope is
-    // not thread safe.
+    // Can be called only on the worker thread, WorkerOrWorkletGlobalScope
+    // and WorkerInspectorController are not thread safe.
     WorkerOrWorkletGlobalScope* globalScope();
+    WorkerInspectorController* workerInspectorController();
 
     // Called for creating WorkerThreadLifecycleObserver on both the main thread
     // and the worker thread.
@@ -238,6 +239,7 @@ private:
     Mutex m_threadStateMutex;
 
     Persistent<WorkerOrWorkletGlobalScope> m_globalScope;
+    Persistent<WorkerInspectorController> m_workerInspectorController;
 
     // Signaled when the thread starts termination on the main thread.
     std::unique_ptr<WaitableEvent> m_terminationEvent;

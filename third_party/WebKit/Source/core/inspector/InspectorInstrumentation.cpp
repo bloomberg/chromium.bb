@@ -46,6 +46,7 @@
 #include "core/page/Page.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 
 namespace blink {
 
@@ -147,7 +148,7 @@ InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope
 {
     if (!workerGlobalScope)
         return nullptr;
-    if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
+    if (WorkerInspectorController* controller = workerGlobalScope->thread()->workerInspectorController())
         return controller->instrumentingAgents();
     return nullptr;
 }

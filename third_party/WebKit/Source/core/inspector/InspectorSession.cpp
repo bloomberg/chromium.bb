@@ -19,11 +19,10 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
-InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, bool autoFlush, V8Inspector* inspector, int contextGroupId, const String* savedState)
+InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, V8Inspector* inspector, int contextGroupId, const String* savedState)
     : m_client(client)
     , m_v8Session(nullptr)
     , m_sessionId(sessionId)
-    , m_autoFlush(autoFlush)
     , m_disposed(false)
     , m_instrumentingAgents(instrumentingAgents)
     , m_inspectorBackendDispatcher(new protocol::UberDispatcher(this))
@@ -105,10 +104,7 @@ void InspectorSession::sendProtocolNotification(const protocol::String16& messag
 {
     if (m_disposed)
         return;
-    if (m_autoFlush)
-        m_client->sendProtocolMessage(m_sessionId, 0, message, String());
-    else
-        m_notificationQueue.append(message);
+    m_notificationQueue.append(message);
 }
 
 void InspectorSession::flushProtocolNotifications()

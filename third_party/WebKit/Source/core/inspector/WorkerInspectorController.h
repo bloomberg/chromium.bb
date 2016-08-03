@@ -33,6 +33,7 @@
 
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -44,13 +45,10 @@ class InstrumentingAgents;
 class WorkerThread;
 class WorkerThreadDebugger;
 
-namespace protocol {
-class Dispatcher;
-class Frontend;
-class FrontendChannel;
-}
-
-class WorkerInspectorController final : public GarbageCollectedFinalized<WorkerInspectorController>, public InspectorSession::Client {
+class WorkerInspectorController final
+    : public GarbageCollectedFinalized<WorkerInspectorController>
+    , public InspectorSession::Client
+    , private WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
 public:
     static WorkerInspectorController* create(WorkerThread*);
@@ -63,6 +61,7 @@ public:
     void disconnectFrontend();
     void dispatchMessageFromFrontend(const String&);
     void dispose();
+    void flushProtocolNotifications();
 
 private:
     WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
@@ -70,6 +69,10 @@ private:
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
     void resumeStartup() override;
+
+    // WebThread::TaskObserver implementation.
+    void willProcessTask() override;
+    void didProcessTask() override;
 
     WorkerThreadDebugger* m_debugger;
     WorkerThread* m_thread;

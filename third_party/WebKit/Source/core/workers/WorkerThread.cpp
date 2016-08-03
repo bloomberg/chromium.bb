@@ -33,6 +33,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -270,6 +271,8 @@ void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
 void WorkerThread::startRunningDebuggerTasksOnPauseOnWorkerThread()
 {
     DCHECK(isCurrentThread());
+    if (m_workerInspectorController)
+        m_workerInspectorController->flushProtocolNotifications();
     m_pausedInDebugger = true;
     ThreadDebugger::idleStarted(isolate());
     std::unique_ptr<CrossThreadClosure> task;
@@ -295,6 +298,12 @@ WorkerOrWorkletGlobalScope* WorkerThread::globalScope()
 {
     DCHECK(isCurrentThread());
     return m_globalScope.get();
+}
+
+WorkerInspectorController* WorkerThread::workerInspectorController()
+{
+    DCHECK(isCurrentThread());
+    return m_workerInspectorController.get();
 }
 
 bool WorkerThread::terminated()
@@ -484,6 +493,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         // Optimize for memory usage instead of latency for the worker isolate.
         isolate()->IsolateInBackgroundNotification();
         m_globalScope = createWorkerGlobalScope(std::move(startupData));
+        m_workerInspectorController = WorkerInspectorController::create(this);
         if (m_globalScope->isWorkerGlobalScope())
             toWorkerGlobalScope(m_globalScope)->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
@@ -549,6 +559,10 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
     workerReportingProxy().willDestroyWorkerGlobalScope();
     InspectorInstrumentation::allAsyncTasksCanceled(globalScope());
     globalScope()->dispose();
+    if (m_workerInspectorController) {
+        m_workerInspectorController->dispose();
+        m_workerInspectorController.clear();
+    }
     workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
 

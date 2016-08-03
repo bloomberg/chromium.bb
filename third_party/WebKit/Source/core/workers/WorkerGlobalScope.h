@@ -52,7 +52,6 @@ class ConsoleMessageStorage;
 class ExceptionState;
 class V8AbstractEventListener;
 class WorkerClients;
-class WorkerInspectorController;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -128,7 +127,6 @@ public:
     WorkerSettings* workerSettings() const { return m_workerSettings.get(); }
 
     WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
-    WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
     WorkerClients* clients() { return m_workerClients.get(); }
     ConsoleMessageStorage* consoleMessageStorage() { return m_consoleMessageStorage.get(); }
 
@@ -168,7 +166,6 @@ private:
     Member<WorkerOrWorkletScriptController> m_scriptController;
     WorkerThread* m_thread;
 
-    Member<WorkerInspectorController> m_workerInspectorController;
     bool m_closing;
 
     Member<WorkerEventQueue> m_eventQueue;

@@ -34,8 +34,10 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
@@ -66,8 +68,9 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
-    m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->v8Inspector(), m_debugger->contextGroupId(), nullptr);
+    m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0, m_debugger->v8Inspector(), m_debugger->contextGroupId(), nullptr);
     m_session->append(new InspectorLogAgent(m_thread->consoleMessageStorage()));
+    m_thread->workerBackingThread().backingThread().addTaskObserver(this);
 }
 
 void WorkerInspectorController::disconnectFrontend()
@@ -76,6 +79,7 @@ void WorkerInspectorController::disconnectFrontend()
         return;
     m_session->dispose();
     m_session.clear();
+    m_thread->workerBackingThread().backingThread().removeTaskObserver(this);
 }
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
@@ -94,6 +98,12 @@ void WorkerInspectorController::dispose()
     m_thread = nullptr;
 }
 
+void WorkerInspectorController::flushProtocolNotifications()
+{
+    if (m_session)
+        m_session->flushProtocolNotifications();
+}
+
 void WorkerInspectorController::resumeStartup()
 {
     m_thread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
@@ -103,6 +113,16 @@ void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, c
 {
     // Worker messages are wrapped, no need to handle callId or state.
     m_thread->workerReportingProxy().postMessageToPageInspector(response);
+}
+
+void WorkerInspectorController::willProcessTask()
+{
+}
+
+void WorkerInspectorController::didProcessTask()
+{
+    if (m_session)
+        m_session->flushProtocolNotifications();
 }
 
 DEFINE_TRACE(WorkerInspectorController)
