@@ -19,7 +19,6 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -27,9 +26,10 @@
 #include "ui/base/layout.h"
 
 class PrefService;
+class Profile;
 
 namespace arc {
-class ArcBridgeService;
+class ArcPackageSyncableService;
 }  // namespace arc
 
 namespace content {
@@ -48,7 +48,6 @@ class PrefRegistrySyncable;
 class ArcAppListPrefs
     : public KeyedService,
       public arc::mojom::AppHost,
-      public arc::ArcBridgeService::Observer,
       public arc::InstanceHolder<arc::mojom::AppInstance>::Observer,
       public arc::ArcAuthService::Observer {
  public:
@@ -124,6 +123,14 @@ class ArcAppListPrefs
 
     virtual void OnNotificationsEnabledChanged(
         const std::string& package_name, bool enabled) {}
+    // Notifies that package has been installed.
+    virtual void OnPackageInstalled(
+        const arc::mojom::ArcPackageInfo& package_info) {}
+    // Notifies that package has been modified.
+    virtual void OnPackageModified(
+        const arc::mojom::ArcPackageInfo& package_info) {}
+    // Notifies that package has been uninstalled.
+    virtual void OnPackageRemoved(const std::string& package_name) {}
 
     virtual void OnTaskOrientationLockRequested(
         int32_t task_id,
@@ -133,8 +140,9 @@ class ArcAppListPrefs
     virtual ~Observer() {}
   };
 
-  static ArcAppListPrefs* Create(const base::FilePath& base_path,
-                                 PrefService* prefs);
+  static ArcAppListPrefs* Create(
+      Profile* profile,
+      arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder);
 
   // Convenience function to get the ArcAppListPrefs for a BrowserContext. It
   // will only return non-null pointer for the primary user.
@@ -202,14 +210,17 @@ class ArcAppListPrefs
   // Removes app with the given app_id.
   void RemoveApp(const std::string& app_id);
 
+  arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder() {
+    return app_instance_holder_;
+  }
+
  private:
   friend class ChromeLauncherControllerImplTest;
 
   // See the Create methods.
-  ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);
-
-  // arc::ArcBridgeService::Observer:
-  void OnBridgeStopped(arc::ArcBridgeService::StopReason reason) override;
+  ArcAppListPrefs(
+      Profile* profile,
+      arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder);
 
   // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
   void OnInstanceReady() override;
@@ -268,8 +279,12 @@ class ArcAppListPrefs
                        ui::ScaleFactor scale_factor,
                        bool install_succeed);
 
+  Profile* const profile_;
+
   // Owned by the BrowserContext.
-  PrefService* prefs_;
+  PrefService* const prefs_;
+
+  arc::InstanceHolder<arc::mojom::AppInstance>* const app_instance_holder_;
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;
@@ -286,6 +301,8 @@ class ArcAppListPrefs
   bool is_initialized_ = false;
   // True if apps were restored.
   bool apps_restored_ = false;
+
+  arc::ArcPackageSyncableService* sync_service_;
 
   mojo::Binding<arc::mojom::AppHost> binding_;
 

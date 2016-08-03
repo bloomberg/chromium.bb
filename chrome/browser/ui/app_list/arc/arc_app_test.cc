@@ -122,14 +122,20 @@ void ArcAppTest::SetUp(Profile* profile) {
   // Check initial conditions.
   EXPECT_EQ(bridge_service_.get(), arc::ArcBridgeService::Get());
   EXPECT_FALSE(arc::ArcBridgeService::Get()->ready());
-
-  // At this point we should have ArcAppListPrefs as observer of service.
-  EXPECT_TRUE(bridge_service_->HasObserver(arc_app_list_pref_));
-  bridge_service()->SetReady();
 }
 
 void ArcAppTest::TearDown() {
   auth_service_.reset();
+}
+
+void ArcAppTest::StopArcInstance() {
+  bridge_service_->app()->SetInstance(nullptr);
+}
+
+void ArcAppTest::RestartArcInstance() {
+  bridge_service_->app()->SetInstance(nullptr);
+  app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
+  bridge_service_->app()->SetInstance(app_instance_.get());
 }
 
 const user_manager::User* ArcAppTest::CreateUserAndLogin() {

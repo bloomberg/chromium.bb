@@ -14,9 +14,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -193,9 +196,10 @@ void RemovePackageFromPrefs(PrefService* prefs,
 }  // namespace
 
 // static
-ArcAppListPrefs* ArcAppListPrefs::Create(const base::FilePath& base_path,
-                                         PrefService* prefs) {
-  return new ArcAppListPrefs(base_path, prefs);
+ArcAppListPrefs* ArcAppListPrefs::Create(
+    Profile* profile,
+    arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder) {
+  return new ArcAppListPrefs(profile, app_instance_holder);
 }
 
 // static
@@ -218,9 +222,18 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
   return crx_file::id_util::GenerateId(input);
 }
 
-ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
-                                 PrefService* prefs)
-    : prefs_(prefs), binding_(this), weak_ptr_factory_(this) {
+ArcAppListPrefs::ArcAppListPrefs(
+    Profile* profile,
+    arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder)
+    : profile_(profile),
+      prefs_(profile->GetPrefs()),
+      app_instance_holder_(app_instance_holder),
+      sync_service_(nullptr),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  DCHECK(profile);
+  DCHECK(app_instance_holder);
+  const base::FilePath& base_path = profile->GetPath();
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
   arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
@@ -231,21 +244,18 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
     OnOptInEnabled(auth_service->IsArcEnabled());
   auth_service->AddObserver(this);
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  DCHECK(bridge_service);
-
-  bridge_service->app()->AddObserver(this);
-  bridge_service->AddObserver(this);
-  if (!bridge_service->ready())
-    OnBridgeStopped(arc::ArcBridgeService::StopReason::SHUTDOWN);
+  app_instance_holder_->AddObserver(this);
+  if (!app_instance_holder_->instance())
+    OnInstanceClosed();
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
+  // A reference to ArcBridgeService is kept here so that it would crash the
+  // tests where ArcBridgeService and ArcAppListPrefs are not destroyed in right
+  // order.
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (bridge_service) {
-    bridge_service->RemoveObserver(this);
-    bridge_service->app()->RemoveObserver(this);
-  }
+  if (bridge_service)
+    app_instance_holder_->RemoveObserver(this);
 
   arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
   if (auth_service)
@@ -299,12 +309,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    NOTREACHED();
-    return;
-  }
-  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
+  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
   if (!app_instance) {
     // AppInstance should be ready since we have app_id in ready_apps_. This
     // can happen in browser_tests.
@@ -353,20 +358,14 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
     return;
   }
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    NOTREACHED();
-    return;
-  }
-
-  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
+  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
   if (!app_instance) {
     // AppInstance should be ready since we have app_id in ready_apps_.
     NOTREACHED();
     return;
   }
 
-  if (bridge_service->app()->version() < kSetNotificationsEnabledMinVersion) {
+  if (app_instance_holder_->version() < kSetNotificationsEnabledMinVersion) {
     VLOG(2) << "app version is too small to set notifications enabled.";
     return;
   }
@@ -563,18 +562,8 @@ void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
     RemoveAllApps();
 }
 
-void ArcAppListPrefs::OnBridgeStopped(
-    arc::ArcBridgeService::StopReason reason) {
-  DisableAllApps();
-}
-
 void ArcAppListPrefs::OnInstanceReady() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    NOTREACHED();
-    return;
-  }
-  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
+  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -582,10 +571,21 @@ void ArcAppListPrefs::OnInstanceReady() {
 
   app_instance->Init(binding_.CreateInterfacePtrAndBind());
   app_instance->RefreshAppList();
+
+  // Start ArcPackageSyncService.
+  sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
+  DCHECK(sync_service_);
+  sync_service_->SyncStarted();
 }
 
 void ArcAppListPrefs::OnInstanceClosed() {
-  ready_apps_.clear();
+  DisableAllApps();
+  binding_.Close();
+
+  if (sync_service_) {
+    sync_service_->StopSyncing(syncer::ARC_PACKAGE);
+    sync_service_ = nullptr;
+  }
 }
 
 void ArcAppListPrefs::AddAppAndShortcut(
@@ -777,6 +777,7 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
     RemoveApp(app_id);
 
   RemovePackageFromPrefs(prefs_, package_name);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPackageRemoved(package_name));
 }
 
 void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
@@ -854,12 +855,15 @@ void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcEnabled());
   AddOrUpdatePackagePrefs(prefs_, *package_info);
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnPackageInstalled(*package_info));
 }
 
 void ArcAppListPrefs::OnPackageModified(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcEnabled());
   AddOrUpdatePackagePrefs(prefs_, *package_info);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPackageModified(*package_info));
 }
 
 void ArcAppListPrefs::OnPackageListRefreshed(

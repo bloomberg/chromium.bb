@@ -102,6 +102,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 #include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
 #endif
@@ -412,6 +413,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::WIFI_CREDENTIALS:
       return wifi_sync::WifiCredentialSyncableServiceFactory::
           GetForBrowserContext(profile_)->AsWeakPtr();
+    case syncer::ARC_PACKAGE:
+      return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
 #endif
     default:
       // The following datatypes still need to be transitioned to the
@@ -607,6 +610,9 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
     sync_service->RegisterDataTypeController(new UIDataTypeController(
         ui_thread, error_callback, syncer::WIFI_CREDENTIALS, this));
   }
+  // TODO (lgcheng@) Add switch for this.
+  sync_service->RegisterDataTypeController(new UIDataTypeController(
+      ui_thread, error_callback, syncer::ARC_PACKAGE, this));
 #endif
 }
 

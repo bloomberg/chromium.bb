@@ -43,6 +43,10 @@ class ArcAppTest {
   void SetUp(Profile* profile);
   void TearDown();
 
+  // Public methods to modify AppInstance for unit_tests.
+  void StopArcInstance();
+  void RestartArcInstance();
+
   static std::string GetAppId(const arc::mojom::AppInfo& app_info);
   static std::string GetAppId(const arc::mojom::ShortcutInfo& shortcut);
 
