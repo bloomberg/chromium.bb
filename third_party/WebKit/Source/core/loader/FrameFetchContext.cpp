@@ -218,6 +218,10 @@ CachePolicy FrameFetchContext::getCachePolicy() const
 
     if (m_documentLoader && m_documentLoader->request().getCachePolicy() == WebCachePolicy::ReturnCacheDataElseLoad)
         return CachePolicyHistoryBuffer;
+
+    // Returns CachePolicyVerify for other cases, mainly FrameLoadTypeStandard
+    // and FrameLoadTypeReloadMainResource. See public/web/WebFrameLoadType.h
+    // to know how these load types work.
     return CachePolicyVerify;
 }
 
@@ -249,14 +253,18 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
         for (Frame* f = frame(); f; f = f->tree().parent()) {
             if (!f->isLocalFrame())
                 continue;
-            frameLoadType = toLocalFrame(f)->loader().loadType();
-            if (frameLoadType == FrameLoadTypeBackForward)
+            FrameLoadType parentFrameLoadType = toLocalFrame(f)->loader().loadType();
+            if (parentFrameLoadType == FrameLoadTypeBackForward)
                 return WebCachePolicy::ReturnCacheDataElseLoad;
-            if (frameLoadType == FrameLoadTypeReloadBypassingCache)
+            if (parentFrameLoadType == FrameLoadTypeReloadBypassingCache)
                 return WebCachePolicy::BypassingCache;
-            if (frameLoadType == FrameLoadTypeReload)
+            if (parentFrameLoadType == FrameLoadTypeReload)
                 return WebCachePolicy::ValidatingCacheData;
         }
+        // Returns UseProtocolCachePolicy for other cases, parent frames not
+        // having special kinds of FrameLoadType as they are checked inside
+        // the for loop above, or |frameLoadType| being FrameLoadTypeStandard.
+        // See public/web/WebFrameLoadType.h to know how these load types work.
         return WebCachePolicy::UseProtocolCachePolicy;
     }
 
