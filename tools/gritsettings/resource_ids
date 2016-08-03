@@ -251,57 +251,57 @@
     "includes": [26760],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [26947],
+    "includes": [26977],
   },
   "ui/login/login_resources.grd": {
-    "includes": [26960],
+    "includes": [26990],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [26970],
+    "includes": [27000],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [26980],
+    "includes": [27010],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [27080],
+    "messages": [27110],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [27530],
+    "messages": [27560],
   },
   "components/components_locale_settings.grd": {
-    "includes": [27980],
-    "messages": [27985],
+    "includes": [28010],
+    "messages": [28015],
   },
   "components/components_strings.grd": {
-    "messages": [27990],
+    "messages": [28020],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [29250],
+    "messages": [29280],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [29250],
+    "messages": [29280],
   },
   "components/resources/components_resources.grd": {
-    "includes": [29300],
+    "includes": [29330],
   },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [29850],
+    "structures": [29880],
   },
   "third_party/WebKit/public/blink_resources.grd": {
-    "includes": [30070],
-    "structures": [30370],
+    "includes": [30100],
+    "structures": [30400],
   },
   "chrome/browser/resources/md_policy/policy_resources.grd": {
-    "structures": [30600],
+    "structures": [30630],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [30620],
+    "structures": [30650],
   },
   "headless/lib/resources/headless_lib_resources.grd": {
-    "includes": [30640],
+    "includes": [30670],
   },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
