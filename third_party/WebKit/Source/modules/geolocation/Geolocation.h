@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
+#include "device/geolocation/public/interfaces/geolocation.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/GeolocationWatchers.h"
@@ -40,7 +41,7 @@
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom-blink.h"
+
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
 
@@ -164,7 +165,7 @@ private:
     // See https://goo.gl/Y0ZkNV
     void recordOriginTypeAccess() const;
 
-    void onPositionUpdated(mojom::blink::GeopositionPtr);
+    void onPositionUpdated(device::mojom::blink::GeopositionPtr);
 
     // Processes the notifiers that were waiting for a permission decision. If
     // granted then the notifier's timers are started. Otherwise, a fatal error
@@ -190,7 +191,7 @@ private:
     };
 
     Permission m_geolocationPermission;
-    mojom::blink::GeolocationServicePtr m_geolocationService;
+    device::mojom::blink::GeolocationServicePtr m_geolocationService;
     bool m_enableHighAccuracy = false;
     mojom::blink::PermissionServicePtr m_permissionService;
 

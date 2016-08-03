@@ -71,12 +71,11 @@ component("device_geolocation") {
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//net",
-
-    # TODO(mcasas): move geolocation.mojom to public/interfaces.
-    "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx",
   ]
-
+  public_deps = [
+    "//device/geolocation/public/interfaces",
+  ]
   if (is_android) {
     sources -= [
       "network_location_provider.cc",

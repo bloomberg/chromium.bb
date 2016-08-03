@@ -7,7 +7,7 @@
 
 let geolocationServiceMock = loadMojoModules(
     'geolocationServiceMock',
-    ['third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom',
+    ['device/geolocation/public/interfaces/geolocation.mojom',
      'third_party/WebKit/public/platform/modules/permissions/permission.mojom',
      'third_party/WebKit/public/platform/modules/permissions/permission_status.mojom',
      'mojo/public/js/router',

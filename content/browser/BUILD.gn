@@ -64,6 +64,7 @@ source_set("browser") {
     "//device/bluetooth",
     "//device/gamepad",
     "//device/geolocation:device_geolocation",
+    "//device/geolocation/public/interfaces",
     "//device/power_save_blocker",
     "//device/vibration",
     "//gin",

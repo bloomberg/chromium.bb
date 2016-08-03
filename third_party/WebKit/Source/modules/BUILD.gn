@@ -69,6 +69,7 @@ target(modules_target_type, "modules") {
   deps = [
     ":make_modules_generated",
     "//device/battery:mojo_bindings_blink",
+    "//device/geolocation/public/interfaces:interfaces_blink",
     "//device/nfc:mojo_bindings_blink",
     "//device/usb/public/interfaces:interfaces_blink",
     "//device/vibration:mojo_bindings_blink",

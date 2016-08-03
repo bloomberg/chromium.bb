@@ -46,7 +46,7 @@ static const char permissionDeniedErrorMessage[] = "User denied Geolocation";
 static const char failedToStartServiceErrorMessage[] = "Failed to start Geolocation service";
 static const char framelessDocumentErrorMessage[] = "Geolocation cannot be used in frameless documents";
 
-static Geoposition* createGeoposition(const mojom::blink::Geoposition& position)
+static Geoposition* createGeoposition(const device::mojom::blink::Geoposition& position)
 {
     Coordinates* coordinates = Coordinates::create(
         position.latitude,
@@ -64,18 +64,18 @@ static Geoposition* createGeoposition(const mojom::blink::Geoposition& position)
     return Geoposition::create(coordinates, convertSecondsToDOMTimeStamp(position.timestamp));
 }
 
-static PositionError* createPositionError(mojom::blink::Geoposition::ErrorCode mojomErrorCode, const String& error)
+static PositionError* createPositionError(device::mojom::blink::Geoposition::ErrorCode mojomErrorCode, const String& error)
 {
     PositionError::ErrorCode errorCode = PositionError::kPositionUnavailable;
     switch (mojomErrorCode) {
-    case mojom::blink::Geoposition::ErrorCode::PERMISSION_DENIED:
+    case device::mojom::blink::Geoposition::ErrorCode::PERMISSION_DENIED:
         errorCode = PositionError::kPermissionDenied;
         break;
-    case mojom::blink::Geoposition::ErrorCode::POSITION_UNAVAILABLE:
+    case device::mojom::blink::Geoposition::ErrorCode::POSITION_UNAVAILABLE:
         errorCode = PositionError::kPositionUnavailable;
         break;
-    case mojom::blink::Geoposition::ErrorCode::NONE:
-    case mojom::blink::Geoposition::ErrorCode::TIMEOUT:
+    case device::mojom::blink::Geoposition::ErrorCode::NONE:
+    case device::mojom::blink::Geoposition::ErrorCode::TIMEOUT:
         NOTREACHED();
         break;
     }
@@ -505,7 +505,7 @@ void Geolocation::queryNextPosition()
     m_geolocationService->QueryNextPosition(convertToBaseCallback(WTF::bind(&Geolocation::onPositionUpdated, wrapPersistent(this))));
 }
 
-void Geolocation::onPositionUpdated(mojom::blink::GeopositionPtr position)
+void Geolocation::onPositionUpdated(device::mojom::blink::GeopositionPtr position)
 {
     m_disconnectedGeolocationService = false;
     if (position->valid) {

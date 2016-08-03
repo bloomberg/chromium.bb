@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module blink.mojom;
+module device.mojom;
 
 // A Geoposition represents a position fix. It was originally derived from:
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation.h

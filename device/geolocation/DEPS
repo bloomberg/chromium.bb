@@ -4,6 +4,5 @@ include_rules = [
   "+google_apis",
   "+jni",
   "+net",
-  "+third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h",
   "+third_party/cros_system_api/dbus",
 ]
