@@ -32,6 +32,7 @@
 #include "chrome/common/features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
@@ -79,7 +80,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #else
 #include "ui/message_center/message_center_switches.h"
 #endif
@@ -767,6 +767,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)},
+    {"enable-credit-card-signin-promo",
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME,
+     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardSigninPromo)},
     {"smooth-scrolling",  // FLAGS:RECORD_UMA
      IDS_FLAGS_SMOOTH_SCROLLING_NAME, IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION,
      // Mac has a separate implementation with its own setting to disable.
@@ -2038,10 +2042,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-web-payments", IDS_FLAGS_ENABLE_WEB_PAYMENTS_NAME,
      IDS_FLAGS_ENABLE_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebPayments)},
-    {"enable-credit-card-signin-promo",
-     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME,
-     IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardSigninPromo)},
 #endif  // defined(OS_ANDROID)
         // NOTE: Adding new command-line switches requires adding corresponding
         // entries to enum "LoginCustomFlags" in histograms.xml. See note in
