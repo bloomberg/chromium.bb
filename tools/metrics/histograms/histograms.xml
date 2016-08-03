@@ -30699,6 +30699,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicTimeBetweenTwoPacketSent" units="ms">
   <owner>zhongyi@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016. No longer tracked.
+  </obsolete>
   <summary>
     Time duration from last packet sent to a new packet sent in QUIC connection.
   </summary>
