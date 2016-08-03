@@ -102,9 +102,6 @@ public:
         DISALLOW_NEW();
         SecurityDetails()
             : certID(0)
-            , numUnknownSCTs(0)
-            , numInvalidSCTs(0)
-            , numValidSCTs(0)
         {
         }
         // All strings are human-readable values.
@@ -115,9 +112,6 @@ public:
         // have a separate MAC value (i.e. if the cipher suite is AEAD).
         String mac;
         int certID;
-        size_t numUnknownSCTs;
-        size_t numInvalidSCTs;
-        size_t numValidSCTs;
         SignedCertificateTimestampList sctList;
     };
 
@@ -218,7 +212,7 @@ public:
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
     const SecurityDetails* getSecurityDetails() const { return &m_securityDetails; }
-    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts, const SignedCertificateTimestampList& sctList);
+    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, const SignedCertificateTimestampList& sctList);
 
     long long appCacheID() const { return m_appCacheID; }
     void setAppCacheID(long long id) { m_appCacheID = id; }

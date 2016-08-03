@@ -341,9 +341,6 @@ void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDet
         webSecurityDetails.cipher,
         webSecurityDetails.mac,
         webSecurityDetails.certId,
-        webSecurityDetails.numUnknownScts,
-        webSecurityDetails.numInvalidScts,
-        webSecurityDetails.numValidScts,
         sctList);
 }
 

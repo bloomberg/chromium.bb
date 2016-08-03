@@ -987,16 +987,6 @@
                 ]
             },
             {
-                "id": "CertificateValidationDetails",
-                "type": "object",
-                "description": "Details about the validation status of a request's certificate.",
-                "properties": [
-                    { "name": "numUnknownScts", "type": "integer", "description": "The number of SCTs from unknown logs." },
-                    { "name": "numInvalidScts", "type": "integer", "description": "The number of invalid SCTs." },
-                    { "name": "numValidScts", "type": "integer", "description": "The number of valid SCTs." }
-                ]
-            },
-            {
                 "id": "SignedCertificateTimestamp",
                 "type" : "object",
                 "description": "Details of a signed certificate timestamp (SCT).",
@@ -1021,7 +1011,6 @@
                     { "name": "cipher", "type": "string", "description": "Cipher name." },
                     { "name": "mac", "type": "string", "optional": true, "description": "TLS MAC. Note that AEAD ciphers do not have separate MACs." },
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate ID value." },
-                    { "name": "certificateValidationDetails", "$ref": "CertificateValidationDetails", "optional": true, "description": "Validation details for the request's certficate." },
                     { "name": "signedCertificateTimestampList", "type": "array", "items": { "$ref": "SignedCertificateTimestamp" }, "description": "List of signed certificate timestamps (SCTs)." }
                 ]
             },

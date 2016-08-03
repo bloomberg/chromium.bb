@@ -421,15 +421,6 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
 
         const ResourceResponse::SecurityDetails* responseSecurityDetails = response.getSecurityDetails();
 
-        int numUnknownSCTs = safeCast<int>(responseSecurityDetails->numUnknownSCTs);
-        int numInvalidSCTs = safeCast<int>(responseSecurityDetails->numInvalidSCTs);
-        int numValidSCTs = safeCast<int>(responseSecurityDetails->numValidSCTs);
-
-        std::unique_ptr<protocol::Network::CertificateValidationDetails> certificateValidationDetails = protocol::Network::CertificateValidationDetails::create()
-            .setNumUnknownScts(numUnknownSCTs)
-            .setNumInvalidScts(numInvalidSCTs)
-            .setNumValidScts(numValidSCTs).build();
-
         std::unique_ptr<protocol::Array<protocol::Network::SignedCertificateTimestamp>> signedCertificateTimestampList = protocol::Array<protocol::Network::SignedCertificateTimestamp>::create();
         for (auto const& sct : responseSecurityDetails->sctList) {
             std::unique_ptr<protocol::Network::SignedCertificateTimestamp> signedCertificateTimestamp = protocol::Network::SignedCertificateTimestamp::create()
@@ -452,7 +443,6 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
             .setCertificateId(responseSecurityDetails->certID)
             .setSignedCertificateTimestampList(std::move(signedCertificateTimestampList))
             .build();
-        securityDetails->setCertificateValidationDetails(std::move(certificateValidationDetails));
         if (responseSecurityDetails->mac.length() > 0)
             securityDetails->setMac(responseSecurityDetails->mac);
 

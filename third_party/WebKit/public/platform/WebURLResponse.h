@@ -100,18 +100,12 @@ public:
             const WebString& cipher,
             const WebString& mac,
             int certId,
-            size_t numUnknownScts,
-            size_t numInvalidScts,
-            size_t numValidScts,
             const SignedCertificateTimestampList& sctList)
             : protocol(protocol)
             , keyExchange(keyExchange)
             , cipher(cipher)
             , mac(mac)
             , certId(certId)
-            , numUnknownScts(numUnknownScts)
-            , numInvalidScts(numInvalidScts)
-            , numValidScts(numValidScts)
             , sctList(sctList)
         {
         }
@@ -123,9 +117,6 @@ public:
         // have a separate MAC value (i.e. if the cipher suite is AEAD).
         WebString mac;
         int certId;
-        size_t numUnknownScts;
-        size_t numInvalidScts;
-        size_t numValidScts;
         SignedCertificateTimestampList sctList;
     };
 

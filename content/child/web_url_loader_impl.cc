@@ -278,10 +278,6 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   response->setSecurityStyle(securityStyle);
 
-  size_t num_unknown_scts = ssl_status.num_unknown_scts;
-  size_t num_invalid_scts = ssl_status.num_invalid_scts;
-  size_t num_valid_scts = ssl_status.num_valid_scts;
-
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
       info.signed_certificate_timestamps.size());
 
@@ -291,7 +287,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
       WebString::fromUTF8(cipher), WebString::fromUTF8(mac), ssl_status.cert_id,
-      num_unknown_scts, num_invalid_scts, num_valid_scts, sct_list);
+      sct_list);
 
   response->setSecurityDetails(webSecurityDetails);
 }
