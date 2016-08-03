@@ -85,7 +85,7 @@ public:
     template <size_t N>
     static v8::Local<v8::Value> callExtraOrCrash(ScriptState* scriptState, const char* name, v8::Local<v8::Value>(&args)[N])
     {
-        return v8CallOrCrash(callExtraHelper(scriptState, name, N, args));
+        return callExtraHelper(scriptState, name, N, args).ToLocalChecked();
     }
 
 private:

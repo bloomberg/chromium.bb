@@ -62,7 +62,7 @@ public:
         m_jsController.clear();
         if (isTerminating(m_scriptState.get()))
             return;
-        v8CallOrCrash(result);
+        result.ToLocalChecked();
     }
 
     double desiredSize() const
@@ -82,7 +82,7 @@ public:
         if (isTerminating(m_scriptState.get()))
             return 0;
 
-        return v8CallOrCrash(result).As<v8::Number>()->Value();
+        return result.ToLocalChecked().As<v8::Number>()->Value();
     }
 
     template <typename ChunkType>
@@ -103,7 +103,7 @@ public:
         v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerEnqueue", args);
         if (isTerminating(m_scriptState.get()))
             return;
-        v8CallOrCrash(result);
+        result.ToLocalChecked();
     }
 
     template <typename ErrorType>
@@ -127,7 +127,7 @@ public:
         m_jsController.clear();
         if (isTerminating(m_scriptState.get()))
             return;
-        v8CallOrCrash(result);
+        result.ToLocalChecked();
     }
 
 private:

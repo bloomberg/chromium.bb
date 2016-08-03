@@ -90,7 +90,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
     v8::Local<v8::Value> error = v8::Exception::Error(v8String(isolate, domException->message()));
     ASSERT(!error.IsEmpty());
     v8::Local<v8::Object> exceptionObject = exception.As<v8::Object>();
-    v8CallOrCrash(exceptionObject->SetAccessor(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error));
+    exceptionObject->SetAccessor(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error).ToChecked();
 
     auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
     privateError.set(scriptState->context(), exceptionObject, error);

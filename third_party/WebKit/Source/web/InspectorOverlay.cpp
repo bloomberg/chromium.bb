@@ -513,7 +513,7 @@ Page* InspectorOverlay::overlayPage()
     v8::Local<v8::Object> global = scriptState->context()->Global();
     v8::Local<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
     DCHECK(!overlayHostObj.IsEmpty());
-    v8CallOrCrash(global->Set(scriptState->context(), v8AtomicString(isolate, "InspectorOverlayHost"), overlayHostObj));
+    global->Set(scriptState->context(), v8AtomicString(isolate, "InspectorOverlayHost"), overlayHostObj).ToChecked();
 
 #if OS(WIN)
     evaluateInOverlay("setPlatform", "windows");

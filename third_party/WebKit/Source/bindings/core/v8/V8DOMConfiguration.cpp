@@ -82,9 +82,9 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::Object> instan
 
     DCHECK(attribute.propertyLocationConfiguration);
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
-        v8CallOrCrash(instance->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)));
+        instance->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)).ToChecked();
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
-        v8CallOrCrash(prototype->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)));
+        prototype->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)).ToChecked();
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
         NOTREACHED();
 }
@@ -205,8 +205,8 @@ void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::Function> inter
     v8::PropertyAttribute attributes =
         static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
     v8::Local<v8::Primitive> value = valueForConstant(isolate, constant);
-    v8CallOrCrash(interface->DefineOwnProperty(context, name, value, attributes));
-    v8CallOrCrash(prototype->DefineOwnProperty(context, name, value, attributes));
+    interface->DefineOwnProperty(context, name, value, attributes).ToChecked();
+    prototype->DefineOwnProperty(context, name, value, attributes).ToChecked();
 }
 
 template<class Configuration>
@@ -253,11 +253,11 @@ void installMethodInternal(v8::Isolate* isolate, v8::Local<v8::Object> instance,
         (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(), signature, method.length);
         functionTemplate->RemovePrototype();
-        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
+        v8::Local<v8::Function> function = functionTemplate->GetFunction(isolate->GetCurrentContext()).ToLocalChecked();
         if (method.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
-            v8CallOrCrash(instance->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)));
+            instance->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)).ToChecked();
         if (method.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
-            v8CallOrCrash(prototype->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)));
+            prototype->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)).ToChecked();
     }
     if (method.propertyLocationConfiguration & V8DOMConfiguration::OnInterface) {
         // Operations installed on the interface object must be static
@@ -265,8 +265,8 @@ void installMethodInternal(v8::Isolate* isolate, v8::Local<v8::Object> instance,
         // type check against a holder.
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(), method.length);
         functionTemplate->RemovePrototype();
-        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
-        v8CallOrCrash(interface->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)));
+        v8::Local<v8::Function> function = functionTemplate->GetFunction(isolate->GetCurrentContext()).ToLocalChecked();
+        interface->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(method.attribute)).ToChecked();
     }
 }
 

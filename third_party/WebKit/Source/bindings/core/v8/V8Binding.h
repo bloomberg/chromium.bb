@@ -426,14 +426,14 @@ inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const StringVi
 {
     DCHECK(isolate);
     if (string.is8Bit())
-        return v8CallOrCrash(v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(string.characters8()), v8::NewStringType::kInternalized, static_cast<int>(string.length())));
-    return v8CallOrCrash(v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, static_cast<int>(string.length())));
+        return v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(string.characters8()), v8::NewStringType::kInternalized, static_cast<int>(string.length())).ToLocalChecked();
+    return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, static_cast<int>(string.length())).ToLocalChecked();
 }
 
 inline v8::Local<v8::String> v8StringFromUtf8(v8::Isolate* isolate, const char* bytes, int length)
 {
     DCHECK(isolate);
-    return v8CallOrCrash(v8::String::NewFromUtf8(isolate, bytes, v8::NewStringType::kNormal, length));
+    return v8::String::NewFromUtf8(isolate, bytes, v8::NewStringType::kNormal, length).ToLocalChecked();
 }
 
 inline v8::Local<v8::Value> v8Undefined()

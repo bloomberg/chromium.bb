@@ -66,7 +66,7 @@ void injectInternalsObject(v8::Local<v8::Context> context)
     if (internals.IsEmpty())
         return;
 
-    v8CallOrCrash(global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals));
+    global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals).ToChecked();
 
     // Set origin trials installation function to |installOriginTrialsForTests|
     if (!s_originalInstallOriginTrialsFunction) {

@@ -70,7 +70,7 @@ public:
             v8::MaybeLocal<v8::Value> maybeValue = v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(), &done);
             if (isTerminating(v.getScriptState()))
                 return ScriptValue();
-            v8::Local<v8::Value> value = v8CallOrCrash(maybeValue);
+            v8::Local<v8::Value> value = maybeValue.ToLocalChecked();
             if (done) {
                 readingContext->onReadDone();
                 return v;

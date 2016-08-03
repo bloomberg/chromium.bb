@@ -91,18 +91,6 @@ inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::
     return success;
 }
 
-template <typename T>
-inline T v8CallOrCrash(v8::Maybe<T> maybe)
-{
-    return maybe.FromJust();
-}
-
-template <typename T>
-inline v8::Local<T> v8CallOrCrash(v8::MaybeLocal<T> maybeLocal)
-{
-    return maybeLocal.ToLocalChecked();
-}
-
 #define V8_CALL(outVariable, handle, methodCall, failureExpression) \
     do { \
         if (handle.IsEmpty() || !v8Call(handle->methodCall, outVariable)) { \

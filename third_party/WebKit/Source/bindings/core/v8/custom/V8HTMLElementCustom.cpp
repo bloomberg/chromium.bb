@@ -90,9 +90,7 @@ void V8HTMLElement::constructorCustom(
     // instead.
     v8SetReturnValue(info, wrapper);
 
-    v8CallOrCrash(wrapper->SetPrototype(
-        scriptState->context(),
-        definition->prototype()));
+    wrapper->SetPrototype(scriptState->context(), definition->prototype()).ToChecked();
 }
 
 } // namespace blink

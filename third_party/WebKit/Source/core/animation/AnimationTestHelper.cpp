@@ -20,12 +20,12 @@ v8::Local<v8::Value> doubleToV8Value(double number)
 
 void setV8ObjectPropertyAsString(v8::Isolate* isolate, v8::Local<v8::Object> object, String name, String value)
 {
-    v8CallOrCrash(object->Set(isolate->GetCurrentContext(), stringToV8Value(name), stringToV8Value(value)));
+    object->Set(isolate->GetCurrentContext(), stringToV8Value(name), stringToV8Value(value)).ToChecked();
 }
 
 void setV8ObjectPropertyAsNumber(v8::Isolate* isolate, v8::Local<v8::Object> object, String name, double value)
 {
-    v8CallOrCrash(object->Set(isolate->GetCurrentContext(), stringToV8Value(name), doubleToV8Value(value)));
+    object->Set(isolate->GetCurrentContext(), stringToV8Value(name), doubleToV8Value(value)).ToChecked();
 }
 
 } // namespace blink

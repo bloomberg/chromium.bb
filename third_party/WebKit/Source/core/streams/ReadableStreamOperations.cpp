@@ -40,7 +40,7 @@ ScriptValue ReadableStreamOperations::createReadableStream(ScriptState* scriptSt
     v8::MaybeLocal<v8::Value> jsStream = V8ScriptRunner::callExtra(scriptState, "createReadableStreamWithExternalController", args);
     if (isTerminating(scriptState))
         return ScriptValue();
-    return ScriptValue(scriptState, v8CallOrCrash(jsStream));
+    return ScriptValue(scriptState, jsStream.ToLocalChecked());
 }
 
 ScriptValue ReadableStreamOperations::createCountQueuingStrategy(ScriptState* scriptState, size_t highWaterMark)
@@ -54,7 +54,7 @@ ScriptValue ReadableStreamOperations::createCountQueuingStrategy(ScriptState* sc
     if (isTerminating(scriptState))
         return ScriptValue();
 
-    return ScriptValue(scriptState, v8CallOrCrash(jsStrategy));
+    return ScriptValue(scriptState, jsStrategy.ToLocalChecked());
 }
 
 ScriptValue ReadableStreamOperations::getReader(ScriptState* scriptState, ScriptValue stream, ExceptionState& es)
@@ -84,7 +84,7 @@ bool ReadableStreamOperations::isReadableStream(ScriptState* scriptState, Script
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStream", args);
     if (isTerminating(scriptState))
         return true;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isDisturbed(ScriptState* scriptState, ScriptValue stream)
@@ -97,7 +97,7 @@ bool ReadableStreamOperations::isDisturbed(ScriptState* scriptState, ScriptValue
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStreamDisturbed", args);
     if (isTerminating(scriptState))
         return true;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isLocked(ScriptState* scriptState, ScriptValue stream)
@@ -110,7 +110,7 @@ bool ReadableStreamOperations::isLocked(ScriptState* scriptState, ScriptValue st
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStreamLocked", args);
     if (isTerminating(scriptState))
         return true;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isReadable(ScriptState* scriptState, ScriptValue stream)
@@ -123,7 +123,7 @@ bool ReadableStreamOperations::isReadable(ScriptState* scriptState, ScriptValue 
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamReadable", args);
     if (isTerminating(scriptState))
         return false;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isClosed(ScriptState* scriptState, ScriptValue stream)
@@ -136,7 +136,7 @@ bool ReadableStreamOperations::isClosed(ScriptState* scriptState, ScriptValue st
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStreamClosed", args);
     if (isTerminating(scriptState))
         return false;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isErrored(ScriptState* scriptState, ScriptValue stream)
@@ -149,7 +149,7 @@ bool ReadableStreamOperations::isErrored(ScriptState* scriptState, ScriptValue s
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStreamErrored", args);
     if (isTerminating(scriptState))
         return true;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 bool ReadableStreamOperations::isReadableStreamDefaultReader(ScriptState* scriptState, ScriptValue value)
@@ -165,7 +165,7 @@ bool ReadableStreamOperations::isReadableStreamDefaultReader(ScriptState* script
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "IsReadableStreamDefaultReader", args);
     if (isTerminating(scriptState))
         return true;
-    return v8CallOrCrash(result)->ToBoolean()->Value();
+    return result.ToLocalChecked()->ToBoolean()->Value();
 }
 
 ScriptPromise ReadableStreamOperations::defaultReaderRead(ScriptState* scriptState, ScriptValue reader)
@@ -178,7 +178,7 @@ ScriptPromise ReadableStreamOperations::defaultReaderRead(ScriptState* scriptSta
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultReaderRead", args);
     if (isTerminating(scriptState))
         return ScriptPromise();
-    return ScriptPromise::cast(scriptState, v8CallOrCrash(result));
+    return ScriptPromise::cast(scriptState, result.ToLocalChecked());
 }
 
 void ReadableStreamOperations::tee(ScriptState* scriptState, ScriptValue stream, ScriptValue* newStream1, ScriptValue* newStream2)
@@ -193,7 +193,7 @@ void ReadableStreamOperations::tee(ScriptState* scriptState, ScriptValue stream,
     v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callExtra(scriptState, "ReadableStreamTee", args);
     if (isTerminating(scriptState))
         return;
-    ScriptValue result(scriptState, v8CallOrCrash(maybeResult));
+    ScriptValue result(scriptState, maybeResult.ToLocalChecked());
     DCHECK(result.v8Value()->IsArray());
     v8::Local<v8::Array> branches = result.v8Value().As<v8::Array>();
     DCHECK_EQ(2u, branches->Length());
@@ -205,8 +205,8 @@ void ReadableStreamOperations::tee(ScriptState* scriptState, ScriptValue stream,
     if (isTerminating(scriptState))
         return;
 
-    *newStream1 = ScriptValue(scriptState, v8CallOrCrash(maybeStream1));
-    *newStream2 = ScriptValue(scriptState, v8CallOrCrash(maybeStream2));
+    *newStream1 = ScriptValue(scriptState, maybeStream1.ToLocalChecked());
+    *newStream2 = ScriptValue(scriptState, maybeStream2.ToLocalChecked());
 
     DCHECK(isReadableStream(scriptState, *newStream1));
     DCHECK(isReadableStream(scriptState, *newStream2));

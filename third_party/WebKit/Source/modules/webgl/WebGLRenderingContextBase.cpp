@@ -6412,9 +6412,9 @@ void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, 
 
     v8::Local<v8::Array> localCache = persistentCache->newLocal(isolate);
     if (targetObject) {
-        v8CallOrCrash(localCache->Set(scriptState->context(), index, targetObject->mainWorldWrapper(isolate)));
+        localCache->Set(scriptState->context(), index, targetObject->mainWorldWrapper(isolate)).ToChecked();
     } else {
-        v8CallOrCrash(localCache->Set(scriptState->context(), index, v8::Null(isolate)));
+        localCache->Set(scriptState->context(), index, v8::Null(isolate)).ToChecked();
     }
 }
 

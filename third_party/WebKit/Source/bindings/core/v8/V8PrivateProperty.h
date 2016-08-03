@@ -82,7 +82,7 @@ public:
         // Returns the value of the private property if set, or undefined.
         v8::Local<v8::Value> getOrUndefined(v8::Local<v8::Context> context, v8::Local<v8::Object> object) const
         {
-            return v8CallOrCrash(object->GetPrivate(context, m_privateSymbol));
+            return object->GetPrivate(context, m_privateSymbol).ToLocalChecked();
         }
 
         // Returns the value of the private property if set, or an empty handle.

@@ -49,8 +49,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
 {
     v8::Local<v8::Map> map =
         ensureCustomElementsRegistryMap(scriptState, registry);
-    v8::Local<v8::Value> nameValue = v8CallOrCrash(
-        map->Get(scriptState->context(), constructor));
+    v8::Local<v8::Value> nameValue = map->Get(scriptState->context(), constructor).ToLocalChecked();
     if (!nameValue->IsString())
         return nullptr;
     AtomicString name = toCoreAtomicString(nameValue.As<v8::String>());
@@ -93,7 +92,7 @@ static void keepAlive(v8::Local<v8::Array>& array, uint32_t index,
     if (value.IsEmpty())
         return;
 
-    v8CallOrCrash(array->Set(scriptState->context(), index, value));
+    array->Set(scriptState->context(), index, value).ToChecked();
 
     persistent.set(scriptState->isolate(), value);
     persistent.setPhantom();
@@ -126,7 +125,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
         v8String(scriptState->isolate(), descriptor.name());
     v8::Local<v8::Map> map =
         ensureCustomElementsRegistryMap(scriptState, registry);
-    v8CallOrCrash(map->Set(scriptState->context(), constructor, nameValue));
+    map->Set(scriptState->context(), constructor, nameValue).ToLocalChecked();
     definition->m_constructor.setPhantom();
 
     // We add the prototype and callbacks here to keep them alive. We use the
@@ -136,7 +135,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     keepAlive(array, 1, connectedCallback, definition->m_connectedCallback, scriptState);
     keepAlive(array, 2, disconnectedCallback, definition->m_disconnectedCallback, scriptState);
     keepAlive(array, 3, attributeChangedCallback, definition->m_attributeChangedCallback, scriptState);
-    v8CallOrCrash(map->Set(scriptState->context(), nameValue, array));
+    map->Set(scriptState->context(), nameValue, array).ToLocalChecked();
 
     return definition;
 }

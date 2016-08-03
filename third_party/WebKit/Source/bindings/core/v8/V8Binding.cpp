@@ -950,7 +950,7 @@ void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::Pr
 
 v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
-    v8CallOrCrash(value.As<v8::Object>()->SetIntegrityLevel(isolate->GetCurrentContext(), v8::IntegrityLevel::kFrozen));
+    value.As<v8::Object>()->SetIntegrityLevel(isolate->GetCurrentContext(), v8::IntegrityLevel::kFrozen).ToChecked();
     return value;
 }
 
