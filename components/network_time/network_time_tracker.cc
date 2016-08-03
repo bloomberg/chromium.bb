@@ -13,6 +13,8 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -164,6 +166,10 @@ double RandomQueryProbability() {
     return probability;
   }
   return kRandomQueryProbability;
+}
+
+void RecordFetchValidHistogram(bool valid) {
+  UMA_HISTOGRAM_BOOLEAN("NetworkTimeTracker.UpdateTimeFetchValid", valid);
 }
 
 }  // namespace
@@ -367,6 +373,9 @@ void NetworkTimeTracker::CheckTime() {
                               net::LOAD_DO_NOT_SAVE_COOKIES |
                               net::LOAD_DO_NOT_SEND_COOKIES |
                               net::LOAD_DO_NOT_SEND_AUTH_DATA);
+
+  UMA_HISTOGRAM_BOOLEAN("NetworkTimeTracker.UpdateTimeFetchAttempted", true);
+
   time_fetcher_->Start();
   fetch_started_ = tick_clock_->NowTicks();
 
@@ -374,10 +383,14 @@ void NetworkTimeTracker::CheckTime() {
 }
 
 bool NetworkTimeTracker::UpdateTimeFromResponse() {
-  if (time_fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS &&
+  if (time_fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
       time_fetcher_->GetResponseCode() != 200) {
     DVLOG(1) << "fetch failed, status=" << time_fetcher_->GetStatus().status()
              << ",code=" << time_fetcher_->GetResponseCode();
+    // The error code is negated because net errors are negative, but
+    // the corresponding histogram enum is positive.
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NetworkTimeTracker.UpdateTimeFetchFailed",
+                                -time_fetcher_->GetStatus().error());
     return false;
   }
 
@@ -390,24 +403,31 @@ bool NetworkTimeTracker::UpdateTimeFromResponse() {
   if (!query_signer_->ValidateResponse(response_body,
                                        GetServerProof(time_fetcher_.get()))) {
     DVLOG(1) << "invalid signature";
+    RecordFetchValidHistogram(false);
     return false;
   }
   response_body = response_body.substr(5);  // Skips leading )]}'\n
   std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
   if (!value) {
     DVLOG(1) << "bad JSON";
+    RecordFetchValidHistogram(false);
     return false;
   }
   const base::DictionaryValue* dict;
   if (!value->GetAsDictionary(&dict)) {
     DVLOG(1) << "not a dictionary";
+    RecordFetchValidHistogram(false);
     return false;
   }
   double current_time_millis;
   if (!dict->GetDouble("current_time_millis", &current_time_millis)) {
     DVLOG(1) << "no current_time_millis";
+    RecordFetchValidHistogram(false);
     return false;
   }
+
+  RecordFetchValidHistogram(true);
+
   // There is a "server_nonce" key here too, but it serves no purpose other than
   // to make the server's response unpredictable.
   base::Time current_time = base::Time::FromJsTime(current_time_millis);

@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -29,6 +30,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network_time {
+
+namespace {
+const char kFetchAttemptHistogram[] =
+    "NetworkTimeTracker.UpdateTimeFetchAttempted";
+const char kFetchFailedHistogram[] = "NetworkTimeTracker.UpdateTimeFetchFailed";
+const char kFetchValidHistogram[] = "NetworkTimeTracker.UpdateTimeFetchValid";
+}  // namespace
 
 class NetworkTimeTrackerTest : public testing::Test {
  public:
@@ -434,6 +442,11 @@ TEST_F(NetworkTimeTrackerTest, SerializeWithWallClockAdvance) {
 }
 
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   base::Time out_network_time;
   EXPECT_FALSE(tracker_->GetNetworkTime(&out_network_time, nullptr));
   // First query should happen soon.
@@ -454,6 +467,11 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
   // Should see no backoff in the success case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(60),
             tracker_->GetTimerDelayForTesting());
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 1);
+  histograms.ExpectBucketCount(kFetchValidHistogram, true, 1);
 }
 
 TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
@@ -494,6 +512,11 @@ TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileFeatureDisabled) {
 }
 
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkBadSignature) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::BadSignatureResponseHandler));
   EXPECT_TRUE(test_server_->Start());
@@ -505,6 +528,11 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkBadSignature) {
   EXPECT_FALSE(tracker_->GetNetworkTime(&out_network_time, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMinutes(120),
             tracker_->GetTimerDelayForTesting());
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 1);
+  histograms.ExpectBucketCount(kFetchValidHistogram, false, 1);
 }
 
 static const uint8_t kDevKeyPubBytes[] = {
@@ -518,6 +546,11 @@ static const uint8_t kDevKeyPubBytes[] = {
     0x04, 0x16, 0xe2, 0x3d, 0x21, 0x76, 0x2b};
 
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkBadData) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::BadDataResponseHandler));
   EXPECT_TRUE(test_server_->Start());
@@ -531,9 +564,19 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkBadData) {
   EXPECT_FALSE(tracker_->GetNetworkTime(&out_network_time, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMinutes(120),
             tracker_->GetTimerDelayForTesting());
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 1);
+  histograms.ExpectBucketCount(kFetchValidHistogram, false, 1);
 }
 
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkServerError) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::ServerErrorResponseHandler));
   EXPECT_TRUE(test_server_->Start());
@@ -546,9 +589,22 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkServerError) {
   // Should see backoff in the error case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(120),
             tracker_->GetTimerDelayForTesting());
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 1);
+  // There was no network error, so the histogram is recorded as
+  // net::OK, indicating that the connection succeeded but there was a
+  // non-200 HTTP status code.
+  histograms.ExpectBucketCount(kFetchFailedHistogram, net::OK, 1);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
 }
 
-TEST_F(NetworkTimeTrackerTest, UpdateFromNetworNetworkError) {
+TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkNetworkError) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::NetworkErrorResponseHandler));
   EXPECT_TRUE(test_server_->Start());
@@ -561,9 +617,20 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworNetworkError) {
   // Should see backoff in the error case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(120),
             tracker_->GetTimerDelayForTesting());
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 1);
+  histograms.ExpectBucketCount(kFetchFailedHistogram, -net::ERR_EMPTY_RESPONSE,
+                               1);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
 }
 
 TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkLargeResponse) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 0);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 0);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   test_server_->RegisterRequestHandler(
       base::Bind(&NetworkTimeTrackerTest::GoodTimeResponseHandler));
   EXPECT_TRUE(test_server_->Start());
@@ -576,10 +643,19 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetworkLargeResponse) {
   tracker_->WaitForFetchForTesting(123123123);
   EXPECT_FALSE(tracker_->GetNetworkTime(&out_network_time, nullptr));
 
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 1);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 1);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 0);
+
   tracker_->SetMaxResponseSizeForTesting(1024);
   EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
   tracker_->WaitForFetchForTesting(123123123);
   EXPECT_TRUE(tracker_->GetNetworkTime(&out_network_time, nullptr));
+
+  histograms.ExpectTotalCount(kFetchAttemptHistogram, 2);
+  histograms.ExpectTotalCount(kFetchFailedHistogram, 1);
+  histograms.ExpectTotalCount(kFetchValidHistogram, 1);
+  histograms.ExpectBucketCount(kFetchValidHistogram, true, 1);
 }
 
 }  // namespace network_time

@@ -34746,6 +34746,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NetworkTimeTracker.UpdateTimeFetchAttempted">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker makes periodic queries to obtain a secure timestamp over
+    the network. This histogram increments whenever such a query is attempted.
+  </summary>
+</histogram>
+
+<histogram name="NetworkTimeTracker.UpdateTimeFetchFailed" enum="NetErrorCodes">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker makes periodic queries to obtain a secure timestamp over
+    the network. This histogram records the request's net error code whenever a
+    secure timestamp fetch results in a network error or a non-200 HTTP status
+    code.
+  </summary>
+</histogram>
+
+<histogram name="NetworkTimeTracker.UpdateTimeFetchValid" enum="BooleanValid">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker makes periodic queries to obtain a secure timestamp over
+    the network. Whenever one of these requests results in a successful 200
+    status code, this histogram records true if the response parsed and
+    validated successfully, and false otherwise.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ActionAndroid" enum="NewTabPageActionAndroid">
   <owner>newt@chromium.org</owner>
   <summary>
