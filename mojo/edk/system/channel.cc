@@ -192,8 +192,8 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   ScopedPlatformHandleVectorPtr handles(
       new PlatformHandleVector(header->num_handles));
   for (size_t i = 0; i < header->num_handles; i++) {
-    (*handles)[i].handle = reinterpret_cast<HANDLE>(
-        static_cast<uintptr_t>(message->handles_[i].handle));
+    (*handles)[i].handle =
+        base::win::Uint32ToHandle(message->handles_[i].handle);
   }
   message->SetHandles(std::move(handles));
 #endif
