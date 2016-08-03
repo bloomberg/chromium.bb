@@ -86,7 +86,7 @@ void ScreenStatusView::CreateItems() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
-  icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   icon_->SetImage(bundle.GetImageNamed(icon_id_).ToImageSkia());
   AddChildView(icon_);
   label_ = new views::Label;

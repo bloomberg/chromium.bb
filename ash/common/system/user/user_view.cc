@@ -236,8 +236,9 @@ gfx::Size UserView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   // Only the active user panel will be forced to a certain height.
   if (!user_index_) {
-    size.set_height(
-        std::max(size.height(), kTrayPopupItemHeight + GetInsets().height()));
+    size.set_height(std::max(
+        size.height(),
+        GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) + GetInsets().height()));
   }
   return size;
 }

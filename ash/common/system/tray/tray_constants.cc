@@ -52,7 +52,6 @@ const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupTextSpacingVertical = 4;
 const int kTrayPopupUserCardVerticalPadding = 10;
 
-const int kTrayPopupItemHeight = 46;
 const int kTrayPopupDetailsIconWidth = 25;
 const int kTrayPopupDetailsLabelExtraLeftMargin = 8;
 const SkColor kTrayPopupHoverBackgroundColor = SkColorSetRGB(0xe4, 0xe4, 0xe4);
@@ -93,6 +92,7 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
   const int kTraySpacing[] = {4, 4, 8};
   const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 8};
+  const int kTrayPopupItemHeight[] = {46, 46, 48};
   const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
 
   const int mode = MaterialDesignController::GetMode();
@@ -106,6 +106,8 @@ int GetTrayConstant(TrayConstant constant) {
       return kTraySpacing[mode];
     case TRAY_PADDING_FROM_EDGE_OF_SHELF:
       return kTrayPaddingFromEdgeOfShelf[mode];
+    case TRAY_POPUP_ITEM_HEIGHT:
+      return kTrayPopupItemHeight[mode];
     case VIRTUAL_KEYBOARD_BUTTON_SIZE:
       return kVirtualKeyboardButtonSize[mode];
   }

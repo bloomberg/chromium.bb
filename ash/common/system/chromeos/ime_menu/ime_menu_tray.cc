@@ -103,10 +103,11 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 
   // views::View:
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kTrayPopupItemHeight, kTrayPopupItemHeight);
+    int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+    return gfx::Size(size, size);
   }
   int GetHeightForWidth(int width) const override {
-    return kTrayPopupItemHeight;
+    return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
   }
 
   // views::ButtonListener:

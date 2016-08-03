@@ -47,7 +47,6 @@ extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupTextSpacingVertical;
 extern const int kTrayPopupUserCardVerticalPadding;
 
-extern const int kTrayPopupItemHeight;
 extern const int kTrayPopupDetailsIconWidth;
 extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;
@@ -97,6 +96,9 @@ enum TrayConstant {
 
   // Padding between the edge of shelf and the item in status tray area.
   TRAY_PADDING_FROM_EDGE_OF_SHELF,
+
+  // The height of the rows in the system tray menu.
+  TRAY_POPUP_ITEM_HEIGHT,
 
   // The width and height of the virtual keyboard button in the status tray
   // area. For non-MD, adjustments are made to the button dimensions based on

@@ -159,7 +159,8 @@ class DisplayView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+    image_ =
+        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY).ToImageSkia());
     AddChildView(image_);

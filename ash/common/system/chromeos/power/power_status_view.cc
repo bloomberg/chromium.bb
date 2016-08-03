@@ -79,7 +79,8 @@ void PowerStatusView::LayoutView() {
         views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems);
     SetLayoutManager(layout);
 
-    icon_ = new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+    icon_ = new ash::FixedSizedImageView(
+        0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     AddChildView(icon_);
 
     AddChildView(percentage_label_);
@@ -134,11 +135,11 @@ void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
 
 gfx::Size PowerStatusView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
-  return gfx::Size(size.width(), kTrayPopupItemHeight);
+  return gfx::Size(size.width(), GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
 }
 
 int PowerStatusView::GetHeightForWidth(int width) const {
-  return kTrayPopupItemHeight;
+  return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
 }
 
 void PowerStatusView::Layout() {

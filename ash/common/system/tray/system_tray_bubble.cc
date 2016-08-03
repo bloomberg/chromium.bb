@@ -37,7 +37,9 @@ namespace {
 // we may not know the height of the default view, or the default view may
 // be too short, so we use this as a default and minimum height for any
 // detailed view.
-const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
+int GetDetailedBubbleMaxHeight() {
+  return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) * 5;
+}
 
 // Duration of swipe animation used when transitioning from a default to
 // detailed view or vice versa.
@@ -188,8 +190,8 @@ void SystemTrayBubble::InitView(views::View* anchor,
   DCHECK(!bubble_view_);
 
   if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
-      init_params->max_height < kDetailedBubbleMaxHeight) {
-    init_params->max_height = kDetailedBubbleMaxHeight;
+      init_params->max_height < GetDetailedBubbleMaxHeight()) {
+    init_params->max_height = GetDetailedBubbleMaxHeight();
   } else if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION) {
     init_params->close_on_deactivate = false;
   }

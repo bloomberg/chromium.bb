@@ -96,7 +96,8 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
 
-  views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  views::ImageView* icon =
+      new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_AURA_UBER_TRAY_BRIGHTNESS);
   icon->SetImage(image.ToImageSkia());

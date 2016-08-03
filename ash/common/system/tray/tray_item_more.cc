@@ -27,7 +27,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
 
-  icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   AddChildView(icon_);
 
   label_ = new views::Label;

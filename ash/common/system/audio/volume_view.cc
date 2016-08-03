@@ -82,7 +82,7 @@ class VolumeButton : public views::ToggleImageButton {
   // views::View:
   gfx::Size GetPreferredSize() const override {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
-    size.set_height(kTrayPopupItemHeight);
+    size.set_height(GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     return size;
   }
 

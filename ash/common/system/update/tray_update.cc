@@ -54,7 +54,8 @@ class UpdateView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* image = new FixedSizedImageView(0, kTrayPopupItemHeight);
+    views::ImageView* image =
+        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
                         .ToImageSkia());
 

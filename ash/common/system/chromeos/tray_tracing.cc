@@ -34,7 +34,8 @@ class DefaultTracingView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+    image_ =
+        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
       // TODO(tdanderson): Update the icon used for tracing or remove it from
       // the system menu. See crbug.com/625691.

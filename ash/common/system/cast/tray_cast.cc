@@ -135,7 +135,7 @@ CastCastView::CastCastView() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
-  icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
   icon_->SetImage(
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAST_ENABLED).ToImageSkia());
   AddChildView(icon_);

@@ -46,7 +46,7 @@ class CapsLockDefaultView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     FixedSizedImageView* image =
-        new FixedSizedImageView(0, kTrayPopupItemHeight);
+        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
       image->SetImage(CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK,
                                        kMenuIconSize, kMenuIconColor));

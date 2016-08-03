@@ -221,7 +221,8 @@ class InfoIcon : public views::ImageButton {
 
   // views::View
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kTrayPopupItemHeight, kTrayPopupItemHeight);
+    int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+    return gfx::Size(size, size);
   }
 
   void SetVisible(bool visible) override {
