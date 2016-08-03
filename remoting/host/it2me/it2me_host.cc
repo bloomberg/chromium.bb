@@ -261,6 +261,7 @@ void It2MeHost::FinishConnect() {
   // Disable audio by default.
   // TODO(sergeyu): Add UI to enable it.
   protocol_config->DisableAudioChannel();
+  protocol_config->set_webrtc_supported(true);
   session_manager->set_protocol_config(std::move(protocol_config));
 
   // Create the host.
