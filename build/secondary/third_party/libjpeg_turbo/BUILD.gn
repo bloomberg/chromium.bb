@@ -10,6 +10,8 @@ if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
 
+assert(!is_ios, "This is not used on iOS, don't drag it in unintentionally")
+
 if (current_cpu == "x86" || current_cpu == "x64") {
   import("//third_party/yasm/yasm_assemble.gni")
 
