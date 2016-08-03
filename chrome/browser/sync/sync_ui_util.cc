@@ -43,6 +43,9 @@
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
+#else
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/sync_driver/sync_error_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 typedef GoogleServiceAuthError AuthError;
@@ -397,6 +400,71 @@ void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
         IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
     return;
   }
+}
+
+AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
+                                                  int* content_string_id,
+                                                  int* button_string_id) {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+
+  // The order or priority is going to be: 1. Unrecoverable errors.
+  // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
+  if (service && service->HasUnrecoverableError()) {
+    // An unrecoverable error is sometimes accompanied by an actionable error.
+    // If an actionable error is not set to be UPGRADE_CLIENT, then show a
+    // generic unrecoverable error message.
+    ProfileSyncService::Status status;
+    service->QueryDetailedSyncStatus(&status);
+    if (status.sync_protocol_error.action != syncer::UPGRADE_CLIENT) {
+      // Display different messages and buttons for managed accounts.
+      if (SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited()) {
+        // For a managed user, the user is directed to the signout
+        // confirmation dialogue in the settings page.
+        *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE;
+        *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON;
+        return MANAGED_USER_UNRECOVERABLE_ERROR;
+      }
+      // For a non-managed user, we sign out on the user's behalf and prompt
+      // the user to sign in again.
+      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE;
+      *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON;
+      return UNRECOVERABLE_ERROR;
+    }
+  }
+
+  // Check for an auth error.
+  SigninErrorController* signin_error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile);
+  if (signin_error_controller && signin_error_controller->HasError()) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;
+    return AUTH_ERROR;
+  }
+
+  // Check for sync errors if the sync service is enabled.
+  if (service) {
+    // Check for an actionable UPGRADE_CLIENT error.
+    ProfileSyncService::Status status;
+    service->QueryDetailedSyncStatus(&status);
+    if (status.sync_protocol_error.action == syncer::UPGRADE_CLIENT) {
+      *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
+      *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
+      return UPGRADE_CLIENT_ERROR;
+    }
+
+    // Check for a sync passphrase error.
+    SyncErrorController* sync_error_controller =
+        service->sync_error_controller();
+    if (sync_error_controller && sync_error_controller->HasError()) {
+      *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
+      *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
+      return PASSPHRASE_ERROR;
+    }
+  }
+
+  // There is no error.
+  return NO_SYNC_ERROR;
 }
 #endif
 

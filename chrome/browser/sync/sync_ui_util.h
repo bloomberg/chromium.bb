@@ -29,6 +29,16 @@ enum StatusLabelStyle {
   WITH_HTML    // Label may contain an HTML-formatted link.
 };
 
+// Sync errors that should be exposed to the user through the avatar button.
+enum AvatarSyncErrorType {
+  NO_SYNC_ERROR,                     // No sync error.
+  MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
+  UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
+  AUTH_ERROR,                        // Authentication error.
+  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
+  PASSPHRASE_ERROR                   // Sync passphrase error.
+};
+
 // TODO(akalin): audit the use of ProfileSyncService* service below,
 // and use const ProfileSyncService& service where possible.
 
@@ -50,14 +60,20 @@ MessageType GetStatusLabelsForNewTabPage(Profile* profile,
                                          base::string16* status_label,
                                          base::string16* link_label);
 
+#if !defined(OS_CHROMEOS)
 // Gets various labels for the sync global error based on the sync error state.
 // |menu_item_label|, |bubble_message|, and |bubble_accept_label| must not be
 // NULL. Note that we don't use SyncGlobalError on Chrome OS.
-#if !defined(OS_CHROMEOS)
 void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
                                        base::string16* menu_item_label,
                                        base::string16* bubble_message,
                                        base::string16* bubble_accept_label);
+
+// Gets the error message and button label for the sync errors that should be
+// exposed to the user through the titlebar avatar button.
+AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
+                                                  int* content_string_id,
+                                                  int* button_string_id);
 #endif
 
 MessageType GetStatus(Profile* profile,

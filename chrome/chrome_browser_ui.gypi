@@ -1348,6 +1348,9 @@
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [
+      'browser/ui/avatar_button_error_controller.h',
+      'browser/ui/avatar_button_error_controller.cc',
+      'browser/ui/avatar_button_error_controller_delegate.h',
       'browser/ui/startup/default_browser_infobar_delegate.cc',
       'browser/ui/startup/default_browser_infobar_delegate.h',
       'browser/ui/startup/default_browser_prompt.cc',

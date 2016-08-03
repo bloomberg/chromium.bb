@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1476,65 +1477,33 @@ views::View* ProfileChooserView::CreateTutorialView(
 }
 
 views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(browser_->profile());
-
-  // The order or priority is going to be: 1. Unrecoverable errors.
-  // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
-  if (service && service->HasUnrecoverableError()) {
-    // An unrecoverable error is sometimes accompanied by an actionable error.
-    // If an actionable error is not set to be UPGRADE_CLIENT, then show a
-    // generic unrecoverable error message.
-    ProfileSyncService::Status status;
-    service->QueryDetailedSyncStatus(&status);
-    if (status.sync_protocol_error.action != syncer::UPGRADE_CLIENT) {
-      // Display different messages and buttons for managed accounts.
-      if (SigninManagerFactory::GetForProfile(browser_->profile())
-              ->IsSignoutProhibited()) {
-        // For a managed user, the user is directed to the signout
-        // confirmation dialogue in the settings page.
-        return CreateSyncErrorView(IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE,
-                                   IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON,
-                                   &sync_error_signout_button_);
-      }
-      // For a non-managed user, we sign out on the user's behalf and prompt
-      // the user to sign in again.
-      return CreateSyncErrorView(IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE,
-                                 IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON,
-                                 &sync_error_signin_again_button_);
-    }
+  int content_string_id, button_string_id;
+  views::LabelButton** button_out = nullptr;
+  sync_ui_util::AvatarSyncErrorType error =
+      sync_ui_util::GetMessagesForAvatarSyncError(
+          browser_->profile(), &content_string_id, &button_string_id);
+  switch (error) {
+    case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+      button_out = &sync_error_signout_button_;
+      break;
+    case sync_ui_util::UNRECOVERABLE_ERROR:
+      button_out = &sync_error_signin_again_button_;
+      break;
+    case sync_ui_util::AUTH_ERROR:
+      button_out = &sync_error_signin_button_;
+      break;
+    case sync_ui_util::UPGRADE_CLIENT_ERROR:
+      button_out = &sync_error_upgrade_button_;
+      break;
+    case sync_ui_util::PASSPHRASE_ERROR:
+      button_out = &sync_error_passphrase_button_;
+      break;
+    case sync_ui_util::NO_SYNC_ERROR:
+      return nullptr;
+    default:
+      NOTREACHED();
   }
-
-  // Check for an auth error.
-  if (HasAuthError(browser_->profile())) {
-    return CreateSyncErrorView(IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE,
-                               IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON,
-                               &sync_error_signin_button_);
-  }
-
-  // Check for sync errors if the sync service is enabled.
-  if (service) {
-    // Check for an actionable UPGRADE_CLIENT error.
-    ProfileSyncService::Status status;
-    service->QueryDetailedSyncStatus(&status);
-    if (status.sync_protocol_error.action == syncer::UPGRADE_CLIENT) {
-      return CreateSyncErrorView(IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE,
-                                 IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON,
-                                 &sync_error_upgrade_button_);
-    }
-
-    // Check for a sync passphrase error.
-    SyncErrorController* sync_error_controller =
-        service->sync_error_controller();
-    if (sync_error_controller && sync_error_controller->HasError()) {
-      return CreateSyncErrorView(IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE,
-                                 IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON,
-                                 &sync_error_passphrase_button_);
-    }
-  }
-
-  // There is no error.
-  return nullptr;
+  return CreateSyncErrorView(content_string_id, button_string_id, button_out);
 }
 
 views::View* ProfileChooserView::CreateSyncErrorView(
