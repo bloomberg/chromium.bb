@@ -1595,9 +1595,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- Add to Home screen strings -->
-      <message name="IDS_ADD_TO_HOMESCREEN_TITLE" desc="Edit text title for Add to Home screen dialog [CHAR-LIMIT=30]">
-        Title
-      </message>
       <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
         Add to Home screen
       </message>
@@ -1814,24 +1811,6 @@ You are signing in with a managed account and giving its administrator control o
       <!-- Document mode messages -->
       <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">
         Close all incognito tabs
-      </message>
-      <message name="IDS_TABS_AND_APPS_TITLE" desc="The title of a preference which controls whether your tabs are shown within Chrome or in system app switcher.">
-        Merge tabs and apps
-      </message>
-      <message name="IDS_TABS_AND_APPS_SETTINGS_DESCRIPTION" desc="A message shown on settings screen from which you can enable/disable the feature that combines Chrome tabs with recent applications and shows them together in the system app switcher.">
-        See your tabs with other recent apps on your phone’s Overview screen.
-      </message>
-      <message name="IDS_TABS_AND_APPS_TURN_OFF_TITLE" desc="A message shown as a title of a confirmation dialog to turn off a feature where apps and tabs are located together in recents switcher">
-        Separate tabs and apps
-      </message>
-      <message name="IDS_TABS_AND_APPS_TURN_ON_TITLE" desc="A message shown as a title of a confirmation dialog to turn on a feature where apps and tabs are located together in recents switcher">
-        Merge tabs and apps
-      </message>
-      <message name="IDS_TABS_AND_APPS_OPT_OUT_CONFIRMATION" desc="The confirmation message shown when the user opts out of having apps and tabs together in recents">
-        Tabs will move to a tab switcher inside Chrome.
-      </message>
-      <message name="IDS_TABS_AND_APPS_OPT_IN_CONFIRMATION" desc="The confirmation message shown when the user opts in to have apps and tabs together in recents">
-        Tabs will live together with recent apps.
       </message>
 
       <!-- Autofill/Wallet integration prompt -->
@@ -2234,24 +2213,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_ACCESSIBILITY_BOOKMARK_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
         Close navigation drawer
-      </message>
-
-      <!-- Bookmark widget -->
-      <!-- TODO(ianwen): delete these strings once GYP is no longer used -->
-      <message name="IDS_BOOKMARK_WIDGET_TITLE_STABLE" desc="Title for the widget that shows bookmarks from Chrome.">
-        Chrome bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_WIDGET_TITLE_BETA" desc="Title for the widget that shows bookmarks from Chrome Beta.">
-        Chrome Beta bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_WIDGET_TITLE_DEV" desc="Title for the widget that shows bookmarks from Chrome Dev.">
-        Chrome Dev bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_WIDGET_TITLE_CANARY" desc="Title for the widget that shows bookmarks from Chrome Canary.">
-        Chrome Canary bookmarks
-      </message>
-      <message name="IDS_BOOKMARK_WIDGET_TITLE_WORK" desc="Title for the widget that shows bookmarks from Work Chrome (Chrome for Enterprise).">
-        Work Chrome bookmarks
       </message>
 
       <!-- Offline pages -->
