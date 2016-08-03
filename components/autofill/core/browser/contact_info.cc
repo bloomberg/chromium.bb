@@ -153,17 +153,7 @@ base::string16 NameInfo::FullName() const {
   if (!full_.empty())
     return full_;
 
-  std::vector<base::string16> full_name;
-  if (!given_.empty())
-    full_name.push_back(given_);
-
-  if (!middle_.empty())
-    full_name.push_back(middle_);
-
-  if (!family_.empty())
-    full_name.push_back(family_);
-
-  return base::JoinString(full_name, base::ASCIIToUTF16(" "));
+  return data_util::JoinNameParts(given_, middle_, family_);
 }
 
 base::string16 NameInfo::MiddleInitial() const {

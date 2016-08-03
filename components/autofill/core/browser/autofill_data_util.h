@@ -17,11 +17,21 @@ struct NameParts {
   base::string16 family;
 };
 
+// Returns true if |name| looks like a CJK name (or some kind of mish-mash of
+// the three, at least).
+bool IsCJKName(const base::string16& name);
+
 // TODO(crbug.com/586510): Investigate the use of app_locale to do better name
 // splitting.
 // Returns the different name parts (given, middle and family names) of the full
 // |name| passed as a parameter.
 NameParts SplitName(const base::string16& name);
+
+// Concatenates the name parts together in the correct order (based on script),
+// and returns the result.
+base::string16 JoinNameParts(const base::string16& given,
+                             const base::string16& middle,
+                             const base::string16& family);
 
 // Returns true iff |full_name| is a concatenation of some combination of the
 // first/middle/last (incl. middle initial) in |profile|.

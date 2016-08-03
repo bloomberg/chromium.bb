@@ -160,6 +160,14 @@ class AutofillProfileComparator {
   bool HaveMergeableNames(const AutofillProfile& p1,
                           const AutofillProfile& p2) const;
 
+  // Returns true if |p1| and |p2| have Chinese, Japanese, or Korean names that
+  // are equivalent for the purpose of merging profiles.
+  //
+  // This method is used internally by |HaveMergeableNames()| when CJK names are
+  // detected.
+  bool HaveMergeableCJKNames(const AutofillProfile& p1,
+                             const AutofillProfile& p2) const;
+
   // Returns true if |p1| and |p2| have email addresses which are equivalent for
   // the purposes of merging the two profiles. This means one of the email
   // addresses is empty, or the email addresses are the same (modulo case).
@@ -199,6 +207,13 @@ class AutofillProfileComparator {
   // the email addresses.
   bool HaveMergeableAddresses(const AutofillProfile& p1,
                               const AutofillProfile& p2) const;
+
+  // Populates |name_info| with the result of merging the Chinese, Japanese or
+  // Korean names in |p1| and |p2|. Returns true if successful. Expects that
+  // |p1| and |p2| have already been found to be mergeable, and have CJK names.
+  bool MergeCJKNames(const AutofillProfile& p1,
+                     const AutofillProfile& p2,
+                     NameInfo* info) const;
 
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;

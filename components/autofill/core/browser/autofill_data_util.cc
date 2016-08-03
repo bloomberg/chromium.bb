@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/i18n/char_iterator.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -116,7 +117,7 @@ size_t StartsWithAny(base::StringPiece16 name, const char** prefixes,
 
 // Returns true if |c| is a CJK (Chinese, Japanese, Korean) character, for any
 // of the CJK alphabets.
-bool IsCJK(base::char16 c) {
+bool IsCJKCharacter(UChar32 c) {
   static const std::set<UScriptCode> kCjkScripts {
     USCRIPT_HAN, // CJK logographs, used by all 3 (but rarely for Korean)
     USCRIPT_HANGUL, // Korean alphabet
@@ -129,34 +130,20 @@ bool IsCJK(base::char16 c) {
   return kCjkScripts.find(script) != kCjkScripts.end();
 }
 
-// Returns true if |name| looks like a CJK name (or some kind of mish-mash of
-// the three, at least). The name is considered to be a CJK name if it is only
-// CJK characters or spaces.
-//
-// Chinese and Japanese names are usually spelled out using the Han characters
-// (logographs), which constitute the "CJK Unified Ideographs" block in Unicode,
-// also referred to as Unihan. Korean names are usually spelled out in the
-// Korean alphabet (Hangul), although they do have a Han equivalent as well.
-bool IsCJKName(const base::string16& name) {
-  for (base::char16 c : name) {
-    if (!IsCJK(c) && !base::IsUnicodeWhitespace(c)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // Returns true if |c| is a Korean Hangul character.
-bool IsHangul(base::char16 c) {
+bool IsHangulCharacter(UChar32 c) {
   UErrorCode error = U_ZERO_ERROR;
   return uscript_getScript(c, &error) == USCRIPT_HANGUL;
 }
 
 // Returns true if |name| looks like a Korean name, made up entirely of Hangul
-// characters or spaces.
+// characters or spaces. |name| should already be confirmed to be a CJK name, as
+// per |IsCJKName()|.
 bool IsHangulName(const base::string16& name) {
-  for (base::char16 c : name) {
-    if (!IsHangul(c) && !base::IsUnicodeWhitespace(c)) {
+  for (base::i18n::UTF16CharIterator iter(name.data(), name.length());
+       !iter.end(); iter.Advance()) {
+    UChar32 c = iter.get();
+    if (!IsHangulCharacter(c) && !base::IsUnicodeWhitespace(c)) {
       return false;
     }
   }
@@ -173,10 +160,6 @@ bool SplitCJKName(const std::vector<base::string16>& name_tokens,
   // normally no space between the two parts of the name. When entering their
   // name into a field, though, some people add a space to disambiguate. CJK
   // names (almost) never have a middle name.
-  //
-  // TODO(crbug.com/89111): Foreign names in Japanese are written in Katakana,
-  // with a '・' (KATAKANA MIDDLE DOT U+30FB) character as a separator, with
-  // the *western* ordering. e.g. "ビル・ゲイツ" ("biru・geitsu" AKA Bill Gates)
   if (name_tokens.size() == 1) {
     // There is no space between the surname and given name. Try to infer where
     // to separate between the two. Most Chinese and Korean surnames have only
@@ -221,10 +204,50 @@ bool SplitCJKName(const std::vector<base::string16>& name_tokens,
 
 }  // namespace
 
+bool IsCJKName(const base::string16& name) {
+  // The name is considered to be a CJK name if it is only CJK characters,
+  // spaces, and "middle dot" separators, with at least one CJK character, and
+  // no more than 2 words.
+  //
+  // Chinese and Japanese names are usually spelled out using the Han characters
+  // (logographs), which constitute the "CJK Unified Ideographs" block in
+  // Unicode, also referred to as Unihan. Korean names are usually spelled out
+  // in the Korean alphabet (Hangul), although they do have a Han equivalent as
+  // well.
+  //
+  // The middle dot is used as a separator for foreign names in Japanese.
+  static const base::char16 kKatakanaMiddleDot = u'\u30FB';
+  // A (common?) typo for 'KATAKANA MIDDLE DOT' (U+30FB).
+  static const base::char16 kMiddleDot = u'\u00B7';
+  bool previous_was_cjk = false;
+  size_t word_count = 0;
+  for (base::i18n::UTF16CharIterator iter(name.data(), name.length());
+       !iter.end(); iter.Advance()) {
+    UChar32 c = iter.get();
+    const bool is_cjk = IsCJKCharacter(c);
+    if (!is_cjk && !base::IsUnicodeWhitespace(c) && c != kKatakanaMiddleDot &&
+        c != kMiddleDot) {
+      return false;
+    }
+    if (is_cjk && !previous_was_cjk) {
+      word_count++;
+    }
+    previous_was_cjk = is_cjk;
+  }
+  return word_count > 0 && word_count < 3;
+}
+
 NameParts SplitName(const base::string16& name) {
-  std::vector<base::string16> name_tokens =
-      base::SplitString(name, base::ASCIIToUTF16(" ,"), base::KEEP_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
+  static const base::char16 kWordSeparators[] = {
+    u' ', // ASCII space.
+    u',', // ASCII comma.
+    u'\u3000', // 'IDEOGRAPHIC SPACE' (U+3000).
+    u'\u30FB', // 'KATAKANA MIDDLE DOT' (U+30FB).
+    u'\u00B7', // 'MIDDLE DOT' (U+00B7).
+    u'\0' // End of string.
+  };
+  std::vector<base::string16> name_tokens = base::SplitString(
+      name, kWordSeparators, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   StripPrefixes(&name_tokens);
 
   NameParts parts;
@@ -283,6 +306,30 @@ NameParts SplitName(const base::string16& name) {
   return parts;
 }
 
+base::string16 JoinNameParts(const base::string16& given,
+                             const base::string16& middle,
+                             const base::string16& family) {
+  // First Middle Last
+  std::vector<base::string16> full_name;
+  if (!given.empty())
+    full_name.push_back(given);
+
+  if (!middle.empty())
+    full_name.push_back(middle);
+
+  if (!family.empty())
+    full_name.push_back(family);
+
+  const char* separator = " ";
+  if (IsCJKName(given) && IsCJKName(family) && middle.empty()) {
+    // LastFirst
+    std::reverse(full_name.begin(), full_name.end());
+    separator = "";
+  }
+
+  return base::JoinString(full_name, base::ASCIIToUTF16(separator));
+}
+
 bool ProfileMatchesFullName(const base::string16 full_name,
                             const autofill::AutofillProfile& profile) {
   const base::string16 kSpace = base::ASCIIToUTF16(" ");
@@ -315,6 +362,20 @@ bool ProfileMatchesFullName(const base::string16 full_name,
   candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
               profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kPeriodSpace +
               profile.GetRawInfo(autofill::NAME_LAST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  // Last First
+  candidate = profile.GetRawInfo(autofill::NAME_LAST) + kSpace +
+              profile.GetRawInfo(autofill::NAME_FIRST);
+  if (!full_name.compare(candidate)) {
+    return true;
+  }
+
+  // LastFirst
+  candidate = profile.GetRawInfo(autofill::NAME_LAST) +
+              profile.GetRawInfo(autofill::NAME_FIRST);
   if (!full_name.compare(candidate)) {
     return true;
   }
