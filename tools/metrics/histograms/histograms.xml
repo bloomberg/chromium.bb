@@ -21782,6 +21782,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AVDA.NumAVDAInstances" units="AVDA instances">
+  <owner>watk@chromium.org</owner>
+  <summary>
+    The number of concurrently running AndroidVideoDecodeAccelerators. Logged
+    during each AVDA initialization.
+  </summary>
+</histogram>
+
 <histogram name="Media.AVDA.VirtualContext" enum="BooleanVirtualContext">
   <owner>liberato@chromium.org</owner>
   <summary>

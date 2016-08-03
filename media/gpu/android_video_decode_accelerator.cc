@@ -194,6 +194,9 @@ class AVDATimerManager {
     }
 
     thread_avda_instances_.insert(avda_instance);
+    UMA_HISTOGRAM_ENUMERATION("Media.AVDA.NumAVDAInstances",
+                              thread_avda_instances_.size(),
+                              31);  // PRESUBMIT_IGNORE_UMA_MAX
     return true;
   }
 
