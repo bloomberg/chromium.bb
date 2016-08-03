@@ -478,6 +478,71 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @SmallTest
     @Feature("Omnibox")
+    public void testAutocompleteCorrectlyPerservedOnBatchMode() throws InterruptedException {
+        startMainActivityOnBlankPage();
+        stubLocationBarAutocomplete();
+
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
+
+        // Valid case (cursor at the end of text, single character, matches previous autocomplete).
+        setAutocomplete(urlBar, "g", "oogle.com");
+        AutocompleteState state = getAutocompleteState(urlBar, new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+                urlBar.setText("go");
+                urlBar.setSelection(2);
+                urlBar.endBatchEdit();
+            }
+        });
+        assertTrue(state.hasAutocomplete);
+        assertEquals("google.com", state.textWithAutocomplete);
+        assertEquals("go", state.textWithoutAutocomplete);
+
+        // Invalid case (cursor not at the end of the text)
+        setAutocomplete(urlBar, "g", "oogle.com");
+        state = getAutocompleteState(urlBar, new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+                urlBar.setText("go");
+                urlBar.setSelection(0);
+                urlBar.endBatchEdit();
+            }
+        });
+        assertFalse(state.hasAutocomplete);
+
+        // Invalid case (next character did not match previous autocomplete)
+        setAutocomplete(urlBar, "g", "oogle.com");
+        state = getAutocompleteState(urlBar, new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+                urlBar.setText("ga");
+                urlBar.setSelection(2);
+                urlBar.endBatchEdit();
+            }
+        });
+        assertFalse(state.hasAutocomplete);
+
+        // Invalid case (multiple characters entered instead of 1)
+        setAutocomplete(urlBar, "g", "oogle.com");
+        state = getAutocompleteState(urlBar, new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+                urlBar.setText("googl");
+                urlBar.setSelection(5);
+                urlBar.endBatchEdit();
+            }
+        });
+        assertFalse(state.hasAutocomplete);
+    }
+
+    @SmallTest
+    @Feature("Omnibox")
     public void testAutocompleteSpanClearedOnNonMatchingCommitText() throws InterruptedException {
         startMainActivityOnBlankPage();
 

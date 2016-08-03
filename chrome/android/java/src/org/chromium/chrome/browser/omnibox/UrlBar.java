@@ -366,8 +366,20 @@ public class UrlBar extends VerticallyFixedEditText {
             mSelectionChangedInBatchMode = false;
         }
 
-        if (!TextUtils.equals(mBeforeBatchEditFullText, getText().toString())
+        String newText = getText().toString();
+        if (!TextUtils.equals(mBeforeBatchEditFullText, newText)
                 || getText().getSpanStart(mAutocompleteSpan) != mBeforeBatchEditAutocompleteIndex) {
+            // If the text being typed is a single character that matches the next character in the
+            // previously visible autocomplete text, we reapply the autocomplete text to prevent
+            // a visual flickering when the autocomplete text is cleared and then quickly reapplied
+            // when the next round of suggestions is received.
+            if (shouldAutocomplete() && mBeforeBatchEditAutocompleteIndex != -1
+                    && mBeforeBatchEditFullText != null
+                    && mBeforeBatchEditFullText.startsWith(newText)
+                    && !mTextDeletedInBatchMode
+                    && newText.length() - mBeforeBatchEditAutocompleteIndex == 1) {
+                setAutocompleteText(newText, mBeforeBatchEditFullText.substring(newText.length()));
+            }
             notifyAutocompleteTextStateChanged(mTextDeletedInBatchMode);
         }
 
