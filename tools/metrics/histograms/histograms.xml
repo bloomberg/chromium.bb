@@ -46721,6 +46721,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskTime" units="microseconds">
+  <owner>sunyunjia@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    The duration of every task queued in the _renderer_ scheduler to see the
+    distribution of the task duration.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.UserModel.GestureDuration" units="ms">
   <owner>alexclarke@chromium.org</owner>
   <summary>Duration of gestures (scrolls and pinches).</summary>

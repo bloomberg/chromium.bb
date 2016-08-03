@@ -1423,6 +1423,9 @@ void RendererSchedulerImpl::ReportTaskTime(base::TimeTicks start_time,
                                                                    end_time);
   MainThreadOnly().long_task_tracker.RecordLongTask(
       start_time, end_time - start_time);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
+                              (end_time - start_time).InMicroseconds(), 1,
+                              1000000, 50);
 }
 
 LongTaskTracker::LongTaskTiming RendererSchedulerImpl::GetLongTaskTiming() {
