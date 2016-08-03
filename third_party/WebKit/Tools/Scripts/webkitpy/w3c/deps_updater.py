@@ -74,31 +74,12 @@ class DepsUpdater(object):
             _, out = self.run(['git', 'diff', 'master', '--name-only'])
             email_list = self.generate_email_list(out, directory_dict)
             self.print_('## Uploading change list.')
-            command = ['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer'] + ['--cc' + email for email in email_list]
-            if self.auth_refresh_token_json:
-                command.append('--auth-refresh-token-json')
-                command.append(self.auth_refresh_token_json)
-            self.check_run(command)
+            self.check_run(self.generate_upload_command(email_list))
             self.print_('## Triggering try jobs.')
-            for try_bot in try_bots:
-                self.run(['git', 'cl', 'try', '-b', try_bot])
+            self.run(['git', 'cl', 'try'] + ['-b ' + try_bot for try_bot in try_bots])
             self.print_('## Waiting for Try Job Results')
-            has_failing_results = False
-            while True:
-                time.sleep(POLL_DELAY_SECONDS)
-                _, out = self.run(['git', 'cl', 'try-results'])
-                results = self.parse_try_job_results(out)
-                if results.get('Started') or results.get('Scheduled'):
-                    continue
-                if results.get('Failures'):
-                    has_failing_results = True
-                break
-            if has_failing_results:
-                self.print_('## Adding test expectations lines to LayoutTests/TestExpectations')
-                script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
-                self.run([self.host.executable, script_path])
-                self.check_run(['git', 'commit', '-a', '-m', '\'Modified Test Expectations from W3C Test Auto-roller\''])
-                self.check_run(['git', 'cl', 'upload', '-m', '\'Wrote lines to TestExpectations\''])
+            if self.has_failing_results():
+                self.write_test_expectations()
             else:
                 self.print_('No Failures, committing patch.')
             self.run(['git', 'cl', 'land', '-f'])
@@ -352,3 +333,29 @@ class DepsUpdater(object):
             if dict_set['notification-email']:
                 directory_dict[dict_set['directory']] = dict_set['notification-email']
         return directory_dict
+
+    def write_test_expectations(self):
+        self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
+        script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
+        self.run([self.host.executable, script_path])
+        message = '\'Modified TestExpectations for newly imported tests.\''
+        self.check_run(['git', 'commit', '-a', '-m', message])
+        self.check_run(['git', 'cl', 'upload', '-m', message])
+
+    def has_failing_results(self):
+        while True:
+            time.sleep(POLL_DELAY_SECONDS)
+            _, out = self.run(['git', 'cl', 'try-results'])
+            results = self.parse_try_job_results(out)
+            if results.get('Started') or results.get('Scheduled'):
+                continue
+            if results.get('Failures'):
+                return True
+            return False
+
+    def generate_upload_command(self, email_list):
+        command = ['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer']
+        command = ['--cc=' + email for email in email_list]
+        if self.auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        return command
