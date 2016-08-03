@@ -43,10 +43,6 @@ bool GetCurrentUidRxBytes(int64_t* bytes) {
   return *bytes != ERROR_NOT_SUPPORTED;
 }
 
-bool Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace traffic_stats
 
 }  // namespace android

@@ -12,11 +12,6 @@
 namespace device {
 
 // static
-bool UsbDeviceHandleAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeUsbConnection_jni.h
-}
-
-// static
 scoped_refptr<UsbDeviceHandleAndroid> UsbDeviceHandleAndroid::Create(
     JNIEnv* env,
     scoped_refptr<UsbDevice> device,

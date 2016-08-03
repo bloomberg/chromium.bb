@@ -18,9 +18,6 @@ class MediaThrottler {
   // Called to get the singleton MediaThrottler instance.
   static MediaThrottler* GetInstance();
 
-  // Jni registration.
-  static bool RegisterMediaThrottler(JNIEnv* env);
-
   virtual ~MediaThrottler();
 
   // Called to request the permission to decode media data. Returns true if

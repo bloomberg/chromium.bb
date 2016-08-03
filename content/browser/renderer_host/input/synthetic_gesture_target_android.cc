@@ -25,11 +25,6 @@ SyntheticGestureTargetAndroid::SyntheticGestureTargetAndroid(
 SyntheticGestureTargetAndroid::~SyntheticGestureTargetAndroid() {
 }
 
-bool SyntheticGestureTargetAndroid::RegisterMotionEventSynthesizer(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void SyntheticGestureTargetAndroid::TouchSetPointer(
     JNIEnv* env, int index, int x, int y, int id) {
   TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchSetPointer");

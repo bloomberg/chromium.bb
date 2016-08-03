@@ -381,9 +381,4 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
       base::Bind(&GetMediaMetadataFromFd, fd, offset, size, callback));
 }
 
-// static
-bool MediaResourceGetterImpl::RegisterMediaResourceGetter(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

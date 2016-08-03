@@ -13,11 +13,6 @@ using base::android::ScopedJavaLocalRef;
 namespace device {
 
 // static
-bool UsbInterfaceAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeUsbInterface_jni.h
-}
-
-// static
 UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_interface) {

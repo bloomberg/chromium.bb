@@ -20,9 +20,3 @@ bool LocationSettingsImpl::CanSitesRequestLocationPermission(
   return Java_LocationSettings_canSitesRequestLocationPermission(
       env, web_contents->GetJavaWebContents().obj());
 }
-
-// Register native methods
-
-bool LocationSettingsImpl::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

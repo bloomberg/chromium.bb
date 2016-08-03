@@ -18,9 +18,6 @@ class ScopedUseFakeInstanceIDAndroid {
   ScopedUseFakeInstanceIDAndroid();
   ~ScopedUseFakeInstanceIDAndroid();
 
-  // Register JNI methods.
-  static bool RegisterJni(JNIEnv* env);
-
  private:
   bool previous_value_;
 

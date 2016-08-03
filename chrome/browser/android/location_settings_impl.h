@@ -17,8 +17,6 @@ class LocationSettingsImpl : public LocationSettings {
   LocationSettingsImpl();
   ~LocationSettingsImpl() override;
 
-  static bool Register(JNIEnv* env);
-
   // LocationSettings implementation:
   bool CanSitesRequestLocationPermission(
       content::WebContents* web_contents) override;

@@ -32,9 +32,5 @@ void ExtractCertVerifyResult(jobject result,
       env, chain_byte_array.obj(), verified_chain);
 }
 
-bool RegisterCertVerifyResult(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace net

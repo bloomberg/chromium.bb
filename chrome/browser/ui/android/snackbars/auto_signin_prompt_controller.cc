@@ -30,6 +30,3 @@ void ShowAutoSigninPrompt(content::WebContents* web_contents,
       env, tab->GetJavaObject().obj(), java_message.obj());
 }
 
-bool RegisterAutoSigninSnackbarController(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -47,9 +47,5 @@ void OpenDateAndTimeSettings() {
       base::android::GetApplicationContext());
 }
 
-bool RegisterIntentHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace chrome

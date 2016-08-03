@@ -12,7 +12,6 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "components/external_video_surface/component_jni_registrar.h"
-#include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
@@ -28,8 +27,6 @@ static base::android::RegistrationMethod
     { "ExternalVideoSurfaceContainer",
         external_video_surface::RegisterExternalVideoSurfaceJni },
 #endif
-    { "NavigationInterception",
-        navigation_interception::RegisterNavigationInterceptionJni },
     { "WebContentsDelegateAndroid",
         web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
 };

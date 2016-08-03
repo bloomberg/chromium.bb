@@ -12,9 +12,6 @@ namespace device {
 
 class UsbEndpointAndroid {
  public:
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   static UsbEndpointDescriptor Convert(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& usb_endpoint);

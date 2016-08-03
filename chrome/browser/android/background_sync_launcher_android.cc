@@ -49,11 +49,6 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserIfStoppedImpl(
 }
 
 // static
-bool BackgroundSyncLauncherAndroid::RegisterLauncher(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
     bool disabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

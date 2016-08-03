@@ -21,9 +21,6 @@ class JniTouchEventData {
   JniTouchEventData();
   ~JniTouchEventData();
 
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJni(JNIEnv* env);
-
   // Copies touch point data from a Java object to a C++ object.
   static void CopyTouchPointData(
       JNIEnv* env,

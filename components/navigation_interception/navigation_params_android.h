@@ -16,8 +16,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
     const NavigationParams& params,
     bool has_user_gesture_carryover);
 
-bool RegisterNavigationParams(JNIEnv* env);
-
 }  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_ANDROID_H_

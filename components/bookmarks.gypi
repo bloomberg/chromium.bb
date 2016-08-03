@@ -76,8 +76,6 @@
             'bookmarks/common/android/bookmark_id.cc',
             'bookmarks/common/android/bookmark_id.h',
             'bookmarks/common/android/bookmark_type_list.h',
-            'bookmarks/common/android/component_jni_registrar.cc',
-            'bookmarks/common/android/component_jni_registrar.h',
           ],
         }],
         ['toolkit_views==1', {

@@ -65,9 +65,3 @@ void DownloadOverwriteInfoBar::ProcessButton(int action) {
 DownloadOverwriteInfoBarDelegate* DownloadOverwriteInfoBar::GetDelegate() {
   return static_cast<DownloadOverwriteInfoBarDelegate*>(delegate());
 }
-
-// Native JNI methods ---------------------------------------------------------
-
-bool RegisterDownloadOverwriteInfoBarDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

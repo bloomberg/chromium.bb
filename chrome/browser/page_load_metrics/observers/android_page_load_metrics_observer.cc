@@ -32,7 +32,3 @@ void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
       env, java_web_contents.obj(),
       static_cast<jlong>(first_contentful_paint_ms));
 }
-
-bool RegisterPageLoadMetricsBindings(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

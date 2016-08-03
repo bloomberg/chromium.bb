@@ -11,8 +11,6 @@ namespace chrome {
 
 void TerminateAndroid();
 
-bool RegisterApplicationLifetimeAndroid(JNIEnv* env);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_ANDROID_H_

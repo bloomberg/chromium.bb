@@ -97,9 +97,5 @@ ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
   return engine;
 }
 
-bool RegisterKeyStore(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace net

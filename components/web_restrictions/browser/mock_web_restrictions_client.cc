@@ -18,9 +18,5 @@ MockWebRestrictionsClient::~MockWebRestrictionsClient() {
       base::android::AttachCurrentThread());
 }
 
-bool MockWebRestrictionsClient::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace web_restrictions
 

@@ -35,7 +35,3 @@ base::android::ScopedJavaLocalRef<jobjectArray> CreateNativeCredentialArray(
     size_t size) {
   return Java_Credential_createCredentialArray(env, static_cast<int>(size));
 }
-
-bool RegisterCredential(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

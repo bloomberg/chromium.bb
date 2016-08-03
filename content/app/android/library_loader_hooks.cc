@@ -28,7 +28,6 @@
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
 #include "device/gamepad/android/gamepad_jni_registrar.h"
 #include "device/geolocation/android/geolocation_jni_registrar.h"
-#include "device/power_save_blocker/power_save_blocker_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/capture/content/android/screen_capture_jni_registrar.h"
@@ -81,9 +80,6 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterGeolocationJni(env))
-      return false;
-
-    if (!device::android::RegisterPowerSaveBlockerJni(env))
       return false;
 
     if (!device::android::RegisterUsbJni(env))

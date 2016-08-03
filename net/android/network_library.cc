@@ -150,9 +150,5 @@ std::string GetWifiSSID() {
           base::android::GetApplicationContext()));
 }
 
-bool RegisterNetworkLibrary(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace net

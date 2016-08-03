@@ -17,7 +17,6 @@ class InterfaceRegistry;
 
 class ChromeInterfaceRegistrarAndroid {
  public:
-  static bool Register(JNIEnv* env);
   static void ExposeInterfacesToFrame(
       shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host);

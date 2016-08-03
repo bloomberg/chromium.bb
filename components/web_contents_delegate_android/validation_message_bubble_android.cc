@@ -75,9 +75,4 @@ void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
       anchor_in_root_view.height());
 }
 
-// static
-bool ValidationMessageBubbleAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace web_contents_delegate_android

@@ -7,11 +7,6 @@
 #include "base/android/jni_android.h"
 #include "jni/PushMessagingServiceObserver_jni.h"
 
-// static
-bool PushMessagingServiceObserverAndroid::RegisterJni(JNIEnv* env) {
-  return chrome::android::RegisterNativesImpl(env);
-}
-
 void PushMessagingServiceObserverAndroid::OnMessageHandled() {
   chrome::android::Java_PushMessagingServiceObserver_onMessageHandled(
       base::android::AttachCurrentThread());

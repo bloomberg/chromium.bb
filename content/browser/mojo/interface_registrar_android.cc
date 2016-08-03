@@ -12,11 +12,6 @@
 namespace content {
 
 // static
-bool InterfaceRegistrarAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
     InterfaceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();

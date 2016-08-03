@@ -11,8 +11,6 @@
 namespace variations {
 namespace android {
 
-bool RegisterVariationsSeedBridge(JNIEnv* env);
-
 // Return the first run seed data pulled from the Java side of application.
 void GetVariationsFirstRunSeed(std::string* seed_data,
                                std::string* seed_signature,

@@ -18,8 +18,6 @@ class SavePasswordInfoBar : public ConfirmInfoBar {
 
   ~SavePasswordInfoBar() override;
 
- static bool Register(JNIEnv* env);
-
  private:
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

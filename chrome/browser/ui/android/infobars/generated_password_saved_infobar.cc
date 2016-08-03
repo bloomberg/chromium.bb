@@ -61,7 +61,3 @@ void GeneratedPasswordSavedInfoBar::ProcessButton(int action) {
 
   RemoveSelf();
 }
-
-bool RegisterGeneratedPasswordSavedInfoBarDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
-#include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/app/shell_main_delegate.h"
 #include "testing/android/native_test/native_test_launcher.h"
@@ -17,7 +16,6 @@ namespace {
 bool RegisterJNI(JNIEnv* env) {
   return base::android::RegisterJni(env) &&
       content::android::RegisterShellJni(env) &&
-      content::NestedMessagePumpAndroid::RegisterJni(env) &&
       testing::android::RegisterNativeTestJNI(env);
 }
 

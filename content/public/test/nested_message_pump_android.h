@@ -24,8 +24,6 @@ class NestedMessagePumpAndroid : public base::MessagePumpForUI {
   void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
   void Start(Delegate* delegate) override;
 
-  static bool RegisterJni(JNIEnv* env);
-
  protected:
   ~NestedMessagePumpAndroid() override;
 

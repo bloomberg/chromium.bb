@@ -31,9 +31,6 @@ class DistillerUIHandleAndroid : public DistillerUIHandle {
   DISALLOW_COPY_AND_ASSIGN(DistillerUIHandleAndroid);
 };
 
-// Registers the FeedbackReporter's native methods through JNI.
-bool RegisterUIHandle(JNIEnv* env);
-
 }  // namespace android
 
 }  // namespace dom_distiller

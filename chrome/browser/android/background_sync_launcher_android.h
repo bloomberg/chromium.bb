@@ -30,8 +30,6 @@ class BackgroundSyncLauncherAndroid {
   static void LaunchBrowserIfStopped(bool launch_when_next_online,
                                      int64_t min_delay_ms);
 
-  static bool RegisterLauncher(JNIEnv* env);
-
   static bool ShouldDisableBackgroundSync();
 
   // TODO(iclelland): Remove this once the bots have their play services package

@@ -46,11 +46,6 @@ void DistillerUIHandleAndroid::ClosePanel(bool animate) {
   Java_DomDistillerUIUtils_closePanel(env, animate);
 }
 
-// static
-bool RegisterUIHandle(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 
 }  // namespace dom_distiller

@@ -98,8 +98,4 @@ void PowerSaveBlocker::InitDisplaySleepBlocker(
   delegate_->ApplyBlock();
 }
 
-bool RegisterPowerSaveBlocker(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace device

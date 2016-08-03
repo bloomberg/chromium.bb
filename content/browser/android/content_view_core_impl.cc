@@ -1640,7 +1640,7 @@ static ScopedJavaLocalRef<jobject> FromWebContentsAndroid(
 }
 
 bool RegisterContentViewCore(JNIEnv* env) {
-  return RegisterNativesImpl(env) && JNI_DragEvent::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

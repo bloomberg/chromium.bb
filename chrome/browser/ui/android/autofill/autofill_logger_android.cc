@@ -22,8 +22,4 @@ void AutofillLoggerAndroid::DidFillOrPreviewField(
       env, j_autofilled_value.obj(), j_profile_full_name.obj());
 }
 
-bool AutofillLoggerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace autofill

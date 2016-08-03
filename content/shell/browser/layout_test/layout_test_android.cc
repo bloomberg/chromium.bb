@@ -44,8 +44,6 @@ namespace content {
 
 void EnsureInitializeForAndroidLayoutTests() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  content::NestedMessagePumpAndroid::RegisterJni(env);
-  content::RegisterNativesImpl(env);
 
   bool success = base::MessageLoop::InitMessagePumpForUIFactory(
       &CreateMessagePumpForUI);

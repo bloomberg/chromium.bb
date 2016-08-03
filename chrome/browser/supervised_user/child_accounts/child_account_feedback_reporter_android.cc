@@ -29,7 +29,3 @@ void ReportChildAccountFeedback(content::WebContents* web_contents,
   Java_ChildAccountFeedbackReporter_reportFeedbackWithWindow(
       env, window->GetJavaObject().obj(), jdesc.obj(), jurl.obj());
 }
-
-bool RegisterChildAccountFeedbackReporter(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

@@ -12,8 +12,6 @@ namespace android {
 
 class AccessibilityUtil {
  public:
-  static bool Register(JNIEnv* env);
-
   static bool IsAccessibilityEnabled();
 
  private:

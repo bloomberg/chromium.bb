@@ -58,8 +58,4 @@ bool IsVisible(gfx::NativeView view) {
   return true;
 }
 
-bool RegisterPlatformUtil(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 } // namespace platform_util

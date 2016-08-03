@@ -17,8 +17,6 @@ class MockWebRestrictionsClient {
   MockWebRestrictionsClient();
 
   ~MockWebRestrictionsClient();
-
-  static bool Register(JNIEnv* env);
 };
 
 }  // namespace web_restrictions

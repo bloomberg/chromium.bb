@@ -25,7 +25,4 @@ base::android::ScopedJavaLocalRef<jobjectArray> CreateNativeCredentialArray(
     JNIEnv* env,
     size_t size);
 
-// Registers the Credential native method.
-bool RegisterCredential(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_CREDENTIAL_ANDROID_H_

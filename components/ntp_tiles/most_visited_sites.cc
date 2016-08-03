@@ -174,13 +174,6 @@ MostVisitedSites::~MostVisitedSites() {
   supervisor_->SetObserver(nullptr);
 }
 
-#if defined(OS_ANDROID)
-// static
-bool MostVisitedSites::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-#endif
-
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
                                                   int num_sites) {
   DCHECK(observer);

@@ -23,8 +23,6 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
       base::android::ScopedJavaLocalRef<jobject> touch_event_synthesizer);
   ~SyntheticGestureTargetAndroid() override;
 
-  static bool RegisterMotionEventSynthesizer(JNIEnv* env);
-
   // SyntheticGestureTargetBase:
   void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,

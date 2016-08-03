@@ -16,11 +16,6 @@ ScreenOrientationDelegateAndroid::~ScreenOrientationDelegateAndroid() {
 }
 
 // static
-bool ScreenOrientationDelegateAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void ScreenOrientationDelegateAndroid::StartAccurateListening() {
   Java_ScreenOrientationProvider_startAccurateListening(
       base::android::AttachCurrentThread());

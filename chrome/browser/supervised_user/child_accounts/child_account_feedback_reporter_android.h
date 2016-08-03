@@ -20,7 +20,4 @@ void ReportChildAccountFeedback(content::WebContents* web_contents,
                                 const std::string& description,
                                 const GURL& url);
 
-// Register native methods
-bool RegisterChildAccountFeedbackReporter(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_CHILD_ACCOUNT_FEEDBACK_REPORTER_ANDROID_H_

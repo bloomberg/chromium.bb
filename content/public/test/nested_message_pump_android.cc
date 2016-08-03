@@ -151,9 +151,4 @@ void NestedMessagePumpAndroid::ScheduleDelayedWork(
   }
 }
 
-// static
-bool NestedMessagePumpAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

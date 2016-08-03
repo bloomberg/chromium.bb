@@ -33,6 +33,4 @@ class AndroidPageLoadMetricsObserver
   DISALLOW_COPY_AND_ASSIGN(AndroidPageLoadMetricsObserver);
 };
 
-bool RegisterPageLoadMetricsBindings(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_ANDROID_PAGE_LOAD_METRICS_OBSERVER_H_

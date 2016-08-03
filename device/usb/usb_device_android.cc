@@ -24,11 +24,6 @@ using base::android::ScopedJavaLocalRef;
 namespace device {
 
 // static
-bool UsbDeviceAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeUsbDevice_jni.h
-}
-
-// static
 scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     JNIEnv* env,
     base::WeakPtr<UsbServiceAndroid> service,

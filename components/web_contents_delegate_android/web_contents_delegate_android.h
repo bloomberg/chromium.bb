@@ -128,8 +128,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   std::unique_ptr<ValidationMessageBubbleAndroid> validation_message_bubble_;
 };
 
-bool RegisterWebContentsDelegateAndroid(JNIEnv* env);
-
 }  // namespace web_contents_delegate_android
 
 #endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_

@@ -18,8 +18,6 @@ class UpdatePasswordInfoBar : public ConfirmInfoBar {
       std::unique_ptr<UpdatePasswordInfoBarDelegate> delegate);
   ~UpdatePasswordInfoBar() override;
 
-  static bool Register(JNIEnv* env);
-
   int GetIdOfSelectedUsername() const;
 
  private:

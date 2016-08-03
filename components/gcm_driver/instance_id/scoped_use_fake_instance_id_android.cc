@@ -11,11 +11,6 @@ using base::android::AttachCurrentThread;
 
 namespace instance_id {
 
-// static
-bool ScopedUseFakeInstanceIDAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ScopedUseFakeInstanceIDAndroid::ScopedUseFakeInstanceIDAndroid() {
   JNIEnv* env = AttachCurrentThread();
   previous_value_ =

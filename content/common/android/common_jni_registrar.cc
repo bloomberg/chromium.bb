@@ -7,14 +7,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
-#include "content/common/android/hash_set.h"
-#include "content/common/android/media_metadata_android.h"
 #include "content/common/android/resource_request_body_android.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
-  { "HashSet", content::RegisterHashSet },
-  { "MediaMetadataAndroid", content::MediaMetadataAndroid::Register },
   { "ResourceRequestBody", content::RegisterResourceRequestBody },
 };
 

@@ -40,8 +40,4 @@ void TerminateAndroid() {
   Java_ApplicationLifetime_terminate(env, restart);
 }
 
-bool RegisterApplicationLifetimeAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace browser

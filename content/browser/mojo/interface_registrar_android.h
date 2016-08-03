@@ -16,7 +16,6 @@ class InterfaceRegistryAndroid;
 // registry.
 class InterfaceRegistrarAndroid {
  public:
-  static bool Register(JNIEnv* env);
   static void ExposeInterfacesToRenderer(InterfaceRegistryAndroid* registry);
   static void ExposeInterfacesToFrame(InterfaceRegistryAndroid* registry);
 };

@@ -23,10 +23,6 @@ using base::android::AttachCurrentThread;
 
 namespace device {
 
-bool CardboardVRDevice::RegisterCardboardVRDevice(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 CardboardVRDevice::CardboardVRDevice(VRDeviceProvider* provider)
     : VRDevice(provider) {
   JNIEnv* env = AttachCurrentThread();

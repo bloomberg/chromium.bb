@@ -18,8 +18,6 @@ class MediaMetadataAndroid {
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaObject(
       JNIEnv* env, const MediaMetadata& metadata);
 
-  static bool Register(JNIEnv* env);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaMetadataAndroid);
 };

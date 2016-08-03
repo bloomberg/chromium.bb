@@ -18,8 +18,6 @@ class NTPSnippetsLauncher : public ntp_snippets::NTPSnippetsScheduler {
  public:
   static NTPSnippetsLauncher* Get();
 
-  static bool Register(JNIEnv* env);
-
   // ntp_snippets::NTPSnippetsScheduler implementation.
   bool Schedule(base::TimeDelta period_wifi_charging,
                 base::TimeDelta period_wifi,

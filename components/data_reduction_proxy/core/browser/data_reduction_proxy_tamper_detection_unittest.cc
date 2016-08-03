@@ -25,11 +25,6 @@
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "net/android/network_library.h"
-#endif
-
 namespace {
 
 // Calcuates MD5 hash value for a string and then base64 encode it. Testcases
@@ -81,17 +76,6 @@ std::vector<std::string> StringsToVector(const std::string& values) {
     now = next + 1;
   }
   return ret;
-}
-
-void InitEnv() {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  static bool inited = false;
-  if (!inited) {
-    net::android::RegisterNetworkLibrary(env);
-    inited = true;
-  }
-#endif
 }
 
 }  // namespace
@@ -827,8 +811,6 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
       true,
     },
   };
-
-  InitEnv();
 
   for (size_t i = 0; i < arraysize(test); ++i) {
     std::string raw_headers(test[i].raw_header);

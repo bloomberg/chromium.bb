@@ -21,8 +21,6 @@ class AutofillLoggerAndroid {
   static void DidFillOrPreviewField(const base::string16& autofilled_value,
                                     const base::string16& profile_full_name);
 
-  static bool Register(JNIEnv* env);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillLoggerAndroid);
 };

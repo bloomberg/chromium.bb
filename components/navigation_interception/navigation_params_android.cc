@@ -34,10 +34,4 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
       has_user_gesture_carryover);
 }
 
-// Register native methods.
-
-bool RegisterNavigationParams(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace navigation_interception

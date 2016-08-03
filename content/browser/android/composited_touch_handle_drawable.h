@@ -31,8 +31,6 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   gfx::RectF GetVisibleBounds() const override;
   float GetDrawableHorizontalPaddingRatio() const override;
 
-  static bool RegisterHandleViewResources(JNIEnv* env);
-
  private:
   void DetachLayer();
   void UpdateLayerPosition();

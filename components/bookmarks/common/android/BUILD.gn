@@ -10,8 +10,6 @@ source_set("android") {
     "bookmark_id.cc",
     "bookmark_id.h",
     "bookmark_type.h",
-    "component_jni_registrar.cc",
-    "component_jni_registrar.h",
   ]
   deps = [
     ":bookmarks_jni_headers",

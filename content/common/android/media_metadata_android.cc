@@ -61,9 +61,4 @@ MediaMetadataAndroid::CreateJavaObject(
   return j_metadata;
 }
 
-// static
-bool MediaMetadataAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

@@ -6,13 +6,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "net/android/cellular_signal_strength.h"
 #include "net/android/gurl_utils.h"
 #include "net/android/http_auth_negotiate_android.h"
 #include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
-#include "net/android/network_library.h"
-#include "net/android/traffic_stats.h"
 #include "net/cert/x509_util_android.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "url/url_features.h"
@@ -25,11 +22,6 @@ namespace net {
 namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
-    {"AndroidCellularSignalStrength", cellular_signal_strength::Register},
-    {"AndroidCertVerifyResult", RegisterCertVerifyResult},
-    {"AndroidKeyStore", RegisterKeyStore},
-    {"AndroidNetworkLibrary", RegisterNetworkLibrary},
-    {"AndroidTrafficStats", traffic_stats::Register},
     {"GURLUtils", RegisterGURLUtils},
     {"HttpAuthNegotiateAndroid", HttpAuthNegotiateAndroid::Register},
     {"NetworkChangeNotifierAndroid", NetworkChangeNotifierAndroid::Register},

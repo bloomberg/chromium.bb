@@ -39,7 +39,4 @@ class DownloadOverwriteInfoBar : public InfoBarAndroid {
   DISALLOW_COPY_AND_ASSIGN(DownloadOverwriteInfoBar);
 };
 
-// Registers the native methods through JNI.
-bool RegisterDownloadOverwriteInfoBarDelegate(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_DOWNLOAD_OVERWRITE_INFOBAR_H_

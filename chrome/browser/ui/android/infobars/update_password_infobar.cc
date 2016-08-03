@@ -19,10 +19,6 @@ UpdatePasswordInfoBar::UpdatePasswordInfoBar(
 
 UpdatePasswordInfoBar::~UpdatePasswordInfoBar() {}
 
-bool UpdatePasswordInfoBar::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 int UpdatePasswordInfoBar::GetIdOfSelectedUsername() const {
   return Java_UpdatePasswordInfoBar_getSelectedUsername(
       base::android::AttachCurrentThread(), java_infobar_.obj());

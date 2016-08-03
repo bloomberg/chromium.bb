@@ -76,8 +76,3 @@ void AppBannerInfoBarAndroid::OnInstallStateChanged(int new_state) {
                                                      new_state);
 }
 
-// Native JNI methods ---------------------------------------------------------
-
-bool RegisterAppBannerInfoBarAndroid(JNIEnv* env) {
- return RegisterNativesImpl(env);
-}

@@ -9,11 +9,6 @@
 namespace device {
 
 // static
-bool UsbEndpointAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeUsbEndpoint_jni.h
-}
-
-// static
 UsbEndpointDescriptor UsbEndpointAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_endpoint) {

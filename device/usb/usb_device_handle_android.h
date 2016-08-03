@@ -16,9 +16,6 @@ class UsbDevice;
 // through an instance of android.hardware.usb.UsbDeviceConnection.
 class UsbDeviceHandleAndroid : public UsbDeviceHandleUsbfs {
  public:
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   static scoped_refptr<UsbDeviceHandleAndroid> Create(
       JNIEnv* env,
       scoped_refptr<UsbDevice> device,

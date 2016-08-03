@@ -20,7 +20,4 @@ class WebContents;
 void ShowAutoSigninPrompt(content::WebContents* web_contents,
                           const base::string16& username);
 
-// Register native method.
-bool RegisterAutoSigninSnackbarController(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_SNACKBARS_AUTO_SIGNIN_PROMPT_CONTROLLER_H_

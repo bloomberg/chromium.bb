@@ -75,8 +75,6 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(InterceptNavigationDelegate);
 };
 
-bool RegisterInterceptNavigationDelegate(JNIEnv* env);
-
 }  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_

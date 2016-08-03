@@ -425,14 +425,4 @@ void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(
     content::WebContents* web_contents) {
 }
 
-// ----------------------------------------------------------------------------
-// Native JNI methods
-// ----------------------------------------------------------------------------
-
-// Register native methods
-
-bool RegisterWebContentsDelegateAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace web_contents_delegate_android

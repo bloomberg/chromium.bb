@@ -100,9 +100,4 @@ float PopupTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
   return drawable_horizontal_padding_ratio_;
 }
 
-// static
-bool PopupTouchHandleDrawable::RegisterPopupTouchHandleDrawable(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

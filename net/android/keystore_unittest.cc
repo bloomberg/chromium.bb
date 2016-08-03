@@ -58,16 +58,6 @@ namespace {
 
 typedef base::android::ScopedJavaLocalRef<jobject> ScopedJava;
 
-JNIEnv* InitEnv() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  static bool inited = false;
-  if (!inited) {
-    RegisterNativesImpl(env);
-    inited = true;
-  }
-  return env;
-}
-
 // Returns true if running on an Android version older than 4.2
 bool IsOnAndroidOlderThan_4_2(void) {
   const int kAndroid42ApiLevel = 17;
@@ -171,7 +161,7 @@ EVP_PKEY* ImportPublicKeyFile(const char* filename) {
 // Retrieve a JNI local ref from encoded PKCS#8 data.
 ScopedJava GetPKCS8PrivateKeyJava(PrivateKeyType key_type,
                                   const std::string& pkcs8_key) {
-  JNIEnv* env = InitEnv();
+  JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> bytes(
       base::android::ToJavaByteArray(
           env, reinterpret_cast<const uint8_t*>(pkcs8_key.data()),
@@ -408,7 +398,6 @@ void DoKeySigningWithWrapper(EVP_PKEY* wrapper_key,
 
 TEST(AndroidKeyStore, GetRSAKeyModulus) {
   crypto::OpenSSLErrStackTracer err_trace(FROM_HERE);
-  InitEnv();
 
   // Load the test RSA key.
   crypto::ScopedEVP_PKEY pkey(ImportPrivateKeyFile(kTestRsaKeyFile));

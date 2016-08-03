@@ -16,8 +16,6 @@
 class PushMessagingServiceObserverAndroid
     : public PushMessagingServiceObserver {
  public:
-  static bool RegisterJni(JNIEnv* env);
-
   // PushMessagingServiceObserver implementation.
   void OnMessageHandled() override;
 

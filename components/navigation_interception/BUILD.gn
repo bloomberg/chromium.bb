@@ -24,8 +24,6 @@ static_library("navigation_interception") {
 
   if (is_android) {
     sources += [
-      "component_jni_registrar.cc",
-      "component_jni_registrar.h",
       "intercept_navigation_delegate.cc",
       "intercept_navigation_delegate.h",
       "navigation_params_android.cc",

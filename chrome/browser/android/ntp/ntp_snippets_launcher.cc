@@ -23,11 +23,6 @@ NTPSnippetsLauncher* NTPSnippetsLauncher::Get() {
   return g_snippets_launcher.Pointer();
 }
 
-// static
-bool NTPSnippetsLauncher::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 bool NTPSnippetsLauncher::Schedule(base::TimeDelta period_wifi_charging,
                                    base::TimeDelta period_wifi,
                                    base::TimeDelta period_fallback,

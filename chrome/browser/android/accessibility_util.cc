@@ -10,10 +10,6 @@
 namespace chrome {
 namespace android {
 
-bool AccessibilityUtil::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 bool AccessibilityUtil::IsAccessibilityEnabled() {
   return Java_AccessibilityUtil_isAccessibilityEnabled(
       base::android::AttachCurrentThread(),

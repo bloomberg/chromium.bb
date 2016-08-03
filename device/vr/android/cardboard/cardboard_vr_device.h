@@ -15,8 +15,6 @@ namespace device {
 
 class CardboardVRDevice : public VRDevice {
  public:
-  static bool RegisterCardboardVRDevice(JNIEnv* env);
-
   explicit CardboardVRDevice(VRDeviceProvider* provider);
   ~CardboardVRDevice() override;
 

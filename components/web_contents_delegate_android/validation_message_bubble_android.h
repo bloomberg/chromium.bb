@@ -33,8 +33,6 @@ class ValidationMessageBubbleAndroid {
       content::RenderWidgetHost* widget_host,
       const gfx::Rect& anchor_in_screen);
 
-  static bool Register(JNIEnv* env);
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_validation_message_bubble_;
 };

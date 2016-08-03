@@ -22,8 +22,6 @@ void SendEmail(const base::string16& data_email,
 // Triggers an intent to open the date and time settings.
 void OpenDateAndTimeSettings();
 
-bool RegisterIntentHelper(JNIEnv* env);
-
 }  // namespace android
 }  // namespace chrome
 

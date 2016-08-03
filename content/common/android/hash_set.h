@@ -8,8 +8,6 @@
 
 namespace content {
 
-bool RegisterHashSet(JNIEnv* env);
-
 void JNI_Java_HashSet_add(JNIEnv* env,
                           const base::android::JavaRef<jobject>& hash_set,
                           const base::android::JavaRef<jobject>& object);

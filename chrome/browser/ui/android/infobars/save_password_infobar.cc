@@ -46,10 +46,6 @@ void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env,
   GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB);
 }
 
-bool SavePasswordInfoBar::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
     std::unique_ptr<SavePasswordInfoBarDelegate> delegate) {
   return base::WrapUnique(new SavePasswordInfoBar(std::move(delegate)));

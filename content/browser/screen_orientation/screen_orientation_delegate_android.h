@@ -22,8 +22,6 @@ class ScreenOrientationDelegateAndroid : public ScreenOrientationDelegate {
   ScreenOrientationDelegateAndroid();
   ~ScreenOrientationDelegateAndroid() override;
 
-  static bool Register(JNIEnv* env);
-
   // Ask the ScreenOrientationListener (Java) to start accurately listening to
   // the screen orientation. It keep track of the number of start request if it
   // is already running an accurate listening.

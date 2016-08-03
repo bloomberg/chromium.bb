@@ -50,10 +50,6 @@ bool GetSignalStrengthLevel(int32_t* signal_strength_level) {
   return true;
 }
 
-bool Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace cellular_signal_strength
 
 }  // namespace android

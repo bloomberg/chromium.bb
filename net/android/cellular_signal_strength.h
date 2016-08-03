@@ -30,8 +30,6 @@ NET_EXPORT bool GetSignalStrengthDbm(int32_t* signal_strength_dbm)
 NET_EXPORT bool GetSignalStrengthLevel(int32_t* signal_strength_level)
     WARN_UNUSED_RESULT;
 
-bool Register(JNIEnv* env);
-
 }  // namespace cellular_signal_strength
 
 }  // namespace android

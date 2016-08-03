@@ -147,10 +147,4 @@ void InterceptNavigationDelegate::UpdateLastUserGestureCarryoverTimestamp() {
   last_user_gesture_carryover_timestamp_ = base::TimeTicks::Now();
 }
 
-// Register native methods.
-
-bool RegisterInterceptNavigationDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace navigation_interception

@@ -179,9 +179,4 @@ void CompositedTouchHandleDrawable::UpdateLayerPosition() {
   layer_->SetPosition(origin_position_);
 }
 
-// static
-bool CompositedTouchHandleDrawable::RegisterHandleViewResources(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace content

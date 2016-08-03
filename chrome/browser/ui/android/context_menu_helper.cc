@@ -177,6 +177,5 @@ void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
 }
 
 bool RegisterContextMenuHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env) &&
-         ContextMenuParamsAndroid::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }

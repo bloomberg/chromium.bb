@@ -22,8 +22,6 @@ int JavaBookmarkIdGetType(JNIEnv* env, jobject obj);
 base::android::ScopedJavaLocalRef<jobject> JavaBookmarkIdCreateBookmarkId(
     JNIEnv* env, jlong id, jint type);
 
-bool RegisterBookmarkId(JNIEnv* env);
-
 }  // namespace android
 }  // namespace bookmarks
 

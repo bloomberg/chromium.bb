@@ -32,7 +32,4 @@ class ConfirmInfoBar : public InfoBarAndroid {
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
 
-// Registers native methods.
-bool RegisterConfirmInfoBar(JNIEnv* env);
-
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_

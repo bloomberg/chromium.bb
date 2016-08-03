@@ -35,8 +35,6 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   gfx::RectF GetVisibleBounds() const override;
   float GetDrawableHorizontalPaddingRatio() const override;
 
-  static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
-
  private:
   PopupTouchHandleDrawable(JNIEnv* env, jobject obj, float dpi_scale);
 

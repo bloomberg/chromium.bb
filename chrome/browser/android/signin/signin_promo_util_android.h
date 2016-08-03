@@ -19,8 +19,6 @@ class SigninPromoUtilAndroid {
   static void StartAccountSigninActivityForPromo(
       content::ContentViewCore* content_view_core,
       signin_metrics::AccessPoint access_point);
-
-  static bool Register(JNIEnv* env);
 };
 
 }  // namespace android

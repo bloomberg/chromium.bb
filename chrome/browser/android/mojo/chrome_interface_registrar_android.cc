@@ -12,11 +12,6 @@
 #include "services/shell/public/cpp/interface_registry.h"
 
 // static
-bool ChromeInterfaceRegistrarAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void ChromeInterfaceRegistrarAndroid::ExposeInterfacesToFrame(
     shell::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {

@@ -15,11 +15,6 @@ MediaThrottler* MediaThrottler::GetInstance() {
   return base::Singleton<MediaThrottler>::get();
 }
 
-// static
-bool MediaThrottler::RegisterMediaThrottler(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 MediaThrottler::~MediaThrottler() {}
 
 bool MediaThrottler::RequestDecoderResources() {

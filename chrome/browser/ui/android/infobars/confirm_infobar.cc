@@ -118,10 +118,3 @@ base::string16 ConfirmInfoBar::GetTextFor(
   return (delegate->GetButtons() & button) ?
       delegate->GetButtonLabel(button) : base::string16();
 }
-
-
-// Native JNI methods ---------------------------------------------------------
-
-bool RegisterConfirmInfoBar(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

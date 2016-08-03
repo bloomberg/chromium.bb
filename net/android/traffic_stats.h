@@ -47,8 +47,6 @@ NET_EXPORT bool GetCurrentUidTxBytes(int64_t* bytes);
 // and UDP usage. |bytes| must not be nullptr.
 NET_EXPORT bool GetCurrentUidRxBytes(int64_t* bytes);
 
-bool Register(JNIEnv* env);
-
 }  // namespace traffic_stats
 
 }  // namespace android

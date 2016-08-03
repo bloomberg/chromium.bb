@@ -14,11 +14,6 @@ JniTouchEventData::JniTouchEventData() {}
 JniTouchEventData::~JniTouchEventData() {}
 
 // static
-bool JniTouchEventData::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void JniTouchEventData::CopyTouchPointData(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& java_object,

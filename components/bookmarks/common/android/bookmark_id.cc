@@ -22,9 +22,5 @@ base::android::ScopedJavaLocalRef<jobject> JavaBookmarkIdCreateBookmarkId(
   return Java_BookmarkId_createBookmarkId(env, id, type);
 }
 
-bool RegisterBookmarkId(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace bookmarks

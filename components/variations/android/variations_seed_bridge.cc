@@ -43,10 +43,6 @@ ScopedJavaLocalRef<jbyteArray> StringToJavaByteArray(
 namespace variations {
 namespace android {
 
-bool RegisterVariationsSeedBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void GetVariationsFirstRunSeed(std::string* seed_data,
                                std::string* seed_signature,
                                std::string* seed_country,
