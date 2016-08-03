@@ -189,7 +189,7 @@
        'swarming_gn_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
       'CrWinAsan tester': 'none',
       'CrWinAsan(dll)':
-       'swarming_gn_asan_clang_fuzzer_shared_v8_heap_x86_full_symbols_release',
+       'swarming_gn_asan_clang_shared_v8_heap_x86_full_symbols_release',
       'CrWinAsan(dll) tester': 'none',
       'CrWinAsanCov':
         ('swarming_gn_asan_clang_edge_fuzzer'
@@ -1808,8 +1808,8 @@
       'v8_heap', 'full_symbols', 'release',
     ],
 
-    'swarming_gn_asan_clang_fuzzer_shared_v8_heap_x86_full_symbols_release': [
-      'swarming', 'gn', 'asan', 'clang_tot', 'fuzzer', 'shared', 'v8_heap',
+    'swarming_gn_asan_clang_shared_v8_heap_x86_full_symbols_release': [
+      'swarming', 'gn', 'asan', 'clang_tot', 'shared', 'v8_heap',
       'full_symbols', 'release',
     ],
 
