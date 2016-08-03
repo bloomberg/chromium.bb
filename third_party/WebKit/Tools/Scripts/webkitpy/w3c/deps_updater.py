@@ -77,7 +77,8 @@ class DepsUpdater(object):
             self.check_run(self.generate_upload_command(email_list))
             self.print_('## Triggering try jobs.')
             for try_bot in try_bots:
-                self.run(['git', 'cl', 'try', '-b', try_bot])
+                self.run(['git', 'cl', 'try', '-b', try_bot,
+                          '--auth-refresh-token-json', self.auth_refresh_token_json])
             self.print_('## Waiting for Try Job Results')
             if self.has_failing_results():
                 self.write_test_expectations()
