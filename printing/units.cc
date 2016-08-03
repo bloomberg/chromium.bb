@@ -9,7 +9,7 @@
 
 namespace printing {
 
-int ConvertUnit(int value, int old_unit, int new_unit) {
+int ConvertUnit(double value, int old_unit, int new_unit) {
   DCHECK_GT(new_unit, 0);
   DCHECK_GT(old_unit, 0);
   // With integer arithmetic, to divide a value with correct rounding, you need

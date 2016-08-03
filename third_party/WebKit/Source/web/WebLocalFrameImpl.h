@@ -178,7 +178,7 @@ public:
     bool isPageBoxVisible(int pageIndex) override;
     void pageSizeAndMarginsInPixels(
         int pageIndex,
-        WebSize& pageSize,
+        WebDoubleSize& pageSize,
         int& marginTop,
         int& marginRight,
         int& marginBottom,

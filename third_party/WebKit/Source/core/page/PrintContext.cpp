@@ -294,10 +294,10 @@ bool PrintContext::isPageBoxVisible(LocalFrame* frame, int pageNumber)
 
 String PrintContext::pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft)
 {
-    IntSize pageSize(width, height);
+    DoubleSize pageSize(width, height);
     frame->document()->pageSizeAndMarginsInPixels(pageNumber, pageSize, marginTop, marginRight, marginBottom, marginLeft);
 
-    return "(" + String::number(pageSize.width()) + ", " + String::number(pageSize.height()) + ") " +
+    return "(" + String::number(floor(pageSize.width())) + ", " + String::number(floor(pageSize.height())) + ") " +
         String::number(marginTop) + ' ' + String::number(marginRight) + ' ' + String::number(marginBottom) + ' ' + String::number(marginLeft);
 }
 

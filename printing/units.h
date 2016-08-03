@@ -40,7 +40,7 @@ const float kA3WidthInch = 11.69f;
 const float kA3HeightInch = 16.54f;
 
 // Converts from one unit system to another using integer arithmetics.
-PRINTING_EXPORT int ConvertUnit(int value, int old_unit, int new_unit);
+PRINTING_EXPORT int ConvertUnit(double value, int old_unit, int new_unit);
 
 // Converts from one unit system to another using doubles.
 PRINTING_EXPORT double ConvertUnitDouble(double value, double old_unit,

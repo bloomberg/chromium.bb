@@ -1999,12 +1999,12 @@ bool Document::isPageBoxVisible(int pageIndex)
     return styleForPage(pageIndex)->visibility() != HIDDEN; // display property doesn't apply to @page.
 }
 
-void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
+void Document::pageSizeAndMarginsInPixels(int pageIndex, DoubleSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
 {
     RefPtr<ComputedStyle> style = styleForPage(pageIndex);
 
-    int width = pageSize.width();
-    int height = pageSize.height();
+    double width = pageSize.width();
+    double height = pageSize.height();
     switch (style->getPageSizeType()) {
     case PAGE_SIZE_AUTO:
         break;
@@ -2025,7 +2025,7 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
     default:
         ASSERT_NOT_REACHED();
     }
-    pageSize = IntSize(width, height);
+    pageSize = DoubleSize(width, height);
 
     // The percentage is calculated with respect to the width even for margin top and bottom.
     // http://www.w3.org/TR/CSS2/box.html#margin-properties

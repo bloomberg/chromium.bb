@@ -17,6 +17,7 @@ class WebAutofillClient;
 class WebContentSettingsClient;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
+class WebDoubleSize;
 class WebFrameClient;
 class WebFrameWidget;
 class WebRange;
@@ -163,7 +164,7 @@ public:
     // marginLeft must be initialized to the default values that are used if
     // auto is specified.
     virtual void pageSizeAndMarginsInPixels(int pageIndex,
-        WebSize& pageSize,
+        WebDoubleSize& pageSize,
         int& marginTop,
         int& marginRight,
         int& marginBottom,

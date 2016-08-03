@@ -181,6 +181,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayer.h"
@@ -1327,9 +1328,9 @@ bool WebLocalFrameImpl::isPageBoxVisible(int pageIndex)
     return frame()->document()->isPageBoxVisible(pageIndex);
 }
 
-void WebLocalFrameImpl::pageSizeAndMarginsInPixels(int pageIndex, WebSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
+void WebLocalFrameImpl::pageSizeAndMarginsInPixels(int pageIndex, WebDoubleSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
 {
-    IntSize size = pageSize;
+    DoubleSize size = pageSize;
     frame()->document()->pageSizeAndMarginsInPixels(pageIndex, size, marginTop, marginRight, marginBottom, marginLeft);
     pageSize = size;
 }

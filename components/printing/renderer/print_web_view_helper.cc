@@ -32,6 +32,7 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
+#include "third_party/WebKit/public/platform/WebDoubleSize.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -128,9 +129,9 @@ PrintMsg_Print_Params GetCssPrintParams(
   PrintMsg_Print_Params page_css_params = page_params;
   int dpi = GetDPI(&page_params);
 
-  blink::WebSize page_size_in_pixels(
-      ConvertUnit(page_params.page_size.width(), dpi, kPixelsPerInch),
-      ConvertUnit(page_params.page_size.height(), dpi, kPixelsPerInch));
+  blink::WebDoubleSize page_size_in_pixels(
+      ConvertUnitDouble(page_params.page_size.width(), dpi, kPixelsPerInch),
+      ConvertUnitDouble(page_params.page_size.height(), dpi, kPixelsPerInch));
   int margin_top_in_pixels =
       ConvertUnit(page_params.margin_top, dpi, kPixelsPerInch);
   int margin_right_in_pixels = ConvertUnit(
@@ -145,8 +146,6 @@ PrintMsg_Print_Params GetCssPrintParams(
       page_params.margin_left,
       dpi, kPixelsPerInch);
 
-  blink::WebSize original_page_size_in_pixels = page_size_in_pixels;
-
   if (frame) {
     frame->pageSizeAndMarginsInPixels(page_index,
                                       page_size_in_pixels,
@@ -156,9 +155,9 @@ PrintMsg_Print_Params GetCssPrintParams(
                                       margin_left_in_pixels);
   }
 
-  int new_content_width = page_size_in_pixels.width -
+  double new_content_width = page_size_in_pixels.width() -
                           margin_left_in_pixels - margin_right_in_pixels;
-  int new_content_height = page_size_in_pixels.height -
+  double new_content_height = page_size_in_pixels.height() -
                            margin_top_in_pixels - margin_bottom_in_pixels;
 
   // Invalid page size and/or margins. We just use the default setting.
@@ -168,20 +167,12 @@ PrintMsg_Print_Params GetCssPrintParams(
     return page_css_params;
   }
 
+  page_css_params.page_size =
+      gfx::Size(ConvertUnit(page_size_in_pixels.width(), kPixelsPerInch, dpi),
+                ConvertUnit(page_size_in_pixels.height(), kPixelsPerInch, dpi));
   page_css_params.content_size =
       gfx::Size(ConvertUnit(new_content_width, kPixelsPerInch, dpi),
-                ConvertUnit(new_content_height, kPixelsPerInch, dpi));
-
-  if (original_page_size_in_pixels != page_size_in_pixels) {
-    page_css_params.page_size =
-        gfx::Size(ConvertUnit(page_size_in_pixels.width, kPixelsPerInch, dpi),
-                  ConvertUnit(page_size_in_pixels.height, kPixelsPerInch, dpi));
-  } else {
-    // Printing frame doesn't have any page size css. Pixels to dpi conversion
-    // causes rounding off errors. Therefore use the default page size values
-    // directly.
-    page_css_params.page_size = page_params.page_size;
-  }
+              ConvertUnit(new_content_height, kPixelsPerInch, dpi));
 
   page_css_params.margin_top =
       ConvertUnit(margin_top_in_pixels, kPixelsPerInch, dpi);
