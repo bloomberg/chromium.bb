@@ -69,7 +69,7 @@ Panel.init = function() {
    * @type {boolean}
    * @private
    */
-  this.menusEnabled_ = false;
+  this.menusEnabled_ = localStorage['useNext'] == 'true';
 
   /**
    * A callback function to be executed to perform the action from selecting
