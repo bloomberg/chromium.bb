@@ -1038,15 +1038,14 @@ wl_output_transform OutputTransform(display::Display::Rotation rotation) {
   return WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
-class WaylandDisplayObserver : public display::DisplayObserver {
+class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
  public:
-  WaylandDisplayObserver(const display::Display& display,
-                         wl_resource* output_resource)
-      : display_id_(display.id()), output_resource_(output_resource) {
+  WaylandPrimaryDisplayObserver(wl_resource* output_resource)
+      : output_resource_(output_resource) {
     display::Screen::GetScreen()->AddObserver(this);
-    SendDisplayMetrics(display);
+    SendDisplayMetrics();
   }
-  ~WaylandDisplayObserver() override {
+  ~WaylandPrimaryDisplayObserver() override {
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
@@ -1055,18 +1054,29 @@ class WaylandDisplayObserver : public display::DisplayObserver {
   void OnDisplayRemoved(const display::Display& new_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
-    if (display.id() != display_id_)
+    if (display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
       return;
 
+    // There is no need to check DISPLAY_METRIC_PRIMARY because when primary
+    // changes, bounds always changes. (new primary should have had non
+    // 0,0 origin).
+    // Only exception is when switching to newly connected primary with
+    // the same bounds. This happens whenyou're in docked mode, suspend,
+    // unplug the dislpay, then resume to the internal display which has
+    // the same resolution. Since metrics does not change, there is no need
+    // to notify clients.
     if (changed_metrics &
         (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
          DISPLAY_METRIC_ROTATION)) {
-      SendDisplayMetrics(display);
+      SendDisplayMetrics();
     }
   }
 
  private:
-  void SendDisplayMetrics(const display::Display& display) {
+  void SendDisplayMetrics() {
+    display::Display display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+
     const ash::DisplayInfo& info =
         ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
             display.id());
@@ -1099,13 +1109,10 @@ class WaylandDisplayObserver : public display::DisplayObserver {
     }
   }
 
-  // The identifier associated with the observed display.
-  const int64_t display_id_;
-
   // The output resource associated with the display.
   wl_resource* const output_resource_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayObserver);
+  DISALLOW_COPY_AND_ASSIGN(WaylandPrimaryDisplayObserver);
 };
 
 const uint32_t output_version = 2;
@@ -1114,14 +1121,9 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_output_interface, std::min(version, output_version), id);
 
-  // TODO(reveman): Multi-display support.
-  const display::Display& display = ash::Shell::GetInstance()
-                                        ->display_manager()
-                                        ->GetPrimaryDisplayCandidate();
-
   SetImplementation(
       resource, nullptr,
-      base::WrapUnique(new WaylandDisplayObserver(display, resource)));
+      base::WrapUnique(new WaylandPrimaryDisplayObserver(resource)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1575,10 +1577,8 @@ class WaylandRemoteShell : public ash::ShellObserver,
                            public display::DisplayObserver {
  public:
   WaylandRemoteShell(Display* display,
-                     int64_t display_id,
                      wl_resource* remote_shell_resource)
       : display_(display),
-        display_id_(display_id),
         remote_shell_resource_(remote_shell_resource),
         weak_ptr_factory_(this) {
     ash::WmShell::Get()->AddShellObserver(this);
@@ -1610,9 +1610,12 @@ class WaylandRemoteShell : public ash::ShellObserver,
   void OnDisplayRemoved(const display::Display& new_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
-    if (display.id() != display_id_)
+    if (display::Screen::GetScreen()->GetPrimaryDisplay().id() != display.id())
       return;
 
+    // No need to update when a primary dislpay has changed without bounds
+    // change. See WaylandPrimaryDisplayObserver::OnDisplayMetricsChanged
+    // for more details.
     if (changed_metrics &
         (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
          DISPLAY_METRIC_ROTATION | DISPLAY_METRIC_WORK_AREA)) {
@@ -1652,9 +1655,9 @@ class WaylandRemoteShell : public ash::ShellObserver,
 
  private:
   void SendPrimaryDisplayMetrics() {
-    const display::Display& primary =
-        ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
-            display_id_);
+    const display::Display primary =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+
     SendConfigure_DEPRECATED(primary);
     SendDisplayMetrics(primary);
   }
@@ -1688,7 +1691,7 @@ class WaylandRemoteShell : public ash::ShellObserver,
     if (wl_resource_get_version(remote_shell_resource_) >= 9)
       return;
 
-    gfx::Insets work_area_insets = display.GetWorkAreaInsets();
+    const gfx::Insets& work_area_insets = display.GetWorkAreaInsets();
     zwp_remote_shell_v1_send_configure(
         remote_shell_resource_, display.size().width(), display.size().height(),
         work_area_insets.left(), work_area_insets.top(),
@@ -1739,9 +1742,6 @@ class WaylandRemoteShell : public ash::ShellObserver,
 
   // The exo display instance. Not owned.
   Display* const display_;
-
-  // The identifier associated with the observed display.
-  const int64_t display_id_;
 
   // The remote shell resource associated with observer.
   wl_resource* const remote_shell_resource_;
@@ -1905,14 +1905,9 @@ void bind_remote_shell(wl_client* client,
       wl_resource_create(client, &zwp_remote_shell_v1_interface,
                          std::min(version, remote_shell_version), id);
 
-  // TODO(reveman): Multi-display support.
-  const display::Display& display = ash::Shell::GetInstance()
-                                        ->display_manager()
-                                        ->GetPrimaryDisplayCandidate();
-
   SetImplementation(resource, &remote_shell_implementation,
                     base::WrapUnique(new WaylandRemoteShell(
-                        static_cast<Display*>(data), display.id(), resource)));
+                        static_cast<Display*>(data), resource)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
