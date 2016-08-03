@@ -187,8 +187,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad);
-  sk_sp<SkImage> ApplyBackgroundFilters(DrawingFrame* frame,
-                                        const RenderPassDrawQuad* quad,
+  sk_sp<SkImage> ApplyBackgroundFilters(const RenderPassDrawQuad* quad,
                                         ScopedResource* background_texture,
                                         const gfx::RectF& rect);
 
@@ -243,7 +242,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                       const gfx::QuadF& clipping_region_quad,
                                       int matrix_location,
                                       const float uv[8]);
-  void DrawQuadGeometry(const DrawingFrame* frame,
+  void DrawQuadGeometry(const gfx::Transform& projection_matrix,
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect,
                         int matrix_location);
@@ -263,7 +262,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void ReinitializeGLState();
   void RestoreGLState();
-  void RestoreFramebuffer(DrawingFrame* frame);
 
   void DiscardBackbuffer() override;
   void EnsureBackbuffer() override;

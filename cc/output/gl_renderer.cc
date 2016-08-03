@@ -156,12 +156,17 @@ struct DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
   ~DrawRenderPassDrawQuadParams() {}
 
-  // Inputs.
+  // Required Inputs.
   const RenderPassDrawQuad* quad = nullptr;
   const Resource* contents_texture = nullptr;
-  DirectRenderer::DrawingFrame* frame = nullptr;
   const gfx::QuadF* clip_region = nullptr;
   bool flip_texture = false;
+
+  gfx::Transform window_matrix;
+  gfx::Transform projection_matrix;
+
+  // |frame| is needed for background effects.
+  DirectRenderer::DrawingFrame* frame = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -222,14 +227,13 @@ static GLint GetActiveTextureUnit(GLES2Interface* gl) {
 
 class GLRenderer::ScopedUseGrContext {
  public:
-  static std::unique_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
-                                                    DrawingFrame* frame) {
+  static std::unique_ptr<ScopedUseGrContext> Create(GLRenderer* renderer) {
     // GrContext for filters is created lazily, and may fail if the context
     // is lost.
     // TODO(vmiura,bsalomon): crbug.com/487850 Ensure that
     // ContextProvider::GrContext() does not return NULL.
     if (renderer->output_surface_->context_provider()->GrContext())
-      return base::WrapUnique(new ScopedUseGrContext(renderer, frame));
+      return base::WrapUnique(new ScopedUseGrContext(renderer));
     return nullptr;
   }
 
@@ -237,7 +241,6 @@ class GLRenderer::ScopedUseGrContext {
     // Pass context control back to GLrenderer.
     scoped_gpu_raster_ = nullptr;
     renderer_->RestoreGLState();
-    renderer_->RestoreFramebuffer(frame_);
   }
 
   GrContext* context() const {
@@ -245,17 +248,15 @@ class GLRenderer::ScopedUseGrContext {
   }
 
  private:
-  ScopedUseGrContext(GLRenderer* renderer, DrawingFrame* frame)
+  explicit ScopedUseGrContext(GLRenderer* renderer)
       : scoped_gpu_raster_(
             new ScopedGpuRaster(renderer->output_surface_->context_provider())),
-        renderer_(renderer),
-        frame_(frame) {
+        renderer_(renderer) {
     // scoped_gpu_raster_ passes context control to Skia.
   }
 
   std::unique_ptr<ScopedGpuRaster> scoped_gpu_raster_;
   GLRenderer* renderer_;
-  DrawingFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUseGrContext);
 };
@@ -910,12 +911,11 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
 }
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
-    DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     ScopedResource* background_texture,
     const gfx::RectF& rect) {
   DCHECK(ShouldApplyBackgroundFilters(quad));
-  auto use_gr_context = ScopedUseGrContext::Create(this, frame);
+  auto use_gr_context = ScopedUseGrContext::Create(this);
   sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, gfx::SizeF(background_texture->size()));
 
@@ -1039,6 +1039,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   params.quad = quad;
   params.frame = frame;
   params.clip_region = clip_region;
+  params.window_matrix = frame->window_matrix;
+  params.projection_matrix = frame->projection_matrix;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 here is arbitrary and unused.
@@ -1070,6 +1072,8 @@ void GLRenderer::DrawRenderPassQuadInternal(
   UpdateRPDQShadersForBlending(params);
   if (!UpdateRPDQWithSkiaFilters(params))
     return;
+  UseRenderPass(params->frame, params->frame->current_render_pass);
+  SetViewport();
   UpdateRPDQTexturesForSampling(params);
   UpdateRPDQBlendMode(params);
   ChooseRPDQProgram(params);
@@ -1091,9 +1095,8 @@ bool GLRenderer::InitializeRPDQParameters(
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
                     params->dst_rect);
-  params->contents_device_transform = params->frame->window_matrix *
-                                      params->frame->projection_matrix *
-                                      quad_rect_matrix;
+  params->contents_device_transform =
+      params->window_matrix * params->projection_matrix * quad_rect_matrix;
   params->contents_device_transform.FlattenTo2d();
 
   // Can only draw surface if device matrix is invertible.
@@ -1129,6 +1132,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       settings_->force_blending_with_shaders;
 
   if (params->use_shaders_for_blending) {
+    DCHECK(params->frame);
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
@@ -1150,9 +1154,9 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       if (ShouldApplyBackgroundFilters(quad) && params->background_texture) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
-        params->background_image = ApplyBackgroundFilters(
-            params->frame, quad, params->background_texture.get(),
-            gfx::RectF(params->background_rect));
+        params->background_image =
+            ApplyBackgroundFilters(quad, params->background_texture.get(),
+                                   gfx::RectF(params->background_rect));
         if (params->background_image) {
           params->background_image_id =
               skia::GrBackendObjectToGrGLTextureInfo(
@@ -1226,8 +1230,8 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         SkIRect subset;
         gfx::RectF src_rect(quad->rect);
         params->filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this, params->frame), resource_provider_,
-            src_rect, params->dst_rect, quad->filters_scale, std::move(filter),
+            ScopedUseGrContext::Create(this), resource_provider_, src_rect,
+            params->dst_rect, quad->filters_scale, std::move(filter),
             params->contents_texture, &offset, &subset, params->flip_texture);
         if (!params->filter_image)
           return false;
@@ -1494,7 +1498,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
 }
 
 void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
-  DrawQuadGeometry(params.frame,
+  DrawQuadGeometry(params.projection_matrix,
                    params.quad->shared_quad_state->quad_to_target_transform,
                    params.dst_rect, params.locations.matrix);
 
@@ -1875,7 +1879,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     gfx::RectF centered_rect(
         gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
         gfx::SizeF(tile_rect.size()));
-    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
+    DrawQuadGeometry(frame->projection_matrix,
+                     quad->shared_quad_state->quad_to_target_transform,
                      centered_rect, uniforms.matrix_location);
   } else {
     PrepareGeometry(SHARED_BINDING);
@@ -2074,7 +2079,8 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       gfx::SizeF(tile_rect.size()));
-  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
+  DrawQuadGeometry(frame->projection_matrix,
+                   quad->shared_quad_state->quad_to_target_transform,
                    centered_rect, uniforms.matrix_location);
 }
 
@@ -2392,7 +2398,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   SetShaderOpacity(quad->shared_quad_state->opacity, alpha_location);
   if (!clip_region) {
-    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
+    DrawQuadGeometry(frame->projection_matrix,
+                     quad->shared_quad_state->quad_to_target_transform,
                      tile_rect, matrix_location);
   } else {
     float uvs[8] = {0};
@@ -2439,7 +2446,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   SetShaderOpacity(quad->shared_quad_state->opacity,
                    program->fragment_shader().alpha_location());
   if (!clip_region) {
-    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
+    DrawQuadGeometry(frame->projection_matrix,
+                     quad->shared_quad_state->quad_to_target_transform,
                      gfx::RectF(quad->rect),
                      program->vertex_shader().matrix_location());
   } else {
@@ -2804,7 +2812,7 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
                     reinterpret_cast<const void*>(0));
 }
 
-void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
+void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
                                   const gfx::Transform& draw_transform,
                                   const gfx::RectF& quad_rect,
                                   int matrix_location) {
@@ -2812,7 +2820,7 @@ void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
   static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad_rect_matrix);
+  ToGLMatrix(&gl_matrix[0], projection_matrix * quad_rect_matrix);
   gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
@@ -3728,15 +3736,6 @@ void GLRenderer::RestoreGLState() {
   } else {
     gl_->Disable(GL_SCISSOR_TEST);
   }
-}
-
-void GLRenderer::RestoreFramebuffer(DrawingFrame* frame) {
-  UseRenderPass(frame, frame->current_render_pass);
-
-  // Call SetViewport directly, rather than through PrepareSurfaceForPass.
-  // PrepareSurfaceForPass also clears the surface, which is not desired when
-  // restoring.
-  SetViewport();
 }
 
 bool GLRenderer::IsContextLost() {
