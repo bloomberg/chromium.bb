@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -302,19 +303,24 @@ public class DownloadNotificationService extends Service {
      * Add a download successful notification.
      * @param downloadGuid GUID of the download.
      * @param fileName GUID of the download.
-     * @param intent Intent to launch when clicking the notification.
+     * @param systemDownloadId Download ID assigned by system DownloadManager.
      * @return ID of the successful download notification. Used for removing the notification when
      *         user click on the snackbar.
      */
-    public int notifyDownloadSuccessful(String downloadGuid, String fileName, Intent intent) {
+    public int notifyDownloadSuccessful(String downloadGuid, String fileName,
+            long systemDownloadId) {
         int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download_done, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
-        if (intent != null) {
-            builder.setContentIntent(PendingIntent.getActivity(
-                    mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
-        }
+        ComponentName component = new ComponentName(
+                mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
+        Intent intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
+        intent.setComponent(component);
+        long[] idArray = {systemDownloadId};
+        intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
+        builder.setContentIntent(PendingIntent.getBroadcast(
+                mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
         mDownloadsInProgress.remove(downloadGuid);

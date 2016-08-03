@@ -237,7 +237,7 @@ public class DownloadNotificationServiceTest extends
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(3, entries.size());
 
-        service.notifyDownloadSuccessful(guid1, "success", null);
+        service.notifyDownloadSuccessful(guid1, "success", 100L);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
@@ -262,7 +262,7 @@ public class DownloadNotificationServiceTest extends
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
         String guid = UUID.randomUUID().toString();
-        service.notifyDownloadSuccessful(guid, "test", null);
+        service.notifyDownloadSuccessful(guid, "test", 100L);
         assertEquals(1, getService().getNotificationIds().size());
     }
 

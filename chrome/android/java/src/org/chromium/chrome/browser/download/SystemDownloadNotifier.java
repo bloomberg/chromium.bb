@@ -50,7 +50,6 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         // Pending download notifications to be posted.
         public final int type;
         public final DownloadInfo downloadInfo;
-        public Intent intent;
         public long startTime;
         public boolean isAutoResumable;
         public boolean canDownloadWhileMetered;
@@ -179,10 +178,9 @@ public class SystemDownloadNotifier implements DownloadNotifier {
 
     @Override
     public void notifyDownloadSuccessful(DownloadInfo downloadInfo, long systemDownloadId,
-            boolean canResolve, Intent intent) {
+            boolean canResolve) {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo);
-        info.intent = intent;
         info.canResolve = canResolve;
         info.systemDownloadId = systemDownloadId;
         updateDownloadNotification(info);
@@ -283,7 +281,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         final int notificationId = mBoundService.notifyDownloadSuccessful(
                                 info.getDownloadGuid(), info.getFileName(),
-                                notificationInfo.intent);
+                                notificationInfo.systemDownloadId);
                         onSuccessNotificationShown(notificationInfo, notificationId);
                         stopServiceIfNeeded();
                         break;

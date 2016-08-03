@@ -552,8 +552,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                                 || canResolveDownloadItem(mContext, item);
                         long systemDownloadId = item.getSystemDownloadId();
                         mDownloadNotifier.notifyDownloadSuccessful(
-                                info, systemDownloadId, canResolve,
-                                getLaunchIntentFromDownloadId(mContext, systemDownloadId));
+                                info, systemDownloadId, canResolve);
                         broadcastDownloadSuccessful(info);
                     } else {
                         downloadItems.add(item);

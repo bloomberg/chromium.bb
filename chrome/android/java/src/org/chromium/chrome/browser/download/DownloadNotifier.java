@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.Intent;
-
 /**
  * Class for reporting the status of a download.
  */
@@ -15,10 +13,9 @@ public interface DownloadNotifier {
      * @param downloadInfo info about the successful download.
      * @param systemDownloadId The system download ID assigned to the download.
      * @param canResolve Whether the download can be resolved to any activity.
-     * @param intent Intent to launch when clicking the download notification.
      */
     void notifyDownloadSuccessful(DownloadInfo downloadInfo, long systemDownloadId,
-            boolean canResolve, Intent intent);
+            boolean canResolve);
 
     /**
      * Add a download failed notification.
