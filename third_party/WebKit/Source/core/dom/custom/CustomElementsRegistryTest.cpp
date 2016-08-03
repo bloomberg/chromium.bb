@@ -249,7 +249,6 @@ public:
             || constructionStack().last() != element)
             return false;
         constructionStack().last().clear();
-        element->setCustomElementState(CustomElementState::Custom);
         return true;
     }
 

@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS "connectedCallback", "attributeChangedCallback" reactions should execute after the constructor 
-PASS The constructor non-conformatly uses API decorated with the [CEReactions] 
-FAIL Upgrading an element with a throwing constructor should rethrow that exception assert_array_equals: rethrow any exception thrown from constructor property 0, expected "constructor throws" but got object "Error: assert_false: calling super() with non-empty construction stack should not define the element expected false got true"
-FAIL Upgrading an element with invalid constructor assert_array_equals: returning object that is different from element should throw "InvalidStateError" lengths differ, expected 1 got 0
-Harness: the test ran to completion.
-

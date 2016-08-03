@@ -61,7 +61,9 @@ void V8HTMLElement::constructorCustom(
         element = HTMLElement::create(
             QualifiedName(nullAtom, definition->descriptor().localName(), HTMLNames::xhtmlNamespaceURI),
             *window->document());
+        // TODO(davaajav): write this as one call to setCustomElementState instead of two
         element->setCustomElementState(CustomElementState::Undefined);
+        element->setCustomElementState(CustomElementState::Custom);
     } else {
         element = definition->constructionStack().last();
         if (element) {
@@ -91,10 +93,6 @@ void V8HTMLElement::constructorCustom(
     v8CallOrCrash(wrapper->SetPrototype(
         scriptState->context(),
         definition->prototype()));
-
-    // TODO(dominicc): Move this to the exactly correct place when
-    // https://github.com/whatwg/html/issues/1297 is closed.
-    element->setCustomElementState(CustomElementState::Custom);
 }
 
 } // namespace blink

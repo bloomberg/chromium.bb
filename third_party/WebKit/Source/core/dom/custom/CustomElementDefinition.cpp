@@ -127,7 +127,7 @@ void CustomElementDefinition::upgrade(Element* element)
         return;
     }
 
-    CHECK(element->getCustomElementState() == CustomElementState::Custom);
+    element->setCustomElementState(CustomElementState::Custom);
 }
 
 bool CustomElementDefinition::hasAttributeChangedCallback(

@@ -9,11 +9,13 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8CustomElementsRegistry.h"
 #include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElement.h"
+#include "core/events/ErrorEvent.h"
 #include "core/html/HTMLElement.h"
 #include "v8.h"
 #include "wtf/Allocator.h"
@@ -224,18 +226,23 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
     tryCatch.SetVerbose(true);
 
     Element* result = runConstructor();
-    if (!result)
+
+    // To report exception thrown from runConstructor()
+    if (tryCatch.HasCaught())
         return false;
 
+    // To report InvalidStateError Exception, when the constructor returns some differnt object
     if (result != element) {
-        V8ThrowException::throwException(
-            V8ThrowException::createDOMException(
-                m_scriptState->isolate(),
-                InvalidStateError,
-                "custom element constructors must call super() first and must "
-                "not return a different object",
-                constructor()),
-            m_scriptState->isolate());
+        const String& message = "custom element constructors must call super() first and must "
+            "not return a different object";
+
+        std::unique_ptr<SourceLocation> location = SourceLocation::fromFunction(constructor().As<v8::Function>());
+        v8::Local<v8::Value> exception =  V8ThrowException::createDOMException(
+            m_scriptState->isolate(),
+            InvalidStateError,
+            message,
+            constructor());
+        fireErrorEvent(m_scriptState.get(), message, exception, std::move(location));
         return false;
     }
 
@@ -258,6 +265,14 @@ Element* ScriptCustomElementDefinition::runConstructor()
         return nullptr;
     }
     return V8Element::toImplWithTypeCheck(isolate, result);
+}
+
+void ScriptCustomElementDefinition::fireErrorEvent(ScriptState* scriptState, const String& message, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
+{
+    ErrorEvent* event = ErrorEvent::create(message, std::move(location), &scriptState->world());
+    V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event, exception, scriptState->context()->Global());
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    executionContext->reportException(event, NotSharableCrossOrigin);
 }
 
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const
