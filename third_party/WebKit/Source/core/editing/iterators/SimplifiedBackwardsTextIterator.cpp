@@ -94,7 +94,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextItera
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, Node* endNode, int startOffset, int endOffset)
 {
-    if (!startNode->offsetInCharacters() && startOffset >= 0) {
+    if (!startNode->isCharacterDataNode() && startOffset >= 0) {
         // |Strategy::childAt()| will return 0 if the offset is out of range. We
         // rely on this behavior instead of calling |countChildren()| to avoid
         // traversing the children twice.
@@ -103,7 +103,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, N
             startOffset = 0;
         }
     }
-    if (!endNode->offsetInCharacters() && endOffset > 0) {
+    if (!endNode->isCharacterDataNode() && endOffset > 0) {
         // |Strategy::childAt()| will return 0 if the offset is out of range. We
         // rely on this behavior instead of calling |countChildren()| to avoid
         // traversing the children twice.

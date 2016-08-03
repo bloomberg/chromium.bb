@@ -172,7 +172,7 @@ inline void RangeBoundaryPoint::set(Node* container, int offset, Node* childBefo
 inline void RangeBoundaryPoint::setOffset(int offset)
 {
     DCHECK(m_containerNode);
-    DCHECK(m_containerNode->offsetInCharacters());
+    DCHECK(m_containerNode->isCharacterDataNode());
     DCHECK_GE(m_offsetInContainer, 0);
     DCHECK(!m_childBeforeBoundary);
     m_offsetInContainer = offset;
@@ -199,7 +199,7 @@ inline void RangeBoundaryPoint::setToStartOfNode(Node& container)
 inline void RangeBoundaryPoint::setToEndOfNode(Node& container)
 {
     m_containerNode = &container;
-    if (m_containerNode->offsetInCharacters()) {
+    if (m_containerNode->isCharacterDataNode()) {
         m_offsetInContainer = m_containerNode->maxCharacterOffset();
         m_childBeforeBoundary = nullptr;
     } else {

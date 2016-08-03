@@ -95,7 +95,7 @@ static bool notSkipping(const Node& node)
 template <typename Strategy>
 Node* pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
 {
-    if (rangeEndOffset >= 0 && !rangeEndContainer.offsetInCharacters() && notSkipping(rangeEndContainer)) {
+    if (rangeEndOffset >= 0 && !rangeEndContainer.isCharacterDataNode() && notSkipping(rangeEndContainer)) {
         for (Node* next = Strategy::childAt(rangeEndContainer, rangeEndOffset); next; next = Strategy::nextSibling(*next)) {
             if (notSkipping(*next))
                 return next;
@@ -184,12 +184,12 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
     m_startOffset = startOffset;
     m_endContainer = endContainer;
     m_endOffset = endOffset;
-    m_endNode = endContainer && !endContainer->offsetInCharacters() && endOffset > 0 ? Strategy::childAt(*endContainer, endOffset - 1) : nullptr;
+    m_endNode = endContainer && !endContainer->isCharacterDataNode() && endOffset > 0 ? Strategy::childAt(*endContainer, endOffset - 1) : nullptr;
 
     m_shadowDepth = shadowDepthOf<Strategy>(*startContainer, *endContainer);
 
     // Set up the current node for processing.
-    if (startContainer->offsetInCharacters())
+    if (startContainer->isCharacterDataNode())
         m_node = startContainer;
     else if (Node* child = Strategy::childAt(*startContainer, startOffset))
         m_node = child;
@@ -1059,7 +1059,7 @@ Node* TextIteratorAlgorithm<Strategy>::node() const
 {
     if (m_textState.positionNode() || m_endContainer) {
         Node* node = currentContainer();
-        if (node->offsetInCharacters())
+        if (node->isCharacterDataNode())
             return node;
         return Strategy::childAt(*node, startOffsetInCurrentContainer());
     }

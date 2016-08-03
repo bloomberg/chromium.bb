@@ -1235,7 +1235,7 @@ void Range::checkExtractPrecondition(ExceptionState& exceptionState)
 
 Node* Range::firstNode() const
 {
-    if (m_start.container()->offsetInCharacters())
+    if (m_start.container()->isCharacterDataNode())
         return m_start.container();
     if (Node* child = NodeTraversal::childAt(*m_start.container(), m_start.offset()))
         return child;
@@ -1246,7 +1246,7 @@ Node* Range::firstNode() const
 
 Node* Range::pastLastNode() const
 {
-    if (m_end.container()->offsetInCharacters())
+    if (m_end.container()->isCharacterDataNode())
         return NodeTraversal::nextSkippingChildren(*m_end.container());
     if (Node* child = NodeTraversal::childAt(*m_end.container(), m_end.offset()))
         return child;

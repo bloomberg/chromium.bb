@@ -48,7 +48,7 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
     DCHECK(node);
     if (!node)
         return 0;
-    if (node->offsetInCharacters())
+    if (node->isCharacterDataNode())
         return node->maxCharacterOffset();
 
     if (Traversal::hasChildren(*node))

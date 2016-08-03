@@ -114,7 +114,7 @@ bool isEmptyFontTag(const Element* element, ShouldStyleAttributeBeEmpty shouldSt
 
 static bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
 {
-    if (anchorNode->offsetInCharacters())
+    if (anchorNode->isCharacterDataNode())
         return offset < anchorNode->maxCharacterOffset();
     int currentOffset = 0;
     for (Node* node = NodeTraversal::firstChild(*anchorNode); node && currentOffset < offset; node = NodeTraversal::nextSibling(*node))
