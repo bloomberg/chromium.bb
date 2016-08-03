@@ -8428,30 +8428,6 @@ I don't think this site should be blocked!
         Report an issue
       </message>
 
-      <!-- settings reset bubble messages -->
-      <message name="IDS_RESETTING" desc="Text for the button, once the user clicked to reset settings.">
-        Resetting...
-      </message>
-      <message name="IDS_NO_THANKS" desc="Text for the button the user clicks to refuse settings reset.">
-        No thanks
-      </message>
-      <if expr="use_titlecase">
-        <message name="IDS_RESET_SETTINGS_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
-          Reset Altered <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Settings
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_RESET_SETTINGS_MENU_ITEM" desc="Text for the Chrome menu option replacing Update required.">
-          Reset altered <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings
-        </message>
-      </if>
-      <message name="IDS_RESET_BUBBLE_TITLE" desc="Text for the title of the settings reset bubble view.">
-        Reset altered <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings?
-      </message>
-      <message name="IDS_RESET_BUBBLE_TEXT" desc="Text for the settings reset bubble view full description.">
-        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> detected that your browser settings may have been changed without your knowledge. Would you like to reset them to their original defaults?
-      </message>
-
       <!-- SRT bubble messages -->
       <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the Chrome Cleanup Tool bubble">
         Get the Chrome Cleanup Tool
