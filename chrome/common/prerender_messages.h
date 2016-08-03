@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "chrome/common/prerender_types.h"
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -15,6 +16,9 @@
 #include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START PrerenderMsgStart
+
+IPC_ENUM_TRAITS_MAX_VALUE(prerender::PrerenderMode,
+                          prerender::PRERENDER_MODE_COUNT - 1)
 
 // PrerenderLinkManager Messages
 // These are messages sent from the renderer to the browser in
@@ -47,10 +51,9 @@ IPC_MESSAGE_CONTROL1(PrerenderHostMsg_AbandonLinkRelPrerender,
 // running prerenders.
 
 // Tells a renderer if it's currently being prerendered.  Must only be set
-// to true before any navigation occurs, and only set to false at most once
-// after that.
-IPC_MESSAGE_ROUTED1(PrerenderMsg_SetIsPrerendering,
-                    bool /* whether the RenderView is prerendering */)
+// before any navigation occurs, and only set to NO_PRERENDER at most once after
+// that.
+IPC_MESSAGE_ROUTED1(PrerenderMsg_SetIsPrerendering, prerender::PrerenderMode)
 
 // Signals to launcher that a prerender is running.
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,

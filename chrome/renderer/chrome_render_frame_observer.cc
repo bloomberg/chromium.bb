@@ -158,8 +158,9 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ChromeRenderFrameObserver::OnSetIsPrerendering(bool is_prerendering) {
-  if (is_prerendering) {
+void ChromeRenderFrameObserver::OnSetIsPrerendering(
+    prerender::PrerenderMode mode) {
+  if (mode != prerender::NO_PRERENDER) {
     // If the PrerenderHelper for this frame already exists, don't create it. It
     // can already be created for subframes during handling of
     // RenderFrameCreated, if the parent frame was prerendering at time of

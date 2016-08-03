@@ -14,6 +14,13 @@ enum PrerenderRelType {
   PrerenderRelTypeNext = 0x2,
 };
 
+enum PrerenderMode {
+  NO_PRERENDER = 0,
+  FULL_PRERENDER = 1,  // Full rendering of the page.
+  PREFETCH_ONLY = 2,   // Prefetch some network resources to warm up the cache.
+  PRERENDER_MODE_COUNT = 3,
+};
+
 }  // namespace prerender
 
 #endif  // CHROME_COMMON_PRERENDER_TYPES_H_

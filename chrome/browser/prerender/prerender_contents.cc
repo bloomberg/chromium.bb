@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/common/prerender_types.h"
 #include "chrome/common/render_messages.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -512,7 +513,7 @@ void PrerenderContents::RenderFrameCreated(
   // occur.  Note that this is always triggered before the first navigation, so
   // there's no need to send the message just after the WebContents is created.
   render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
-      render_frame_host->GetRoutingID(), true));
+      render_frame_host->GetRoutingID(), FULL_PRERENDER));
 }
 
 void PrerenderContents::DidStopLoading() {
@@ -700,7 +701,7 @@ void PrerenderContents::PrepareForUse() {
 
   if (prerender_contents_.get()) {
     prerender_contents_->SendToAllFrames(
-        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, false));
+        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, NO_PRERENDER));
   }
 
   NotifyPrerenderStop();

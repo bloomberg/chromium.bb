@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/common/prerender_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 
@@ -30,7 +31,7 @@ class PrerenderHelper
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 
-  void OnSetIsPrerendering(bool is_prerendering);
+  void OnSetIsPrerendering(PrerenderMode mode);
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHelper);
 };

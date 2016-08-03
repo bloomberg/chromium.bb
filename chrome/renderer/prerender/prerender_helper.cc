@@ -58,10 +58,10 @@ bool PrerenderHelper::OnMessageReceived(
   return false;
 }
 
-void PrerenderHelper::OnSetIsPrerendering(bool is_prerendering) {
+void PrerenderHelper::OnSetIsPrerendering(PrerenderMode mode) {
   // Immediately after construction, |this| may receive the message that
   // triggered its creation.  If so, ignore it.
-  if (is_prerendering)
+  if (mode != prerender::NO_PRERENDER)
     return;
 
   content::RenderFrame* frame = render_frame();

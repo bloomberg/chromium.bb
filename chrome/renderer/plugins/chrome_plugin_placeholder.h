@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/common/prerender_types.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 #include "content/public/renderer/context_menu_client.h"
@@ -94,6 +95,7 @@ class ChromePluginPlaceholder final
   void OnPluginComponentUpdateDownloading();
   void OnPluginComponentUpdateSuccess();
   void OnPluginComponentUpdateFailure();
+  void OnSetPrerenderMode(prerender::PrerenderMode mode);
 
   ChromeViewHostMsg_GetPluginInfo_Status status_;
 

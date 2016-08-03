@@ -212,7 +212,7 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   // We don't swallow these messages because multiple blocked plugins and other
   // objects have an interest in them.
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetPrerenderMode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
   IPC_END_MESSAGE_MAP()
 
@@ -272,6 +272,11 @@ void ChromePluginPlaceholder::OnPluginComponentUpdateSuccess() {
 void ChromePluginPlaceholder::OnPluginComponentUpdateFailure() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
                                         plugin_name_));
+}
+
+void ChromePluginPlaceholder::OnSetPrerenderMode(
+    prerender::PrerenderMode mode) {
+  OnSetIsPrerendering(mode != prerender::NO_PRERENDER);
 }
 
 void ChromePluginPlaceholder::PluginListChanged() {
