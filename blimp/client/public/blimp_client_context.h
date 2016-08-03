@@ -30,8 +30,10 @@ namespace client {
 class BlimpClientContext : public KeyedService {
  public:
 #if defined(OS_ANDROID)
-  // Returns a Java object of the type BlimpClientContext.
-  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+  // Returns a Java object of the type BlimpClientContext for the given
+  // BlimpClientContext.
+  static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
+      BlimpClientContext* blimp_client_context);
 #endif  // defined(OS_ANDROID)
 
   // Creates a BlimpClientContext. The implementation of this function

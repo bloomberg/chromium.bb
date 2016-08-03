@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/public/blimp_client_context.h"
 #include "jni/BlimpClientContextImpl_jni.h"
 
 namespace blimp {
@@ -25,14 +26,21 @@ BlimpClientContextImplAndroid* BlimpClientContextImplAndroid::FromJavaObject(
       Java_BlimpClientContextImpl_getNativePtr(env, jobj));
 }
 
-base::android::ScopedJavaLocalRef<jobject>
-BlimpClientContextImplAndroid::GetJavaObject() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
+// This function is declared in //blimp/client/public/blimp_client_context.h,
+// and either this function or the one in
+// //blimp/client/core/android/dummy_client_context_android.cc should be linked
+// in to any binary using BlimpClientContext::GetJavaObject.
+// static
+base::android::ScopedJavaLocalRef<jobject> BlimpClientContext::GetJavaObject(
+    BlimpClientContext* blimp_client_context) {
+  BlimpClientContextImplAndroid* blimp_client_context_impl_android =
+      static_cast<BlimpClientContextImplAndroid*>(blimp_client_context);
+  return blimp_client_context_impl_android->GetJavaObject();
 }
 
 BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
-    BlimpClientContextImpl* blimp_client_context_impl)
-    : blimp_client_context_impl_(blimp_client_context_impl) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
+    : BlimpClientContextImpl(io_thread_task_runner) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_BlimpClientContextImpl_create(
@@ -46,9 +54,15 @@ BlimpClientContextImplAndroid::~BlimpClientContextImplAndroid() {
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-BlimpClientContextImplAndroid::CreateBlimpContents(JNIEnv* env, jobject jobj) {
+BlimpClientContextImplAndroid::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BlimpClientContextImplAndroid::CreateBlimpContentsJava(JNIEnv* env,
+                                                       jobject jobj) {
   std::unique_ptr<BlimpContents> blimp_contents =
-      blimp_client_context_impl_->CreateBlimpContents();
+      BlimpClientContextImpl::CreateBlimpContents();
   // This intentionally releases the ownership and gives it to Java.
   BlimpContentsImpl* blimp_contents_impl =
       static_cast<BlimpContentsImpl*>(blimp_contents.release());

@@ -7,30 +7,31 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "blimp/client/core/blimp_client_context_impl.h"
 
 namespace blimp {
 namespace client {
 
 // JNI bridge between BlimpClientContextImpl in Java and C++.
-class BlimpClientContextImplAndroid : public base::SupportsUserData::Data {
+class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
  public:
   static bool RegisterJni(JNIEnv* env);
   static BlimpClientContextImplAndroid* FromJavaObject(JNIEnv* env,
                                                        jobject jobj);
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
+  // The |io_thread_task_runner| must be the task runner to use for IO
+  // operations.
   explicit BlimpClientContextImplAndroid(
-      BlimpClientContextImpl* blimp_client_context_impl);
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~BlimpClientContextImplAndroid() override;
 
-  base::android::ScopedJavaLocalRef<jobject> CreateBlimpContents(JNIEnv* env,
-                                                                 jobject jobj);
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  base::android::ScopedJavaLocalRef<jobject> CreateBlimpContentsJava(
+      JNIEnv* env,
+      jobject jobj);
 
  private:
-  BlimpClientContextImpl* blimp_client_context_impl_;
-
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientContextImplAndroid);

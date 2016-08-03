@@ -7,21 +7,21 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "blimp/client/core/dummy_blimp_client_context.h"
 
 namespace blimp {
 namespace client {
 
 // JNI bridge between DummyBlimpClientContext in Java and C++.
-class DummyBlimpClientContextAndroid : public base::SupportsUserData::Data {
+class DummyBlimpClientContextAndroid : public DummyBlimpClientContext {
  public:
   static DummyBlimpClientContextAndroid* FromJavaObject(JNIEnv* env,
                                                         jobject jobj);
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   DummyBlimpClientContextAndroid();
   ~DummyBlimpClientContextAndroid() override;
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

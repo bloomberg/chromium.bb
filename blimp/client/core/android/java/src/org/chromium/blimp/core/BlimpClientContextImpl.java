@@ -36,7 +36,7 @@ public class BlimpClientContextImpl implements BlimpClientContext {
     @Override
     public BlimpContents createBlimpContents() {
         assert mNativeBlimpClientContextImplAndroid != 0;
-        return nativeCreateBlimpContents(mNativeBlimpClientContextImplAndroid);
+        return nativeCreateBlimpContentsJava(mNativeBlimpClientContextImplAndroid);
     }
 
     @Override
@@ -62,6 +62,6 @@ public class BlimpClientContextImpl implements BlimpClientContext {
         return mNativeBlimpClientContextImplAndroid;
     }
 
-    private native BlimpContents nativeCreateBlimpContents(
+    private native BlimpContents nativeCreateBlimpContentsJava(
             long nativeBlimpClientContextImplAndroid);
 }

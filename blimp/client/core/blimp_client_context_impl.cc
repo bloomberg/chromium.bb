@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/supports_user_data.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
@@ -20,14 +19,6 @@
 namespace blimp {
 namespace client {
 
-namespace {
-
-#if defined(OS_ANDROID)
-const char kBlimpClientContextImplAndroidKey[] =
-    "blimp_client_context_impl_android";
-#endif  // OS_ANDROID
-}
-
 // This function is declared in //blimp/client/public/blimp_client_context.h,
 // and either this function or the one in
 // //blimp/client/core/dummy_blimp_client_context.cc should be linked in to
@@ -35,7 +26,11 @@ const char kBlimpClientContextImplAndroidKey[] =
 // static
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+#if defined(OS_ANDROID)
+  return new BlimpClientContextImplAndroid(io_thread_task_runner);
+#else
   return new BlimpClientContextImpl(io_thread_task_runner);
+#endif  // defined(OS_ANDROID)
 }
 
 BlimpClientContextImpl::BlimpClientContextImpl(
@@ -64,29 +59,6 @@ BlimpClientContextImpl::BlimpClientContextImpl(
 BlimpClientContextImpl::~BlimpClientContextImpl() {
   io_thread_task_runner_->DeleteSoon(FROM_HERE, net_components_.release());
 }
-
-#if defined(OS_ANDROID)
-
-base::android::ScopedJavaLocalRef<jobject>
-BlimpClientContextImpl::GetJavaObject() {
-  return GetBlimpClientContextImplAndroid()->GetJavaObject();
-}
-
-BlimpClientContextImplAndroid*
-BlimpClientContextImpl::GetBlimpClientContextImplAndroid() {
-  BlimpClientContextImplAndroid* blimp_client_contents_impl_android =
-      static_cast<BlimpClientContextImplAndroid*>(
-          GetUserData(kBlimpClientContextImplAndroidKey));
-  if (!blimp_client_contents_impl_android) {
-    blimp_client_contents_impl_android =
-        new BlimpClientContextImplAndroid(this);
-    SetUserData(kBlimpClientContextImplAndroidKey,
-                blimp_client_contents_impl_android);
-  }
-  return blimp_client_contents_impl_android;
-}
-
-#endif  // defined(OS_ANDROID)
 
 void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
   delegate_ = delegate;

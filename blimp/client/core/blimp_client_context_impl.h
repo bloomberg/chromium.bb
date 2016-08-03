@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/supports_user_data.h"
 #include "base/threading/thread.h"
 #include "blimp/client/core/session/client_network_components.h"
 #include "blimp/client/core/session/network_event_observer.h"
@@ -20,22 +19,13 @@
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/thread_pipe_manager.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#endif  // defined(OS_ANDROID)
-
 namespace blimp {
 namespace client {
-
-#if defined(OS_ANDROID)
-class BlimpClientContextImplAndroid;
-#endif  // defined(OS_ANDROID)
 
 // BlimpClientContextImpl is the implementation of the main context-class for
 // the blimp client.
 class BlimpClientContextImpl : public BlimpClientContext,
-                               public NetworkEventObserver,
-                               base::SupportsUserData {
+                               public NetworkEventObserver {
  public:
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
@@ -43,14 +33,7 @@ class BlimpClientContextImpl : public BlimpClientContext,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~BlimpClientContextImpl() override;
 
-#if defined(OS_ANDROID)
-  BlimpClientContextImplAndroid* GetBlimpClientContextImplAndroid();
-#endif  // defined(OS_ANDROID)
-
-// BlimpClientContext implementation.
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
-#endif  // defined(OS_ANDROID)
+  // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
 

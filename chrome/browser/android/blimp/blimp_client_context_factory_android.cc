@@ -22,9 +22,8 @@ GetBlimpClientContextForProfile(JNIEnv* env,
                                 const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
-  return BlimpClientContextFactory::GetInstance()
-      ->GetForBrowserContext(profile)
-      ->GetJavaObject();
+  return blimp::client::BlimpClientContext::GetJavaObject(
+      BlimpClientContextFactory::GetInstance()->GetForBrowserContext(profile));
 }
 
 bool RegisterBlimpClientContextFactoryJni(JNIEnv* env) {

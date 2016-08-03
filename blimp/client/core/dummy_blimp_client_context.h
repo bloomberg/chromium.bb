@@ -6,36 +6,19 @@
 #define BLIMP_CLIENT_CORE_DUMMY_BLIMP_CLIENT_CONTEXT_H_
 
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#endif  // defined(OS_ANDROID)
 
 namespace blimp {
 namespace client {
 
-#if defined(OS_ANDROID)
-class DummyBlimpClientContextAndroid;
-#endif  // defined(OS_ANDROID)
-
 // A dummy implementation of the BlimpClientContext.
-class DummyBlimpClientContext : public BlimpClientContext,
-                                base::SupportsUserData {
+class DummyBlimpClientContext : public BlimpClientContext {
  public:
   DummyBlimpClientContext();
   ~DummyBlimpClientContext() override;
 
-#if defined(OS_ANDROID)
-  DummyBlimpClientContextAndroid* GetDummyBlimpClientContextAndroid();
-#endif  // defined(OS_ANDROID)
-
-// BlimpClientContext implementation.
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
-#endif  // defined(OS_ANDROID)
+  // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
 

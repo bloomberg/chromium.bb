@@ -4,11 +4,8 @@
 
 #include "blimp/client/core/dummy_blimp_client_context.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/supports_user_data.h"
-#include "blimp/client/public/blimp_client_context_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/android/dummy_blimp_client_context_android.h"
@@ -17,14 +14,6 @@
 namespace blimp {
 namespace client {
 
-namespace {
-
-#if defined(OS_ANDROID)
-const char kDummyBlimpClientContextAndroidKey[] =
-    "dummy_blimp_client_context_android";
-#endif  // OS_ANDROID
-}
-
 // This function is declared in //blimp/client/public/blimp_client_context.h,
 // and either this function or the one in
 // //blimp/client/core/blimp_client_context_impl.cc should be linked in to
@@ -32,34 +21,16 @@ const char kDummyBlimpClientContextAndroidKey[] =
 // static
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+#if defined(OS_ANDROID)
+  return new DummyBlimpClientContextAndroid();
+#else
   return new DummyBlimpClientContext();
+#endif  // defined(OS_ANDROID)
 }
 
 DummyBlimpClientContext::DummyBlimpClientContext() : BlimpClientContext() {}
 
 DummyBlimpClientContext::~DummyBlimpClientContext() {}
-
-#if defined(OS_ANDROID)
-
-base::android::ScopedJavaLocalRef<jobject>
-DummyBlimpClientContext::GetJavaObject() {
-  return GetDummyBlimpClientContextAndroid()->GetJavaObject();
-}
-
-DummyBlimpClientContextAndroid*
-DummyBlimpClientContext::GetDummyBlimpClientContextAndroid() {
-  DummyBlimpClientContextAndroid* dummy_blimp_client_contents_android =
-      static_cast<DummyBlimpClientContextAndroid*>(
-          GetUserData(kDummyBlimpClientContextAndroidKey));
-  if (!dummy_blimp_client_contents_android) {
-    dummy_blimp_client_contents_android = new DummyBlimpClientContextAndroid();
-    SetUserData(kDummyBlimpClientContextAndroidKey,
-                dummy_blimp_client_contents_android);
-  }
-  return dummy_blimp_client_contents_android;
-}
-
-#endif  // defined(OS_ANDROID)
 
 void DummyBlimpClientContext::SetDelegate(
     BlimpClientContextDelegate* delegate) {}
