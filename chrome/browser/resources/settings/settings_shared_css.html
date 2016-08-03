@@ -42,19 +42,20 @@
       }
 
       paper-dropdown-menu paper-listbox {
-        padding: 0;
+        min-width: 128px;
+        padding: 8px 0;
       }
 
       iron-dropdown .dropdown-item,
       paper-dropdown-menu .dropdown-item {
+        -webkit-padding-start: 24px;
         align-items: center;
         background: none;
         border: none;
         color: var(--paper-grey-800);
         display: flex;
         font: inherit;
-        min-height: 48px;
-        padding: 0 16px;
+        min-height: 32px;
         text-align: start;
         width: 100%;
       }
