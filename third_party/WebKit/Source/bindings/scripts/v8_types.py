@@ -199,6 +199,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return implemented_as_class + '*'
         return cpp_template_type('Member', implemented_as_class)
     if idl_type.is_dictionary:
+        if used_as_rvalue_type:
+            return 'const %s&' % base_idl_type
         return base_idl_type
     if idl_type.is_union_type:
         # Avoid "AOrNullOrB" for cpp type of (A? or B) because we generate
