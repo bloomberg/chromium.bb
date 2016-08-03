@@ -1152,6 +1152,11 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
 
+#if defined(OS_CHROMEOS)
+// List of all printers that the user has configured.
+const char kPrintingDevices[] = "printing.devices";
+#endif  // OS_CHROMEOS
+
 // An integer pref specifying the fallback behavior for sites outside of content
 // packs. One of:
 // 0: Allow (does nothing)
