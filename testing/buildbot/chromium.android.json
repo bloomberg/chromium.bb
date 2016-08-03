@@ -470,6 +470,19 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "sync_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "sync_unit_tests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1008,6 +1021,19 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "sync_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ]
+        },
+        "test": "sync_unit_tests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1157,6 +1183,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "sync_unit_tests"
+      },
+      {
         "test": "ui_android_unittests"
       },
       {
@@ -1259,6 +1288,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
@@ -1366,6 +1398,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
@@ -1483,6 +1518,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "sync_unit_tests"
+      },
+      {
         "test": "ui_android_unittests"
       },
       {
@@ -1593,6 +1631,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "sync_unit_tests"
+      },
+      {
         "test": "ui_android_unittests"
       },
       {
@@ -1698,6 +1739,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
@@ -1813,6 +1857,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "sync_unit_tests"
+      },
+      {
         "test": "ui_android_unittests"
       },
       {
@@ -1918,6 +1965,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
