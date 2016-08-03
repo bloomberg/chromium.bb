@@ -25,7 +25,6 @@ class FilePath;
 
 namespace shell {
 class InterfaceProvider;
-class InterfaceRegistry;
 }
 
 namespace content {
@@ -92,10 +91,6 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // they need to call this method so that the process handle is associated with
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
-
-  // Returns the shell::InterfaceRegistry the browser process uses to expose
-  // interfaces to the child.
-  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
 
   // Returns the shell::InterfaceProvider the browser process can use to bind
   // interfaces exposed to it from the child.

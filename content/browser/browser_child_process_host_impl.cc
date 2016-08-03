@@ -278,11 +278,6 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   data_.handle = handle;
 }
 
-shell::InterfaceRegistry* BrowserChildProcessHostImpl::GetInterfaceRegistry() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return delegate_->GetInterfaceRegistry();
-}
-
 shell::InterfaceProvider* BrowserChildProcessHostImpl::GetRemoteInterfaces() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return delegate_->GetRemoteInterfaces();

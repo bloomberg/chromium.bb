@@ -106,7 +106,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       GpuMainThreadFactoryFunction create);
 
   // BrowserChildProcessHostDelegate implementation.
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   // Get the GPU process host for the GPU process with the given ID. Returns

@@ -39,8 +39,7 @@ class MojoChildConnection::IOThreadContext
   void Initialize(const shell::Identity& child_identity,
                   shell::Connector* connector,
                   mojo::ScopedMessagePipeHandle service_pipe,
-                  scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-                  const shell::InterfaceRegistry::Binder& default_binder) {
+                  scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
     DCHECK(!io_task_runner_);
     io_task_runner_ = io_task_runner;
     std::unique_ptr<shell::Connector> io_thread_connector;
@@ -51,9 +50,7 @@ class MojoChildConnection::IOThreadContext
         base::Bind(&IOThreadContext::InitializeOnIOThread, this,
                    child_identity,
                    base::Passed(&io_thread_connector),
-                   base::Passed(&service_pipe),
-                   base::Bind(&CallBinderOnTaskRunner, default_binder,
-                              base::ThreadTaskRunnerHandle::Get())));
+                   base::Passed(&service_pipe)));
   }
 
   void ShutDown() {
@@ -89,8 +86,7 @@ class MojoChildConnection::IOThreadContext
   void InitializeOnIOThread(
       const shell::Identity& child_identity,
       std::unique_ptr<shell::Connector> connector,
-      mojo::ScopedMessagePipeHandle service_pipe,
-      const shell::InterfaceRegistry::Binder& default_binder) {
+      mojo::ScopedMessagePipeHandle service_pipe) {
     shell::mojom::ServicePtr service;
     service.Bind(mojo::InterfacePtrInfo<shell::mojom::Service>(
         std::move(service_pipe), 0u));
@@ -102,11 +98,8 @@ class MojoChildConnection::IOThreadContext
                                          std::move(pid_receiver_request));
 
     // In some unit testing scenarios a null connector is passed.
-    if (!connector)
-      return;
-
-    connection_ = connector->Connect(&params);
-    connection_->GetInterfaceRegistry()->set_default_binder(default_binder);
+    if (connector)
+      connection_ = connector->Connect(&params);
   }
 
   void ShutDownOnIOThread() {
@@ -136,17 +129,13 @@ MojoChildConnection::MojoChildConnection(
     : context_(new IOThreadContext),
       child_identity_(service_name, shell::mojom::kInheritUserID, instance_id),
       service_token_(mojo::edk::GenerateRandomToken()),
-      interface_registry_(nullptr),
       weak_factory_(this) {
   mojo::ScopedMessagePipeHandle service_pipe =
       mojo::edk::CreateParentMessagePipe(service_token_, child_token);
 
   context_ = new IOThreadContext;
-  context_->Initialize(
-      child_identity_, connector, std::move(service_pipe),
-      io_task_runner,
-      base::Bind(&MojoChildConnection::GetInterface,
-                 weak_factory_.GetWeakPtr()));
+  context_->Initialize(child_identity_, connector, std::move(service_pipe),
+                       io_task_runner);
   remote_interfaces_.Forward(
       base::Bind(&CallBinderOnTaskRunner,
                  base::Bind(&IOThreadContext::GetRemoteInterfaceOnIOThread,
@@ -159,13 +148,6 @@ MojoChildConnection::~MojoChildConnection() {
 
 void MojoChildConnection::SetProcessHandle(base::ProcessHandle handle) {
   context_->SetProcessHandle(handle);
-}
-
-void MojoChildConnection::GetInterface(
-    const mojo::String& interface_name,
-    mojo::ScopedMessagePipeHandle request_handle) {
-  static_cast<shell::mojom::InterfaceProvider*>(&interface_registry_)
-      ->GetInterface(interface_name, std::move(request_handle));
 }
 
 }  // namespace content

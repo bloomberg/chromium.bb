@@ -1204,10 +1204,6 @@ void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
   Send(new ViewMsg_TimezoneChange(zone_id));
 }
 
-shell::InterfaceRegistry* RenderProcessHostImpl::GetInterfaceRegistry() {
-  return mojo_child_connection_->GetInterfaceRegistry();
-}
-
 shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
   return mojo_child_connection_->GetRemoteInterfaces();
 }

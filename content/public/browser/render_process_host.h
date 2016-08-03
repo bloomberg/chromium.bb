@@ -263,10 +263,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // have changed.
   virtual void NotifyTimezoneChange(const std::string& zone_id) = 0;
 
-  // Returns the shell::InterfaceRegistry the browser process uses to expose
-  // interfaces to the renderer.
-  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
-
   // Returns the shell::InterfaceProvider the browser process can use to bind
   // interfaces exposed to it from the renderer.
   virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;

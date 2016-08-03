@@ -940,10 +940,6 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
       process_->GetTerminationStatus(true /* known_dead */, NULL));
 }
 
-shell::InterfaceRegistry* GpuProcessHost::GetInterfaceRegistry() {
-  return mojo_child_connection_->GetInterfaceRegistry();
-}
-
 shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
   return mojo_child_connection_->GetRemoteInterfaces();
 }

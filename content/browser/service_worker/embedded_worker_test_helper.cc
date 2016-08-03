@@ -112,9 +112,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   std::unique_ptr<shell::InterfaceProvider> host_remote_interfaces(
       new shell::InterfaceProvider);
   host_remote_interfaces->Bind(std::move(interfaces));
-  std::unique_ptr<shell::InterfaceRegistry> host_registry(
-      new shell::InterfaceRegistry(nullptr));
-  render_process_host_->SetInterfaceRegistry(std::move(host_registry));
   render_process_host_->SetRemoteInterfaces(std::move(host_remote_interfaces));
 }
 

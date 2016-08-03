@@ -38,10 +38,6 @@ class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
   // returned from GetExitCodeProcess()).
   virtual void OnProcessCrashed(int exit_code) {}
 
-  // Returns the shell::InterfaceRegistry the browser process uses to expose
-  // interfaces to the child.
-  virtual shell::InterfaceRegistry* GetInterfaceRegistry();
-
   // Returns the shell::InterfaceProvider the browser process can use to bind
   // interfaces exposed to it from the child.
   virtual shell::InterfaceProvider* GetRemoteInterfaces();

@@ -78,7 +78,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
                                                int* exit_code) override;
   void SetName(const base::string16& name) override;
   void SetHandle(base::ProcessHandle handle) override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
 
   // ChildProcessHostDelegate implementation:

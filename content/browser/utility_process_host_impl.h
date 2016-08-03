@@ -58,7 +58,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void SetEnv(const base::EnvironmentMap& env) override;
 #endif
   bool Start() override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
   void SetName(const base::string16& name) override;
 

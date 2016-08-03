@@ -15,12 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
-
-#if defined(OS_ANDROID)
-#include "content/public/browser/android/interface_registry_android.h"
-#endif
 
 namespace shell {
 class Connection;
@@ -45,10 +40,6 @@ class MojoChildConnection {
                       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~MojoChildConnection();
 
-  shell::InterfaceRegistry* GetInterfaceRegistry() {
-    return &interface_registry_;
-  }
-
   shell::InterfaceProvider* GetRemoteInterfaces() {
     return &remote_interfaces_;
   }
@@ -70,19 +61,11 @@ class MojoChildConnection {
  private:
   class IOThreadContext;
 
-  void GetInterface(const mojo::String& interface_name,
-                    mojo::ScopedMessagePipeHandle request_handle);
-
   scoped_refptr<IOThreadContext> context_;
   shell::Identity child_identity_;
   const std::string service_token_;
 
-  shell::InterfaceRegistry interface_registry_;
   shell::InterfaceProvider remote_interfaces_;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
-#endif
 
   base::WeakPtrFactory<MojoChildConnection> weak_factory_;
 

@@ -238,10 +238,6 @@ bool UtilityProcessHostImpl::Start() {
   return StartProcess();
 }
 
-shell::InterfaceRegistry* UtilityProcessHostImpl::GetInterfaceRegistry() {
-  return mojo_child_connection_->GetInterfaceRegistry();
-}
-
 shell::InterfaceProvider* UtilityProcessHostImpl::GetRemoteInterfaces() {
   return mojo_child_connection_->GetRemoteInterfaces();
 }
