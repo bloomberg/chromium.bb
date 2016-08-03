@@ -350,9 +350,15 @@ def main():
   assert os.path.exists(mini_installer_path), ('Could not find file %s' %
                                                mini_installer_path)
 
+  next_version_mini_installer_path = os.path.join(
+      args.build_dir, args.target, 'next_version_mini_installer.exe')
+  assert os.path.exists(next_version_mini_installer_path), (
+      'Could not find file %s' % next_version_mini_installer_path)
+
   suite = unittest.TestSuite()
 
-  variable_expander = VariableExpander(mini_installer_path)
+  variable_expander = VariableExpander(mini_installer_path,
+                                       next_version_mini_installer_path)
   config = ParseConfigFile(args.config, variable_expander)
 
   RunCleanCommand(args.force_clean, variable_expander)

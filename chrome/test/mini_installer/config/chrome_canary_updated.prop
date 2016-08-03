@@ -1,0 +1,40 @@
+{
+  "Condition": "$SUPPORTS_SXS",
+  "Files": {
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.exe": {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+        {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION.manifest":
+        {"exists": true}
+  },
+  "RegistryEntries": {
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY_SXS": {
+      "exists": "required",
+      "values": {
+        "pv": {"type": "SZ", "data": "$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION"},
+        "opv": {},
+        "cmd": {}
+      }
+    },
+    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME_SXS": {
+      "exists": "required",
+      "values": {
+        "UninstallString": {
+          "type": "SZ",
+          "data": "\"$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --chrome-sxs --verbose-logging"
+        },
+        "Version": {"type": "SZ", "data": "$NEXT_VERSION_MINI_INSTALLER_FILE_VERSION"}
+      }
+    },
+    "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME_SXS$USER_SPECIFIC_REGISTRY_SUFFIX": {
+      "exists": "forbidden"
+    }
+  }
+}

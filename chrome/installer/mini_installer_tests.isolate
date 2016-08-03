@@ -16,6 +16,7 @@
         'files': [
           '../test/mini_installer/',
           '<(PRODUCT_DIR)/mini_installer.exe',
+          '<(PRODUCT_DIR)/next_version_mini_installer.exe',
         ],
       },
     }],
