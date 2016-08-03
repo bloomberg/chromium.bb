@@ -59,15 +59,20 @@ void CastMediaClient::RecordRapporURL(const std::string& metric,
 bool CastMediaClient::IsSupportedVideoConfig(::media::VideoCodec codec,
                                              ::media::VideoCodecProfile profile,
                                              int level) {
+  // TODO(servolk): For now, while the MediaCapabilitiesShlib is not mandatory
+  // and might not be present, we will call the custom IsSupportedVideoConfig
+  // implementation when it's present and will rely on the older approach
+  // (MediaCodecSupportShlib) to block codecs not supported on platforms that
+  // don't have MediaCodecSupportShlib yet. During the next OEM API change we'll
+  // make MediaCodecSupportShlib mandatory and will be always able to call it.
   if (MediaCapabilitiesShlib::IsSupportedVideoConfig) {
     return MediaCapabilitiesShlib::IsSupportedVideoConfig(
         ToCastVideoCodec(codec), ToCastVideoProfile(profile), level);
   }
   LOG(WARNING) << __FUNCTION__
-               << " using default MediaClient::IsSupportedVideoConfig impl";
-  if (codec == ::media::kCodecH264 || codec == ::media::kCodecVP8)
-      return true;
-  return false;
+               << " MediaCapabilitiesShlib::IsSupportedVideoConfig not present"
+               << ", returning true";
+  return true;
 }
 
 }  // namespace media
