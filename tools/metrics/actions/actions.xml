@@ -3060,6 +3060,13 @@ should be able to be added at any place in this file.
   <description>User hit &quot;open in browser&quot; menu item.</description>
 </action>
 
+<action name="CustomTabsMenuOpenSameUrl">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    User opens the same url again after closing the previous custom tab.
+  </description>
+</action>
+
 <action name="CustomTabsMenuReadItLater">
   <owner>ianwen@chromium.org</owner>
   <description>User hit &quot;read it later&quot; menu item.</description>

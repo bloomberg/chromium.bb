@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.view.Window;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -74,6 +76,7 @@ public class CustomTabActivity extends ChromeActivity {
     public static final int RESULT_CLOSED = 3;
 
     private static final String TAG = "CustomTabActivity";
+    private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
     private static CustomTabContentHandler sActiveContentHandler;
 
@@ -389,6 +392,13 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Put Sync in the correct state by calling tab state initialized. crbug.com/581811.
         getTabModelSelector().markTabStateInitialized();
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        String lastUrl = preferences.getString(LAST_URL_PREF, null);
+        if (lastUrl != null && lastUrl.equals(getUrlToLoad())) {
+            RecordUserAction.record("CustomTabsMenuOpenSameUrl");
+        } else {
+            preferences.edit().putString(LAST_URL_PREF, getUrlToLoad()).apply();
+        }
         super.finishNativeInitialization();
     }
 
