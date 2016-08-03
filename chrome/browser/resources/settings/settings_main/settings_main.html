@@ -16,17 +16,20 @@
         @apply(--settings-actionable);
         align-items: center;
         display: flex;
-        margin-bottom: 24px;
+        margin-bottom: 3px;
         margin-top: 12px;  /* Part of a 48px spacer (33px + 12px + 3px). */
         min-height: 32px;
         padding: 0 12px;
+      }
+
+      #overscroll {
+        margin-top: 64px;
       }
 
       #toggleContainer {
         align-items: center;
         display: flex;
         justify-content: center;
-        margin-bottom: calc(-1 * var(--settings-page-vertical-margin));
       }
 
       #toggleSpacer {
@@ -82,7 +85,7 @@
       <settings-about-page current-route="{{currentRoute}}">
       </settings-about-page>
     </template>
-    <div id="overscroll"></div>
+    <div id="overscroll" style="padding-bottom: [[overscroll_]]px"></div>
   </template>
   <script src="settings_main.js"></script>
   <script src="/search_settings.js"></script>

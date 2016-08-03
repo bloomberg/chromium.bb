@@ -37,6 +37,12 @@ Polymer({
     /** @private */
     inSubpage_: Boolean,
 
+    /** @private */
+    overscroll_: {
+      type: Number,
+      observer: 'overscrollChanged_',
+    },
+
     /**
      * Controls which main pages are displayed via dom-ifs.
      * @type {!{about: boolean, basic: boolean, advanced: boolean}}
@@ -78,6 +84,30 @@ Polymer({
       settings.navigateTo(this.advancedToggleExpanded_ ?
           settings.Route.ADVANCED : settings.Route.BASIC);
     }.bind(this));
+
+  },
+
+  /** @private */
+  overscrollChanged_: function() {
+    if (!this.overscroll_ && this.boundScroll_) {
+      this.parentNode.scroller.removeEventListener('scroll', this.boundScroll_);
+      this.boundScroll_ = null;
+    } else if (this.overscroll_ && !this.boundScroll_) {
+      this.boundScroll_ = this.scrollEventListener_.bind(this);
+      this.parentNode.scroller.addEventListener('scroll', this.boundScroll_);
+    }
+  },
+
+  /** @private */
+  scrollEventListener_: function() {
+    var scroller = this.parentNode.scroller;
+    var overscroll = this.$.overscroll;
+    var visibleBottom = scroller.scrollTop + scroller.clientHeight;
+    var overscrollBottom = overscroll.offsetTop + overscroll.scrollHeight;
+    // How much of the overscroll is visible (may be negative).
+    var visibleOverscroll = overscroll.scrollHeight -
+                            (overscrollBottom - visibleBottom);
+    this.overscroll_ = Math.max(0, visibleOverscroll);
   },
 
   /**
@@ -128,7 +158,7 @@ Polymer({
       // Ensure any dom-if reflects the current properties.
       Polymer.dom.flush();
 
-      this.$.overscroll.style.paddingBottom = this.overscrollHeight_() + 'px';
+      this.overscroll_ = this.overscrollHeight_();
     }.bind(this));
   },
 
