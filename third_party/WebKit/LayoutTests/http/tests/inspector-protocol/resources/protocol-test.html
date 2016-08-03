@@ -283,28 +283,9 @@ InspectorTest.evaluateInPage = function(string, callback)
     });
 };
 
-InspectorTest._asyncCallbacks = {};
-InspectorTest._asyncCallbackId = 0;
-
-InspectorTest.evaluateInPageAsync = function(string, callback)
+InspectorTest.evaluateInPageAsync = function(expression)
 {
-    var id = ++InspectorTest._asyncCallbackId;
-    InspectorTest._asyncCallbacks[id] = callback;
-    var callbackString = "testRunner.evaluateInWebInspector.bind(testRunner, 42, \"InspectorTest._evaluateInPageAsyncCompleted(" + id + ")\")";
-    var code = string.replace("%callback", callbackString);
-    InspectorTest.evaluateInPage(code);
-};
-
-InspectorTest._evaluateInPageAsyncCompleted = function(id)
-{
-    var callback = InspectorTest._asyncCallbacks[id];
-    delete InspectorTest._asyncCallbacks[id];
-    if (!callback) {
-        InspectorTest.log("Error: no callback for async function");
-        InspectorTest.completeTest();
-        return;
-    }
-    callback();
+    return InspectorTest.sendCommandPromise("Runtime.evaluate", { "expression": expression, awaitPromise: true }).then((message) => message.result.result.value);
 }
 
 InspectorTest.completeTestIfError = function(messageObject)

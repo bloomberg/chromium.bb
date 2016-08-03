@@ -6,14 +6,16 @@
 var worker;
 var onMessageCallbacks = {};
 
-function startWorker(callback)
+function startWorker()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     worker = new Worker("../resources/worker-console-worker.js");
     worker.onmessage = function(event) {
         worker.onmessage = onMessageFromWorker;
-        if (callback)
-            callback();
+        callback();
     };
+    return promise;
 }
 
 function logInWorkerFromPage(message, callback)
@@ -133,7 +135,7 @@ function test()
         function start0(next)
         {
             InspectorTest.log("Starting worker");
-            InspectorTest.evaluateInPageAsync("startWorker(%callback)", next);
+            InspectorTest.evaluateInPageAsync("startWorker()").then(next);
         },
 
         function log0(next)
@@ -150,7 +152,7 @@ function test()
         function start1(next)
         {
             InspectorTest.log("Starting worker");
-            InspectorTest.evaluateInPageAsync("startWorker(%callback)", next);
+            InspectorTest.evaluateInPageAsync("startWorker()").then(next);
         },
 
         function log1(next)
@@ -213,7 +215,7 @@ function test()
         function start2(next)
         {
             InspectorTest.log("Starting worker");
-            InspectorTest.evaluateInPageAsync("startWorker(%callback)", next);
+            InspectorTest.evaluateInPageAsync("startWorker()").then(next);
         },
 
         function log4(next)
@@ -247,7 +249,7 @@ function test()
         function start3(next)
         {
             InspectorTest.log("Starting worker");
-            InspectorTest.evaluateInPageAsync("startWorker(%callback)", next);
+            InspectorTest.evaluateInPageAsync("startWorker()").then(next);
         },
 
         function log6(next)
