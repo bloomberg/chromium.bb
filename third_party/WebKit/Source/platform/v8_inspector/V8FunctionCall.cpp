@@ -81,10 +81,6 @@ v8::Local<v8::Value> V8FunctionCall::call(bool& hadException, bool reportExcepti
 
 v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
 {
-    // TODO(dgozman): get rid of this check.
-    if (!m_inspector->client()->isExecutionAllowed())
-        return v8::Local<v8::Value>();
-
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_value);
     v8::Local<v8::Value> value;
     if (!thisObject->Get(m_context, m_name).ToLocal(&value))

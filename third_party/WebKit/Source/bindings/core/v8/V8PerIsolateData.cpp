@@ -39,6 +39,7 @@
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <v8-debug.h>
 
 namespace blink {
 
@@ -46,7 +47,7 @@ static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
 static void beforeCallEnteredCallback(v8::Isolate* isolate)
 {
-    RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
+    RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden() || isolate->GetCurrentContext() == v8::Debug::GetDebugContext(isolate));
 }
 
 static void microtasksCompletedCallback(v8::Isolate* isolate)

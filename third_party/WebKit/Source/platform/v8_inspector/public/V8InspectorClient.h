@@ -27,7 +27,6 @@ public:
     virtual void endUserGesture() = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;
-    virtual bool isExecutionAllowed() = 0;
     virtual double currentTimeMS() = 0;
     virtual v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) = 0;
     virtual bool isInspectableHeapObject(v8::Local<v8::Object>) = 0;

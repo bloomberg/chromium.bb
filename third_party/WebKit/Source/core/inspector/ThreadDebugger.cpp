@@ -159,11 +159,6 @@ bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value)
     return V8DOMWrapper::isWrapper(m_isolate, value);
 }
 
-bool ThreadDebugger::isExecutionAllowed()
-{
-    return !ScriptForbiddenScope::isScriptForbidden();
-}
-
 double ThreadDebugger::currentTimeMS()
 {
     return WTF::currentTimeMS();

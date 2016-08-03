@@ -51,14 +51,10 @@ public:
 
     const char* GetName(v8::Local<v8::Object> object) override
     {
-        int contextId = V8Debugger::contextId(object->CreationContext());
-        if (!contextId)
+        InspectedContext* context = m_session->inspector()->getContext(m_session->contextGroupId(), V8Debugger::contextId(object->CreationContext()));
+        if (!context)
             return "";
-        ErrorString errorString;
-        InjectedScript* injectedScript = m_session->findInjectedScript(&errorString, contextId);
-        if (!injectedScript)
-            return "";
-        String16 name = injectedScript->context()->origin();
+        String16 name = context->origin();
         size_t length = name.length();
         if (m_offset + length + 1 >= m_strings.size())
             return "";

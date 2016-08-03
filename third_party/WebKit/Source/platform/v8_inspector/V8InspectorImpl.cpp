@@ -79,10 +79,6 @@ V8RuntimeAgentImpl* V8InspectorImpl::enabledRuntimeAgentForGroup(int contextGrou
 
 v8::MaybeLocal<v8::Value> V8InspectorImpl::runCompiledScript(v8::Local<v8::Context> context, v8::Local<v8::Script> script)
 {
-    // TODO(dgozman): get rid of this check.
-    if (!m_client->isExecutionAllowed())
-        return v8::MaybeLocal<v8::Value>();
-
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     int groupId = V8Debugger::getGroupId(context);
     if (V8DebuggerAgentImpl* agent = enabledDebuggerAgentForGroup(groupId))
@@ -96,10 +92,6 @@ v8::MaybeLocal<v8::Value> V8InspectorImpl::runCompiledScript(v8::Local<v8::Conte
 
 v8::MaybeLocal<v8::Value> V8InspectorImpl::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
 {
-    // TODO(dgozman): get rid of this check.
-    if (!m_client->isExecutionAllowed())
-        return v8::MaybeLocal<v8::Value>();
-
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     int groupId = V8Debugger::getGroupId(context);
     if (V8DebuggerAgentImpl* agent = enabledDebuggerAgentForGroup(groupId))
@@ -190,6 +182,9 @@ void V8InspectorImpl::disconnect(V8InspectorSessionImpl* session)
 
 InspectedContext* V8InspectorImpl::getContext(int groupId, int contextId) const
 {
+    if (!groupId || !contextId)
+        return nullptr;
+
     ContextsByGroupMap::const_iterator contextGroupIt = m_contexts.find(groupId);
     if (contextGroupIt == m_contexts.end())
         return nullptr;
