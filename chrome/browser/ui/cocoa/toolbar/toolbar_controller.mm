@@ -368,6 +368,10 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     NSRect locationBarFrame = [locationBar_ frame];
     locationBarFrame.origin.x = NSMaxX(homeButtonFrame) +
         kMaterialDesignButtonInset;
+    if (![homeButton_ isHidden]) {
+      // Ensure proper spacing between the home button and the location bar.
+      locationBarFrame.origin.x += kMaterialDesignElementPadding;
+    }
     locationBarFrame.origin.y = NSMaxY(toolbarBounds) -
         kMaterialDesignLocationBarPadding - kMaterialDesignLocationBarHeight;
     locationBarFrame.size.width =
@@ -798,6 +802,9 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   CGFloat moveX = [homeButton_ frame].size.width;
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     moveX -= 1.0;
+  } else {
+    // Ensure proper spacing between the home button and the location bar.
+    moveX += kMaterialDesignElementPadding;
   }
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
