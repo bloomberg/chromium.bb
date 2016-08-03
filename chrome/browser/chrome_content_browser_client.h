@@ -197,6 +197,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                        WindowContainerType container_type,
                        const GURL& target_url,
                        const content::Referrer& referrer,
+                       const std::string& frame_name,
                        WindowOpenDisposition disposition,
                        const blink::WebWindowFeatures& features,
                        bool user_gesture,

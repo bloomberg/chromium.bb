@@ -15,6 +15,7 @@
 BlockedWindowParams::BlockedWindowParams(
     const GURL& target_url,
     const content::Referrer& referrer,
+    const std::string& frame_name,
     WindowOpenDisposition disposition,
     const blink::WebWindowFeatures& features,
     bool user_gesture,
@@ -23,6 +24,7 @@ BlockedWindowParams::BlockedWindowParams(
     int opener_render_frame_id)
     : target_url_(target_url),
       referrer_(referrer),
+      frame_name_(frame_name),
       disposition_(disposition),
       features_(features),
       user_gesture_(user_gesture),
@@ -34,6 +36,8 @@ BlockedWindowParams::BlockedWindowParams(
 BlockedWindowParams::BlockedWindowParams(const BlockedWindowParams& other) =
     default;
 
+BlockedWindowParams::~BlockedWindowParams() = default;
+
 chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
     content::WebContents* web_contents) const {
   GURL popup_url(target_url_);
@@ -43,6 +47,7 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
       popup_url,
       ui::PAGE_TRANSITION_LINK);
   nav_params.referrer = referrer_;
+  nav_params.frame_name = frame_name_;
   nav_params.source_contents = web_contents;
   nav_params.is_renderer_initiated = true;
   nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;

@@ -421,6 +421,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
                CheckTitle);
 }
 
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectFrameName) {
+  RunCheckTest(browser(),
+               "/popup_blocker/popup-framename.html",
+               ExpectTab,
+               CheckTitle);
+}
+
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-windowfeatures.html",

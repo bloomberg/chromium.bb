@@ -255,6 +255,7 @@ void LoadURLInContents(WebContents* target_contents,
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.source_site_instance = params->source_site_instance;
   load_url_params.referrer = params->referrer;
+  load_url_params.frame_name = params->frame_name;
   load_url_params.frame_tree_node_id = params->frame_tree_node_id;
   load_url_params.redirect_chain = params->redirect_chain;
   load_url_params.transition_type = params->transition;
@@ -338,6 +339,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
       params.source_site_instance
           ? params.source_site_instance
           : tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
+  create_params.main_frame_name = params.frame_name;
   if (params.source_contents) {
     create_params.initial_size =
         params.source_contents->GetContainerBounds().size();

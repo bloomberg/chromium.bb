@@ -2160,6 +2160,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     WindowContainerType container_type,
     const GURL& target_url,
     const content::Referrer& referrer,
+    const std::string& frame_name,
     WindowOpenDisposition disposition,
     const WebWindowFeatures& features,
     bool user_gesture,
@@ -2237,6 +2238,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
   BlockedWindowParams blocked_params(target_url,
                                      referrer,
+                                     frame_name,
                                      disposition,
                                      features,
                                      user_gesture,

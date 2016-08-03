@@ -72,6 +72,9 @@ struct NavigateParams {
   GURL url;
   content::Referrer referrer;
 
+  // The frame name to be used for the main frame.
+  std::string frame_name;
+
   // The browser-global ID of the frame to navigate, or -1 for the main frame.
   int frame_tree_node_id;
 
