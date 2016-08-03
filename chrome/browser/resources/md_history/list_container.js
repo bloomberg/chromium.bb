@@ -65,9 +65,12 @@ Polymer({
       return;
     }
 
+    // Close any open dialog if a new query is initiated.
+    if (!incremental && this.$.dialog.open)
+      this.$.dialog.close();
+
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
-
 
     var lastVisitTime = 0;
     if (incremental) {
@@ -112,7 +115,6 @@ Polymer({
 
   /** @private */
   loadMoreHistory_: function() { this.queryHistory(true); },
-
 
   /**
    * @param {HistoryQuery} info

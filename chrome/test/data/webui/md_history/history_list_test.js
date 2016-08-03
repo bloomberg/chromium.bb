@@ -287,10 +287,29 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
+      test('delete dialog closed on url change', function() {
+        app.queryState_.queryingDisabled = false;
+        var listContainer = app.$.history;
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
+        return flush().then(function() {
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
+
+          MockInteractions.tap(items[2].$.checkbox);
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+
+          // Confirmation dialog should appear.
+          assertTrue(listContainer.$.dialog.open);
+
+          app.set('queryState_.searchTerm', 'something else');
+          assertFalse(listContainer.$.dialog.open);
+        });
+      });
+
       teardown(function() {
         element.historyData_ = [];
         registerMessageCallback('removeVisits', this, undefined);
-        registerMessageCallback('queryHistory', this, undefined);
+        registerMessageCallback('queryHistory', this, function() {});
         app.queryState_.queryingDisabled = true;
         app.set('queryState_.searchTerm', '');
         return flush();
