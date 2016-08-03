@@ -458,13 +458,11 @@ void ChromeOmniboxClient::SetSuggestionToPrefetch(
       const InstantSuggestion& suggestion) {
   DCHECK(search::IsInstantExtendedAPIEnabled());
   content::WebContents* web_contents = controller_->GetWebContents();
-  if (web_contents &&
-      SearchTabHelper::FromWebContents(web_contents)->IsSearchResultsPage()) {
-    if (search::ShouldPrefetchSearchResultsOnSRP()) {
-      SearchTabHelper::FromWebContents(web_contents)->
-          SetSuggestionToPrefetch(suggestion);
-    }
-  } else {
+  // TODO(treib): This check should probably be removed - IsSearchResultsPage
+  // will always return false here, because it'll only be true for pages
+  // rendered in the Instant process. crbug.com/627747
+  if (!web_contents ||
+      !SearchTabHelper::FromWebContents(web_contents)->IsSearchResultsPage()) {
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(profile_);
     if (prerenderer)

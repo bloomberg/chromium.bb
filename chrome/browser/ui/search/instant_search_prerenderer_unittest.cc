@@ -355,7 +355,6 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   EXPECT_FALSE(
       search::ExtractSearchTermsFromURL(profile(), active_tab->GetURL())
           .empty());
-  EXPECT_FALSE(search::ShouldPrefetchSearchResultsOnSRP());
   EXPECT_FALSE(prerenderer->IsAllowed(search_type_match, active_tab));
 }
 

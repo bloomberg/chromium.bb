@@ -52,7 +52,6 @@ namespace search {
 
 namespace {
 
-const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kPrerenderInstantUrlOnOmniboxFocus[] =
     "prerender_instant_url_on_omnibox_focus";
 
@@ -609,12 +608,6 @@ InstantSupportState GetInstantSupportStateFromNavigationEntry(
     return INSTANT_SUPPORT_UNKNOWN;
 
   return StringToInstantSupportState(value);
-}
-
-bool ShouldPrefetchSearchResultsOnSRP() {
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kPrefetchSearchResultsOnSRP, false, flags);
 }
 
 bool ShouldUseAltInstantURL() {

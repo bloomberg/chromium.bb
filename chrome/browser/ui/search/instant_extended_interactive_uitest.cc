@@ -266,12 +266,6 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
     InstantTestBase::Init(instant_url, ntp_url, true);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        "EmbeddedSearch/Group11 prefetch_results_srp:1/");
-  }
-
   net::FakeURLFetcherFactory* fake_factory() { return fake_factory_.get(); }
 
  private:
@@ -282,29 +276,6 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
   std::unique_ptr<net::FakeURLFetcherFactory> fake_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantExtendedPrefetchTest);
-};
-
-class InstantExtendedNetworkTest : public InstantExtendedTest {
- protected:
-  void SetUpOnMainThread() override {
-    disable_for_test_.reset(new net::NetworkChangeNotifier::DisableForTest);
-    fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
-    InstantExtendedTest::SetUpOnMainThread();
-  }
-
-  void TearDownOnMainThread() override {
-    InstantExtendedTest::TearDownOnMainThread();
-    fake_network_change_notifier_.reset();
-    disable_for_test_.reset();
-  }
-
-  void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    fake_network_change_notifier_->SetConnectionType(type);
-  }
-
- private:
-  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> disable_for_test_;
-  std::unique_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the
