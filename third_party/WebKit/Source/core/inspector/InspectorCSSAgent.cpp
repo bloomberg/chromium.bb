@@ -994,8 +994,15 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
         return;
 
     CSSComputedStyleDeclaration* computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
-    InspectorStyle* inspectorStyle = InspectorStyle::create(computedStyleInfo, nullptr, nullptr);
-    *style = inspectorStyle->buildArrayForComputedStyle();
+    *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
+    for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+        CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
+        if (!CSSPropertyMetadata::isEnabledProperty(propertyId) || isShorthandProperty(propertyId) || CSSPropertyMetadata::isDescriptorOnly(propertyId))
+            continue;
+        (*style)->addItem(protocol::CSS::CSSComputedStyleProperty::create()
+            .setName(getPropertyNameString(propertyId))
+            .setValue(computedStyleInfo->getPropertyValue(propertyId)).build());
+    }
 
     if (!RuntimeEnabledFeatures::cssVariablesEnabled())
         return;

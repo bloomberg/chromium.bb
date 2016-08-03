@@ -787,22 +787,6 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
     return result;
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
-{
-    std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> result = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
-    Vector<CSSPropertySourceData> properties;
-    populateAllProperties(properties);
-
-    for (auto& property : properties) {
-        std::unique_ptr<protocol::CSS::CSSComputedStyleProperty> entry = protocol::CSS::CSSComputedStyleProperty::create()
-            .setName(property.name)
-            .setValue(property.value).build();
-        result->addItem(std::move(entry));
-    }
-
-    return result;
-}
-
 bool InspectorStyle::styleText(String* result)
 {
     if (!m_sourceData)

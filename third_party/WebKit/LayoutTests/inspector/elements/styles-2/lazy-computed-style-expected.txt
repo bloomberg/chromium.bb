@@ -45,6 +45,14 @@ background-image: none;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
 background-origin: padding-box;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+background-position-x: 0%;
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+background-position-y: 0%;
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+background-repeat-x: ;
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
+background-repeat-y: ;
+    initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
 background-size: auto;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
 display: block;

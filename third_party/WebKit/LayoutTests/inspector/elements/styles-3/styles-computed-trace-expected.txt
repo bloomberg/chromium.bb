@@ -13,6 +13,14 @@ background-image: none;
     initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
 background-origin: padding-box;
     initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-position-x: 0%;
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-position-y: 0%;
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-repeat-x: ;
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-repeat-y: ;
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
 background-size: auto;
     initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
 display: block;
@@ -21,8 +29,6 @@ font-family: Courier;
     Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
     OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
     OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
-text-decoration: underline solid rgb(0, 0, 0);
-    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 text-decoration-color: rgb(0, 0, 0);
     initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 text-decoration-line: underline;
@@ -42,8 +48,6 @@ font-family: Courier;
     OVERLOADED Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
     OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
     OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
-text-decoration: underline solid rgb(0, 0, 0);
-    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 text-decoration-color: rgb(0, 0, 0);
     initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
 text-decoration-line: underline;

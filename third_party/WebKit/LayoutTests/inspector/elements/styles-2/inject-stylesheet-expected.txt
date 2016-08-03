@@ -13,6 +13,14 @@ background-image: none;
     initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
 background-origin: padding-box;
     initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
+background-position-x: 0%;
+    initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
+background-position-y: 0%;
+    initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
+background-repeat-x: ;
+    initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
+background-repeat-y: ;
+    initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
 background-size: auto;
     initial - #main inject-stylesheet.html:5 -> inject-stylesheet.html:5:3
 border-bottom-style: solid;
@@ -74,6 +82,18 @@ background-image: none;
     initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-origin: padding-box;
+    initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
+background-position-x: 0%;
+    initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
+background-position-y: 0%;
+    initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
+background-repeat-x: ;
+    initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
+background-repeat-y: ;
     initial - #iframeBody injected stylesheet
     OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3
 background-size: auto;

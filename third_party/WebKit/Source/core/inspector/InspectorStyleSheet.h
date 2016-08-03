@@ -61,7 +61,6 @@ public:
 
     CSSStyleDeclaration* cssStyle() { return m_style.get(); }
     std::unique_ptr<protocol::CSS::CSSStyle> buildObjectForStyle();
-    std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> buildArrayForComputedStyle();
     bool styleText(String* result);
     bool textForRange(const SourceRange&, String* result);
 
