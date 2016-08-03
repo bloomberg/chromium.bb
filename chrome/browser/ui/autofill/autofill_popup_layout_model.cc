@@ -160,12 +160,11 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_WARNING_MESSAGE:
       return warning_font_list_;
     case POPUP_ITEM_ID_CLEAR_FORM:
+    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
       return normal_font_list_;
-    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-      return smaller_font_list_;
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
     case POPUP_ITEM_ID_DATALIST_ENTRY:

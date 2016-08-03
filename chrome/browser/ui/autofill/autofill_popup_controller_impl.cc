@@ -382,10 +382,6 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 SkColor AutofillPopupControllerImpl::GetBackgroundColorForRow(int index) const {
   if (index == selected_line_)
     return kHoveredBackgroundColor;
-  if (suggestions_[index].frontend_id ==
-      POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
-    return kPromoPopupBackground;
-  }
 
   return SK_ColorTRANSPARENT;
 }

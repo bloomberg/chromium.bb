@@ -16,8 +16,6 @@ const int kPopupBorderThickness = 1;
 const SkColor kBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
 const SkColor kHoveredBackgroundColor = SkColorSetRGB(0xCD, 0xCD, 0xCD);
 const SkColor kLabelTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
-const SkColor kPromoPopupBackground = SkColorSetRGB(0xFA, 0xFA, 0xFA);
-const SkColor kWarningTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 constexpr SkColor kPopupBackground = SK_ColorWHITE;
 constexpr SkColor kValueTextColor = SK_ColorBLACK;
 

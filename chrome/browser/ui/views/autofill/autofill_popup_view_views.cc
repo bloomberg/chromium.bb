@@ -81,7 +81,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
       controller_->layout_model().GetValueFontListForRow(index),
-      controller_->IsWarning(index) ? kWarningTextColor : kValueTextColor,
+      controller_->IsWarning(index) ? kLabelTextColor : kValueTextColor,
       value_rect, text_align);
 
   // Use this to figure out where all the other Autofill items should be placed.
