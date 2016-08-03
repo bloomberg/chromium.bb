@@ -160,6 +160,9 @@ public class ContentSettingsResources {
                                  org.chromium.chrome.R.string.protected_content,
                                  org.chromium.chrome.R.string.protected_content,
                                  ContentSetting.ASK, ContentSetting.BLOCK, 0, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                    new ResourceItem(R.drawable.settings_usb, 0, 0, ContentSetting.ASK,
+                                 ContentSetting.BLOCK, 0, 0));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

@@ -95,6 +95,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   };
 
   struct ChooserUIInfo {
+    ContentSettingsType content_settings_type;
     ChooserContextBase* (*get_context)(Profile*);
     int blocked_icon_id;
     int allowed_icon_id;

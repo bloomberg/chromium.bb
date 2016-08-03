@@ -198,8 +198,8 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
 WebsiteSettings::ChooserUIInfo kChooserUIInfo[] = {
-    {&GetUsbChooserContext, IDR_BLOCKED_USB, IDR_ALLOWED_USB,
-     IDS_WEBSITE_SETTINGS_USB_DEVICE_LABEL,
+    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
+     IDR_BLOCKED_USB, IDR_ALLOWED_USB, IDS_WEBSITE_SETTINGS_USB_DEVICE_LABEL,
      IDS_WEBSITE_SETTINGS_DELETE_USB_DEVICE, "name"},
 };
 

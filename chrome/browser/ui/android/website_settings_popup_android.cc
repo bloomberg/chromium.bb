@@ -93,11 +93,6 @@ void WebsiteSettingsPopupAndroid::SetCookieInfo(
 void WebsiteSettingsPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     const ChosenObjectInfoList& chosen_object_info_list) {
-  // TODO(reillyg): Display the contents of |chosen_object_info_list|.
-  // https://crbug.com/424667.
-  STLDeleteContainerPointers(chosen_object_info_list.begin(),
-                             chosen_object_info_list.end());
-
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // On Android, we only want to display a subset of the available options in a
@@ -134,6 +129,18 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
           static_cast<jint>(permission),
           static_cast<jint>(user_specified_settings_to_display[permission]));
     }
+  }
+
+  for (auto* chosen_object : chosen_object_info_list) {
+    base::string16 object_title =
+        WebsiteSettingsUI::ChosenObjectToUIString(*chosen_object);
+
+    Java_WebsiteSettingsPopup_addPermissionSection(
+        env, popup_jobject_.obj(),
+        ConvertUTF16ToJavaString(env, object_title).obj(),
+        static_cast<jint>(chosen_object->ui_info.content_settings_type),
+        static_cast<jint>(CONTENT_SETTING_ALLOW));
+    delete chosen_object;
   }
 
   Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_.obj());
