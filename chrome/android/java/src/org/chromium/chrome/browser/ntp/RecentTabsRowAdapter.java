@@ -396,7 +396,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                             return true;
                         }
                     });
-            menu.add(R.string.recent_tabs_remove_menu_option)
+            menu.add(R.string.recent_tabs_hide_menu_option)
                     .setOnMenuItemClickListener(new OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {

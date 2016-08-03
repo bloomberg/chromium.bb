@@ -2028,8 +2028,8 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_RECENT_TABS_OPEN_ALL_MENU_OPTION" desc="Context menu option to open all tabs from a foreign session.">
         Open all
       </message>
-      <message name="IDS_RECENT_TABS_REMOVE_MENU_OPTION" desc="Context menu option to remove a foreign session.">
-        Remove from list
+      <message name="IDS_RECENT_TABS_HIDE_MENU_OPTION" desc="Context menu option to remove a foreign session.">
+        Hide for now
       </message>
       <message name="IDS_RECENT_TABS_THIS_DEVICE" desc="Header shown above the list of tabs currently open on this device.">
         This device
