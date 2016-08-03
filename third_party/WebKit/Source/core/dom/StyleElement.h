@@ -31,7 +31,7 @@ class ContainerNode;
 class Document;
 class Element;
 
-class StyleElement : public GarbageCollectedMixin {
+class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
 public:
     StyleElement(Document*, bool createdByParser);
     virtual ~StyleElement();

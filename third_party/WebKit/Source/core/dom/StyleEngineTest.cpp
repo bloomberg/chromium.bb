@@ -9,7 +9,9 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Heap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
@@ -65,6 +67,39 @@ TEST_F(StyleEngineTest, AnalyzedInject)
 
     ASSERT_TRUE(t1->computedStyle());
     EXPECT_EQ(makeRGB(0, 128, 0), t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+}
+
+TEST_F(StyleEngineTest, TextToSheetCache)
+{
+    HTMLStyleElement* element = HTMLStyleElement::create(document(), false);
+
+    String sheetText("div {}");
+    TextPosition minPos = TextPosition::minimumPosition();
+    StyleEngineContext context;
+
+    CSSStyleSheet* sheet1 = styleEngine().createSheet(element, sheetText, minPos, context);
+
+    // Check that the first sheet is not using a cached StyleSheetContents.
+    EXPECT_FALSE(sheet1->contents()->isUsedFromTextCache());
+
+    CSSStyleSheet* sheet2 = styleEngine().createSheet(element, sheetText, minPos, context);
+
+    // Check that the second sheet uses the cached StyleSheetContents for the first.
+    EXPECT_EQ(sheet1->contents(), sheet2->contents());
+    EXPECT_TRUE(sheet2->contents()->isUsedFromTextCache());
+
+    sheet1 = nullptr;
+    sheet2 = nullptr;
+    element = nullptr;
+
+    // Garbage collection should clear the weak reference in the StyleSheetContents cache.
+    ThreadHeap::collectAllGarbage();
+
+    element = HTMLStyleElement::create(document(), false);
+    sheet1 = styleEngine().createSheet(element, sheetText, minPos, context);
+
+    // Check that we did not use a cached StyleSheetContents after the garbage collection.
+    EXPECT_FALSE(sheet1->contents()->isUsedFromTextCache());
 }
 
 } // namespace blink

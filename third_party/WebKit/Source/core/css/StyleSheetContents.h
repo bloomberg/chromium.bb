@@ -82,6 +82,7 @@ public:
     bool hasSingleOwnerNode() const;
     Node* singleOwnerNode() const;
     Document* singleOwnerDocument() const;
+    bool hasSingleOwnerDocument() const { return m_hasSingleOwnerDocument; }
 
     const String& charset() const { return m_parserContext.charset(); }
 
@@ -140,7 +141,8 @@ public:
     bool isMutable() const { return m_isMutable; }
     void setMutable() { m_isMutable = true; }
 
-    void removeSheetFromCache(Document*);
+    bool isUsedFromTextCache() const { return m_isUsedFromTextCache; }
+    void setIsUsedFromTextCache() { m_isUsedFromTextCache = true; }
 
     bool isReferencedFromResource() const { return m_referencedFromResource; }
     void setReferencedFromResource(CSSStyleSheetResource*);
@@ -186,6 +188,7 @@ private:
     bool m_hasFontFaceRule : 1;
     bool m_hasMediaQueries : 1;
     bool m_hasSingleOwnerDocument : 1;
+    bool m_isUsedFromTextCache : 1;
 
     CSSParserContext m_parserContext;
 

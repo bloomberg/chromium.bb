@@ -162,7 +162,6 @@ public:
     void resolverChanged(StyleResolverUpdateMode);
 
     CSSStyleSheet* createSheet(Element*, const String& text, TextPosition startPosition, StyleEngineContext&);
-    void removeSheet(StyleSheetContents*);
 
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
     void ensureFullscreenUAStyle();
@@ -267,8 +266,8 @@ private:
 
     Member<CSSFontSelector> m_fontSelector;
 
-    HeapHashMap<AtomicString, Member<StyleSheetContents>> m_textToSheetCache;
-    HeapHashMap<Member<StyleSheetContents>, AtomicString> m_sheetToTextCache;
+    HeapHashMap<AtomicString, WeakMember<StyleSheetContents>> m_textToSheetCache;
+    HeapHashMap<WeakMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 
     std::unique_ptr<StyleResolverStats> m_styleResolverStats;
     unsigned m_styleForElementCount = 0;

@@ -511,18 +511,20 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
 
     AtomicString textContent(text);
 
-    HeapHashMap<AtomicString, Member<StyleSheetContents>>::AddResult result = m_textToSheetCache.add(textContent, nullptr);
-    if (result.isNewEntry || !result.storedValue->value) {
+    auto result = m_textToSheetCache.add(textContent, nullptr);
+    StyleSheetContents* contents = result.storedValue->value;
+    if (result.isNewEntry || !contents || !contents->isCacheableForStyleElement()) {
+        result.storedValue->value = nullptr;
         styleSheet = StyleEngine::parseSheet(e, text, startPosition);
-        if (result.isNewEntry && styleSheet->contents()->isCacheableForStyleElement()) {
+        if (styleSheet->contents()->isCacheableForStyleElement()) {
             result.storedValue->value = styleSheet->contents();
             m_sheetToTextCache.add(styleSheet->contents(), textContent);
         }
     } else {
-        StyleSheetContents* contents = result.storedValue->value;
         DCHECK(contents);
         DCHECK(contents->isCacheableForStyleElement());
-        DCHECK_EQ(contents->singleOwnerDocument(), e->document());
+        DCHECK(contents->hasSingleOwnerDocument());
+        contents->setIsUsedFromTextCache();
         styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
     }
 
@@ -539,16 +541,6 @@ CSSStyleSheet* StyleEngine::parseSheet(Element* e, const String& text, TextPosit
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().characterSet());
     styleSheet->contents()->parseStringAtPosition(text, startPosition);
     return styleSheet;
-}
-
-void StyleEngine::removeSheet(StyleSheetContents* contents)
-{
-    HeapHashMap<Member<StyleSheetContents>, AtomicString>::iterator it = m_sheetToTextCache.find(contents);
-    if (it == m_sheetToTextCache.end())
-        return;
-
-    m_textToSheetCache.remove(it->value);
-    m_sheetToTextCache.remove(contents);
 }
 
 void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const

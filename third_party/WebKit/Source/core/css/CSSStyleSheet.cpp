@@ -147,10 +147,8 @@ static bool isStyleElement(const Node* node)
 void CSSStyleSheet::willMutateRules()
 {
     // If we are the only client it is safe to mutate.
-    if (m_contents->clientSize() <= 1 && !m_contents->isReferencedFromResource()) {
+    if (!m_contents->isUsedFromTextCache() && !m_contents->isReferencedFromResource()) {
         m_contents->clearRuleSet();
-        if (Document* document = ownerDocument())
-            m_contents->removeSheetFromCache(document);
         m_contents->setMutable();
         return;
     }

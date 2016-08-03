@@ -33,7 +33,7 @@ class HTMLStyleElement;
 template<typename T> class EventSender;
 using StyleEventSender = EventSender<HTMLStyleElement>;
 
-class HTMLStyleElement final : public HTMLElement, private StyleElement {
+class CORE_EXPORT HTMLStyleElement final : public HTMLElement, private StyleElement {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 public:

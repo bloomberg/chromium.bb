@@ -65,6 +65,7 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
     , m_hasFontFaceRule(false)
     , m_hasMediaQueries(false)
     , m_hasSingleOwnerDocument(true)
+    , m_isUsedFromTextCache(false)
     , m_parserContext(context)
 {
 }
@@ -83,6 +84,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_hasFontFaceRule(o.m_hasFontFaceRule)
     , m_hasMediaQueries(o.m_hasMediaQueries)
     , m_hasSingleOwnerDocument(true)
+    , m_isUsedFromTextCache(false)
     , m_parserContext(o.m_parserContext)
 {
     // FIXME: Copy import rules.
@@ -98,10 +100,6 @@ StyleSheetContents::~StyleSheetContents()
 
 void StyleSheetContents::setHasSyntacticallyValidCSSHeader(bool isValidCss)
 {
-    if (!isValidCss) {
-        if (Document* document = clientSingleOwnerDocument())
-            removeSheetFromCache(document);
-    }
     m_hasSyntacticallyValidCSSHeader = isValidCss;
 }
 
@@ -546,8 +544,6 @@ void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet)
     if (!sheet->ownerDocument() || !m_loadingClients.isEmpty() || !m_completedClients.isEmpty())
         return;
 
-    if (m_hasSingleOwnerDocument)
-        removeSheetFromCache(sheet->ownerDocument());
     m_hasSingleOwnerDocument = true;
 }
 
@@ -568,12 +564,6 @@ void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet)
     ASSERT(m_completedClients.contains(sheet));
     m_completedClients.remove(sheet);
     m_loadingClients.add(sheet);
-}
-
-void StyleSheetContents::removeSheetFromCache(Document* document)
-{
-    ASSERT(document);
-    document->styleEngine().removeSheet(this);
 }
 
 void StyleSheetContents::setReferencedFromResource(CSSStyleSheetResource* resource)
