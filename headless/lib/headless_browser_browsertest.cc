@@ -14,7 +14,11 @@
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
 #include "headless/test/test_protocol_handler.h"
+#include "headless/test/test_url_request_job.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/cookie_store.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -207,6 +211,136 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
   EXPECT_EQ(kDefaultOptions.window_size.height(), screen_height);
   EXPECT_EQ(kDefaultOptions.window_size.width(), window_width);
   EXPECT_EQ(kDefaultOptions.window_size.height(), window_height);
+}
+
+namespace {
+
+// True if the request method is "safe" (per section 4.2.1 of RFC 7231).
+bool IsMethodSafe(const std::string& method) {
+  return method == "GET" || method == "HEAD" || method == "OPTIONS" ||
+         method == "TRACE";
+}
+
+class ProtocolHandlerWithCookies
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  ProtocolHandlerWithCookies(net::CookieList* sent_cookies);
+  ~ProtocolHandlerWithCookies() override {}
+
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
+ private:
+  net::CookieList* sent_cookies_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerWithCookies);
+};
+
+class URLRequestJobWithCookies : public TestURLRequestJob {
+ public:
+  URLRequestJobWithCookies(net::URLRequest* request,
+                           net::NetworkDelegate* network_delegate,
+                           net::CookieList* sent_cookies);
+  ~URLRequestJobWithCookies() override {}
+
+  // net::URLRequestJob implementation:
+  void Start() override;
+
+ private:
+  void SaveCookiesAndStart(const net::CookieList& cookie_list);
+
+  net::CookieList* sent_cookies_;  // Not owned.
+  base::WeakPtrFactory<URLRequestJobWithCookies> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(URLRequestJobWithCookies);
+};
+
+ProtocolHandlerWithCookies::ProtocolHandlerWithCookies(
+    net::CookieList* sent_cookies)
+    : sent_cookies_(sent_cookies) {}
+
+net::URLRequestJob* ProtocolHandlerWithCookies::MaybeCreateJob(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return new URLRequestJobWithCookies(request, network_delegate, sent_cookies_);
+}
+
+URLRequestJobWithCookies::URLRequestJobWithCookies(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    net::CookieList* sent_cookies)
+    // Return an empty response for every request.
+    : TestURLRequestJob(request, network_delegate, ""),
+      sent_cookies_(sent_cookies),
+      weak_factory_(this) {}
+
+void URLRequestJobWithCookies::Start() {
+  net::CookieStore* cookie_store = request_->context()->cookie_store();
+  net::CookieOptions options;
+  options.set_include_httponly();
+
+  // See net::URLRequestHttpJob::AddCookieHeaderAndStart().
+  url::Origin requested_origin(request_->url());
+  url::Origin site_for_cookies(request_->first_party_for_cookies());
+
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          requested_origin, site_for_cookies,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    if (net::registry_controlled_domains::SameDomainOrHost(
+            requested_origin, request_->initiator(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      options.set_same_site_cookie_mode(
+          net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+    } else if (IsMethodSafe(request_->method())) {
+      options.set_same_site_cookie_mode(
+          net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
+    }
+  }
+  cookie_store->GetCookieListWithOptionsAsync(
+      request_->url(), options,
+      base::Bind(&URLRequestJobWithCookies::SaveCookiesAndStart,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void URLRequestJobWithCookies::SaveCookiesAndStart(
+    const net::CookieList& cookie_list) {
+  *sent_cookies_ = cookie_list;
+  NotifyHeadersComplete();
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ReadCookiesInProtocolHandler) {
+  net::CookieList sent_cookies;
+  ProtocolHandlerMap protocol_handlers;
+  protocol_handlers[url::kHttpsScheme] =
+      base::WrapUnique(new ProtocolHandlerWithCookies(&sent_cookies));
+
+  HeadlessBrowser::Options::Builder builder;
+  builder.SetProtocolHandlers(std::move(protocol_handlers));
+  SetBrowserOptions(builder.Build());
+
+  HeadlessWebContents* web_contents =
+      browser()
+          ->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("https://example.com/cookie.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // The first load has no cookies.
+  EXPECT_EQ(0u, sent_cookies.size());
+
+  // Set a cookie and reload the page.
+  EXPECT_FALSE(EvaluateScript(
+                   web_contents,
+                   "document.cookie = 'shape=oblong', window.location.reload()")
+                   ->HasExceptionDetails());
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // We should have sent the cookie this time.
+  EXPECT_EQ(1u, sent_cookies.size());
+  EXPECT_EQ("shape", sent_cookies[0].Name());
+  EXPECT_EQ("oblong", sent_cookies[0].Value());
 }
 
 }  // namespace headless
