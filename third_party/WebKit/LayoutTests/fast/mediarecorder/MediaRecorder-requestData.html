@@ -27,6 +27,7 @@ var makeAsyncTest = function(value, expected) {
         const recorderOnDataAvailable = test.step_func_done(function(event) {
             assert_equals(event.data.size, 0,
                           'Recorded data size should be == 0');
+            assert_equals(event.data.type, "video/webm");
         });
 
         const recorderOnStop = test.step_func(function() {
@@ -37,7 +38,7 @@ var makeAsyncTest = function(value, expected) {
             assert_unreached('Recording error.');
         });
 
-        const gotStream = test.step_func_done(function(stream) {
+        const gotStream = test.step_func(function(stream) {
             checkStreamTracks(stream, value['video'], value['audio']);
 
             var recorder = new MediaRecorder(stream);

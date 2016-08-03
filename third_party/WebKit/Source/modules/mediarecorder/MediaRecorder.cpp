@@ -21,6 +21,8 @@ namespace blink {
 
 namespace {
 
+const char* kDefaultMimeType = "video/webm";
+
 // Boundaries of Opus bitrate from https://www.opus-codec.org/.
 const int kSmallestPossibleOpusBitRate = 6000;
 const int kLargestAutoAllocatedOpusBitRate = 128000;
@@ -136,7 +138,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , ActiveDOMObject(context)
     , m_stream(stream)
     , m_streamAmountOfTracks(stream->getTracks().size())
-    , m_mimeType(options.mimeType())
+    , m_mimeType(options.hasMimeType() ? options.mimeType() : kDefaultMimeType)
     , m_stopped(true)
     , m_ignoreMutedMedia(true)
     , m_audioBitsPerSecond(0)
@@ -297,8 +299,10 @@ void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
 
     // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s) is in muted() state.
 
-    if (!m_blobData)
+    if (!m_blobData) {
         m_blobData = BlobData::create();
+        m_blobData->setContentType(m_mimeType);
+    }
     if (data)
         m_blobData->appendBytes(data, length);
 
