@@ -24,11 +24,14 @@ MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
                                            Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   aura::Env::GetInstanceDontCreate()->PrependPreTargetHandler(this);
-  aura::client::GetActivationClient(root_)->AddObserver(this);
-  root_->AddObserver(this);
+  if (root_) {
+    aura::client::GetActivationClient(root_)->AddObserver(this);
+    root_->AddObserver(this);
+  }
 }
 
 MenuPreTargetHandler::~MenuPreTargetHandler() {
+  aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
   Cleanup();
 }
 
@@ -55,7 +58,6 @@ void MenuPreTargetHandler::OnKeyEvent(ui::KeyEvent* event) {
 void MenuPreTargetHandler::Cleanup() {
   if (!root_)
     return;
-  aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
   // The ActivationClient may have been destroyed by the time we get here.
   aura::client::ActivationClient* client =
       aura::client::GetActivationClient(root_);

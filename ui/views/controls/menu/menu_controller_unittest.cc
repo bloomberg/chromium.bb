@@ -1304,6 +1304,20 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   EXPECT_EQ(run_result, nullptr);
   TestCancelEvent();
 }
+
+// Tests that if a menu is ran without a widget, that MenuPreTargetHandler does
+// not cause a crash.
+TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
+  ExitMenuRun();
+  MenuController* controller = menu_controller();
+  controller->SetAsyncRun(true);
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
+                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+}
+
 #endif  // defined(USE_AURA)
 
 }  // namespace test
