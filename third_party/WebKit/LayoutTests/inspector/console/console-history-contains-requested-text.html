@@ -10,7 +10,7 @@ function test()
     function step2()
     {
         var consoleView = WebInspector.ConsoleView.instance();
-        InspectorTest.addResult(consoleView._prompt._previous());
+        InspectorTest.addResult(consoleView._prompt.history().previous());
         InspectorTest.completeTest();
     }
 }
