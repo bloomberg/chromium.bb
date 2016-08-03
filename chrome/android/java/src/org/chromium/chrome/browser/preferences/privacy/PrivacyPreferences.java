@@ -172,23 +172,34 @@ public class PrivacyPreferences extends PreferenceFragment
 
         CheckBoxPreference navigationErrorPref = (CheckBoxPreference) findPreference(
                 PREF_NAVIGATION_ERROR);
-        navigationErrorPref.setChecked(prefServiceBridge.isResolveNavigationErrorEnabled());
+        if (navigationErrorPref != null) {
+            navigationErrorPref.setChecked(
+                    prefServiceBridge.isResolveNavigationErrorEnabled());
+        }
 
         CheckBoxPreference searchSuggestionsPref = (CheckBoxPreference) findPreference(
                 PREF_SEARCH_SUGGESTIONS);
-        searchSuggestionsPref.setChecked(prefServiceBridge.isSearchSuggestEnabled());
+        if (searchSuggestionsPref != null) {
+            searchSuggestionsPref.setChecked(prefServiceBridge.isSearchSuggestEnabled());
+        }
 
         CheckBoxPreference extendedReportingPref =
                 (CheckBoxPreference) findPreference(PREF_SAFE_BROWSING_EXTENDED_REPORTING);
-        extendedReportingPref.setChecked(
-                prefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
+        if (extendedReportingPref != null) {
+            extendedReportingPref.setChecked(
+                    prefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
+        }
 
         CheckBoxPreference safeBrowsingPref =
                 (CheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
-        safeBrowsingPref.setChecked(prefServiceBridge.isSafeBrowsingEnabled());
+        if (safeBrowsingPref != null) {
+            safeBrowsingPref.setChecked(prefServiceBridge.isSafeBrowsingEnabled());
+        }
 
         Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);
-        doNotTrackPref.setSummary(prefServiceBridge.isDoNotTrackEnabled() ? textOn : textOff);
+        if (doNotTrackPref != null) {
+            doNotTrackPref.setSummary(prefServiceBridge.isDoNotTrackEnabled() ? textOn : textOff);
+        }
 
         Preference contextualPref = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (contextualPref != null) {
@@ -204,8 +215,10 @@ public class PrivacyPreferences extends PreferenceFragment
 
         if (privacyPrefManager.isCellularExperimentEnabled()) {
             Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
-            usageAndCrashPref.setSummary(privacyPrefManager.isUsageAndCrashReportingEnabled()
-                    ? textOn : textOff);
+            if (usageAndCrashPref != null) {
+                usageAndCrashPref.setSummary(privacyPrefManager.isUsageAndCrashReportingEnabled()
+                        ? textOn : textOff);
+            }
         }
     }
 
