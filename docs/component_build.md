@@ -1,4 +1,4 @@
-﻿# The Chrome Component Build
+# The Chrome Component Build
 
 ## Introduction
 
@@ -7,9 +7,9 @@ zero-to-two shared libraries (depending on the platform). This is efficient at
 runtime, but can take a long time to link because so much code goes into a
 single binary. When you set the GN build variable
 
-    ```python
-    is_component_build = true
-    ```
+```python
+is_component_build = true
+```
 
 the build will generate many smaller shared libraries. This speeds up link
 times, and means that many changes only require that the local shared library
@@ -23,18 +23,18 @@ of a shared library, static library, or source set. The template will
 generate a shared library when `is_component_build` is enabled, and a static
 library otherwise.
 
-    ```python
-    component("browser") {
-      output_name = "chrome_browser"
-      sources = ...
-      ...
-    }
-    ```
+```python
+component("browser") {
+  output_name = "chrome_browser"
+  sources = ...
+  ...
+}
+```
 
 Shared libraries in GN must have globally unique output names. According to GN
 style, your target should be named something simple and convenient (often
 matching your directory name). If this is non-unique, override it with the
-output_name variable.
+`output_name` variable.
 
 ### Dependencies between targets
 
@@ -67,7 +67,7 @@ use GN’s public headers and visibility restrictions to define your public API.
 
 ### Chrome’s pattern for exports
 
-Write a header with the name <component_name>_export.h. Copy an [existing
+Write a header with the name `<component_name>_export.h`. Copy an [existing
 one](https://cs.chromium.org/chromium/src/ipc/ipc_export.h)
 and update the macro names. It will key off of two macros:
 
@@ -85,25 +85,25 @@ imported, respectively. You should copy an existing file and update the
 
 When defining the target for your component, set:
 
-    ```python
-    defines = [ "FOO_IMPLEMENTATION" ]
-    ```
+```python
+defines = [ "FOO_IMPLEMENTATION" ]
+```
 
 In your BUILD.gn file. If you have source sets that also make up your
 component, set this on them also. A good way to share this is to put the
 definition in a GN config:
 
-    ```python
-    config("foo_implementation") {
-      defines = [ "FOO_IMPLEMENTATION" ]
-    }
-    ```
+```python
+config("foo_implementation") {
+  defines = [ "FOO_IMPLEMENTATION" ]
+}
+```
 
 and set the config on the targets that use it:
 
-    ```python
-    configs += [ ":foo_implementation" ]
-    ```
+```python
+configs += [ ":foo_implementation" ]
+```
 
 The component build is only reason to use the `*_IMPLEMENTATION` macros. If
 your code is not being compiled into a component, don’t define such a macro
@@ -114,24 +114,26 @@ your code is not being compiled into a component, don’t define such a macro
 Use the `*_EXPORT` macros on function and class declarations (don’t annotate
 the implementations) as follows:
 
-    ```c++
-    #include "yourcomponent/yourcomponent_export.h"
+```c++
+#include "yourcomponent/yourcomponent_export.h"
 
-    class YOURCOMPONENT_EXPORT YourClass { ... };
+class YOURCOMPONENT_EXPORT YourClass { ... };
 
-    YOURCOMPONENT_EXPORT void SomeFunction();
-    ```
+YOURCOMPONENT_EXPORT void SomeFunction();
+```
 
 Sometimes you have an internal helper class used as the base for an exported
 class. Visual C++ will complain if the base class is not exported:
 
     warning C4275: non dll-interface class 'YourClass' used as base for dll-interface class 'Base'
 
-If you don’t use the base class outside of the component, Chrome supplies the NON_EXPORTED_BASE macro in base/compiler_specific.h to disable the warning. For example:
+If you don’t use the base class outside of the component, Chrome supplies the
+`NON_EXPORTED_BASE` macro in `base/compiler_specific.h` to disable the warning.
+For example:
 
-    ```c++
-    class YourClass : public NON_EXPORTED_BASE(Base) { ... };
-    ```
+```c++
+class YourClass : public NON_EXPORTED_BASE(Base) { ... };
+```
 
 ## Creating components from multiple targets
 
@@ -174,28 +176,28 @@ In the component build the structure will be: `//external/thing` ➜
 Set GN visibility so that the targets with the code can only be depended on by
 targets inside your component.
 
-    ```python
-    if (is_component_build) {
-      component("mycomponent") {
-        public_deps = [ ":browser_impl", ":renderer_impl" ]
-      }
-    }
+```python
+if (is_component_build) {
+  component("mycomponent") {
+    public_deps = [ ":browser_impl", ":renderer_impl" ]
+  }
+}
 
-    # External targets always depend on this or the equivalent “renderer” target.
-    group("browser") {
-      if (is_component_build) {
-        public_deps = [ ":mycomponent" ]
-      } else {
-        public_deps = [ ":browser_impl" ]
-      }
-    }
+# External targets always depend on this or the equivalent “renderer” target.
+group("browser") {
+  if (is_component_build) {
+    public_deps = [ ":mycomponent" ]
+  } else {
+    public_deps = [ ":browser_impl" ]
+  }
+}
 
-    source_set("browser_impl") {
-      visibility = [ ":*" ]  # Prevent accidental dependencies.
-      defines = [ "MYCOMPONENT_IMPLEMENTATION" ]
-      sources = [ ... ]
-    }
-    ```
+source_set("browser_impl") {
+  visibility = [ ":*" ]  # Prevent accidental dependencies.
+  defines = [ "MYCOMPONENT_IMPLEMENTATION" ]
+  sources = [ ... ]
+}
+```
 
 ## Common mistakes
 
