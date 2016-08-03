@@ -279,6 +279,8 @@ protected:
     void resetUnpackParameters() override;
     void restoreUnpackParameters() override;
 
+    void renderbufferStorageHelper(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName);
+
     Member<WebGLFramebuffer> m_readFramebufferBinding;
     Member<WebGLTransformFeedback> m_transformFeedbackBinding;
 

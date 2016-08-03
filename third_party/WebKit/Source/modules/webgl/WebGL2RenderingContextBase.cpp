@@ -340,7 +340,6 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
         return ScriptValue::createNull(scriptState);
     }
 
-    bool floatType = false;
 
     switch (internalformat) {
     // Renderbuffer doesn't support unsized internal formats,
@@ -395,7 +394,6 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
             synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid internalformat when EXT_color_buffer_float is not enabled");
             return ScriptValue::createNull(scriptState);
         }
-        floatType = true;
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter", "invalid internalformat");
@@ -407,20 +405,14 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
         {
             std::unique_ptr<GLint[]> values;
             GLint length = -1;
-            if (!floatType) {
-                contextGL()->GetInternalformativ(target, internalformat, GL_NUM_SAMPLE_COUNTS, 1, &length);
-                if (length <= 0)
-                    return WebGLAny(scriptState, DOMInt32Array::create(0));
+            contextGL()->GetInternalformativ(target, internalformat, GL_NUM_SAMPLE_COUNTS, 1, &length);
+            if (length <= 0)
+                return WebGLAny(scriptState, DOMInt32Array::create(0));
 
-                values = wrapArrayUnique(new GLint[length]);
-                for (GLint ii = 0; ii < length; ++ii)
-                    values[ii] = 0;
-                contextGL()->GetInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
-            } else {
-                length = 1;
-                values = wrapArrayUnique(new GLint[1]);
-                values[0] = 1;
-            }
+            values = wrapArrayUnique(new GLint[length]);
+            for (GLint ii = 0; ii < length; ++ii)
+                values[ii] = 0;
+            contextGL()->GetInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
             return WebGLAny(scriptState, DOMInt32Array::create(values.get(), length));
         }
     default:
@@ -629,6 +621,21 @@ void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLs
     }
 }
 
+void WebGL2RenderingContextBase::renderbufferStorageHelper(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName)
+{
+    if (!samples) {
+        contextGL()->RenderbufferStorage(target, internalformat, width, height);
+    } else {
+        GLint maxNumberOfSamples = 0;
+        contextGL()->GetInternalformativ(target, internalformat, GL_SAMPLES, 1, &maxNumberOfSamples);
+        if (samples > maxNumberOfSamples) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "samples out of range");
+            return;
+        }
+        contextGL()->RenderbufferStorageMultisampleCHROMIUM(target, samples, internalformat, width, height);
+    }
+}
+
 void WebGL2RenderingContextBase::renderbufferStorageImpl(
     GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height,
     const char* functionName)
@@ -673,18 +680,7 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
     case GL_DEPTH24_STENCIL8:
     case GL_DEPTH32F_STENCIL8:
     case GL_STENCIL_INDEX8:
-        if (!samples) {
-            contextGL()->RenderbufferStorage(target, internalformat, width, height);
-        } else {
-            GLint maxNumberOfSamples = 0;
-            contextGL()->GetInternalformativ(target, internalformat, GL_SAMPLES, 1, &maxNumberOfSamples);
-            if (samples > maxNumberOfSamples) {
-                synthesizeGLError(GL_INVALID_OPERATION, functionName, "samples out of range");
-                return;
-            }
-            contextGL()->RenderbufferStorageMultisampleCHROMIUM(
-                target, samples, internalformat, width, height);
-        }
+        renderbufferStorageHelper(target, samples, internalformat, width, height, functionName);
         break;
     case GL_DEPTH_STENCIL:
         // To be WebGL 1 backward compatible.
@@ -692,7 +688,7 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
             synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
             return;
         }
-        contextGL()->RenderbufferStorage(target, GL_DEPTH24_STENCIL8, width, height);
+        renderbufferStorageHelper(target, 0, GL_DEPTH24_STENCIL8, width, height, functionName);
         break;
     case GL_R16F:
     case GL_RG16F:
@@ -705,11 +701,7 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
             synthesizeGLError(GL_INVALID_ENUM, functionName, "EXT_color_buffer_float not enabled");
             return;
         }
-        if (samples) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "multisampled float buffers not supported");
-            return;
-        }
-        contextGL()->RenderbufferStorage(target, internalformat, width, height);
+        renderbufferStorageHelper(target, samples, internalformat, width, height, functionName);
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
