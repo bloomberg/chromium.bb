@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/views/focus/focus_manager.h"
 
 using content::DesktopMediaID;
@@ -25,12 +26,14 @@ DesktopMediaListView::DesktopMediaListView(
     DesktopMediaPickerDialogView* parent,
     std::unique_ptr<DesktopMediaList> media_list,
     DesktopMediaSourceViewStyle generic_style,
-    DesktopMediaSourceViewStyle single_style)
+    DesktopMediaSourceViewStyle single_style,
+    const base::string16& accessible_name)
     : parent_(parent),
       media_list_(std::move(media_list)),
       single_style_(single_style),
       generic_style_(generic_style),
       active_style_(&single_style_),
+      accessible_name_(accessible_name),
       weak_factory_(this) {
   SetStyle(&single_style_);
 
@@ -238,4 +241,9 @@ void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
         static_cast<DesktopMediaSourceView*>(child_at(i));
     source_view->SetStyle(*active_style_);
   }
+}
+
+void DesktopMediaListView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_GROUP;
+  state->name = accessible_name_;
 }

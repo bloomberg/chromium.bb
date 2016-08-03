@@ -7,6 +7,7 @@
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -207,4 +208,9 @@ void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
     RequestFocus();
     event->SetHandled();
   }
+}
+
+void DesktopMediaSourceView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
+  state->name = label_->text();
 }

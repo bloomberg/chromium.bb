@@ -20,7 +20,8 @@ class DesktopMediaListView : public views::View,
   DesktopMediaListView(DesktopMediaPickerDialogView* parent,
                        std::unique_ptr<DesktopMediaList> media_list,
                        DesktopMediaSourceViewStyle generic_style,
-                       DesktopMediaSourceViewStyle single_style);
+                       DesktopMediaSourceViewStyle single_style,
+                       const base::string16& accessible_name);
 
   ~DesktopMediaListView() override;
 
@@ -39,6 +40,7 @@ class DesktopMediaListView : public views::View,
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // DesktopMediaList::Observer interface
@@ -62,6 +64,8 @@ class DesktopMediaListView : public views::View,
   DesktopMediaSourceViewStyle single_style_;
   DesktopMediaSourceViewStyle generic_style_;
   DesktopMediaSourceViewStyle* active_style_;
+
+  base::string16 accessible_name_;
 
   base::WeakPtrFactory<DesktopMediaListView> weak_factory_;
 
