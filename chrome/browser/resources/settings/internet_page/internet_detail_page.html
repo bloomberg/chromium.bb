@@ -78,6 +78,10 @@
           </div>
         </div>
         <div id="buttonDiv" class="layout horizontal center">
+          <paper-button class="secondary-button" on-tap="onForgetTap_"
+              hidden$="[[!showForget_(networkProperties)]]">
+            Forget
+          </paper-button>
           <paper-button class="secondary-button" on-tap="onViewAccountTap_"
               hidden$="[[!showViewAccount_(networkProperties)]]">
             View Account

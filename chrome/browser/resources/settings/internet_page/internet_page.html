@@ -26,14 +26,12 @@
           <settings-internet-detail-page
               guid="[[detailGuid]]"
               default-network="[[defaultNetwork]]"
-              on-close="onBackTap_"
               networking-private="[[networkingPrivate]]">
           </settings-internet-detail-page>
         </settings-subpage>
       </template>
       <template is="dom-if" name="known-networks">
-        <settings-subpage
-            page-title="$i18n{internetKnownNetworksPageTitle}">
+        <settings-subpage page-title="$i18n{internetKnownNetworksPageTitle}">
           <settings-internet-known-networks-page
               network-type="[[knownNetworksType]]"
               on-show-detail="onShowDetail_"

@@ -26,7 +26,9 @@
       }
 
       paper-spinner {
-        -webkit-margin-start: 20px;
+        height: 20px;
+        margin: 0 20px;
+        width: 20px;
       }
 
       .button-row {
@@ -50,8 +52,9 @@
       }
     </style>
     <div class="settings-box two-line">
-      <div id="details" class="start" on-tap="onDetailsTap_" actionable>
-        <cr-network-list-network-item id="detailsItem"
+      <div id="details" actionable class="start layout horizontal center"
+          on-tap="onDetailsTap_">
+        <cr-network-list-network-item class="flex"
             network-state="[[activeNetworkState]]" show-buttons>
         </cr-network-list-network-item>
         <paper-spinner active="[[showScanning_(deviceState, expanded)]]">

@@ -315,7 +315,7 @@ namespace networkingPrivate {
     ManagedDOMString? ClientCertType;
     ManagedEAPProperties? EAP;
     ManagedDOMString? Group;
-    ManagedLong IKEVersion;
+    ManagedLong? IKEVersion;
     ManagedDOMString? PSK;
     ManagedBoolean? SaveCredentials;
     ManagedDOMStringList? ServerCARefs;

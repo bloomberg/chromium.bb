@@ -114,15 +114,30 @@ Polymer({
   },
 
   /** @override */
+  ready: function() {
+    if (!this.guid)
+      this.close_();
+  },
+
+  /** @override */
   detached: function() {
     this.networkingPrivate.onNetworksChanged.removeListener(
         this.networksChangedListener_);
   },
 
   /** @private */
+  close_: function() {
+    // Delay sending subpage-back until the next render frame to allow other
+    // subpages to load first.
+    setTimeout(function() {
+      this.fire('subpage-back');
+    }.bind(this));
+  },
+
+  /** @private */
   guidChanged_: function() {
     if (!this.guid)
-      return;
+      this.close_();
     this.getNetworkDetails_();
   },
 
@@ -198,7 +213,7 @@ Polymer({
     if (!properties) {
       // If |properties| becomes null (i.e. the network is no longer visible),
       // close the page.
-      this.fire('close');
+      this.close_();
     }
   },
 
@@ -298,6 +313,17 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  showForget_: function() {
+    var type = this.networkProperties.Type;
+    if (type != CrOnc.Type.WI_FI && type != CrOnc.Type.VPN)
+      return false;
+    return this.isRemembered_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   showActivate_: function() {
     if (this.networkProperties.Type != CrOnc.Type.CELLULAR)
       return false;
@@ -366,6 +392,11 @@ Polymer({
   /** @private */
   onDisconnectTap_: function() {
     this.networkingPrivate.startDisconnect(this.guid);
+  },
+
+  /** @private */
+  onForgetTap_: function() {
+    this.networkingPrivate.forgetNetwork(this.guid);
   },
 
   /** @private */
