@@ -50,7 +50,6 @@ public:
 
 private:
     explicit WorkerEventQueue(ExecutionContext*);
-    void removeEvent(Event*);
 
     Member<ExecutionContext> m_executionContext;
     bool m_isClosed;

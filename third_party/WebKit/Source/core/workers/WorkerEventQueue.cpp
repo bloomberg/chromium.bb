@@ -66,8 +66,10 @@ public:
 
     ~EventDispatcherTask() override
     {
-        if (m_event)
-            m_eventQueue->removeEvent(m_event.get());
+        if (m_event) {
+            InspectorInstrumentation::asyncTaskCanceled(m_event->target()->getExecutionContext(), m_event);
+            m_eventQueue->m_eventTaskMap.remove(m_event);
+        }
     }
 
     void dispatchEvent(ExecutionContext* context, Event* event)
@@ -80,7 +82,8 @@ public:
     {
         if (m_isCancelled)
             return;
-        m_eventQueue->removeEvent(m_event.get());
+
+        m_eventQueue->m_eventTaskMap.remove(m_event.get());
         dispatchEvent(context, m_event);
         m_event.clear();
     }
@@ -104,12 +107,6 @@ private:
     bool m_isCancelled;
 };
 
-void WorkerEventQueue::removeEvent(Event* event)
-{
-    InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
-    m_eventTaskMap.remove(event);
-}
-
 bool WorkerEventQueue::enqueueEvent(Event* event)
 {
     if (m_isClosed)
@@ -127,7 +124,8 @@ bool WorkerEventQueue::cancelEvent(Event* event)
     if (!task)
         return false;
     task->cancel();
-    removeEvent(event);
+    InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
+    m_eventTaskMap.remove(event);
     return true;
 }
 
