@@ -48,7 +48,7 @@ namespace feedbackPrivate {
 
     // Optional product ID to override the Chrome [OS] product id that is
     // usually passed to the feedback server.
-    DOMString? productId;
+    long? productId;
 
     // Screenshot to send with this feedback.
     [instanceOf=Blob] object? screenshot;

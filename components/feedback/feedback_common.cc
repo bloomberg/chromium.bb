@@ -15,6 +15,12 @@
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+constexpr int kChromeOSProductId = 208;
+#else
+constexpr int kChromeBrowserProductId = 237;
+#endif
+
 const char kMultilineIndicatorString[] = "<multiline>\n";
 const char kMultilineStartString[] = "---------- START ----------\n";
 const char kMultilineEndString[] = "---------- END ----------\n\n";
@@ -99,8 +105,7 @@ FeedbackCommon::AttachedFile::AttachedFile(const std::string& filename,
 
 FeedbackCommon::AttachedFile::~AttachedFile() {}
 
-
-FeedbackCommon::FeedbackCommon() : product_id_(0) {}
+FeedbackCommon::FeedbackCommon() : product_id_(-1) {}
 
 FeedbackCommon::~FeedbackCommon() {}
 
@@ -182,7 +187,31 @@ void FeedbackCommon::PrepareReport(
     userfeedback::ExtensionSubmit* feedback_data) const {
   // Unused field, needs to be 0 though.
   feedback_data->set_type_id(0);
-  feedback_data->set_product_id(product_id_);
+
+  // Set whether we're reporting from ChromeOS or Chrome on another platform.
+  userfeedback::ChromeData chrome_data;
+#if defined(OS_CHROMEOS)
+  const userfeedback::ChromeData_ChromePlatform chrome_platform =
+      userfeedback::ChromeData_ChromePlatform_CHROME_OS;
+  const int default_product_id = kChromeOSProductId;
+  userfeedback::ChromeOsData chrome_os_data;
+  chrome_os_data.set_category(
+      userfeedback::ChromeOsData_ChromeOsCategory_OTHER);
+  *(chrome_data.mutable_chrome_os_data()) = chrome_os_data;
+#else
+  const userfeedback::ChromeData_ChromePlatform chrome_platform =
+      userfeedback::ChromeData_ChromePlatform_CHROME_BROWSER;
+  const int default_product_id = kChromeBrowserProductId;
+  userfeedback::ChromeBrowserData chrome_browser_data;
+  chrome_browser_data.set_category(
+      userfeedback::ChromeBrowserData_ChromeBrowserCategory_OTHER);
+  *(chrome_data.mutable_chrome_browser_data()) = chrome_browser_data;
+#endif  // defined(OS_CHROMEOS)
+  chrome_data.set_chrome_platform(chrome_platform);
+  *(feedback_data->mutable_chrome_data()) = chrome_data;
+
+  feedback_data->set_product_id(HasProductId() ? product_id_
+                                               : default_product_id);
 
   userfeedback::CommonData* common_data = feedback_data->mutable_common_data();
   // We're not using gaia ids, we're using the e-mail field instead.

@@ -13,22 +13,31 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kOne[] = "one";
-const char kTwo[] = "two";
-const char kThree[] = "three";
-const char kFour[] = "four";
+constexpr char kOne[] = "one";
+constexpr char kTwo[] = "two";
+constexpr char kThree[] = "three";
+constexpr char kFour[] = "four";
 #define TEN_LINES "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n"
-const char kLongLog[] = TEN_LINES TEN_LINES TEN_LINES TEN_LINES TEN_LINES;
-const char kLogsAttachmentName[] = "system_logs.zip";
+constexpr char kLongLog[] = TEN_LINES TEN_LINES TEN_LINES TEN_LINES TEN_LINES;
+constexpr char kLogsAttachmentName[] = "system_logs.zip";
+constexpr int kTestProductId = 3490;
+
+#if defined(OS_CHROMEOS)
+constexpr int kDefaultProductId = 208;  // ChromeOS default product ID.
+#else
+constexpr int kDefaultProductId = 237;  // Chrome default product ID.
+#endif  // defined(OS_CHROMEOS)
 }  // namespace
 
 class FeedbackCommonTest : public testing::Test {
  protected:
-  FeedbackCommonTest() {
-    feedback_ = scoped_refptr<FeedbackCommon>(new FeedbackCommon());
+  FeedbackCommonTest()
+      : feedback_(new FeedbackCommon()) {
   }
 
   ~FeedbackCommonTest() override {}
+
+  bool FeedbackHasProductId() const { return feedback_->HasProductId(); }
 
   scoped_refptr<FeedbackCommon> feedback_;
   userfeedback::ExtensionSubmit report_;
@@ -40,12 +49,24 @@ TEST_F(FeedbackCommonTest, TestBasicData) {
   feedback_->set_description(kTwo);
   feedback_->set_page_url(kThree);
   feedback_->set_user_email(kFour);
+  EXPECT_FALSE(FeedbackHasProductId());
+  feedback_->set_product_id(kTestProductId);
+  EXPECT_TRUE(FeedbackHasProductId());
   feedback_->PrepareReport(&report_);
 
   EXPECT_EQ(kOne, report_.bucket());
   EXPECT_EQ(kTwo, report_.common_data().description());
   EXPECT_EQ(kThree, report_.web_data().url());
   EXPECT_EQ(kFour, report_.common_data().user_email());
+  EXPECT_EQ(kTestProductId, report_.product_id());
+}
+
+// If an feedback requester doesn't set the product ID, the report will be sent
+// with the default product ID for Chrome/ChromeOS depending on the platform.
+TEST_F(FeedbackCommonTest, TestDefaultProductId) {
+  EXPECT_FALSE(FeedbackHasProductId());
+  feedback_->PrepareReport(&report_);
+  EXPECT_EQ(kDefaultProductId, report_.product_id());
 }
 
 TEST_F(FeedbackCommonTest, TestAddLogs) {

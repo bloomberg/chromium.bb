@@ -100,12 +100,15 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   void set_locale(const std::string& locale) { locale_ = locale; }
 
  protected:
-  friend class base::RefCountedThreadSafe<FeedbackCommon>;
-  friend class FeedbackCommonTest;
-
   virtual ~FeedbackCommon();
 
  private:
+  friend class base::RefCountedThreadSafe<FeedbackCommon>;
+  friend class FeedbackCommonTest;
+
+  // Returns true if a product ID was set in the feedback report.
+  bool HasProductId() const { return product_id_ != -1; }
+
   std::string category_tag_;
   std::string page_url_;
   std::string description_;

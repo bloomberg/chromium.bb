@@ -204,6 +204,15 @@ function sendReport() {
   if (!$('screenshot-checkbox').checked)
     feedbackInfo.screenshot = null;
 
+  var productId = parseInt('' + feedbackInfo.productId);
+  if (isNaN(productId)) {
+    // For apps that still use a string value as the |productId|, we must clear
+    // that value since the API uses an integer value, and a conflict in data
+    // types will cause the report to fail to be sent.
+    productId = null;
+  }
+  feedbackInfo.productId = productId;
+
   // Request sending the report, show the landing page (if allowed), and close
   // this window right away. The FeedbackRequest object that represents this
   // report will take care of sending the report in the background.

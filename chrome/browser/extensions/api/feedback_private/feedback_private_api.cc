@@ -234,30 +234,34 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
 bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   std::unique_ptr<feedback_private::SendFeedback::Params> params(
       feedback_private::SendFeedback::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   const FeedbackInfo &feedback_info = params->feedback;
 
   std::string attached_file_uuid;
-  if (feedback_info.attached_file_blob_uuid.get() &&
-      !feedback_info.attached_file_blob_uuid->empty())
+  if (feedback_info.attached_file_blob_uuid &&
+      !feedback_info.attached_file_blob_uuid->empty()) {
     attached_file_uuid = *feedback_info.attached_file_blob_uuid;
+  }
 
   std::string screenshot_uuid;
-  if (feedback_info.screenshot_blob_uuid.get() &&
-      !feedback_info.screenshot_blob_uuid->empty())
+  if (feedback_info.screenshot_blob_uuid &&
+      !feedback_info.screenshot_blob_uuid->empty()) {
     screenshot_uuid = *feedback_info.screenshot_blob_uuid;
+  }
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
   feedback_data->set_context(GetProfile());
   feedback_data->set_description(feedback_info.description);
 
-  if (feedback_info.category_tag.get())
+  if (feedback_info.product_id)
+    feedback_data->set_product_id(*feedback_info.product_id);
+  if (feedback_info.category_tag)
     feedback_data->set_category_tag(*feedback_info.category_tag);
-  if (feedback_info.page_url.get())
+  if (feedback_info.page_url)
     feedback_data->set_page_url(*feedback_info.page_url);
-  if (feedback_info.email.get())
+  if (feedback_info.email)
     feedback_data->set_user_email(*feedback_info.email);
 
   if (!attached_file_uuid.empty()) {
@@ -269,7 +273,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   if (!screenshot_uuid.empty())
     feedback_data->set_screenshot_uuid(screenshot_uuid);
 
-  if (feedback_info.trace_id.get()) {
+  if (feedback_info.trace_id) {
     feedback_data->set_trace_id(*feedback_info.trace_id);
   }
 
