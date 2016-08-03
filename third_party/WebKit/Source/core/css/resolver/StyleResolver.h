@@ -154,11 +154,6 @@ public:
         return m_features;
     }
 
-    RuleFeatureSet& ruleFeatureSet()
-    {
-        return m_features;
-    }
-
     StyleSharingList& styleSharingList();
 
     bool hasRulesForId(const AtomicString&) const;
