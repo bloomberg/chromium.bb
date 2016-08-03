@@ -8,7 +8,10 @@
 #include <windows.h>
 
 #include "base/debug/gdi_debug_util_win.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/win_util.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace {
@@ -166,14 +169,67 @@ void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
   LoadTransformToDC(source, transform);
 }
 
+SkImageInfo PrepareAllocation(HDC context, BITMAP* backing) {
+  HBITMAP backing_handle =
+      static_cast<HBITMAP>(GetCurrentObject(context, OBJ_BITMAP));
+  const size_t backing_size = sizeof *backing;
+  return (GetObject(backing_handle, backing_size, backing) == backing_size)
+            ? SkImageInfo::MakeN32Premul(backing->bmWidth, backing->bmHeight)
+            : SkImageInfo();
+}
+
+sk_sp<SkSurface> MapPlatformSurface(HDC context) {
+  BITMAP backing;
+  const SkImageInfo size(PrepareAllocation(context, &backing));
+  return size.isEmpty() ? nullptr
+                        : SkSurface::MakeRasterDirect(size, backing.bmBits,
+                                                      backing.bmWidthBytes);
+}
+
+SkBitmap MapPlatformBitmap(HDC context) {
+  BITMAP backing;
+  const SkImageInfo size(PrepareAllocation(context, &backing));
+  SkBitmap bitmap;
+  if (!size.isEmpty())
+    bitmap.installPixels(size, backing.bmBits, size.minRowBytes());
+  return bitmap;
+}
+
+HDC CreateOffscreenSurface(int width, int height) {
+  HBITMAP bitmap = nullptr;
+
+  // If this process doesn't have access to GDI, we'll have to use a shared
+  // memory segment instead.
+  if (!base::win::IsUser32AndGdi32Available())
+    return nullptr;
+
+  bitmap = CreateHBitmap(width, height, false, nullptr, nullptr);
+  if (!bitmap)
+    return nullptr;
+
+  base::win::ScopedCreateDC scoped_hdc(CreateCompatibleDC(nullptr));
+  if (!scoped_hdc.IsValid())
+    return nullptr;
+  InitializeDC(scoped_hdc.Get());
+  HRGN clip = CreateRectRgn(0, 0, width, height);
+  if ((SelectClipRgn(scoped_hdc.Get(), clip) == ERROR) ||
+      (!DeleteObject(clip)))
+    return nullptr;
+
+  SelectObject(scoped_hdc.Get(), bitmap);
+
+  // The caller must call DeleteDC(hdc) on this object once done with it.
+  return scoped_hdc.Take();
+}
+
 void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
    CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
 }
 
 HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
                       HANDLE shared_section, void** data) {
-  // CreateDIBSection appears to get unhappy if we create an empty bitmap, so
-  // just create a minimal bitmap
+  // CreateDIBSection fails to allocate anything if we try to create an empty
+  // bitmap, so just create a minimal bitmap.
   if ((width == 0) || (height == 0)) {
     width = 1;
     height = 1;
@@ -184,12 +240,10 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
   HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
                                      0, data, shared_section, 0);
 
-#if !defined(_WIN64)
-  // If this call fails, we're gonna crash hard. Try to get some useful
-  // information out before we crash for post-mortem analysis.
+  // If CreateDIBSection() failed, try to get some useful information out
+  // before we crash for post-mortem analysis.
   if (!hbitmap)
     base::debug::GDIBitmapAllocFailure(&hdr, shared_section);
-#endif
 
   return hbitmap;
 }

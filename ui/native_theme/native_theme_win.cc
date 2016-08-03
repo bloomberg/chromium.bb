@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/color_palette.h"
@@ -285,10 +286,12 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     }
   }
 
+  skia::ScopedPlatformPaint paint(canvas);
+  HDC surface = paint.GetPlatformSurface();
   if (needs_paint_indirect)
-    PaintIndirect(canvas, part, state, rect, extra);
+    PaintIndirect(canvas, surface, part, state, rect, extra);
   else
-    PaintDirect(canvas, part, state, rect, extra);
+    PaintDirect(canvas, surface, part, state, rect, extra);
 }
 
 NativeThemeWin::NativeThemeWin()
@@ -377,14 +380,12 @@ void NativeThemeWin::PaintMenuBackground(SkCanvas* canvas,
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
-void NativeThemeWin::PaintDirect(SkCanvas* canvas,
+void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
+                                 HDC hdc,
                                  Part part,
                                  State state,
                                  const gfx::Rect& rect,
                                  const ExtraParams& extra) const {
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC hdc = scoped_platform_paint.GetPlatformSurface();
-
   switch (part) {
     case kCheckbox:
       PaintCheckbox(hdc, part, state, rect, extra.button);
@@ -439,11 +440,11 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
       return;
     case kScrollbarHorizontalTrack:
     case kScrollbarVerticalTrack:
-      PaintScrollbarTrack(canvas, hdc, part, state, rect,
+      PaintScrollbarTrack(destination_canvas, hdc, part, state, rect,
                           extra.scrollbar_track);
       return;
     case kScrollbarCorner:
-      canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
+      destination_canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
       return;
     case kTabPanelBackground:
       PaintTabPanelBackground(hdc, rect);
@@ -453,7 +454,7 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
       return;
     case kTrackbarThumb:
     case kTrackbarTrack:
-      PaintTrackbar(canvas, hdc, part, state, rect, extra.trackbar);
+      PaintTrackbar(destination_canvas, hdc, part, state, rect, extra.trackbar);
       return;
     case kWindowResizeGripper:
       PaintWindowResizeGripper(hdc, rect);
@@ -673,7 +674,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   return GetAuraColor(color_id, this);
 }
 
-void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
+void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
+                                   HDC destination_hdc,
                                    Part part,
                                    State state,
                                    const gfx::Rect& rect,
@@ -684,12 +686,13 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   //                  keeping a cache of the resulting bitmaps.
 
   // Create an offscreen canvas that is backed by an HDC.
-  sk_sp<skia::BitmapPlatformDevice> device(
-      skia::BitmapPlatformDevice::Create(
-          rect.width(), rect.height(), false, NULL));
-  DCHECK(device);
-  SkCanvas offscreen_canvas(device.get());
-  DCHECK(skia::SupportsPlatformPaint(&offscreen_canvas));
+  base::win::ScopedCreateDC offscreen_hdc(
+      skia::CreateOffscreenSurface(rect.width(), rect.height()));
+  sk_sp<SkSurface> offscreen_surface =
+      skia::MapPlatformSurface(offscreen_hdc.Get());
+  DCHECK(offscreen_surface);
+  SkCanvas* offscreen_canvas = offscreen_surface->getCanvas();
+  DCHECK(offscreen_canvas);
 
   // Some of the Windows theme drawing operations do not write correct alpha
   // values for fully-opaque pixels; instead the pixels get alpha 0. This is
@@ -699,7 +702,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   // which pixels get touched by the paint operation. After paint, set any
   // pixels that have alpha 0 to opaque and placeholders to fully-transparent.
   const SkColor placeholder = SkColorSetARGB(1, 0, 0, 0);
-  offscreen_canvas.clear(placeholder);
+  offscreen_canvas->clear(placeholder);
 
   // Offset destination rects to have origin (0,0).
   gfx::Rect adjusted_rect(rect.size());
@@ -718,14 +721,15 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
       break;
   }
   // Draw the theme controls using existing HDC-drawing code.
-  PaintDirect(&offscreen_canvas, part, state, adjusted_rect, adjusted_extra);
+  PaintDirect(offscreen_canvas, offscreen_hdc.Get(), part, state,
+              adjusted_rect, adjusted_extra);
 
-  SkBitmap bitmap = skia::ReadPixels(&offscreen_canvas);
+  SkBitmap offscreen_bitmap = skia::MapPlatformBitmap(offscreen_hdc.Get());
 
   // Post-process the pixels to fix up the alpha values (see big comment above).
   const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
   const int pixel_count = rect.width() * rect.height();
-  SkPMColor* pixels = bitmap.getAddr32(0, 0);
+  SkPMColor* pixels = offscreen_bitmap.getAddr32(0, 0);
   for (int i = 0; i < pixel_count; i++) {
     if (pixels[i] == placeholder_value) {
       // Pixel wasn't touched - make it fully transparent.
@@ -739,8 +743,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
     }
   }
 
-  // Draw the offscreen bitmap to the destination canvas.
-  canvas->drawBitmap(bitmap, rect.x(), rect.y());
+  destination_canvas->drawBitmap(offscreen_bitmap, rect.x(), rect.y());
 }
 
 HRESULT NativeThemeWin::GetThemePartSize(ThemeName theme_name,

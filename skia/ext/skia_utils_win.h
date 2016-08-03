@@ -5,8 +5,10 @@
 #ifndef SKIA_EXT_SKIA_UTILS_WIN_H_
 #define SKIA_EXT_SKIA_UTILS_WIN_H_
 
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 #include "build/build_config.h"
 #include <windows.h>
@@ -14,6 +16,7 @@
 struct SkIRect;
 struct SkPoint;
 struct SkRect;
+class SkSurface;
 typedef unsigned long DWORD;
 typedef DWORD COLORREF;
 typedef struct tagPOINT POINT;
@@ -59,6 +62,21 @@ SK_API void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
 //   Sets |transform| on source afterwards!
 SK_API void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
                     const RECT& src_rect, const SkMatrix& transform);
+
+// Creates a surface writing to the pixels backing |context|'s bitmap.
+// Returns null on error.
+SK_API sk_sp<SkSurface> MapPlatformSurface(HDC context);
+
+// Creates a bitmap backed by the same pixels backing the HDC's bitmap.
+// Returns an empty bitmap on error.
+SK_API SkBitmap MapPlatformBitmap(HDC context);
+
+// Creates an offscreen HDC suitable for writing to via MapPlatformSurface().
+// Caller is responsible for calling DeleteDC() when done.
+// Will return null if any errors are encountered.
+// TODO(fmalita): consider returning ScopedCreateDC() when that type is
+// returnable (https://crbug.com/622442)
+SK_API HDC CreateOffscreenSurface(int width, int height);
 
 // Fills in a BITMAPINFOHEADER structure given the bitmap's size.
 SK_API void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
