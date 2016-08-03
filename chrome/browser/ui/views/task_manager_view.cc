@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/new_task_manager_view.h"
+#include "chrome/browser/ui/views/task_manager_view.h"
 
 #include <stddef.h>
 
@@ -49,17 +49,17 @@ namespace task_management {
 
 namespace {
 
-NewTaskManagerView* g_task_manager_view = nullptr;
+TaskManagerView* g_task_manager_view = nullptr;
 
 }  // namespace
 
-NewTaskManagerView::~NewTaskManagerView() {
+TaskManagerView::~TaskManagerView() {
   // Delete child views now, while our table model still exists.
   RemoveAllChildViews(true);
 }
 
 // static
-task_management::TaskManagerTableModel* NewTaskManagerView::Show(
+task_management::TaskManagerTableModel* TaskManagerView::Show(
     Browser* browser) {
   if (g_task_manager_view) {
     // If there's a Task manager window open already, just activate it.
@@ -68,18 +68,16 @@ task_management::TaskManagerTableModel* NewTaskManagerView::Show(
     return g_task_manager_view->table_model_.get();
   }
 
-  g_task_manager_view = new NewTaskManagerView();
+  g_task_manager_view = new TaskManagerView();
 
-  gfx::NativeWindow window = browser ? browser->window()->GetNativeWindow()
-                                     : nullptr;
+  gfx::NativeWindow window =
+      browser ? browser->window()->GetNativeWindow() : nullptr;
 #if defined(USE_ASH)
   if (!window)
     window = ash::wm::GetActiveWindow();
 #endif
 
-  DialogDelegate::CreateDialogWidget(g_task_manager_view,
-                                     window,
-                                     nullptr);
+  DialogDelegate::CreateDialogWidget(g_task_manager_view, window, nullptr);
   g_task_manager_view->InitAlwaysOnTopState();
 
 #if defined(OS_WIN)
@@ -98,41 +96,38 @@ task_management::TaskManagerTableModel* NewTaskManagerView::Show(
   g_task_manager_view->GetWidget()->Show();
 
   // Set the initial focus to the list of tasks.
-  views::FocusManager* focus_manager =
-      g_task_manager_view->GetFocusManager();
+  views::FocusManager* focus_manager = g_task_manager_view->GetFocusManager();
   if (focus_manager)
     focus_manager->SetFocusedView(g_task_manager_view->tab_table_);
 
 #if defined(USE_ASH)
   gfx::NativeWindow native_window =
       g_task_manager_view->GetWidget()->GetNativeWindow();
-  ash::SetShelfItemDetailsForDialogWindow(native_window,
-                                          IDR_ASH_SHELF_ICON_TASK_MANAGER,
-                                          native_window->title());
+  ash::SetShelfItemDetailsForDialogWindow(
+      native_window, IDR_ASH_SHELF_ICON_TASK_MANAGER, native_window->title());
 #endif
   return g_task_manager_view->table_model_.get();
 }
 
 // static
-void NewTaskManagerView::Hide() {
+void TaskManagerView::Hide() {
   if (g_task_manager_view)
     g_task_manager_view->GetWidget()->Close();
 }
 
-bool NewTaskManagerView::IsColumnVisible(int column_id) const {
+bool TaskManagerView::IsColumnVisible(int column_id) const {
   return tab_table_->IsColumnVisible(column_id);
 }
 
-void NewTaskManagerView::SetColumnVisibility(int column_id,
-                                             bool new_visibility) {
+void TaskManagerView::SetColumnVisibility(int column_id, bool new_visibility) {
   tab_table_->SetColumnVisibility(column_id, new_visibility);
 }
 
-bool NewTaskManagerView::IsTableSorted() const {
+bool TaskManagerView::IsTableSorted() const {
   return tab_table_->is_sorted();
 }
 
-TableSortDescriptor NewTaskManagerView::GetSortDescriptor() const {
+TableSortDescriptor TaskManagerView::GetSortDescriptor() const {
   if (!IsTableSorted())
     return TableSortDescriptor();
 
@@ -140,8 +135,7 @@ TableSortDescriptor NewTaskManagerView::GetSortDescriptor() const {
   return TableSortDescriptor(descriptor.column_id, descriptor.ascending);
 }
 
-void NewTaskManagerView::SetSortDescriptor(
-    const TableSortDescriptor& descriptor) {
+void TaskManagerView::SetSortDescriptor(const TableSortDescriptor& descriptor) {
   views::TableView::SortDescriptors descriptor_list;
 
   // If |sorted_column_id| is the default value, it means to clear the sort.
@@ -153,43 +147,42 @@ void NewTaskManagerView::SetSortDescriptor(
   tab_table_->SetSortDescriptors(descriptor_list);
 }
 
-gfx::Size NewTaskManagerView::GetPreferredSize() const {
+gfx::Size TaskManagerView::GetPreferredSize() const {
   return gfx::Size(460, 270);
 }
 
-bool NewTaskManagerView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
+bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
   DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
   GetWidget()->Close();
   return true;
 }
 
-bool NewTaskManagerView::CanResize() const {
+bool TaskManagerView::CanResize() const {
   return true;
 }
 
-bool NewTaskManagerView::CanMaximize() const {
+bool TaskManagerView::CanMaximize() const {
   return true;
 }
 
-bool NewTaskManagerView::CanMinimize() const {
+bool TaskManagerView::CanMinimize() const {
   return true;
 }
 
-bool NewTaskManagerView::ExecuteWindowsCommand(int command_id) {
+bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
   return false;
 }
 
-base::string16 NewTaskManagerView::GetWindowTitle() const {
+base::string16 TaskManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
 }
 
-std::string NewTaskManagerView::GetWindowName() const {
+std::string TaskManagerView::GetWindowName() const {
   return prefs::kTaskManagerWindowPlacement;
 }
 
-bool NewTaskManagerView::Accept() {
+bool TaskManagerView::Accept() {
   using SelectedIndices = ui::ListSelectionModel::SelectedIndices;
   SelectedIndices selection(tab_table_->selection_model().selected_indices());
   for (SelectedIndices::const_reverse_iterator i = selection.rbegin();
@@ -201,20 +194,20 @@ bool NewTaskManagerView::Accept() {
   return false;
 }
 
-bool NewTaskManagerView::Close() {
+bool TaskManagerView::Close() {
   return true;
 }
 
-int NewTaskManagerView::GetDialogButtons() const {
+int TaskManagerView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 NewTaskManagerView::GetDialogButtonLabel(
+base::string16 TaskManagerView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL);
 }
 
-bool NewTaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
+bool TaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
   const ui::ListSelectionModel::SelectedIndices& selections(
       tab_table_->selection_model().selected_indices());
   for (const auto& selection : selections) {
@@ -225,7 +218,7 @@ bool NewTaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return !selections.empty() && TaskManagerInterface::IsEndProcessEnabled();
 }
 
-void NewTaskManagerView::WindowClosing() {
+void TaskManagerView::WindowClosing() {
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
@@ -237,32 +230,30 @@ void NewTaskManagerView::WindowClosing() {
   table_model_->StoreColumnsSettings();
 }
 
-bool NewTaskManagerView::ShouldUseCustomFrame() const {
+bool TaskManagerView::ShouldUseCustomFrame() const {
   return false;
 }
 
-void NewTaskManagerView::GetGroupRange(int model_index,
-                                       views::GroupRange* range) {
+void TaskManagerView::GetGroupRange(int model_index, views::GroupRange* range) {
   table_model_->GetRowsGroupRange(model_index, &range->start, &range->length);
 }
 
-void NewTaskManagerView::OnSelectionChanged() {
+void TaskManagerView::OnSelectionChanged() {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-void NewTaskManagerView::OnDoubleClick() {
+void TaskManagerView::OnDoubleClick() {
   ActivateSelectedTab();
 }
 
-void NewTaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
+void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
   if (keycode == ui::VKEY_RETURN)
     ActivateSelectedTab();
 }
 
-void NewTaskManagerView::ShowContextMenuForView(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
+void TaskManagerView::ShowContextMenuForView(views::View* source,
+                                             const gfx::Point& point,
+                                             ui::MenuSourceType source_type) {
   ui::SimpleMenuModel menu_model(this);
 
   for (const auto& table_column : columns_) {
@@ -273,8 +264,7 @@ void NewTaskManagerView::ShowContextMenuForView(
   menu_runner_.reset(
       new views::MenuRunner(&menu_model, views::MenuRunner::CONTEXT_MENU));
 
-  if (menu_runner_->RunMenuAt(GetWidget(),
-                              nullptr,
+  if (menu_runner_->RunMenuAt(GetWidget(), nullptr,
                               gfx::Rect(point, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT,
                               source_type) == views::MenuRunner::MENU_DELETED) {
@@ -282,19 +272,19 @@ void NewTaskManagerView::ShowContextMenuForView(
   }
 }
 
-bool NewTaskManagerView::IsCommandIdChecked(int id) const {
+bool TaskManagerView::IsCommandIdChecked(int id) const {
   return tab_table_->IsColumnVisible(id);
 }
 
-bool NewTaskManagerView::IsCommandIdEnabled(int id) const {
+bool TaskManagerView::IsCommandIdEnabled(int id) const {
   return true;
 }
 
-void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
+void TaskManagerView::ExecuteCommand(int id, int event_flags) {
   table_model_->ToggleColumnVisibility(id);
 }
 
-NewTaskManagerView::NewTaskManagerView()
+TaskManagerView::TaskManagerView()
     : tab_table_(nullptr),
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
@@ -302,11 +292,11 @@ NewTaskManagerView::NewTaskManagerView()
 }
 
 // static
-NewTaskManagerView* NewTaskManagerView::GetInstanceForTests() {
+TaskManagerView* TaskManagerView::GetInstanceForTests() {
   return g_task_manager_view;
 }
 
-void NewTaskManagerView::Init() {
+void TaskManagerView::Init() {
   // Create the table columns.
   for (size_t i = 0; i < kColumnsSize; ++i) {
     const auto& col_data = kColumns[i];
@@ -318,12 +308,11 @@ void NewTaskManagerView::Init() {
   }
 
   // Create the table view.
-  tab_table_ = new views::TableView(nullptr, columns_, views::ICON_AND_TEXT,
-                                    false);
-  table_model_.reset(new TaskManagerTableModel(REFRESH_TYPE_CPU |
-                                               REFRESH_TYPE_MEMORY |
-                                               REFRESH_TYPE_NETWORK_USAGE,
-                                               this));
+  tab_table_ =
+      new views::TableView(nullptr, columns_, views::ICON_AND_TEXT, false);
+  table_model_.reset(new TaskManagerTableModel(
+      REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_NETWORK_USAGE,
+      this));
   tab_table_->SetModel(table_model_.get());
   tab_table_->SetGrouper(this);
   tab_table_->SetObserver(this);
@@ -343,32 +332,32 @@ void NewTaskManagerView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
 }
 
-void NewTaskManagerView::InitAlwaysOnTopState() {
+void TaskManagerView::InitAlwaysOnTopState() {
   RetrieveSavedAlwaysOnTopState();
   GetWidget()->SetAlwaysOnTop(is_always_on_top_);
 }
 
-void NewTaskManagerView::ActivateSelectedTab() {
+void TaskManagerView::ActivateSelectedTab() {
   const int active_row = tab_table_->selection_model().active();
   if (active_row != ui::ListSelectionModel::kUnselectedIndex)
     table_model_->ActivateTask(active_row);
 }
 
-void NewTaskManagerView::SelectTaskOfActiveTab(Browser* browser) {
+void TaskManagerView::SelectTaskOfActiveTab(Browser* browser) {
   if (browser) {
     tab_table_->Select(table_model_->GetRowForWebContents(
         browser->tab_strip_model()->GetActiveWebContents()));
   }
 }
 
-void NewTaskManagerView::RetrieveSavedAlwaysOnTopState() {
+void TaskManagerView::RetrieveSavedAlwaysOnTopState() {
   is_always_on_top_ = false;
 
   if (!g_browser_process->local_state())
     return;
 
   const base::DictionaryValue* dictionary =
-    g_browser_process->local_state()->GetDictionary(GetWindowName());
+      g_browser_process->local_state()->GetDictionary(GetWindowName());
   if (dictionary)
     dictionary->GetBoolean("always_on_top", &is_always_on_top_);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_NEW_TASK_MANAGER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_NEW_TASK_MANAGER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TASK_MANAGER_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_TASK_MANAGER_VIEW_H_
 
 #include <vector>
 
@@ -28,15 +28,14 @@ class View;
 namespace task_management {
 
 // The new task manager UI container.
-class NewTaskManagerView
-    : public TableViewDelegate,
-      public views::DialogDelegateView,
-      public views::TableGrouper,
-      public views::TableViewObserver,
-      public views::ContextMenuController,
-      public ui::SimpleMenuModel::Delegate {
+class TaskManagerView : public TableViewDelegate,
+                        public views::DialogDelegateView,
+                        public views::TableGrouper,
+                        public views::TableViewObserver,
+                        public views::ContextMenuController,
+                        public ui::SimpleMenuModel::Delegate {
  public:
-  ~NewTaskManagerView() override;
+  ~TaskManagerView() override;
 
   // Shows the Task Manager window, or re-activates an existing one.
   static task_management::TaskManagerTableModel* Show(Browser* browser);
@@ -89,11 +88,11 @@ class NewTaskManagerView
   void ExecuteCommand(int id, int event_flags) override;
 
  private:
-  friend class NewTaskManagerViewTest;
+  friend class TaskManagerViewTest;
 
-  NewTaskManagerView();
+  TaskManagerView();
 
-  static NewTaskManagerView* GetInstanceForTests();
+  static TaskManagerView* GetInstanceForTests();
 
   // Creates the child controls.
   void Init();
@@ -126,9 +125,9 @@ class NewTaskManagerView
   // True when the Task Manager window should be shown on top of other windows.
   bool is_always_on_top_;
 
-  DISALLOW_COPY_AND_ASSIGN(NewTaskManagerView);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerView);
 };
 
 }  // namespace task_management
 
-#endif  // CHROME_BROWSER_UI_VIEWS_NEW_TASK_MANAGER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TASK_MANAGER_VIEW_H_

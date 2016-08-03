@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
-#include "chrome/browser/ui/views/new_task_manager_view.h"
+#include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,10 +37,10 @@ namespace task_management {
 
 using browsertest_util::WaitForTaskManagerRows;
 
-class NewTaskManagerViewTest : public InProcessBrowserTest {
+class TaskManagerViewTest : public InProcessBrowserTest {
  public:
-  NewTaskManagerViewTest() {}
-  ~NewTaskManagerViewTest() override {}
+  TaskManagerViewTest() {}
+  ~TaskManagerViewTest() override {}
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -56,8 +56,8 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  NewTaskManagerView* GetView() const {
-    return NewTaskManagerView::GetInstanceForTests();
+  TaskManagerView* GetView() const {
+    return TaskManagerView::GetInstanceForTests();
   }
 
   views::TableView* GetTable() const {
@@ -76,7 +76,7 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
     dict_update->Clear();
   }
 
-  void ToggleColumnVisibility(NewTaskManagerView* view, int col_id) {
+  void ToggleColumnVisibility(TaskManagerView* view, int col_id) {
     DCHECK(view);
     view->table_model_->ToggleColumnVisibility(col_id);
   }
@@ -104,12 +104,12 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NewTaskManagerViewTest);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerViewTest);
 };
 
 // Tests that all defined columns have a corresponding string IDs for keying
 // into the user preferences dictionary.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, AllColumnsHaveStringIds) {
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, AllColumnsHaveStringIds) {
   for (size_t i = 0; i < kColumnsSize; ++i)
     EXPECT_NE("", GetColumnIdAsString(kColumns[i].id));
 }
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, AllColumnsHaveStringIds) {
 // In the case of no settings stored in the user preferences local store, test
 // that the task manager table starts with the default columns visibility as
 // stored in |kColumns|.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, TableStartsWithDefaultColumns) {
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, TableStartsWithDefaultColumns) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
@@ -133,11 +133,11 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, TableStartsWithDefaultColumns) {
 
 // Tests that changing columns visibility and sort order will be stored upon
 // closing the task manager view and restored when re-opened.
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, ColumnsSettingsAreRestored) {
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, ColumnsSettingsAreRestored) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
-  NewTaskManagerView* view = GetView();
+  TaskManagerView* view = GetView();
   ASSERT_TRUE(view);
   views::TableView* table = GetTable();
   ASSERT_TRUE(table);
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, ColumnsSettingsAreRestored) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, InitialSelection) {
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, InitialSelection) {
   // Navigate the first tab.
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, InitialSelection) {
             FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, SelectionConsistency) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());
@@ -323,4 +323,3 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, SelectionConsistency) {
 }
 
 }  // namespace task_management
-
