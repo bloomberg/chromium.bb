@@ -21,20 +21,6 @@ import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/toolchain/concurrent_links.gni")
 
-if (use_goma) {
-  assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
-  compiler_prefix = "$goma_dir/gomacc "
-} else if (cc_wrapper != "") {
-  compiler_prefix = cc_wrapper + " "
-} else {
-  compiler_prefix = ""
-}
-
-if (!use_xcode_clang) {
-  compiler_prefix =
-      compiler_prefix + rebase_path("$clang_base_path/bin/", root_build_dir)
-}
-
 declare_args() {
   # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
   # tools as they can cause lots of I/O contention when invoking ninja with a
@@ -86,8 +72,21 @@ template("mac_toolchain") {
 
     # concurrent_links is picked up from the declare_arg().
 
-    cc = "${compiler_prefix}clang"
-    cxx = "${compiler_prefix}clang++"
+    if (use_goma) {
+      assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
+      _compiler_prefix = "$goma_dir/gomacc "
+    } else if (cc_wrapper != "") {
+      _compiler_prefix = cc_wrapper + " "
+    } else {
+      _compiler_prefix = ""
+    }
+
+    if (invoker.toolchain_os != "ios" || !use_xcode_clang) {
+      _compiler_prefix += rebase_path("$clang_base_path/bin/", root_build_dir)
+    }
+
+    cc = "${_compiler_prefix}clang"
+    cxx = "${_compiler_prefix}clang++"
     ld = cxx
 
     linker_driver =
