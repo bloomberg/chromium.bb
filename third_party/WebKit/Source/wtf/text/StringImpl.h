@@ -718,11 +718,12 @@ template<> struct DefaultHash<RefPtr<StringImpl>> {
 } // namespace WTF
 
 using WTF::StringImpl;
-using WTF::equal;
-using WTF::equalNonNull;
-using WTF::TextCaseSensitivity;
-using WTF::TextCaseSensitive;
 using WTF::TextCaseASCIIInsensitive;
 using WTF::TextCaseInsensitive;
+using WTF::TextCaseSensitive;
+using WTF::TextCaseSensitivity;
+using WTF::equal;
+using WTF::equalNonNull;
+using WTF::lengthOfNullTerminatedString;
 
 #endif

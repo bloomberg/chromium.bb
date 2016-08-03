@@ -292,10 +292,14 @@ UChar32 String::characterStartingAt(unsigned i) const
 
 void String::ensure16Bit()
 {
-    unsigned length = this->length();
-    if (!length || !is8Bit())
+    if (isNull())
         return;
-    m_impl = make16BitFrom8BitSource(m_impl->characters8(), length).impl();
+    if (!is8Bit())
+        return;
+    if (unsigned length = this->length())
+        m_impl = make16BitFrom8BitSource(m_impl->characters8(), length).releaseImpl();
+    else
+        m_impl = StringImpl::empty16Bit();
 }
 
 void String::truncate(unsigned position)
@@ -420,18 +424,6 @@ String String::foldCase() const
     if (!m_impl)
         return String();
     return m_impl->foldCase();
-}
-
-Vector<UChar> String::charactersWithNullTermination() const
-{
-    if (!m_impl)
-        return Vector<UChar>();
-
-    Vector<UChar> result;
-    result.reserveInitialCapacity(length() + 1);
-    appendTo(result);
-    result.append('\0');
-    return result;
 }
 
 unsigned String::copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const

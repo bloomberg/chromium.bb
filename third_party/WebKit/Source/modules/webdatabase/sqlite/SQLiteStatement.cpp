@@ -185,9 +185,9 @@ int SQLiteStatement::bindText(int index, const String& text)
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
-    // SQLite treats uses zero pointers to represent null strings, which means we need to make sure to map null WTFStrings to zero pointers.
-    ASSERT(!String().charactersWithNullTermination().data());
-    return restrictError(sqlite3_bind_text16(m_statement, index, text.charactersWithNullTermination().data(), sizeof(UChar) * text.length(), SQLITE_TRANSIENT));
+    String text16(text);
+    text16.ensure16Bit();
+    return restrictError(sqlite3_bind_text16(m_statement, index, text16.characters16(), sizeof(UChar) * text16.length(), SQLITE_TRANSIENT));
 }
 
 int SQLiteStatement::bindDouble(int index, double number)

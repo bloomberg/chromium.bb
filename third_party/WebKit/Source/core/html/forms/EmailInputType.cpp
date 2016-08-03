@@ -69,7 +69,8 @@ String EmailInputType::convertEmailAddressToASCII(const ScriptRegexp& regexp, co
     // UnicodeString ctor for copy-on-write does not work reliably (in debug
     // build.) TODO(jshin): In an unlikely case this is a perf-issue, treat
     // 8bit and non-8bit strings separately.
-    icu::UnicodeString idnDomainName(host.charactersWithNullTermination().data(), host.length());
+    host.ensure16Bit();
+    icu::UnicodeString idnDomainName(host.characters16(), host.length());
     icu::UnicodeString domainName;
 
     // Leak |idna| at the end.

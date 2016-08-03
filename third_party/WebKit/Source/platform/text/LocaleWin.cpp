@@ -59,7 +59,15 @@ static LCID LCIDFromLocaleInternal(LCID userDefaultLCID, const String& userDefau
     String localeLanguageCode = extractLanguageCode(locale);
     if (equalIgnoringCase(localeLanguageCode, userDefaultLanguageCode))
         return userDefaultLCID;
-    return ::LocaleNameToLCID(locale.charactersWithNullTermination().data(), 0);
+    if (locale.length() >= LOCALE_NAME_MAX_LENGTH)
+        return 0;
+    UChar buffer[LOCALE_NAME_MAX_LENGTH];
+    if (locale.is8Bit())
+        StringImpl::copyChars(buffer, locale.characters8(), locale.length());
+    else
+        StringImpl::copyChars(buffer, locale.characters16(), locale.length());
+    buffer[locale.length()] = '\0';
+    return ::LocaleNameToLCID(buffer, 0);
 }
 
 static LCID LCIDFromLocale(const String& locale, bool defaultsForLocale)

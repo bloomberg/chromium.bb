@@ -51,9 +51,9 @@ static USet* getSmartSet(bool isPreviousCharacter)
     USet* smartSet = isPreviousCharacter ? preSmartSet : postSmartSet;
     if (!smartSet) {
         // Whitespace and newline (kCFCharacterSetWhitespaceAndNewline)
+        static const UChar* kWhitespaceAndNewLine = reinterpret_cast<const UChar*>(u"[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
         UErrorCode ec = U_ZERO_ERROR;
-        String whitespaceAndNewline("[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
-        smartSet = uset_openPattern(whitespaceAndNewline.charactersWithNullTermination().data(), whitespaceAndNewline.length(), &ec);
+        smartSet = uset_openPattern(kWhitespaceAndNewLine, lengthOfNullTerminatedString(kWhitespaceAndNewLine), &ec);
         DCHECK(U_SUCCESS(ec)) << ec;
 
         // CJK ranges
@@ -75,9 +75,9 @@ static USet* getSmartSet(bool isPreviousCharacter)
             addAllCodePoints(smartSet, ")].,;:?\'!\"%*-/}");
 
             // Punctuation (kCFCharacterSetPunctuation)
+            static const UChar* kPunctuationClass = reinterpret_cast<const UChar*>(u"[:P:]");
             UErrorCode ec = U_ZERO_ERROR;
-            String punctuationClass("[:P:]");
-            USet* icuPunct = uset_openPattern(punctuationClass.charactersWithNullTermination().data(), punctuationClass.length(), &ec);
+            USet* icuPunct = uset_openPattern(kPunctuationClass, lengthOfNullTerminatedString(kPunctuationClass), &ec);
             DCHECK(U_SUCCESS(ec)) << ec;
             uset_addAll(smartSet, icuPunct);
             uset_close(icuPunct);

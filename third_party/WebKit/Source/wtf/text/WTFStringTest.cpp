@@ -401,6 +401,39 @@ TEST(StringTest, Lower)
     EXPECT_STREQ("link", String::fromUTF8("LIN\xE2\x84\xAA").lower().utf8().data());
 }
 
+TEST(StringTest, Ensure16Bit)
+{
+    String string8("8bit");
+    EXPECT_TRUE(string8.is8Bit());
+    string8.ensure16Bit();
+    EXPECT_FALSE(string8.is8Bit());
+    EXPECT_EQ("8bit", string8);
+
+    String string16(reinterpret_cast<const UChar*>(u"16bit"));
+    EXPECT_FALSE(string16.is8Bit());
+    string16.ensure16Bit();
+    EXPECT_FALSE(string16.is8Bit());
+    EXPECT_EQ("16bit", string16);
+
+    String empty8(StringImpl::empty());
+    EXPECT_TRUE(empty8.is8Bit());
+    empty8.ensure16Bit();
+    EXPECT_FALSE(empty8.is8Bit());
+    EXPECT_TRUE(empty8.isEmpty());
+    EXPECT_FALSE(empty8.isNull());
+
+    String empty16(StringImpl::empty16Bit());
+    EXPECT_FALSE(empty16.is8Bit());
+    empty16.ensure16Bit();
+    EXPECT_FALSE(empty16.is8Bit());
+    EXPECT_TRUE(empty16.isEmpty());
+    EXPECT_FALSE(empty16.isNull());
+
+    String nullString;
+    nullString.ensure16Bit();
+    EXPECT_TRUE(nullString.isNull());
+}
+
 CString toCStringThroughPrinter(const String& string)
 {
     std::ostringstream output;

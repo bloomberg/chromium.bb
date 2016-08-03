@@ -214,7 +214,6 @@ public:
     size_t find(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
         { return DISPATCH_CASE_OP(caseSensitivity, find, (str, start)); }
 
-    Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
 
     template<typename BufferType>
