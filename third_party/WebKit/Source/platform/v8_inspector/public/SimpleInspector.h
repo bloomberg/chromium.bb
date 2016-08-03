@@ -37,11 +37,10 @@ public:
 private:
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
-    void muteWarningsAndDeprecations(int) override { }
-    void unmuteWarningsAndDeprecations(int) override { }
+    void muteMetrics(int) override { }
+    void unmuteMetrics(int) override { }
     double currentTimeMS() override { return 0; };
 
-    bool isExecutionAllowed() override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
     void beginEnsureAllContextsInGroup(int contextGroupId) override { }
     void endEnsureAllContextsInGroup(int contextGroupId) override { }

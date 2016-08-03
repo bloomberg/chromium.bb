@@ -37,7 +37,7 @@ bool SimpleInspector::formatAccessorsAsProperties(v8::Local<v8::Value> value)
 
 void SimpleInspector::connectFrontend(protocol::FrontendChannel* channel)
 {
-    m_session = m_inspector->connect(1, channel, this, &m_state);
+    m_session = m_inspector->connect(1, channel, &m_state);
 }
 
 void SimpleInspector::disconnectFrontend()
@@ -54,11 +54,6 @@ void SimpleInspector::dispatchMessageFromFrontend(const String16& message)
 v8::Local<v8::Context> SimpleInspector::ensureDefaultContextInGroup(int)
 {
     return m_context;
-}
-
-bool SimpleInspector::isExecutionAllowed()
-{
-    return true;
 }
 
 void SimpleInspector::notifyContextDestroyed()
