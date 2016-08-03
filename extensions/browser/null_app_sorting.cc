@@ -31,6 +31,13 @@ void NullAppSorting::EnsureValidOrdinals(
     const syncer::StringOrdinal& suggested_page) {
 }
 
+bool NullAppSorting::GetDefaultOrdinals(
+    const std::string& extension_id,
+    syncer::StringOrdinal* page_ordinal,
+    syncer::StringOrdinal* app_launch_ordinal) {
+  return false;
+}
+
 void NullAppSorting::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,

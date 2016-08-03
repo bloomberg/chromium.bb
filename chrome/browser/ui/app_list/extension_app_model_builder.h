@@ -65,11 +65,6 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
   void OnAppUninstalled(content::BrowserContext* browser_context,
                         const std::string& app_id) override;
 
-  // AppListItemListObserver.
-  void OnListItemMoved(size_t from_index,
-                       size_t to_index,
-                       app_list::AppListItem* item) override;
-
   std::unique_ptr<ExtensionAppItem> CreateAppItem(
       const std::string& extension_id,
       const std::string& extension_name,

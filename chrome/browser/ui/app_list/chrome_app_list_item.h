@@ -46,6 +46,9 @@ class ChromeAppListItem : public app_list::AppListItem {
   void UpdateFromSync(
       const app_list::AppListSyncableService::SyncItem* sync_item);
 
+  // Set the default position if it exists.
+  void SetDefaultPositionIfApplicable();
+
  private:
   Profile* profile_;
 

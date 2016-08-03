@@ -49,9 +49,6 @@ class ArcAppItem : public ChromeAppListItem,
   // Updates the app item's icon, if necessary making it gray.
   void UpdateIcon();
 
-  // Set the position from the ordering.
-  void UpdatePositionFromOrdering();
-
   std::unique_ptr<ArcAppIcon> arc_app_icon_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
 

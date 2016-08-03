@@ -72,7 +72,7 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   return app;
 }
 
-const char kDefaultApps[] = "Packaged App 1,Packaged App 2,Hosted App";
+const char kDefaultApps[] = "Hosted App,Packaged App 1,Packaged App 2";
 const size_t kDefaultAppCount = 3u;
 
 }  // namespace
@@ -183,7 +183,7 @@ TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing),
                                NULL);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
+  EXPECT_EQ(std::string("Hosted App,Packaged App 1"),
             GetModelContent(model_.get()));
 
   base::RunLoop().RunUntilIdle();
@@ -201,7 +201,7 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                base::Bind(&base::DoNothing),
                                NULL);
-  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
+  EXPECT_EQ(std::string("Hosted App,Packaged App 1"),
             GetModelContent(model_.get()));
 
   base::RunLoop().RunUntilIdle();

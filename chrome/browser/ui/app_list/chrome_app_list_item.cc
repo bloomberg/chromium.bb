@@ -43,6 +43,12 @@ extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
   return extensions::ExtensionSystem::Get(profile())->app_sorting();
 }
 
+AppListControllerDelegate* ChromeAppListItem::GetController() {
+  return g_controller_for_test != nullptr
+             ? g_controller_for_test
+             : AppListService::Get()->GetControllerDelegate();
+}
+
 void ChromeAppListItem::UpdateFromSync(
     const app_list::AppListSyncableService::SyncItem* sync_item) {
   DCHECK(sync_item && sync_item->item_ordinal.IsValid());
@@ -53,8 +59,13 @@ void ChromeAppListItem::UpdateFromSync(
     SetName(sync_item->item_name);
 }
 
-AppListControllerDelegate* ChromeAppListItem::GetController() {
-  return g_controller_for_test != nullptr
-             ? g_controller_for_test
-             : AppListService::Get()->GetControllerDelegate();
+void ChromeAppListItem::SetDefaultPositionIfApplicable() {
+  syncer::StringOrdinal page_ordinal;
+  syncer::StringOrdinal launch_ordinal;
+  if (GetAppSorting()->GetDefaultOrdinals(id(), &page_ordinal,
+                                          &launch_ordinal) &&
+      page_ordinal.IsValid() && launch_ordinal.IsValid()) {
+    set_position(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
+                                       launch_ordinal.ToInternalValue()));
+  }
 }

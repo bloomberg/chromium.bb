@@ -35,6 +35,14 @@ class AppSorting {
       const std::string& extension_id,
       const syncer::StringOrdinal& suggested_page) = 0;
 
+  // Gets the default ordinals for |extension_id|. Returns false if no default
+  // ordinals for |extension_id| is defined. Otherwise, returns true and
+  // ordinals is updated with corresponding ordinals.
+  virtual bool GetDefaultOrdinals(
+      const std::string& extension_id,
+      syncer::StringOrdinal* page_ordinal,
+      syncer::StringOrdinal* app_launch_ordinal) = 0;
+
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
   // Empty strings are used to indicate no successor or predecessor.

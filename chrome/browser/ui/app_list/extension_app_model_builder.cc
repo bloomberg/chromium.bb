@@ -245,35 +245,3 @@ ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
     const std::string& extension_id) {
   return static_cast<ExtensionAppItem*>(GetAppItem(extension_id));
 }
-
-void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
-                                               size_t to_index,
-                                               app_list::AppListItem* item) {
-  DCHECK(!service());
-
-  // This will get called from AppListItemList::ListItemMoved after
-  // set_position is called for the item.
-  if (item->GetItemType() != ExtensionAppItem::kItemType)
-    return;
-
-  app_list::AppListItemList* item_list = model()->top_level_item_list();
-  ExtensionAppItem* prev = nullptr;
-  for (size_t idx = to_index; idx > 0; --idx) {
-    app_list::AppListItem* item = item_list->item_at(idx - 1);
-    if (item->GetItemType() == ExtensionAppItem::kItemType) {
-      prev = static_cast<ExtensionAppItem*>(item);
-      break;
-    }
-  }
-  ExtensionAppItem* next = nullptr;
-  for (size_t idx = to_index; idx < item_list->item_count() - 1; ++idx) {
-    app_list::AppListItem* item = item_list->item_at(idx + 1);
-    if (item->GetItemType() == ExtensionAppItem::kItemType) {
-      next = static_cast<ExtensionAppItem*>(item);
-      break;
-    }
-  }
-  // item->Move will call set_position, overriding the item's position.
-  if (prev || next)
-    static_cast<ExtensionAppItem*>(item)->Move(prev, next);
-}

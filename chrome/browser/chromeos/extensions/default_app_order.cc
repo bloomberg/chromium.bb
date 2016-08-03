@@ -15,6 +15,8 @@
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/genius_app/app_id.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +38,10 @@ const char kImportDefaultOrderAttr[] = "import_default_order";
 
 const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
+    arc::kPlayStoreAppId,
     extensions::kWebStoreAppId,
+    "nplnnjkbeijcggmpdcecpabgbjgeiedc",  // Play Games
+    genius_app::kGeniusAppId,
     extension_misc::kYoutubeAppId,
     extension_misc::kGmailAppId,
     "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar

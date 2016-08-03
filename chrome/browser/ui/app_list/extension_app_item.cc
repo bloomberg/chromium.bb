@@ -121,13 +121,10 @@ ExtensionAppItem::ExtensionAppItem(
       is_platform_app_(is_platform_app),
       has_overlay_(false) {
   Reload();
-  if (sync_item && sync_item->item_ordinal.IsValid()) {
+  if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
-  } else {
-    GetAppSorting()->EnsureValidOrdinals(extension_id,
-                                         syncer::StringOrdinal());
-    UpdatePositionFromOrdering();
-  }
+  else
+    SetDefaultPositionIfApplicable();
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
@@ -189,36 +186,6 @@ void ExtensionAppItem::UpdateIcon() {
     icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
 
   SetIcon(icon);
-}
-
-void ExtensionAppItem::Move(const ExtensionAppItem* prev,
-                            const ExtensionAppItem* next) {
-  if (!prev && !next)
-    return;  // No reordering necessary
-
-  extensions::ExtensionPrefs* prefs =
-      extensions::ExtensionPrefs::Get(profile());
-  extensions::AppSorting* sorting = GetAppSorting();
-
-  syncer::StringOrdinal page;
-  std::string prev_id, next_id;
-  if (!prev) {
-    next_id = next->extension_id();
-    page = sorting->GetPageOrdinal(next_id);
-  } else if (!next) {
-    prev_id = prev->extension_id();
-    page = sorting->GetPageOrdinal(prev_id);
-  } else {
-    prev_id = prev->extension_id();
-    page = sorting->GetPageOrdinal(prev_id);
-    // Only set |next_id| if on the same page, otherwise just insert after prev.
-    if (page.Equals(sorting->GetPageOrdinal(next->extension_id())))
-      next_id = next->extension_id();
-  }
-  prefs->SetAppDraggedByUser(extension_id());
-  sorting->SetPageOrdinal(extension_id(), page);
-  sorting->OnExtensionMoved(extension_id(), prev_id, next_id);
-  UpdatePositionFromOrdering();
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
@@ -346,13 +313,4 @@ const char* ExtensionAppItem::GetItemType() const {
 
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {
   Launch(event_flags);
-}
-
-void ExtensionAppItem::UpdatePositionFromOrdering() {
-  const syncer::StringOrdinal& page =
-      GetAppSorting()->GetPageOrdinal(extension_id());
-  const syncer::StringOrdinal& launch =
-     GetAppSorting()->GetAppLaunchOrdinal(extension_id());
-  set_position(syncer::StringOrdinal(
-      page.ToInternalValue() + launch.ToInternalValue()));
 }

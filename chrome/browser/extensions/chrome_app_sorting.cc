@@ -244,6 +244,22 @@ void ChromeAppSorting::EnsureValidOrdinals(
   }
 }
 
+bool ChromeAppSorting::GetDefaultOrdinals(
+    const std::string& extension_id,
+    syncer::StringOrdinal* page_ordinal,
+    syncer::StringOrdinal* app_launch_ordinal) {
+  CreateDefaultOrdinals();
+  AppOrdinalsMap::const_iterator it = default_ordinals_.find(extension_id);
+  if (it == default_ordinals_.end())
+    return false;
+
+  if (page_ordinal)
+    *page_ordinal = it->second.page_ordinal;
+  if (app_launch_ordinal)
+    *app_launch_ordinal = it->second.app_launch_ordinal;
+  return true;
+}
+
 void ChromeAppSorting::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
@@ -565,22 +581,6 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
     default_ordinals_[extension_id].app_launch_ordinal = app_launch_ordinal;
     app_launch_ordinal = app_launch_ordinal.CreateAfter();
   }
-}
-
-bool ChromeAppSorting::GetDefaultOrdinals(
-    const std::string& extension_id,
-    syncer::StringOrdinal* page_ordinal,
-    syncer::StringOrdinal* app_launch_ordinal) {
-  CreateDefaultOrdinals();
-  AppOrdinalsMap::const_iterator it = default_ordinals_.find(extension_id);
-  if (it == default_ordinals_.end())
-    return false;
-
-  if (page_ordinal)
-    *page_ordinal = it->second.page_ordinal;
-  if (app_launch_ordinal)
-    *app_launch_ordinal = it->second.app_launch_ordinal;
-  return true;
 }
 
 syncer::StringOrdinal ChromeAppSorting::ResolveCollision(

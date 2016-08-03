@@ -97,9 +97,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Overridden from app_list::AppContextMenuDelegate:
   void ExecuteLaunchCommand(int event_flags) override;
 
-  // Set the position from the ordering.
-  void UpdatePositionFromOrdering();
-
   std::unique_ptr<extensions::IconImage> icon_;
   std::unique_ptr<app_list::ExtensionAppContextMenu> context_menu_;
   std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;

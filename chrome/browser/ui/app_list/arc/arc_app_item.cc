@@ -35,7 +35,7 @@ ArcAppItem::ArcAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
-    UpdatePositionFromOrdering();
+    SetDefaultPositionIfApplicable();
 }
 
 ArcAppItem::~ArcAppItem() {
@@ -65,19 +65,6 @@ void ArcAppItem::SetName(const std::string& name) {
 void ArcAppItem::UpdateIcon() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetIcon(arc_app_icon_->image_skia());
-}
-
-void ArcAppItem::UpdatePositionFromOrdering() {
-  // There is an ExtensionAppItem that uses extension::AppSorting to order
-  // its element. There is no commonly available sorting mechanism for app
-  // ordering so use the only one available from extension subsystem.
-  // Page is the earliest non-full page.
-  const syncer::StringOrdinal& page =
-      GetAppSorting()->GetNaturalAppPageOrdinal();
-  // And get next available pos in this page.
-  const syncer::StringOrdinal& pos =
-     GetAppSorting()->CreateNextAppLaunchOrdinal(page);
-  set_position(pos);
 }
 
 void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
