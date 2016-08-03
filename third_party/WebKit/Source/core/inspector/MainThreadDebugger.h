@@ -56,6 +56,7 @@ public:
         virtual ~ClientMessageLoop() { }
         virtual void run(LocalFrame*) = 0;
         virtual void quitNow() = 0;
+        virtual void resumeStartup(LocalFrame*) = 0;
     };
 
     explicit MainThreadDebugger(v8::Isolate*);
@@ -92,6 +93,7 @@ private:
     void beginEnsureAllContextsInGroup(int contextGroupId) override;
     void endEnsureAllContextsInGroup(int contextGroupId) override;
     bool canExecuteScripts(int contextGroupId) override;
+    void resumeStartup(int contextGroupId) override;
     void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override;
 
     std::unique_ptr<ClientMessageLoop> m_clientMessageLoop;

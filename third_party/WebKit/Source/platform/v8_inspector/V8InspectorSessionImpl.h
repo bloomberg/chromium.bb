@@ -11,7 +11,6 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
-#include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 
 #include <v8.h>
 
@@ -31,11 +30,10 @@ class V8RuntimeAgentImpl;
 class V8InspectorSessionImpl : public V8InspectorSession {
     PROTOCOL_DISALLOW_COPY(V8InspectorSessionImpl);
 public:
-    static std::unique_ptr<V8InspectorSessionImpl> create(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
+    static std::unique_ptr<V8InspectorSessionImpl> create(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, const String16* state);
     ~V8InspectorSessionImpl();
 
     V8InspectorImpl* inspector() const { return m_inspector; }
-    V8InspectorSessionClient* client() const { return m_client; }
     V8ConsoleAgentImpl* consoleAgent() { return m_consoleAgent.get(); }
     V8DebuggerAgentImpl* debuggerAgent() { return m_debuggerAgent.get(); }
     V8ProfilerAgentImpl* profilerAgent() { return m_profilerAgent.get(); }
@@ -70,12 +68,11 @@ public:
     static const unsigned kInspectedObjectBufferSize = 5;
 
 private:
-    V8InspectorSessionImpl(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state);
+    V8InspectorSessionImpl(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, const String16* state);
     protocol::DictionaryValue* agentState(const String16& name);
 
     int m_contextGroupId;
     V8InspectorImpl* m_inspector;
-    V8InspectorSessionClient* m_client;
     bool m_customObjectFormatterEnabled;
 
     protocol::UberDispatcher m_dispatcher;

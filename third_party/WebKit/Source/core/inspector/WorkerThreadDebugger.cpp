@@ -158,6 +158,12 @@ bool WorkerThreadDebugger::canExecuteScripts(int contextGroupId)
     return true;
 }
 
+void WorkerThreadDebugger::resumeStartup(int contextGroupId)
+{
+    DCHECK(contextGroupId == workerContextGroupId);
+    m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
+}
+
 void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     DCHECK(contextGroupId == workerContextGroupId);

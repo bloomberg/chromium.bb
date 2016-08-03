@@ -123,7 +123,6 @@ private:
 
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
-    void resumeStartup() override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;

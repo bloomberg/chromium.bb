@@ -1120,7 +1120,6 @@
       'v8_inspector/public/V8Inspector.h',
       'v8_inspector/public/V8InspectorClient.h',
       'v8_inspector/public/V8InspectorSession.h',
-      'v8_inspector/public/V8InspectorSessionClient.h',
       'v8_inspector/public/V8StackTrace.h',
       'web_memory_allocator_dump.cc',
       'web_memory_allocator_dump.h',

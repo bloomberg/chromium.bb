@@ -31,15 +31,14 @@ bool V8InspectorSession::canDispatchMethod(const String16& method)
         || method.startWith(protocol::Console::Metainfo::commandPrefix);
 }
 
-std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, const String16* state)
 {
-    return wrapUnique(new V8InspectorSessionImpl(inspector, contextGroupId, channel, client, state));
+    return wrapUnique(new V8InspectorSessionImpl(inspector, contextGroupId, channel, state));
 }
 
-V8InspectorSessionImpl::V8InspectorSessionImpl(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* savedState)
+V8InspectorSessionImpl::V8InspectorSessionImpl(V8InspectorImpl* inspector, int contextGroupId, protocol::FrontendChannel* channel, const String16* savedState)
     : m_contextGroupId(contextGroupId)
     , m_inspector(inspector)
-    , m_client(client)
     , m_customObjectFormatterEnabled(false)
     , m_dispatcher(channel)
     , m_state(nullptr)

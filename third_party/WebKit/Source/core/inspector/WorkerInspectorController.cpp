@@ -104,11 +104,6 @@ void WorkerInspectorController::flushProtocolNotifications()
         m_session->flushProtocolNotifications();
 }
 
-void WorkerInspectorController::resumeStartup()
-{
-    m_thread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
-}
-
 void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, const String& response, const String& state)
 {
     // Worker messages are wrapped, no need to handle callId or state.

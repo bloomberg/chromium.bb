@@ -34,6 +34,7 @@ public:
     virtual void endEnsureAllContextsInGroup(int contextGroupId) = 0;
     // TODO(dgozman): this was added to support service worker shadow page. We should not connect at all.
     virtual bool canExecuteScripts(int contextGroupId) = 0;
+    virtual void resumeStartup(int contextGroupId) = 0;
 
     virtual void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) = 0;
 

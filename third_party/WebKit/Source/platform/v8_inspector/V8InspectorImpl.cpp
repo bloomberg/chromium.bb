@@ -166,10 +166,10 @@ std::unique_ptr<V8StackTrace> V8InspectorImpl::createStackTrace(v8::Local<v8::St
     return m_debugger->createStackTrace(stackTrace);
 }
 
-std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, const String16* state)
 {
     DCHECK(m_sessions.find(contextGroupId) == m_sessions.cend());
-    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, client, state);
+    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, state);
     m_sessions[contextGroupId] = session.get();
     return std::move(session);
 }

@@ -15,7 +15,6 @@ namespace blink {
 
 class V8InspectorClient;
 class V8InspectorSession;
-class V8InspectorSessionClient;
 class V8StackTrace;
 
 namespace protocol {
@@ -50,7 +49,7 @@ public:
     virtual void exceptionRevoked(v8::Local<v8::Context>, unsigned exceptionId, const String16& message) = 0;
 
     // API methods.
-    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) = 0;
+    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, const String16* state) = 0;
     virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;
     virtual std::unique_ptr<V8StackTrace> captureStackTrace(bool fullStack) = 0;
 };

@@ -268,6 +268,17 @@ private:
         return false;
     }
 
+    void resumeStartup(LocalFrame* frame) override
+    {
+        // If we've paused for createWindow, handle it ourselves.
+        if (quitForCreateWindow())
+            return;
+        // Otherwise, pass to the client (embedded workers do it differently).
+        WebDevToolsAgentImpl* agent = WebLocalFrameImpl::fromFrame(frame)->devToolsAgentImpl();
+        if (agent && agent->client())
+            agent->client()->resumeStartup();
+    }
+
     bool m_runningForDebugBreak;
     bool m_runningForCreateWindow;
     std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
@@ -582,16 +593,6 @@ void WebDevToolsAgentImpl::sendProtocolMessage(int sessionId, int callId, const 
     ASSERT(attached());
     if (m_client)
         m_client->sendProtocolMessage(sessionId, callId, response, state);
-}
-
-void WebDevToolsAgentImpl::resumeStartup()
-{
-    // If we've paused for createWindow, handle it ourselves.
-    if (ClientMessageLoopAdapter::resumeForCreateWindow())
-        return;
-    // Otherwise, pass to the client (embedded workers do it differently).
-    if (m_client)
-        m_client->resumeStartup();
 }
 
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)

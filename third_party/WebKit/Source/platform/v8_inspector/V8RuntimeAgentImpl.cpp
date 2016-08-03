@@ -468,7 +468,7 @@ void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String16& object
 
 void V8RuntimeAgentImpl::run(ErrorString* errorString)
 {
-    m_session->client()->resumeStartup();
+    m_inspector->client()->resumeStartup(m_session->contextGroupId());
 }
 
 void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)

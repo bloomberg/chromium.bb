@@ -10,7 +10,6 @@
 #include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -26,14 +25,12 @@ class V8InspectorSession;
 
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
-    , public V8InspectorSessionClient
     , public protocol::FrontendChannel {
     WTF_MAKE_NONCOPYABLE(InspectorSession);
 public:
     class Client {
     public:
         virtual void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) = 0;
-        virtual void resumeStartup() { }
         virtual ~Client() {}
     };
 
@@ -55,9 +52,6 @@ private:
     // protocol::FrontendChannel implementation.
     void sendProtocolResponse(int callId, const protocol::String16& message) override;
     void sendProtocolNotification(const protocol::String16& message) override;
-
-    // V8InspectorSessionClient implementation.
-    void resumeStartup() override;
 
     Client* m_client;
     std::unique_ptr<V8InspectorSession> m_v8Session;

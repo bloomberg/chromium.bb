@@ -39,7 +39,7 @@ InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrume
 
     String16 v8State;
     m_state->getString(kV8StateKey, &v8State);
-    m_v8Session = inspector->connect(contextGroupId, this, this, savedState ? &v8State : nullptr);
+    m_v8Session = inspector->connect(contextGroupId, this, savedState ? &v8State : nullptr);
 }
 
 InspectorSession::~InspectorSession()
@@ -116,11 +116,6 @@ void InspectorSession::flushProtocolNotifications()
     for (size_t i = 0; i < m_notificationQueue.size(); ++i)
         m_client->sendProtocolMessage(m_sessionId, 0, m_notificationQueue[i], String());
     m_notificationQueue.clear();
-}
-
-void InspectorSession::resumeStartup()
-{
-    m_client->resumeStartup();
 }
 
 DEFINE_TRACE(InspectorSession)

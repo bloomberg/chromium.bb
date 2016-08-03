@@ -67,7 +67,7 @@ public:
     v8::Local<v8::Context> regexContext();
 
     // V8Inspector implementation.
-    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) override;
+    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, const String16* state) override;
     void contextCreated(const V8ContextInfo&) override;
     void contextDestroyed(v8::Local<v8::Context>) override;
     void resetContextGroup(int contextGroupId) override;
