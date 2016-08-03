@@ -1,0 +1,40 @@
+<!-- comment 1 -->
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.nodeWithId("inspect", onNode);
+
+    function onNode(node)
+    {
+        var commentNode = node.nextSibling;
+        InspectorTest.selectNode(commentNode)
+            .then(onNodeSelected);
+    }
+
+    function onNodeSelected()
+    {
+        InspectorTest.addResult("HTML comments shown:");
+        InspectorTest.dumpElementsTree();
+        WebInspector.settingForTest("showHTMLComments").set(false);
+        InspectorTest.addResult("\nHTML comments hidden:");
+        InspectorTest.dumpElementsTree();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<!-- comment 2 -->
+<body onload="runTest()">
+<p>
+Verifies show/hide HTML comments setting.
+<span id="inspect"></span>
+<!-- comment 3 -->
+</p>
+</body>
+</html>
