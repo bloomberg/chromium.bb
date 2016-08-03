@@ -168,6 +168,12 @@
     "args": ["--enable-blink-features=MediaSession"]
   },
   {
+    "prefix": "mse-1mb-buffers",
+    "base": "http/tests/media/media-source/stream_memory_tests",
+    "args": ["--mse-audio-buffer-size-limit=1048576",
+             "--mse-video-buffer-size-limit=1048576"]
+  },
+  {
     "prefix": "sharedarraybuffer",
     "base": "fast/workers",
     "args": ["--js-flags=--harmony-sharedarraybuffer",

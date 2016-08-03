@@ -126,12 +126,12 @@
         return expectations;
     };
 
-    function loadData_(test, url, callback, isBinary)
+    function loadData_(test, url, callback, responseType)
     {
         var request = new XMLHttpRequest();
         request.open("GET", url, true);
-        if (isBinary) {
-            request.responseType = 'arraybuffer';
+        if (responseType !== undefined) {
+            request.responseType = responseType;
         }
         request.onload = test.step_func(function(event)
         {
@@ -140,7 +140,7 @@
                 return;
             }
             var response = request.response;
-            if (isBinary) {
+            if (responseType !== undefined && responseType == 'arraybuffer') {
                 response = new Uint8Array(response);
             }
             callback(response);
@@ -173,12 +173,17 @@
 
     MediaSourceUtil.loadTextData = function(test, url, callback)
     {
-        loadData_(test, url, callback, false);
+        loadData_(test, url, callback);
     };
 
     MediaSourceUtil.loadBinaryData = function(test, url, callback)
     {
-        loadData_(test, url, callback, true);
+        loadData_(test, url, callback, 'arraybuffer');
+    };
+
+    MediaSourceUtil.loadDataStream = function(test, url, callback)
+    {
+        loadData_(test, url, callback, 'legacystream');
     };
 
     MediaSourceUtil.fetchManifestAndData = function(test, manifestFilename, callback)
@@ -220,6 +225,70 @@
         }
         return mediaData.subarray(start, numBytes + start);
     }
+
+    // Fills up the sourceBuffer by repeatedly calling doAppendDataFunc, which is expected to append some data
+    // to the sourceBuffer, until a QuotaExceeded exception is thrown. Then it calls the onCaughtQuotaExceeded callback.
+    MediaSourceUtil.fillUpSourceBufferHelper = function(test, sourceBuffer, doAppendDataFunc, onCaughtQuotaExceeded)
+    {
+        // We are appending data repeatedly in sequence mode, there should be no gaps.
+        assert_equals(sourceBuffer.mode, 'sequence');
+        assert_false(sourceBuffer.buffered.length > 1, 'unexpected gap in buffered ranges.');
+        try {
+            doAppendDataFunc();
+        } catch(ex) {
+            assert_equals(ex.name, 'QuotaExceededError');
+            onCaughtQuotaExceeded();
+        }
+        test.expectEvent(sourceBuffer, 'updateend', 'append ended.');
+        test.waitForExpectedEvents(function() { MediaSourceUtil.fillUpSourceBufferHelper(test, sourceBuffer, doAppendDataFunc, onCaughtQuotaExceeded); });
+    };
+
+    MediaSourceUtil.fillUpSourceBuffer = function(test, mediaSource, mediaDataManifest, onBufferFull)
+    {
+        MediaSourceUtil.fetchManifestAndData(test, mediaDataManifest, function(type, mediaData)
+        {
+            var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
+            sourceBuffer.mode = 'sequence';
+
+            var appendedDataSize = 0;
+            MediaSourceUtil.fillUpSourceBufferHelper(test, sourceBuffer,
+                function () { // doAppendDataFunc
+                    appendedDataSize += mediaData.length;
+                    sourceBuffer.appendBuffer(mediaData);
+                },
+                function () { // onCaughtQuotaExceeded
+                    onBufferFull(appendedDataSize);
+                });
+        });
+    };
+
+    MediaSourceUtil.fillUpSourceBufferViaAppendStream = function (test, mediaSource, sourceBuffer, mediaURL, onBufferFull, appendSize)
+    {
+        var appendedDataSize = 0;
+        function appendStreamData() {
+            MediaSourceUtil.loadDataStream(test, mediaURL, function(response)
+            {
+                // We are appending data repeatedly in sequence mode, there should be no gaps.
+                assert_false(sourceBuffer.buffered.length > 1, "unexpected gap in buffered ranges.");
+                try {
+                    if (appendSize !== undefined) {
+                      appendedDataSize += appendSize;
+                      sourceBuffer.appendStream(response, appendSize);
+                    } else {
+                      sourceBuffer.appendStream(response);
+                    }
+                } catch(ex) {
+                    assert_equals(ex.name, 'QuotaExceededError');
+                    onBufferFull(appendedDataSize);
+                }
+                test.expectEvent(sourceBuffer, "updateend", "Append ended.");
+                test.waitForExpectedEvents(appendStreamData);
+            });
+        }
+        // Start appending data
+        appendStreamData();
+    };
+
 
     function getFirstSupportedType(typeList)
     {
