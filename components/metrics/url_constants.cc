@@ -8,7 +8,7 @@
 
 namespace metrics {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const char kDefaultMetricsServerUrl[] =
     "https://clientservices.googleapis.com/uma/v2";
 #else
