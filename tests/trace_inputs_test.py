@@ -122,7 +122,7 @@ if sys.platform != 'win32':
   class StraceInputs(unittest.TestCase):
     # Represents the root process pid (an arbitrary number).
     _ROOT_PID = 27
-    _CHILD_PID = 14
+    _CHILD_PID = 24
     _GRAND_CHILD_PID = 70
 
     @staticmethod
@@ -464,6 +464,7 @@ if sys.platform != 'win32':
     def test_futex_missing_in_partial_action_with_no_process(self):
       # That's how futex() calls roll even more (again).
       lines = [
+          (self._ROOT_PID, 'syscall_317(0, 0, 0, 0, 0, 0) = 0'),
           (self._ROOT_PID, 'futex(0x7134840, FUTEX_WAIT_PRIVATE, 2, '
            'NULL <ptrace(SYSCALL):No such process>'),
       ]
@@ -477,7 +478,7 @@ if sys.platform != 'win32':
            'pid': self._ROOT_PID,
          },
        }
-      self.assertContext(lines, ROOT_DIR, expected, True)
+      self.assertContext(lines, ROOT_DIR, expected, False)
 
     def test_getcwd(self):
       lines = [

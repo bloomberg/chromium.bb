@@ -339,7 +339,7 @@ class Results(object):
     def real_path(self):
       """Returns the path with symlinks resolved."""
       if not self._real_path:
-        self._real_path = fs.path.realpath(self.full_path)
+        self._real_path = os.path.realpath(self.full_path)
       return self._real_path
 
     @property
@@ -556,7 +556,7 @@ class Results(object):
     accessed through any symlink which points to the same directory.
     """
     # Resolve any symlink
-    root = fs.realpath(root)
+    root = os.path.realpath(root)
     root = (
         file_path.get_native_path_case(root).rstrip(os.path.sep) + os.path.sep)
     logging.debug('strip_root(%s)' % root)
@@ -847,6 +847,9 @@ class Strace(ApiBase):
       RE_PROCESS_EXITED = re.compile(r'^\+\+\+ exited with (\d+) \+\+\+')
       # A call was canceled. Ignore any prefix.
       RE_UNAVAILABLE = re.compile(r'^.*\)\s*= \? <unavailable>$')
+      # The process has exited due to the ptrace sandbox. RE_PROCESS_EXITED will
+      # follow on next line.
+      RE_PTRACE = re.compile(r'^.*<ptrace\(SYSCALL\):No such process>$')
       # Happens when strace fails to even get the function name.
       UNNAMED_FUNCTION = '????'
 
@@ -991,6 +994,13 @@ class Strace(ApiBase):
             # make sure any self._pending_calls[anything] is properly flushed.
             return
 
+          match = self.RE_PTRACE.match(line)
+          if match:
+            # Not sure what this means. Anyhow, the process died.
+            # TODO(maruel): Add note that only RE_PROCESS_EXITED is valid
+            # afterward.
+            return
+
           match = self.RE_RESUMED.match(line)
           if match:
             if match.group(1) not in self._pending_calls:
@@ -1060,6 +1070,12 @@ class Strace(ApiBase):
       def handle_chmod(self, args, _result):
         self._handle_file(args[0], Results.File.WRITE)
 
+      @parse_args(r'^\"(.+?)\"$', False)
+      def handle_chroot(self, _args, _result):
+        # This is used by Chromium's sandbox. See
+        # https://chromium.googlesource.com/chromium/src/+/master/sandbox/linux/suid/sandbox.c
+        pass
+
       @parse_args(r'^\"(.+?)\", (\d+)$', False)
       def handle_creat(self, args, _result):
         self._handle_file(args[0], Results.File.WRITE)
@@ -1095,6 +1111,11 @@ class Strace(ApiBase):
       def handle_fork(self, args, result):
         self._handle_unknown('fork', args, result)
 
+      @parse_args(r'^(\d+), \"(.*?)\", ({.+}), (\d+)$', True)
+      def handle_fstatat64(self, _args, _result):
+        # TODO(maruel): Handle.
+        pass
+
       def handle_futex(self, _args, _result):
         pass
 
@@ -1126,6 +1147,11 @@ class Strace(ApiBase):
 
       def handle_mkdir(self, _args, _result):
         # We track content, not directories.
+        pass
+
+      @parse_args(r'^(\d+|AT_FDCWD), \".*?\", ({.+}), (\d+)$', True)
+      def handle_newfstatat(self, _args, _result):
+        # TODO(maruel): Handle
         pass
 
       @parse_args(r'^(\".*?\"|0x[a-f0-9]+), ([A-Z\_\|]+)(|, \d+)$', False)
@@ -1184,10 +1210,23 @@ class Strace(ApiBase):
         if not args[0].startswith('0x'):
           self._handle_file(args[0][1:-1], Results.File.TOUCHED)
 
+      @parse_args(r'^(\".+?\"|0x[a-f0-9]+), \{.+?\}$', True)
+      def handle_stat64(self, args, _result):
+        if not args[0].startswith('0x'):
+          self._handle_file(args[0][1:-1], Results.File.TOUCHED)
+
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_symlink(self, args, _result):
         self._handle_file(args[0], Results.File.TOUCHED)
         self._handle_file(args[1], Results.File.WRITE)
+
+      @parse_args(
+          r'^([0-9xa-f]+), ([0-9xa-f]+), ([0-9xa-f]+), ([0-9xa-f]+), '
+          r'([0-9xa-f]+), ([0-9xa-f]+)$',
+          False)
+      def handle_syscall_317(self, _args, _result):
+        # move_pages()
+        pass
 
       @parse_args(r'^\"(.+?)\", \d+', True)
       def handle_truncate(self, args, _result):
@@ -1224,13 +1263,18 @@ class Strace(ApiBase):
           return
         # Update the other process right away.
         childpid = int(result)
+        if childpid < 20:
+          # Ignore, it's probably the Chromium sandbox.
+          return
         child = self._root().get_or_set_proc(childpid)
         if child.parentid is not None or childpid in self.children:
           raise TracingFailure(
               'Found internal inconsitency in process lifetime detection '
-              'during a %s() call' % name,
+              'during a %s()=%s call:\n%s' % (
+                name,
+                result,
+                sorted(self._root()._process_lookup)),
               None, None, None)
-
         # Copy the cwd object.
         child.initial_cwd = self.get_cwd()
         child.parentid = self.pid
@@ -1289,6 +1333,15 @@ class Strace(ApiBase):
           self.root_process = root[0]
           # Save it for later.
           self.root_pid = self.root_process.pid
+        else:
+          raise TracingFailure(
+              'Found internal inconsitency in process lifetime detection '
+              'while finding the root process',
+              None,
+              None,
+              None,
+              self.root_pid,
+              sorted(self._process_lookup))
       else:
         # The sudo case. The traced process was started manually so its pid is
         # known.
@@ -1371,7 +1424,10 @@ class Strace(ApiBase):
         stderr = subprocess.STDOUT
 
       # Ensure all file related APIs are hooked.
-      traces = ','.join(Strace.Context.traces() + ['file'])
+      traces = ','.join(
+          [i for i in Strace.Context.traces()
+            if not i.startswith('syscall_')] +
+          ['file'])
       flags = [
         # Each child process has its own trace file. It is necessary because
         # strace may generate corrupted log file if multiple processes are
@@ -1390,6 +1446,7 @@ class Strace(ApiBase):
         '-e', 'trace=%s' % traces,
         '-o', self._logname + '.' + tracename,
       ]
+      logging.info('%s', flags)
 
       if self.use_sudo:
         pipe_r, pipe_w = os.pipe()
@@ -3173,7 +3230,7 @@ def extract_directories(root_dir, files, blacklist):
   # It is important for root_dir to not be a symlinked path, make sure to call
   # os.path.realpath() as needed.
   assert not root_dir or (
-      fs.realpath(file_path.get_native_path_case(root_dir)) == root_dir)
+      os.path.realpath(file_path.get_native_path_case(root_dir)) == root_dir)
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
   files = [f for f in files if f.existent]
