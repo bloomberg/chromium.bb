@@ -386,6 +386,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   }
   PrepareSink();
   sink_->Start();
+  sink_->Play();  // Not all the sinks play on start.
 
   callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
