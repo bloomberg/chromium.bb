@@ -306,7 +306,7 @@
         'host/resizing_host_observer_unittest.cc',
         'host/resources_unittest.cc',
         'host/screen_resolution_unittest.cc',
-        'host/security_key/security_key_auth_handler_linux_unittest.cc',
+        'host/security_key/security_key_auth_handler_posix_unittest.cc',
         'host/security_key/security_key_auth_handler_win_unittest.cc',
         'host/security_key/security_key_extension_session_unittest.cc',
         'host/security_key/security_key_ipc_client_unittest.cc',

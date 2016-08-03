@@ -58,11 +58,11 @@ unsigned int GetCommandCode(const std::string& data) {
 
 namespace remoting {
 
-class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
+class SecurityKeyAuthHandlerPosix : public SecurityKeyAuthHandler {
  public:
-  explicit SecurityKeyAuthHandlerLinux(
+  explicit SecurityKeyAuthHandlerPosix(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
-  ~SecurityKeyAuthHandlerLinux() override;
+  ~SecurityKeyAuthHandlerPosix() override;
 
  private:
   typedef std::map<int, std::unique_ptr<SecurityKeySocket>> ActiveSockets;
@@ -99,7 +99,7 @@ class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
   // A request timed out.
   void RequestTimedOut(int security_key_connection_id);
 
-  // Ensures SecurityKeyAuthHandlerLinux methods are called on the same thread.
+  // Ensures SecurityKeyAuthHandlerPosix methods are called on the same thread.
   base::ThreadChecker thread_checker_;
 
   // Socket used to listen for authorization requests.
@@ -123,9 +123,9 @@ class SecurityKeyAuthHandlerLinux : public SecurityKeyAuthHandler {
   // Timeout used for a request.
   base::TimeDelta request_timeout_;
 
-  base::WeakPtrFactory<SecurityKeyAuthHandlerLinux> weak_factory_;
+  base::WeakPtrFactory<SecurityKeyAuthHandlerPosix> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerLinux);
+  DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerPosix);
 };
 
 std::unique_ptr<SecurityKeyAuthHandler> SecurityKeyAuthHandler::Create(
@@ -133,7 +133,7 @@ std::unique_ptr<SecurityKeyAuthHandler> SecurityKeyAuthHandler::Create(
     const SendMessageCallback& send_message_callback,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   std::unique_ptr<SecurityKeyAuthHandler> auth_handler(
-      new SecurityKeyAuthHandlerLinux(file_task_runner));
+      new SecurityKeyAuthHandlerPosix(file_task_runner));
   auth_handler->SetSendMessageCallback(send_message_callback);
   return auth_handler;
 }
@@ -143,16 +143,16 @@ void SecurityKeyAuthHandler::SetSecurityKeySocketName(
   g_security_key_socket_name.Get() = security_key_socket_name;
 }
 
-SecurityKeyAuthHandlerLinux::SecurityKeyAuthHandlerLinux(
+SecurityKeyAuthHandlerPosix::SecurityKeyAuthHandlerPosix(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : file_task_runner_(file_task_runner),
       request_timeout_(
           base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)),
       weak_factory_(this) {}
 
-SecurityKeyAuthHandlerLinux::~SecurityKeyAuthHandlerLinux() {}
+SecurityKeyAuthHandlerPosix::~SecurityKeyAuthHandlerPosix() {}
 
-void SecurityKeyAuthHandlerLinux::CreateSecurityKeyConnection() {
+void SecurityKeyAuthHandlerPosix::CreateSecurityKeyConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!g_security_key_socket_name.Get().empty());
 
@@ -163,11 +163,11 @@ void SecurityKeyAuthHandlerLinux::CreateSecurityKeyConnection() {
   file_task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile),
                             g_security_key_socket_name.Get(), false),
-      base::Bind(&SecurityKeyAuthHandlerLinux::CreateSocket,
+      base::Bind(&SecurityKeyAuthHandlerPosix::CreateSocket,
                  weak_factory_.GetWeakPtr()));
 }
 
-void SecurityKeyAuthHandlerLinux::CreateSocket() {
+void SecurityKeyAuthHandlerPosix::CreateSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
   HOST_LOG << "Listening for security key requests on "
            << g_security_key_socket_name.Get().value();
@@ -183,13 +183,13 @@ void SecurityKeyAuthHandlerLinux::CreateSocket() {
   DoAccept();
 }
 
-bool SecurityKeyAuthHandlerLinux::IsValidConnectionId(
+bool SecurityKeyAuthHandlerPosix::IsValidConnectionId(
     int security_key_connection_id) const {
   return GetSocketForConnectionId(security_key_connection_id) !=
          active_sockets_.end();
 }
 
-void SecurityKeyAuthHandlerLinux::SendClientResponse(
+void SecurityKeyAuthHandlerPosix::SendClientResponse(
     int security_key_connection_id,
     const std::string& response) {
   ActiveSockets::const_iterator iter =
@@ -202,7 +202,7 @@ void SecurityKeyAuthHandlerLinux::SendClientResponse(
   }
 }
 
-void SecurityKeyAuthHandlerLinux::SendErrorAndCloseConnection(
+void SecurityKeyAuthHandlerPosix::SendErrorAndCloseConnection(
     int security_key_connection_id) {
   ActiveSockets::const_iterator iter =
       GetSocketForConnectionId(security_key_connection_id);
@@ -215,30 +215,30 @@ void SecurityKeyAuthHandlerLinux::SendErrorAndCloseConnection(
   }
 }
 
-void SecurityKeyAuthHandlerLinux::SetSendMessageCallback(
+void SecurityKeyAuthHandlerPosix::SetSendMessageCallback(
     const SendMessageCallback& callback) {
   send_message_callback_ = callback;
 }
 
-size_t SecurityKeyAuthHandlerLinux::GetActiveConnectionCountForTest() const {
+size_t SecurityKeyAuthHandlerPosix::GetActiveConnectionCountForTest() const {
   return active_sockets_.size();
 }
 
-void SecurityKeyAuthHandlerLinux::SetRequestTimeoutForTest(
+void SecurityKeyAuthHandlerPosix::SetRequestTimeoutForTest(
     base::TimeDelta timeout) {
   request_timeout_ = timeout;
 }
 
-void SecurityKeyAuthHandlerLinux::DoAccept() {
+void SecurityKeyAuthHandlerPosix::DoAccept() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int result = auth_socket_->Accept(
-      &accept_socket_, base::Bind(&SecurityKeyAuthHandlerLinux::OnAccepted,
+      &accept_socket_, base::Bind(&SecurityKeyAuthHandlerPosix::OnAccepted,
                                   base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnAccepted(result);
 }
 
-void SecurityKeyAuthHandlerLinux::OnAccepted(int result) {
+void SecurityKeyAuthHandlerPosix::OnAccepted(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(net::ERR_IO_PENDING, result);
 
@@ -250,18 +250,18 @@ void SecurityKeyAuthHandlerLinux::OnAccepted(int result) {
   int security_key_connection_id = ++last_connection_id_;
   SecurityKeySocket* socket = new SecurityKeySocket(
       std::move(accept_socket_), request_timeout_,
-      base::Bind(&SecurityKeyAuthHandlerLinux::RequestTimedOut,
+      base::Bind(&SecurityKeyAuthHandlerPosix::RequestTimedOut,
                  base::Unretained(this), security_key_connection_id));
   active_sockets_[security_key_connection_id] = base::WrapUnique(socket);
   socket->StartReadingRequest(
-      base::Bind(&SecurityKeyAuthHandlerLinux::OnReadComplete,
+      base::Bind(&SecurityKeyAuthHandlerPosix::OnReadComplete,
                  base::Unretained(this), security_key_connection_id));
 
   // Continue accepting new connections.
   DoAccept();
 }
 
-void SecurityKeyAuthHandlerLinux::OnReadComplete(
+void SecurityKeyAuthHandlerPosix::OnReadComplete(
     int security_key_connection_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -278,23 +278,23 @@ void SecurityKeyAuthHandlerLinux::OnReadComplete(
   send_message_callback_.Run(security_key_connection_id, request_data);
 
   iter->second->StartReadingRequest(
-      base::Bind(&SecurityKeyAuthHandlerLinux::OnReadComplete,
+      base::Bind(&SecurityKeyAuthHandlerPosix::OnReadComplete,
                  base::Unretained(this), security_key_connection_id));
 }
 
-SecurityKeyAuthHandlerLinux::ActiveSockets::const_iterator
-SecurityKeyAuthHandlerLinux::GetSocketForConnectionId(
+SecurityKeyAuthHandlerPosix::ActiveSockets::const_iterator
+SecurityKeyAuthHandlerPosix::GetSocketForConnectionId(
     int security_key_connection_id) const {
   return active_sockets_.find(security_key_connection_id);
 }
 
-void SecurityKeyAuthHandlerLinux::SendErrorAndCloseActiveSocket(
+void SecurityKeyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
     const ActiveSockets::const_iterator& iter) {
   iter->second->SendSshError();
   active_sockets_.erase(iter);
 }
 
-void SecurityKeyAuthHandlerLinux::RequestTimedOut(
+void SecurityKeyAuthHandlerPosix::RequestTimedOut(
     int security_key_connection_id) {
   HOST_LOG << "SecurityKey request timed out";
   ActiveSockets::const_iterator iter =

@@ -333,7 +333,7 @@ source_set("unit_tests") {
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
     "screen_resolution_unittest.cc",
-    "security_key/security_key_auth_handler_linux_unittest.cc",
+    "security_key/security_key_auth_handler_posix_unittest.cc",
     "security_key/security_key_auth_handler_win_unittest.cc",
     "security_key/security_key_extension_session_unittest.cc",
     "security_key/security_key_ipc_client_unittest.cc",

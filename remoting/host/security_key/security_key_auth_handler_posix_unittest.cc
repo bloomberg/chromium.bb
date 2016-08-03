@@ -52,11 +52,11 @@ void RunUntilIdle() {
 
 }  // namespace
 
-class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
+class SecurityKeyAuthHandlerPosixTest : public testing::Test {
  public:
-  SecurityKeyAuthHandlerLinuxTest()
+  SecurityKeyAuthHandlerPosixTest()
       : run_loop_(new base::RunLoop()),
-        file_thread_("SecurityKeyAuthHandlerLinuxTest_FileThread") {
+        file_thread_("SecurityKeyAuthHandlerPosixTest_FileThread") {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(kSocketFilename);
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(socket_path_);
@@ -65,7 +65,7 @@ class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     send_message_callback_ =
-        base::Bind(&SecurityKeyAuthHandlerLinuxTest::SendMessageToClient,
+        base::Bind(&SecurityKeyAuthHandlerPosixTest::SendMessageToClient,
                    base::Unretained(this));
 
     auth_handler_ = remoting::SecurityKeyAuthHandler::Create(
@@ -157,10 +157,10 @@ class SecurityKeyAuthHandlerLinuxTest : public testing::Test {
   base::Closure accept_callback_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerLinuxTest);
+  DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerPosixTest);
 };
 
-TEST_F(SecurityKeyAuthHandlerLinuxTest, NotClosedAfterRequest) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, NotClosedAfterRequest) {
   CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
@@ -180,7 +180,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, NotClosedAfterRequest) {
   ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
-TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoRequests) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, HandleTwoRequests) {
   CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
@@ -208,7 +208,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoRequests) {
   ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
-TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, HandleTwoIndependentRequests) {
   CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
@@ -241,7 +241,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
   ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
-TEST_F(SecurityKeyAuthHandlerLinuxTest, DidReadTimeout) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, DidReadTimeout) {
   CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
@@ -252,7 +252,7 @@ TEST_F(SecurityKeyAuthHandlerLinuxTest, DidReadTimeout) {
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
-TEST_F(SecurityKeyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
   CreateSocketAndWait();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);

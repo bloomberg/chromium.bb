@@ -41,11 +41,11 @@ class SecurityKeyAuthHandler {
       const SendMessageCallback& send_message_callback,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
   // Specify the name of the socket to listen to security key requests on.
   static void SetSecurityKeySocketName(
       const base::FilePath& security_key_socket_name);
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_POSIX)
 
   // Sets the callback used to send messages to the client.
   virtual void SetSendMessageCallback(const SendMessageCallback& callback) = 0;
