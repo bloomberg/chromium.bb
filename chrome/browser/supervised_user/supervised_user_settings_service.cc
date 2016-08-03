@@ -241,6 +241,14 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
         sync_data.GetSpecifics().managed_user_setting();
     std::unique_ptr<base::Value> value =
         JSONReader::Read(supervised_user_setting.value());
+    // Wrongly formatted input will cause null values.
+    // SetWithoutPathExpansion below requires non-null values.
+    if (!value) {
+      DLOG(ERROR) << "Invalid managed user setting value: "
+                  << supervised_user_setting.value()
+                  << ". Values must be JSON values.";
+      continue;
+    }
     std::string name_suffix = supervised_user_setting.name();
     std::string name_key = name_suffix;
     base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
