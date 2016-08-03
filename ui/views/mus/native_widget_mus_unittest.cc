@@ -521,4 +521,30 @@ TEST_F(NativeWidgetMusTest, SetMusWindowBounds) {
   EXPECT_EQ(end_bounds, native_widget->window_tree_host()->GetBounds());
 }
 
+// Verifies visibility of the aura::Window and ui::Window are updated when the
+// Widget is shown/hidden.
+TEST_F(NativeWidgetMusTest, TargetVisibility) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  NativeWidgetMus* native_widget =
+      static_cast<NativeWidgetMus*>(widget->native_widget_private());
+  ui::Window* mus_window = native_widget->window();
+  EXPECT_FALSE(mus_window->visible());
+  EXPECT_FALSE(widget->GetNativeView()->TargetVisibility());
+
+  widget->Show();
+  EXPECT_TRUE(mus_window->visible());
+  EXPECT_TRUE(widget->GetNativeView()->TargetVisibility());
+}
+
+// Indirectly verifies Show() isn't invoked twice on the underlying
+// aura::Window.
+TEST_F(NativeWidgetMusTest, DontShowTwice) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->GetNativeView()->layer()->SetOpacity(0.0f);
+  // aura::Window::Show() allows the opacity to be 0 as long as the window is
+  // hidden. So, as long as this only invokes aura::Window::Show() once the
+  // DCHECK in aura::Window::Show() won't fire.
+  widget->Show();
+}
+
 }  // namespace views

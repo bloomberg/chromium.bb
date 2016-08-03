@@ -973,9 +973,9 @@ void NativeWidgetMus::Hide() {
   if (!(window_ && window_tree_host_))
     return;
 
-  window_tree_host_->Hide();
+  // NOTE: |window_tree_host_| and |window_| visibility is updated in
+  // OnMusWindowVisibilityChanged().
   window_->SetVisible(false);
-  GetNativeWindow()->Hide();
 }
 
 void NativeWidgetMus::ShowMaximizedWithBounds(
@@ -987,9 +987,9 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
   if (!(window_ && window_tree_host_))
     return;
 
-  window_tree_host_->Show();
+  // NOTE: |window_tree_host_| and |window_| visibility is updated in
+  // OnMusWindowVisibilityChanged().
   window_->SetVisible(true);
-  GetNativeWindow()->Show();
   if (native_widget_delegate_->CanActivate()) {
     if (state != ui::SHOW_STATE_INACTIVE)
       Activate();
