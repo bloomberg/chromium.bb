@@ -10,6 +10,7 @@
 
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -19,7 +20,7 @@ class PrefRegistrySyncable;
 
 namespace chromeos {
 
-class PrinterPrefManager {
+class PrinterPrefManager : public KeyedService {
  public:
   explicit PrinterPrefManager(Profile* profile);
 

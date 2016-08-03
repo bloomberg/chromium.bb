@@ -969,6 +969,8 @@
         'browser/chromeos/printer_detector/printer_detector_factory.h',
         'browser/chromeos/printing/printer_pref_manager.cc',
         'browser/chromeos/printing/printer_pref_manager.h',
+        'browser/chromeos/printing/printer_pref_manager_factory.cc',
+        'browser/chromeos/printing/printer_pref_manager_factory.h',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.cc',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.h',
         'browser/chromeos/profiles/avatar_menu_chromeos.cc',
