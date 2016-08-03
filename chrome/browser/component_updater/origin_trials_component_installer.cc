@@ -54,8 +54,9 @@ bool OriginTrialsComponentInstallerTraits::VerifyInstallation(
   return manifest.HasKey("origin-trials");
 }
 
-bool OriginTrialsComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool OriginTrialsComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 bool OriginTrialsComponentInstallerTraits::RequiresNetworkEncryption() const {

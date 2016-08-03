@@ -52,8 +52,9 @@ SubresourceFilterComponentInstallerTraits::
 SubresourceFilterComponentInstallerTraits::
     ~SubresourceFilterComponentInstallerTraits() {}
 
-bool SubresourceFilterComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool SubresourceFilterComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 // Public data is delivered via this component, no need for encryption.

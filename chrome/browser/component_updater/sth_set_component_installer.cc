@@ -55,8 +55,9 @@ STHSetComponentInstallerTraits::STHSetComponentInstallerTraits(
 
 STHSetComponentInstallerTraits::~STHSetComponentInstallerTraits() {}
 
-bool STHSetComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool STHSetComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 // Public data is delivered via this component, no need for encryption.

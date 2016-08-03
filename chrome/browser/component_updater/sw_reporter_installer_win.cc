@@ -114,7 +114,9 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     return base::PathExists(dir.Append(kSwReporterExeName));
   }
 
-  bool CanAutoUpdate() const override { return true; }
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override {
+    return true;
+  }
 
   bool RequiresNetworkEncryption() const override { return false; }
 

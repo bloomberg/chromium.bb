@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -31,7 +32,7 @@ class FileTypePoliciesComponentInstallerTraits
 
  private:
   // The following methods override ComponentInstallerTraits.
-  bool CanAutoUpdate() const override;
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override;

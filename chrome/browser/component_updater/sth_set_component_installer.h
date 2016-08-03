@@ -48,7 +48,7 @@ class STHSetComponentInstallerTraits : public ComponentInstallerTraits {
   friend class STHSetComponentInstallerTest;
 
   // ComponentInstallerTraits implementation.
-  bool CanAutoUpdate() const override;
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override;

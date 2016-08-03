@@ -72,8 +72,9 @@ const uint8_t kPublicKeySHA256[32] = {
 
 const char kEVWhitelistManifestName[] = "EV Certs CT whitelist";
 
-bool EVWhitelistComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool EVWhitelistComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 bool EVWhitelistComponentInstallerTraits::RequiresNetworkEncryption() const {

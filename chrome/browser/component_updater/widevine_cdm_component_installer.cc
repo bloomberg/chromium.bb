@@ -248,7 +248,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
 
  private:
   // The following methods override ComponentInstallerTraits.
-  bool CanAutoUpdate() const override;
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                                const base::FilePath& install_dir) override;
@@ -279,8 +279,9 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
 WidevineCdmComponentInstallerTraits::WidevineCdmComponentInstallerTraits() {
 }
 
-bool WidevineCdmComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool WidevineCdmComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 bool WidevineCdmComponentInstallerTraits::RequiresNetworkEncryption() const {

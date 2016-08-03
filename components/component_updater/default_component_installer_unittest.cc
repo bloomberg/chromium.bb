@@ -74,7 +74,9 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
     return true;
   }
 
-  bool CanAutoUpdate() const override { return true; }
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override {
+    return false;
+  }
 
   bool RequiresNetworkEncryption() const override { return true; }
 

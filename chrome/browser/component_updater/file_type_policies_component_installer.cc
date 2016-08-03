@@ -56,8 +56,9 @@ void LoadFileTypesFromDisk(const base::FilePath& pb_path) {
 
 namespace component_updater {
 
-bool FileTypePoliciesComponentInstallerTraits::CanAutoUpdate() const {
-  return true;
+bool FileTypePoliciesComponentInstallerTraits::
+    SupportsGroupPolicyEnabledComponentUpdates() const {
+  return false;
 }
 
 bool FileTypePoliciesComponentInstallerTraits::RequiresNetworkEncryption()

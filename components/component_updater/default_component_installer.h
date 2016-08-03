@@ -46,9 +46,9 @@ class ComponentInstallerTraits {
   virtual bool VerifyInstallation(const base::DictionaryValue& manifest,
                                   const base::FilePath& install_dir) const = 0;
 
-  // Returns true if the component can be automatically updated. Called once
-  // during component registration from the UI thread.
-  virtual bool CanAutoUpdate() const = 0;
+  // Returns true if the component supports a group policy to enable updates.
+  // Called once during component registration from the UI thread.
+  virtual bool SupportsGroupPolicyEnabledComponentUpdates() const = 0;
 
   // Returns true if the network communication related to this component
   // must be encrypted.
