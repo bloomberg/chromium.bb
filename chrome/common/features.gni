@@ -5,22 +5,16 @@
 # This is the GN version of //chrome/chrome_features.gypi.
 # Please keep in sync!
 
+import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 
+# Please keep features in alphabetical order.
 declare_args() {
-  # Google Now is disabled to prepare for its removal.
-  # http://crbug.com/539674
-  enable_google_now = false
-
   # Whether the Java UI is being used (Java infobars and popups, Java native
   # settings and first run experience, sign-in etc.).
   # Default to true if compiling for android, but allow this being overriden
   # through the environment.
   android_java_ui = is_android
-
-  # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
-  # pages. https://github.com/polymer/vulcanize
-  use_vulcanize = true
 
   # Enables support for background apps.
   enable_background = !is_ios && !is_android && !is_chromecast
@@ -28,12 +22,25 @@ declare_args() {
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
+  # Google Now is disabled to prepare for its removal.
+  # http://crbug.com/539674
+  enable_google_now = false
+
+  # 'Ok Google' hotwording is disabled by default. Set to true to enable. (This
+  # will download a closed-source NaCl module at startup.) Chrome-branded
+  # ChromeOS builds have this enabled by default.
+  enable_hotwording = is_chrome_branded && is_chromeos
+
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
 
   # Enables vr shell.
   enable_vr_shell = false
+
+  # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
+  # pages. https://github.com/polymer/vulcanize
+  use_vulcanize = true
 }
 
 chrome_grit_defines = [
