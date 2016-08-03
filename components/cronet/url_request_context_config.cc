@@ -53,7 +53,6 @@ const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
-const char kQuicRaceCertVerification[] = "race_cert_verification";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -187,13 +186,6 @@ void ParseAndSetExperimentalOptions(
                               &quic_disable_bidirectional_streams)) {
       context_builder->set_quic_disable_bidirectional_streams(
           quic_disable_bidirectional_streams);
-    }
-
-    bool quic_race_cert_verification = false;
-    if (quic_args->GetBoolean(kQuicRaceCertVerification,
-                              &quic_race_cert_verification)) {
-      context_builder->set_quic_race_cert_verification(
-          quic_race_cert_verification);
     }
   }
 
