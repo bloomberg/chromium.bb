@@ -15,18 +15,15 @@ function getWidth()
     return node.offsetWidth;
 }
 
-function rafWidth(resolve, reject)
+function rafWidth()
 {
-    function frameCallback()
-    {
-        resolve(node.offsetWidth);
-    }
-
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(frameCallback);
+        testRunner.layoutAndPaintAsyncThen(() => callback(node.offsetWidth));
+    return promise;
 }
 
-window.debugTest = true;
 function test()
 {
     InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
@@ -46,11 +43,11 @@ function test()
 
     function saveWidth(nodeWidth)
     {
-        var width = nodeWidth;
-        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(function(result) {
-            InspectorTest.log(result === width);
-            InspectorTest.completeTest();
-        });
+        InspectorTest.evaluateInPageAsync("rafWidth()")
+            .then(function(result) {
+                InspectorTest.log(result === nodeWidth);
+                InspectorTest.completeTest();
+            });
     }
 }
 

@@ -9,13 +9,11 @@ function startAnimation()
 
 function rafWidth(resolve, reject)
 {
-    function frameCallback()
-    {
-        resolve(node.offsetWidth);
-    }
-
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(frameCallback);
+        testRunner.layoutAndPaintAsyncThen(() => callback(node.offsetWidth));
+    return promise;
 }
 
 function test()
@@ -37,10 +35,11 @@ function test()
 
     function logWidth()
     {
-        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(function(result) {
-            InspectorTest.log(result);
-            InspectorTest.completeTest();
-        });
+        InspectorTest.evaluateInPageAsync("rafWidth()")
+            .then(function(result) {
+                InspectorTest.log(result);
+                InspectorTest.completeTest();
+            });
     }
 }
 
