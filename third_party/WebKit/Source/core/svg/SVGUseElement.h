@@ -96,7 +96,6 @@ private:
     void clearShadowTree();
     bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
     bool expandUseElementsInShadowTree();
-    void cloneNonMarkupEventListeners();
     void addReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
     void invalidateDependentShadowTrees();

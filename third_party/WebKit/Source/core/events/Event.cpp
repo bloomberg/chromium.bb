@@ -325,18 +325,6 @@ EventDispatchMediator* Event::createMediator()
     return EventDispatchMediator::create(this);
 }
 
-EventTarget* Event::currentTarget() const
-{
-    if (!m_currentTarget)
-        return nullptr;
-    Node* node = m_currentTarget->toNode();
-    if (node && node->isSVGElement()) {
-        if (SVGElement* svgElement = toSVGElement(node)->correspondingElement())
-            return svgElement;
-    }
-    return m_currentTarget.get();
-}
-
 double Event::timeStamp(ScriptState* scriptState) const
 {
     double timeStamp = 0;

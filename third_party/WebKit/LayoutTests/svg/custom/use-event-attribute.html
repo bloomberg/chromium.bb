@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+window.targets = [];
+async_test((t) => {
+  window.addEventListener('load', t.step_func(() => {
+    assert_array_equals(window.targets, [document.querySelector('image')]);
+    t.done();
+  }));
+}, 'An event listener should not be called on a cloned node in a svg <use>\'s UA shadow tree.');
+</script>
+<svg>
+  <g id="a">
+    <image href="" onerror="window.targets.push(event.target);">
+  </g>
+  <use href="#a">
+</svg>

@@ -179,25 +179,6 @@ EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
     return nullptr;
 }
 
-static void copyListenersNotCreatedFromMarkupToTarget(const AtomicString& eventType, EventListenerVector* listenerVector, EventTarget* target)
-{
-    for (auto& eventListener : *listenerVector) {
-        // Event listeners created from markup have already been transfered to the shadow tree during cloning.
-        if (eventListener.listener()->wasCreatedFromMarkup())
-            continue;
-        AddEventListenerOptionsResolved options = eventListener.options();
-        target->addEventListener(eventType, eventListener.listener(), options);
-    }
-}
-
-void EventListenerMap::copyEventListenersNotCreatedFromMarkupToTarget(EventTarget* target)
-{
-    assertNoActiveIterators();
-
-    for (const auto& eventListener : m_entries)
-        copyListenersNotCreatedFromMarkupToTarget(eventListener.first, eventListener.second.get(), target);
-}
-
 DEFINE_TRACE(EventListenerMap)
 {
     visitor->trace(m_entries);

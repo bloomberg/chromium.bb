@@ -120,7 +120,7 @@ public:
     EventTarget* target() const { return m_target.get(); }
     void setTarget(EventTarget*);
 
-    EventTarget* currentTarget() const;
+    EventTarget* currentTarget() const { return m_currentTarget; }
     void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
 
     // This callback is invoked when an event listener has been dispatched

@@ -4,7 +4,7 @@ description("Tests whether SVG event bubbling works across shadow trees.");
 var svgNS = "http://www.w3.org/2000/svg";
 var xhtmlNS = "http://www.w3.org/1999/xhtml";
 var expected = new Array(4);
-var tests = 4;
+var tests = 2;
 var counter = 0;
 var eventCounter = 0;
 
@@ -55,23 +55,13 @@ function nextTest()
 
     switch (counter) {
     case 1:
-        rect.onclick = function(evt) { eventHandler(evt, 1); };
-        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGRectElement] (id: rect) currentTarget: [object SVGRectElement] (id: rect)";
+        use.setAttribute("onclick", "eventHandler(evt, 1)");
+        expected[0] = "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
         testListeners();
         break;
     case 2:
-        rectContainer.addEventListener("click", function(evt) { eventHandler(evt, 2) }, false);
-        expected[1] = "[EventHandler 2] type: click phase: BUBBLING target: [object SVGRectElement] (id: rect) currentTarget: [object SVGGElement] (id: rectParent)";
-        testListeners();
-        break;
-    case 3:
-        use.setAttribute("onclick", "eventHandler(evt, 3)");
-        expected[2] = "[EventHandler 3] type: click phase: AT_TARGET target: [object SVGUseElement] (id: use) currentTarget: [object SVGUseElement] (id: use)";
-        testListeners();
-        break;
-    case 4:
-        useContainer.onclick = function(evt) { eventHandler(evt, 4) };
-        expected[3] = "[EventHandler 4] type: click phase: BUBBLING target: [object SVGUseElement] (id: use) currentTarget: [object SVGGElement] (id: useParent)";
+        useContainer.onclick = function(evt) { eventHandler(evt, 2) };
+        expected[1] = "[EventHandler 2] type: click phase: BUBBLING target: [object SVGUseElement] (id: use) currentTarget: [object SVGGElement] (id: useParent)";
         testListeners();
         break;
     }

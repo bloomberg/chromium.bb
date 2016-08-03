@@ -62,8 +62,6 @@ public:
     EventListenerVector* find(const AtomicString& eventType);
     Vector<AtomicString> eventTypes() const;
 
-    void copyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
-
     DECLARE_TRACE();
 
 private:

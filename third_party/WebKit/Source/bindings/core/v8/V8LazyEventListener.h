@@ -66,12 +66,6 @@ private:
 
     v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
 
-    // Needs to return true for all event handlers implemented in JavaScript so that
-    // the SVG code does not add the event handler in both
-    // SVGUseElement::buildShadowTree and again in
-    // SVGUseElement::transferEventListenersToShadowTree
-    bool wasCreatedFromMarkup() const override { return true; }
-
     void compileScript(ScriptState*, ExecutionContext*);
 
     void fireErrorEvent(v8::Local<v8::Context>, ExecutionContext*, v8::Local<v8::Message>);

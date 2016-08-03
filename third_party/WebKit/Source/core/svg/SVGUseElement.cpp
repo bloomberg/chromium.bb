@@ -442,10 +442,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 
     addReferencesToFirstDegreeNestedUseElements(target);
 
-    if (instanceTreeIsLoading()) {
-        cloneNonMarkupEventListeners();
+    if (instanceTreeIsLoading())
         return;
-    }
 
     // Assure shadow tree building was successful.
     ASSERT(m_targetElementInstance);
@@ -463,8 +461,6 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
     // reset |m_targetElementInstance|.
     m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
     ASSERT(m_targetElementInstance->parentNode() == shadowTreeRootElement);
-
-    cloneNonMarkupEventListeners();
 
     // Update relative length information.
     updateRelativeLengthsInformation();
@@ -546,14 +542,6 @@ void SVGUseElement::addReferencesToFirstDegreeNestedUseElements(SVGElement& targ
         isSVGUseElement(target) ? toSVGUseElement(&target) : Traversal<SVGUseElement>::firstWithin(target);
     for (; useElement; useElement = Traversal<SVGUseElement>::nextSkippingChildren(*useElement, &target))
         addReferenceTo(useElement);
-}
-
-void SVGUseElement::cloneNonMarkupEventListeners()
-{
-    for (SVGElement& element : Traversal<SVGElement>::descendantsOf(*userAgentShadowRoot())) {
-        if (EventTargetData* data = element.correspondingElement()->eventTargetData())
-            data->eventListenerMap.copyEventListenersNotCreatedFromMarkupToTarget(&element);
-    }
 }
 
 bool SVGUseElement::hasCycleUseReferencing(const SVGUseElement& use, const ContainerNode& targetInstance, SVGElement*& newTarget) const

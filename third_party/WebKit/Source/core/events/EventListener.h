@@ -44,7 +44,6 @@ public:
     virtual bool operator==(const EventListener&) const = 0;
     virtual void handleEvent(ExecutionContext*, Event*) = 0;
     virtual const String& code() const { return emptyString(); }
-    virtual bool wasCreatedFromMarkup() const { return false; }
     virtual bool belongsToTheCurrentWorld() const { return false; }
 
     bool isAttribute() const { return virtualisAttribute(); }
