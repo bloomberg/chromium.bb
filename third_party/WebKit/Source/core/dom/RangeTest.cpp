@@ -138,4 +138,21 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText)
     EXPECT_EQ(4, rangeFromTextToMiddleOfElement->endOffset());
 }
 
+TEST_F(RangeTest, updateOwnerDocumentIfNeeded)
+{
+    Element* foo = document().createElement("foo", ASSERT_NO_EXCEPTION);
+    Element* bar = document().createElement("bar", ASSERT_NO_EXCEPTION);
+    foo->appendChild(bar);
+
+    Range* range = Range::create(document(), Position(bar, 0), Position(foo, 1));
+
+    Document* anotherDocument = Document::create();
+    anotherDocument->appendChild(foo);
+
+    EXPECT_EQ(bar, range->startContainer());
+    EXPECT_EQ(0, range->startOffset());
+    EXPECT_EQ(foo, range->endContainer());
+    EXPECT_EQ(1, range->endOffset());
+}
+
 } // namespace blink

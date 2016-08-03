@@ -3772,9 +3772,9 @@ void Document::moveNodeIteratorsToNewDocument(Node& node, Document& newDocument)
     }
 }
 
-void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
+void Document::didMoveTreeToNewDocument(const Node& root)
 {
-    DCHECK_NE(node.document(), this);
+    DCHECK_NE(root.document(), this);
     if (m_ranges.isEmpty())
         return;
 

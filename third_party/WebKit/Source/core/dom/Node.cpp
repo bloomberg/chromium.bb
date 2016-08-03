@@ -1787,7 +1787,6 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 
     oldDocument.markers().removeMarkers(this);
-    oldDocument.updateRangesAfterNodeMovedToAnotherDocument(*this);
     if (oldDocument.frameHost() && !document().frameHost())
         oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
     else if (document().frameHost() && !oldDocument.frameHost())

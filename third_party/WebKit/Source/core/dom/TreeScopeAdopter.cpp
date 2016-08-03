@@ -72,6 +72,9 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
                 moveTreeToNewDocument(*shadow, oldDocument, newDocument);
         }
     }
+    if (!willMoveToNewDocument)
+        return;
+    oldDocument.didMoveTreeToNewDocument(root);
 }
 
 void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document& newDocument) const

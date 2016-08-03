@@ -653,7 +653,7 @@ public:
     void attachRange(Range*);
     void detachRange(Range*);
 
-    void updateRangesAfterNodeMovedToAnotherDocument(const Node&);
+    void didMoveTreeToNewDocument(const Node& root);
     // nodeChildrenWillBeRemoved is used when removing all node children at once.
     void nodeChildrenWillBeRemoved(ContainerNode&);
     // nodeWillBeRemoved is only safe when removing one node at a time.
