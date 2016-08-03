@@ -1364,6 +1364,10 @@ crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/resize-scrollable-iframe.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/text-match-document-change.html [ Pass Failure ]
+crbug.com/627798 fast/forms/fieldset/fieldset-align.html [ Pass Failure ]
+crbug.com/627798 fast/forms/select/listbox-clip.html [ Pass Failure ]
+crbug.com/627798 fast/block/positioning/auto/007.html [ Pass Failure ]
+crbug.com/627798 compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Pass Failure ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
