@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
-#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
@@ -598,9 +597,10 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 // Called right after our window became the main window.
 - (void)windowDidBecomeMain:(NSNotification*)notification {
-  if (chrome::GetLastActiveBrowser() != browser_.get()) {
-    BrowserList::SetLastActive(browser_.get());
-  }
+  // Set this window as active even if the previously active windows was the
+  // same one. This is needed for tracking visibility changes of a browser.
+  BrowserList::SetLastActive(browser_.get());
+
   // Always saveWindowPositionIfNeeded when becoming main, not just
   // when |browser_| is not the last active browser. See crbug.com/536280 .
   [self saveWindowPositionIfNeeded];
@@ -624,6 +624,8 @@ bool IsTabDetachingInFullscreenEnabled() {
 
   extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
       ->set_registry_for_active_window(nullptr);
+
+  BrowserList::NotifyBrowserNoLongerActive(browser_.get());
 }
 
 // Called when we have been minimized.

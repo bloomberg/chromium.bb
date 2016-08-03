@@ -20,6 +20,9 @@ class BrowserListObserver {
   // Called immediately after a browser is set active (SetLastActive)
   virtual void OnBrowserSetLastActive(Browser* browser) {}
 
+  // Called immediately after a browser becomes not active.
+  virtual void OnBrowserNoLongerActive(Browser* browser) {}
+
  protected:
   virtual ~BrowserListObserver() {}
 };

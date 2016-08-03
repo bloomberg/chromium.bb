@@ -1619,6 +1619,7 @@
     # Everything but Android, ChromeOS and iOS (iOS is handled separately).
     'chrome_unit_tests_non_android_or_chromeos_sources': [
       'browser/media/native_desktop_media_list_unittest.cc',
+      'browser/metrics/desktop_engagement/desktop_engagement_service_unittest.cc',
       'browser/signin/cross_device_promo_unittest.cc',
       'browser/signin/signin_global_error_unittest.cc',
       'browser/sync/sync_global_error_unittest.cc',

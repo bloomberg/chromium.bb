@@ -1137,6 +1137,14 @@
     ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
+      'browser/metrics/desktop_engagement/audible_contents_tracker.cc',
+      'browser/metrics/desktop_engagement/audible_contents_tracker.h',
+      'browser/metrics/desktop_engagement/chrome_visibility_observer.cc',
+      'browser/metrics/desktop_engagement/chrome_visibility_observer.h',
+      'browser/metrics/desktop_engagement/desktop_engagement_observer.cc',
+      'browser/metrics/desktop_engagement/desktop_engagement_observer.h',
+      'browser/metrics/desktop_engagement/desktop_engagement_service.cc',
+      'browser/metrics/desktop_engagement/desktop_engagement_service.h',
       'browser/platform_util.cc',
       'browser/policy/cloud/user_policy_signin_service.cc',
       'browser/policy/cloud/user_policy_signin_service.h',

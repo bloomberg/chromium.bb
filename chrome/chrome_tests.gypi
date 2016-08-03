@@ -233,7 +233,7 @@
       'browser/extensions/background_xhr_browsertest.cc',
       'browser/extensions/browsertest_util_browsertest.cc',
       'browser/extensions/chrome_app_api_browsertest.cc',
-      'browser/extensions/chrome_ui_overrides_browsertest.cc',      
+      'browser/extensions/chrome_ui_overrides_browsertest.cc',
       'browser/extensions/content_capabilities_browsertest.cc',
       'browser/extensions/content_script_apitest.cc',
       'browser/extensions/content_security_policy_apitest.cc',
@@ -416,7 +416,6 @@
       'browser/profiles/profile_browsertest.cc',
       'browser/profiles/profile_list_desktop_browsertest.cc',
       'browser/profiles/profile_manager_browsertest.cc',
-      'browser/profiles/profile_statistics_browsertest.cc',
       'browser/profiles/profile_window_browsertest.cc',
       'browser/push_messaging/push_messaging_browsertest.cc',
       'browser/referrer_policy_browsertest.cc',
@@ -886,6 +885,12 @@
       'browser/ui/webui/options/chromeos/guest_mode_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
       'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',
+    ],
+    'chrome_browser_tests_non_mobile_non_cros_sources': [
+      # Tests for non mobile and non CrOS (includes Linux, Win, Mac).
+      'browser/metrics/desktop_engagement/audible_contents_tracker_browsertest.cc',
+      'browser/metrics/desktop_engagement/chrome_visibility_observer_browsertest.cc',
+      'browser/profiles/profile_statistics_browsertest.cc'
     ],
     'chrome_browser_tests_views_non_cros_sources': [
       # This should be brought up on OSX Views but not CrOS.
@@ -2642,10 +2647,8 @@
             'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',
           ],
         }],
-        ['OS=="android" or OS=="ios" or chromeos == 1', {
-          'sources!': [
-            'browser/profiles/profile_statistics_browsertest.cc',
-          ],
+        ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0)', {
+            'sources': [ '<@(chrome_browser_tests_non_mobile_non_cros_sources)' ],
         }],
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_browser_tests_views_sources)' ],

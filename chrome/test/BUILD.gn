@@ -1397,8 +1397,11 @@ test("browser_tests") {
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       ]
     }
-    if (is_android || is_ios || is_chromeos) {
-      sources -= [ "../browser/profiles/profile_statistics_browsertest.cc" ]
+    if (is_mac || is_win || (is_linux && !is_chromeos)) {
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_non_mobile_non_cros_sources,
+              ".",
+              "//chrome")
     }
     if (enable_app_list) {
       sources += rebase_path(

@@ -228,6 +228,12 @@ void BrowserList::SetLastActive(Browser* browser) {
 }
 
 // static
+void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
+  FOR_EACH_OBSERVER(chrome::BrowserListObserver, observers_.Get(),
+                    OnBrowserNoLongerActive(browser));
+}
+
+// static
 bool BrowserList::IsIncognitoSessionActive() {
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->IsOffTheRecord())

@@ -16,6 +16,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_observer.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
@@ -218,7 +219,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
 #endif
 
-  // --- Feature tab helpers behind flags ---
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  metrics::DesktopEngagementObserver::CreateForWebContents(web_contents);
+#endif
+// --- Feature tab helpers behind flags ---
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper::CreateForWebContents(web_contents);

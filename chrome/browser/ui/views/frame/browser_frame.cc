@@ -219,6 +219,8 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
     // ourselves as the last active browser window to ensure that we get treated
     // as such by the rest of Chrome.
     BrowserList::SetLastActive(browser_view_->browser());
+  } else {
+    BrowserList::NotifyBrowserNoLongerActive(browser_view_->browser());
   }
   Widget::OnNativeWidgetActivationChanged(active);
 }

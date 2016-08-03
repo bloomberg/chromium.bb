@@ -77,6 +77,9 @@ class BrowserList {
   // allows us to determine what the last active Browser was on each desktop.
   static void SetLastActive(Browser* browser);
 
+  // Notifies the observers when the current active browser becomes not active.
+  static void NotifyBrowserNoLongerActive(Browser* browser);
+
   // Closes all browsers for |profile| across all desktops.
   // TODO(mlerman): Move the Profile Deletion flow to use the overloaded
   // version of this method with a callback, then remove this method.

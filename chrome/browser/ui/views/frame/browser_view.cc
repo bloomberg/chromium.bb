@@ -1817,6 +1817,8 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   if (active)
     BrowserList::SetLastActive(browser_.get());
+  else
+    BrowserList::NotifyBrowserNoLongerActive(browser_.get());
 
   if (!extension_keybinding_registry_ &&
       GetFocusManager()) {  // focus manager can be null in tests.

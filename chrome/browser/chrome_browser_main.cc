@@ -274,6 +274,11 @@
 #include "services/shell/runner/common/client_util.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -796,6 +801,11 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.
   sampling_profiler_config_.RegisterSyntheticFieldTrial();
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  metrics::DesktopEngagementService::Initialize();
+#endif
 
 #if defined(OS_WIN)
   chrome_browser::SetupPreReadFieldTrial();

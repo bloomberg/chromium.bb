@@ -52510,8 +52510,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Session.TotalDuration" units="ms">
   <owner>mariakhomenko@chromium.org</owner>
   <owner>fqian@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
   <summary>
-    The length of a session (launch/foregrounding to backgrounding) on mobile.
+    The length of a session (launch/foregrounding to backgrounding). On desktop
+    it also takes into account user interaction and audio events.
   </summary>
 </histogram>
 
