@@ -631,6 +631,8 @@
       'screen_util.cc',
       'screen_util.h',
       'screenshot_delegate.h',
+      'shelf/dimmer_view.cc',
+      'shelf/dimmer_view.h',
       'shelf/shelf.cc',
       'shelf/shelf.h',
       'shelf/shelf_bezel_event_filter.cc',

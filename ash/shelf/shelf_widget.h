@@ -104,6 +104,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
  private:
   class DelegateView;
+  friend class DelegateView;
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;

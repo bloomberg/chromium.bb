@@ -6,37 +6,29 @@
 
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/status_area_layout_manager.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -45,198 +37,14 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
 namespace {
+
 // Size of black border at bottom (or side) of shelf.
 const int kNumBlackPixels = 3;
-// Alpha to paint dimming image with.
-const int kDimAlpha = 128;
-
-// The time to dim and un-dim.
-const int kTimeToDimMs = 3000;   // Slow in dimming.
-const int kTimeToUnDimMs = 200;  // Fast in activating.
-
-// Class used to slightly dim shelf items when maximized and visible.
-class DimmerView : public views::View,
-                   public views::WidgetDelegate,
-                   BackgroundAnimatorDelegate {
- public:
-  // If |disable_dimming_animations_for_test| is set, all alpha animations will
-  // be performed instantly.
-  DimmerView(ShelfWidget* shelf_widget,
-             bool disable_dimming_animations_for_test);
-  ~DimmerView() override;
-
-  // Called by |DimmerEventFilter| when the mouse |hovered| state changes.
-  void SetHovered(bool hovered);
-
-  // Force the dimmer to be undimmed.
-  void ForceUndimming(bool force);
-
-  // views::WidgetDelegate overrides:
-  views::Widget* GetWidget() override { return View::GetWidget(); }
-  const views::Widget* GetWidget() const override { return View::GetWidget(); }
-
-  // BackgroundAnimatorDelegate overrides:
-  void UpdateBackground(BackgroundAnimator* animator, int alpha) override {
-    alpha_ = alpha;
-    SchedulePaint();
-  }
-
-  void BackgroundAnimationEnded(BackgroundAnimator* animator) override {}
-
-  // views::View overrides:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-
-  // A function to test the current alpha used.
-  int get_dimming_alpha_for_test() { return alpha_; }
-
- private:
-  // This class monitors mouse events to see if it is on top of the shelf.
-  class DimmerEventFilter : public ui::EventHandler {
-   public:
-    explicit DimmerEventFilter(DimmerView* owner);
-    ~DimmerEventFilter() override;
-
-    // Overridden from ui::EventHandler:
-    void OnMouseEvent(ui::MouseEvent* event) override;
-    void OnTouchEvent(ui::TouchEvent* event) override;
-
-   private:
-    // The owning class.
-    DimmerView* owner_;
-
-    // TRUE if the mouse is inside the shelf.
-    bool mouse_inside_;
-
-    // TRUE if a touch event is inside the shelf.
-    bool touch_inside_;
-
-    DISALLOW_COPY_AND_ASSIGN(DimmerEventFilter);
-  };
-
-  // The owning shelf widget.
-  ShelfWidget* shelf_;
-
-  // The alpha to use for covering the shelf.
-  int alpha_;
-
-  // True if the event filter claims that we should not be dimmed.
-  bool is_hovered_;
-
-  // True if someone forces us not to be dimmed (e.g. a menu is open).
-  bool force_hovered_;
-
-  // True if animations should be suppressed for a test.
-  bool disable_dimming_animations_for_test_;
-
-  // The animator for the background transitions.
-  BackgroundAnimator background_animator_;
-
-  // Notification of entering / exiting of the shelf area by mouse.
-  std::unique_ptr<DimmerEventFilter> event_filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(DimmerView);
-};
-
-DimmerView::DimmerView(ShelfWidget* shelf_widget,
-                       bool disable_dimming_animations_for_test)
-    : shelf_(shelf_widget),
-      alpha_(kDimAlpha),
-      is_hovered_(false),
-      force_hovered_(false),
-      disable_dimming_animations_for_test_(disable_dimming_animations_for_test),
-      background_animator_(this, 0, kDimAlpha) {
-  event_filter_.reset(new DimmerEventFilter(this));
-  // Make sure it is undimmed at the beginning and then fire off the dimming
-  // animation.
-  background_animator_.SetPaintsBackground(false, BACKGROUND_CHANGE_IMMEDIATE);
-  SetHovered(false);
-}
-
-DimmerView::~DimmerView() {}
-
-void DimmerView::SetHovered(bool hovered) {
-  // Remember the hovered state so that we can correct the state once a
-  // possible force state has disappeared.
-  is_hovered_ = hovered;
-  // Undimm also if we were forced to by e.g. an open menu.
-  hovered |= force_hovered_;
-  background_animator_.SetDuration(hovered ? kTimeToUnDimMs : kTimeToDimMs);
-  background_animator_.SetPaintsBackground(!hovered,
-                                           disable_dimming_animations_for_test_
-                                               ? BACKGROUND_CHANGE_IMMEDIATE
-                                               : BACKGROUND_CHANGE_ANIMATE);
-}
-
-void DimmerView::ForceUndimming(bool force) {
-  bool previous = force_hovered_;
-  force_hovered_ = force;
-  // If the forced change does change the result we apply the change.
-  if (is_hovered_ || force_hovered_ != is_hovered_ || previous)
-    SetHovered(is_hovered_);
-}
-
-void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
-  SkPaint paint;
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia shelf_background =
-      *rb->GetImageNamed(IDR_ASH_SHELF_DIMMING).ToImageSkia();
-
-  if (!IsHorizontalAlignment(shelf_->GetAlignment())) {
-    shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
-                              ? SkBitmapOperations::ROTATION_90_CW
-                              : SkBitmapOperations::ROTATION_270_CW);
-  }
-  paint.setAlpha(alpha_);
-  canvas->DrawImageInt(shelf_background, 0, 0, shelf_background.width(),
-                       shelf_background.height(), 0, 0, width(), height(),
-                       false, paint);
-}
-
-DimmerView::DimmerEventFilter::DimmerEventFilter(DimmerView* owner)
-    : owner_(owner), mouse_inside_(false), touch_inside_(false) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
-}
-
-DimmerView::DimmerEventFilter::~DimmerEventFilter() {
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-}
-
-void DimmerView::DimmerEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_MOVED &&
-      event->type() != ui::ET_MOUSE_DRAGGED)
-    return;
-
-  gfx::Point screen_point(event->location());
-  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                             &screen_point);
-  bool inside = owner_->GetBoundsInScreen().Contains(screen_point);
-  if (mouse_inside_ || touch_inside_ != inside || touch_inside_)
-    owner_->SetHovered(inside || touch_inside_);
-  mouse_inside_ = inside;
-}
-
-void DimmerView::DimmerEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  bool touch_inside = false;
-  if (event->type() != ui::ET_TOUCH_RELEASED &&
-      event->type() != ui::ET_TOUCH_CANCELLED) {
-    gfx::Point screen_point(event->location());
-    ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                               &screen_point);
-    touch_inside = owner_->GetBoundsInScreen().Contains(screen_point);
-  }
-
-  if (mouse_inside_ || touch_inside_ != mouse_inside_ || touch_inside)
-    owner_->SetHovered(mouse_inside_ || touch_inside);
-  touch_inside_ = touch_inside;
-}
 
 // ShelfWindowTargeter makes it easier to resize windows with the mouse when the
 // window-edge slightly overlaps with the shelf edge. The targeter also makes it
@@ -269,7 +77,7 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override {
     shelf_->RemoveObserver(this);
-    shelf_ = NULL;
+    shelf_ = nullptr;
   }
 
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
@@ -302,7 +110,6 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
 // sizes it to the width of the shelf minus the size of the status area.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
-                                  public aura::WindowObserver,
                                   public ShelfBackgroundAnimatorObserver {
  public:
   explicit DelegateView(ShelfWidget* shelf);
@@ -334,15 +141,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
-  // aura::WindowObserver overrides:
-  // This will be called when the shelf itself changes its absolute position.
-  // Since the |dimmer_| panel needs to be placed in screen coordinates it needs
-  // to be repositioned. The difference to the OnBoundsChanged call above is
-  // that this gets also triggered when the shelf only moves.
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfOpaqueBackground(int alpha) override;
   void UpdateShelfAssetBackground(int alpha) override;
@@ -359,14 +157,13 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   gfx::Rect GetDimmerBoundsForTest();
 
   // Disable dimming animations for running tests. This needs to be called
-  // prior to the creation of of the |dimmer_|.
+  // prior to the creation of of the dimmer.
   void disable_dimming_animations_for_test() {
     disable_dimming_animations_for_test_ = true;
   }
 
  private:
   ShelfWidget* shelf_;
-  std::unique_ptr<views::Widget> dimmer_;
   FocusCycler* focus_cycler_;
   int asset_background_alpha_;
   // TODO(bruthig): Remove opaque_background_ (see https://crbug.com/621551).
@@ -388,11 +185,11 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
 ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf)
     : shelf_(shelf),
-      focus_cycler_(NULL),
+      focus_cycler_(nullptr),
       asset_background_alpha_(0),
       opaque_background_(ui::LAYER_SOLID_COLOR),
       opaque_foreground_(ui::LAYER_SOLID_COLOR),
-      dimmer_view_(NULL),
+      dimmer_view_(nullptr),
       disable_dimming_animations_for_test_(false) {
   SetLayoutManager(new views::FillLayout());
   set_allow_deactivate_on_esc(true);
@@ -409,40 +206,21 @@ ShelfWidget::DelegateView::~DelegateView() {
   SetDimmed(false);
 }
 
-void ShelfWidget::DelegateView::SetDimmed(bool value) {
-  if (value == (dimmer_.get() != NULL))
+void ShelfWidget::DelegateView::SetDimmed(bool dimmed) {
+  if (dimmed == (dimmer_view_ != nullptr))
     return;
 
-  if (value) {
-    dimmer_.reset(new views::Widget);
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-    params.accept_events = false;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = shelf_->GetNativeView();
-    dimmer_->Init(params);
-    dimmer_->GetNativeWindow()->SetName("ShelfDimmer");
-    dimmer_->SetBounds(shelf_->GetWindowBoundsInScreen());
-    // The shelf should not take focus when it is initially shown.
-    dimmer_->set_focus_on_creation(false);
-    dimmer_view_ = new DimmerView(shelf_, disable_dimming_animations_for_test_);
-    dimmer_->SetContentsView(dimmer_view_);
-    dimmer_->GetNativeView()->SetName("ShelfDimmerView");
-    dimmer_->Show();
-    shelf_->GetNativeView()->AddObserver(this);
+  if (dimmed) {
+    dimmer_view_ = DimmerView::Create(shelf_->wm_shelf_aura_,
+                                      disable_dimming_animations_for_test_);
   } else {
-    // Some unit tests will come here with a destroyed window.
-    if (shelf_->GetNativeView())
-      shelf_->GetNativeView()->RemoveObserver(this);
-    dimmer_view_ = NULL;
-    dimmer_.reset(NULL);
+    dimmer_view_->GetWidget()->CloseNow();
+    dimmer_view_ = nullptr;
   }
 }
 
 bool ShelfWidget::DelegateView::GetDimmed() const {
-  return dimmer_.get() && dimmer_->IsVisible();
+  return dimmer_view_ && dimmer_view_->GetWidget()->IsVisible();
 }
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
@@ -527,18 +305,8 @@ void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_background_.SetBounds(GetLocalBounds());
   opaque_foreground_.SetBounds(GetLocalBounds());
-  if (dimmer_)
-    dimmer_->SetBounds(GetBoundsInScreen());
-}
-
-void ShelfWidget::DelegateView::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
-  // Coming here the shelf got repositioned and since the |dimmer_| is placed
-  // in screen coordinates and not relative to the parent it needs to be
-  // repositioned accordingly.
-  dimmer_->SetBounds(GetBoundsInScreen());
+  if (dimmer_view_)
+    dimmer_view_->GetWidget()->SetBounds(GetBoundsInScreen());
 }
 
 void ShelfWidget::DelegateView::ForceUndimming(bool force) {
@@ -762,6 +530,10 @@ FocusCycler* ShelfWidget::GetFocusCycler() {
 }
 
 void ShelfWidget::Shutdown() {
+  // Tear down the dimmer before |shelf_layout_manager_|, since the dimmer uses
+  // |shelf_layout_manager_| to get the shelf's WmWindow, via WmShelfAura.
+  delegate_view_->SetDimmed(false);
+
   // Shutting down the status area widget may cause some widgets (e.g. bubbles)
   // to close, so uninstall the ShelfLayoutManager event filters first. Don't
   // reset the pointer until later because other widgets (e.g. app list) may
@@ -814,7 +586,7 @@ void ShelfWidget::UpdateShelfItemBackground(int alpha) {
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
-  shelf_layout_manager_ = NULL;
+  shelf_layout_manager_ = nullptr;
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
