@@ -79,6 +79,16 @@ void ContentSubresourceFilterDriverFactory::AddOriginOfURLToActivationSet(
     activate_on_origins_.insert(url.host());
 }
 
+void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url) {
+  if (!ShouldActivateForURL(url))
+    return;
+  ContentSubresourceFilterDriver* driver =
+      DriverFromFrameHost(render_frame_host);
+  driver->ActivateForProvisionalLoad(GetMaximumActivationState());
+}
+
 void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(
     content::RenderFrameHost* render_frame_host,
     std::unique_ptr<ContentSubresourceFilterDriver> driver) {

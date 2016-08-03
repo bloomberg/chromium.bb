@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::NavigationThrottle;
@@ -34,27 +35,18 @@ const char kNonWebURL[] = "chrome://settings";
 
 namespace subresource_filter {
 
-class TestContentSubresourceFilterDriver
-    : public ContentSubresourceFilterDriver {
+class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
  public:
-  TestContentSubresourceFilterDriver(
+  explicit MockSubresourceFilterDriver(
       content::RenderFrameHost* render_frame_host)
-      : ContentSubresourceFilterDriver(render_frame_host) {
-    activation_state_ = ActivationState::DISABLED;
-  }
-  ~TestContentSubresourceFilterDriver() override {}
+      : ContentSubresourceFilterDriver(render_frame_host) {}
 
-  void ActivateForProvisionalLoad(
-      ActivationState new_activation_state) override {
-    activation_state_ = new_activation_state;
-  }
+  ~MockSubresourceFilterDriver() override {}
 
-  ActivationState activation_state() { return activation_state_; }
+  MOCK_METHOD1(ActivateForProvisionalLoad, void(ActivationState));
 
  private:
-  ActivationState activation_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentSubresourceFilterDriver);
+  DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterDriver);
 };
 
 class SubresourceFilterNavigationThrottleTest
@@ -67,7 +59,7 @@ class SubresourceFilterNavigationThrottleTest
     RenderViewHostTestHarness::SetUp();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(web_contents());
 
-    driver_ = new TestContentSubresourceFilterDriver(main_rfh());
+    driver_ = new MockSubresourceFilterDriver(main_rfh());
     factory()->SetDriverForFrameHostForTesting(main_rfh(),
                                                base::WrapUnique(driver_));
   }
@@ -91,7 +83,7 @@ class SubresourceFilterNavigationThrottleTest
         web_contents());
   }
 
-  TestContentSubresourceFilterDriver* driver() { return driver_; }
+  MockSubresourceFilterDriver* driver() { return driver_; }
 
   NavigationThrottle::ThrottleCheckResult SimulateWillStart() {
     return handle()->CallWillStartRequestForTesting(
@@ -112,7 +104,7 @@ class SubresourceFilterNavigationThrottleTest
 
  private:
   // Owned by the factory.
-  TestContentSubresourceFilterDriver* driver_;
+  MockSubresourceFilterDriver* driver_;
   std::unique_ptr<content::NavigationHandle> handle_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterNavigationThrottleTest);
@@ -129,13 +121,13 @@ TEST_F(SubresourceFilterNavigationThrottleTest, RequestWithoutRedirects) {
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       url, std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
+      .Times(1);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(1U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(url));
-  EXPECT_EQ(ActivationState::ENABLED, driver()->activation_state());
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -151,15 +143,16 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
       url_with_activation, std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
   SetUpNavigationHandleForURL(url_without_activation);
   SimulateWillStart();
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(1U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(url_with_activation));
   EXPECT_FALSE(factory()->ShouldActivateForURL(url_without_activation));
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -174,14 +167,15 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
       non_web_url, std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
   SetUpNavigationHandleForURL(non_web_url);
   SimulateWillStart();
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(0U, factory()->activation_set().size());
   EXPECT_FALSE(factory()->ShouldActivateForURL(non_web_url));
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -202,13 +196,15 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
       url, std::vector<GURL>(),
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   SimulateRedirects(redirect);
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
+      .Times(1);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(2U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(url));
   EXPECT_TRUE(factory()->ShouldActivateForURL(redirect));
-  EXPECT_EQ(ActivationState::ENABLED, driver()->activation_state());
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -235,9 +231,12 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       url, redirects, safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
   SimulateRedirects(redirect_after_sb_classification);
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
+      .Times(1);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(redirects.size() + 2U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(url));
@@ -246,7 +245,6 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   EXPECT_TRUE(factory()->ShouldActivateForURL(third_redirect));
   EXPECT_TRUE(
       factory()->ShouldActivateForURL(redirect_after_sb_classification));
-  EXPECT_EQ(ActivationState::ENABLED, driver()->activation_state());
 }
 
 TEST_F(SubresourceFilterNavigationThrottleTest,
@@ -263,18 +261,20 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
       init_url, redirects,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
-  EXPECT_EQ(ActivationState::DISABLED, driver()->activation_state());
   SetUpNavigationHandleForURL(init_url);
   SimulateWillStart();
   SimulateRedirects(redirect_with_match);
   SimulateRedirects(final_url);
+
+  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
+      .Times(1);
   SimulateWillProcessResponse();
+  ::testing::Mock::VerifyAndClearExpectations(driver());
 
   EXPECT_EQ(3U, factory()->activation_set().size());
   EXPECT_TRUE(factory()->ShouldActivateForURL(init_url));
   EXPECT_TRUE(factory()->ShouldActivateForURL(redirect_with_match));
   EXPECT_TRUE(factory()->ShouldActivateForURL(final_url));
-  EXPECT_EQ(ActivationState::ENABLED, driver()->activation_state());
 }
 
 }  // namespace subresource_filter

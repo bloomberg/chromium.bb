@@ -59,7 +59,15 @@ class ContentSubresourceFilterDriverFactory
   ContentSubresourceFilterDriver* DriverFromFrameHost(
       content::RenderFrameHost* render_frame_host);
 
+  // Checks if all preconditions are fulfilled and if so, activates filtering
+  // for the given |render_frame_host|. |url| is used to check web site specific
+  // preconditions and should be the web URL of the page where caller is
+  // intended to activate the Safe Browsing Subresource Filter.
+  void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
+                                    const GURL& url);
+
  private:
+  friend class ContentSubresourceFilterDriverFactoryTest;
   friend class SubresourceFilterNavigationThrottleTest;
 
   typedef std::map<content::RenderFrameHost*,

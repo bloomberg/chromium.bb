@@ -51,15 +51,10 @@ SubresourceFilterNavigationThrottle::WillProcessResponse() {
   if (!navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS())
     return NavigationThrottle::PROCEED;
 
-  ContentSubresourceFilterDriverFactory* driver_factory =
-      ContentSubresourceFilterDriverFactory::FromWebContents(
-          navigation_handle()->GetWebContents());
-  if (driver_factory->ShouldActivateForURL(initial_url_)) {
-    ContentSubresourceFilterDriver* driver =
-        driver_factory->DriverFromFrameHost(
-            navigation_handle()->GetRenderFrameHost());
-    driver->ActivateForProvisionalLoad(GetMaximumActivationState());
-  }
+  ContentSubresourceFilterDriverFactory::FromWebContents(
+      navigation_handle()->GetWebContents())
+      ->ActivateForFrameHostIfNeeded(navigation_handle()->GetRenderFrameHost(),
+                                     initial_url_);
 
   return NavigationThrottle::PROCEED;
 }
