@@ -277,19 +277,20 @@ bool ShouldThemifyFaviconForUrl(const GURL& url) {
          url.host() != chrome::kChromeUIAppLauncherPageHost;
 }
 
-// Computes a path corresponding to the tab's content region inside the outer
+// Returns a path corresponding to the tab's content region inside the outer
 // stroke.
-void GetFillPath(float scale, const gfx::Size& size, SkPath* fill) {
+gfx::Path GetFillPath(float scale, const gfx::Size& size) {
   const float right = size.width() * scale;
   // The bottom of the tab needs to be pixel-aligned or else when we call
   // ClipPath with anti-aliasing enabled it can cause artifacts.
   const float bottom = std::ceil(size.height() * scale);
   const float unscaled_endcap_width = GetUnscaledEndcapWidth();
 
-  fill->moveTo(right - 1, bottom);
-  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
-                 -1.5 * scale);
-  fill->lineTo(right - 1 - (unscaled_endcap_width - 2) * scale, 2.5 * scale);
+  gfx::Path fill;
+  fill.moveTo(right - 1, bottom);
+  fill.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
+                -1.5 * scale);
+  fill.lineTo(right - 1 - (unscaled_endcap_width - 2) * scale, 2.5 * scale);
   // Prevent overdraw in the center near minimum width (only happens if
   // scale < 2).  We could instead avoid this by increasing the tab inset
   // values, but that would shift all the content inward as well, unless we
@@ -298,56 +299,114 @@ void GetFillPath(float scale, const gfx::Size& size, SkPath* fill) {
   const float scaled_endcap_width = 1 + unscaled_endcap_width * scale;
   const float overlap = scaled_endcap_width * 2 - right;
   const float offset = (overlap > 0) ? (overlap / 2) : 0;
-  fill->rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
-                 -1.5 * scale, -2 * scale + offset, -1.5 * scale);
+  fill.rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
+                -1.5 * scale, -2 * scale + offset, -1.5 * scale);
   if (overlap < 0)
-    fill->lineTo(scaled_endcap_width, scale);
-  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
-                 -2 * scale - offset, 1.5 * scale);
-  fill->lineTo(1 + 2 * scale, bottom - 1.5 * scale);
-  fill->rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
-                 1.5 * scale);
-  fill->close();
+    fill.lineTo(scaled_endcap_width, scale);
+  fill.rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
+                -2 * scale - offset, 1.5 * scale);
+  fill.lineTo(1 + 2 * scale, bottom - 1.5 * scale);
+  fill.rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
+                1.5 * scale);
+  fill.close();
+  return fill;
 }
 
-// Computes a path corresponding to the tab's outer border for a given |scale|
-// and stores it in |path|.  If |extend_to_top| is true, the path is extended
-// vertically to the top of the tab bounds.  The caller uses this for Fitts'
-// Law purposes in maximized/fullscreen mode.
-void GetBorderPath(float scale,
-                   const gfx::Size& size,
-                   bool extend_to_top,
-                   SkPath* path) {
-  const float top = scale - 1;
-  const float right = size.width() * scale;
-  const float bottom = size.height() * scale;
-  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
+// Returns a path corresponding to the tab's outer border for a given tab |size|
+// and |scale|.  If |unscale_at_end| is true, this path will be normalized to a
+// 1x scale by scaling by 1/scale before returning.  If |extend_to_top| is true,
+// the path is extended vertically to the top of the tab bounds.  The caller
+// uses this for Fitts' Law purposes in maximized/fullscreen mode.
+gfx::Path GetBorderPath(float scale,
+                        bool unscale_at_end,
+                        bool extend_to_top,
+                        const gfx::Size& size) {
+  gfx::Path path;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const float top = scale - 1;
+    const float right = size.width() * scale;
+    const float bottom = size.height() * scale;
+    const float unscaled_endcap_width = GetUnscaledEndcapWidth();
 
-  path->moveTo(0, bottom);
-  path->rLineTo(0, -1);
-  path->rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
-                 -1.5 * scale);
-  path->lineTo((unscaled_endcap_width - 2) * scale, top + 1.5 * scale);
-  if (extend_to_top) {
-    // Create the vertical extension by extending the side diagonals until they
-    // reach the top of the bounds.
-    const float dy = 2.5 * scale - 1;
-    const float dx = Tab::GetInverseDiagonalSlope() * dy;
-    path->rLineTo(dx, -dy);
-    path->lineTo(right - (unscaled_endcap_width - 2) * scale - dx, 0);
-    path->rLineTo(dx, dy);
+    path.moveTo(0, bottom);
+    path.rLineTo(0, -1);
+    path.rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
+                  -1.5 * scale);
+    path.lineTo((unscaled_endcap_width - 2) * scale, top + 1.5 * scale);
+    if (extend_to_top) {
+      // Create the vertical extension by extending the side diagonals until
+      // they reach the top of the bounds.
+      const float dy = 2.5 * scale - 1;
+      const float dx = Tab::GetInverseDiagonalSlope() * dy;
+      path.rLineTo(dx, -dy);
+      path.lineTo(right - (unscaled_endcap_width - 2) * scale - dx, 0);
+      path.rLineTo(dx, dy);
+    } else {
+      path.rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale,
+                    2 * scale, -1.5 * scale);
+      path.lineTo(right - unscaled_endcap_width * scale, top);
+      path.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+                    1.5 * scale);
+    }
+    path.lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+    path.rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
+                  1.5 * scale);
+    path.rLineTo(0, 1);
+    path.close();
+
+    if (unscale_at_end && (scale != 1))
+      path.transform(SkMatrix::MakeScale(1.f / scale));
   } else {
-    path->rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
-                   -1.5 * scale);
-    path->lineTo(right - unscaled_endcap_width * scale, top);
-    path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
-                   1.5 * scale);
+    // Hit mask constants.
+    const SkScalar kTabCapWidth = 15;
+    const SkScalar kTabTopCurveWidth = 4;
+    const SkScalar kTabBottomCurveWidth = 3;
+#if defined(OS_MACOSX)
+    // Mac's Cocoa UI doesn't have shadows.
+    const SkScalar kTabInset = 0;
+#elif defined(TOOLKIT_VIEWS)
+    // The views browser UI has shadows in the left, right and top parts of the
+    // tab.
+    const SkScalar kTabInset = 6;
+#endif
+
+    SkScalar left = kTabInset;
+    SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+    SkScalar right = SkIntToScalar(size.width()) - kTabInset;
+    SkScalar bottom = SkIntToScalar(size.height());
+
+    // Start in the lower-left corner.
+    path.moveTo(left, bottom);
+
+    // Left end cap.
+    path.lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+    path.lineTo(left + kTabCapWidth - kTabTopCurveWidth,
+                 top + kTabTopCurveWidth);
+    path.lineTo(left + kTabCapWidth, top);
+
+    // Extend over the top shadow area if we have one and the caller wants it.
+    if (top > 0 && extend_to_top) {
+      path.lineTo(left + kTabCapWidth, 0);
+      path.lineTo(right - kTabCapWidth, 0);
+    }
+
+    // Connect to the right cap.
+    path.lineTo(right - kTabCapWidth, top);
+
+    // Right end cap.
+    path.lineTo(right - kTabCapWidth + kTabTopCurveWidth,
+                 top + kTabTopCurveWidth);
+    path.lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
+    path.lineTo(right, bottom);
+
+    // Close out the path.
+    path.lineTo(left, bottom);
+    path.close();
+
+    // Unscaling is not necessary since we never scaled up to begin with.
   }
-  path->lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
-  path->rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
-                 1.5 * scale);
-  path->rLineTo(0, 1);
-  path->close();
+
+  return path;
 }
 
 void PaintTabFill(gfx::Canvas* canvas,
@@ -515,7 +574,7 @@ class Tab::TabCloseButton : public views::ImageButton,
     return button_bounds;
   }
 
-  // views::ViewTargeterDelegate:
+  // views::MaskedTargeterDelegate:
   View* TargetForRect(View* root, const gfx::Rect& rect) override {
     CHECK_EQ(root, this);
 
@@ -528,6 +587,12 @@ class Tab::TabCloseButton : public views::ImageButton,
 
 #if defined(USE_AURA)
     // Include the padding in hit-test for touch events.
+    // TODO(pkasting): It seems like touch events would generate rects rather
+    // than points and thus use the TargetForRect() call above.  If this is
+    // reached, it may be from someone calling GetEventHandlerForPoint() while a
+    // touch happens to be occurring.  In such a case, maybe we don't want this
+    // code to run?  It's possible this block should be removed, or maybe this
+    // whole function deleted.
     if (aura::Env::GetInstance()->is_touch_down())
       contents_bounds = GetLocalBounds();
 #endif
@@ -535,7 +600,7 @@ class Tab::TabCloseButton : public views::ImageButton,
     return contents_bounds.Intersects(rect) ? this : parent();
   }
 
-  // views:MaskedTargeterDelegate:
+  // We need to define this so hit-testing won't include the border region.
   bool GetHitTestMask(gfx::Path* mask) const override {
     DCHECK(mask);
     mask->reset();
@@ -913,7 +978,7 @@ float Tab::GetInverseDiagonalSlope() {
 
 void Tab::AnimationProgressed(const gfx::Animation* animation) {
   // Ignore if the pulse animation is being performed on active tab because
-  // it repaints the same image. See |Tab::PaintTabBackground()|.
+  // it repaints the same image. See PaintTab().
   if ((animation != pulse_animation_.get()) || !IsActive())
     SchedulePaint();
 }
@@ -963,67 +1028,14 @@ void Tab::ShowContextMenuForView(views::View* source,
 // Tab, views::MaskedTargeterDelegate overrides:
 
 bool Tab::GetHitTestMask(gfx::Path* mask) const {
-  DCHECK(mask);
-
+  const float scale = GetWidget()->GetCompositor()->device_scale_factor();
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
   const views::Widget* widget = GetWidget();
   const bool extend_to_top =
       widget && (widget->IsMaximized() || widget->IsFullscreen());
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkPath border;
-    const float scale = GetWidget()->GetCompositor()->device_scale_factor();
-    GetBorderPath(scale, size(), extend_to_top, &border);
-    mask->addPath(border, SkMatrix::MakeScale(1 / scale));
-  } else {
-    // Hit mask constants.
-    const SkScalar kTabCapWidth = 15;
-    const SkScalar kTabTopCurveWidth = 4;
-    const SkScalar kTabBottomCurveWidth = 3;
-#if defined(OS_MACOSX)
-    // Mac's Cocoa UI doesn't have shadows.
-    const SkScalar kTabInset = 0;
-#elif defined(TOOLKIT_VIEWS)
-    // The views browser UI has shadows in the left, right and top parts of the
-    // tab.
-    const SkScalar kTabInset = 6;
-#endif
-
-    SkScalar left = kTabInset;
-    SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
-    SkScalar right = SkIntToScalar(width()) - kTabInset;
-    SkScalar bottom = SkIntToScalar(height());
-
-    // Start in the lower-left corner.
-    mask->moveTo(left, bottom);
-
-    // Left end cap.
-    mask->lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
-    mask->lineTo(left + kTabCapWidth - kTabTopCurveWidth,
-                 top + kTabTopCurveWidth);
-    mask->lineTo(left + kTabCapWidth, top);
-
-    // Extend over the top shadow area if we have one and the caller wants it.
-    if (top > 0 && extend_to_top) {
-      mask->lineTo(left + kTabCapWidth, 0);
-      mask->lineTo(right - kTabCapWidth, 0);
-    }
-
-    // Connect to the right cap.
-    mask->lineTo(right - kTabCapWidth, top);
-
-    // Right end cap.
-    mask->lineTo(right - kTabCapWidth + kTabTopCurveWidth,
-                 top + kTabTopCurveWidth);
-    mask->lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
-    mask->lineTo(right, bottom);
-
-    // Close out the path.
-    mask->lineTo(left, bottom);
-    mask->close();
-  }
+  *mask = GetBorderPath(scale, true, extend_to_top, size());
 
   // It is possible for a portion of the tab to be occluded if tabs are
   // stacked, so modify the hit test mask to only include the visible
@@ -1141,7 +1153,7 @@ void Tab::Layout() {
     if (showing_alert_indicator_) {
       title_width =
           alert_indicator_button_->x() - kAfterTitleSpacing - title_left;
-    } else if (close_button_->visible()) {
+    } else if (showing_close_button_) {
       // Allow the title to overlay the close button's empty border padding.
       title_width = close_button_->x() + close_button_->GetInsets().left() -
           kAfterTitleSpacing - title_left;
@@ -1359,7 +1371,25 @@ void Tab::DataChanged(const TabRendererData& old) {
 }
 
 void Tab::PaintTab(gfx::Canvas* canvas) {
-  PaintTabBackground(canvas);
+  const int kActiveTabFillId = IDR_THEME_TOOLBAR;
+  const bool has_custom_image =
+      GetThemeProvider()->HasCustomImage(kActiveTabFillId);
+  const int y_offset = -GetYInsetForActiveTabBackground();
+  if (IsActive()) {
+    PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+                                  has_custom_image, y_offset);
+  } else {
+    PaintInactiveTabBackground(canvas);
+
+    const double throb_value = GetThrobValue();
+    if (throb_value > 0) {
+      canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
+                             GetLocalBounds());
+      PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+                                    has_custom_image, y_offset);
+      canvas->Restore();
+    }
+  }
 
   if (showing_icon_)
     PaintIcon(canvas);
@@ -1405,28 +1435,6 @@ void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
       gfx::Rect left_eye_rect(
           bar_rect.x(), 0, left_eye_width, kImmersiveBarHeight);
       canvas->FillRect(left_eye_rect, kEyeColor);
-    }
-  }
-}
-
-void Tab::PaintTabBackground(gfx::Canvas* canvas) {
-  const int kActiveTabFillId = IDR_THEME_TOOLBAR;
-  const bool has_custom_image =
-      GetThemeProvider()->HasCustomImage(kActiveTabFillId);
-  const int y_offset = -GetYInsetForActiveTabBackground();
-  if (IsActive()) {
-    PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
-                                  has_custom_image, y_offset);
-  } else {
-    PaintInactiveTabBackground(canvas);
-
-    const double throb_value = GetThrobValue();
-    if (throb_value > 0) {
-      canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
-                             GetLocalBounds());
-      PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
-                                    has_custom_image, y_offset);
-      canvas->Restore();
     }
   }
 }
@@ -1488,7 +1496,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
   const SkScalar radius =
       std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
   const bool draw_hover = !is_active && hover_controller_.ShouldDraw();
-  SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
+  SkPoint hover_location(gfx::PointToSkPoint(hover_controller_.location()));
   const SkColor hover_color =
       SkColorSetA(toolbar_color, hover_controller_.GetAlpha());
 
@@ -1497,8 +1505,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
     const float scale = canvas->UndoDeviceScaleFactor();
 
     // Draw the fill.
-    SkPath fill;
-    GetFillPath(scale, size(), &fill);
+    gfx::Path fill = GetFillPath(scale, size());
     SkPaint paint;
     paint.setAntiAlias(true);
     {
@@ -1523,8 +1530,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
     }
 
     // Draw the stroke.
-    SkPath stroke;
-    GetBorderPath(scale, size(), false, &stroke);
+    gfx::Path stroke = GetBorderPath(scale, false, false, size());
     Op(stroke, fill, kDifference_SkPathOp, &stroke);
     if (!is_active) {
       // Clip out the bottom line; this will be drawn for us by

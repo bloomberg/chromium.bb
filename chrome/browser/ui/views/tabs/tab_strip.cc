@@ -1286,7 +1286,7 @@ void TabStrip::MaybeStartDrag(
   drag_controller_.reset();
   TabDragController::MoveBehavior move_behavior =
       TabDragController::REORDER;
-  // Use MOVE_VISIBILE_TABS in the following conditions:
+  // Use MOVE_VISIBLE_TABS in the following conditions:
   // . Mouse event generated from touch and the left button is down (the right
   //   button corresponds to a long press, which we want to reorder).
   // . Gesture tap down and control key isn't down.
@@ -1300,7 +1300,7 @@ void TabStrip::MaybeStartDrag(
          (!(event.flags() & ui::EF_FROM_TOUCH) &&
           static_cast<const ui::MouseEvent&>(event).IsControlDown()))) ||
        (event.type() == ui::ET_GESTURE_TAP_DOWN && !event.IsControlDown()))) {
-    move_behavior = TabDragController::MOVE_VISIBILE_TABS;
+    move_behavior = TabDragController::MOVE_VISIBLE_TABS;
   }
 
   drag_controller_.reset(new TabDragController);
@@ -1360,29 +1360,31 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
   if (active_index == tab_count())
     active_index--;
 
+  const int current_x = tab_at(index)->x();
   if (index < active_index) {
-    if (tab_at(index)->x() == tab_at(index + 1)->x())
+    const int next_x = tab_at(index + 1)->x();
+    if (current_x == next_x)
       return false;
 
-    if (tab_at(index)->x() > tab_at(index + 1)->x())
+    if (current_x > next_x)
       return true;  // Can happen during dragging.
 
     clip->SetRect(
-        0, 0, tab_at(index + 1)->x() - tab_at(index)->x() + kStackedTabLeftClip,
+        0, 0, next_x - current_x + kStackedTabLeftClip,
         tab_at(index)->height());
   } else if (index > active_index && index > 0) {
-    const gfx::Rect& tab_bounds(tab_at(index)->bounds());
-    const gfx::Rect& previous_tab_bounds(tab_at(index - 1)->bounds());
-    if (tab_bounds.x() == previous_tab_bounds.x())
+    const gfx::Rect& previous_bounds(tab_at(index - 1)->bounds());
+    const int previous_x = previous_bounds.x();
+    if (current_x == previous_x)
       return false;
 
-    if (tab_bounds.x() < previous_tab_bounds.x())
+    if (current_x < previous_x)
       return true;  // Can happen during dragging.
 
-    if (previous_tab_bounds.right() - GetLayoutConstant(TABSTRIP_TAB_OVERLAP) !=
-        tab_bounds.x()) {
-      int x = previous_tab_bounds.right() - tab_bounds.x() -
-          kStackedTabRightClip;
+    if (previous_bounds.right() - GetLayoutConstant(TABSTRIP_TAB_OVERLAP) !=
+        current_x) {
+      int x = previous_bounds.right() - current_x - kStackedTabRightClip;
+      const gfx::Rect& tab_bounds(tab_at(index)->bounds());
       clip->SetRect(x, 0, tab_bounds.width() - x, tab_bounds.height());
     }
   }
@@ -1945,7 +1947,7 @@ void TabStrip::StackDraggedTabs(int delta) {
 bool TabStrip::IsStackingDraggedTabs() const {
   return drag_controller_.get() && drag_controller_->started_drag() &&
       (drag_controller_->move_behavior() ==
-       TabDragController::MOVE_VISIBILE_TABS);
+       TabDragController::MOVE_VISIBLE_TABS);
 }
 
 void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,

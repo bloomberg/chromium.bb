@@ -397,7 +397,7 @@ class TabStrip : public views::View,
   void DraggedTabsDetached();
 
   // Used by TabDragController when the user stops dragging tabs. |move_only| is
-  // true if the move behavior is TabDragController::MOVE_VISIBILE_TABS.
+  // true if the move behavior is TabDragController::MOVE_VISIBLE_TABS.
   // |completed| is true if the drag operation completed successfully, false if
   // it was reverted.
   void StoppedDraggingTabs(const Tabs& tabs,

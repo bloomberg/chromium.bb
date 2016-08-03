@@ -238,7 +238,6 @@ class Tab : public gfx::AnimationDelegate,
   void PaintImmersiveTab(gfx::Canvas* canvas);
 
   // Paint various portions of the Tab.
-  void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
                                      bool is_active,

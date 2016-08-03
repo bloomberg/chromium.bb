@@ -103,8 +103,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kOmniboxDropdownPadding[] = {3, 4, 4};
   const int kOmniboxDropdownTextPadding[] = {3, 3, 3};
   const int kTabBottomPadding[] = {2, 1, 1};
-  const int kTabLeftPadding[] = {20, 16, 18};
-  const int kTabRightPadding[] = {20, 16, 18};
+  const int kTabHorizontalPadding[] = {20, 16, 18};
   const int kTabTopPadding[] = {4, 1, 1};
   const int kToolbarBottomPadding[] = {5, 5, 5};
   const int kToolbarButtonPadding[] = {2, 6, 6};
@@ -124,8 +123,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case OMNIBOX_DROPDOWN_TEXT:
       return gfx::Insets(kOmniboxDropdownTextPadding[mode], 0);
     case TAB:
-      return gfx::Insets(kTabTopPadding[mode], kTabLeftPadding[mode],
-                         kTabBottomPadding[mode], kTabRightPadding[mode]);
+      return gfx::Insets(kTabTopPadding[mode], kTabHorizontalPadding[mode],
+                         kTabBottomPadding[mode], kTabHorizontalPadding[mode]);
     case TOOLBAR:
       return gfx::Insets(kToolbarTopPadding[mode], kToolbarLeftPadding[mode],
                          kToolbarBottomPadding[mode],

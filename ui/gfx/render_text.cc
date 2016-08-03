@@ -349,7 +349,6 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
   paint_.setStrokeWidth(SkIntToScalar(thickness));
 
   const bool clipped = pieces_.size() > 1;
-  SkCanvas* sk_canvas = canvas_->sk_canvas();
   int x = start_.x();
 
   for (size_t i = 0; i < pieces_.size(); ++i) {
@@ -357,8 +356,8 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
 
     if (clipped) {
       canvas_->Save();
-      sk_canvas->clipRect(RectToSkRect(
-          Rect(x, end.y() - thickness, pieces_[i].first, clip_height)));
+      canvas_->ClipRect(
+          Rect(x, end.y() - thickness, pieces_[i].first, clip_height));
     }
 
     canvas_->DrawLine(start_, end, paint_);
