@@ -67,16 +67,16 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
-  NSRect imageRect = NSInsetRect(frame, 0.0, kBackgroundYInset);
+  NSRect image_rect = NSInsetRect(frame, 0.0, kBackgroundYInset);
   if (image_) {
     // Center the image vertically.
-    const NSSize imageSize = [image_ size];
+    const NSSize image_size = [image_ size];
 
-    imageRect.origin.y +=
-        std::floor((NSHeight(frame) - imageSize.height) / 2.0);
-    imageRect.size = imageSize;
+    image_rect.origin.y +=
+        std::floor((NSHeight(frame) - image_size.height) / 2.0);
+    image_rect.size = image_size;
   }
-  return imageRect;
+  return image_rect;
 }
 
 CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
@@ -93,21 +93,21 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const NSRect decoration_frame = NSInsetRect(frame, 0.0, kBackgroundYInset);
-  CGFloat textOffset = NSMinX(decoration_frame);
+  CGFloat text_offset = NSMinX(decoration_frame);
   if (image_) {
     // Center the image vertically.
-    const NSSize imageSize = [image_ size];
-    NSRect imageRect = decoration_frame;
-    imageRect.origin.y +=
-        std::floor((NSHeight(decoration_frame) - imageSize.height) / 2.0);
-    imageRect.size = imageSize;
-    [image_ drawInRect:imageRect
+    const NSSize image_size = [image_ size];
+    NSRect image_rect = decoration_frame;
+    image_rect.origin.y +=
+        std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
+    image_rect.size = image_size;
+    [image_ drawInRect:image_rect
               fromRect:NSZeroRect  // Entire image
              operation:NSCompositeSourceOver
               fraction:1.0
         respectFlipped:YES
                  hints:nil];
-    textOffset = NSMaxX(imageRect) + kIconLabelPadding;
+    text_offset = NSMaxX(image_rect) + kIconLabelPadding;
   }
 
   // Draw the divider and set the text color.
@@ -131,19 +131,19 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   }
 
   if (label_) {
-    NSRect textRect = frame;
-    textRect.origin.x = textOffset;
-    textRect.size.width = NSMaxX(decoration_frame) - NSMinX(textRect);
+    NSRect text_rect = frame;
+    text_rect.origin.x = text_offset;
+    text_rect.size.width = NSMaxX(decoration_frame) - NSMinX(text_rect);
     // Transform the coordinate system to adjust the baseline on Retina. This is
     // the only way to get fractional adjustments.
     gfx::ScopedNSGraphicsContextSaveGState saveGraphicsState;
-    CGFloat lineWidth = [control_view cr_lineWidth];
-    if (lineWidth < 1) {
+    CGFloat line_width = [control_view cr_lineWidth];
+    if (line_width < 1) {
       NSAffineTransform* transform = [NSAffineTransform transform];
       [transform translateXBy:0 yBy:retina_baseline_offset_];
       [transform concat];
     }
-    DrawLabel(label_, attributes_, textRect);
+    DrawLabel(label_, attributes_, text_rect);
   }
 }
 
