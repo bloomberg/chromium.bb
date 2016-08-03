@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
+#include "core/layout/LayoutText.h"
 
 #include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
@@ -314,6 +315,11 @@ public:
     bool isText() const
     {
         return m_layoutObject->isText();
+    }
+
+    bool isEmptyText() const
+    {
+        return isText() && toLayoutText(m_layoutObject)->text().isEmpty();
     }
 
     bool hasLayer() const

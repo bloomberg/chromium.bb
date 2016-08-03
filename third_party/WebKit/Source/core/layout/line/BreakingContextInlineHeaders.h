@@ -206,6 +206,9 @@ inline bool alwaysRequiresLineBox(LineLayoutItem flow)
 
 inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo = LineInfo(), WhitespacePosition whitespacePosition = LeadingWhitespace)
 {
+    if (it.getLineLayoutItem().isEmptyText())
+        return false;
+
     if (it.getLineLayoutItem().isFloatingOrOutOfFlowPositioned())
         return false;
 

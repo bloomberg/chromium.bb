@@ -1358,6 +1358,9 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
+crbug.com/445243 fast/ruby/before-doesnt-crash.html [ NeedsRebaseline ]
+crbug.com/445243 fast/text/rtl-wbr-justification-crash.html [ NeedsRebaseline ]
+
 # crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
 crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
