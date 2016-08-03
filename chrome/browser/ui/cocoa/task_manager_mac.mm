@@ -603,12 +603,13 @@ void TaskManagerMac::WindowWasClosed() {
 }
 
 NSImage* TaskManagerMac::GetImageForRow(int row) {
-  const CGFloat kImageWidth = 16.0;
+  const NSSize kImageSize = NSMakeSize(16.0, 16.0);
   NSImage* image = gfx::NSImageFromImageSkia(table_model_->GetIcon(row));
-  if (!image) {
-    image = [[[NSImage alloc] initWithSize:NSMakeSize(kImageWidth, kImageWidth)]
-        autorelease];
-  }
+  if (image)
+    image.size = kImageSize;
+  else
+    image = [[[NSImage alloc] initWithSize:kImageSize] autorelease];
+
   return image;
 }
 
