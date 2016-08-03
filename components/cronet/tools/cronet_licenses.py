@@ -113,7 +113,6 @@ def main():
 
   if args[0] == 'license':
     if len(args) > 1:
-      print 'Saving license to %s' % args[1]
       f = open(args[1], "w")
       try:
         f.write(GenerateLicense())
