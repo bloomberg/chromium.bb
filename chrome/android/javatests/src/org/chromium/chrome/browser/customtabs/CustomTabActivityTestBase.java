@@ -73,7 +73,7 @@ public abstract class CustomTabActivityTestBase extends
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
             @Override
             public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
+                return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
             }
         }, 5000, 200);
         assertNotNull(tab);

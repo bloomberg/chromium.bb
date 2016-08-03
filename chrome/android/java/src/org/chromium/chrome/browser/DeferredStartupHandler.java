@@ -10,8 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Looper;
-import android.os.MessageQueue;
 import android.os.SystemClock;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -47,17 +45,14 @@ import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
  */
 public class DeferredStartupHandler {
-    private static final String TAG = "DeferredStartupHandler";
     /** Prevents race conditions when deleting snapshot database. */
     private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
     private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
@@ -67,13 +62,8 @@ public class DeferredStartupHandler {
         private static final DeferredStartupHandler INSTANCE = new DeferredStartupHandler();
     }
 
-    private boolean mDeferredStartupInitializedForApp;
-    private boolean mDeferredStartupCompletedForApp;
-    private long mDeferredStartupDuration;
-    private long mMaxTaskDuration;
+    private boolean mDeferredStartupComplete;
     private final Context mAppContext;
-
-    private final Queue<Runnable> mDeferredTasks;
 
     /**
      * This class is an application specific object that handles the deferred startup.
@@ -85,147 +75,25 @@ public class DeferredStartupHandler {
 
     private DeferredStartupHandler() {
         mAppContext = ContextUtils.getApplicationContext();
-        mDeferredTasks = new LinkedList<>();
-    }
-
-    /**
-     * Add the idle handler which will run deferred startup tasks in sequence when idle. This can
-     * be called multiple times by different activities to schedule their own deferred startup
-     * tasks.
-     */
-    public void queueDeferredTasksOnIdleHandler() {
-        mMaxTaskDuration = 0;
-        mDeferredStartupDuration = 0;
-        Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
-            @Override
-            public boolean queueIdle() {
-                Runnable currentTask = mDeferredTasks.poll();
-                if (currentTask == null) {
-                    if (mDeferredStartupInitializedForApp) {
-                        mDeferredStartupCompletedForApp = true;
-                        recordDeferredStartupStats();
-                    }
-                    return false;
-                }
-
-                long startTime = SystemClock.uptimeMillis();
-                currentTask.run();
-                long timeTaken = SystemClock.uptimeMillis() - startTime;
-
-                mMaxTaskDuration = Math.max(mMaxTaskDuration, timeTaken);
-                mDeferredStartupDuration += timeTaken;
-                return true;
-            }
-        });
-    }
-
-    private void recordDeferredStartupStats() {
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration",
-                mDeferredStartupDuration,
-                TimeUnit.MILLISECONDS);
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration",
-                mMaxTaskDuration,
-                TimeUnit.MILLISECONDS);
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
-                SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
-                TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Adds a single deferred task to the queue. The caller is responsible for calling
-     * queueDeferredTasksOnIdleHandler after adding tasks.
-     *
-     * @param deferredTask The tasks to be run.
-     */
-    public void addDeferredTask(Runnable deferredTask) {
-        ThreadUtils.assertOnUiThread();
-        mDeferredTasks.add(deferredTask);
     }
 
     /**
      * Handle application level deferred startup tasks that can be lazily done after all
      * the necessary initialization has been completed. Any calls requiring network access should
      * probably go here.
-     *
-     * Keep these tasks short and break up long tasks into multiple smaller tasks, as they run on
-     * the UI thread and are blocking. Remember to follow RAIL guidelines, as much as possible, and
-     * that most devices are quite slow, so leave enough buffer.
      */
     @UiThread
-    public void initDeferredStartupForApp() {
-        if (mDeferredStartupInitializedForApp) return;
-        mDeferredStartupInitializedForApp = true;
+    public void onDeferredStartupForApp() {
+        if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();
 
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUptime2",
-                SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
+        long startDeferredStartupTime = SystemClock.uptimeMillis();
+
+        RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.DeferredStartUptime",
+                startDeferredStartupTime - UmaUtils.getMainEntryPointTime(),
                 TimeUnit.MILLISECONDS);
 
-        mDeferredTasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // Punt all tasks that may block on disk off onto a background thread.
-                initAsyncDiskTask();
-
-                AfterStartupTaskUtils.setStartupComplete();
-
-                PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
-                    @Override
-                    public void run() {
-                        String homepageUrl = HomepageManager.getHomepageUri(mAppContext);
-                        LaunchMetrics.recordHomePageLaunchMetrics(
-                                HomepageManager.isHomepageEnabled(mAppContext),
-                                NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
-                    }
-                });
-
-                PartnerBookmarksShim.kickOffReading(mAppContext);
-
-                PowerMonitor.create(mAppContext);
-
-                ShareHelper.clearSharedImages(mAppContext);
-            }
-        });
-
-        mDeferredTasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // Clear any media notifications that existed when Chrome was last killed.
-                MediaCaptureNotificationService.clearMediaNotifications(mAppContext);
-
-                startModerateBindingManagementIfNeeded();
-
-                recordKeyboardLocaleUma();
-            }
-        });
-
-        mDeferredTasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // Start or stop Physical Web
-                PhysicalWeb.onChromeStart();
-            }
-        });
-
-        final ChromeApplication application = (ChromeApplication) mAppContext;
-
-        mDeferredTasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // Starts syncing with GSA.
-                application.createGsaHelper().startSync();
-            }
-        });
-
-        // This call will add its own tasks to the queue.
-        application.initializeSharedClasses();
-    }
-
-    private void initAsyncDiskTask() {
+        // Punt all tasks that may block the UI thread off onto a background thread.
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -236,8 +104,8 @@ public class DeferredStartupHandler {
                             ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
                     if (!crashDumpDisabled) {
                         RecordHistogram.recordLongTimesHistogram(
-                                "UMA.Debug.EnableCrashUpload.Uptime3",
-                                asyncTaskStartTime - UmaUtils.getForegroundStartTime(),
+                                "UMA.Debug.EnableCrashUpload.Uptime2",
+                                asyncTaskStartTime - UmaUtils.getMainEntryPointTime(),
                                 TimeUnit.MILLISECONDS);
                         PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
                         MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
@@ -276,6 +144,48 @@ public class DeferredStartupHandler {
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        AfterStartupTaskUtils.setStartupComplete();
+
+        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
+            @Override
+            public void run() {
+                String homepageUrl = HomepageManager.getHomepageUri(mAppContext);
+                LaunchMetrics.recordHomePageLaunchMetrics(
+                        HomepageManager.isHomepageEnabled(mAppContext),
+                        NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
+            }
+        });
+
+        // TODO(aruslan): http://b/6397072 This will be moved elsewhere
+        PartnerBookmarksShim.kickOffReading(mAppContext);
+
+        PowerMonitor.create(mAppContext);
+
+        ShareHelper.clearSharedImages(mAppContext);
+
+        // Clear any media notifications that existed when Chrome was last killed.
+        MediaCaptureNotificationService.clearMediaNotifications(mAppContext);
+
+        startModerateBindingManagementIfNeeded();
+
+        recordKeyboardLocaleUma();
+
+        ChromeApplication application = (ChromeApplication) mAppContext;
+        // Starts syncing with GSA.
+        application.createGsaHelper().startSync();
+
+        application.initializeSharedClasses();
+
+        // Start or stop Physical Web
+        PhysicalWeb.onChromeStart();
+
+        mDeferredStartupComplete = true;
+
+        RecordHistogram.recordLongTimesHistogram(
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration",
+                SystemClock.uptimeMillis() - startDeferredStartupTime,
+                TimeUnit.MILLISECONDS);
     }
 
     private void startModerateBindingManagementIfNeeded() {
@@ -323,7 +233,7 @@ public class DeferredStartupHandler {
         InputMethodManager imm =
                 (InputMethodManager) mAppContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
-        ArrayList<String> uniqueLanguages = new ArrayList<>();
+        ArrayList<String> uniqueLanguages = new ArrayList<String>();
         for (InputMethodInfo method : ims) {
             List<InputMethodSubtype> submethods =
                     imm.getEnabledInputMethodSubtypeList(method, true);
@@ -351,7 +261,7 @@ public class DeferredStartupHandler {
     * @return Whether deferred startup has been completed.
     */
     @VisibleForTesting
-    public boolean isDeferredStartupCompleteForApp() {
-        return mDeferredStartupCompletedForApp;
+    public boolean isDeferredStartupComplete() {
+        return mDeferredStartupComplete;
     }
 }

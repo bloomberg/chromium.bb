@@ -976,18 +976,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected void onDeferredStartup() {
-        super.onDeferredStartup();
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                ActivityManager am =
-                        (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "MemoryAndroid.DeviceMemoryClass", am.getMemoryClass());
+        try {
+            TraceEvent.begin("ChromeTabbedActivity.onDeferredStartup");
+            super.onDeferredStartup();
 
-                AutocompleteController.nativePrefetchZeroSuggestResults();
-            }
-        });
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "MemoryAndroid.DeviceMemoryClass", am.getMemoryClass());
+
+            AutocompleteController.nativePrefetchZeroSuggestResults();
+        } finally {
+            TraceEvent.end("ChromeTabbedActivity.onDeferredStartup");
+        }
     }
 
     private void createTabModelSelectorImpl(Bundle savedInstanceState) {

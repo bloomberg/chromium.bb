@@ -20,6 +20,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.MessageQueue;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -158,6 +160,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     static final int NO_CONTROL_CONTAINER = -1;
 
+    /** Delay in ms after first page load finishes before we initiate deferred startup actions. */
+    private static final int DEFERRED_STARTUP_DELAY_MS = 1000;
+
     private static final int RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS = 5000;
 
     /**
@@ -180,7 +185,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     protected IntentHandler mIntentHandler;
 
-    private boolean mDeferredStartupPosted;
+    /** Whether onDeferredStartup() has been run. */
+    private boolean mDeferredStartupNotified;
 
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
@@ -213,7 +219,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // A set of views obscuring all tabs. When this set is nonempty,
     // all tab content will be hidden from the accessibility tree.
-    private List<View> mViewsObscuringAllTabs = new ArrayList<>();
+    private List<View> mViewsObscuringAllTabs = new ArrayList<View>();
 
     private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
         @Override
@@ -683,57 +689,38 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return false;
     }
 
-    /**
-     * Overriding methods should queue tasks on the DeferredStartupHandler before or after calling
-     * super depending on whether the tasks should run before or after these ones.
-     */
     @Override
     protected void onDeferredStartup() {
         super.onDeferredStartup();
-        initDeferredStartupForActivity();
-        DeferredStartupHandler.getInstance().initDeferredStartupForApp();
-        DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
+        DeferredStartupHandler.getInstance().onDeferredStartupForApp();
+        onDeferredStartupForActivity();
     }
 
     /**
      * All deferred startup tasks that require the activity rather than the app should go here.
      */
-    private void initDeferredStartupForActivity() {
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+    private void onDeferredStartupForActivity() {
+        BeamController.registerForBeam(this, new BeamProvider() {
             @Override
-            public void run() {
-                if (isActivityDestroyed()) return;
-                BeamController.registerForBeam(ChromeActivity.this, new BeamProvider() {
-                    @Override
-                    public String getTabUrlForBeam() {
-                        if (isOverlayVisible()) return null;
-                        if (getActivityTab() == null) return null;
-                        return getActivityTab().getUrl();
-                    }
-                });
-
-                UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(
-                        ChromeActivity.this);
+            public String getTabUrlForBeam() {
+                if (isOverlayVisible()) return null;
+                if (getActivityTab() == null) return null;
+                return getActivityTab().getUrl();
             }
         });
 
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                if (isActivityDestroyed()) return;
-                if (mToolbarManager != null) {
-                    String simpleName = getClass().getSimpleName();
-                    RecordHistogram.recordTimesHistogram(
-                            "MobileStartup.ToolbarInflationTime." + simpleName,
-                            mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
-                    mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
-                }
+        UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(this);
 
-                if (MultiWindowUtils.getInstance().isInMultiWindowMode(ChromeActivity.this)) {
-                    onDeferredStartupForMultiWindowMode();
-                }
-            }
-        });
+        if (mToolbarManager != null) {
+            String simpleName = getClass().getSimpleName();
+            RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarInflationTime." + simpleName,
+                    mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
+            mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
+        }
+
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(this)) {
+            onDeferredStartupForMultiWindowMode();
+        }
     }
 
     /**
@@ -1654,13 +1641,29 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     protected final void postDeferredStartupIfNeeded() {
-        if (!mDeferredStartupPosted) {
-            mDeferredStartupPosted = true;
+        if (!mDeferredStartupNotified) {
             RecordHistogram.recordLongTimesHistogram(
-                    "UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2",
-                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
+                    "UMA.Debug.EnableCrashUpload.PostDeferredStartUptime",
+                    SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
                     TimeUnit.MILLISECONDS);
-            onDeferredStartup();
+
+            // We want to perform deferred startup tasks a short time after the first page
+            // load completes, but only when the main thread Looper has become idle.
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!mDeferredStartupNotified && !isActivityDestroyed()) {
+                        mDeferredStartupNotified = true;
+                        Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
+                            @Override
+                            public boolean queueIdle() {
+                                onDeferredStartup();
+                                return false;  // Remove this idle handler.
+                            }
+                        });
+                    }
+                }
+            }, DEFERRED_STARTUP_DELAY_MS);
         }
     }
 
