@@ -36,6 +36,7 @@ class DepsGrapher(DepsBuilder):
 
   def __init__(self,
                base_directory,
+               extra_repos,
                verbose,
                being_tested,
                ignore_temp_rules,
@@ -77,6 +78,7 @@ class DepsGrapher(DepsBuilder):
     DepsBuilder.__init__(
         self,
         base_directory,
+        extra_repos,
         verbose,
         being_tested,
         ignore_temp_rules,
@@ -290,6 +292,10 @@ def main():
            "to '../../..' relative to the script file, which "
            "will normally be the repository root.")
   option_parser.add_option(
+      '', '--extra-repos',
+      action='append', dest='extra_repos', default=[],
+      help='Specifies extra repositories relative to root repository.')
+  option_parser.add_option(
       "-f", "--format",
       dest="out_format", default="dot",
       help="Output file format. "
@@ -364,6 +370,7 @@ def main():
 
   deps_grapher = DepsGrapher(
       base_directory=options.base_directory,
+      extra_repos=options.extra_repos,
       verbose=options.verbose,
       being_tested=False,
 

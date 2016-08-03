@@ -39,6 +39,7 @@ class DepsChecker(DepsBuilder):
 
   def __init__(self,
                base_directory=None,
+               extra_repos=[],
                verbose=False,
                being_tested=False,
                ignore_temp_rules=False,
@@ -53,7 +54,7 @@ class DepsChecker(DepsBuilder):
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
     DepsBuilder.__init__(
-        self, base_directory, verbose, being_tested, ignore_temp_rules)
+        self, base_directory, extra_repos, verbose, being_tested, ignore_temp_rules)
 
     self._skip_tests = skip_tests
     self._resolve_dotdot = resolve_dotdot
@@ -185,6 +186,10 @@ def main():
            'to "../../.." relative to the script file, which '
            'will normally be the repository root.')
   option_parser.add_option(
+      '', '--extra-repos',
+      action='append', dest='extra_repos', default=[],
+      help='Specifies extra repositories relative to root repository.')
+  option_parser.add_option(
       '', '--ignore-temp-rules',
       action='store_true', dest='ignore_temp_rules', default=False,
       help='Ignore !-prefixed (temporary) rules.')
@@ -217,6 +222,7 @@ def main():
   options, args = option_parser.parse_args()
 
   deps_checker = DepsChecker(options.base_directory,
+                             extra_repos=options.extra_repos,
                              verbose=options.verbose,
                              ignore_temp_rules=options.ignore_temp_rules,
                              skip_tests=options.skip_tests,

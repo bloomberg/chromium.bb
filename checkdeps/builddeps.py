@@ -143,6 +143,7 @@ class DepsBuilder(object):
 
   def __init__(self,
                base_directory=None,
+               extra_repos=[],
                verbose=False,
                being_tested=False,
                ignore_temp_rules=False,
@@ -159,6 +160,7 @@ class DepsBuilder(object):
                       os.path.join(os.path.dirname(__file__),
                       os.path.pardir, os.path.pardir))
     self.base_directory = os.path.abspath(base_directory)  # Local absolute path
+    self.extra_repos = extra_repos
     self.verbose = verbose
     self._under_test = being_tested
     self._ignore_temp_rules = ignore_temp_rules
@@ -348,6 +350,9 @@ class DepsBuilder(object):
     """
     if self.is_git and self._git_source_directories is None:
       self._git_source_directories = _GitSourceDirectories(self.base_directory)
+      for repo in self.extra_repos:
+        repo_path = os.path.join(self.base_directory, repo)
+        self._git_source_directories.update(_GitSourceDirectories(repo_path))
 
     # Collect a list of all files and directories to check.
     files_to_check = []
