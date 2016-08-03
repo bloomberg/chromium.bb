@@ -38,6 +38,7 @@
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_analysis_unittest.cc',
+        'color_transform_unittest.cc',
         'color_utils_unittest.cc',
         'font_fallback_mac_unittest.cc',
         'font_list_unittest.cc',

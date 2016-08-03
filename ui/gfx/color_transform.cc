@@ -1,0 +1,560 @@
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/gfx/color_transform.h"
+
+#include <vector>
+
+#include "base/logging.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/transform.h"
+
+namespace gfx {
+
+Transform Invert(const Transform& t) {
+  Transform ret = t;
+  if (!t.GetInverse(&ret)) {
+    LOG(ERROR) << "Inverse should alsways be possible.";
+  }
+  return ret;
+}
+
+ColorTransform::TriStim Map(const Transform& t, ColorTransform::TriStim color) {
+  t.TransformPoint(&color);
+  return color;
+}
+
+ColorTransform::TriStim Xy2xyz(float x, float y) {
+  return ColorTransform::TriStim(x, y, 1.0f - x - y);
+}
+
+void GetPrimaries(ColorSpace::PrimaryID id,
+                  ColorTransform::TriStim primaries[4]) {
+  switch (id) {
+    default:
+    // If we don't know, assume BT709
+
+    case ColorSpace::PrimaryID::BT709:
+      // Red
+      primaries[0] = Xy2xyz(0.640f, 0.330f);
+      // Green
+      primaries[1] = Xy2xyz(0.300f, 0.600f);
+      // Blue
+      primaries[2] = Xy2xyz(0.150f, 0.060f);
+      // Whitepoint (D65f)
+      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      break;
+
+    case ColorSpace::PrimaryID::BT470M:
+      // Red
+      primaries[0] = Xy2xyz(0.67f, 0.33f);
+      // Green
+      primaries[1] = Xy2xyz(0.21f, 0.71f);
+      // Blue
+      primaries[2] = Xy2xyz(0.14f, 0.08f);
+      // Whitepoint
+      primaries[3] = Xy2xyz(0.31f, 0.316f);
+      break;
+
+    case ColorSpace::PrimaryID::BT470BG:
+      // Red
+      primaries[0] = Xy2xyz(0.64f, 0.33f);
+      // Green
+      primaries[1] = Xy2xyz(0.29f, 0.60f);
+      // Blue
+      primaries[2] = Xy2xyz(0.15f, 0.06f);
+      // Whitepoint (D65f)
+      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      break;
+
+    case ColorSpace::PrimaryID::SMPTE170M:
+    case ColorSpace::PrimaryID::SMPTE240M:
+      // Red
+      primaries[0] = Xy2xyz(0.630f, 0.340f);
+      // Green
+      primaries[1] = Xy2xyz(0.310f, 0.595f);
+      // Blue
+      primaries[2] = Xy2xyz(0.155f, 0.070f);
+      // Whitepoint (D65f)
+      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      break;
+
+    case ColorSpace::PrimaryID::FILM:
+      // Red
+      primaries[0] = Xy2xyz(0.681f, 0.319f);
+      // Green
+      primaries[1] = Xy2xyz(0.243f, 0.692f);
+      // Blue
+      primaries[2] = Xy2xyz(0.145f, 0.049f);
+      // Whitepoint (Cf)
+      primaries[3] = Xy2xyz(0.310f, 0.136f);
+      break;
+
+    case ColorSpace::PrimaryID::BT2020:
+      // Red
+      primaries[0] = Xy2xyz(0.708f, 0.292f);
+      // Green
+      primaries[1] = Xy2xyz(0.170f, 0.797f);
+      // Blue
+      primaries[2] = Xy2xyz(0.131f, 0.046f);
+      // Whitepoint (D65f)
+      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      break;
+
+    case ColorSpace::PrimaryID::SMPTEST428_1:
+      // X
+      primaries[0] = Xy2xyz(1.0f, 0.0f);
+      // Y
+      primaries[1] = Xy2xyz(0.0f, 1.0f);
+      // Z
+      primaries[2] = Xy2xyz(0.0f, 0.0f);
+      // Whitepoint (Ef)
+      primaries[3] = Xy2xyz(1.0f / 3.0f, 1.0f / 3.0f);
+      break;
+
+    case ColorSpace::PrimaryID::SMPTEST431_2:
+      // Red
+      primaries[0] = Xy2xyz(0.680f, 0.320f);
+      // Green
+      primaries[1] = Xy2xyz(0.265f, 0.690f);
+      // Blue
+      primaries[2] = Xy2xyz(0.150f, 0.060f);
+      // Whitepoint
+      primaries[3] = Xy2xyz(0.314f, 0.351f);
+      break;
+
+    case ColorSpace::PrimaryID::SMPTEST432_1:
+      // Red
+      primaries[0] = Xy2xyz(0.680f, 0.320f);
+      // Green
+      primaries[1] = Xy2xyz(0.265f, 0.690f);
+      // Blue
+      primaries[2] = Xy2xyz(0.150f, 0.060f);
+      // Whitepoint (D65f)
+      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      break;
+
+    case ColorSpace::PrimaryID::XYZ_D50:
+      // X
+      primaries[0] = Xy2xyz(1.0f, 0.0f);
+      // Y
+      primaries[1] = Xy2xyz(0.0f, 1.0f);
+      // Z
+      primaries[2] = Xy2xyz(0.0f, 0.0f);
+      // D50
+      primaries[3] = Xy2xyz(0.34567f, 0.35850f);
+      break;
+  }
+}
+
+GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
+  ColorTransform::TriStim primaries[4];
+  GetPrimaries(id, primaries);
+  ColorTransform::TriStim WXYZ(primaries[3].x() / primaries[3].y(), 1.0f,
+                               primaries[3].z() / primaries[3].y());
+
+  Transform ret(
+      primaries[0].x(), primaries[1].x(), primaries[2].x(), 0.0f,  // 1
+      primaries[0].y(), primaries[1].y(), primaries[2].y(), 0.0f,  // 2
+      primaries[0].z(), primaries[1].z(), primaries[2].z(), 0.0f,  // 3
+      0.0f, 0.0f, 0.0f, 1.0f);                                     // 4
+
+  ColorTransform::TriStim conv = Map(Invert(ret), WXYZ);
+  ret.Scale3d(conv.x(), conv.y(), conv.z());
+
+  // Chromatic adaptation.
+  Transform bradford(0.8951000f, 0.2664000f, -0.1614000f, 0.0f,  // 1
+                     -0.7502000f, 1.7135000f, 0.0367000f, 0.0f,  // 2
+                     0.0389000f, -0.0685000f, 1.0296000f, 0.0f,  // 3
+                     0.0f, 0.0f, 0.0f, 1.0f);                    // 4
+
+  ColorTransform::TriStim D50(0.9642f, 1.0f, 0.8249f);
+  ColorTransform::TriStim source_response = Map(bradford, WXYZ);
+  ColorTransform::TriStim dest_response = Map(bradford, D50);
+
+  Transform adapter;
+  adapter.Scale3d(dest_response.x() / source_response.x(),
+                  dest_response.y() / source_response.y(),
+                  dest_response.z() / source_response.z());
+
+  return bradford * adapter * Invert(bradford) * ret;
+}
+
+GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
+  switch (id) {
+    default:
+    case ColorSpace::TransferID::BT709:
+    case ColorSpace::TransferID::SMPTE170M:
+    case ColorSpace::TransferID::BT2020_10:
+    case ColorSpace::TransferID::BT2020_12: {
+      v = fmax(0.0f, v);
+      float a = 1.099296826809442f;
+      float b = 0.018053968510807f;
+      if (v <= b) {
+        return 4.5f * v;
+      } else {
+        return a * powf(v, 0.45f) - (a - 1.0f);
+      }
+    }
+
+    case ColorSpace::TransferID::GAMMA22:
+      v = fmax(0.0f, v);
+      return powf(v, 1.0f / 2.2f);
+
+    case ColorSpace::TransferID::GAMMA28:
+      v = fmax(0.0f, v);
+      return powf(v, 1.0f / 2.8f);
+
+    case ColorSpace::TransferID::SMPTE240M: {
+      v = fmax(0.0f, v);
+      float a = 1.11157219592173128753f;
+      float b = 0.02282158552944503135f;
+      if (v <= b) {
+        return 4.0f * v;
+      } else {
+        return a * powf(v, 0.45f) - (a - 1.0f);
+      }
+    }
+
+    case ColorSpace::TransferID::LINEAR:
+      return v;
+
+    case ColorSpace::TransferID::LOG:
+      if (v < 0.01f)
+        return 0.0f;
+      return 1.0f + log(v) / log(10.0f) / 2.0f;
+
+    case ColorSpace::TransferID::LOG_SQRT:
+      if (v < sqrt(10.0f) / 1000.0f)
+        return 0.0f;
+      return 1.0f + log(v) / log(10.0f) / 2.5f;
+
+    case ColorSpace::TransferID::IEC61966_2_4: {
+      float a = 1.099296826809442f;
+      float b = 0.018053968510807f;
+      if (v < -b) {
+        return -a * powf(-v, 0.45f) + (a - 1.0f);
+      } else if (v <= b) {
+        return 4.5f * v;
+      } else {
+        return a * powf(v, 0.45f) - (a - 1.0f);
+      }
+    }
+
+    case ColorSpace::TransferID::BT1361_ECG: {
+      float a = 1.099f;
+      float b = 0.018f;
+      float l = 0.0045f;
+      if (v < -l) {
+        return -(a * powf(-4.0f * v, 0.45f) + (a - 1.0f)) / 4.0f;
+      } else if (v <= b) {
+        return 4.5f * v;
+      } else {
+        return a * powf(v, 0.45f) - (a - 1.0f);
+      }
+    }
+
+    case ColorSpace::TransferID::IEC61966_2_1: {  // SRGB
+      v = fmax(0.0f, v);
+      float a = 1.055f;
+      float b = 0.0031308f;
+      if (v < b) {
+        return 12.92f * v;
+      } else {
+        return a * powf(v, 1.0f / 2.4f) - (a - 1.0f);
+      }
+    }
+    case ColorSpace::TransferID::SMPTEST2084: {
+      v = fmax(0.0f, v);
+      float m1 = (2610.0f / 4096.0f) / 4.0f;
+      float m2 = (2523.0f / 4096.0f) * 128.0f;
+      float c1 = 3424.0f / 4096.0f;
+      float c2 = (2413.0f / 4096.0f) * 32.0f;
+      float c3 = (2392.0f / 4096.0f) * 32.0f;
+      return powf((c1 + c2 * powf(v, m1)) / (1.0f + c3 * powf(v, m1)), m2);
+    }
+
+    case ColorSpace::TransferID::SMPTEST428_1:
+      v = fmax(0.0f, v);
+      return powf(48.0f * v + 52.37f, 1.0f / 2.6f);
+
+    // Chrome-specific values below
+    case ColorSpace::TransferID::GAMMA24:
+      v = fmax(0.0f, v);
+      return powf(v, 1.0f / 2.4f);
+  }
+}
+
+GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
+  switch (id) {
+    default:
+    case ColorSpace::TransferID::BT709:
+    case ColorSpace::TransferID::SMPTE170M:
+    case ColorSpace::TransferID::BT2020_10:
+    case ColorSpace::TransferID::BT2020_12: {
+      v = fmax(0.0f, v);
+      float a = 1.099296826809442f;
+      float b = 0.018053968510807f;
+      if (v < FromLinear(ColorSpace::TransferID::BT709, b)) {
+        return v / 4.5f;
+      } else {
+        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+      }
+    }
+
+    case ColorSpace::TransferID::GAMMA22:
+      v = fmax(0.0f, v);
+      return powf(v, 2.2f);
+
+    case ColorSpace::TransferID::GAMMA28:
+      v = fmax(0.0f, v);
+      return powf(v, 2.8f);
+
+    case ColorSpace::TransferID::SMPTE240M: {
+      v = fmax(0.0f, v);
+      float a = 1.11157219592173128753f;
+      float b = 0.02282158552944503135f;
+      if (v <= FromLinear(ColorSpace::TransferID::SMPTE240M, b)) {
+        return v / 4.0f;
+      } else {
+        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+      }
+    }
+
+    case ColorSpace::TransferID::LINEAR:
+      return v;
+
+    case ColorSpace::TransferID::LOG:
+      if (v < 0.0f)
+        return 0.0f;
+      return powf(10.0f, (v - 1.0f) * 2.0f);
+
+    case ColorSpace::TransferID::LOG_SQRT:
+      if (v < 0.0f)
+        return 0.0f;
+      return powf(10.0f, (v - 1.0f) * 2.5f);
+
+    case ColorSpace::TransferID::IEC61966_2_4: {
+      float a = 1.099296826809442f;
+      float b = 0.018053968510807f;
+      if (v < FromLinear(ColorSpace::TransferID::IEC61966_2_4, -a)) {
+        return -powf((a - 1.0f - v) / a, 1.0f / 0.45f);
+      } else if (v <= FromLinear(ColorSpace::TransferID::IEC61966_2_4, b)) {
+        return v / 4.5f;
+      } else {
+        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+      }
+    }
+
+    case ColorSpace::TransferID::BT1361_ECG: {
+      float a = 1.099f;
+      float b = 0.018f;
+      float l = 0.0045f;
+      if (v < FromLinear(ColorSpace::TransferID::BT1361_ECG, -l)) {
+        return -powf((1.0f - a - v * 4.0f) / a, 1.0f / 0.45f) / 4.0f;
+      } else if (v <= FromLinear(ColorSpace::TransferID::BT1361_ECG, b)) {
+        return v / 4.5f;
+      } else {
+        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+      }
+    }
+
+    case ColorSpace::TransferID::IEC61966_2_1: {  // SRGB
+      v = fmax(0.0f, v);
+      float a = 1.055f;
+      float b = 0.0031308f;
+      if (v < FromLinear(ColorSpace::TransferID::IEC61966_2_1, b)) {
+        return v / 12.92f;
+      } else {
+        return powf((v + a - 1.0f) / a, 2.4f);
+      }
+    }
+
+    case ColorSpace::TransferID::SMPTEST2084: {
+      v = fmax(0.0f, v);
+      float m1 = (2610.0f / 4096.0f) / 4.0f;
+      float m2 = (2523.0f / 4096.0f) * 128.0f;
+      float c1 = 3424.0f / 4096.0f;
+      float c2 = (2413.0f / 4096.0f) * 32.0f;
+      float c3 = (2392.0f / 4096.0f) * 32.0f;
+      return powf(
+          fmax(powf(v, 1.0f / m2) - c1, 0) / (c2 - c3 * powf(v, 1.0f / m2)),
+          1.0f / m1);
+    }
+
+    case ColorSpace::TransferID::SMPTEST428_1:
+      return (powf(v, 2.6f) - 52.37f) / 48.0f;
+
+    // Chrome-specific values below
+    case ColorSpace::TransferID::GAMMA24:
+      v = fmax(0.0f, v);
+      return powf(v, 2.4f);
+  }
+}
+
+GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
+  float Kr = 0.0f, Kb = 0.0f;
+  switch (id) {
+    case ColorSpace::MatrixID::RGB:
+      return Transform();
+
+    case ColorSpace::MatrixID::BT709:
+    case ColorSpace::MatrixID::UNSPECIFIED:
+    case ColorSpace::MatrixID::RESERVED:
+      Kr = 0.2126f;
+      Kb = 0.0722f;
+      break;
+
+    case ColorSpace::MatrixID::FCC:
+      Kr = 0.30f;
+      Kb = 0.11f;
+      break;
+
+    case ColorSpace::MatrixID::BT470BG:
+    case ColorSpace::MatrixID::SMPTE170M:
+      Kr = 0.299f;
+      Kb = 0.144f;
+      break;
+
+    case ColorSpace::MatrixID::SMPTE240M:
+      Kr = 0.212f;
+      Kb = 0.087f;
+      break;
+
+    case ColorSpace::MatrixID::YCOCG:
+      return Transform(0.25f, 0.5f, 0.25f, 0.5f,    // 1
+                       -0.25f, 0.5f, -0.25f, 0.5f,  // 2
+                       0.5f, 0.0f, -0.5f, 0.0f,     // 3
+                       0.0f, 0.0f, 0.0f, 1.0f);     // 4
+
+    // TODO(hubbe): Check if the CL equation is right.
+    case ColorSpace::MatrixID::BT2020_NCL:
+    case ColorSpace::MatrixID::BT2020_CL:
+      Kr = 0.2627f;
+      Kb = 0.0593f;
+      break;
+
+    case ColorSpace::MatrixID::YDZDX:
+      return Transform(0.0f, 1.0f, 0.0f, 0.0f,               // 1
+                       0.0f, -0.5f, 0.986566f / 2.0f, 0.5f,  // 2
+                       0.5f, -0.991902f / 2.0f, 0.0f, 0.5f,  // 3
+                       0.0f, 0.0f, 0.0f, 1.0f);              // 4
+  }
+  float u_m = 0.5f / (1.0f - Kb);
+  float v_m = 0.5f / (1.0f - Kr);
+  return Transform(
+      Kr, 1.0f - Kr - Kb, Kb, 0.0f,                                 // 1
+      u_m * -Kr, u_m * -(1.0f - Kr - Kb), u_m * (1.0f - Kb), 0.5f,  // 2
+      v_m * (1.0f - Kr), v_m * -(1.0f - Kr - Kb), v_m * -Kb, 0.5f,  // 3
+      0.0f, 0.0f, 0.0f, 1.0f);                                      // 4
+}
+
+Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
+                               ColorSpace::MatrixID matrix) {
+  switch (range) {
+    case ColorSpace::RangeID::FULL:
+      return Transform();
+
+    case ColorSpace::RangeID::LIMITED:
+      break;
+  }
+  switch (matrix) {
+    case ColorSpace::MatrixID::RGB:
+    case ColorSpace::MatrixID::YCOCG:
+      return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
+                       0.0f, 255.0f / 219.0f, 0.0f, -16.0f / 219.0f,  // 2
+                       0.0f, 0.0f, 255.0f / 219.0f, -16.0f / 219.0f,  // 3
+                       0.0f, 0.0f, 0.0f, 1.0f);                       // 4
+
+    case ColorSpace::MatrixID::BT709:
+    case ColorSpace::MatrixID::UNSPECIFIED:
+    case ColorSpace::MatrixID::RESERVED:
+    case ColorSpace::MatrixID::FCC:
+    case ColorSpace::MatrixID::BT470BG:
+    case ColorSpace::MatrixID::SMPTE170M:
+    case ColorSpace::MatrixID::SMPTE240M:
+    case ColorSpace::MatrixID::BT2020_NCL:
+    case ColorSpace::MatrixID::BT2020_CL:
+    case ColorSpace::MatrixID::YDZDX:
+      return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
+                       0.0f, 255.0f / 224.0f, 0.0f, -15.5f / 224.0f,  // 2
+                       0.0f, 0.0f, 255.0f / 224.0f, -15.5f / 224.0f,  // 3
+                       0.0f, 0.0f, 0.0f, 1.0f);                       // 4
+  }
+  NOTREACHED();
+  return Transform();
+}
+
+class ColorSpaceToColorSpaceTransform : public ColorTransform {
+ public:
+  ColorSpaceToColorSpaceTransform(const ColorSpace& from,
+                                  const ColorSpace& to,
+                                  Intent intent)
+      : from_(from), to_(to) {
+    if (intent == Intent::PERCEPTUAL) {
+      switch (from_.transfer_) {
+        case ColorSpace::TransferID::UNSPECIFIED:
+        case ColorSpace::TransferID::BT709:
+        case ColorSpace::TransferID::SMPTE170M:
+          // See SMPTE 1886
+          from_.transfer_ = ColorSpace::TransferID::GAMMA24;
+          break;
+
+        default:  // Do nothing
+          break;
+      }
+
+      // TODO(hubbe): shrink gamuts here (never stretch gamuts)
+    }
+
+    Transform* from_transfer_matrix =
+        from_.matrix_ == ColorSpace::MatrixID::BT2020_CL ? &b_ : &a_;
+    Transform* to_transfer_matrix =
+        to_.matrix_ == ColorSpace::MatrixID::BT2020_CL ? &b_ : &c_;
+
+    c_ *= Invert(GetRangeAdjustMatrix(to_.range_, to_.matrix_));
+    *to_transfer_matrix *= GetTransferMatrix(to_.matrix_);
+    b_ *= Invert(GetPrimaryMatrix(to_.primaries_));
+    b_ *= GetPrimaryMatrix(from_.primaries_);
+    *from_transfer_matrix *= Invert(GetTransferMatrix(from_.matrix_));
+    a_ *= GetRangeAdjustMatrix(from_.range_, from_.matrix_);
+  }
+
+  void transform(TriStim* colors, size_t num) override {
+    for (size_t i = 0; i < num; i++) {
+      TriStim c = colors[i];
+      a_.TransformPoint(&c);
+      c.set_x(ToLinear(from_.transfer_, c.x()));
+      c.set_y(ToLinear(from_.transfer_, c.y()));
+      c.set_z(ToLinear(from_.transfer_, c.z()));
+      b_.TransformPoint(&c);
+      c.set_x(FromLinear(to_.transfer_, c.x()));
+      c.set_y(FromLinear(to_.transfer_, c.y()));
+      c.set_z(FromLinear(to_.transfer_, c.z()));
+      c_.TransformPoint(&c);
+      colors[i] = c;
+    }
+  }
+
+ private:
+  ColorSpace from_;
+  ColorSpace to_;
+
+  // a_ -> tolinear -> b_ -> fromlinear -> c_;
+  Transform a_;
+  Transform b_;
+  Transform c_;
+};
+
+std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
+    const ColorSpace& from,
+    const ColorSpace& to,
+    Intent intent) {
+  // TODO(Hubbe): Check if from and/or to can be mapped to ICC profiles and
+  // provide better transforms in those cases.
+  return std::unique_ptr<ColorTransform>(
+      new ColorSpaceToColorSpaceTransform(from, to, intent));
+}
+
+}  // namespace gfx

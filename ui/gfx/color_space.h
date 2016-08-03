@@ -19,6 +19,7 @@ struct ParamTraits;
 namespace gfx {
 
 class ICCProfile;
+class ColorSpaceToColorSpaceTransform;
 
 // Used to represet a color space for the purpose of color conversion.
 // This is designed to be safe and compact enough to send over IPC
@@ -114,6 +115,7 @@ class GFX_EXPORT ColorSpace {
              RangeID full_range);
 
   static ColorSpace CreateSRGB();
+  static ColorSpace CreateXYZD50();
 
   // TODO: Remove these, and replace with more generic constructors.
   static ColorSpace CreateJpeg();
@@ -133,6 +135,7 @@ class GFX_EXPORT ColorSpace {
   uint64_t icc_profile_id_ = 0;
 
   friend class ICCProfile;
+  friend class ColorSpaceToColorSpaceTransform;
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
 };
 

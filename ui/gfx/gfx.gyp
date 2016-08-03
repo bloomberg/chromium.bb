@@ -150,6 +150,8 @@
         'color_palette.h',
         'color_space.cc',
         'color_space.h',
+        'color_transform.cc',
+        'color_transform.h',
         'color_utils.cc',
         'color_utils.h',
         'favicon_size.cc',

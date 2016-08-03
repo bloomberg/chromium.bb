@@ -35,6 +35,12 @@ ColorSpace ColorSpace::CreateSRGB() {
                     RangeID::FULL);
 }
 
+// Static
+ColorSpace ColorSpace::CreateXYZD50() {
+  return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
+                    RangeID::FULL);
+}
+
 // static
 ColorSpace ColorSpace::CreateJpeg() {
   return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1, MatrixID::BT709,
