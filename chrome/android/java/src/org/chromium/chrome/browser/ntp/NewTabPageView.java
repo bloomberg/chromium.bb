@@ -724,12 +724,19 @@ public class NewTabPageView extends FrameLayout
 
         translation.set(0, 0);
 
-        View view = (View) mSearchBoxView.getParent();
-        while (view != null) {
+        View view = mSearchBoxView;
+        while (true) {
+            view = (View) view.getParent();
+            if (view == null) {
+                // The |mSearchBoxView| is not a child of this view. This can happen if the
+                // RecyclerView detaches the NewTabPageLayout after it has been scrolled out of
+                // view. Set the translation to the minimum Y value as an approximation.
+                translation.y = Integer.MIN_VALUE;
+                break;
+            }
             translation.offset(-view.getScrollX(), -view.getScrollY());
             if (view == this) break;
             translation.offset((int) view.getX(), (int) view.getY());
-            view = (View) view.getParent();
         }
         bounds.offset(translation.x, translation.y);
     }
