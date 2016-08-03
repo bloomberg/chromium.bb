@@ -411,6 +411,55 @@ template("copy_ex") {
   }
 }
 
+template("device_isolate") {
+  testonly = true
+  _runtime_deps_file = "$target_gen_dir/$target_name.runtime_deps"
+  group("${target_name}__write_deps") {
+    forward_variables_from(invoker,
+                           [
+                             "data",
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                           ])
+    write_runtime_deps = _runtime_deps_file
+  }
+
+  action(target_name) {
+    script = "//build/android/gn/generate_isolate.py"
+    inputs = [
+      _runtime_deps_file,
+    ]
+    outputs = [
+      invoker.output,
+    ]
+    args = [
+      "--output-directory=.",
+      "--out-file",
+      rebase_path(invoker.output, root_build_dir),
+      "--runtime-deps-file",
+      rebase_path(_runtime_deps_file, root_build_dir),
+      "--apply-android-filters",
+      "--apply-device-filters",
+    ]
+    _assert_no_odd_data =
+        defined(invoker.assert_no_odd_data) && invoker.assert_no_odd_data
+    if (_assert_no_odd_data) {
+      args += [ "--assert-no-odd-data" ]
+    }
+    if (defined(invoker.command)) {
+      _isolate_dir = get_path_info(invoker.output, "dir")
+      args += [
+        "--command",
+        rebase_path(invoker.command, _isolate_dir),
+      ]
+    }
+    deps = [
+      ":${invoker.target_name}__write_deps",
+    ]
+  }
+}
+
 # Generates a script in the output bin directory which runs the test
 # target using the test runner script in build/android/test_runner.py.
 template("test_runner_script") {

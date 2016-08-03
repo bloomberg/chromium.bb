@@ -6,59 +6,6 @@
 # TEST SETUP
 # ==============================================================================
 
-template("_gen_isolate") {
-  testonly = true
-  _runtime_deps_file = "$target_gen_dir/$target_name.runtime_deps"
-  group("${target_name}__write_deps") {
-    forward_variables_from(invoker,
-                           [
-                             "data",
-                             "data_deps",
-                             "deps",
-                             "public_deps",
-                           ])
-    write_runtime_deps = _runtime_deps_file
-  }
-
-  action(target_name) {
-    script = "//testing/generate_isolate.py"
-    inputs = [
-      _runtime_deps_file,
-    ]
-    outputs = [
-      invoker.output,
-    ]
-    args = [
-      "--output-directory=.",
-      "--out-file",
-      rebase_path(invoker.output, root_build_dir),
-      "--runtime-deps-file",
-      rebase_path(_runtime_deps_file, root_build_dir),
-    ]
-    if (is_android) {
-      args += [ "--apply-android-filters" ]
-    }
-    if (defined(invoker.apply_device_filters) && invoker.apply_device_filters) {
-      args += [ "--apply-device-filters" ]
-    }
-    _assert_no_odd_data =
-        defined(invoker.assert_no_odd_data) && invoker.assert_no_odd_data
-    if (_assert_no_odd_data) {
-      args += [ "--assert-no-odd-data" ]
-    }
-    if (defined(invoker.command)) {
-      _isolate_dir = get_path_info(invoker.output, "dir")
-      args += [
-        "--command",
-        rebase_path(invoker.command, _isolate_dir),
-      ]
-    }
-    deps = [
-      ":${invoker.target_name}__write_deps",
-    ]
-  }
-}
-
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
@@ -98,7 +45,7 @@ template("test") {
       _target_dir_name = get_label_info(":$target_name", "dir")
       _device_isolate_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.device.isolate"
       _gen_isolate_target_name = "${target_name}__isolate"
-      _gen_isolate(_gen_isolate_target_name) {
+      device_isolate(_gen_isolate_target_name) {
         forward_variables_from(invoker,
                                [
                                  "data",
@@ -108,7 +55,6 @@ template("test") {
                                ])
         assert_no_odd_data = !_allow_odd_runtime_deps
         output = _device_isolate_path
-        apply_device_filters = true
       }
     }
 
