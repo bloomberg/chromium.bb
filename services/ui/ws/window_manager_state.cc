@@ -22,10 +22,6 @@ namespace ui {
 namespace ws {
 namespace {
 
-// Debug accelerator IDs start far above the highest valid Windows command ID
-// (0xDFFF) and Chrome's highest IDC command ID.
-const uint32_t kPrintWindowsDebugAcceleratorId = 1u << 31;
-
 base::TimeDelta GetDefaultAckTimerDelay() {
 #if defined(NDEBUG)
   return base::TimeDelta::FromMilliseconds(100);
@@ -200,8 +196,7 @@ void WindowManagerState::ProcessEvent(const ui::Event& event) {
     return;
   }
 
-  event_dispatcher_.ProcessEvent(event,
-                                 EventDispatcher::AcceleratorMatchPhase::ANY);
+  ProcessEventImpl(event);
 }
 
 void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
@@ -297,6 +292,13 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
     OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
+void WindowManagerState::ProcessEventImpl(const ui::Event& event) {
+  // Debug accelerators are always checked and don't interfere with processing.
+  ProcessDebugAccelerator(event);
+  event_dispatcher_.ProcessEvent(event,
+                                 EventDispatcher::AcceleratorMatchPhase::ANY);
+}
+
 void WindowManagerState::QueueEvent(
     const ui::Event& event,
     std::unique_ptr<ProcessedEventTarget> processed_event_target) {
@@ -313,8 +315,7 @@ void WindowManagerState::ProcessNextEventFromQueue() {
     std::unique_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
     event_queue_.pop();
     if (!queued_event->processed_target) {
-      event_dispatcher_.ProcessEvent(
-          *queued_event->event, EventDispatcher::AcceleratorMatchPhase::ANY);
+      ProcessEventImpl(*queued_event->event);
       return;
     }
     if (queued_event->processed_target->IsValid()) {
@@ -364,32 +365,38 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
 }
 
 void WindowManagerState::AddDebugAccelerators() {
-  // Always register the accelerators, even if they only work in debug, so that
-  // keyboard behavior is the same in release and debug builds.
-  mojom::EventMatcherPtr matcher = CreateKeyMatcher(
-      ui::mojom::KeyboardCode::S, ui::mojom::kEventFlagControlDown |
-                                      ui::mojom::kEventFlagAltDown |
-                                      ui::mojom::kEventFlagShiftDown);
-  event_dispatcher_.AddAccelerator(kPrintWindowsDebugAcceleratorId,
-                                   std::move(matcher));
+  const DebugAccelerator accelerator = {
+      DebugAcceleratorType::PRINT_WINDOWS, ui::VKEY_S,
+      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN};
+  debug_accelerators_.push_back(accelerator);
 }
 
-bool WindowManagerState::HandleDebugAccelerator(uint32_t accelerator_id) {
-#if !defined(NDEBUG)
-  if (accelerator_id == kPrintWindowsDebugAcceleratorId) {
-    // Error so it will be collected in system logs.
-    for (Display* display : display_manager()->displays()) {
-      WindowManagerDisplayRoot* display_root =
-          display->GetWindowManagerDisplayRootForUser(user_id());
-      if (display_root) {
-        LOG(ERROR) << "ServerWindow hierarchy:\n"
-                   << display_root->root()->GetDebugWindowHierarchy();
-      }
+void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event) {
+  if (event.type() != ui::ET_KEY_PRESSED)
+    return;
+
+  const ui::KeyEvent& key_event = *event.AsKeyEvent();
+  for (const DebugAccelerator& accelerator : debug_accelerators_) {
+    if (accelerator.key_code == key_event.key_code() &&
+        accelerator.event_flags == key_event.flags()) {
+      HandleDebugAccelerator(accelerator.type);
+      break;
     }
-    return true;
+  }
+}
+
+void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
+#if !defined(NDEBUG)
+  // Error so it will be collected in system logs.
+  for (Display* display : display_manager()->displays()) {
+    WindowManagerDisplayRoot* display_root =
+        display->GetWindowManagerDisplayRootForUser(user_id());
+    if (display_root) {
+      LOG(ERROR) << "ServerWindow hierarchy:\n"
+                 << display_root->root()->GetDebugWindowHierarchy();
+    }
   }
 #endif
-  return false;
 }
 
 void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree) {
@@ -411,8 +418,6 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        const ui::Event& event,
                                        AcceleratorPhase phase) {
   DCHECK(IsActive());
-  if (HandleDebugAccelerator(accelerator_id))
-    return;
   const bool needs_ack = phase == AcceleratorPhase::PRE;
   if (needs_ack) {
     DCHECK_EQ(EventDispatchPhase::NONE, event_dispatch_phase_);

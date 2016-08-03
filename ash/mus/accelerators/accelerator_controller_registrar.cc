@@ -22,10 +22,12 @@ namespace ash {
 namespace mus {
 namespace {
 
-// Callback from registering the accelerator. All our accelerators should be
-// registered, so we expect |added| to be true.
-void OnAcceleratorAdded(bool added) {
-  DCHECK(added);
+// Callback from registering the accelerator.
+void OnAcceleratorAdded(const ui::Accelerator& accelerator, bool added) {
+  // All our accelerators should be registered, so we expect |added| to be true.
+  DCHECK(added) << "duplicate accelerator key_code=" << accelerator.key_code()
+                << " type=" << accelerator.type()
+                << " modifiers=" << accelerator.modifiers();
 }
 
 }  // namespace
@@ -126,10 +128,11 @@ void AcceleratorControllerRegistrar::OnAcceleratorRegistered(
 
   window_manager_->window_manager_client()->AddAccelerator(
       ComputeAcceleratorId(id_namespace_, ids.pre_id), std::move(event_matcher),
-      base::Bind(OnAcceleratorAdded));
+      base::Bind(OnAcceleratorAdded, accelerator));
   window_manager_->window_manager_client()->AddAccelerator(
       ComputeAcceleratorId(id_namespace_, ids.post_id),
-      std::move(post_event_matcher), base::Bind(OnAcceleratorAdded));
+      std::move(post_event_matcher),
+      base::Bind(OnAcceleratorAdded, accelerator));
 }
 
 void AcceleratorControllerRegistrar::OnAcceleratorUnregistered(

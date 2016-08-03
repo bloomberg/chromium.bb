@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -87,6 +88,16 @@ class WindowManagerState : public EventDispatcherDelegate {
   friend class Display;
   friend class test::WindowManagerStateTestApi;
 
+  enum class DebugAcceleratorType {
+    PRINT_WINDOWS,
+  };
+
+  struct DebugAccelerator {
+    DebugAcceleratorType type;
+    ui::KeyboardCode key_code;
+    int event_flags;
+  };
+
   enum class EventDispatchPhase {
     // Not actively dispatching.
     NONE,
@@ -131,6 +142,10 @@ class WindowManagerState : public EventDispatcherDelegate {
   // time.
   void OnEventAckTimeout(ClientSpecificId client_id);
 
+  // Implemenation of processing an event with a match phase of all. This
+  // handles debug accelerators and forwards to EventDispatcher.
+  void ProcessEventImpl(const ui::Event& event);
+
   // Schedules an event to be processed later.
   void QueueEvent(const ui::Event& event,
                   std::unique_ptr<ProcessedEventTarget> processed_event_target);
@@ -149,8 +164,12 @@ class WindowManagerState : public EventDispatcherDelegate {
   // Registers accelerators used internally for debugging.
   void AddDebugAccelerators();
 
-  // Returns true if the accelerator was handled.
-  bool HandleDebugAccelerator(uint32_t accelerator_id);
+  // Finds the debug accelerator for |event| and if one is found calls
+  // HandleDebugAccelerator().
+  void ProcessDebugAccelerator(const ui::Event& event);
+
+  // Runs the specified debug accelerator.
+  void HandleDebugAccelerator(DebugAcceleratorType type);
 
   // Called when waiting for an event or accelerator to be processed by |tree|.
   void ScheduleInputEventTimeout(WindowTree* tree);
@@ -190,6 +209,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   base::WeakPtr<Accelerator> post_target_accelerator_;
   std::queue<std::unique_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
+
+  std::vector<DebugAccelerator> debug_accelerators_;
 
   EventDispatcher event_dispatcher_;
 
