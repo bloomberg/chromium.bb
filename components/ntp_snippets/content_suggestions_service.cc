@@ -25,10 +25,12 @@ ContentSuggestionsService::ContentSuggestionsService(State state)
 ContentSuggestionsService::~ContentSuggestionsService() {}
 
 void ContentSuggestionsService::Shutdown() {
-  DCHECK(providers_by_category_.empty());
-  DCHECK(categories_.empty());
-  DCHECK(suggestions_by_category_.empty());
-  DCHECK(id_category_map_.empty());
+  ntp_snippets_service_ = nullptr;
+  id_category_map_.clear();
+  suggestions_by_category_.clear();
+  providers_by_category_.clear();
+  categories_.clear();
+  providers_.clear();
   state_ = State::DISABLED;
   FOR_EACH_OBSERVER(Observer, observers_, ContentSuggestionsServiceShutdown());
 }
@@ -127,19 +129,15 @@ void ContentSuggestionsService::RemoveObserver(Observer* observer) {
 }
 
 void ContentSuggestionsService::RegisterProvider(
-    ContentSuggestionsProvider* provider) {
-  // TODO(pke): When NTPSnippetsService is purely a provider, think about
-  // removing this state check.
-  if (state_ == State::DISABLED)
-    return;
-
-  provider->SetObserver(this);
+    std::unique_ptr<ContentSuggestionsProvider> provider) {
+  DCHECK(state_ == State::ENABLED);
   for (Category category : provider->GetProvidedCategories()) {
     DCHECK_NE(CategoryStatus::NOT_PROVIDED,
               provider->GetCategoryStatus(category));
-    RegisterCategoryIfRequired(provider, category);
+    RegisterCategoryIfRequired(provider.get(), category);
     NotifyCategoryStatusChanged(category);
   }
+  providers_.push_back(std::move(provider));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -190,22 +188,6 @@ void ContentSuggestionsService::OnCategoryStatusChanged(
     DCHECK_EQ(new_status, provider->GetCategoryStatus(category));
   }
   NotifyCategoryStatusChanged(category);
-}
-
-void ContentSuggestionsService::OnProviderShutdown(
-    ContentSuggestionsProvider* provider) {
-  for (Category category : provider->GetProvidedCategories()) {
-    auto iterator = std::find(categories_.begin(), categories_.end(), category);
-    DCHECK(iterator != categories_.end());
-    categories_.erase(iterator);
-    for (const ContentSuggestion& suggestion :
-         suggestions_by_category_[category]) {
-      id_category_map_.erase(suggestion.id());
-    }
-    suggestions_by_category_.erase(category);
-    providers_by_category_.erase(category);
-    NotifyCategoryStatusChanged(category);
-  }
 }
 
 bool ContentSuggestionsService::RegisterCategoryIfRequired(

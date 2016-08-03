@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -60,8 +59,9 @@ static void FetchSnippets(JNIEnv* env,
                           const JavaParamRef<jclass>& caller,
                           jboolean j_force_request) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  NTPSnippetsServiceFactory::GetForProfile(profile)->FetchSnippets(
-      j_force_request);
+  ContentSuggestionsServiceFactory::GetForProfile(profile)
+      ->ntp_snippets_service()
+      ->FetchSnippets(j_force_request);
 }
 
 // Reschedules the fetching of snippets. Used to support different fetching
@@ -69,7 +69,9 @@ static void FetchSnippets(JNIEnv* env,
 static void RescheduleFetching(JNIEnv* env,
                                const JavaParamRef<jclass>& caller) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  NTPSnippetsServiceFactory::GetForProfile(profile)->RescheduleFetching();
+  ContentSuggestionsServiceFactory::GetForProfile(profile)
+      ->ntp_snippets_service()
+      ->RescheduleFetching();
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,

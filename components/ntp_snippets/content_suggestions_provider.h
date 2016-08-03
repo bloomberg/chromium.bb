@@ -23,8 +23,8 @@ namespace ntp_snippets {
 // A provider can provide suggestions for multiple ContentSuggestionCategories,
 // but for every category that it provides, it will be the only provider in the
 // system which provides suggestions for that category.
-// A provider can be a keyed service, in which case it should notify the
-// ContentSuggestionsService through the observer before it shuts down.
+// Providers are created by the ContentSuggestionsServiceFactory and owned and
+// shut down by the ContentSuggestionsService.
 class ContentSuggestionsProvider {
  public:
   using ImageFetchedCallback =
@@ -63,16 +63,9 @@ class ContentSuggestionsProvider {
     virtual void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
                                          Category category,
                                          CategoryStatus new_status) = 0;
-
-    // Called when the provider needs to shut down and will not deliver any
-    // suggestions anymore.
-    virtual void OnProviderShutdown(ContentSuggestionsProvider* provider) = 0;
   };
 
-  // Sets an observer which is notified about changes to the available
-  // suggestions, or removes it by passing a nullptr. The provider does not take
-  // ownership of the observer and the observer must outlive this provider.
-  virtual void SetObserver(Observer* observer) = 0;
+  virtual ~ContentSuggestionsProvider();
 
   // Returns the categories provided by this provider.
   // When the set of provided categories changes, the Observer is notified
@@ -108,8 +101,8 @@ class ContentSuggestionsProvider {
   virtual void ClearDismissedSuggestionsForDebugging() = 0;
 
  protected:
-  ContentSuggestionsProvider(CategoryFactory* category_factory);
-  virtual ~ContentSuggestionsProvider();
+  ContentSuggestionsProvider(Observer* observer,
+                             CategoryFactory* category_factory);
 
   // Creates a unique ID. The given |within_category_id| must be unique among
   // all suggestion IDs from this provider for the given |category|. This method
@@ -118,13 +111,16 @@ class ContentSuggestionsProvider {
   // suggestions for that category.
   std::string MakeUniqueID(Category category,
                            const std::string& within_category_id);
+
   // Reverse functions for MakeUniqueID()
   Category GetCategoryFromUniqueID(const std::string& unique_id);
   std::string GetWithinCategoryIDFromUniqueID(const std::string& unique_id);
 
+  Observer* observer() const { return observer_; }
   CategoryFactory* category_factory() const { return category_factory_; }
 
  private:
+  Observer* observer_;
   CategoryFactory* category_factory_;
 };
 

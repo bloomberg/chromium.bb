@@ -22,7 +22,6 @@ class ListValue;
 // The implementation for the chrome://snippets-internals page.
 class SnippetsInternalsMessageHandler
     : public content::WebUIMessageHandler,
-      public ntp_snippets::NTPSnippetsServiceObserver,
       public ntp_snippets::ContentSuggestionsService::Observer {
  public:
   SnippetsInternalsMessageHandler();
@@ -31,12 +30,6 @@ class SnippetsInternalsMessageHandler
  private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
-
-  // ntp_snippets::NTPSnippetsServiceObserver:
-  void NTPSnippetsServiceLoaded() override;
-  void NTPSnippetsServiceShutdown() override;
-  void NTPSnippetsServiceDisabledReasonChanged(
-      ntp_snippets::DisabledReason disabled_reason) override;
 
   // ntp_snippets::ContentSuggestionsService::Observer:
   void OnNewSuggestions() override;
@@ -59,10 +52,6 @@ class SnippetsInternalsMessageHandler
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
-
-  ScopedObserver<ntp_snippets::NTPSnippetsService,
-                 ntp_snippets::NTPSnippetsServiceObserver>
-      ntp_snippets_service_observer_;
 
   ScopedObserver<ntp_snippets::ContentSuggestionsService,
                  ntp_snippets::ContentSuggestionsService::Observer>

@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/switches.h"
@@ -111,29 +110,12 @@ std::string GetCategoryStatusName(CategoryStatus status) {
 } // namespace
 
 SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler()
-    : ntp_snippets_service_observer_(this),
-      content_suggestions_service_observer_(this),
+    : content_suggestions_service_observer_(this),
       dom_loaded_(false),
       ntp_snippets_service_(nullptr),
       content_suggestions_service_(nullptr) {}
 
 SnippetsInternalsMessageHandler::~SnippetsInternalsMessageHandler() {}
-
-void SnippetsInternalsMessageHandler::NTPSnippetsServiceShutdown() {}
-
-void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
-  if (!dom_loaded_) return;
-
-  SendSnippets();
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveJson",
-      base::StringValue(
-          ntp_snippets_service_->snippets_fetcher()->last_json()));
-}
-
-void SnippetsInternalsMessageHandler::NTPSnippetsServiceDisabledReasonChanged(
-    ntp_snippets::DisabledReason disabled_reason) {}
 
 void SnippetsInternalsMessageHandler::OnNewSuggestions() {
   if (!dom_loaded_)
@@ -155,13 +137,11 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
   // additional initialization (web_ui() does not work from the constructor)
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  ntp_snippets_service_ =
-      NTPSnippetsServiceFactory::GetInstance()->GetForProfile(profile);
-  ntp_snippets_service_observer_.Add(ntp_snippets_service_);
-
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile);
   content_suggestions_service_observer_.Add(content_suggestions_service_);
+
+  ntp_snippets_service_ = content_suggestions_service_->ntp_snippets_service();
 
   web_ui()->RegisterMessageCallback(
       "refreshContent",
@@ -276,6 +256,10 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
 
   SendString("switch-fetch-url",
              ntp_snippets_service_->snippets_fetcher()->fetch_url().spec());
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveJson",
+      base::StringValue(
+          ntp_snippets_service_->snippets_fetcher()->last_json()));
 
   SendSnippets();
   SendDismissedSnippets();

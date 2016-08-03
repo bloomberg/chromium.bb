@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTIONS_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,8 @@ class Image;
 }
 
 namespace ntp_snippets {
+
+class NTPSnippetsService;
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
@@ -98,7 +101,7 @@ class ContentSuggestionsService : public KeyedService,
   // Registers a new ContentSuggestionsProvider. It must be ensured that at most
   // one provider is registered for every category and that this method is
   // called only once per provider.
-  void RegisterProvider(ContentSuggestionsProvider* provider);
+  void RegisterProvider(std::unique_ptr<ContentSuggestionsProvider> provider);
 
   // Only for debugging use through the internals page.
   // Removes all suggestions from all caches or internal stores in all
@@ -116,6 +119,13 @@ class ContentSuggestionsService : public KeyedService,
 
   CategoryFactory* category_factory() { return &category_factory_; }
 
+  // The reference to the NTPSnippetsService provider should only be set by the
+  // factory and only be used for scheduling, periodic fetching and debugging.
+  NTPSnippetsService* ntp_snippets_service() { return ntp_snippets_service_; }
+  void set_ntp_snippets_service(NTPSnippetsService* ntp_snippets_service) {
+    ntp_snippets_service_ = ntp_snippets_service;
+  }
+
  private:
   friend class ContentSuggestionsServiceTest;
 
@@ -132,7 +142,6 @@ class ContentSuggestionsService : public KeyedService,
   void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
                                Category category,
                                CategoryStatus new_status) override;
-  void OnProviderShutdown(ContentSuggestionsProvider* provider) override;
 
   // Registers the given |provider| for the given |category|, unless it is
   // already registered. Returns true if the category was newly registered or
@@ -149,15 +158,19 @@ class ContentSuggestionsService : public KeyedService,
   // Provides new and existing categories and an order for them.
   CategoryFactory category_factory_;
 
-  // All registered providers. A provider may be contained multiple times, if it
-  // provides multiple categories. The keys of this map are exactly the entries
-  // of |categories_|.
+  // All registered providers, owned by the service.
+  std::vector<std::unique_ptr<ContentSuggestionsProvider>> providers_;
+
+  // All registered categories and their providers. A provider may be contained
+  // multiple times, if it provides multiple categories. The keys of this map
+  // are exactly the entries of |categories_| and the values are a subset of
+  // |providers_|.
   std::map<Category, ContentSuggestionsProvider*, CompareCategoriesByID>
       providers_by_category_;
 
   // All current suggestion categories, in an order determined by the
   // |category_factory_|. This vector contains exactly the same categories as
-  // |providers_|.
+  // |providers_by_category_|.
   std::vector<Category> categories_;
 
   // All current suggestions grouped by category. This contains an entry for
@@ -175,6 +188,11 @@ class ContentSuggestionsService : public KeyedService,
   base::ObserverList<Observer> observers_;
 
   const std::vector<ContentSuggestion> no_suggestions_;
+
+  // Keep a direct reference to this special provider to redirect scheduling,
+  // background fetching and debugging calls to it. If the NTPSnippetsService is
+  // loaded, it is also present in |providers_|, otherwise this is a nullptr.
+  NTPSnippetsService* ntp_snippets_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsService);
 };

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
@@ -28,22 +27,18 @@ namespace ntp_snippets {
 // Currently, those are only the pages that the user last navigated to in an
 // open tab and offlined bookmarks.
 class OfflinePageSuggestionsProvider
-    : public KeyedService,
-      public ContentSuggestionsProvider,
+    : public ContentSuggestionsProvider,
       public offline_pages::OfflinePageModel::Observer {
  public:
   OfflinePageSuggestionsProvider(
+      ContentSuggestionsProvider::Observer* observer,
       CategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model);
   ~OfflinePageSuggestionsProvider() override;
 
-  // Inherited from KeyedService.
-  void Shutdown() override;
-
  private:
   // ContentSuggestionsProvider implementation.
   std::vector<Category> GetProvidedCategories() override;
-  void SetObserver(ContentSuggestionsProvider::Observer* observer) override;
   CategoryStatus GetCategoryStatus(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
@@ -68,8 +63,6 @@ class OfflinePageSuggestionsProvider
   void NotifyStatusChanged(CategoryStatus new_status);
 
   CategoryStatus category_status_;
-
-  ContentSuggestionsProvider::Observer* observer_;
 
   offline_pages::OfflinePageModel* offline_page_model_;
 

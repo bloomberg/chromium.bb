@@ -41,8 +41,10 @@
 
 using testing::ElementsAre;
 using testing::Eq;
-using testing::Return;
+using testing::Invoke;
 using testing::IsEmpty;
+using testing::Mock;
+using testing::Return;
 using testing::SizeIs;
 using testing::StartsWith;
 using testing::_;
@@ -224,37 +226,38 @@ class MockScheduler : public NTPSnippetsScheduler {
   MOCK_METHOD0(Unschedule, bool());
 };
 
-class MockServiceObserver : public NTPSnippetsServiceObserver {
+class MockProviderObserver : public ContentSuggestionsProvider::Observer {
  public:
-  MOCK_METHOD0(NTPSnippetsServiceLoaded, void());
-  MOCK_METHOD0(NTPSnippetsServiceShutdown, void());
-  MOCK_METHOD1(NTPSnippetsServiceDisabledReasonChanged,
-               void(DisabledReason disabled_reason));
+  void OnNewSuggestions(ContentSuggestionsProvider* provider,
+                        Category category,
+                        std::vector<ContentSuggestion> suggestions) override {}
+  MOCK_METHOD3(OnCategoryStatusChanged,
+               void(ContentSuggestionsProvider* provider,
+                    Category category,
+                    CategoryStatus new_status));
 };
 
-class WaitForDBLoad : public NTPSnippetsServiceObserver {
+class WaitForDBLoad {
  public:
-  WaitForDBLoad(NTPSnippetsService* service) : service_(service) {
-    service_->AddObserver(this);
-    if (!service_->ready())
+  WaitForDBLoad(MockProviderObserver* observer, NTPSnippetsService* service)
+      : observer_(observer) {
+    EXPECT_CALL(*observer_, OnCategoryStatusChanged(_, _, _))
+        .WillOnce(Invoke(this, &WaitForDBLoad::OnCategoryStatusChanged));
+    if (!service->ready())
       run_loop_.Run();
   }
 
-  ~WaitForDBLoad() override {
-    service_->RemoveObserver(this);
-  }
+  ~WaitForDBLoad() { Mock::VerifyAndClearExpectations(observer_); }
 
  private:
-  void NTPSnippetsServiceLoaded() override {
-    EXPECT_TRUE(service_->ready());
+  void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
+                               Category category,
+                               CategoryStatus new_status) {
+    EXPECT_EQ(new_status, CategoryStatus::AVAILABLE_LOADING);
     run_loop_.Quit();
   }
 
-  void NTPSnippetsServiceShutdown() override {}
-  void NTPSnippetsServiceDisabledReasonChanged(
-      DisabledReason disabled_reason) override {}
-
-  NTPSnippetsService* service_;
+  MockProviderObserver* observer_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitForDBLoad);
@@ -280,12 +283,10 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   }
 
   ~NTPSnippetsServiceTest() override {
-    if (service_)
-      service_->Shutdown();
-
     // We need to run the message loop after deleting the database, because
     // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
     // runner. Without this, we'd get reports of memory leaks.
+    Mock::VerifyAndClear(&mock_scheduler());
     service_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -293,21 +294,24 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   void SetUp() override {
     test::NTPSnippetsTestBase::SetUp();
     EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
-    CreateSnippetsService(/*enabled=*/true);
+    CreateSnippetsService();
   }
 
-  void CreateSnippetsService(bool enabled) {
-    if (service_)
-      service_->Shutdown();
+  void RecreateSnippetsService() {
+    Mock::VerifyAndClear(&mock_scheduler());
+    service_.reset();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+    CreateSnippetsService();
+  }
+
+  void CreateSnippetsService() {
+    DCHECK(!service_);
 
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(task_runner.get());
-
-    // Delete the current service, so that the database is destroyed before we
-    // create the new one, otherwise opening the new database will fail.
-    service_.reset();
 
     ResetSigninManager();
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher =
@@ -326,15 +330,14 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     SetUpFetchResponse(GetTestJson({GetSnippet()}));
 
     service_.reset(new NTPSnippetsService(
-        enabled, pref_service(), nullptr, &category_factory_, "fr", &scheduler_,
-        std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
+        &observer_, &category_factory_, pref_service(), nullptr, "fr",
+        &scheduler_, std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
         /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
                                        database_dir_.path(), task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(fake_signin_manager(),
                                                    pref_service())));
 
-    if (enabled)
-      WaitForDBLoad(service_.get());
+    WaitForDBLoad(&observer_, service_.get());
   }
 
   std::string MakeUniqueID(const std::string& within_category_id) {
@@ -346,7 +349,8 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
  protected:
   const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
-  MockScheduler& mock_scheduler() {  return scheduler_; }
+  MockProviderObserver& observer() { return observer_; }
+  MockScheduler& mock_scheduler() { return scheduler_; }
 
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
@@ -368,6 +372,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   const GURL test_url_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
+  MockProviderObserver observer_;
   CategoryFactory category_factory_;
   // Last so that the dependencies are deleted after the service.
   std::unique_ptr<NTPSnippetsService> service_;
@@ -377,29 +382,12 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
 
-class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
- public:
-  void SetUp() override {
-    test::NTPSnippetsTestBase::SetUp();
-    EXPECT_CALL(mock_scheduler(), Unschedule()).Times(1);
-    CreateSnippetsService(/*enabled=*/false);
-  }
-};
-
-TEST_F(NTPSnippetsServiceTest, ScheduleIfEnabled) {
+TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
   // SetUp() checks that Schedule is called.
 
   // When we have no snippets are all, loading the service initiates a fetch.
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ("OK", service()->snippets_fetcher()->last_status());
-}
-
-TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
-  // SetUp() checks that Unschedule is called.
-
-  // Make sure we don't fetch anything.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(service()->snippets_fetcher()->last_status(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
@@ -521,8 +509,7 @@ TEST_F(NTPSnippetsServiceTest, Dismiss) {
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The snippet should stay dismissed even after re-creating the service.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
-  CreateSnippetsService(/*enabled=*/true);
+  RecreateSnippetsService();
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
@@ -836,8 +823,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
   // Recreating the service and loading from prefs shouldn't count as fetched
   // articles.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
-  CreateSnippetsService(/*enabled=*/true);
+  RecreateSnippetsService();
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
 }
 
@@ -871,13 +857,10 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
 }
 
 TEST_F(NTPSnippetsServiceTest, StatusChanges) {
-  MockServiceObserver mock_observer;
-  service()->AddObserver(&mock_observer);
-
   // Simulate user signed out
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  EXPECT_CALL(mock_observer, NTPSnippetsServiceDisabledReasonChanged(
-                                 DisabledReason::SIGNED_OUT));
+  EXPECT_CALL(observer(),
+              OnCategoryStatusChanged(_, _, CategoryStatus::SIGNED_OUT));
   service()->OnDisabledReasonChanged(DisabledReason::SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
@@ -885,15 +868,15 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
 
   // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  EXPECT_CALL(mock_observer,
-              NTPSnippetsServiceDisabledReasonChanged(DisabledReason::NONE));
+  EXPECT_CALL(observer(),
+              OnCategoryStatusChanged(_, _, CategoryStatus::AVAILABLE_LOADING));
   EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
   service()->OnDisabledReasonChanged(DisabledReason::NONE);
+  EXPECT_CALL(observer(),
+              OnCategoryStatusChanged(_, _, CategoryStatus::AVAILABLE));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
   EXPECT_FALSE(service()->snippets().empty());
-
-  service()->RemoveObserver(&mock_observer);
 }
 
 }  // namespace ntp_snippets

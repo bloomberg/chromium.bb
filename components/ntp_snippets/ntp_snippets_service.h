@@ -15,10 +15,8 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
@@ -66,18 +64,17 @@ class NTPSnippetsServiceObserver;
 // provides them as content suggestions.
 // TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
 // a subdirectory.
-class NTPSnippetsService : public KeyedService,
-                           public image_fetcher::ImageFetcherDelegate,
+class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
                            public ContentSuggestionsProvider {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
   // (British English person in the US) are not language codes.
-  NTPSnippetsService(bool enabled,
+  NTPSnippetsService(Observer* observer,
+                     CategoryFactory* category_factory,
                      PrefService* pref_service,
                      suggestions::SuggestionsService* suggestions_service,
-                     CategoryFactory* category_factory,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -89,9 +86,6 @@ class NTPSnippetsService : public KeyedService,
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // Inherited from KeyedService.
-  void Shutdown() override;
 
   // Returns whether the service is ready. While this is false, the list of
   // snippets will be empty, and all modifications to it (fetch, dismiss, etc)
@@ -142,7 +136,6 @@ class NTPSnippetsService : public KeyedService,
   // TODO(pke): At some point reorder the implementations in the .cc file
   // accordingly.
   std::vector<Category> GetProvidedCategories() override;
-  void SetObserver(Observer* observer) override;
   CategoryStatus GetCategoryStatus(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
@@ -153,10 +146,6 @@ class NTPSnippetsService : public KeyedService,
   // Returns the lists of suggestion hosts the snippets are restricted to.
   std::set<std::string> GetSuggestionsHosts() const;
 
-  // Observer accessors.
-  void AddObserver(NTPSnippetsServiceObserver* observer);
-  void RemoveObserver(NTPSnippetsServiceObserver* observer);
-
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();
 
@@ -164,43 +153,41 @@ class NTPSnippetsService : public KeyedService,
   friend class NTPSnippetsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
 
-  // TODO(pke): As soon as the DisabledReason is replaced with the new status,
-  // also remove the old State enum and replace it with CategoryStatus and a
-  // similar status diagram.
   // Possible state transitions:
-  //  +------- NOT_INITED ------+
-  //  |        /       \        |
-  //  |   READY <--> DISABLED <-+
-  //  |       \        /
-  //  +-----> SHUT_DOWN
+  //       NOT_INITED --------+
+  //       /       \          |
+  //      v         v         |
+  //   READY <--> DISABLED    |
+  //       \       /          |
+  //        v     v           |
+  //     ERROR_OCCURRED <-----+
   enum class State {
     // The service has just been created. Can change to states:
-    // - DISABLED: if the constructor was called with |enabled == false| . In
-    //             that case the service will stay disabled until it is shut
-    //             down. It can also enter this state after the database is
-    //             done loading and GetStateForDependenciesStatus identifies
-    //             the next state to be DISABLED.
+    // - DISABLED: After the database is done loading,
+    //             GetStateForDependenciesStatus can identify the next state to
+    //             be DISABLED.
     // - READY: if GetStateForDependenciesStatus returns it, after the database
     //          is done loading.
+    // - ERROR_OCCURRED: when an unrecoverable error occurred.
     NOT_INITED,
 
     // The service registered observers, timers, etc. and is ready to answer to
     // queries, fetch snippets... Can change to states:
     // - DISABLED: when the global Chrome state changes, for example after
     //             |OnStateChanged| is called and sync is disabled.
-    // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
+    // - ERROR_OCCURRED: when an unrecoverable error occurred.
     READY,
 
     // The service is disabled and unregistered the related resources.
     // Can change to states:
     // - READY: when the global Chrome state changes, for example after
     //          |OnStateChanged| is called and sync is enabled.
-    // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
+    // - ERROR_OCCURRED: when an unrecoverable error occurred.
     DISABLED,
 
-    // The service shutdown and can't be used anymore. This state is checked
-    // for early exit in callbacks from observers.
-    SHUT_DOWN
+    // The service or one of its dependencies encountered an unrecoverable error
+    // and the service can't be used anymore.
+    ERROR_OCCURRED
   };
 
   // image_fetcher::ImageFetcherDelegate implementation.
@@ -259,9 +246,9 @@ class NTPSnippetsService : public KeyedService,
   // Disables the service. Do not call directly, use |EnterState| instead.
   void EnterStateDisabled();
 
-  // Applies the effects of the transition to the SHUT_DOWN state. Do not call
-  // directly, use |EnterState| instead.
-  void EnterStateShutdown();
+  // Disables the service permanently because an unrecoverable error occurred.
+  // Do not call directly, use |EnterState| instead.
+  void EnterStateError();
 
   // Converts the cached snippets to article content suggestions and notifies
   // the observers.
@@ -288,13 +275,6 @@ class NTPSnippetsService : public KeyedService,
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
-
-  // The observers.
-  // TODO(pke): This is an old kind of observers that will be removed.
-  base::ObserverList<NTPSnippetsServiceObserver> observers_;
-
-  // The observer to deliver data to.
-  Observer* observer_;
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
@@ -328,25 +308,6 @@ class NTPSnippetsService : public KeyedService,
   const Category provided_category_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
-};
-
-// TODO(pke): Remove this when snippets internals don't access this service
-// directly anymore.
-class NTPSnippetsServiceObserver {
- public:
-  // Sent every time the service loads a new set of data.
-  virtual void NTPSnippetsServiceLoaded() = 0;
-
-  // Sent when the service is shutting down.
-  virtual void NTPSnippetsServiceShutdown() = 0;
-
-  // Sent when the state of the service is changing. Something changed in its
-  // dependencies so it's notifying observers about incoming data changes.
-  // If the service might be enabled, DisabledReason::NONE will be provided.
-  virtual void NTPSnippetsServiceDisabledReasonChanged(DisabledReason) = 0;
-
- protected:
-  virtual ~NTPSnippetsServiceObserver() {}
 };
 
 }  // namespace ntp_snippets

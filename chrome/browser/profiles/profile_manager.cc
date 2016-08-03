@@ -107,9 +107,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/ntp/offline_page_suggestions_provider_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1229,8 +1227,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 #if defined(OS_ANDROID)
   // Service is responsible for fetching content snippets for the NTP.
   ContentSuggestionsServiceFactory::GetForProfile(profile);
-  NTPSnippetsServiceFactory::GetForProfile(profile);
-  OfflinePageSuggestionsProviderFactory::GetForProfile(profile);
 #endif
 }
 

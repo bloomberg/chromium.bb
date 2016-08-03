@@ -21,23 +21,20 @@ const int kMaxSuggestionsCount = 5;
 }  // namespace
 
 OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
+    ContentSuggestionsProvider::Observer* observer,
     CategoryFactory* category_factory,
     OfflinePageModel* offline_page_model)
-    : ContentSuggestionsProvider(category_factory),
+    : ContentSuggestionsProvider(observer, category_factory),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
-      observer_(nullptr),
       offline_page_model_(offline_page_model),
       provided_category_(
           category_factory->FromKnownCategory(KnownCategories::OFFLINE_PAGES)) {
   offline_page_model_->AddObserver(this);
+  FetchOfflinePages();
 }
 
-OfflinePageSuggestionsProvider::~OfflinePageSuggestionsProvider() {}
-
-// Inherited from KeyedService.
-void OfflinePageSuggestionsProvider::Shutdown() {
+OfflinePageSuggestionsProvider::~OfflinePageSuggestionsProvider() {
   offline_page_model_->RemoveObserver(this);
-  category_status_ = CategoryStatus::NOT_PROVIDED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,13 +42,6 @@ void OfflinePageSuggestionsProvider::Shutdown() {
 
 std::vector<Category> OfflinePageSuggestionsProvider::GetProvidedCategories() {
   return std::vector<Category>({provided_category_});
-}
-
-void OfflinePageSuggestionsProvider::SetObserver(
-    ContentSuggestionsProvider::Observer* observer) {
-  observer_ = observer;
-  if (observer)
-    FetchOfflinePages();
 }
 
 CategoryStatus OfflinePageSuggestionsProvider::GetCategoryStatus(
@@ -105,8 +95,6 @@ void OfflinePageSuggestionsProvider::FetchOfflinePages() {
 void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     const MultipleOfflinePageItemResult& result) {
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
-  if (!observer_)
-    return;
 
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem& item : result) {
@@ -129,7 +117,8 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
       break;
   }
 
-  observer_->OnNewSuggestions(this, provided_category_, std::move(suggestions));
+  observer()->OnNewSuggestions(this, provided_category_,
+                               std::move(suggestions));
 }
 
 void OfflinePageSuggestionsProvider::NotifyStatusChanged(
@@ -138,9 +127,7 @@ void OfflinePageSuggestionsProvider::NotifyStatusChanged(
     return;
   category_status_ = new_status;
 
-  if (!observer_)
-    return;
-  observer_->OnCategoryStatusChanged(this, provided_category_, new_status);
+  observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
 }
 
 }  // namespace ntp_snippets

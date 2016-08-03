@@ -185,10 +185,10 @@ void Compact(NTPSnippet::PtrVector* snippets) {
 }  // namespace
 
 NTPSnippetsService::NTPSnippetsService(
-    bool enabled,
+    Observer* observer,
+    CategoryFactory* category_factory,
     PrefService* pref_service,
     SuggestionsService* suggestions_service,
-    CategoryFactory* category_factory,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -196,13 +196,12 @@ NTPSnippetsService::NTPSnippetsService(
     std::unique_ptr<ImageDecoder> image_decoder,
     std::unique_ptr<NTPSnippetsDatabase> database,
     std::unique_ptr<NTPSnippetsStatusService> status_service)
-    : ContentSuggestionsProvider(category_factory),
+    : ContentSuggestionsProvider(observer, category_factory),
       state_(State::NOT_INITED),
       category_status_(CategoryStatus::INITIALIZING),
       pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       application_language_code_(application_language_code),
-      observer_(nullptr),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
@@ -212,21 +211,14 @@ NTPSnippetsService::NTPSnippetsService(
       fetch_after_load_(false),
       provided_category_(
           category_factory->FromKnownCategory(KnownCategories::ARTICLES)) {
-  // In some cases, don't even bother loading the database.
-  if (!enabled) {
-    EnterState(State::SHUT_DOWN, CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
-    return;
-  }
   if (database_->IsErrorState()) {
-    EnterState(State::SHUT_DOWN, CategoryStatus::LOADING_ERROR);
+    EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
     return;
   }
 
   database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
                                          base::Unretained(this)));
 
-  // TODO(pke): Move this to SetObserver as soon as the UI reads from the
-  // ContentSuggestionsService directly.
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
   database_->LoadSnippets(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
@@ -234,7 +226,6 @@ NTPSnippetsService::NTPSnippetsService(
 }
 
 NTPSnippetsService::~NTPSnippetsService() {
-  DCHECK(state_ == State::SHUT_DOWN);
 }
 
 // static
@@ -242,11 +233,6 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kSnippetHosts);
 
   NTPSnippetsStatusService::RegisterProfilePrefs(registry);
-}
-
-// Inherited from KeyedService.
-void NTPSnippetsService::Shutdown() {
-  EnterState(State::SHUT_DOWN, CategoryStatus::NOT_PROVIDED);
 }
 
 void NTPSnippetsService::FetchSnippets(bool force_request) {
@@ -355,21 +341,9 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging() {
   dismissed_snippets_.clear();
 }
 
-void NTPSnippetsService::SetObserver(Observer* observer) {
-  observer_ = observer;
-}
-
 CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
   DCHECK(category.IsKnownCategory(KnownCategories::ARTICLES));
   return category_status_;
-}
-
-void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 // static
@@ -399,10 +373,9 @@ void NTPSnippetsService::OnImageDataFetched(const std::string& snippet_id,
 }
 
 void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
-  DCHECK(state_ == State::NOT_INITED || state_ == State::SHUT_DOWN);
-  if (state_ == State::SHUT_DOWN)
+  if (state_ == State::ERROR_OCCURRED)
     return;
-
+  DCHECK(state_ == State::NOT_INITED);
   DCHECK(snippets_.empty());
   DCHECK(dismissed_snippets_.empty());
   for (std::unique_ptr<NTPSnippet>& snippet : snippets) {
@@ -422,7 +395,7 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
 }
 
 void NTPSnippetsService::OnDatabaseError() {
-  EnterState(State::SHUT_DOWN, CategoryStatus::LOADING_ERROR);
+  EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
 }
 
 // TODO(dgn): name clash between content suggestions and suggestions hosts.
@@ -699,14 +672,10 @@ void NTPSnippetsService::EnterStateDisabled() {
   RescheduleFetching();
 }
 
-void NTPSnippetsService::EnterStateShutdown() {
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceShutdown());
-
+void NTPSnippetsService::EnterStateError() {
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();
   RescheduleFetching();
-
   snippets_status_service_.reset();
 }
 
@@ -733,9 +702,6 @@ void NTPSnippetsService::FinishInitialization() {
 
 void NTPSnippetsService::OnDisabledReasonChanged(
     DisabledReason disabled_reason) {
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceDisabledReasonChanged(disabled_reason));
-
   switch (disabled_reason) {
     case DisabledReason::NONE:
       // Do not change the status. That will be done in EnterStateEnabled()
@@ -783,22 +749,15 @@ void NTPSnippetsService::EnterState(State state, CategoryStatus status) {
       EnterStateDisabled();
       return;
 
-    case State::SHUT_DOWN:
-      DVLOG(1) << "Entering state: SHUT_DOWN";
-      state_ = State::SHUT_DOWN;
-      EnterStateShutdown();
+    case State::ERROR_OCCURRED:
+      DVLOG(1) << "Entering state: ERROR_OCCURRED";
+      state_ = State::ERROR_OCCURRED;
+      EnterStateError();
       return;
   }
 }
 
 void NTPSnippetsService::NotifyNewSuggestions() {
-  // TODO(pke): Remove this as soon as this becomes a pure provider.
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
-
-  if (!observer_)
-    return;
-
   std::vector<ContentSuggestion> result;
   for (const std::unique_ptr<NTPSnippet>& snippet : snippets_) {
     if (!snippet->is_complete())
@@ -815,7 +774,7 @@ void NTPSnippetsService::NotifyNewSuggestions() {
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }
-  observer_->OnNewSuggestions(this, provided_category_, std::move(result));
+  observer()->OnNewSuggestions(this, provided_category_, std::move(result));
 }
 
 void NTPSnippetsService::UpdateCategoryStatus(CategoryStatus status) {
@@ -823,10 +782,8 @@ void NTPSnippetsService::UpdateCategoryStatus(CategoryStatus status) {
     return;
 
   category_status_ = status;
-  if (observer_) {
-    observer_->OnCategoryStatusChanged(this, provided_category_,
-                                       category_status_);
-  }
+  observer()->OnCategoryStatusChanged(this, provided_category_,
+                                      category_status_);
 }
 
 }  // namespace ntp_snippets

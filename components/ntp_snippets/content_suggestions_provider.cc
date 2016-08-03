@@ -18,8 +18,9 @@ const char kSeparator = '|';
 }  // namespace
 
 ContentSuggestionsProvider::ContentSuggestionsProvider(
+    Observer* observer,
     CategoryFactory* category_factory)
-    : category_factory_(category_factory) {}
+    : observer_(observer), category_factory_(category_factory) {}
 
 ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 
