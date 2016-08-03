@@ -14,7 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 // These values are used for a histogram. Do not reorder.
@@ -91,23 +91,28 @@ class UpdateCheckDelegate {
 // available and |install_update_if_possible| is true, the new version will be
 // automatically downloaded and installed. |elevation_window| is the window
 // which should own any necessary elevation UI. Methods on |delegate| will be
-// invoked on the caller's thread to provide feedback on the operation, with
-// messages localized to |locale| if possible.
-void BeginUpdateCheck(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const std::string& locale,
-    bool install_update_if_possible,
-    gfx::AcceleratedWidget elevation_window,
-    const base::WeakPtr<UpdateCheckDelegate>& delegate);
+// invoked on the caller's task runner to provide feedback on the operation,
+// with messages localized to |locale| if possible.
+void BeginUpdateCheck(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                      const std::string& locale,
+                      bool install_update_if_possible,
+                      gfx::AcceleratedWidget elevation_window,
+                      const base::WeakPtr<UpdateCheckDelegate>& delegate);
+
+// A type of callback supplied by tests to provide a custom
+// IGlobalInterfaceTable implementation.
+using GlobalInterfaceTableClassFactory =
+    base::Callback<HRESULT(base::win::ScopedComPtr<IGlobalInterfaceTable>*)>;
 
 // A type of callback supplied by tests to provide a custom IGoogleUpdate3Web
 // implementation (see src/google_update/google_update_idl.idl).
-typedef base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*)>
-    GoogleUpdate3ClassFactory;
+using GoogleUpdate3ClassFactory =
+    base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*)>;
 
-// For use by tests that wish to provide a custom IGoogleUpdate3Web
-// implementation independent of Google Update's.
-void SetGoogleUpdateFactoryForTesting(
+// For use by tests that wish to provide custom IGlobalInterfaceTable and
+// IGoogleUpdate3Web implementations.
+void SetUpdateCheckFactoriesForTesting(
+    const GlobalInterfaceTableClassFactory& git_factory,
     const GoogleUpdate3ClassFactory& google_update_factory);
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
