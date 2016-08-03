@@ -151,9 +151,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
 
-  // Returns false if drawing is not possible for any reason.
+  // If any of the following functions returns false, then it means that drawing
+  // is not possible.
   bool InitializeRPDQParameters(DrawRenderPassDrawQuadParams* params);
-
+  void UpdateRPDQShadersForBlending(DrawRenderPassDrawQuadParams* params);
+  bool UpdateRPDQWithSkiaFilters(DrawRenderPassDrawQuadParams* params);
+  void UpdateRPDQTexturesForSampling(DrawRenderPassDrawQuadParams* params);
+  void UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params);
   void ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params);
   void UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params);
   void DrawRPDQ(const DrawRenderPassDrawQuadParams& params);

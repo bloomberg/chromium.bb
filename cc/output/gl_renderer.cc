@@ -211,6 +211,7 @@ struct DrawRenderPassDrawQuadParams {
   bool use_color_matrix = false;
 
   gfx::QuadF surface_quad;
+  gfx::Transform contents_device_transform;
 };
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
@@ -1066,6 +1067,11 @@ void GLRenderer::DrawRenderPassQuadInternal(
     DrawRenderPassDrawQuadParams* params) {
   if (!InitializeRPDQParameters(params))
     return;
+  UpdateRPDQShadersForBlending(params);
+  if (!UpdateRPDQWithSkiaFilters(params))
+    return;
+  UpdateRPDQTexturesForSampling(params);
+  UpdateRPDQBlendMode(params);
   ChooseRPDQProgram(params);
   UpdateRPDQUniforms(params);
   DrawRPDQ(*params);
@@ -1085,13 +1091,13 @@ bool GLRenderer::InitializeRPDQParameters(
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
                     params->dst_rect);
-  gfx::Transform contents_device_transform = params->frame->window_matrix *
-                                             params->frame->projection_matrix *
-                                             quad_rect_matrix;
-  contents_device_transform.FlattenTo2d();
+  params->contents_device_transform = params->frame->window_matrix *
+                                      params->frame->projection_matrix *
+                                      quad_rect_matrix;
+  params->contents_device_transform.FlattenTo2d();
 
   // Can only draw surface if device matrix is invertible.
-  if (!contents_device_transform.IsInvertible())
+  if (!params->contents_device_transform.IsInvertible())
     return false;
 
   params->surface_quad = SharedGeometryQuad();
@@ -1099,7 +1105,7 @@ bool GLRenderer::InitializeRPDQParameters(
   gfx::QuadF device_layer_quad;
   if (settings_->allow_antialiasing) {
     bool clipped = false;
-    device_layer_quad = MathUtil::MapQuad(contents_device_transform,
+    device_layer_quad = MathUtil::MapQuad(params->contents_device_transform,
                                           params->surface_quad, &clipped);
     params->use_aa = ShouldAntialiasQuad(device_layer_quad, clipped,
                                          settings_->force_antialiasing);
@@ -1107,8 +1113,15 @@ bool GLRenderer::InitializeRPDQParameters(
 
   const gfx::QuadF* aa_quad = params->use_aa ? &device_layer_quad : nullptr;
   SetupRenderPassQuadForClippingAndAntialiasing(
-      contents_device_transform, quad, aa_quad, params->clip_region,
+      params->contents_device_transform, quad, aa_quad, params->clip_region,
       &params->surface_quad, params->edge);
+
+  return true;
+}
+
+void GLRenderer::UpdateRPDQShadersForBlending(
+    DrawRenderPassDrawQuadParams* params) {
+  const RenderPassDrawQuad* quad = params->quad;
   SkXfermode::Mode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
@@ -1119,8 +1132,8 @@ bool GLRenderer::InitializeRPDQParameters(
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
-        params->frame, quad, contents_device_transform, params->clip_region,
-        params->use_aa);
+        params->frame, quad, params->contents_device_transform,
+        params->clip_region, params->use_aa);
 
     if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
@@ -1170,10 +1183,13 @@ bool GLRenderer::InitializeRPDQParameters(
       params->background_texture &&   // Have original background texture
       params->background_image_id &&  // Have filtered background texture
       quad->mask_resource_id();       // Have mask texture
-  SetBlendEnabled(
-      !params->use_shaders_for_blending &&
-      (quad->ShouldDrawWithBlending() || !IsDefaultBlendMode(blend_mode)));
+  DCHECK_EQ(params->background_texture || params->background_image_id,
+            params->use_shaders_for_blending);
+}
 
+bool GLRenderer::UpdateRPDQWithSkiaFilters(
+    DrawRenderPassDrawQuadParams* params) {
+  const RenderPassDrawQuad* quad = params->quad;
   // TODO(senorblanco): Cache this value so that we don't have to do it for both
   // the surface and its replica.  Apply filters to the contents texture.
   if (!quad->filters.IsEmpty()) {
@@ -1222,10 +1238,15 @@ bool GLRenderer::InitializeRPDQParameters(
       }
     }
   }
+  return true;
+}
 
-  if (quad->mask_resource_id()) {
+void GLRenderer::UpdateRPDQTexturesForSampling(
+    DrawRenderPassDrawQuadParams* params) {
+  if (params->quad->mask_resource_id()) {
     params->mask_resource_lock.reset(new ResourceProvider::ScopedSamplerGL(
-        resource_provider_, quad->mask_resource_id(), GL_TEXTURE1, GL_LINEAR));
+        resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
+        GL_LINEAR));
   }
 
   if (params->filter_image) {
@@ -1248,17 +1269,19 @@ bool GLRenderer::InitializeRPDQParameters(
               params->contents_resource_lock->target());
     params->source_needs_flip = params->flip_texture;
   }
+}
 
+void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
+  SkXfermode::Mode blend_mode = params->quad->shared_quad_state->blend_mode;
+  SetBlendEnabled(!params->use_shaders_for_blending &&
+                  (params->quad->ShouldDrawWithBlending() ||
+                   !IsDefaultBlendMode(blend_mode)));
   if (!params->use_shaders_for_blending) {
     if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
       gl_->BlendBarrierKHR();
 
     ApplyBlendModeUsingBlendFunc(blend_mode);
   }
-
-  DCHECK_EQ(params->background_texture || params->background_image_id,
-            params->use_shaders_for_blending);
-  return true;
 }
 
 void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
