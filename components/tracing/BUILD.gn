@@ -70,24 +70,6 @@ proto_library("proto_zero_testing_messages") {
   generator_plugin_suffix = ".pbzero"
   generate_cc = false
   generate_python = false
-
-  # TODO(kraynov) Move away this complex path evaluation and dependency
-  # injection to proto_library.gni. All lines below should be removed.
-  # The problem is that root_out_dir and root_build_dir may differ in case of
-  # cross compilation. Also .exe will be appended on Windows.
-
-  plugin_host_label = generator_plugin_label + "($host_toolchain)"
-  generator_plugin =
-      rebase_path(get_label_info(plugin_host_label, "root_out_dir") + "/" +
-                      get_label_info(plugin_host_label, "name"),
-                  root_build_dir)
-  if (is_win) {
-    generator_plugin += ".exe"
-  }
-
-  deps = [
-    plugin_host_label,
-  ]
 }
 
 source_set("unit_tests") {
