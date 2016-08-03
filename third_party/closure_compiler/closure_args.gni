@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 # GYP version: third_party/closure_compiler/closure_args.gypi
-default_closure_args = [
-  "compilation_level=SIMPLE_OPTIMIZATIONS",
 
+# Args for all uses of the closure compiler
+common_closure_args = [
   "extra_annotation_name=attribute",
   "extra_annotation_name=demo",
   "extra_annotation_name=element",
@@ -14,6 +14,13 @@ default_closure_args = [
   "extra_annotation_name=homepage",
   "extra_annotation_name=status",
   "extra_annotation_name=submodule",
+
+  "source_map_format=V3",
+]
+
+# Additional closure args for performing full checks.
+checking_closure_args = [
+  "compilation_level=SIMPLE_OPTIMIZATIONS",
 
   "jscomp_error=accessControls",
   "jscomp_error=ambiguousFunctionDecl",
@@ -38,9 +45,18 @@ default_closure_args = [
   "language_out=ECMASCRIPT5_STRICT",
 
   "polymer_pass",
-
-  "source_map_format=V3",
 ]
+
+# Additional closure arguments for minifying
+minifying_closure_args = [
+  "compilation_level=WHITESPACE_ONLY",
+
+  "language_in=ECMASCRIPT6",
+  "language_out=ECMASCRIPT6",
+]
+
+# For compatibility with old uses.
+default_closure_args = common_closure_args + checking_closure_args
 
 default_disabled_closure_args = [
   "jscomp_off=duplicate",

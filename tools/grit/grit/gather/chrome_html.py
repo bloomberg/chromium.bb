@@ -349,6 +349,7 @@ class ChromeHtml(interface.GathererBase):
           filename,
           self.grd_node,
           allow_external_script = self.allow_external_script_,
+          strip_whitespace=True,
           preprocess_only = self.preprocess_only_,
           rewrite_function=lambda fp, t, d: ProcessImageSets(
               fp, t, self.scale_factors_, d,

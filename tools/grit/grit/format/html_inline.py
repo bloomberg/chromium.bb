@@ -18,6 +18,7 @@ import mimetypes
 
 from grit import lazy_re
 from grit import util
+from grit.format import minifier
 
 # There is a python bug that makes mimetypes crash if the Windows
 # registry contains non-Latin keys ( http://bugs.python.org/issue9291
@@ -129,8 +130,8 @@ class InlinedData:
 
 def DoInline(
     input_filename, grd_node, allow_external_script=False,
-    preprocess_only=False, names_only=False, rewrite_function=None,
-    filename_expansion_function=None):
+    preprocess_only=False, names_only=False, strip_whitespace=False,
+    rewrite_function=None, filename_expansion_function=None):
   """Helper function that inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
@@ -142,6 +143,7 @@ def DoInline(
     grd_node: html node from the grd file for this include tag
     preprocess_only: Skip all HTML processing, only handle <if> and <include>.
     names_only: |nil| will be returned for the inlined contents (faster).
+    strip_whitespace: remove whitespace and comments in the input files.
     rewrite_function: function(filepath, text, distribution) which will be
         called to rewrite html content before inlining images.
     filename_expansion_function: function(filename) which will be called to
@@ -220,7 +222,10 @@ def DoInline(
       else:
         str = leading + trailing
 
-  def InlineFileContents(src_match, pattern, inlined_files=inlined_files):
+  def InlineFileContents(src_match,
+                         pattern,
+                         inlined_files=inlined_files,
+                         strip_whitespace=False):
     """Helper function to inline external files of various types"""
     filepath = GetFilepath(src_match)
     if filepath is None:
@@ -237,6 +242,7 @@ def DoInline(
 
     return pattern % InlineToString(
         filepath, grd_node, allow_external_script=allow_external_script,
+        strip_whitespace=strip_whitespace,
         filename_expansion_function=filename_expansion_function)
 
   def InlineIncludeFiles(src_match):
@@ -249,8 +255,9 @@ def DoInline(
     """Helper function to inline external script files"""
     attrs = (match.group('attrs1') + match.group('attrs2')).strip()
     if attrs:
-       attrs = ' ' + attrs
-    return InlineFileContents(match, '<script' + attrs + '>%s</script>')
+      attrs = ' ' + attrs
+    return InlineFileContents(match, '<script' + attrs + '>%s</script>',
+                              strip_whitespace=True)
 
   def InlineCSSText(text, css_filepath):
     """Helper function that inlines external resources in CSS text"""
@@ -321,7 +328,13 @@ def DoInline(
   # going to throw out anyway.
   flat_text = CheckConditionalElements(flat_text)
 
+  flat_text = _INCLUDE_RE.sub(InlineIncludeFiles, flat_text)
+
   if not preprocess_only:
+    if strip_whitespace:
+      flat_text = minifier.Minify(flat_text,
+                                  os.path.splitext(input_filename)[1])
+
     if not allow_external_script:
       # We need to inline css and js before we inline images so that image
       # references gets inlined in the css and js
@@ -333,8 +346,6 @@ def DoInline(
     flat_text = _STYLESHEET_RE.sub(
         lambda m: InlineCSSFile(m, '<style>%s</style>'),
         flat_text)
-
-  flat_text = _INCLUDE_RE.sub(InlineIncludeFiles, flat_text)
 
   # Check conditional elements, second pass. This catches conditionals in any
   # of the text we just inlined.
@@ -357,8 +368,8 @@ def DoInline(
 
 
 def InlineToString(input_filename, grd_node, preprocess_only = False,
-                   allow_external_script=False, rewrite_function=None,
-                   filename_expansion_function=None):
+                   allow_external_script=False, strip_whitespace=False,
+                   rewrite_function=None, filename_expansion_function=None):
   """Inlines the resources in a specified file and returns it as a string.
 
   Args:
@@ -373,6 +384,7 @@ def InlineToString(input_filename, grd_node, preprocess_only = False,
         grd_node,
         preprocess_only=preprocess_only,
         allow_external_script=allow_external_script,
+        strip_whitespace=strip_whitespace,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_data
   except IOError, e:
@@ -411,6 +423,7 @@ def GetResourceFilenames(filename,
         names_only=True,
         preprocess_only=False,
         allow_external_script=allow_external_script,
+        strip_whitespace=False,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_files
   except IOError, e:

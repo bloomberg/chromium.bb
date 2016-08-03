@@ -15,6 +15,7 @@ import grit.format.gzip_string
 import grit.format.html_inline
 import grit.format.rc
 import grit.format.rc_header
+from grit.format import minifier
 from grit.node import base
 
 class IncludeNode(base.Node):
@@ -89,13 +90,15 @@ class IncludeNode(base.Node):
     from grit.format import rc_header
     id_map = rc_header.GetIds(self.GetRoot())
     id = id_map[self.GetTextualIds()[0]]
+    filename = self.ToRealPath(self.GetInputPath())
     if self.attrs['flattenhtml'] == 'true':
       allow_external_script = self.attrs['allowexternalscript'] == 'true'
       data = self._GetFlattenedData(allow_external_script=allow_external_script)
     else:
-      filename = self.ToRealPath(self.GetInputPath())
       data = util.ReadFile(filename, util.BINARY)
-
+    # Note that the minifier will only do anything if a minifier command
+    # has been set in the command line.
+    data = minifier.Minify(data, os.path.splitext(filename)[1])
     if 'compress' in self.attrs and self.attrs['compress'] == 'gzip':
       # We only use rsyncable compression on Linux.
       # We exclude ChromeOS since ChromeOS bots are Linux based but do not have

@@ -17,6 +17,7 @@ import sys
 from grit import grd_reader
 from grit import shortcuts
 from grit import util
+from grit.format import minifier
 from grit.node import include
 from grit.node import message
 from grit.node import structure
@@ -126,6 +127,12 @@ Options:
                     generated will depend on a stampfile instead of the first
                     output in the input .grd file.
 
+  --js-minifier     A command to run the Javascript minifier. If not set then
+                    Javascript won't be minified. The command should read the
+                    original Javascript from standard input, and output the
+                    minified Javascript to standard output. A non-zero exit
+                    status will be taken as indicating failure.
+
 Conditional inclusion of resources only affects the output of files which
 control which resources get linked into a binary, e.g. it affects .rc files
 meant for compilation but it does not affect resource header files (that define
@@ -148,6 +155,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     output_all_resource_defines = None
     write_only_new = False
     depend_on_stamp = False
+    js_minifier = None
     replace_ellipsis = True
     (own_opts, args) = getopt.getopt(args, 'a:o:D:E:f:w:t:h:',
         ('depdir=','depfile=','assert-file-list=',
@@ -155,6 +163,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
          'no-output-all-resource-defines',
          'no-replace-ellipsis',
          'depend-on-stamp',
+         'js-minifier=',
          'write-only-new='))
     for (key, val) in own_opts:
       if key == '-a':
@@ -195,6 +204,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
         write_only_new = val != '0'
       elif key == '--depend-on-stamp':
         depend_on_stamp = True
+      elif key == '--js-minifier':
+        js_minifier = val
 
     if len(args):
       print 'This tool takes no tool-specific arguments.'
@@ -213,6 +224,9 @@ are exported to translation interchange files (e.g. XMB files), etc.
         self.VerboseOut('Using whitelist: %s\n' % whitelist_filename);
         whitelist_contents = util.ReadFile(whitelist_filename, util.RAW_TEXT)
         self.whitelist_names.update(whitelist_contents.strip().split('\n'))
+
+    if js_minifier:
+      minifier.SetJsMinifier(js_minifier)
 
     self.write_only_new = write_only_new
 

@@ -225,7 +225,7 @@ class Checker(object):
     self._log_debug("Dependencies: %s" % deps)
     self._log_debug("Target: %s" % self._target)
 
-    js_args = deps + [self._target] if self._target else []
+    js_args = deps + ([self._target] if self._target else [])
 
     if not custom_sources:
       # TODO(dbeam): compiler.jar automatically detects "@externs" in a --js arg
@@ -272,7 +272,8 @@ class Checker(object):
     errors = stderr.strip().split("\n\n")
     maybe_summary = errors.pop()
 
-    if re.search(".*error.*warning.*typed", maybe_summary):
+    summary = re.search("(?P<error_count>\d+).*error.*warning", maybe_summary)
+    if summary:
       self._log_debug("Summary: %s" % maybe_summary)
     else:
       # Not a summary. Running the jar failed. Bail.
@@ -280,7 +281,7 @@ class Checker(object):
       self._nuke_temp_files()
       sys.exit(1)
 
-    if errors and out_file:
+    if summary.group('error_count') != "0" and out_file:
       if os.path.exists(out_file):
         os.remove(out_file)
       if os.path.exists(self._MAP_FILE_FORMAT % out_file):
