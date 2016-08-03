@@ -2,29 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/lazy_instance.h"
 #include "net/ssl/ssl_platform_key_task_runner.h"
+
+#include "base/lazy_instance.h"
 
 namespace net {
 
-SSLPlatformKeyTaskRunner::SSLPlatformKeyTaskRunner() {
-  worker_pool_ = new base::SequencedWorkerPool(1, "Platform Key Thread");
-  task_runner_ = worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
-      worker_pool_->GetSequenceToken(),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+SSLPlatformKeyTaskRunner::SSLPlatformKeyTaskRunner()
+    : worker_thread_("Platform Key Thread") {
+  base::Thread::Options options;
+  options.joinable = false;
+  worker_thread_.StartWithOptions(options);
 }
 
-SSLPlatformKeyTaskRunner::~SSLPlatformKeyTaskRunner() {}
+SSLPlatformKeyTaskRunner::~SSLPlatformKeyTaskRunner() = default;
 
-scoped_refptr<base::SequencedTaskRunner>
+scoped_refptr<base::SingleThreadTaskRunner>
 SSLPlatformKeyTaskRunner::task_runner() {
-  return task_runner_;
+  return worker_thread_.task_runner();
 }
 
 base::LazyInstance<SSLPlatformKeyTaskRunner>::Leaky g_platform_key_task_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-scoped_refptr<base::SequencedTaskRunner> GetSSLPlatformKeyTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> GetSSLPlatformKeyTaskRunner() {
   return g_platform_key_task_runner.Get().task_runner();
 }
 

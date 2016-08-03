@@ -18,7 +18,7 @@
 #include "net/ssl/ssl_private_key.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -52,8 +52,9 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  ThreadedSSLPrivateKey(std::unique_ptr<Delegate> delegate,
-                        scoped_refptr<base::TaskRunner> task_runner);
+  ThreadedSSLPrivateKey(
+      std::unique_ptr<Delegate> delegate,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // SSLPrivateKey implementation.
   Type GetType() override;
@@ -68,7 +69,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
   class Core;
 
   scoped_refptr<Core> core_;
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<ThreadedSSLPrivateKey> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadedSSLPrivateKey);

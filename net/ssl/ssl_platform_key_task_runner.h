@@ -6,27 +6,32 @@
 #define NET_SSL_SSL_PLATFORM_KEY_TASK_RUNNER_H_
 
 #include "base/macros.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/memory/ref_counted.h"
+#include "base/threading/thread.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace net {
 
-// Serialize all the private key operations on a single background
-// thread to avoid problems with buggy smartcards.
+// Serialize all the private key operations on a single background thread to
+// avoid problems with buggy smartcards. Its underlying Thread is non-joinable
+// and as such provides TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN semantics.
 class SSLPlatformKeyTaskRunner {
  public:
   SSLPlatformKeyTaskRunner();
   ~SSLPlatformKeyTaskRunner();
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner();
 
  private:
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::Thread worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyTaskRunner);
 };
 
-scoped_refptr<base::SequencedTaskRunner> GetSSLPlatformKeyTaskRunner();
+scoped_refptr<base::SingleThreadTaskRunner> GetSSLPlatformKeyTaskRunner();
 
 }  // namespace net
 
