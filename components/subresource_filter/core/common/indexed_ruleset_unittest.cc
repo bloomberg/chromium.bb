@@ -44,7 +44,18 @@ class IndexedRulesetTest : public testing::Test {
       proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER) const {
     DCHECK_NE(matcher_.get(), nullptr);
     url::Origin origin = GetOrigin(initiator);
-    return matcher_->IsAllowed(GURL(url), origin, element_type);
+    return !matcher_->ShouldDisallowResourceLoad(GURL(url), origin,
+                                                 element_type);
+  }
+
+  bool ShouldDeactivate(const char* document_url,
+                        const char* initiator = nullptr,
+                        proto::ActivationType activation_type =
+                            proto::ACTIVATION_TYPE_UNSPECIFIED) const {
+    DCHECK(matcher_);
+    url::Origin origin = GetOrigin(initiator);
+    return matcher_->ShouldDisableFilteringForDocument(GURL(document_url),
+                                                       origin, activation_type);
   }
 
   proto::UrlRule CreateRule(const UrlPattern& url_pattern,
@@ -79,6 +90,14 @@ class IndexedRulesetTest : public testing::Test {
                                         int32_t element_types) {
     proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, false);
     rule.set_element_types(element_types);
+    indexer_.AddUrlRule(rule);
+  }
+
+  void AddWhitelistRuleWithActivationTypes(const UrlPattern& url_pattern,
+                                           int32_t activation_types) {
+    proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, true);
+    rule.set_element_types(proto::ELEMENT_TYPE_UNSPECIFIED);
+    rule.set_activation_types(activation_types);
     indexer_.AddUrlRule(rule);
   }
 
@@ -472,6 +491,55 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
   }
 }
 
+TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
+  constexpr proto::ActivationType kNone = proto::ACTIVATION_TYPE_UNSPECIFIED;
+  constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
+
+  const struct {
+    const char* url_pattern;
+    int32_t activation_types;
+
+    const char* document_url;
+    proto::ActivationType activation_type;
+    bool expect_disabled;
+  } kTestCases[] = {
+      {"example.com", kDocument, "http://example.com", kDocument, true},
+      {"xample.com", kDocument, "http://example.com", kDocument, true},
+      {"exampl.com", kDocument, "http://example.com", kDocument, false},
+
+      {"example.com", kNone, "http://example.com", kDocument, false},
+      {"example.com", kDocument, "http://example.com", kNone, false},
+      {"example.com", kNone, "http://example.com", kNone, false},
+
+      // Invalid GURL.
+      {"example.com", kDocument, "http;//example.com", kDocument, false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "Rule: " << test_case.url_pattern
+                 << "; ActivationTypes: " << (int)test_case.activation_types
+                 << "; DocURL: " << test_case.document_url
+                 << "; ActivationType: " << (int)test_case.activation_type);
+
+    AddWhitelistRuleWithActivationTypes(
+        UrlPattern(test_case.url_pattern, kSubstring),
+        test_case.activation_types);
+    Finish();
+
+    EXPECT_EQ(test_case.expect_disabled,
+              ShouldDeactivate(test_case.document_url, nullptr /* initiator */,
+                               test_case.activation_type));
+    EXPECT_EQ(test_case.expect_disabled,
+              ShouldDeactivate(test_case.document_url, "http://example.com/",
+                               test_case.activation_type));
+    EXPECT_EQ(test_case.expect_disabled,
+              ShouldDeactivate(test_case.document_url, "http://xmpl.com/",
+                               test_case.activation_type));
+    Reset();
+  }
+}
+
 TEST_F(IndexedRulesetTest, EmptyRuleset) {
   Finish();
   EXPECT_TRUE(ShouldAllow("http://example.com"));
@@ -511,6 +579,20 @@ TEST_F(IndexedRulesetTest, BlacklistWhitelist) {
   EXPECT_TRUE(ShouldAllow("https://whitelisted.com?filter=off"));
   EXPECT_TRUE(ShouldAllow("https://notblacklisted.com"));
   EXPECT_FALSE(ShouldAllow("http://blacklisted.com?filter=on"));
+}
+
+TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
+  const auto kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
+
+  AddSimpleRule(UrlPattern("example.com", kSubstring), false);
+  AddWhitelistRuleWithActivationTypes(UrlPattern("example.com", kSubstring),
+                                      kDocument);
+  Finish();
+
+  EXPECT_TRUE(ShouldDeactivate("https://example.com", nullptr, kDocument));
+  EXPECT_FALSE(ShouldDeactivate("https://xample.com", nullptr, kDocument));
+  EXPECT_FALSE(ShouldAllow("https://example.com"));
+  EXPECT_TRUE(ShouldAllow("https://xample.com"));
 }
 
 }  // namespace subresource_filter

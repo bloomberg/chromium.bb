@@ -16,6 +16,7 @@
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace subresource_filter {
 
@@ -37,13 +38,15 @@ class DocumentSubresourceFilter
   DocumentSubresourceFilter(
       ActivationState activation_state,
       const scoped_refptr<const MemoryMappedRuleset>& ruleset,
-      std::vector<GURL> ancestor_document_urls);
+      const std::vector<GURL>& ancestor_document_urls);
   ~DocumentSubresourceFilter() override;
 
   // blink::WebDocumentSubresourceFilter:
   bool allowLoad(const blink::WebURL& resourceUrl,
                  blink::WebURLRequest::RequestContext) override;
 
+  // The number of subresource loads that went through the allowLoad method.
+  size_t num_loads_total() const { return num_loads_total_; }
   // Statistics on the number of subresource loads that were evaluated, were
   // matched by filtering rules, and were disallowed, respectively, during the
   // lifetime of |this| filter.
@@ -54,12 +57,23 @@ class DocumentSubresourceFilter
  private:
   ActivationState activation_state_;
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
-  IndexedRulesetMatcher matcher_;
-  std::vector<GURL> ancestor_document_urls_;
+  IndexedRulesetMatcher ruleset_matcher_;
+  url::Origin document_origin_;
 
+  size_t num_loads_total_ = 0;
   size_t num_loads_evaluated_ = 0;
   size_t num_loads_matching_rules_ = 0;
   size_t num_loads_disallowed_ = 0;
+
+  // Even when subresource filtering is activated at the page level by the
+  // |activation_state| passed into the constructor, the current document or
+  // ancestors thereof may still match special filtering rules that specifically
+  // disable the application of other types of rules on these documents. See
+  // proto::ActivationType for details.
+  //
+  // Indicates whether the document is subject to a whitelist rule with DOCUMENT
+  // activation type.
+  bool filtering_disabled_for_document_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSubresourceFilter);
 };

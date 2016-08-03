@@ -56750,7 +56750,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whenever a document load is finished in a main frame or subframe with
     subresource filtering activated, records the total number of subresource
-    loads that have been evaluated.
+    loads that have been evaluated. This only differs from 'Total' when the
+    document is subject to a deactivating rule with DOCUMENT activation type.
   </summary>
 </histogram>
 
@@ -56763,6 +56764,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     subresource filtering activated, records the total number of subresource
     loads that have matched filtering rules. This only differs from `Disallowed`
     when filtering is performed in dry-run mode.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total"
+    units="resource loads">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whenever a document load is finished in a main frame or subframe with
+    subresource filtering activated, records the total number of subresource
+    loads that have gone through the subresource filtering pipeline.
   </summary>
 </histogram>
 

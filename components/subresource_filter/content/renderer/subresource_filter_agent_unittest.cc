@@ -244,6 +244,8 @@ TEST_F(SubresourceFilterAgentTest, Disabled_HistogramSamples) {
   histogram_tester.ExpectTotalCount(
       "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0);
   histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 0);
+  histogram_tester.ExpectTotalCount(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
   histogram_tester.ExpectTotalCount(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0);
@@ -260,6 +262,8 @@ TEST_F(SubresourceFilterAgentTest,
       static_cast<int>(ActivationState::ENABLED), 1);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0, 1);
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 0);
   histogram_tester.ExpectTotalCount(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
   histogram_tester.ExpectTotalCount(
@@ -294,6 +298,9 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
       static_cast<int>(ActivationState::ENABLED), 2);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 2);
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total"),
+              ::testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
           "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated"),
@@ -329,6 +336,8 @@ TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
       static_cast<int>(ActivationState::DRYRUN), 1);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 3, 1);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 3, 1);
   histogram_tester.ExpectUniqueSample(

@@ -75,13 +75,34 @@ proto::ElementType ToElementType(
 DocumentSubresourceFilter::DocumentSubresourceFilter(
     ActivationState activation_state,
     const scoped_refptr<const MemoryMappedRuleset>& ruleset,
-    std::vector<GURL> ancestor_document_urls)
+    const std::vector<GURL>& ancestor_document_urls)
     : activation_state_(activation_state),
       ruleset_(ruleset),
-      matcher_(ruleset_->data(), ruleset_->length()),
-      ancestor_document_urls_(std::move(ancestor_document_urls)) {
+      ruleset_matcher_(ruleset_->data(), ruleset_->length()) {
   DCHECK_NE(activation_state_, ActivationState::DISABLED);
   DCHECK(ruleset);
+
+  if (ancestor_document_urls.empty())
+    return;
+
+  document_origin_ = url::Origin(ancestor_document_urls.front());
+
+  url::Origin parent_document_origin;
+  for (auto iter = ancestor_document_urls.rbegin(),
+            rend = ancestor_document_urls.rend();
+       iter != rend; ++iter) {
+    const GURL& document_url(*iter);
+    if (ruleset_matcher_.ShouldDisableFilteringForDocument(
+            document_url, parent_document_origin,
+            proto::ACTIVATION_TYPE_DOCUMENT)) {
+      filtering_disabled_for_document_ = true;
+      return;
+    }
+    parent_document_origin = url::Origin(document_url);
+  }
+
+  // TODO(pkalinnikov): Implement GENERICBLOCK activation type as well.
+  // TODO(pkalinnikov): Match several activation types in a batch.
 }
 
 DocumentSubresourceFilter::~DocumentSubresourceFilter() = default;
@@ -92,16 +113,14 @@ bool DocumentSubresourceFilter::allowLoad(
   TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
                resourceUrl.string().utf8());
 
-  // TODO(pkalinnikov): Check all |ancestor_document_urls| for activation bit
-  // here or once in the constructor.
+  ++num_loads_total_;
+  if (filtering_disabled_for_document_)
+    return true;
   ++num_loads_evaluated_;
 
-  url::Origin initiator;
-  if (!ancestor_document_urls_.empty())
-    initiator = url::Origin(ancestor_document_urls_.front());
-
-  if (!matcher_.IsAllowed(GURL(resourceUrl), initiator,
-                          ToElementType(request_context))) {
+  if (ruleset_matcher_.ShouldDisallowResourceLoad(
+          GURL(resourceUrl), document_origin_,
+          ToElementType(request_context))) {
     ++num_loads_matching_rules_;
     if (activation_state_ == ActivationState::ENABLED) {
       ++num_loads_disallowed_;

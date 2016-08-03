@@ -66,6 +66,9 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   DCHECK(filter_for_last_committed_load_);
   UMA_HISTOGRAM_COUNTS_1000(
+      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total",
+      filter_for_last_committed_load_->num_loads_total());
+  UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated",
       filter_for_last_committed_load_->num_loads_evaluated());
   UMA_HISTOGRAM_COUNTS_1000(
@@ -95,7 +98,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
     std::unique_ptr<DocumentSubresourceFilter> filter(
         new DocumentSubresourceFilter(activation_state_for_provisional_load_,
                                       ruleset_dealer_->ruleset(),
-                                      std::move(ancestor_document_urls)));
+                                      ancestor_document_urls));
     filter_for_last_committed_load_ = filter->AsWeakPtr();
     SetSubresourceFilterForCommittedLoad(std::move(filter));
   }

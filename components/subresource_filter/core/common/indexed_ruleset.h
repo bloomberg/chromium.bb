@@ -112,12 +112,24 @@ class IndexedRulesetMatcher {
   // |size|.
   IndexedRulesetMatcher(const uint8_t* buffer, size_t size);
 
+  // Returns whether the subset of subresource filtering rules specified by the
+  // |activation_type| should be disabled for the |document| loaded from
+  // |parent_document_origin|. Always returns false if |activation_type| ==
+  // ACTIVATION_TYPE_UNSPECIFIED or the |document_url| is not valid. Unlike
+  // page-level activation, such rules can be used to have fine-grained control
+  // over the activation of filtering within (sub-)documents.
+  bool ShouldDisableFilteringForDocument(
+      const GURL& document_url,
+      const url::Origin& parent_document_origin,
+      proto::ActivationType activation_type) const;
+  // TODO(pkalinnikov): GetActivationTypesForDocument.
+
   // Returns whether the network request to |url| of |element_type| initiated by
-  // |initiator| is allowed to proceed. Always returns true, if the |url| is not
-  // valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
-  bool IsAllowed(const GURL& url,
-                 const url::Origin& initiator,
-                 proto::ElementType element_type) const;
+  // |document_origin| is not allowed to proceed. Always returns false if the
+  // |url| is not valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
+  bool ShouldDisallowResourceLoad(const GURL& url,
+                                  const url::Origin& document_origin,
+                                  proto::ElementType element_type) const;
 
  private:
   // Returns whether the network request matches a particular part of the index.
@@ -126,6 +138,7 @@ class IndexedRulesetMatcher {
                       const GURL& url,
                       const url::Origin& initiator,
                       proto::ElementType element_type,
+                      proto::ActivationType activation_type,
                       bool is_third_party);
 
   const flat::IndexedRuleset* root_;

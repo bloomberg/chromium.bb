@@ -63,10 +63,10 @@ void BuildFailureFunction(const UrlPattern& pattern,
 //
 // TODO(pkalinnikov): Outline algorithms implemented in this function.
 template <typename FailureIter>
-bool IsMatch(const GURL& url,
-             const UrlPattern& pattern,
-             FailureIter failure_begin,
-             FailureIter failure_end);
+bool IsUrlPatternMatch(const GURL& url,
+                       const UrlPattern& pattern,
+                       FailureIter failure_begin,
+                       FailureIter failure_end);
 
 // Implementation --------------------------------------------------------------
 
@@ -168,10 +168,10 @@ void BuildFailureFunction(const UrlPattern& pattern,
 }
 
 template <typename FailureIter>
-bool IsMatch(const GURL& url,
-             const UrlPattern& pattern,
-             FailureIter failure_begin,
-             FailureIter failure_end) {
+bool IsUrlPatternMatch(const GURL& url,
+                       const UrlPattern& pattern,
+                       FailureIter failure_begin,
+                       FailureIter failure_end) {
   DCHECK(url.is_valid());
 
   StringSplitter<impl::IsWildcard> subpatterns(pattern.url_pattern);

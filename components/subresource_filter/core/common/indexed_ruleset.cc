@@ -325,9 +325,14 @@ bool IsThirdPartyUrl(const GURL& url, const url::Origin& first_party_origin) {
 bool DoesRuleMetadataMatch(const flat::UrlRule& rule,
                            const url::Origin& initiator,
                            proto::ElementType element_type,
+                           proto::ActivationType activation_type,
                            bool is_third_party) {
   if (element_type != proto::ELEMENT_TYPE_UNSPECIFIED &&
       !(rule.element_types() & element_type)) {
+    return false;
+  }
+  if (activation_type != proto::ACTIVATION_TYPE_UNSPECIFIED &&
+      !(rule.activation_types() & activation_type)) {
     return false;
   }
 
@@ -348,6 +353,7 @@ bool MatchesAny(const FlatUrlRuleList* rules,
                 const GURL& url,
                 const url::Origin& initiator,
                 proto::ElementType element_type,
+                proto::ActivationType activation_type,
                 bool is_third_party) {
   if (!rules)
     return false;
@@ -357,15 +363,17 @@ bool MatchesAny(const FlatUrlRuleList* rules,
     if (rule->url_pattern_type() != flat::UrlPatternType_REGEXP) {
       const uint8_t* begin = rule->failure_function()->data();
       const uint8_t* end = begin + rule->failure_function()->size();
-      if (!IsMatch(url, UrlPattern(*rule), begin, end))
+      if (!IsUrlPatternMatch(url, UrlPattern(*rule), begin, end))
         continue;
     } else {
       // TODO(pkalinnikov): Implement REGEXP rules matching.
       continue;
     }
 
-    if (DoesRuleMetadataMatch(*rule, initiator, element_type, is_third_party))
+    if (DoesRuleMetadataMatch(*rule, initiator, element_type, activation_type,
+                              is_third_party)) {
       return true;
+    }
   }
 
   return false;
@@ -387,22 +395,37 @@ IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
   DCHECK(!index || index->n() == kNGramSize);
 }
 
-bool IndexedRulesetMatcher::IsAllowed(const GURL& url,
-                                      const url::Origin& initiator,
-                                      proto::ElementType element_type) const {
+bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
+    const GURL& document_url,
+    const url::Origin& parent_document_origin,
+    proto::ActivationType activation_type) const {
+  if (!document_url.is_valid() ||
+      activation_type == proto::ACTIVATION_TYPE_UNSPECIFIED) {
+    return false;
+  }
+  return IsMatch(root_->whitelist_index(), document_url, parent_document_origin,
+                 proto::ELEMENT_TYPE_UNSPECIFIED, activation_type,
+                 IsThirdPartyUrl(document_url, parent_document_origin));
+}
+
+bool IndexedRulesetMatcher::ShouldDisallowResourceLoad(
+    const GURL& url,
+    const url::Origin& document_origin,
+    proto::ElementType element_type) const {
   if (!url.is_valid() || element_type == proto::ELEMENT_TYPE_UNSPECIFIED)
-    return true;
-  const bool is_third_party = IsThirdPartyUrl(url, initiator);
-  return !IsMatch(root_->blacklist_index(), url, initiator, element_type,
-                  is_third_party) ||
-         IsMatch(root_->whitelist_index(), url, initiator, element_type,
-                 is_third_party);
+    return false;
+  const bool is_third_party = IsThirdPartyUrl(url, document_origin);
+  return IsMatch(root_->blacklist_index(), url, document_origin, element_type,
+                 proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party) &&
+         !IsMatch(root_->whitelist_index(), url, document_origin, element_type,
+                  proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party);
 }
 
 bool IndexedRulesetMatcher::IsMatch(const flat::UrlPatternIndex* index,
                                     const GURL& url,
                                     const url::Origin& initiator,
                                     proto::ElementType element_type,
+                                    proto::ActivationType activation_type,
                                     bool is_third_party) {
   if (!index)
     return false;
@@ -428,13 +451,14 @@ bool IndexedRulesetMatcher::IsMatch(const flat::UrlPatternIndex* index,
     if (entry == empty_slot)
       continue;
     if (MatchesAny(entry->rule_list(), url, initiator, element_type,
-                   is_third_party)) {
+                   activation_type, is_third_party)) {
       return true;
     }
   }
 
   const FlatUrlRuleList* rules = index->fallback_rules();
-  return MatchesAny(rules, url, initiator, element_type, is_third_party);
+  return MatchesAny(rules, url, initiator, element_type, activation_type,
+                    is_third_party);
 }
 
 }  // namespace subresource_filter
