@@ -52,56 +52,16 @@ gclient sync --nohooks -r <lkgr-sha1>
 This is not needed for a typical developer workflow; only for one-time
 builds of Chromium.
 
-## Configure your build
+## Configure GN
 
-Android builds can be run with GN or GYP, though GN incremental builds
-are the fastest option and GN will soon be the only supported option.
-They are both meta-build systems that generate nina files for the
-Android build. Both builds are regularly tested on the build waterfall.
-
-### Configure GYP (deprecated -- use GN instead)
-
-If you are using GYP, next to the .gclient file, create a a file called
-'chromium.gyp_env' with the following contents:
-
-```shell
-echo "{ 'GYP_DEFINES': 'OS=android target_arch=arm', }" > chromium.gyp_env
-```
-
-Note that "arm" is the default architecture and can be omitted. If
-building for x86 or MIPS devices, change `target_arch` to "ia32" or
-"mipsel".
-
- **NOTE:** If you are using the `GYP_DEFINES` environment variable, it
-will override any settings in this file. Either clear it or set it to
-the values above before running `gclient runhooks`.
-
- See
-[build/android/developer\_recommended\_flags.gypi](https://code.google.com/p/chromium/codesearch#chromium/src/build/android/developer_recommended_flags.gypi&sq=package:chromium&type=cs&q=file:android/developer_recommended_flags.gypi&l=1)
-for other recommended GYP settings.
- Once chromium.gyp_env is ready, you need to run the following command
-to update projects from gyp files. You may need to run this again when
-you have added new files, updated gyp files, or sync'ed your
-repository.
-
-```shell
-gclient runhooks
-```
-
-#### This will download more things and prompt you to accept Terms of Service for Android SDK packages.
-
-## Configure GN (recommended)
-
-If you are using GN, create a build directory and set the build flags
-with:
+Create a build directory and set the build flags with:
 
 ```shell
 gn args out/Default
 ```
 
  You can replace out/Default with another name you choose inside the out
-directory. Do not use GYP's out/Debug or out/Release directories, as
-they may conflict with GYP builds.
+directory.
 
 Also be aware that some scripts (e.g. tombstones.py, adb_gdb.py)
 require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
@@ -191,9 +151,6 @@ unplugging and reattaching your device.
 
 ### Build the full browser
 
-**Note: When adding new resource files or java files in gyp builds, you
-need to run 'gclient runhooks' again to get them in the build.**
-
 ```shell
 ninja -C out/Release chrome_public_apk
 ```
@@ -201,7 +158,6 @@ ninja -C out/Release chrome_public_apk
 And deploy it to your Android device:
 
 ```shell
-build/android/adb_install_apk.py out/Release/apks/ChromePublic.apk # For gyp.
 CHROMIUM_OUTPUT_DIR=$gndir build/android/adb_install_apk.py $gndir/apks/ChromePublic.apk # for gn.
 ```
 
@@ -219,9 +175,8 @@ build/android/adb_install_apk.py out/Release/apks/ContentShell.apk
 ```
 
 this will build and install an Android apk under
-`out/Release/apks/ContentShell.apk`. For GYP, replace `Release` with `Debug`
-above if you want to generate a Debug app. If you are using GN, substitute the
-name you initially gave to your build directory.
+`out/Release/apks/ContentShell.apk`. (Where `Release` is the name of your build
+directory.)
 
 If you use custom out dir instead of standard out/ dir, use
 CHROMIUM_OUT_DIR env.

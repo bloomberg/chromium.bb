@@ -24,9 +24,7 @@ by `gclient runhooks`.
 Regenerate the ninja build files with Clang enabled. Again, on Linux and Mac,
 Clang is the default compiler.
 
-If you use gyp: `GYP_DEFINES=clang=1 build/gyp_chromium`
-
-If you use gn, run `gn args` and add `is_clang = true` to your args.gn file.
+Run `gn args` and add `is_clang = true` to your args.gn file.
 
 Build: `ninja -C out/Debug chrome`
 
@@ -59,8 +57,10 @@ To test the FindBadConstructs plugin, run:
      ./test.py ../../../../third_party/llvm-build/Release+Asserts/bin/clang \
                ../../../../third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so)
 
-To run [other plugins](writing_clang_plugins.md), add these to your
-`GYP_DEFINES` (this is not currently set up in GN):
+These instructions are for GYP which no longer works. Something similar needs
+to be set up for the GN build if you want to do this. For reference, here are
+the old instructions: To run [other plugins](writing_clang_plugins.md), add
+these to your `GYP_DEFINES`:
 
 *   `clang_load`: Absolute path to a dynamic library containing your plugin
 *   `clang_add_plugin`: tells clang to run a specific PluginASTAction
@@ -85,10 +85,7 @@ http://build.chromium.org/p/chromium.fyi/console?category=win%20clang
 
 ``` shell
 python tools\clang\scripts\update.py
-set GYP_DEFINES=clang=1
-python build\gyp_chromium
-
-# or, if you use gn, run `gn args` and add `is_clang = true` to your args.gn
+# run `gn args` and add `is_clang = true` to your args.gn, then...
 ninja -C out\Debug chrome
 ```
 
@@ -102,6 +99,10 @@ Current brokenness:
     [ansicon](https://github.com/adoxa/ansicon/releases).
 
 ## Using a custom clang binary
+
+These instructions are for GYP which no longer works. Something similar needs
+to be set up for the GN build if you want to do this. For reference, here are
+the old instructions:
 
 If you want to try building Chromium with your own clang binary that you've
 already built, set `make_clang_dir` to the directory containing `bin/clang`
@@ -138,6 +139,5 @@ Linux support, where it can link Chrome approximately twice as fast as gold and
 MSVC's link.exe as of this writing. LLD does not yet support generating PDB
 files, which makes it hard to debug Chrome while using LLD.
 
-If you use gyp, you can enable it with `GYP_DEFINES=lld=1`. If you use gn, set
-`use_lld = true` in args.gn. Currently this configuration is only supported on
-Windows.
+Set `use_lld = true` in args.gn. Currently this configuration is only supported
+on Windows.

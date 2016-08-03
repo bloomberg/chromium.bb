@@ -16,8 +16,7 @@ Read more about Ninja at [the Ninja home page](https://ninja-build.org/).
 
 #### Install
 
-Ninja is included in `depot_tools` as well as `gyp`, so there's nothing to
-install.
+Ninja is included in `depot_tools` so there's nothing to install.
 
 ## Build instructions
 
