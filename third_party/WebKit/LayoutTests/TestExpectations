@@ -1409,3 +1409,5 @@ crbug.com/541703 http/tests/security/xss-eval.html [ Skip ]
 
 # Flaky on Win7 dbg and Mac10.11 (retina)
 crbug.com/634019 [ Win7 Debug Mac10.11 Retina ] virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ Pass Timeout ]
+
+crbug.com/634073 [ Win7 ] transforms/2d/hindi-rotated.html [ Pass Failure ]
