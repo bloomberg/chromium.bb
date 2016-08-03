@@ -1392,3 +1392,5 @@ crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/overflow-scroll-
 crbug.com/619452 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
 
 crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Skip ]
+
+crbug.com/541703 http/tests/security/xss-eval.html [ Skip ]

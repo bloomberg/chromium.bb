@@ -37,7 +37,7 @@ addEventListener("message", function()
     shouldBe("childEval.call(frames[0], 'document').testExpando",
         (function() { try {
             return childEval.call(frames[0], 'document').testExpando;
-        } catch(e) { return e.name; } })(), "It's me too!");
+        } catch(e) { return e.name; } })(), "TypeError");
 
     shouldBe("childEvalCaller('document').testExpando",
         (function() { try {
@@ -45,7 +45,7 @@ addEventListener("message", function()
         } catch(e) { return e.name; } })(), "SecurityError");
 
     shouldBe("childLocalEvalCaller('document').testExpando",
-        (function() { try { return childLocalEvalCaller('document').testExpando; } catch(e) { return e.name; } })(), "It's me too!");
+        (function() { try { return childLocalEvalCaller('document').testExpando; } catch(e) { return e.name; } })(), "TypeError");
 
     if (window.testRunner)
         testRunner.notifyDone();
