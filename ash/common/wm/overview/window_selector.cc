@@ -179,7 +179,8 @@ gfx::Rect GetTextFilterPosition(WmWindow* root_window) {
                 kShellWindowId_DefaultContainer)));
     return gfx::Rect(0.5 * (total_bounds.width() -
                             std::min(kTextFilterWidthMD, total_bounds.width())),
-                     total_bounds.height() * kTextFilterTopScreenProportion,
+                     total_bounds.y() +
+                         total_bounds.height() * kTextFilterTopScreenProportion,
                      std::min(kTextFilterWidthMD, total_bounds.width()),
                      kTextFilterHeightMD);
   }
