@@ -320,12 +320,14 @@ class CounterThread : public SimpleThread {
   CounterThread(const std::string& name,
                 PersistentMemoryAllocator::Iterator* iterator,
                 Lock* lock,
-                ConditionVariable* condition)
+                ConditionVariable* condition,
+                bool* wake_up)
       : SimpleThread(name, Options()),
         iterator_(iterator),
         lock_(lock),
         condition_(condition),
-        count_(0) {}
+        count_(0),
+        wake_up_(wake_up) {}
 
   void Run() override {
     // Wait so all threads can start at approximately the same time.
@@ -333,8 +335,17 @@ class CounterThread : public SimpleThread {
     // releases the next, etc., etc.
     {
       AutoLock autolock(*lock_);
-      condition_->Wait();
-      condition_->Signal();
+
+      // Before calling Wait(), make sure that the wake up condition
+      // has not already passed.  Also, since spurious signal events
+      // are possible, check the condition in a while loop to make
+      // sure that the wake up condition is met when this thread
+      // returns from the Wait().
+      // See usage comments in src/base/synchronization/condition_variable.h.
+      while (!*wake_up_) {
+        condition_->Wait();
+        condition_->Signal();
+      }
     }
 
     uint32_t type;
@@ -350,6 +361,9 @@ class CounterThread : public SimpleThread {
   Lock* lock_;
   ConditionVariable* condition_;
   unsigned count_;
+  bool* wake_up_;
+
+  DISALLOW_COPY_AND_ASSIGN(CounterThread);
 };
 
 // Ensure that parallel iteration returns the same number of objects as
@@ -373,18 +387,27 @@ TEST_F(PersistentMemoryAllocatorTest, IteratorParallelismTest) {
   PersistentMemoryAllocator::Iterator iter(allocator_.get());
   Lock lock;
   ConditionVariable condition(&lock);
+  bool wake_up = false;
 
-  CounterThread t1("t1", &iter, &lock, &condition);
-  CounterThread t2("t2", &iter, &lock, &condition);
-  CounterThread t3("t3", &iter, &lock, &condition);
-  CounterThread t4("t4", &iter, &lock, &condition);
-  CounterThread t5("t5", &iter, &lock, &condition);
+  CounterThread t1("t1", &iter, &lock, &condition, &wake_up);
+  CounterThread t2("t2", &iter, &lock, &condition, &wake_up);
+  CounterThread t3("t3", &iter, &lock, &condition, &wake_up);
+  CounterThread t4("t4", &iter, &lock, &condition, &wake_up);
+  CounterThread t5("t5", &iter, &lock, &condition, &wake_up);
 
   t1.Start();
   t2.Start();
   t3.Start();
   t4.Start();
   t5.Start();
+
+  // Take the lock and set the wake up condition to true.  This helps to
+  // avoid a race condition where the Signal() event is called before
+  // all the threads have reached the Wait() and thus never get woken up.
+  {
+    AutoLock autolock(lock);
+    wake_up = true;
+  }
 
   // This will release all the waiting threads.
   condition.Signal();
