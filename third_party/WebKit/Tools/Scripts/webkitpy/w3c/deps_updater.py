@@ -355,7 +355,7 @@ class DepsUpdater(object):
 
     def generate_upload_command(self, email_list):
         command = ['git', 'cl', 'upload', '-f', '-m', 'W3C auto test importer']
-        command = ['--cc=' + email for email in email_list]
+        command += ['--cc=' + email for email in email_list]
         if self.auth_refresh_token_json:
             command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
         return command
