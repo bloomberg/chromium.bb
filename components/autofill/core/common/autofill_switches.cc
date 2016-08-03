@@ -8,10 +8,6 @@
 namespace autofill {
 namespace switches {
 
-// Disables using device's camera to scan a new credit card when filling out a
-// credit card form.
-const char kDisableCreditCardScan[]         = "disable-credit-card-scan";
-
 // Force hiding the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card. The card will never be stored
 // locally.
@@ -28,10 +24,6 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
 // The "disable" flag for kEnableSingleClickAutofill.
 const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
-
-// Enables using device's camera to scan a new credit card when filling out a
-// credit card form.
-const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
 
 // Force showing the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card.

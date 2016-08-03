@@ -1494,12 +1494,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-new-zip-unpacker", IDS_FLAGS_NEW_ZIP_UNPACKER_NAME,
      IDS_FLAGS_NEW_ZIP_UNPACKER_DESCRIPTION, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)},
-#endif  // defined(OS_CHROMEOS)
-    {"enable-credit-card-scan", IDS_FLAGS_CREDIT_CARD_SCAN_NAME,
-     IDS_FLAGS_CREDIT_CARD_SCAN_DESCRIPTION, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnableCreditCardScan,
-                               autofill::switches::kDisableCreditCardScan)},
-#if defined(OS_CHROMEOS)
     {"disable-captive-portal-bypass-proxy",
      IDS_FLAGS_CAPTIVE_PORTAL_BYPASS_PROXY_NAME,
      IDS_FLAGS_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION, kOsCrOS,

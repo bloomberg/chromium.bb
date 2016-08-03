@@ -62,11 +62,6 @@
             }
         }
     ],
-    "CreditCardScan": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "DataCompressionProxyDevRollout": [
         {
             "group_name": "Control"
