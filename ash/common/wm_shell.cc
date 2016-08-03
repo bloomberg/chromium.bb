@@ -16,6 +16,7 @@
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_window_watcher.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -75,6 +76,8 @@ void WmShell::Initialize() {
 void WmShell::Shutdown() {
   // Accesses WmShell in its destructor.
   accessibility_delegate_.reset();
+  // ShelfWindowWatcher has window observers and a pointer to the shelf model.
+  shelf_window_watcher_.reset();
   // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
   // shelf items in Chrome) so explicitly shutdown early.
   shelf_model_->DestroyItemDelegates();
@@ -232,6 +235,7 @@ void WmShell::CreateShelfDelegate() {
   DCHECK(GetSessionStateDelegate());
   DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
   shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
+  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model_.get()));
 }
 
 void WmShell::DeleteWindowCycleController() {

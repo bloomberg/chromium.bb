@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_WINDOW_WATCHER_H_
-#define ASH_SHELF_SHELF_WINDOW_WATCHER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_WINDOW_WATCHER_H_
+#define ASH_COMMON_SHELF_SHELF_WINDOW_WATCHER_H_
 
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_window_observer.h"
@@ -111,4 +111,4 @@ class ShelfWindowWatcher : public WmActivationObserver,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_WINDOW_WATCHER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_WINDOW_WATCHER_H_

@@ -124,6 +124,8 @@ class ASH_EXPORT WmWindow {
 
   // Returns null if there are no details.
   virtual ShelfItemDetails* GetShelfItemDetails() = 0;
+  virtual void SetShelfItemDetails(const ShelfItemDetails& details) = 0;
+  virtual void ClearShelfItemDetails() = 0;
 
   wm::WindowState* GetWindowState() {
     return const_cast<wm::WindowState*>(

@@ -41,6 +41,7 @@ class ScopedDisableInternalMouseAndKeyboard;
 class SessionStateDelegate;
 class ShelfDelegate;
 class ShelfModel;
+class ShelfWindowWatcher;
 class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
@@ -348,6 +349,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfModel> shelf_model_;
+  std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;

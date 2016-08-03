@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_window_watcher_item_delegate.h"
+#include "ash/common/shelf/shelf_window_watcher_item_delegate.h"
 
+#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf_util.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 

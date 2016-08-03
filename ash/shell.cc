@@ -56,7 +56,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell_init_params.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -368,13 +367,6 @@ void Shell::CreateShelf() {
   DCHECK_GT(session_state_delegate_->NumberOfLoggedInUsers(), 0);
   wm_shell_->CreateShelfDelegate();
 
-  // TODO(jamescook): This is here for historical reasons. Move it to WmShell.
-  // http://crbug.com/629257
-  if (!shelf_window_watcher_) {
-    shelf_window_watcher_.reset(
-        new ShelfWindowWatcher(wm_shell_->shelf_model()));
-  }
-
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
@@ -644,10 +636,6 @@ Shell::~Shell() {
   // Has to happen before ~MruWindowTracker.
   wm_shell_->DeleteWindowCycleController();
   wm_shell_->DeleteWindowSelectorController();
-
-  // |shelf_window_watcher_| has a weak pointer to the shelf model and has
-  // window observers.
-  shelf_window_watcher_.reset();
 
   // Destroy all child windows including widgets.
   window_tree_host_manager_->CloseChildWindows();

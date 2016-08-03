@@ -76,6 +76,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   int GetIntProperty(WmWindowProperty key) override;
   void SetIntProperty(WmWindowProperty key, int value) override;
   ShelfItemDetails* GetShelfItemDetails() override;
+  void SetShelfItemDetails(const ShelfItemDetails& details) override;
+  void ClearShelfItemDetails() override;
   const wm::WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   WmWindow* GetToplevelWindowForFocus() override;

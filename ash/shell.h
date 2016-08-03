@@ -117,7 +117,6 @@ class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
-class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class SlowAnimationEventFilter;
@@ -523,7 +522,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
-  std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<DragDropController> drag_drop_controller_;

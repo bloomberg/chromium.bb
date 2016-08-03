@@ -355,8 +355,16 @@ void WmWindowMus::SetIntProperty(WmWindowProperty key, int value) {
 }
 
 ShelfItemDetails* WmWindowMus::GetShelfItemDetails() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED();  // TODO: Add support; see crbug.com/634150
   return nullptr;
+}
+
+void WmWindowMus::SetShelfItemDetails(const ShelfItemDetails& details) {
+  NOTIMPLEMENTED();  // TODO: Add support; see crbug.com/634150
+}
+
+void WmWindowMus::ClearShelfItemDetails() {
+  NOTIMPLEMENTED();  // TODO: Add support; see crbug.com/634150
 }
 
 const wm::WindowState* WmWindowMus::GetWindowState() const {

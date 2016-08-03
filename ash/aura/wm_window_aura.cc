@@ -291,6 +291,16 @@ ShelfItemDetails* WmWindowAura::GetShelfItemDetails() {
   return window_->GetProperty(kShelfItemDetailsKey);
 }
 
+void WmWindowAura::SetShelfItemDetails(const ShelfItemDetails& details) {
+  // |item_details| is owned by |window_|.
+  ShelfItemDetails* item_details = new ShelfItemDetails(details);
+  window_->SetProperty(kShelfItemDetailsKey, item_details);
+}
+
+void WmWindowAura::ClearShelfItemDetails() {
+  window_->ClearProperty(kShelfItemDetailsKey);
+}
+
 const wm::WindowState* WmWindowAura::GetWindowState() const {
   return ash::wm::GetWindowState(window_);
 }
