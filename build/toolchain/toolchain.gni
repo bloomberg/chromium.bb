@@ -36,14 +36,16 @@ declare_args() {
   use_xcode_clang = is_ios && is_official_build
 }
 
-if (is_clang) {
-  # Clang compiler version. Clang files are placed at version-dependent paths.
-  clang_version = "3.9.0"
+declare_args() {
+  if (is_clang) {
+    # Clang compiler version. Clang files are placed at version-dependent paths.
+    clang_version = "3.9.0"
 
-  if (llvm_force_head_revision) {
-    # TODO(hans): Remove after next Clang roll.
-    # ToT Clang has a higher version number.
-    clang_version = "4.0.0"
+    if (llvm_force_head_revision) {
+      # TODO(hans): Remove after next Clang roll.
+      # ToT Clang has a higher version number.
+      clang_version = "4.0.0"
+    }
   }
 }
 
