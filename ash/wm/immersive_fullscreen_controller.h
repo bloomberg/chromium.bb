@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/immersive_revealed_lock.h"
+#include "ash/common/wm/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
@@ -17,7 +17,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
-
 #include "ui/wm/core/transient_window_observer.h"
 
 namespace aura {
