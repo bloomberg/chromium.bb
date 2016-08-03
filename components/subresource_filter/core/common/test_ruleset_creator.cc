@@ -88,23 +88,26 @@ void TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
       &test_ruleset_pair->indexed));
 }
 
+void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
+  DCHECK(path);
+  ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
+              scoped_temp_dir_.CreateUniqueTempDir());
+  *path = scoped_temp_dir_.path().AppendASCII(
+      base::IntToString(next_unique_file_suffix++));
+}
+
 void TestRulesetCreator::CreateTestRulesetFromContents(
     std::vector<uint8_t> ruleset_contents,
     TestRuleset* ruleset) {
   DCHECK(ruleset);
-  ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
-              scoped_temp_dir_.CreateUniqueTempDir());
-  base::FilePath path = scoped_temp_dir_.path().AppendASCII(
-      base::IntToString(next_unique_file_suffix++));
 
-  int ruleset_size_as_int = base::checked_cast<int>(ruleset_contents.size());
+  ruleset->contents = std::move(ruleset_contents);
+  ASSERT_NO_FATAL_FAILURE(GetUniqueTemporaryPath(&ruleset->path));
+  int ruleset_size_as_int = base::checked_cast<int>(ruleset->contents.size());
   int num_bytes_written = base::WriteFile(
-      path, reinterpret_cast<const char*>(ruleset_contents.data()),
+      ruleset->path, reinterpret_cast<const char*>(ruleset->contents.data()),
       ruleset_size_as_int);
   ASSERT_EQ(ruleset_size_as_int, num_bytes_written);
-
-  ruleset->path = path;
-  ruleset->contents = std::move(ruleset_contents);
 }
 
 }  // namespace testing

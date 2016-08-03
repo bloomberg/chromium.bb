@@ -18,4 +18,7 @@ const base::FilePath::CharType kUnindexedRulesetBaseDirectoryName[] =
 const base::FilePath::CharType kRulesetDataFileName[] =
     FILE_PATH_LITERAL("Ruleset Data");
 
+const base::FilePath::CharType kLicenseFileName[] =
+    FILE_PATH_LITERAL("LICENSE");
+
 }  // namespace subresource_filter

@@ -22,14 +22,13 @@ using component_updater::ComponentUpdateService;
 
 namespace {
 
-void IndexAndStoreAndPublishRulesetVersionIfNeeded(
-    const base::FilePath& unindexed_ruleset_path,
-    const std::string& content_version) {
+void IndexAndStoreAndPublishRulesetIfNeeded(
+    const subresource_filter::UnindexedRulesetInfo& unindexed_ruleset_info) {
   subresource_filter::RulesetService* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
   if (ruleset_service) {
-    ruleset_service->IndexAndStoreAndPublishRulesetVersionIfNeeded(
-        unindexed_ruleset_path, content_version);
+    ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(
+        unindexed_ruleset_info);
   }
 }
 
@@ -45,6 +44,16 @@ const uint8_t kPublicKeySHA256[32] = {
 
 const char kSubresourceFilterSetFetcherManifestName[] =
     "Subresource Filter Rules";
+
+// static
+const base::FilePath::CharType
+    SubresourceFilterComponentInstallerTraits::kRulesetDataFileName[] =
+        FILE_PATH_LITERAL("Filtering Rules");
+
+// static
+const base::FilePath::CharType
+    SubresourceFilterComponentInstallerTraits::kLicenseFileName[] =
+        FILE_PATH_LITERAL("LICENSE");
 
 SubresourceFilterComponentInstallerTraits::
     SubresourceFilterComponentInstallerTraits() {}
@@ -75,13 +84,14 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK(!install_dir.empty());
   DVLOG(1) << "Subresource Filter Version Ready: " << install_dir.value();
-  base::FilePath unindexed_ruleset_path =
-      install_dir.Append(FILE_PATH_LITERAL("subresource_filter_rules.blob"));
+  subresource_filter::UnindexedRulesetInfo ruleset_info;
+  ruleset_info.content_version = version.GetString();
+  ruleset_info.ruleset_path = install_dir.Append(kRulesetDataFileName);
+  ruleset_info.license_path = install_dir.Append(kLicenseFileName);
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
                      content::BrowserThread::UI),
-      base::Bind(&IndexAndStoreAndPublishRulesetVersionIfNeeded,
-                 unindexed_ruleset_path, version.GetString()));
+      base::Bind(&IndexAndStoreAndPublishRulesetIfNeeded, ruleset_info));
 }
 
 // Called during startup and installation before ComponentReady().

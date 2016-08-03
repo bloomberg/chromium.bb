@@ -40,19 +40,26 @@ class TestRulesetService : public subresource_filter::RulesetService {
 
   ~TestRulesetService() override {}
 
-  void IndexAndStoreAndPublishRulesetVersionIfNeeded(
-      const base::FilePath& unindexed_ruleset_path,
-      const std::string& content_version) override {
-    ruleset_path_ = unindexed_ruleset_path;
-    content_version_ = content_version;
+  using UnindexedRulesetInfo = subresource_filter::UnindexedRulesetInfo;
+  void IndexAndStoreAndPublishRulesetIfNeeded(
+      const UnindexedRulesetInfo& unindexed_ruleset_info) override {
+    unindexed_ruleset_info_ = unindexed_ruleset_info;
   }
 
-  const base::FilePath& ruleset_path() const { return ruleset_path_; }
-  const std::string& content_version() const { return content_version_; }
+  const base::FilePath& ruleset_path() const {
+    return unindexed_ruleset_info_.ruleset_path;
+  }
+
+  const base::FilePath& license_path() const {
+    return unindexed_ruleset_info_.license_path;
+  }
+
+  const std::string& content_version() const {
+    return unindexed_ruleset_info_.content_version;
+  }
 
  private:
-  base::FilePath ruleset_path_;
-  std::string content_version_;
+  UnindexedRulesetInfo unindexed_ruleset_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRulesetService);
 };
@@ -104,31 +111,35 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
             ->subresource_filter_ruleset_service());
   }
 
-  void WriteSubresourceFilterToFile(
-      const std::string subresource_filter_content,
-      const base::FilePath& filename) {
-    ASSERT_EQ(static_cast<int32_t>(subresource_filter_content.length()),
-              base::WriteFile(filename, subresource_filter_content.c_str(),
-                              subresource_filter_content.length()));
+  void WriteStringToFile(const std::string data, const base::FilePath& path) {
+    ASSERT_EQ(static_cast<int32_t>(data.length()),
+              base::WriteFile(path, data.data(), data.length()));
   }
 
   base::FilePath component_install_dir() {
     return component_install_dir_.path();
   }
 
-  void LoadSubresourceFilterRules(const std::string& ruleset_contents) {
+  // If |license_contents| is null, no license file will be created.
+  void CreateTestSubresourceFilterRuleset(const std::string& ruleset_contents,
+                                          const std::string* license_contents) {
+    base::FilePath ruleset_data_path = component_install_dir().Append(
+        SubresourceFilterComponentInstallerTraits::kRulesetDataFileName);
+    ASSERT_NO_FATAL_FAILURE(
+        WriteStringToFile(ruleset_contents, ruleset_data_path));
+
+    base::FilePath license_path = component_install_dir().Append(
+        SubresourceFilterComponentInstallerTraits::kLicenseFileName);
+    if (license_contents) {
+      ASSERT_NO_FATAL_FAILURE(
+          WriteStringToFile(*license_contents, license_path));
+    }
+  }
+
+  void LoadSubresourceFilterRuleset() {
     std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
-    const base::FilePath subresource_filters_dir(component_install_dir());
-
-    const base::FilePath first_subresource_filter_file =
-        subresource_filters_dir.Append(
-            FILE_PATH_LITERAL("subresource_filter_rules.blob"));
-    WriteSubresourceFilterToFile(ruleset_contents,
-                                 first_subresource_filter_file);
-
     ASSERT_TRUE(
-        traits_->VerifyInstallation(*manifest, component_install_dir_.path()));
-
+        traits_->VerifyInstallation(*manifest, component_install_dir()));
     const base::Version expected_version("1.2.3.4");
     traits_->ComponentReady(expected_version, component_install_dir(),
                             std::move(manifest));
@@ -173,24 +184,33 @@ TEST_F(SubresourceFilterComponentInstallerTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyFile) {
+TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyRuleset) {
   ASSERT_TRUE(service());
-  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRules(std::string()));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestSubresourceFilterRuleset(std::string(), nullptr));
+  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset());
   std::string actual_ruleset_contents;
   ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
                                      &actual_ruleset_contents));
   EXPECT_TRUE(actual_ruleset_contents.empty()) << actual_ruleset_contents;
+  EXPECT_FALSE(base::PathExists(service()->license_path()));
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
   ASSERT_TRUE(service());
-  const std::string expected_ruleset_contents("foobar");
-  ASSERT_NO_FATAL_FAILURE(
-      LoadSubresourceFilterRules(expected_ruleset_contents));
+  const std::string expected_ruleset_contents = "foobar";
+  const std::string expected_license_contents = "license";
+  ASSERT_NO_FATAL_FAILURE(CreateTestSubresourceFilterRuleset(
+      expected_ruleset_contents, &expected_license_contents));
+  ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset());
   std::string actual_ruleset_contents;
+  std::string actual_license_contents;
   ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
                                      &actual_ruleset_contents));
   EXPECT_EQ(expected_ruleset_contents, actual_ruleset_contents);
+  ASSERT_TRUE(base::ReadFileToString(service()->license_path(),
+                                     &actual_license_contents));
+  EXPECT_EQ(expected_license_contents, actual_license_contents);
 }
 
 }  // namespace component_updater

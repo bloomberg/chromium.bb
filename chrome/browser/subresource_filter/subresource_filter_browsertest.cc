@@ -98,9 +98,11 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
     RulesetDistributionListener* listener = new RulesetDistributionListener();
     g_browser_process->subresource_filter_ruleset_service()
         ->RegisterDistributor(base::WrapUnique(listener));
+    subresource_filter::UnindexedRulesetInfo unindexed_ruleset_info;
+    unindexed_ruleset_info.content_version = test_ruleset_content_version;
+    unindexed_ruleset_info.ruleset_path = test_ruleset_pair.unindexed.path;
     g_browser_process->subresource_filter_ruleset_service()
-        ->IndexAndStoreAndPublishRulesetVersionIfNeeded(
-            test_ruleset_pair.unindexed.path, test_ruleset_content_version);
+        ->IndexAndStoreAndPublishRulesetIfNeeded(unindexed_ruleset_info);
     listener->AwaitDistribution();
   }
 

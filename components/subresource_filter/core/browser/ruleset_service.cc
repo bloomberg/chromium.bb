@@ -39,11 +39,12 @@ const char kSubresourceFilterRulesetContentVersion[] =
 const char kSubresourceFilterRulesetFormatVersion[] =
     "subresource_filter.ruleset_version.format";
 
-base::FilePath GetRulesetDataFilePath(const base::FilePath& version_directory) {
-  return version_directory.Append(kRulesetDataFileName);
-}
-
 }  // namespace
+
+// UnindexedRulesetInfo ------------------------------------------------------
+
+UnindexedRulesetInfo::UnindexedRulesetInfo() = default;
+UnindexedRulesetInfo::~UnindexedRulesetInfo() = default;
 
 // IndexedRulesetVersion ------------------------------------------------------
 
@@ -115,20 +116,20 @@ RulesetService::RulesetService(
 
 RulesetService::~RulesetService() {}
 
-void RulesetService::IndexAndStoreAndPublishRulesetVersionIfNeeded(
-    const base::FilePath& unindexed_ruleset_path,
-    const std::string& content_version) {
+void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
+    const UnindexedRulesetInfo& unindexed_ruleset_info) {
   // Trying to store a ruleset with the same version for a second time would not
   // only be futile, but would fail on Windows due to "File System Tunneling" as
   // long as the previously stored copy of the rules is still in use.
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   if (most_recently_indexed_version.IsCurrentFormatVersion() &&
-      most_recently_indexed_version.content_version == content_version)
+      most_recently_indexed_version.content_version ==
+          unindexed_ruleset_info.content_version)
     return;
 
   IndexAndStoreRuleset(
-      unindexed_ruleset_path, content_version,
+      unindexed_ruleset_info,
       base::Bind(&RulesetService::OpenAndPublishRuleset, AsWeakPtr()));
 }
 
@@ -139,55 +140,58 @@ void RulesetService::RegisterDistributor(
   distributors_.push_back(std::move(distributor));
 }
 
-void RulesetService::IndexAndStoreRuleset(
-    const base::FilePath& unindexed_ruleset_path,
-    const std::string& content_version,
-    const WriteRulesetCallback& success_callback) {
-  IndexedRulesetVersion indexed_version;
-  indexed_version.content_version = content_version;
-  indexed_version.format_version =
-      IndexedRulesetVersion::CurrentFormatVersion();
-  if (!indexed_version.IsValid())
-    return;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&RulesetService::IndexAndWriteRuleset,
-                 indexed_ruleset_base_dir_, indexed_version,
-                 unindexed_ruleset_path),
-      base::Bind(&RulesetService::OnWrittenRuleset, AsWeakPtr(),
-                 indexed_version, success_callback));
+// static
+base::FilePath RulesetService::GetRulesetDataFilePath(
+    const base::FilePath& version_directory) {
+  return version_directory.Append(kRulesetDataFileName);
 }
 
 // static
-bool RulesetService::IndexAndWriteRuleset(
-    const base::FilePath& indexed_ruleset_base_dir,
-    const IndexedRulesetVersion& indexed_version,
-    const base::FilePath& unindexed_ruleset_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+base::FilePath RulesetService::GetLicenseFilePath(
+    const base::FilePath& version_directory) {
+  return version_directory.Append(kLicenseFileName);
+}
 
+// static
+IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
+    const base::FilePath& indexed_ruleset_base_dir,
+    const UnindexedRulesetInfo& unindexed_ruleset_info) {
+  base::ThreadRestrictions::AssertIOAllowed();
   std::string unindexed_ruleset_data;
-  if (!base::ReadFileToString(unindexed_ruleset_path, &unindexed_ruleset_data))
-    return false;
+  if (!base::ReadFileToString(unindexed_ruleset_info.ruleset_path,
+                              &unindexed_ruleset_data)) {
+    return IndexedRulesetVersion();
+  }
 
   // TODO(pkalinnikov): Implement streaming wire format here.
   proto::UrlRule rule;
   if (!rule.ParseFromString(unindexed_ruleset_data))
-    return false;
+    return IndexedRulesetVersion();
 
   RulesetIndexer indexer;
   indexer.AddUrlRule(rule);
   indexer.Finish();
 
-  return WriteRuleset(indexed_ruleset_base_dir, indexed_version, indexer.data(),
-                      indexer.size());
+  IndexedRulesetVersion indexed_version(
+      unindexed_ruleset_info.content_version,
+      IndexedRulesetVersion::CurrentFormatVersion());
+  if (!WriteRuleset(indexed_ruleset_base_dir, indexed_version,
+                    unindexed_ruleset_info.license_path, indexer.data(),
+                    indexer.size())) {
+    return IndexedRulesetVersion();
+  }
+
+  DCHECK(indexed_version.IsValid());
+  return indexed_version;
 }
 
 // static
 bool RulesetService::WriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const IndexedRulesetVersion& indexed_version,
-    const uint8_t* data,
-    size_t length) {
+    const base::FilePath& license_path,
+    const uint8_t* indexed_ruleset_data,
+    size_t indexed_ruleset_size) {
   base::FilePath indexed_ruleset_version_dir =
       indexed_version.GetSubdirectoryPathForVersion(indexed_ruleset_base_dir);
   base::ScopedTempDir scratch_dir;
@@ -197,15 +201,20 @@ bool RulesetService::WriteRuleset(
   }
 
   static_assert(sizeof(uint8_t) == sizeof(char), "Expected char = byte.");
-  const int data_size_in_chars = base::checked_cast<int>(length);
+  const int data_size_in_chars = base::checked_cast<int>(indexed_ruleset_size);
   if (base::WriteFile(GetRulesetDataFilePath(scratch_dir.path()),
-                      reinterpret_cast<const char*>(data),
+                      reinterpret_cast<const char*>(indexed_ruleset_data),
                       data_size_in_chars) != data_size_in_chars) {
     return false;
   }
 
+  if (base::PathExists(license_path)) {
+    if (!base::CopyFile(license_path, GetLicenseFilePath(scratch_dir.path())))
+      return false;
+  }
+
   // Creating a temporary directory also makes sure the path (except for the
-  // final segment) gets created. ReplaceFile will not create the path.
+  // final segment) gets created. ReplaceFile would not create the path.
   DCHECK(base::PathExists(indexed_ruleset_version_dir.DirName()));
 
   // This will attempt to overwrite the previously stored ruleset with the same
@@ -224,12 +233,24 @@ bool RulesetService::WriteRuleset(
   return false;
 }
 
+void RulesetService::IndexAndStoreRuleset(
+    const UnindexedRulesetInfo& unindexed_ruleset_info,
+    const WriteRulesetCallback& success_callback) {
+  if (unindexed_ruleset_info.content_version.empty())
+    return;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&RulesetService::IndexAndWriteRuleset,
+                 indexed_ruleset_base_dir_, unindexed_ruleset_info),
+      base::Bind(&RulesetService::OnWrittenRuleset, AsWeakPtr(),
+                 success_callback));
+}
+
 void RulesetService::OnWrittenRuleset(
-    const IndexedRulesetVersion& version,
     const WriteRulesetCallback& result_callback,
-    bool success) {
+    const IndexedRulesetVersion& version) {
   DCHECK(!result_callback.is_null());
-  if (!success)
+  if (!version.IsValid())
     return;
   version.SaveToPrefs(local_state_);
   result_callback.Run(version);

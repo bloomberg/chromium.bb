@@ -9,11 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "components/component_updater/default_component_installer.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace component_updater {
 
@@ -23,8 +20,10 @@ class ComponentUpdateService;
 class SubresourceFilterComponentInstallerTraits
     : public ComponentInstallerTraits {
  public:
-  SubresourceFilterComponentInstallerTraits();
+  static const base::FilePath::CharType kRulesetDataFileName[];
+  static const base::FilePath::CharType kLicenseFileName[];
 
+  SubresourceFilterComponentInstallerTraits();
   ~SubresourceFilterComponentInstallerTraits() override;
 
  private:

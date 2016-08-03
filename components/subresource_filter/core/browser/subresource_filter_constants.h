@@ -25,6 +25,9 @@ extern const base::FilePath::CharType kUnindexedRulesetBaseDirectoryName[];
 // The name of the file that actually stores the ruleset contents.
 extern const base::FilePath::CharType kRulesetDataFileName[];
 
+// The name of the applicable license file, if any, stored next to the ruleset.
+extern const base::FilePath::CharType kLicenseFileName[];
+
 }  // namespace subresource_filter
 
 #endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CONSTANTS_H_

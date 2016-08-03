@@ -44,9 +44,9 @@ struct TestRulesetPair {
 
 // Helper class to create subresource filtering rulesets for testing.
 //
-// All temporary files corresponding to TestRulesets are cleaned up when the
-// instance goes out of scope, but file handles already open can still be used
-// and read even after this.
+// All temporary files and paths are cleaned up when the instance goes out of
+// scope, but file handles already open can still be used and read even after
+// this has happened.
 class TestRulesetCreator {
  public:
   TestRulesetCreator();
@@ -58,6 +58,10 @@ class TestRulesetCreator {
   void CreateRulesetToDisallowURLsWithPathSuffix(
       base::StringPiece suffix,
       TestRulesetPair* test_ruleset_pair);
+
+  // Returns a unique |path| that is valid for the lifetime of this instance.
+  // No file at |path| will be automatically created.
+  void GetUniqueTemporaryPath(base::FilePath* path);
 
  private:
   // Writes the |ruleset_contents| to a temporary file, and initializes

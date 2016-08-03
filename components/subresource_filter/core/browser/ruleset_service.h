@@ -31,17 +31,37 @@ namespace subresource_filter {
 
 class RulesetDistributor;
 
+// Encapsulates information about a version of unindexed subresource
+// filtering rules on disk.
+struct UnindexedRulesetInfo {
+  UnindexedRulesetInfo();
+  ~UnindexedRulesetInfo();
+
+  // The version of the ruleset contents. Because the wire format of unindexed
+  // rules is expected to be stable over time (at least backwards compatible),
+  // the unindexed ruleset is uniquely identified by its content version.
+  //
+  // The version string must not be empty, but can be any string otherwise.
+  // There is no ordering defined on versions.
+  std::string content_version;
+
+  // The path to the file containing the unindexed subresource filtering rules.
+  base::FilePath ruleset_path;
+
+  // The (optional) path to a file containing the applicable license, which will
+  // be copied next to the indexed ruleset. For convenience, the lack of license
+  // can be indicated not only by setting |license_path| to empty, but also by
+  // setting it to any non existent path.
+  base::FilePath license_path;
+};
+
 // Encapsulates the combination of the binary format version of the indexed
 // ruleset, and the version of the ruleset contents.
 //
-// The wire format of unindexed rules coming through the component updater
-// is expected to be relatively stable, so a ruleset is uniquely identified by
-// its content version.
-//
-// In contrast, the binary format of the index data structures is expected to
-// evolve over time, so the indexed ruleset is identified by a pair of versions:
-// the content version of the rules that have been indexed; and the binary
-// format version of the indexed data structures.
+// In contrast to the unindexed ruleset, the binary format of the index data
+// structures is expected to evolve over time, so the indexed ruleset is
+// identified by a pair of versions: the content version of the rules that have
+// been indexed; and the binary format version of the indexed data structures.
 struct IndexedRulesetVersion {
   IndexedRulesetVersion();
   IndexedRulesetVersion(const std::string& content_version, int format_version);
@@ -85,20 +105,18 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
                  const base::FilePath& indexed_ruleset_base_dir);
   virtual ~RulesetService();
 
-  // Indexes, stores, and publishes the specified |content_version| of the
-  // subresource filtering rules available at |unindexed_ruleset_path|, unless
-  // the specified version matches that of the most recently indexed version, in
-  // which case it does nothing. The |unindexed_ruleset_path| needs to remain
-  // accessible even after the method returns.
+  // Indexes, stores, and publishes the given unindexed ruleset, unless its
+  // |content_version| matches that of the most recently indexed version, in
+  // which case it does nothing. The files comprising the unindexed ruleset
+  // need to remain accessible even after the method returns.
   //
   // Computation-heavy steps and I/O are performed on a background thread.
   // Still, to prevent start-up congestion, this method should be called at the
   // earliest shortly after start-up.
   //
   // Virtual so that it can be mocked out in tests.
-  virtual void IndexAndStoreAndPublishRulesetVersionIfNeeded(
-      const base::FilePath& unindexed_ruleset_path,
-      const std::string& content_version);
+  virtual void IndexAndStoreAndPublishRulesetIfNeeded(
+      const UnindexedRulesetInfo& unindexed_ruleset_info);
 
   // Registers a |distributor| that will be notified each time a new version of
   // the ruleset becomes avalable. The |distributor| will be destroyed along
@@ -111,36 +129,43 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   using WriteRulesetCallback =
       base::Callback<void(const IndexedRulesetVersion&)>;
 
-  // Posts a task to the |blocking_task_runner_| to index and persist a new
-  // |content_version| of the unindexed |ruleset|. Then, on success, updates the
-  // most recently indexed version in preferences and invokes |success_callback|
-  // on the calling thread. There is no callback on failure.
-  void IndexAndStoreRuleset(const base::FilePath& unindexed_ruleset_path,
-                            const std::string& content_version,
-                            const WriteRulesetCallback& success_callback);
+  static base::FilePath GetRulesetDataFilePath(
+      const base::FilePath& version_directory);
+  static base::FilePath GetLicenseFilePath(
+      const base::FilePath& version_directory);
 
-  // Reads the unindexed rules from |unindexed_ruleset_path|, indexes them, and
-  // calls WriteRuleset() to write the indexed ruleset data. To be called on the
-  // |blocking_task_runner_|.
-  static bool IndexAndWriteRuleset(
+  // Reads the ruleset described in |unindexed_ruleset_info|, indexes it, and
+  // calls WriteRuleset() to persist the indexed ruleset. Returns the resulting
+  // indexed ruleset version, or an invalid version on error. To be called on
+  // the |blocking_task_runner_|.
+  static IndexedRulesetVersion IndexAndWriteRuleset(
       const base::FilePath& indexed_ruleset_base_dir,
-      const IndexedRulesetVersion& indexed_version,
-      const base::FilePath& unindexed_ruleset_path);
+      const UnindexedRulesetInfo& unindexed_ruleset_info);
 
-  // Writes the indexed ruleset |data| of the given |length| to the subdirectory
-  // corresponding to |indexed_version| under |indexed_ruleset_base_dir|.
+  // Writes, atomically, all files comprising the given |indexed_version| of the
+  // ruleset into the corresponding subdirectory in |indexed_ruleset_base_dir|.
+  // More specifically, it writes:
+  //  -- the |indexed_ruleset_data| of the given |indexed_ruleset_size|,
+  //  -- a copy of the LICENSE file at |license_path|, if exists.
   // Returns true on success. To be called on the |blocking_task_runner_|.
   //
   // Writing is factored out into this separate function so it can be
   // independently exercised in tests.
   static bool WriteRuleset(const base::FilePath& indexed_ruleset_base_dir,
                            const IndexedRulesetVersion& indexed_version,
-                           const uint8_t* data,
-                           size_t length);
+                           const base::FilePath& license_path,
+                           const uint8_t* indexed_ruleset_data,
+                           size_t indexed_ruleset_size);
 
-  void OnWrittenRuleset(const IndexedRulesetVersion& version,
-                        const WriteRulesetCallback& result_callback,
-                        bool success);
+  // Posts a task to the |blocking_task_runner_| to index and persist the given
+  // unindexed ruleset. Then, on success, updates the most recently indexed
+  // version in preferences and invokes |success_callback| on the calling
+  // thread. There is no callback on failure.
+  void IndexAndStoreRuleset(const UnindexedRulesetInfo& unindexed_ruleset_info,
+                            const WriteRulesetCallback& success_callback);
+
+  void OnWrittenRuleset(const WriteRulesetCallback& result_callback,
+                        const IndexedRulesetVersion& version);
 
   void OpenAndPublishRuleset(const IndexedRulesetVersion& version);
   void OnOpenedRuleset(base::File::Error error);

@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/testing_pref_service.h"
@@ -35,6 +36,7 @@ const char kTestContentVersion2[] = "1.2.3.5";
 
 const char kTestDisallowedSuffix1[] = "foo";
 const char kTestDisallowedSuffix2[] = "bar";
+const char kTestLicenseContents[] = "Lorem ipsum";
 
 class MockRulesetDistributor : public RulesetDistributor {
  public:
@@ -105,18 +107,47 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
     }
   }
 
-  void IndexAndStoreAndPublishUpdatedRuleset(
-      const TestRulesetPair& test_ruleset_pair,
-      const std::string& new_content_version) {
-    service()->IndexAndStoreAndPublishRulesetVersionIfNeeded(
-        test_ruleset_pair.unindexed.path, new_content_version);
+  // Creates a new file with the given license |contents| at a unique temporary
+  // path, which is returned in |path|.
+  void CreateTestLicenseFile(const std::string& contents,
+                             base::FilePath* path) {
+    ASSERT_NO_FATAL_FAILURE(
+        test_ruleset_creator()->GetUniqueTemporaryPath(path));
+    ASSERT_EQ(static_cast<int>(contents.size()),
+              base::WriteFile(*path, contents.data(),
+                              static_cast<int>(contents.size())));
   }
 
-  void WritePreexistingRuleset(const TestRulesetPair& test_ruleset_pair,
-                               const IndexedRulesetVersion& indexed_version) {
-    RulesetService::WriteRuleset(base_dir(), indexed_version,
-                                 test_ruleset_pair.indexed.contents.data(),
-                                 test_ruleset_pair.indexed.contents.size());
+  void IndexAndStoreAndPublishUpdatedRuleset(
+      const TestRulesetPair& test_ruleset_pair,
+      const std::string& new_content_version,
+      const base::FilePath& license_path = base::FilePath()) {
+    UnindexedRulesetInfo ruleset_info;
+    ruleset_info.ruleset_path = test_ruleset_pair.unindexed.path;
+    ruleset_info.license_path = license_path;
+    ruleset_info.content_version = new_content_version;
+    service()->IndexAndStoreAndPublishRulesetIfNeeded(ruleset_info);
+  }
+
+  bool WriteRuleset(const TestRulesetPair& test_ruleset_pair,
+                    const IndexedRulesetVersion& indexed_version,
+                    const base::FilePath& license_path = base::FilePath()) {
+    return RulesetService::WriteRuleset(
+        base_dir(), indexed_version, license_path,
+        test_ruleset_pair.indexed.contents.data(),
+        test_ruleset_pair.indexed.contents.size());
+  }
+
+  base::FilePath GetExpectedRulesetDataFilePath(
+      const IndexedRulesetVersion& version) const {
+    return RulesetService::GetRulesetDataFilePath(
+        version.GetSubdirectoryPathForVersion(base_dir()));
+  }
+
+  base::FilePath GetExpectedLicenseFilePath(
+      const IndexedRulesetVersion& version) const {
+    return RulesetService::GetLicenseFilePath(
+        version.GetSubdirectoryPathForVersion(base_dir()));
   }
 
   void RunUntilIdle() { task_runner_->RunUntilIdle(); }
@@ -145,6 +176,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   RulesetService* service() { return service_.get(); }
   MockRulesetDistributor* mock_distributor() { return mock_distributor_; }
 
+  TestRulesetCreator* test_ruleset_creator() { return &ruleset_creator_; }
   const TestRulesetPair& test_ruleset_1() const { return test_ruleset_1_; }
   const TestRulesetPair& test_ruleset_2() const { return test_ruleset_2_; }
   base::FilePath base_dir() const {
@@ -166,6 +198,75 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilteringRulesetServiceTest);
 };
+
+TEST_F(SubresourceFilteringRulesetServiceTest, PathsAreSane) {
+  IndexedRulesetVersion indexed_version(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+
+  base::FilePath ruleset_data_path =
+      GetExpectedRulesetDataFilePath(indexed_version);
+  base::FilePath license_path = GetExpectedLicenseFilePath(indexed_version);
+
+  base::FilePath version_dir = ruleset_data_path.DirName();
+  EXPECT_NE(ruleset_data_path, license_path);
+  EXPECT_EQ(version_dir, license_path.DirName());
+
+  EXPECT_TRUE(base_dir().IsParent(version_dir));
+  EXPECT_PRED_FORMAT2(::testing::IsSubstring,
+                      base::IntToString(indexed_version.format_version),
+                      version_dir.MaybeAsASCII());
+  EXPECT_PRED_FORMAT2(::testing::IsSubstring, indexed_version.content_version,
+                      version_dir.MaybeAsASCII());
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest, WriteRuleset) {
+  base::FilePath original_license_path;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestLicenseFile(kTestLicenseContents, &original_license_path));
+  IndexedRulesetVersion indexed_version(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+
+  ASSERT_TRUE(
+      WriteRuleset(test_ruleset_1(), indexed_version, original_license_path));
+
+  base::File indexed_ruleset_data;
+  indexed_ruleset_data.Initialize(
+      GetExpectedRulesetDataFilePath(indexed_version),
+      base::File::FLAG_READ | base::File::FLAG_OPEN);
+  ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
+      &indexed_ruleset_data, test_ruleset_1().indexed.contents));
+  std::string actual_license_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      GetExpectedLicenseFilePath(indexed_version), &actual_license_contents));
+  EXPECT_EQ(kTestLicenseContents, actual_license_contents);
+}
+
+// If the unindexed ruleset is not accompanied by a LICENSE file, there should
+// be no such file created next to the indexed ruleset. The lack of license can
+// be indicated by |license_path| being either an empty or non-existent path.
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       WriteRuleset_NonExistentLicensePath) {
+  base::FilePath nonexistent_license_path;
+  ASSERT_NO_FATAL_FAILURE(test_ruleset_creator()->GetUniqueTemporaryPath(
+      &nonexistent_license_path));
+  IndexedRulesetVersion indexed_version(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+  ASSERT_TRUE(WriteRuleset(test_ruleset_1(), indexed_version,
+                           nonexistent_license_path));
+  EXPECT_TRUE(
+      base::PathExists(GetExpectedRulesetDataFilePath(indexed_version)));
+  EXPECT_FALSE(base::PathExists(GetExpectedLicenseFilePath(indexed_version)));
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest, WriteRuleset_EmptyLicensePath) {
+  IndexedRulesetVersion indexed_version(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+  ASSERT_TRUE(
+      WriteRuleset(test_ruleset_1(), indexed_version, base::FilePath()));
+  EXPECT_TRUE(
+      base::PathExists(GetExpectedRulesetDataFilePath(indexed_version)));
+  EXPECT_FALSE(base::PathExists(GetExpectedLicenseFilePath(indexed_version)));
+}
 
 TEST_F(SubresourceFilteringRulesetServiceTest, Startup_NoRulesetNotPublished) {
   EXPECT_EQ(0u, mock_distributor()->published_rulesets().size());
@@ -193,7 +294,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
                                        legacy_format_version);
   ASSERT_TRUE(legacy_version.IsValid());
   legacy_version.SaveToPrefs(prefs());
-  WritePreexistingRuleset(test_ruleset_1(), legacy_version);
+  WriteRuleset(test_ruleset_1(), legacy_version);
 
   ResetService(CreateRulesetService());
   RunUntilIdle();
@@ -205,7 +306,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
   IndexedRulesetVersion current_version(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   current_version.SaveToPrefs(prefs());
-  WritePreexistingRuleset(test_ruleset_1(), current_version);
+  WriteRuleset(test_ruleset_1(), current_version);
 
   ResetService(CreateRulesetService());
   RunUntilIdle();
@@ -245,7 +346,10 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
-  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
+  base::FilePath original_license_path;
+  CreateTestLicenseFile(kTestLicenseContents, &original_license_path);
+  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1,
+                                        original_license_path);
   RunUntilIdle();
 
   IndexedRulesetVersion stored_version;
@@ -253,6 +357,13 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
   EXPECT_EQ(kTestContentVersion1, stored_version.content_version);
   EXPECT_EQ(IndexedRulesetVersion::CurrentFormatVersion(),
             stored_version.format_version);
+
+  // The unindexed ruleset was accompanied by a LICENSE file, ensure it is
+  // copied next to the indexed ruleset.
+  std::string actual_license_contents;
+  ASSERT_TRUE(base::ReadFileToString(GetExpectedLicenseFilePath(stored_version),
+                                     &actual_license_contents));
+  EXPECT_EQ(kTestLicenseContents, actual_license_contents);
 
   ResetService(CreateRulesetService());
   RunUntilIdle();
