@@ -56,9 +56,12 @@
     ],
     "ContextualSearch": [
         {
-            "group_name": "OptOut",
+            "group_name": "Expected",
             "params": {
-                "enabled": "true"
+                "enable_quick_answers": "true",
+                "enable_translation": "true",
+                "recent_scroll_duration_ms": "300",
+                "suppression_taps": "10"
             }
         }
     ],
