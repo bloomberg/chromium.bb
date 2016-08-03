@@ -167,6 +167,11 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   return handles_.GetDispatcher(handle);
 }
 
+void Core::SetDefaultProcessErrorCallback(
+    const ProcessErrorCallback& callback) {
+  default_process_error_callback_ = callback;
+}
+
 void Core::AddChild(base::ProcessHandle process_handle,
                     ScopedPlatformHandle platform_handle,
                     const std::string& child_token,
@@ -772,6 +777,8 @@ MojoResult Core::NotifyBadMessage(MojoMessageHandle message,
       reinterpret_cast<MessageForTransit*>(message)->ports_message();
   if (ports_message.source_node() == ports::kInvalidNodeName) {
     DVLOG(1) << "Received invalid message from unknown node.";
+    if (!default_process_error_callback_.is_null())
+      default_process_error_callback_.Run(std::string(error, error_num_bytes));
     return MOJO_RESULT_OK;
   }
 

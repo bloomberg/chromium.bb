@@ -84,6 +84,10 @@ void Init() {
   internal::g_core = new Core();
 }
 
+void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
+  internal::g_core->SetDefaultProcessErrorCallback(callback);
+}
+
 MojoResult CreatePlatformHandleWrapper(
     ScopedPlatformHandle platform_handle,
     MojoHandle* platform_handle_wrapper_handle) {

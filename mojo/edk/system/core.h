@@ -51,6 +51,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
+  void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
+
   // Called in the parent process any time a new child is launched.
   void AddChild(base::ProcessHandle process_handle,
                 ScopedPlatformHandle platform_handle,
@@ -289,6 +291,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // This is lazily initialized on first access. Always use GetNodeController()
   // to access it.
   std::unique_ptr<NodeController> node_controller_;
+
+  // The default callback to invoke, if any, when a process error is reported
+  // but cannot be associated with a specific process.
+  ProcessErrorCallback default_process_error_callback_;
 
   base::Lock handles_lock_;
   HandleTable handles_;

@@ -104,6 +104,8 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
 {%-       for param in method.response_parameters %}
   *out_{{param.name}}_ = std::move(p_{{param.name}});
 {%-       endfor %}
+  mojo::internal::SyncMessageResponseSetup::SetCurrentSyncResponseMessage(
+      message);
   *result_ = true;
   return true;
 }
@@ -133,8 +135,10 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%-     set desc = class_name~"::"~method.name~" response" %}
   {{alloc_params(method.response_param_struct, "params", "message",
                  "&serialization_context_", desc)}}
-  if (!callback_.is_null())
+  if (!callback_.is_null()) {
+    mojo::internal::MessageDispatchContext context(message);
     callback_.Run({{pass_params(method.response_parameters)}});
+  }
   return true;
 }
 {%-   endif %}
@@ -318,6 +322,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
+      mojo::internal::MessageDispatchContext context(message);
       sink_->{{method.name}}({{pass_params(method.parameters)}});
       return true;
 {%-     else %}
@@ -356,6 +361,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
+      mojo::internal::MessageDispatchContext context(message);
       sink_->{{method.name}}(
 {%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback);
       return true;

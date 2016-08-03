@@ -11,10 +11,23 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_local.h"
 
 namespace mojo {
+
+namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<internal::MessageDispatchContext>>
+    g_tls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::ThreadLocalPointer<SyncMessageResponseContext>>
+    g_tls_sync_response_context = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 Message::Message() {
 }
@@ -80,6 +93,7 @@ ScopedMessageHandle Message::TakeMojoMessage() {
 }
 
 void Message::NotifyBadMessage(const std::string& error) {
+  DCHECK(buffer_);
   buffer_->NotifyBadMessage(error);
 }
 
@@ -89,6 +103,36 @@ void Message::CloseHandles() {
     if (it->is_valid())
       CloseRaw(*it);
   }
+}
+
+SyncMessageResponseContext::SyncMessageResponseContext()
+    : outer_context_(current()) {
+  g_tls_sync_response_context.Get().Set(this);
+}
+
+SyncMessageResponseContext::~SyncMessageResponseContext() {
+  DCHECK_EQ(current(), this);
+  g_tls_sync_response_context.Get().Set(outer_context_);
+}
+
+// static
+SyncMessageResponseContext* SyncMessageResponseContext::current() {
+  return g_tls_sync_response_context.Get().Get();
+}
+
+void SyncMessageResponseContext::ReportBadMessage(const std::string& error) {
+  GetBadMessageCallback().Run(error);
+}
+
+const ReportBadMessageCallback&
+SyncMessageResponseContext::GetBadMessageCallback() {
+  if (bad_message_callback_.is_null()) {
+    std::unique_ptr<Message> new_message(new Message);
+    response_.MoveTo(new_message.get());
+    bad_message_callback_ = base::Bind(&Message::NotifyBadMessage,
+                                       base::Owned(new_message.release()));
+  }
+  return bad_message_callback_;
 }
 
 MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
@@ -121,5 +165,56 @@ MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
       std::move(mojo_message), num_bytes, &handles);
   return MOJO_RESULT_OK;
 }
+
+void ReportBadMessage(const std::string& error) {
+  internal::MessageDispatchContext* context =
+      internal::MessageDispatchContext::current();
+  DCHECK(context);
+  context->GetBadMessageCallback().Run(error);
+}
+
+ReportBadMessageCallback GetBadMessageCallback() {
+  internal::MessageDispatchContext* context =
+      internal::MessageDispatchContext::current();
+  DCHECK(context);
+  return context->GetBadMessageCallback();
+}
+
+namespace internal {
+
+MessageDispatchContext::MessageDispatchContext(Message* message)
+    : outer_context_(current()), message_(message) {
+  g_tls_message_dispatch_context.Get().Set(this);
+}
+
+MessageDispatchContext::~MessageDispatchContext() {
+  DCHECK_EQ(current(), this);
+  g_tls_message_dispatch_context.Get().Set(outer_context_);
+}
+
+// static
+MessageDispatchContext* MessageDispatchContext::current() {
+  return g_tls_message_dispatch_context.Get().Get();
+}
+
+const ReportBadMessageCallback&
+MessageDispatchContext::GetBadMessageCallback() {
+  if (bad_message_callback_.is_null()) {
+    std::unique_ptr<Message> new_message(new Message);
+    message_->MoveTo(new_message.get());
+    bad_message_callback_ = base::Bind(&Message::NotifyBadMessage,
+                                       base::Owned(new_message.release()));
+  }
+  return bad_message_callback_;
+}
+
+// static
+void SyncMessageResponseSetup::SetCurrentSyncResponseMessage(Message* message) {
+  SyncMessageResponseContext* context = SyncMessageResponseContext::current();
+  if (context)
+    message->MoveTo(&context->response_);
+}
+
+}  // namespace internal
 
 }  // namespace mojo

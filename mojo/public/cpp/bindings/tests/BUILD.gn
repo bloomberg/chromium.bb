@@ -26,6 +26,7 @@ source_set("tests") {
     "message_queue.cc",
     "message_queue.h",
     "multiplex_router_unittest.cc",
+    "report_bad_message_unittest.cc",
     "request_response_unittest.cc",
     "router_test_util.cc",
     "router_test_util.h",
@@ -45,6 +46,7 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
+    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",

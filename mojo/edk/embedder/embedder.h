@@ -74,6 +74,11 @@ MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init();
 
+// Sets a default callback to invoke when an internal error is reported but
+// cannot be associated with a specific child process.
+MOJO_SYSTEM_IMPL_EXPORT void SetDefaultProcessErrorCallback(
+    const ProcessErrorCallback& callback);
+
 // Basic functions -------------------------------------------------------------
 
 // The functions in this section are available once |Init()| has been called.

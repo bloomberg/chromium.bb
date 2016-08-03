@@ -7,9 +7,16 @@
 
 #include <stdint.h>
 
+#include <string>
+
+#include "base/callback.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
+
+class Message;
+
 namespace internal {
 
 #pragma pack(push, 1)
@@ -36,6 +43,28 @@ static_assert(sizeof(MessageHeaderWithRequestID) == 32,
               "Bad sizeof(MessageHeaderWithRequestID)");
 
 #pragma pack(pop)
+
+class MessageDispatchContext {
+ public:
+  explicit MessageDispatchContext(Message* message);
+  ~MessageDispatchContext();
+
+  static MessageDispatchContext* current();
+
+  const base::Callback<void(const std::string&)>& GetBadMessageCallback();
+
+ private:
+  MessageDispatchContext* outer_context_;
+  Message* message_;
+  base::Callback<void(const std::string&)> bad_message_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageDispatchContext);
+};
+
+class SyncMessageResponseSetup {
+ public:
+  static void SetCurrentSyncResponseMessage(Message* message);
+};
 
 }  // namespace internal
 }  // namespace mojo
