@@ -149,8 +149,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
       base::StringPrintf(
           "child-src chrome://terms/ %s/;",
           extensions::kGaiaAuthExtensionOrigin));
-  source->OverrideContentSecurityPolicyObjectSrc(
-      "object-src chrome:;");
+  source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
   source->AddResourcePath("gaia_auth_host.js",
                           StartupUtils::IsWebviewSigninEnabled()
                               ? IDR_GAIA_AUTH_AUTHENTICATOR_JS

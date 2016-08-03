@@ -89,8 +89,6 @@ TEST_F(CSPSourceListTest, BasicMatchingStar)
     EXPECT_FALSE(sourceList.matches(KURL(base, "data:https://example.test/")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "blob:https://example.test/")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "filesystem:https://example.test/")));
-    EXPECT_FALSE(sourceList.matches(KURL(base, "file:///etc/hosts")));
-    EXPECT_FALSE(sourceList.matches(KURL(base, "applewebdata://example.test/")));
 }
 
 TEST_F(CSPSourceListTest, BasicMatchingSelf)
