@@ -225,13 +225,13 @@ class RemoteTryJob(object):
     })
     return properties
 
-  def _PutConfigToBuildBucket(self, bot, http, buildbucket_put_url, dryrun):
+  def _PutConfigToBuildBucket(self, bot, http, testjob, dryrun):
     """Put the tryjob request to buildbucket.
 
     Args:
       bot: The bot config to put.
       http: An authorized http instance.
-      buildbucket_put_url: Target buildbucket url to put the config.
+      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
     """
 
@@ -242,8 +242,9 @@ class RemoteTryJob(object):
             'properties': self._GetProperties(bot),
         }),
     })
-    buildbucket_id = buildbucket_lib.PutBuildBucket(
-        body, http, buildbucket_put_url, dryrun)
+    content = buildbucket_lib.PutBuildBucket(
+        body, http, testjob, dryrun)
+    buildbucket_id = buildbucket_lib.GetBuildId(content)
 
     if buildbucket_id is not None:
       print(self.BUILDBUCKET_PUT_RESP_FORMAT %
@@ -260,10 +261,8 @@ class RemoteTryJob(object):
         service_account=buildbucket_lib.GetServiceAccount(
             constants.CHROMEOS_SERVICE_ACCOUNT))
 
-    buildbucket_put_url = buildbucket_lib.GetBuildBucketPutUrl(testjob)
-
     for bot in self.bots:
-      self._PutConfigToBuildBucket(bot, http, buildbucket_put_url, dryrun)
+      self._PutConfigToBuildBucket(bot, http, testjob, dryrun)
 
   def _PushConfig(self, workdir, testjob, dryrun, current_time):
     """Pushes the tryjob config to Git as a file.
