@@ -42,7 +42,7 @@ class FakeCredentialManager : public mojom::CredentialManager {
 
  private:
   // mojom::CredentialManager methods:
-  void Store(mojom::CredentialInfoPtr credential,
+  void Store(const CredentialInfo& credential,
              const StoreCallback& callback) override {
     callback.Run();
   }
@@ -54,20 +54,19 @@ class FakeCredentialManager : public mojom::CredentialManager {
 
   void Get(bool zero_click_only,
            bool include_passwords,
-           mojo::Array<GURL> federations,
+           const std::vector<GURL>& federations,
            const GetCallback& callback) override {
     const std::string& url = federations[0].spec();
 
     if (url == kTestCredentialPassword) {
-      mojom::CredentialInfoPtr info = mojom::CredentialInfo::New();
-      info->type = mojom::CredentialType::PASSWORD;
-      callback.Run(mojom::CredentialManagerError::SUCCESS, std::move(info));
+      CredentialInfo info;
+      info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
+      callback.Run(mojom::CredentialManagerError::SUCCESS, info);
     } else if (url == kTestCredentialEmpty) {
-      callback.Run(mojom::CredentialManagerError::SUCCESS,
-                   mojom::CredentialInfo::New());
+      callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());
     } else if (url == kTestCredentialReject) {
       callback.Run(mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-                   nullptr);
+                   base::nullopt);
     }
   }
 

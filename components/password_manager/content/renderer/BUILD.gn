@@ -10,7 +10,7 @@ static_library("renderer") {
 
   deps = [
     "//base",
-    "//components/password_manager/content/public/cpp",
+    "//components/password_manager/content/public/interfaces",
     "//components/password_manager/core/common",
     "//components/strings",
     "//content/public/common",

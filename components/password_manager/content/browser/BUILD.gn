@@ -23,7 +23,6 @@ static_library("browser") {
     "//components/autofill/content/public/interfaces",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
-    "//components/password_manager/content/public/cpp",
     "//components/password_manager/content/public/interfaces",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",

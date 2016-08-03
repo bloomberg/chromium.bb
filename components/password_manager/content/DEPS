@@ -3,6 +3,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+content/public/common",
   "+mojo/common",
+  "+mojo/public",
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",

@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/password_manager/content/public/cpp/type_converters.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -185,12 +184,12 @@ void RespondCallback(bool* called) {
 
 void GetCredentialCallback(bool* called,
                            mojom::CredentialManagerError* out_error,
-                           mojom::CredentialInfoPtr* out_info,
+                           base::Optional<CredentialInfo>* out_info,
                            mojom::CredentialManagerError error,
-                           mojom::CredentialInfoPtr info) {
+                           const base::Optional<CredentialInfo>& info) {
   *called = true;
   *out_error = error;
-  *out_info = std::move(info);
+  *out_info = info;
 }
 
 }  // namespace
@@ -281,7 +280,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
                                     const std::vector<GURL>& federations) {
     bool called = false;
     mojom::CredentialManagerError error;
-    mojom::CredentialInfoPtr credential;
+    base::Optional<CredentialInfo> credential;
     CallGet(zero_click_only, include_passwords, federations,
             base::Bind(&GetCredentialCallback, &called, &error, &credential));
     EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
@@ -293,16 +292,16 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
 
     EXPECT_TRUE(called);
     EXPECT_EQ(mojom::CredentialManagerError::SUCCESS, error);
-    EXPECT_EQ(mojom::CredentialType::EMPTY, credential->type);
+    EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, credential->type);
   }
 
   void ExpectZeroClickSignInSuccess(bool zero_click_only,
                                     bool include_passwords,
                                     const std::vector<GURL>& federations,
-                                    mojom::CredentialType type) {
+                                    CredentialType type) {
     bool called = false;
     mojom::CredentialManagerError error;
-    mojom::CredentialInfoPtr credential;
+    base::Optional<CredentialInfo> credential;
     CallGet(zero_click_only, include_passwords, federations,
             base::Bind(&GetCredentialCallback, &called, &error, &credential));
     EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
@@ -320,10 +319,10 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
   void ExpectCredentialType(bool zero_click_only,
                             bool include_passwords,
                             const std::vector<GURL>& federations,
-                            mojom::CredentialType type) {
+                            CredentialType type) {
     bool called = false;
     mojom::CredentialManagerError error;
-    mojom::CredentialInfoPtr credential;
+    base::Optional<CredentialInfo> credential;
     CallGet(zero_click_only, include_passwords, federations,
             base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -339,8 +338,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
   // Helpers for testing CredentialManagerImpl methods.
   void CallStore(const CredentialInfo& info,
                  const CredentialManagerImpl::StoreCallback& callback) {
-    mojom::CredentialInfoPtr credential = mojom::CredentialInfo::From(info);
-    cm_service_impl_->Store(std::move(credential), callback);
+    cm_service_impl_->Store(info, callback);
   }
 
   void CallRequireUserMediation(
@@ -550,7 +548,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerGetOverwriteZeroClick) {
 
   bool called = false;
   mojom::CredentialManagerError error;
-  mojom::CredentialInfoPtr credential;
+  base::Optional<CredentialInfo> credential;
   CallGet(false, true, federations,
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -685,7 +683,8 @@ TEST_F(CredentialManagerImplTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  ExpectCredentialType(false, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(false, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -697,7 +696,8 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
   std::vector<GURL> federations;
-  ExpectCredentialType(false, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(false, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -709,7 +709,7 @@ TEST_F(CredentialManagerImplTest,
 
   std::vector<GURL> federations;
   ExpectZeroClickSignInSuccess(false, true, federations,
-                               mojom::CredentialType::PASSWORD);
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -724,7 +724,8 @@ TEST_F(CredentialManagerImplTest,
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  ExpectCredentialType(false, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(false, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -739,7 +740,7 @@ TEST_F(CredentialManagerImplTest,
 
   bool called = false;
   mojom::CredentialManagerError error;
-  mojom::CredentialInfoPtr credential;
+  base::Optional<CredentialInfo> credential;
   CallGet(false, true, federations,
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -759,7 +760,7 @@ TEST_F(
 
   bool called = false;
   mojom::CredentialManagerError error;
-  mojom::CredentialInfoPtr credential;
+  base::Optional<CredentialInfo> credential;
   CallGet(true, true, federations,
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -779,7 +780,7 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
 
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::PASSWORD);
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -807,7 +808,7 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
 
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::FEDERATED);
+                               CredentialType::CREDENTIAL_TYPE_FEDERATED);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -842,7 +843,7 @@ TEST_F(CredentialManagerImplTest,
   // We pass in 'true' for the 'include_passwords' argument to ensure that
   // password-type credentials are included as potential matches.
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::PASSWORD);
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -884,7 +885,7 @@ TEST_F(CredentialManagerImplTest,
           cm_service_impl_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::FEDERATED);
+                               CredentialType::CREDENTIAL_TYPE_FEDERATED);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -959,7 +960,8 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
   // With two items in the password store, we shouldn't get credentials back.
-  ExpectCredentialType(true, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(true, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -975,7 +977,8 @@ TEST_F(CredentialManagerImplTest,
 
   // With two items in the password store, we shouldn't get credentials back,
   // even though only one item has |skip_zero_click| set |false|.
-  ExpectCredentialType(true, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(true, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -992,7 +995,8 @@ TEST_F(CredentialManagerImplTest,
 
   // We only have cross-origin zero-click credentials; they should not be
   // returned.
-  ExpectCredentialType(true, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(true, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -1008,14 +1012,14 @@ TEST_F(CredentialManagerImplTest,
   // 1st request.
   bool called_1 = false;
   mojom::CredentialManagerError error_1;
-  mojom::CredentialInfoPtr credential_1;
+  base::Optional<CredentialInfo> credential_1;
   CallGet(
       false, true, federations,
       base::Bind(&GetCredentialCallback, &called_1, &error_1, &credential_1));
   // 2nd request.
   bool called_2 = false;
   mojom::CredentialManagerError error_2;
-  mojom::CredentialInfoPtr credential_2;
+  base::Optional<CredentialInfo> credential_2;
   CallGet(
       false, true, federations,
       base::Bind(&GetCredentialCallback, &called_2, &error_2, &credential_2));
@@ -1030,12 +1034,12 @@ TEST_F(CredentialManagerImplTest,
   // Check that the second request triggered a rejection.
   EXPECT_TRUE(called_2);
   EXPECT_EQ(mojom::CredentialManagerError::PENDINGREQUEST, error_2);
-  EXPECT_TRUE(credential_2.is_null());
+  EXPECT_FALSE(credential_2);
 
   // Check that the first request resolves.
   EXPECT_TRUE(called_1);
   EXPECT_EQ(mojom::CredentialManagerError::SUCCESS, error_1);
-  EXPECT_NE(mojom::CredentialType::EMPTY, credential_1->type);
+  EXPECT_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential_1->type);
 }
 
 TEST_F(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
@@ -1073,7 +1077,7 @@ TEST_F(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
 
   bool called = false;
   mojom::CredentialManagerError error;
-  mojom::CredentialInfoPtr credential;
+  base::Optional<CredentialInfo> credential;
   CallGet(false, true, federations,
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -1109,7 +1113,7 @@ TEST_F(CredentialManagerImplTest, NoResetSkipZeroClickAfterPromptInIncognito) {
 
   bool called = false;
   mojom::CredentialManagerError error;
-  mojom::CredentialInfoPtr credential;
+  base::Optional<CredentialInfo> credential;
   CallGet(false, true, std::vector<GURL>(),
           base::Bind(&GetCredentialCallback, &called, &error, &credential));
 
@@ -1131,7 +1135,8 @@ TEST_F(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {
       .Times(testing::Exactly(0));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
 
-  ExpectCredentialType(true, true, federations, mojom::CredentialType::EMPTY);
+  ExpectCredentialType(true, true, federations,
+                       CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 TEST_F(CredentialManagerImplTest, ZeroClickWithAffiliatedFormInPasswordStore) {
@@ -1151,7 +1156,7 @@ TEST_F(CredentialManagerImplTest, ZeroClickWithAffiliatedFormInPasswordStore) {
           cm_service_impl_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::PASSWORD);
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest,
@@ -1212,7 +1217,7 @@ TEST_F(CredentialManagerImplTest,
           cm_service_impl_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   ExpectZeroClickSignInSuccess(true, true, federations,
-                               mojom::CredentialType::PASSWORD);
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {

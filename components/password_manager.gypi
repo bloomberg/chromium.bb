@@ -273,10 +273,10 @@
               'password_manager/content/public/interfaces/credential_manager.mojom',
             ],
             'mojom_typemaps': [
+              'password_manager/content/public/cpp/credential_manager.typemap',
               '<(DEPTH)/url/mojo/gurl.typemap',
               '<(DEPTH)/url/mojo/origin.typemap',
             ],
-            'use_new_wrapper_types': 'false',
           },
           'include_dirs': [
             '..',
@@ -286,14 +286,12 @@
           ],
         },
         {
-          # GN version: //components/password_manager/content/public/cpp
+          # GN version: //components/password_manager/content/public/interfaces
           'target_name': 'password_manager_content_mojo_bindings',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-            '../third_party/WebKit/public/blink.gyp:blink',
             '../url/url.gyp:url_mojom',
             'password_manager_content_mojo_bindings_mojom',
             'password_manager_core_common',
@@ -301,12 +299,8 @@
           'export_dependent_settings': [
              '../url/url.gyp:url_mojom',
            ],
-          'include_dirs': [
-            '..',
-          ],
           'sources': [
-            'password_manager/content/public/cpp/type_converters.cc',
-            'password_manager/content/public/cpp/type_converters.h',
+            'password_manager/content/public/cpp/credential_manager_struct_traits.cc',
           ],
         },
         {

@@ -13,7 +13,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/password_manager/content/public/cpp/type_converters.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -27,8 +26,7 @@ namespace {
 
 void RunMojoGetCallback(const mojom::CredentialManager::GetCallback& callback,
                         const CredentialInfo& info) {
-  mojom::CredentialInfoPtr credential = mojom::CredentialInfo::From(info);
-  callback.Run(mojom::CredentialManagerError::SUCCESS, std::move(credential));
+  callback.Run(mojom::CredentialManagerError::SUCCESS, info);
 }
 
 }  // namespace
@@ -50,10 +48,9 @@ void CredentialManagerImpl::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CredentialManagerImpl::Store(mojom::CredentialInfoPtr credential,
+void CredentialManagerImpl::Store(const CredentialInfo& credential,
                                   const StoreCallback& callback) {
-  CredentialInfo info = credential.To<CredentialInfo>();
-  DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, info.type);
+  DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential.type);
 
   // Send acknowledge response back.
   callback.Run();
@@ -65,7 +62,7 @@ void CredentialManagerImpl::Store(mojom::CredentialInfoPtr credential,
 
   GURL origin = web_contents()->GetLastCommittedURL().GetOrigin();
   std::unique_ptr<autofill::PasswordForm> form(
-      CreatePasswordFormFromCredentialInfo(info, origin));
+      CreatePasswordFormFromCredentialInfo(credential, origin));
   form->skip_zero_click = !IsZeroClickAllowed();
 
   form_manager_.reset(new CredentialManagerPasswordFormManager(
@@ -150,7 +147,7 @@ void CredentialManagerImpl::ScheduleRequireMediationTask(
 
 void CredentialManagerImpl::Get(bool zero_click_only,
                                 bool include_passwords,
-                                mojo::Array<GURL> federations,
+                                const std::vector<GURL>& federations,
                                 const GetCallback& callback) {
   PasswordStore* store = GetPasswordStore();
   if (pending_request_ || !store) {
@@ -158,7 +155,7 @@ void CredentialManagerImpl::Get(bool zero_click_only,
     callback.Run(pending_request_
                      ? mojom::CredentialManagerError::PENDINGREQUEST
                      : mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-                 nullptr);
+                 base::nullopt);
     return;
   }
 
@@ -167,8 +164,7 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   if ((zero_click_only && !IsZeroClickAllowed()) ||
       client_->DidLastPageLoadEncounterSSLErrors()) {
     // Callback with empty credential info.
-    callback.Run(mojom::CredentialManagerError::SUCCESS,
-                 mojom::CredentialInfo::New());
+    callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());
     return;
   }
 
@@ -177,11 +173,11 @@ void CredentialManagerImpl::Get(bool zero_click_only,
         GetSynthesizedFormForOrigin(),
         base::Bind(&CredentialManagerImpl::ScheduleRequestTask,
                    weak_factory_.GetWeakPtr(), callback, zero_click_only,
-                   include_passwords, federations.PassStorage()));
+                   include_passwords, federations));
   } else {
     std::vector<std::string> no_affiliated_realms;
     ScheduleRequestTask(callback, zero_click_only, include_passwords,
-                        federations.PassStorage(), no_affiliated_realms);
+                        federations, no_affiliated_realms);
   }
 }
 

@@ -5,6 +5,5 @@ include_rules = [
   "+components/keyed_service/content",
   "+content/public/browser",
   "+ipc",
-  "+mojo/public",
   "+net",
 ]
