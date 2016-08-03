@@ -37,9 +37,6 @@ struct GL_EXPORT GLWindowSystemBindingInfo {
   bool direct_rendering;
 };
 
-GL_EXPORT void GetAllowedGLImplementations(
-    std::vector<GLImplementation>* impls);
-
 #if defined(OS_WIN)
 typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);
 #else
@@ -105,10 +102,6 @@ GL_EXPORT void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
 // return a function that prints a log message about the function being
 // unsupported.
 GL_EXPORT void* GetGLProcAddress(const char* name);
-
-// Return information about the GL window system binding implementation (e.g.,
-// EGL, GLX, WGL). Returns true if the information was retrieved successfully.
-GL_EXPORT bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info);
 
 // Helper for fetching the OpenGL extensions from the current context.
 // This helper abstracts over differences between the desktop OpenGL

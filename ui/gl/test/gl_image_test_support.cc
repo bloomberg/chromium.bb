@@ -18,8 +18,8 @@ namespace gl {
 
 // static
 void GLImageTestSupport::InitializeGL() {
-  std::vector<GLImplementation> allowed_impls;
-  GetAllowedGLImplementations(&allowed_impls);
+  std::vector<GLImplementation> allowed_impls =
+      init::GetAllowedGLImplementations();
   DCHECK(!allowed_impls.empty());
 
   GLImplementation impl = allowed_impls[0];

@@ -5,6 +5,8 @@
 #ifndef UI_GL_INIT_GL_FACTORY_H_
 #define UI_GL_INIT_GL_FACTORY_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,6 +22,10 @@ class GLSurface;
 
 namespace init {
 
+// Returns a list of allowed GL implementations. The default implementation will
+// be the first item.
+GL_INIT_EXPORT std::vector<GLImplementation> GetAllowedGLImplementations();
+
 // Initializes GL bindings.
 GL_INIT_EXPORT bool InitializeGLOneOff();
 
@@ -32,6 +38,11 @@ GL_INIT_EXPORT bool InitializeGLOneOffImplementation(GLImplementation impl,
 
 // Clears GL bindings and resets GL implementation.
 GL_INIT_EXPORT void ClearGLBindings();
+
+// Return information about the GL window system binding implementation (e.g.,
+// EGL, GLX, WGL). Returns true if the information was retrieved successfully.
+GL_INIT_EXPORT bool GetGLWindowSystemBindingInfo(
+    GLWindowSystemBindingInfo* info);
 
 // Creates a GL context that is compatible with the given surface.
 // |share_group|, if non-NULL, is a group of contexts which the internally

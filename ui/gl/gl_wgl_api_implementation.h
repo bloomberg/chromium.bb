@@ -22,7 +22,7 @@ struct GLWindowSystemBindingInfo;
 GL_EXPORT void InitializeStaticGLBindingsWGL();
 GL_EXPORT void InitializeDebugGLBindingsWGL();
 GL_EXPORT void ClearGLBindingsWGL();
-bool GetGLWindowSystemBindingInfoWGL(GLWindowSystemBindingInfo* info);
+GL_EXPORT bool GetGLWindowSystemBindingInfoWGL(GLWindowSystemBindingInfo* info);
 
 class GL_EXPORT WGLApiBase : public WGLApi {
  public:

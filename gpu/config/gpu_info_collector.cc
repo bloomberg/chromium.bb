@@ -95,7 +95,7 @@ int StringContainsName(
   return -1;
 }
 
-}  // namespace anonymous
+}  // namespace
 
 namespace gpu {
 
@@ -157,7 +157,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.MaxMSAASampleCount", max_samples);
 
   gl::GLWindowSystemBindingInfo window_system_binding_info;
-  if (GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
+  if (gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
     gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
     gpu_info->gl_ws_version = window_system_binding_info.version;
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;

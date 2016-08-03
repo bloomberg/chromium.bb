@@ -23,7 +23,7 @@ struct GLWindowSystemBindingInfo;
 GL_EXPORT void InitializeStaticGLBindingsEGL();
 GL_EXPORT void InitializeDebugGLBindingsEGL();
 GL_EXPORT void ClearGLBindingsEGL();
-bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info);
+GL_EXPORT bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info);
 
 class GL_EXPORT EGLApiBase : public EGLApi {
  public:

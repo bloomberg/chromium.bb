@@ -22,8 +22,7 @@ bool InitializeGLOneOff() {
 
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
-  std::vector<GLImplementation> allowed_impls;
-  GetAllowedGLImplementations(&allowed_impls);
+  std::vector<GLImplementation> allowed_impls = GetAllowedGLImplementations();
   DCHECK(!allowed_impls.empty());
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();

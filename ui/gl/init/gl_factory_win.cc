@@ -11,6 +11,7 @@
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_context_wgl.h"
+#include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
@@ -19,10 +20,30 @@
 #include "ui/gl/gl_surface_osmesa_win.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_surface_wgl.h"
+#include "ui/gl/gl_wgl_api_implementation.h"
 #include "ui/gl/vsync_provider_win.h"
 
 namespace gl {
 namespace init {
+
+std::vector<GLImplementation> GetAllowedGLImplementations() {
+  std::vector<GLImplementation> impls;
+  impls.push_back(kGLImplementationEGLGLES2);
+  impls.push_back(kGLImplementationDesktopGL);
+  impls.push_back(kGLImplementationOSMesaGL);
+  return impls;
+}
+
+bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL:
+      return GetGLWindowSystemBindingInfoWGL(info);
+    case kGLImplementationEGLGLES2:
+      return GetGLWindowSystemBindingInfoEGL(info);
+    default:
+      return false;
+  }
+}
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
