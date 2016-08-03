@@ -18,8 +18,6 @@
 
 namespace task_management {
 
-namespace {
-
 // Temporarily intercepts the calls between a TableModel and its Observer,
 // running |callback| whenever anything happens.
 class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
@@ -62,103 +60,104 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
   base::Closure callback_;
 };
 
+namespace {
+
+// Returns the TaskManagerTableModel for the the visible NewTaskManagerView.
+TaskManagerTableModel* GetRealModel() {
+  return chrome::ShowTaskManager(nullptr);
+}
+
 }  // namespace
 
-class TaskManagerTesterImpl : public TaskManagerTester {
- public:
-  explicit TaskManagerTesterImpl(const base::Closure& on_resource_change)
-      : model_(GetRealModel()) {
-    // Eavesdrop the model->view conversation, since the model only supports
-    // single observation.
-    if (!on_resource_change.is_null()) {
-      interceptor_.reset(new ScopedInterceptTableModelObserver(
-          model_, model_->table_model_observer_, on_resource_change));
-    }
+TaskManagerTester::TaskManagerTester(const base::Closure& on_resource_change)
+    : model_(GetRealModel()) {
+  // Eavesdrop the model->view conversation, since the model only supports
+  // single observation.
+  if (!on_resource_change.is_null()) {
+    interceptor_.reset(new ScopedInterceptTableModelObserver(
+        model_, model_->table_model_observer_, on_resource_change));
   }
+}
 
-  ~TaskManagerTesterImpl() override {
-    CHECK_EQ(GetRealModel(), model_) << "Task Manager should not be hidden "
-                                        "while TaskManagerTester is alive. "
-                                        "This indicates a test bug.";
+TaskManagerTester::~TaskManagerTester() {
+  CHECK_EQ(GetRealModel(), model_) << "Task Manager should not be hidden "
+                                      "while TaskManagerTester is alive. "
+                                      "This indicates a test bug.";
+}
+
+// TaskManagerTester:
+int TaskManagerTester::GetRowCount() {
+  return model_->RowCount();
+}
+
+base::string16 TaskManagerTester::GetRowTitle(int row) {
+  return model_->GetText(row, IDS_TASK_MANAGER_TASK_COLUMN);
+}
+
+void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
+  int column_id = 0;
+  switch (column) {
+    case ColumnSpecifier::COLUMN_NONE:
+      return;
+    case ColumnSpecifier::SQLITE_MEMORY_USED:
+      column_id = IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN;
+      break;
+    case ColumnSpecifier::V8_MEMORY_USED:
+    case ColumnSpecifier::V8_MEMORY:
+      column_id = IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN;
+      break;
   }
+  model_->ToggleColumnVisibility(column_id);
+}
 
-  // TaskManagerTester:
-  int GetRowCount() override { return model_->RowCount(); }
+int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
+  TaskId task_id = model_->tasks_[row];
+  int64_t value = 0;
+  int64_t ignored = 0;
+  bool success = false;
 
-  base::string16 GetRowTitle(int row) override {
-    return model_->GetText(row, IDS_TASK_MANAGER_TASK_COLUMN);
+  switch (column) {
+    case ColumnSpecifier::COLUMN_NONE:
+      break;
+    case ColumnSpecifier::V8_MEMORY:
+      success = task_manager()->GetV8Memory(task_id, &value, &ignored);
+      break;
+    case ColumnSpecifier::V8_MEMORY_USED:
+      success = task_manager()->GetV8Memory(task_id, &ignored, &value);
+      break;
+    case ColumnSpecifier::SQLITE_MEMORY_USED:
+      value = task_manager()->GetSqliteMemoryUsed(task_id);
+      success = true;
+      break;
   }
+  if (!success)
+    return 0;
+  return value;
+}
 
-  void ToggleColumnVisibility(ColumnSpecifier column) override {
-    int column_id = 0;
-    switch (column) {
-      case ColumnSpecifier::COLUMN_NONE:
-        return;
-      case ColumnSpecifier::SQLITE_MEMORY_USED:
-        column_id = IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN;
-        break;
-      case ColumnSpecifier::V8_MEMORY_USED:
-      case ColumnSpecifier::V8_MEMORY:
-        column_id = IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN;
-        break;
-    }
-    model_->ToggleColumnVisibility(column_id);
-  }
+int32_t TaskManagerTester::GetTabId(int row) {
+  TaskId task_id = model_->tasks_[row];
+  return task_manager()->GetTabId(task_id);
+}
 
-  int64_t GetColumnValue(ColumnSpecifier column, int row) override {
-    task_management::TaskId task_id = model_->tasks_[row];
-    int64_t value = 0;
-    int64_t ignored = 0;
-    bool success = false;
+void TaskManagerTester::Kill(int row) {
+  model_->KillTask(row);
+}
 
-    switch (column) {
-      case ColumnSpecifier::COLUMN_NONE:
-        break;
-      case ColumnSpecifier::V8_MEMORY:
-        success = task_manager()->GetV8Memory(task_id, &value, &ignored);
-        break;
-      case ColumnSpecifier::V8_MEMORY_USED:
-        success = task_manager()->GetV8Memory(task_id, &ignored, &value);
-        break;
-      case ColumnSpecifier::SQLITE_MEMORY_USED:
-        value = task_manager()->GetSqliteMemoryUsed(task_id);
-        success = true;
-        break;
-    }
-    if (!success)
-      return 0;
-    return value;
-  }
+void TaskManagerTester::GetRowsGroupRange(int row,
+                                          int* out_start,
+                                          int* out_length) {
+  return model_->GetRowsGroupRange(row, out_start, out_length);
+}
 
-  int32_t GetTabId(int row) override {
-    task_management::TaskId task_id = model_->tasks_[row];
-    return task_manager()->GetTabId(task_id);
-  }
-
-  void Kill(int row) override { model_->KillTask(row); }
-
-  void GetRowsGroupRange(int row, int* out_start, int* out_length) override {
-    return model_->GetRowsGroupRange(row, out_start, out_length);
-  }
-
- private:
-  task_management::TaskManagerInterface* task_manager() {
-    return model_->observed_task_manager();
-  }
-
-  // Returns the TaskManagerTableModel for the the visible NewTaskManagerView.
-  static task_management::TaskManagerTableModel* GetRealModel() {
-    return chrome::ShowTaskManager(nullptr);
-  }
-
-  task_management::TaskManagerTableModel* model_;
-  std::unique_ptr<ScopedInterceptTableModelObserver> interceptor_;
-};
+TaskManagerInterface* TaskManagerTester::task_manager() {
+  return model_->observed_task_manager();
+}
 
 // static
 std::unique_ptr<TaskManagerTester> TaskManagerTester::Create(
     const base::Closure& callback) {
-  return base::WrapUnique(new TaskManagerTesterImpl(callback));
+  return base::WrapUnique(new TaskManagerTester(callback));
 }
 
 }  // namespace task_management

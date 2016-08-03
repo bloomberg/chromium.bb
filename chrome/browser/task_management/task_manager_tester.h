@@ -15,42 +15,55 @@
 
 namespace task_management {
 
+class ScopedInterceptTableModelObserver;
+class TaskManagerInterface;
+class TaskManagerTableModel;
+
 // An adapter to simplify testing the task manager.
 class TaskManagerTester {
  public:
   using ColumnSpecifier = browsertest_util::ColumnSpecifier;
 
-  // Creates a TaskManagerTester backed by the current task manager. The task
-  // manager should already be visible when you call this function. |callback|,
-  // if not a null callback, will be invoked when the underlying model changes.
-  static std::unique_ptr<TaskManagerTester> Create(
-      const base::Closure& callback);
+  ~TaskManagerTester();
 
-  virtual ~TaskManagerTester() {}
+  // Creates a TaskManagerTester backed by the current task manager. The task
+  // manager should already be visible when you call this function.
+  // |on_resource_change|, if not a null callback, will be invoked when the
+  // underlying model changes.
+  static std::unique_ptr<TaskManagerTester> Create(
+      const base::Closure& on_resource_change);
 
   // Get the number of rows currently in the task manager.
-  virtual int GetRowCount() = 0;
+  int GetRowCount();
 
   // Get the title text of a particular |row|.
-  virtual base::string16 GetRowTitle(int row) = 0;
+  base::string16 GetRowTitle(int row);
 
   // Hide or show a column. If a column is not visible its stats are not
   // necessarily gathered.
-  virtual void ToggleColumnVisibility(ColumnSpecifier column) = 0;
+  void ToggleColumnVisibility(ColumnSpecifier column);
 
   // Get the value of a column as an int64. Memory values are in bytes.
-  virtual int64_t GetColumnValue(ColumnSpecifier column, int row) = 0;
+  int64_t GetColumnValue(ColumnSpecifier column, int row);
 
   // If |row| is associated with a WebContents, return its SessionID. Otherwise,
   // return -1.
-  virtual int32_t GetTabId(int row) = 0;
+  int32_t GetTabId(int row);
 
   // Kill the process of |row|.
-  virtual void Kill(int row) = 0;
+  void Kill(int row);
 
   // Gets the start index and length of the group to which the task at
   // |row_index| belongs.
-  virtual void GetRowsGroupRange(int row, int* out_start, int* out_length) = 0;
+  void GetRowsGroupRange(int row, int* out_start, int* out_length);
+
+ private:
+  explicit TaskManagerTester(const base::Closure& on_resource_change);
+
+  TaskManagerInterface* task_manager();
+
+  TaskManagerTableModel* model_;
+  std::unique_ptr<ScopedInterceptTableModelObserver> interceptor_;
 };
 
 }  // namespace task_management

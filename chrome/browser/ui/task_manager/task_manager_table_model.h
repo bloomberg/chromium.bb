@@ -109,7 +109,7 @@ class TaskManagerTableModel
   int GetRowForWebContents(content::WebContents* web_contents);
 
  private:
-  friend class TaskManagerTesterImpl;
+  friend class TaskManagerTester;
 
   // Start / stop observing the task manager.
   void StartUpdating();
