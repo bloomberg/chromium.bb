@@ -391,10 +391,6 @@ extern const char kPrintingEnabled[];
 extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewDefaultDestinationSelectionRules[];
 
-#if defined(OS_CHROMEOS)
-extern const char kPrintingDevices[];
-#endif  // OS_CHROMEOS
-
 extern const char kDefaultSupervisedUserFilteringBehavior[];
 
 extern const char kSupervisedUserCreationAllowed[];
