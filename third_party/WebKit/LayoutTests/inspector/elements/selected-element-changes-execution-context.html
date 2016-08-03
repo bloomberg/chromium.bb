@@ -5,43 +5,59 @@
 <script>
 function test()
 {
-    InspectorTest.expandElementsTree(selectNode);
-    var previousContext;
+    var mainContext;
 
-    function selectNode()
-    {
-        previousContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        InspectorTest.selectNodeWithId("head", iframeNodeSelected);
-    }
+    InspectorTest.runTestSuite([
+        function initialize(next)
+        {
+            InspectorTest.expandElementsTree(onExpanded);
 
-    function iframeNodeSelected()
-    {
-        var node = WebInspector.panels.elements.selectedDOMNode();
-        var currentContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        InspectorTest.addResult("Context has changed:");
-        InspectorTest.addResult(previousContext.id !== currentContext.id);
-        InspectorTest.addResult("Context matches node frameId: ");
-        InspectorTest.addResult(currentContext.frameId == node.frameId());
-        previousContext = currentContext;
-        InspectorTest.selectNodeWithId("element", elementSelected);
-    }
+            function onExpanded()
+            {
+                mainContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+                dumpContextAndNext(next);
+            }
+        },
 
-    function elementSelected()
+        function selectIframeInnerNode(next)
+        {
+            InspectorTest.selectNodeWithId("head", dumpContextAndNext.bind(null, next));
+        },
+
+        function selectMainFrameNode(next)
+        {
+            InspectorTest.selectNodeWithId("element", dumpContextAndNext.bind(null, next));
+        },
+
+        function selectIframeNode(next)
+        {
+            InspectorTest.selectNodeWithId("iframe-per-se", dumpContextAndNext.bind(null, next));
+        },
+
+        function selectIframeImmediateChild(next)
+        {
+            var iframe = WebInspector.context.flavor(WebInspector.DOMNode);
+            var child = iframe.firstChild;
+            InspectorTest.selectNode(child).then(dumpContextAndNext.bind(null, next));
+        },
+    ]);
+
+    function dumpContextAndNext(next)
     {
-        var node = WebInspector.panels.elements.selectedDOMNode();
-        var currentContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        InspectorTest.addResult("Context has changed:");
-        InspectorTest.addResult(previousContext.id !== currentContext.id);
-        InspectorTest.addResult("Context matches node frameId: ");
-        InspectorTest.addResult(currentContext.frameId == node.frameId());
-        InspectorTest.completeTest();
+        var context = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        var node = WebInspector.context.flavor(WebInspector.DOMNode);
+        var contextName = context === mainContext ? "main" : "iframe";
+        var matchesNode = context.frameId === node.frameId();
+        InspectorTest.addResult("Execution Context: " + contextName);
+        InspectorTest.addResult("          matches: " + matchesNode);
+        next();
     }
 }
 </script>
 </head>
 <body>
     <p>Tests that the execution context is changed to match new selected node.</p>
-    <iframe src="resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
+    <iframe id="iframe-per-se" src="resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
     <div id="element"></div>
 </body>
 </html>
