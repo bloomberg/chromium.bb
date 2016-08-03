@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/user_agent.h"
 #include "headless/public/headless_browser.h"
+
+#include <utility>
+
+#include "content/public/common/user_agent.h"
 
 using Options = headless::HeadlessBrowser::Options;
 using Builder = headless::HeadlessBrowser::Options::Builder;
@@ -19,11 +22,11 @@ constexpr gfx::Size kDefaultWindowSize(800, 600);
 Options::Options(int argc, const char** argv)
     : argc(argc),
       argv(argv),
-      user_agent(content::BuildUserAgentFromProduct(kProductName)),
       message_pump(nullptr),
       single_process_mode(false),
       disable_sandbox(false),
       gl_implementation("osmesa"),
+      user_agent(content::BuildUserAgentFromProduct(kProductName)),
       window_size(kDefaultWindowSize) {}
 
 Options::Options(Options&& options) = default;
@@ -73,13 +76,13 @@ Builder& Builder::SetDisableSandbox(bool disable_sandbox) {
   return *this;
 }
 
-Builder& Builder::SetProtocolHandlers(ProtocolHandlerMap protocol_handlers) {
-  options_.protocol_handlers = std::move(protocol_handlers);
+Builder& Builder::SetGLImplementation(const std::string& gl_implementation) {
+  options_.gl_implementation = gl_implementation;
   return *this;
 }
 
-Builder& Builder::SetGLImplementation(const std::string& gl_implementation) {
-  options_.gl_implementation = gl_implementation;
+Builder& Builder::SetUserDataDir(const base::FilePath& user_data_dir) {
+  options_.user_data_dir = user_data_dir;
   return *this;
 }
 

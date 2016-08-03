@@ -6,6 +6,8 @@
 #define HEADLESS_PUBLIC_HEADLESS_WEB_CONTENTS_H_
 
 #include <list>
+#include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -15,7 +17,7 @@
 #include "url/gurl.h"
 
 namespace headless {
-class HeadlessBrowserContext;
+class HeadlessBrowserContextImpl;
 class HeadlessBrowserImpl;
 class HeadlessDevToolsTarget;
 
@@ -79,12 +81,6 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   // Specify the initial window size (default is configured in browser options).
   Builder& SetWindowSize(const gfx::Size& size);
 
-  // Set a browser context for storing session data (e.g., cookies, cache, local
-  // storage) for the tab. Several tabs can share the same browser context. If
-  // unset, the default browser context will be used. The browser context must
-  // outlive this HeadlessWebContents.
-  Builder& SetBrowserContext(HeadlessBrowserContext* browser_context);
-
   // Specify an embedder provided Mojo service to be installed.  The
   // |service_factory| callback is called on demand by Mojo to instantiate the
   // service if a client asks for it.
@@ -107,7 +103,10 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
 
  private:
   friend class HeadlessBrowserImpl;
+  friend class HeadlessBrowserContextImpl;
   friend class HeadlessWebContentsImpl;
+
+  explicit Builder(HeadlessBrowserContextImpl* browser_context);
 
   template <typename Interface>
   static void ForwardToServiceFactory(
@@ -131,12 +130,10 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
     DISALLOW_COPY_AND_ASSIGN(MojoService);
   };
 
-  explicit Builder(HeadlessBrowserImpl* browser);
+  HeadlessBrowserContextImpl* browser_context_;
 
-  HeadlessBrowserImpl* browser_;
   GURL initial_url_ = GURL("about:blank");
   gfx::Size window_size_;
-  HeadlessBrowserContext* browser_context_;
   std::list<MojoService> mojo_services_;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);

@@ -23,9 +23,11 @@ class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
@@ -40,9 +42,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/window_open.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));

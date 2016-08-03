@@ -4,8 +4,10 @@
 
 #include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -55,10 +57,7 @@ class HeadlessBrowserContextIsolationTest
   void DevToolsTargetReady() override {
     if (!web_contents2_) {
       browser_context_ = browser()->CreateBrowserContextBuilder().Build();
-      web_contents2_ = browser()
-                           ->CreateWebContentsBuilder()
-                           .SetBrowserContext(browser_context_.get())
-                           .Build();
+      web_contents2_ = browser_context_->CreateWebContentsBuilder().Build();
       web_contents2_->AddObserver(this);
       return;
     }
@@ -170,10 +169,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
           .SetProtocolHandlers(std::move(protocol_handlers))
           .Build();
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
-          .SetBrowserContext(browser_context.get())
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
@@ -185,12 +182,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
   EXPECT_EQ(kResponseBody, inner_html);
   web_contents->Close();
 
-  // Loading the same non-existent page using a tab with the default context
+  std::unique_ptr<HeadlessBrowserContext> another_browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  // Loading the same non-existent page using a tab with a different context
   // should not work since the protocol handler only exists on the custom
   // context.
   web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      another_browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
@@ -200,6 +199,38 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
                   ->GetAsString(&inner_html));
   EXPECT_EQ("", inner_html);
   web_contents->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
+  // We do not want to bother with posting tasks to create a temp dir.
+  // Just allow IO from main thread for now.
+  base::ThreadRestrictions::SetIOAllowed(true);
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  base::ScopedTempDir user_data_dir;
+  ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
+
+  // Newly created temp directory should be empty.
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
+
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetUserDataDir(user_data_dir.path())
+          .Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // Something should be written to this directory.
+  // If it is not the case, more complex page may be needed.
+  // ServiceWorkers may be a good option.
+  EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir.path()));
 }
 
 }  // namespace headless

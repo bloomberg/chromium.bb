@@ -4,6 +4,9 @@
 
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -58,35 +61,41 @@ class WebContentsObserverAdapter : public content::WebContentsObserver {
 
 class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
  public:
-  explicit Delegate(HeadlessBrowserImpl* browser) : browser_(browser) {}
+  explicit Delegate(HeadlessBrowserContextImpl* browser_context)
+      : browser_context_(browser_context) {}
 
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_frame_id,
                           const std::string& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override {
-    browser_->RegisterWebContents(
-        HeadlessWebContentsImpl::CreateFromWebContents(new_contents, browser_));
+    std::unique_ptr<HeadlessWebContentsImpl> web_contents =
+        HeadlessWebContentsImpl::CreateFromWebContents(new_contents,
+                                                       browser_context_);
+
+    DCHECK(new_contents->GetBrowserContext() == browser_context_);
+
+    browser_context_->RegisterWebContents(web_contents.get());
+    browser_context_->browser()->RegisterWebContents(std::move(web_contents));
   }
 
  private:
-  HeadlessBrowserImpl* browser_;  // Not owned.
+  HeadlessBrowserContextImpl* browser_context_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 // static
 std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
     HeadlessWebContents::Builder* builder,
-    aura::Window* parent_window,
-    HeadlessBrowserImpl* browser) {
-  content::BrowserContext* context =
-      HeadlessBrowserContextImpl::From(builder->browser_context_);
-  content::WebContents::CreateParams create_params(context, nullptr);
+    aura::Window* parent_window) {
+  content::WebContents::CreateParams create_params(builder->browser_context_,
+                                                   nullptr);
   create_params.initial_size = builder->window_size_;
 
   std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
       base::WrapUnique(new HeadlessWebContentsImpl(
-          content::WebContents::Create(create_params), browser));
+          content::WebContents::Create(create_params),
+          builder->browser_context_));
 
   headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
   headless_web_contents->InitializeScreen(parent_window, builder->window_size_);
@@ -99,9 +108,10 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
 std::unique_ptr<HeadlessWebContentsImpl>
 HeadlessWebContentsImpl::CreateFromWebContents(
     content::WebContents* web_contents,
-    HeadlessBrowserImpl* browser) {
+    HeadlessBrowserContextImpl* browser_context) {
   std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      base::WrapUnique(new HeadlessWebContentsImpl(web_contents, browser));
+      base::WrapUnique(
+          new HeadlessWebContentsImpl(web_contents, browser_context));
 
   return headless_web_contents;
 }
@@ -122,12 +132,13 @@ void HeadlessWebContentsImpl::InitializeScreen(aura::Window* parent_window,
 
 HeadlessWebContentsImpl::HeadlessWebContentsImpl(
     content::WebContents* web_contents,
-    HeadlessBrowserImpl* browser)
+    HeadlessBrowserContextImpl* browser_context)
     : content::WebContentsObserver(web_contents),
-      web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(browser)),
+      web_contents_delegate_(
+          new HeadlessWebContentsImpl::Delegate(browser_context)),
       web_contents_(web_contents),
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
-      browser_(browser) {
+      browser_context_(browser_context) {
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 
@@ -148,7 +159,7 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
   for (const MojoService& service : mojo_services_) {
     interface_registry->AddInterface(service.service_name,
                                      service.service_factory,
-                                     browser_->BrowserMainThread());
+                                     browser()->BrowserMainThread());
   }
 }
 
@@ -164,7 +175,8 @@ bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
 }
 
 void HeadlessWebContentsImpl::Close() {
-  browser_->DestroyWebContents(this);
+  browser_context()->UnregisterWebContents(this);
+  browser()->DestroyWebContents(this);
 }
 
 std::string HeadlessWebContentsImpl::GetDevtoolsAgentHostId() {
@@ -200,11 +212,18 @@ content::WebContents* HeadlessWebContentsImpl::web_contents() const {
   return web_contents_.get();
 }
 
-HeadlessWebContents::Builder::Builder(HeadlessBrowserImpl* browser)
-    : browser_(browser),
-      window_size_(browser_->options()->window_size),
-      browser_context_(
-          browser->browser_main_parts()->default_browser_context()) {}
+HeadlessBrowserImpl* HeadlessWebContentsImpl::browser() const {
+  return browser_context_->browser();
+}
+
+HeadlessBrowserContextImpl* HeadlessWebContentsImpl::browser_context() const {
+  return browser_context_;
+}
+
+HeadlessWebContents::Builder::Builder(
+    HeadlessBrowserContextImpl* browser_context)
+    : browser_context_(browser_context),
+      window_size_(browser_context->options()->window_size()) {}
 
 HeadlessWebContents::Builder::~Builder() = default;
 
@@ -222,12 +241,6 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetWindowSize(
   return *this;
 }
 
-HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetBrowserContext(
-    HeadlessBrowserContext* browser_context) {
-  browser_context_ = browser_context;
-  return *this;
-}
-
 HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
     const std::string& service_name,
     const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
@@ -237,7 +250,7 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
 }
 
 HeadlessWebContents* HeadlessWebContents::Builder::Build() {
-  return browser_->CreateWebContents(this);
+  return browser_context_->browser()->CreateWebContents(this);
 }
 
 HeadlessWebContents::Builder::MojoService::MojoService() {}

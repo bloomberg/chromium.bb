@@ -28,11 +28,8 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopRun() override;
   void PostMainMessageLoopRun() override;
 
-  HeadlessBrowserContextImpl* default_browser_context() const;
-
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
-  std::unique_ptr<HeadlessBrowserContextImpl> browser_context_;
   std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
       devtools_http_handler_;
 

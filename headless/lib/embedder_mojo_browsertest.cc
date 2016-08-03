@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -85,28 +86,22 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
             .GetRawDataResource(IDR_HEADLESS_EMBEDDER_TEST_MOJOM_JS)
             .as_string();
 
+    HeadlessBrowserContext::Builder builder =
+        browser()->CreateBrowserContextBuilder();
+    builder.AddJsMojoBindings("headless/lib/embedder_test.mojom",
+                              embedder_test_mojom_js);
     if (http_policy_ == HttpPolicy::ENABLE_HTTP) {
-      browser_context_ =
-          browser()
-              ->CreateBrowserContextBuilder()
-              .AddJsMojoBindings("headless/lib/embedder_test.mojom",
-                                 embedder_test_mojom_js)
-              .EnableUnsafeNetworkAccessWithMojoBindings(true)
-              .Build();
-    } else {
-      browser_context_ =
-          browser()
-              ->CreateBrowserContextBuilder()
-              .AddJsMojoBindings("headless/lib/embedder_test.mojom",
-                                 embedder_test_mojom_js)
-              .Build();
+      builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
+    }
+    if (host_resolver_rules_) {
+      builder.SetHostResolverRules(*host_resolver_rules_);
     }
 
+    browser_context_ = builder.Build();
+
     web_contents_ =
-        browser()
-            ->CreateWebContentsBuilder()
+        browser_context_->CreateWebContentsBuilder()
             .SetInitialURL(GURL(GetInitialUrl()))
-            .SetBrowserContext(browser_context_.get())
             .AddMojoService(base::Bind(&EmbedderMojoTest::CreateTestMojoService,
                                        base::Unretained(this)))
             .Build();
@@ -135,6 +130,7 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
       test_embedder_mojo_bindings_;
 
   HttpPolicy http_policy_;
+  base::Optional<std::string> host_resolver_rules_;
 };
 
 class MojoBindingsTest : public EmbedderMojoTest {
@@ -182,11 +178,9 @@ class MojoBindingsReinstalledAfterNavigation : public EmbedderMojoTest {
   void SetUpOnMainThread() override {
     // We want to make sure bindings work across browser initiated cross-origin
     // navigation, which is why we're setting up this fake tld.
-    HeadlessBrowser::Options::Builder builder;
-    builder.SetHostResolverRules(
+    host_resolver_rules_ =
         base::StringPrintf("MAP not-an-actual-domain.tld 127.0.0.1:%d",
-                           embedded_test_server()->host_port_pair().port()));
-    SetBrowserOptions(builder.Build());
+                           embedded_test_server()->host_port_pair().port());
 
     EmbedderMojoTest::SetUpOnMainThread();
   }

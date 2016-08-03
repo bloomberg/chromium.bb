@@ -4,6 +4,9 @@
 
 #include "headless/lib/browser/headless_devtools.h"
 
+#include <string>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
@@ -11,7 +14,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "headless/grit/headless_lib_resources.h"
-#include "headless/lib/browser/headless_browser_context_impl.h"
+#include "headless/public/headless_browser.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,7 +29,7 @@ const int kBackLog = 10;
 
 class TCPServerSocketFactory : public DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const net::IPEndPoint& endpoint)
+  explicit TCPServerSocketFactory(const net::IPEndPoint& endpoint)
       : endpoint_(endpoint) {
     DCHECK(endpoint_.address().IsValid());
   }
@@ -90,15 +93,14 @@ HeadlessDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
 }  // namespace
 
 std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
-    HeadlessBrowserContextImpl* browser_context) {
-  const net::IPEndPoint& endpoint =
-      browser_context->options()->devtools_endpoint;
+    HeadlessBrowser::Options* options) {
+  const net::IPEndPoint& endpoint = options->devtools_endpoint;
   std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
   return base::WrapUnique(new DevToolsHttpHandler(
       std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),
-      browser_context->GetPath(), base::FilePath(), std::string(),
-      browser_context->options()->user_agent));
+      options->user_data_dir,  // TODO(altimin): Figure a proper value for this.
+      base::FilePath(), std::string(), options->user_agent));
 }
 
 }  // namespace headless

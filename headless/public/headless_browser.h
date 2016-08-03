@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "headless/public/headless_browser_context.h"
@@ -35,13 +36,11 @@ class HEADLESS_EXPORT HeadlessBrowser {
  public:
   struct Options;
 
-  // Open a new tab. Returns a builder object which can be used to set
-  // properties for the new tab.
-  virtual HeadlessWebContents::Builder CreateWebContentsBuilder() = 0;
-
-  // Deprecated. Use CreateWebContentsBuilder() instead.
-  virtual HeadlessWebContents* CreateWebContents(const GURL& initial_url,
-                                                 const gfx::Size& size) = 0;
+  // Create a new browser context which can be used to create tabs and isolate
+  // them from one another.
+  // User owns newly created HeadlessBrowserContext and should delete them
+  // before calling HeadlessBrowser::Shutdown().
+  virtual HeadlessBrowserContext::Builder CreateBrowserContextBuilder() = 0;
 
   virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
 
@@ -61,10 +60,6 @@ class HEADLESS_EXPORT HeadlessBrowser {
   // Requests browser to stop as soon as possible. |Run| will return as soon as
   // browser stops.
   virtual void Shutdown() = 0;
-
-  // Create a new browser context, which can be used to isolate
-  // HeadlessWebContents from one another.
-  virtual HeadlessBrowserContext::Builder CreateBrowserContextBuilder() = 0;
 
  protected:
   HeadlessBrowser() {}
@@ -87,23 +82,12 @@ struct HeadlessBrowser::Options {
   int argc;
   const char** argv;
 
-  std::string user_agent;
-  std::string navigator_platform;
-
   // Address at which DevTools should listen for connections. Disabled by
   // default.
   net::IPEndPoint devtools_endpoint;
 
-  // Address of the HTTP/HTTPS proxy server to use. The system proxy settings
-  // are used by default.
-  net::HostPortPair proxy_server;
-
   // Optional message pump that overrides the default. Must outlive the browser.
   base::MessagePump* message_pump;
-
-  // Comma-separated list of rules that control how hostnames are mapped. See
-  // chrome::switches::kHostRules for a description for the format.
-  std::string host_resolver_rules;
 
   // Run the browser in single process mode instead of using separate renderer
   // processes as per default. Note that this also disables any sandboxing of
@@ -114,19 +98,33 @@ struct HeadlessBrowser::Options {
   // a security risk and should be used with caution.
   bool disable_sandbox;
 
-  // Custom network protocol handlers. These can be used to override URL
-  // fetching for different network schemes.
-  ProtocolHandlerMap protocol_handlers;
-
   // Choose the GL implementation to use for rendering. A suitable
   // implementantion is selected by default. Setting this to an empty
   // string can be used to disable GL rendering (e.g., WebGL support).
   std::string gl_implementation;
 
+  // Default per-context options, can be specialized on per-context basis.
+
+  std::string user_agent;
+
+  // Address of the HTTP/HTTPS proxy server to use. The system proxy settings
+  // are used by default.
+  net::HostPortPair proxy_server;
+
+  // Comma-separated list of rules that control how hostnames are mapped. See
+  // chrome::switches::kHostRules for a description for the format.
+  std::string host_resolver_rules;
+
   // Default window size. This is also used to create the window tree host and
   // as initial screen size. Defaults to 800x600.
   gfx::Size window_size;
 
+  // Path to user data directory, where browser will look for its state.
+  // If empty, default directory (where the binary is located) will be used.
+  base::FilePath user_data_dir;
+
+  // Reminder: when adding a new field here, do not forget to add it to
+  // HeadlessBrowserContextOptions (where appropriate).
  private:
   Options(int argc, const char** argv);
 
@@ -139,16 +137,21 @@ class HeadlessBrowser::Options::Builder {
   Builder();
   ~Builder();
 
-  Builder& SetUserAgent(const std::string& user_agent);
+  // Browser-wide settings.
+
   Builder& EnableDevToolsServer(const net::IPEndPoint& endpoint);
   Builder& SetMessagePump(base::MessagePump* message_pump);
-  Builder& SetProxyServer(const net::HostPortPair& proxy_server);
-  Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetSingleProcessMode(bool single_process_mode);
   Builder& SetDisableSandbox(bool disable_sandbox);
-  Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
   Builder& SetGLImplementation(const std::string& gl_implementation);
+
+  // Per-context settings.
+
+  Builder& SetUserAgent(const std::string& user_agent);
+  Builder& SetProxyServer(const net::HostPortPair& proxy_server);
+  Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetWindowSize(const gfx::Size& window_size);
+  Builder& SetUserDataDir(const base::FilePath& user_data_dir);
 
   Options Build();
 

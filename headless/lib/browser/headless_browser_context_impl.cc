@@ -5,12 +5,16 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "headless/public/util/black_hole_protocol_handler.h"
@@ -73,16 +77,22 @@ net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {
 }
 
 HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
-    ProtocolHandlerMap protocol_handlers,
-    HeadlessBrowser::Options* options)
-    : protocol_handlers_(std::move(protocol_handlers)),
-      options_(options),
+    HeadlessBrowserImpl* browser,
+    HeadlessBrowserContextOptions context_options)
+    : browser_(browser),
+      context_options_(std::move(context_options)),
       resource_context_(new HeadlessResourceContext) {
   InitWhileIOAllowed();
 }
 
 HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
+  auto all_web_contents = GetAllWebContents();
+  for (auto* web_contents : all_web_contents) {
+    web_contents->Close();
+  }
+
   ShutdownStoragePartitions();
+
   if (resource_context_) {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        resource_context_.release());
@@ -95,9 +105,18 @@ HeadlessBrowserContextImpl* HeadlessBrowserContextImpl::From(
   return reinterpret_cast<HeadlessBrowserContextImpl*>(browser_context);
 }
 
+HeadlessWebContents::Builder
+HeadlessBrowserContextImpl::CreateWebContentsBuilder() {
+  DCHECK(browser_->BrowserMainThread()->BelongsToCurrentThread());
+  return HeadlessWebContents::Builder(this);
+}
+
 void HeadlessBrowserContextImpl::InitWhileIOAllowed() {
-  // TODO(skyostil): Allow the embedder to override this.
-  PathService::Get(base::DIR_EXE, &path_);
+  if (!context_options_.user_data_dir().empty()) {
+    path_ = context_options_.user_data_dir();
+  } else {
+    PathService::Get(base::DIR_EXE, &path_);
+  }
   BrowserContext::Initialize(this, path_);
 }
 
@@ -163,8 +182,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
               content::BrowserThread::IO),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE),
-          protocol_handlers, std::move(protocol_handlers_),
-          std::move(request_interceptors), options()));
+          protocol_handlers, context_options_.TakeProtocolHandlers(),
+          std::move(request_interceptors), &context_options_));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
@@ -190,13 +209,44 @@ HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
   return nullptr;
 }
 
-void HeadlessBrowserContextImpl::SetOptionsForTesting(
-    HeadlessBrowser::Options* options) {
-  options_ = options;
+std::vector<HeadlessWebContents*>
+HeadlessBrowserContextImpl::GetAllWebContents() {
+  std::vector<HeadlessWebContents*> result;
+
+  result.reserve(web_contents_map_.size());
+
+  for (const auto& web_contents_pair : web_contents_map_) {
+    result.push_back(web_contents_pair.second);
+  }
+
+  return result;
+}
+
+void HeadlessBrowserContextImpl::RegisterWebContents(
+    HeadlessWebContentsImpl* web_contents) {
+  web_contents_map_[web_contents->GetDevtoolsAgentHostId()] = web_contents;
+}
+
+void HeadlessBrowserContextImpl::UnregisterWebContents(
+    HeadlessWebContentsImpl* web_contents) {
+  auto it = web_contents_map_.find(web_contents->GetDevtoolsAgentHostId());
+  DCHECK(it != web_contents_map_.end());
+  web_contents_map_.erase(it);
+}
+
+HeadlessBrowserImpl* HeadlessBrowserContextImpl::browser() const {
+  return browser_;
+}
+
+const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
+    const {
+  return &context_options_;
 }
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
-    : browser_(browser), enable_http_and_https_if_mojo_used_(false) {}
+    : browser_(browser),
+      options_(new HeadlessBrowserContextOptions(browser->options())),
+      enable_http_and_https_if_mojo_used_(false) {}
 
 HeadlessBrowserContext::Builder::~Builder() = default;
 
@@ -205,7 +255,40 @@ HeadlessBrowserContext::Builder::Builder(Builder&&) = default;
 HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetProtocolHandlers(
     ProtocolHandlerMap protocol_handlers) {
-  protocol_handlers_ = std::move(protocol_handlers);
+  options_->protocol_handlers_ = std::move(protocol_handlers);
+  return *this;
+}
+
+HeadlessBrowserContext::Builder& HeadlessBrowserContext::Builder::SetUserAgent(
+    const std::string& user_agent) {
+  options_->user_agent_ = user_agent;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetProxyServer(
+    const net::HostPortPair& proxy_server) {
+  options_->proxy_server_ = proxy_server;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetHostResolverRules(
+    const std::string& host_resolver_rules) {
+  options_->host_resolver_rules_ = host_resolver_rules;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder& HeadlessBrowserContext::Builder::SetWindowSize(
+    const gfx::Size& window_size) {
+  options_->window_size_ = window_size;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetUserDataDir(
+    const base::FilePath& user_data_dir) {
+  options_->user_data_dir_ = user_data_dir;
   return *this;
 }
 
@@ -235,23 +318,23 @@ HeadlessBrowserContext::Builder::Build() {
           InMemoryProtocolHandler::Response(binding.js_bindings,
                                             "application/javascript"));
     }
-    DCHECK(protocol_handlers_.find(kHeadlessMojomProtocol) ==
-           protocol_handlers_.end());
-    protocol_handlers_[kHeadlessMojomProtocol] =
+    DCHECK(options_->protocol_handlers_.find(kHeadlessMojomProtocol) ==
+           options_->protocol_handlers_.end());
+    options_->protocol_handlers_[kHeadlessMojomProtocol] =
         std::move(headless_mojom_protocol_handler);
 
     // Unless you know what you're doing it's unsafe to allow http/https for a
     // context with mojo bindings.
     if (!enable_http_and_https_if_mojo_used_) {
-      protocol_handlers_[url::kHttpScheme] =
+      options_->protocol_handlers_[url::kHttpScheme] =
           base::WrapUnique(new BlackHoleProtocolHandler());
-      protocol_handlers_[url::kHttpsScheme] =
+      options_->protocol_handlers_[url::kHttpsScheme] =
           base::WrapUnique(new BlackHoleProtocolHandler());
     }
   }
 
-  return base::WrapUnique(new HeadlessBrowserContextImpl(
-      std::move(protocol_handlers_), browser_->options()));
+  return base::WrapUnique(
+      new HeadlessBrowserContextImpl(browser_, std::move(*options_)));
 }
 
 HeadlessBrowserContext::Builder::MojoBindings::MojoBindings() {}

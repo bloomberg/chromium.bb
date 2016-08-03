@@ -6,12 +6,20 @@
 #define HEADLESS_PUBLIC_HEADLESS_BROWSER_CONTEXT_H_
 
 #include <list>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
+#include "base/optional.h"
 #include "headless/public/headless_export.h"
+#include "headless/public/headless_web_contents.h"
+#include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace headless {
 class HeadlessBrowserImpl;
+class HeadlessBrowserContextOptions;
 
 using ProtocolHandlerMap = std::unordered_map<
     std::string,
@@ -19,11 +27,18 @@ using ProtocolHandlerMap = std::unordered_map<
 
 // Represents an isolated session with a unique cache, cookies, and other
 // profile/session related data.
+// When browser context is deleted, all associated web contents are closed.
 class HEADLESS_EXPORT HeadlessBrowserContext {
  public:
   class Builder;
 
   virtual ~HeadlessBrowserContext() {}
+
+  // Open a new tab. Returns a builder object which can be used to set
+  // properties for the new tab.
+  virtual HeadlessWebContents::Builder CreateWebContentsBuilder() = 0;
+
+  virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
 
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 
@@ -34,7 +49,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContext);
 };
 
-// TODO(alexclarke): We should support this builder for the default context.
 class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
  public:
   Builder(Builder&&);
@@ -64,10 +78,21 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& EnableUnsafeNetworkAccessWithMojoBindings(
       bool enable_http_and_https_if_mojo_used);
 
+  // By default |HeadlessBrowserContext| inherits the following options from
+  // the browser instance. The methods below can be used to override these
+  // settings. See HeadlessBrowser::Options for their meaning.
+  Builder& SetUserAgent(const std::string& user_agent);
+  Builder& SetProxyServer(const net::HostPortPair& proxy_server);
+  Builder& SetHostResolverRules(const std::string& host_resolver_rules);
+  Builder& SetWindowSize(const gfx::Size& window_size);
+  Builder& SetUserDataDir(const base::FilePath& user_data_dir);
+
   std::unique_ptr<HeadlessBrowserContext> Build();
 
  private:
   friend class HeadlessBrowserImpl;
+
+  explicit Builder(HeadlessBrowserImpl* browser);
 
   struct MojoBindings {
     MojoBindings();
@@ -81,10 +106,9 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
     DISALLOW_COPY_AND_ASSIGN(MojoBindings);
   };
 
-  explicit Builder(HeadlessBrowserImpl* browser);
-
   HeadlessBrowserImpl* browser_;
-  ProtocolHandlerMap protocol_handlers_;
+  std::unique_ptr<HeadlessBrowserContextOptions> options_;
+
   std::list<MojoBindings> mojo_bindings_;
   bool enable_http_and_https_if_mojo_used_;
 

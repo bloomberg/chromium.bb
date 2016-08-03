@@ -13,6 +13,7 @@ extern const char kRemoteDebuggingAddress[];
 extern const char kRepl[];
 extern const char kScreenshot[];
 extern const char kUseGL[];
+extern const char kUserDataDir[];
 }  // namespace switches
 }  // namespace headless
 

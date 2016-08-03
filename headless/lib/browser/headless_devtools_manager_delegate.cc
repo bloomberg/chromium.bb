@@ -5,6 +5,7 @@
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 
 #include <string>
+#include <utility>
 
 #include "base/guid.h"
 #include "content/public/browser/web_contents.h"
@@ -17,7 +18,7 @@ namespace headless {
 
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     HeadlessBrowserImpl* browser)
-    : browser_(browser) {
+    : browser_(browser), weak_ptr_factory_(this) {
   command_map_["Browser.createTarget"] =
       &HeadlessDevToolsManagerDelegate::CreateTarget;
   command_map_["Browser.closeTarget"] =
@@ -55,6 +56,16 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return result.release();
 }
 
+void HeadlessDevToolsManagerDelegate::Shutdown() {
+  default_browser_context_.reset();
+  browser_context_map_.clear();
+}
+
+base::WeakPtr<HeadlessDevToolsManagerDelegate>
+HeadlessDevToolsManagerDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
   std::string url;
@@ -65,22 +76,25 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
   params->GetString("browserContextId", &browser_context_id);
   params->GetInteger("width", &width);
   params->GetInteger("height", &height);
-  HeadlessWebContentsImpl* web_contents_impl;
+
+  HeadlessBrowserContext* context;
   auto find_it = browser_context_map_.find(browser_context_id);
   if (find_it != browser_context_map_.end()) {
-    web_contents_impl = HeadlessWebContentsImpl::From(
-        browser_->CreateWebContentsBuilder()
-            .SetInitialURL(GURL(url))
-            .SetWindowSize(gfx::Size(width, height))
-            .SetBrowserContext(find_it->second.get())
-            .Build());
+    context = find_it->second.get();
   } else {
-    web_contents_impl = HeadlessWebContentsImpl::From(
-        browser_->CreateWebContentsBuilder()
-            .SetInitialURL(GURL(url))
-            .SetWindowSize(gfx::Size(width, height))
-            .Build());
+    if (!default_browser_context_) {
+      default_browser_context_ =
+          browser_->CreateBrowserContextBuilder().Build();
+    }
+    context = default_browser_context_.get();
   }
+
+  HeadlessWebContentsImpl* web_contents_impl =
+      HeadlessWebContentsImpl::From(context->CreateWebContentsBuilder()
+                                        .SetInitialURL(GURL(url))
+                                        .SetWindowSize(gfx::Size(width, height))
+                                        .Build());
+
   return browser::CreateTargetResult::Builder()
       .SetTargetId(web_contents_impl->GetDevtoolsAgentHostId())
       .Build()

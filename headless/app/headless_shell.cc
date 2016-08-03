@@ -31,6 +31,7 @@
 #include "ui/gfx/geometry/size.h"
 
 using headless::HeadlessBrowser;
+using headless::HeadlessBrowserContext;
 using headless::HeadlessDevToolsClient;
 using headless::HeadlessWebContents;
 namespace page = headless::page;
@@ -56,7 +57,10 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
 
-    HeadlessWebContents::Builder builder(browser_->CreateWebContentsBuilder());
+    browser_context_ = browser_->CreateBrowserContextBuilder().Build();
+
+    HeadlessWebContents::Builder builder(
+        browser_context_->CreateWebContentsBuilder());
     base::CommandLine::StringVector args =
         base::CommandLine::ForCurrentProcess()->GetArgs();
 
@@ -81,6 +85,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     }
     web_contents_->RemoveObserver(this);
     web_contents_ = nullptr;
+    browser_context_.reset();
     browser_->Shutdown();
   }
 
@@ -280,6 +285,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   HeadlessWebContents* web_contents_;
   bool processed_page_ready_;
   std::unique_ptr<net::FileStream> screenshot_file_stream_;
+  std::unique_ptr<HeadlessBrowserContext> browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };
@@ -337,6 +343,11 @@ int main(int argc, const char** argv) {
   if (command_line.HasSwitch(headless::switches::kUseGL)) {
     builder.SetGLImplementation(
         command_line.GetSwitchValueASCII(headless::switches::kUseGL));
+  }
+
+  if (command_line.HasSwitch(headless::switches::kUserDataDir)) {
+    builder.SetUserDataDir(
+        command_line.GetSwitchValuePath(headless::switches::kUserDataDir));
   }
 
   return HeadlessBrowserMain(

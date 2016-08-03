@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 
 namespace headless {
@@ -32,6 +33,11 @@ class HeadlessDevToolsManagerDelegate
   base::DictionaryValue* HandleCommand(content::DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
 
+  // Delete owned browser contexts.
+  void Shutdown();
+
+  base::WeakPtr<HeadlessDevToolsManagerDelegate> GetWeakPtr();
+
  private:
   std::unique_ptr<base::Value> CreateTarget(
       const base::DictionaryValue* params);
@@ -49,6 +55,10 @@ class HeadlessDevToolsManagerDelegate
       HeadlessDevToolsManagerDelegate::*)(const base::DictionaryValue* params);
 
   std::map<std::string, CommandMemberFnPtr> command_map_;
+
+  std::unique_ptr<HeadlessBrowserContext> default_browser_context_;
+
+  base::WeakPtrFactory<HeadlessDevToolsManagerDelegate> weak_ptr_factory_;
 };
 
 }  // namespace headless

@@ -19,28 +19,96 @@
 #include "net/cookies/cookie_store.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+
+using testing::UnorderedElementsAre;
 
 namespace headless {
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateAndDestroyWebContents) {
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContentsBuilder().Build();
+      browser_context->CreateWebContentsBuilder().Build();
   EXPECT_TRUE(web_contents);
 
-  EXPECT_EQ(static_cast<size_t>(1), browser()->GetAllWebContents().size());
-  EXPECT_EQ(web_contents, browser()->GetAllWebContents()[0]);
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
+  EXPECT_THAT(browser_context->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
   // TODO(skyostil): Verify viewport dimensions once we can.
+
   web_contents->Close();
+
+  EXPECT_TRUE(browser()->GetAllWebContents().empty());
+  EXPECT_TRUE(browser_context->GetAllWebContents().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
+                       WebContentsAreDestroyedWithContext) {
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder().Build();
+  EXPECT_TRUE(web_contents);
+
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
+  EXPECT_THAT(browser_context->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
+
+  browser_context.reset();
+
+  EXPECT_TRUE(browser()->GetAllWebContents().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DestroyAndCreateTwoWebContents) {
+  std::unique_ptr<HeadlessBrowserContext> browser_context1 =
+      browser()->CreateBrowserContextBuilder().Build();
+  HeadlessWebContents* web_contents1 =
+      browser_context1->CreateWebContentsBuilder().Build();
+
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents1));
+  EXPECT_THAT(browser_context1->GetAllWebContents(),
+              UnorderedElementsAre(web_contents1));
+
+  std::unique_ptr<HeadlessBrowserContext> browser_context2 =
+      browser()->CreateBrowserContextBuilder().Build();
+  HeadlessWebContents* web_contents2 =
+      browser_context2->CreateWebContentsBuilder().Build();
+
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents1, web_contents2));
+  EXPECT_THAT(browser_context1->GetAllWebContents(),
+              UnorderedElementsAre(web_contents1));
+  EXPECT_THAT(browser_context2->GetAllWebContents(),
+              UnorderedElementsAre(web_contents2));
+
+  browser_context1.reset();
+
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents2));
+  EXPECT_THAT(browser_context2->GetAllWebContents(),
+              UnorderedElementsAre(web_contents2));
+
+  browser_context2.reset();
 
   EXPECT_TRUE(browser()->GetAllWebContents().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateWithBadURL) {
   GURL bad_url("not_valid");
+
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContentsBuilder().SetInitialURL(bad_url).Build();
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(bad_url)
+          .Build();
+
   EXPECT_FALSE(web_contents);
   EXPECT_TRUE(browser()->GetAllWebContents().empty());
 }
@@ -70,9 +138,11 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
-  HeadlessBrowser::Options::Builder builder;
-  builder.SetProxyServer(proxy_server()->host_port_pair());
-  SetBrowserOptions(builder.Build());
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetProxyServer(proxy_server()->host_port_pair())
+          .Build();
 
   // Load a page which doesn't actually exist, but for which the our proxy
   // returns valid content anyway.
@@ -80,32 +150,36 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
   // TODO(altimin): Currently this construction does not serve hello.html
   // from headless/test/data as expected. We should fix this.
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
-  EXPECT_EQ(static_cast<size_t>(1), browser()->GetAllWebContents().size());
-  EXPECT_EQ(web_contents, browser()->GetAllWebContents()[0]);
+  EXPECT_THAT(browser()->GetAllWebContents(),
+              UnorderedElementsAre(web_contents));
   web_contents->Close();
   EXPECT_TRUE(browser()->GetAllWebContents().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetHostResolverRules) {
   EXPECT_TRUE(embedded_test_server()->Start());
-  HeadlessBrowser::Options::Builder builder;
-  builder.SetHostResolverRules(
+
+  std::string host_resolver_rules =
       base::StringPrintf("MAP not-an-actual-domain.tld 127.0.0.1:%d",
-                         embedded_test_server()->host_port_pair().port()));
-  SetBrowserOptions(builder.Build());
+                         embedded_test_server()->host_port_pair().port());
+
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetHostResolverRules(host_resolver_rules)
+          .Build();
 
   // Load a page which doesn't actually exist, but which is turned into a valid
   // address by our host resolver rules.
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
+
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
@@ -115,15 +189,16 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpProtocolHandler) {
   protocol_handlers[url::kHttpScheme] =
       base::WrapUnique(new TestProtocolHandler(kResponseBody));
 
-  HeadlessBrowser::Options::Builder builder;
-  builder.SetProtocolHandlers(std::move(protocol_handlers));
-  SetBrowserOptions(builder.Build());
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetProtocolHandlers(std::move(protocol_handlers))
+          .Build();
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
@@ -142,15 +217,16 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
   protocol_handlers[url::kHttpsScheme] =
       base::WrapUnique(new TestProtocolHandler(kResponseBody));
 
-  HeadlessBrowser::Options::Builder builder;
-  builder.SetProtocolHandlers(std::move(protocol_handlers));
-  SetBrowserOptions(builder.Build());
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetProtocolHandlers(std::move(protocol_handlers))
+          .Build();
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("https://not-an-actual-domain.tld/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
@@ -164,8 +240,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContentsBuilder().Build();
+      browser_context->CreateWebContentsBuilder().Build();
 
   bool webgl_supported;
   EXPECT_TRUE(
@@ -179,8 +258,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContentsBuilder().Build();
+      browser_context->CreateWebContentsBuilder().Build();
 
   HeadlessBrowser::Options::Builder builder;
   const HeadlessBrowser::Options kDefaultOptions = builder.Build();
@@ -316,13 +398,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ReadCookiesInProtocolHandler) {
   protocol_handlers[url::kHttpsScheme] =
       base::WrapUnique(new ProtocolHandlerWithCookies(&sent_cookies));
 
-  HeadlessBrowser::Options::Builder builder;
-  builder.SetProtocolHandlers(std::move(protocol_handlers));
-  SetBrowserOptions(builder.Build());
+  std::unique_ptr<HeadlessBrowserContext> browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetProtocolHandlers(std::move(protocol_handlers))
+          .Build();
 
   HeadlessWebContents* web_contents =
-      browser()
-          ->CreateWebContentsBuilder()
+      browser_context->CreateWebContentsBuilder()
           .SetInitialURL(GURL("https://example.com/cookie.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));

@@ -31,5 +31,8 @@ const char kScreenshot[] = "screenshot";
 // rendering.
 const char kUseGL[] = "use-gl";
 
+// Directory where the browser stores the user profile.
+const char kUserDataDir[] = "user-data-dir";
+
 }  // namespace switches
 }  // namespace headless

@@ -8,9 +8,12 @@
 #include "headless/public/headless_browser.h"
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
 namespace aura {
@@ -34,10 +37,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
-  HeadlessWebContents::Builder CreateWebContentsBuilder() override;
   HeadlessBrowserContext::Builder CreateBrowserContextBuilder() override;
-  HeadlessWebContents* CreateWebContents(const GURL& initial_url,
-                                         const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserFileThread()
@@ -63,10 +63,9 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   // Close given |web_contents| and delete it.
   void DestroyWebContents(HeadlessWebContentsImpl* web_contents);
 
-  // Customize the options used by this headless browser instance. Note that
-  // options which take effect before the message loop has been started (e.g.,
-  // custom message pumps) cannot be set via this method.
-  void SetOptionsForTesting(HeadlessBrowser::Options options);
+  HeadlessDevToolsManagerDelegate* devtools_manager_delegate() const;
+  void set_devtools_manager_delegate(
+      base::WeakPtr<HeadlessDevToolsManagerDelegate>);
 
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;
@@ -77,6 +76,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
       web_contents_map_;
+
+  base::WeakPtr<HeadlessDevToolsManagerDelegate> devtools_manager_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);

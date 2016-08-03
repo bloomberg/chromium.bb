@@ -204,12 +204,81 @@ class BrowserDomainCreateAndDeletePageTest
   }
 
   void OnCloseTargetResult(std::unique_ptr<browser::CloseTargetResult> result) {
+    EXPECT_TRUE(result->GetSuccess());
     EXPECT_EQ(1u, browser()->GetAllWebContents().size());
     FinishAsynchronousTest();
   }
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(BrowserDomainCreateAndDeletePageTest);
+
+class BrowserDomainCreateAndDeleteBrowserContextTest
+    : public HeadlessAsyncDevTooledBrowserTest {
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+
+    devtools_client_->GetBrowser()->GetExperimental()->CreateBrowserContext(
+        browser::CreateBrowserContextParams::Builder().Build(),
+        base::Bind(&BrowserDomainCreateAndDeleteBrowserContextTest::
+                       OnCreateContextResult,
+                   base::Unretained(this)));
+  }
+
+  void OnCreateContextResult(
+      std::unique_ptr<browser::CreateBrowserContextResult> result) {
+    browser_context_id_ = result->GetBrowserContextId();
+
+    devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
+        browser::CreateTargetParams::Builder()
+            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetBrowserContextId(result->GetBrowserContextId())
+            .SetWidth(1)
+            .SetHeight(1)
+            .Build(),
+        base::Bind(&BrowserDomainCreateAndDeleteBrowserContextTest::
+                       OnCreateTargetResult,
+                   base::Unretained(this)));
+  }
+
+  void OnCreateTargetResult(
+      std::unique_ptr<browser::CreateTargetResult> result) {
+    EXPECT_EQ(2u, browser()->GetAllWebContents().size());
+
+    devtools_client_->GetBrowser()->GetExperimental()->CloseTarget(
+        browser::CloseTargetParams::Builder()
+            .SetTargetId(result->GetTargetId())
+            .Build(),
+        base::Bind(&BrowserDomainCreateAndDeleteBrowserContextTest::
+                       OnCloseTargetResult,
+                   base::Unretained(this)));
+  }
+
+  void OnCloseTargetResult(std::unique_ptr<browser::CloseTargetResult> result) {
+    EXPECT_EQ(1u, browser()->GetAllWebContents().size());
+    EXPECT_TRUE(result->GetSuccess());
+
+    devtools_client_->GetBrowser()->GetExperimental()->DisposeBrowserContext(
+        browser::DisposeBrowserContextParams::Builder()
+            .SetBrowserContextId(browser_context_id_)
+            .Build(),
+        base::Bind(&BrowserDomainCreateAndDeleteBrowserContextTest::
+                       OnDisposeBrowserContextResult,
+                   base::Unretained(this)));
+  }
+
+  void OnDisposeBrowserContextResult(
+      std::unique_ptr<browser::DisposeBrowserContextResult> result) {
+    EXPECT_TRUE(result->GetSuccess());
+    FinishAsynchronousTest();
+  }
+
+ private:
+  std::string browser_context_id_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(BrowserDomainCreateAndDeleteBrowserContextTest);
 
 class BrowserDomainDisposeContextFailsIfInUse
     : public HeadlessAsyncDevTooledBrowserTest {

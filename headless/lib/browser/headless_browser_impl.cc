@@ -4,6 +4,8 @@
 
 #include "headless/lib/browser/headless_browser_impl.h"
 
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -49,40 +51,14 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
     HeadlessBrowser::Options options)
     : on_start_callback_(on_start_callback),
       options_(std::move(options)),
-      browser_main_parts_(nullptr) {
-}
+      browser_main_parts_(nullptr) {}
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
-
-HeadlessWebContents::Builder HeadlessBrowserImpl::CreateWebContentsBuilder() {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  return HeadlessWebContents::Builder(this);
-}
 
 HeadlessBrowserContext::Builder
 HeadlessBrowserImpl::CreateBrowserContextBuilder() {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
   return HeadlessBrowserContext::Builder(this);
-}
-
-HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
-    HeadlessWebContents::Builder* builder) {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      HeadlessWebContentsImpl::Create(builder, window_tree_host_->window(),
-                                      this);
-  if (!headless_web_contents)
-    return nullptr;
-  return RegisterWebContents(std::move(headless_web_contents));
-}
-
-HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
-    const GURL& initial_url,
-    const gfx::Size& size) {
-  return CreateWebContentsBuilder()
-      .SetInitialURL(initial_url)
-      .SetWindowSize(size)
-      .Build();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -99,6 +75,19 @@ HeadlessBrowserImpl::BrowserFileThread() const {
 
 void HeadlessBrowserImpl::Shutdown() {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+
+  // DevToolsManagerDelegate owns some BrowserContexts. Tell it to delete them.
+  if (devtools_manager_delegate()) {
+    devtools_manager_delegate()->Shutdown();
+  }
+
+  // We need to close all WebContents here.
+  std::vector<HeadlessWebContents*> all_web_contents = GetAllWebContents();
+  for (HeadlessWebContents* web_contents : all_web_contents) {
+    web_contents->Close();
+  }
+  DCHECK(web_contents_map_.empty());
+
   BrowserMainThread()->PostTask(FROM_HERE,
                                 base::MessageLoop::QuitWhenIdleClosure());
 }
@@ -138,6 +127,17 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
   on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();
 }
 
+HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
+    HeadlessWebContents::Builder* builder) {
+  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
+      HeadlessWebContentsImpl::Create(builder, window_tree_host_->window());
+  if (!headless_web_contents)
+    return nullptr;
+  builder->browser_context_->RegisterWebContents(headless_web_contents.get());
+  return RegisterWebContents(std::move(headless_web_contents));
+}
+
 HeadlessWebContentsImpl* HeadlessBrowserImpl::RegisterWebContents(
     std::unique_ptr<HeadlessWebContentsImpl> web_contents) {
   DCHECK(web_contents);
@@ -154,19 +154,24 @@ void HeadlessBrowserImpl::DestroyWebContents(
   web_contents_map_.erase(it);
 }
 
+HeadlessDevToolsManagerDelegate*
+HeadlessBrowserImpl::devtools_manager_delegate() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return devtools_manager_delegate_.get();
+}
+
+void HeadlessBrowserImpl::set_devtools_manager_delegate(
+    base::WeakPtr<HeadlessDevToolsManagerDelegate> devtools_manager_delegate) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  devtools_manager_delegate_ = devtools_manager_delegate;
+}
+
 HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevtoolsAgentHostId(
     const std::string& devtools_agent_host_id) {
   auto it = web_contents_map_.find(devtools_agent_host_id);
   if (it == web_contents_map_.end())
     return nullptr;
   return it->second.get();
-}
-
-void HeadlessBrowserImpl::SetOptionsForTesting(
-    HeadlessBrowser::Options options) {
-  options_ = std::move(options);
-  browser_main_parts()->default_browser_context()->SetOptionsForTesting(
-      &options_);
 }
 
 void RunChildProcessIfNeeded(int argc, const char** argv) {

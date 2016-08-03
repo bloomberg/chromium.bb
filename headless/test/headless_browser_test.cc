@@ -147,11 +147,6 @@ void HeadlessBrowserTest::RunTestOnMainThreadLoop() {
   }
 }
 
-void HeadlessBrowserTest::SetBrowserOptions(HeadlessBrowser::Options options) {
-  HeadlessContentMainDelegate::GetInstance()->browser()->SetOptionsForTesting(
-      std::move(options));
-}
-
 HeadlessBrowser* HeadlessBrowserTest::browser() const {
   return HeadlessContentMainDelegate::GetInstance()->browser();
 }
@@ -196,7 +191,9 @@ void HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady() {
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
-  web_contents_ = browser()->CreateWebContentsBuilder().Build();
+  browser_context_ = browser()->CreateBrowserContextBuilder().Build();
+
+  web_contents_ = browser_context_->CreateWebContentsBuilder().Build();
   web_contents_->AddObserver(this);
 
   RunAsynchronousTest();
@@ -205,6 +202,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   web_contents_->RemoveObserver(this);
   web_contents_->Close();
   web_contents_ = nullptr;
+  browser_context_.reset();
 }
 
 }  // namespace headless
