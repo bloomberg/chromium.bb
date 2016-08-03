@@ -46,8 +46,8 @@ LoginStateNotificationBlockerChromeOS::
 }
 
 bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
-    const message_center::NotifierId& notifier_id) const {
-  if (ash::system_notifier::ShouldAlwaysShowPopups(notifier_id))
+    const message_center::Notification& notification) const {
+  if (ash::system_notifier::ShouldAlwaysShowPopups(notification.notifier_id()))
     return true;
 
   if (locked_)

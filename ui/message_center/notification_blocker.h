@@ -31,16 +31,17 @@ class MESSAGE_CENTER_EXPORT NotificationBlocker {
   // Checks the current state and updates the availability.
   virtual void CheckState() {}
 
-  // Returns true when notifications from |notifier_id| should appear in the
-  // message center. Default returns true always.
-  virtual bool ShouldShowNotification(const NotifierId& notifier_id) const;
+  // Returns true should be shown in the message center. Default returns true
+  // always.
+  virtual bool ShouldShowNotification(
+      const Notification& notification) const;
 
-  // Returns true when notifications from |notifier_id| should be shown as
-  // popups on screen.  If it's false, those notifications should be queued.
+  // Returns true if this notification should be shown as popups on screen.
+  // If it's false, those notifications should be queued.
   // When a blocker starts returning false for a notification which is already
   // shown as a popup, the notification should be closed as a popup immediately.
   virtual bool ShouldShowNotificationAsPopup(
-      const NotifierId& notifier_id) const = 0;
+      const Notification& notification) const = 0;
 
  protected:
   MessageCenter* message_center() { return message_center_; }

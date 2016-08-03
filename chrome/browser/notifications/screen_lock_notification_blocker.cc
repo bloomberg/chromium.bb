@@ -35,6 +35,6 @@ void ScreenLockNotificationBlocker::CheckState() {
 }
 
 bool ScreenLockNotificationBlocker::ShouldShowNotificationAsPopup(
-    const message_center::NotifierId& notifier_id) const {
+    const message_center::Notification& notification) const {
   return !is_locked_;
 }

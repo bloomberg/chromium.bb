@@ -31,7 +31,7 @@ class LoginStateNotificationBlockerChromeOS
  private:
   // message_center::NotificationBlocker overrides:
   bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const override;
+      const message_center::Notification& notification) const override;
 
   // ash::ShellObserver overrides:
   void OnLockStateChanged(bool locked) override;

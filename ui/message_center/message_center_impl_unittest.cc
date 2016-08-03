@@ -154,7 +154,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
 
   // NotificationBlocker overrides:
   bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const override {
+      const message_center::Notification& notification) const override {
     return notifications_enabled_;
   }
 
@@ -174,9 +174,10 @@ class PopupNotificationBlocker : public ToggledNotificationBlocker {
 
   // NotificationBlocker overrides:
   bool ShouldShowNotificationAsPopup(
-      const NotifierId& notifier_id) const override {
-    return (notifier_id == allowed_notifier_) ||
-        ToggledNotificationBlocker::ShouldShowNotificationAsPopup(notifier_id);
+      const Notification& notification) const override {
+    return (notification.notifier_id() == allowed_notifier_) ||
+        ToggledNotificationBlocker::ShouldShowNotificationAsPopup(
+            notification);
   }
 
  private:
@@ -193,8 +194,8 @@ class TotalNotificationBlocker : public PopupNotificationBlocker {
   ~TotalNotificationBlocker() override {}
 
   // NotificationBlocker overrides:
-  bool ShouldShowNotification(const NotifierId& notifier_id) const override {
-    return ShouldShowNotificationAsPopup(notifier_id);
+  bool ShouldShowNotification(const Notification& notification) const override {
+    return ShouldShowNotificationAsPopup(notification);
   }
 
  private:

@@ -29,7 +29,7 @@ void NotificationBlocker::RemoveObserver(
 }
 
 bool NotificationBlocker::ShouldShowNotification(
-    const NotifierId& notifier_id) const {
+    const Notification& notification) const {
   return true;
 }
 

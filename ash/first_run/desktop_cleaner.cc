@@ -82,7 +82,7 @@ class NotificationBlocker : public message_center::NotificationBlocker {
  private:
   // Overriden from message_center::NotificationBlocker.
   bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const override {
+      const message_center::Notification& notification) const override {
     return false;
   }
 

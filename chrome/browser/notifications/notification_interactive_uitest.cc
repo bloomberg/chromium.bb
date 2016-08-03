@@ -69,7 +69,7 @@ class ToggledNotificationBlocker : public message_center::NotificationBlocker {
 
   // NotificationBlocker overrides:
   bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const override {
+      const message_center::Notification& notification) const override {
     return notifications_enabled_;
   }
 

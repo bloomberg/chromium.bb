@@ -28,9 +28,9 @@ class MultiUserNotificationBlockerChromeOS
 
   // message_center::NotificationBlocker overrides:
   bool ShouldShowNotification(
-      const message_center::NotifierId& notifier_id) const override;
+      const message_center::Notification& notification) const override;
   bool ShouldShowNotificationAsPopup(
-      const message_center::NotifierId& notifier_id) const override;
+      const message_center::Notification& notification) const override;
 
  private:
   // Returns true if this blocker is actively working.
