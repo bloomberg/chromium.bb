@@ -53,6 +53,14 @@ class ThreadCheckerDoNothing {
 //   ThreadChecker thread_checker_;
 // }
 //
+// Note that, when enabled, CalledOnValidThread() returns false when called from
+// tasks posted to SingleThreadTaskRunners bound to different sequences, even if
+// the tasks happen to run on the same thread (e.g. two independent TaskRunners
+// with ExecutionMode::SINGLE_THREADED on the TaskScheduler that happen to share
+// a thread). Also, CalledOnValidThread() returns false when called from a non-
+// single-threaded task which is associated with a SequenceToken (e.g. a task
+// posted with ExecutionMode::SEQUENCED to the TaskScheduler).
+//
 // In Release mode, CalledOnValidThread will always return true.
 #if DCHECK_IS_ON()
 class ThreadChecker : public ThreadCheckerImpl {

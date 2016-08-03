@@ -2,164 +2,166 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/threading/thread_checker.h"
-
 #include <memory>
 
-#include "base/logging.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/test/gtest_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequence_token.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_checker_impl.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-
 namespace {
 
-// Simple class to exercise the basics of ThreadChecker.
-// Both the destructor and DoStuff should verify that they were
-// called on the same thread as the constructor.
-class ThreadCheckerClass : public ThreadChecker {
+// A thread that runs a callback.
+class RunCallbackThread : public SimpleThread {
  public:
-  ThreadCheckerClass() {}
-
-  // Verifies that it was called on the same thread as the constructor.
-  void DoStuff() {
-    DCHECK(CalledOnValidThread());
-  }
-
-  void DetachFromThread() {
-    ThreadChecker::DetachFromThread();
-  }
-
-  static void MethodOnDifferentThreadImpl();
-  static void DetachThenCallFromDifferentThreadImpl();
+  explicit RunCallbackThread(const Closure& callback)
+      : SimpleThread("RunCallbackThread"), callback_(callback) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadCheckerClass);
+  // SimpleThread:
+  void Run() override { callback_.Run(); }
+
+  const Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunCallbackThread);
 };
 
-// Calls ThreadCheckerClass::DoStuff on another thread.
-class CallDoStuffOnThread : public base::SimpleThread {
- public:
-  explicit CallDoStuffOnThread(ThreadCheckerClass* thread_checker_class)
-      : SimpleThread("call_do_stuff_on_thread"),
-        thread_checker_class_(thread_checker_class) {
-  }
+// Runs a callback on a new thread synchronously.
+void RunCallbackOnNewThreadSynchronously(const Closure& callback) {
+  RunCallbackThread run_callback_thread(callback);
+  run_callback_thread.Start();
+  run_callback_thread.Join();
+}
 
-  void Run() override { thread_checker_class_->DoStuff(); }
+void ExpectCalledOnValidThread(ThreadCheckerImpl* thread_checker) {
+  ASSERT_TRUE(thread_checker);
 
- private:
-  ThreadCheckerClass* thread_checker_class_;
+  // This should bind |thread_checker| to the current thread if it wasn't
+  // already bound to a thread.
+  EXPECT_TRUE(thread_checker->CalledOnValidThread());
 
-  DISALLOW_COPY_AND_ASSIGN(CallDoStuffOnThread);
-};
+  // Since |thread_checker| is now bound to the current thread, another call to
+  // CalledOnValidThread() should return true.
+  EXPECT_TRUE(thread_checker->CalledOnValidThread());
+}
 
-// Deletes ThreadCheckerClass on a different thread.
-class DeleteThreadCheckerClassOnThread : public base::SimpleThread {
- public:
-  explicit DeleteThreadCheckerClassOnThread(
-      ThreadCheckerClass* thread_checker_class)
-      : SimpleThread("delete_thread_checker_class_on_thread"),
-        thread_checker_class_(thread_checker_class) {
-  }
+void ExpectNotCalledOnValidThread(ThreadCheckerImpl* thread_checker) {
+  ASSERT_TRUE(thread_checker);
+  EXPECT_FALSE(thread_checker->CalledOnValidThread());
+}
 
-  void Run() override { thread_checker_class_.reset(); }
-
- private:
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteThreadCheckerClassOnThread);
-};
+void ExpectNotCalledOnValidThreadWithSequenceTokenAndThreadTaskRunnerHandle(
+    ThreadCheckerImpl* thread_checker,
+    SequenceToken sequence_token) {
+  ThreadTaskRunnerHandle thread_task_runner_handle(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(sequence_token);
+  ExpectNotCalledOnValidThread(thread_checker);
+}
 
 }  // namespace
 
-TEST(ThreadCheckerTest, CallsAllowedOnSameThread) {
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
-
-  // Verify that DoStuff doesn't assert.
-  thread_checker_class->DoStuff();
-
-  // Verify that the destructor doesn't assert.
-  thread_checker_class.reset();
+TEST(ThreadCheckerTest, CallsAllowedSameThreadNoSequenceToken) {
+  ThreadCheckerImpl thread_checker;
+  EXPECT_TRUE(thread_checker.CalledOnValidThread());
 }
 
-TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+TEST(ThreadCheckerTest,
+     CallsAllowedSameThreadSameSequenceTokenWithThreadTaskRunnerHandle) {
+  ThreadTaskRunnerHandle thread_task_runner_handle(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+  ThreadCheckerImpl thread_checker;
+  EXPECT_TRUE(thread_checker.CalledOnValidThread());
+}
 
-  // Verify that the destructor doesn't assert
-  // when called on a different thread.
-  DeleteThreadCheckerClassOnThread delete_on_thread(
-      thread_checker_class.release());
+TEST(ThreadCheckerTest,
+     CallsDisallowedSameThreadSameSequenceTokenNoThreadTaskRunnerHandle) {
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+  ThreadCheckerImpl thread_checker;
+  EXPECT_FALSE(thread_checker.CalledOnValidThread());
+}
 
-  delete_on_thread.Start();
-  delete_on_thread.Join();
+TEST(ThreadCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
+  ThreadCheckerImpl thread_checker;
+  RunCallbackOnNewThreadSynchronously(
+      Bind(&ExpectNotCalledOnValidThread, Unretained(&thread_checker)));
+}
+
+TEST(ThreadCheckerTest, CallsDisallowedOnDifferentThreadsSameSequenceToken) {
+  ThreadTaskRunnerHandle thread_task_runner_handle(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  const SequenceToken sequence_token(SequenceToken::Create());
+
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(sequence_token);
+  ThreadCheckerImpl thread_checker;
+  EXPECT_TRUE(thread_checker.CalledOnValidThread());
+
+  RunCallbackOnNewThreadSynchronously(Bind(
+      &ExpectNotCalledOnValidThreadWithSequenceTokenAndThreadTaskRunnerHandle,
+      Unretained(&thread_checker), sequence_token));
+}
+
+TEST(ThreadCheckerTest, CallsDisallowedSameThreadDifferentSequenceToken) {
+  std::unique_ptr<ThreadCheckerImpl> thread_checker;
+
+  ThreadTaskRunnerHandle thread_task_runner_handle(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+
+  {
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    thread_checker.reset(new ThreadCheckerImpl);
+  }
+
+  {
+    // Different SequenceToken.
+    ScopedSetSequenceTokenForCurrentThread
+        scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+    EXPECT_FALSE(thread_checker->CalledOnValidThread());
+  }
+
+  // No SequenceToken.
+  EXPECT_FALSE(thread_checker->CalledOnValidThread());
 }
 
 TEST(ThreadCheckerTest, DetachFromThread) {
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+  ThreadCheckerImpl thread_checker;
+  thread_checker.DetachFromThread();
 
-  // Verify that DoStuff doesn't assert when called on a different thread after
-  // a call to DetachFromThread.
-  thread_checker_class->DetachFromThread();
-  CallDoStuffOnThread call_on_thread(thread_checker_class.get());
+  // Verify that CalledOnValidThread() returns true when called on a different
+  // thread after a call to DetachFromThread().
+  RunCallbackOnNewThreadSynchronously(
+      Bind(&ExpectCalledOnValidThread, Unretained(&thread_checker)));
 
-  call_on_thread.Start();
-  call_on_thread.Join();
+  EXPECT_FALSE(thread_checker.CalledOnValidThread());
 }
 
-void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
+TEST(ThreadCheckerTest, DetachFromThreadWithSequenceToken) {
+  ThreadTaskRunnerHandle thread_task_runner_handle(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  ScopedSetSequenceTokenForCurrentThread
+      scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
+  ThreadCheckerImpl thread_checker;
+  thread_checker.DetachFromThread();
 
-  // DoStuff should assert in debug builds only when called on a
-  // different thread.
-  CallDoStuffOnThread call_on_thread(thread_checker_class.get());
+  // Verify that CalledOnValidThread() returns true when called on a different
+  // thread after a call to DetachFromThread().
+  RunCallbackOnNewThreadSynchronously(
+      Bind(&ExpectCalledOnValidThread, Unretained(&thread_checker)));
 
-  call_on_thread.Start();
-  call_on_thread.Join();
+  EXPECT_FALSE(thread_checker.CalledOnValidThread());
 }
-
-#if DCHECK_IS_ON()
-TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThreadInDebug) {
-  ASSERT_DCHECK_DEATH({ ThreadCheckerClass::MethodOnDifferentThreadImpl(); },
-                      "");
-}
-#else
-TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
-  ThreadCheckerClass::MethodOnDifferentThreadImpl();
-}
-#endif  // DCHECK_IS_ON()
-
-void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
-  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
-      new ThreadCheckerClass);
-
-  // DoStuff doesn't assert when called on a different thread
-  // after a call to DetachFromThread.
-  thread_checker_class->DetachFromThread();
-  CallDoStuffOnThread call_on_thread(thread_checker_class.get());
-
-  call_on_thread.Start();
-  call_on_thread.Join();
-
-  // DoStuff should assert in debug builds only after moving to
-  // another thread.
-  thread_checker_class->DoStuff();
-}
-
-#if DCHECK_IS_ON()
-TEST(ThreadCheckerDeathTest, DetachFromThreadInDebug) {
-  ASSERT_DCHECK_DEATH(
-      { ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl(); }, "");
-}
-#else
-TEST(ThreadCheckerTest, DetachFromThreadInRelease) {
-  ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl();
-}
-#endif  // DCHECK_IS_ON()
 
 }  // namespace base
