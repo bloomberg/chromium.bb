@@ -223,8 +223,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     return spdy_framer_.GetDataFrameMinimumSize();
   }
 
-  size_t GetControlFrameHeaderSize() const {
-    return spdy_framer_.GetControlFrameHeaderSize();
+  size_t GetFrameHeaderSize() const {
+    return spdy_framer_.GetFrameHeaderSize();
   }
 
   size_t GetSynStreamMinimumSize() const {

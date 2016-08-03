@@ -525,8 +525,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return buffered_spdy_framer_->GetDataFrameMinimumSize();
   }
 
-  size_t GetControlFrameHeaderSize() const {
-    return buffered_spdy_framer_->GetControlFrameHeaderSize();
+  size_t GetFrameHeaderSize() const {
+    return buffered_spdy_framer_->GetFrameHeaderSize();
   }
 
   size_t GetFrameMinimumSize() const {
