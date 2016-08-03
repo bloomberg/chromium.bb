@@ -156,10 +156,12 @@ void DisplayItemList::Finalize() {
       << inputs_.visual_rects.size();
   rtree_.Build(inputs_.visual_rects);
 
-  if (!retain_visual_rects_)
-    // This clears both the vector and the vector's capacity, since
-    // visual_rects won't be used anymore.
-    std::vector<gfx::Rect>().swap(inputs_.visual_rects);
+  // TODO(wkorman): Restore the below, potentially with a switch to allow
+  // clearing visual rects except for Blimp engine. http://crbug.com/633750
+  // if (!retain_visual_rects_)
+  //   // This clears both the vector and the vector's capacity, since
+  //   // visual_rects won't be used anymore.
+  //   std::vector<gfx::Rect>().swap(inputs_.visual_rects);
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
