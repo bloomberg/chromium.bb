@@ -1024,7 +1024,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
             NetLog::TYPE_HTTP_STREAM_REQUEST_PROTO,
             base::Bind(&NetLogHttpStreamProtoCallback,
                        status, &proto));
-        if (NextProtoIsSPDY(protocol_negotiated_))
+        if (protocol_negotiated_ == kProtoHTTP2)
           SwitchToSpdyMode();
       }
     }
