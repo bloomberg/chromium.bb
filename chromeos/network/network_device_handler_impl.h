@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -134,13 +135,19 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   // Apply the current value of |mac_addr_randomization_| to wifi devices.
   void ApplyMACAddressRandomizationToShill();
 
+  void SetMACAddressRandomizationErrorCallback(
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
+
   // Get the DeviceState for the wifi device, if any.
   const DeviceState* GetWifiDeviceState(
       const network_handler::ErrorCallback& error_callback);
 
   NetworkStateHandler* network_state_handler_;
   bool cellular_allow_roaming_;
-  bool mac_addr_randomization_;
+  bool mac_addr_randomization_supported_;
+  bool mac_addr_randomization_enabled_;
+  base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);
 };
