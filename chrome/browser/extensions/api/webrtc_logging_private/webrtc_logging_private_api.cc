@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/logging.h"
@@ -207,6 +209,14 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   webrtc_logging_handler_host->set_upload_log_on_render_close(
       params->should_upload);
 
+  // Post a task since this is an asynchronous extension function.
+  // TODO(devlin): This is unneccessary; this should just be a
+  // UIThreadExtensionFunction. Fix this.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::SendResponse,
+          this, true));
   return true;
 }
 
