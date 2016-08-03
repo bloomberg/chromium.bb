@@ -94,6 +94,9 @@ paper-item {
   cursor: pointer;
   font: inherit;
   min-height: 40px;
+  /* TODO(michaelpg): fix this for everybody ever.
+   * https://github.com/PolymerElements/paper-menu-button/issues/56 */
+  white-space: nowrap;
 }
 
 @media not all and (max-width: 1024px) {
