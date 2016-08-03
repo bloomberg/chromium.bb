@@ -39,6 +39,7 @@ const char kSwitchIdeValueVs2015[] = "vs2015";
 const char kSwitchIdeValueXcode[] = "xcode";
 const char kSwitchIdeValueJson[] = "json";
 const char kSwitchNinjaExtraArgs[] = "ninja-extra-args";
+const char kSwitchNoDeps[] = "no-deps";
 const char kSwitchRootTarget[] = "root-target";
 const char kSwitchSln[] = "sln";
 const char kSwitchWorkspace[] = "workspace";
@@ -205,8 +206,9 @@ bool RunIdeWriter(const std::string& ide,
     std::string filters;
     if (command_line->HasSwitch(kSwitchFilters))
       filters = command_line->GetSwitchValueASCII(kSwitchFilters);
+    bool no_deps = command_line->HasSwitch(kSwitchNoDeps);
     bool res = VisualStudioWriter::RunAndWriteFiles(
-        build_settings, builder, version, sln_name, filters, err);
+        build_settings, builder, version, sln_name, filters, no_deps, err);
     if (res && !quiet) {
       OutputString("Generating Visual Studio projects took " +
                    base::Int64ToString(timer.Elapsed().InMilliseconds()) +
@@ -310,6 +312,11 @@ const char kGen_Help[] =
     "      Override default sln file name (\"all\"). Solution file is written\n"
     "      to the root build directory.\n"
     "\n"
+    "  --no-deps\n"
+    "      Don't include targets dependencies to the solution. Changes the\n"
+    "      way how --filters option works. Only directly matching targets are\n"
+    "      included.\n"
+    "\n"
     "Xcode Flags\n"
     "\n"
     "  --workspace=<file_name>\n"
@@ -348,7 +355,7 @@ const char kGen_Help[] =
     "Generic JSON Output\n"
     "\n"
     "  Dumps target information to JSON file and optionally invokes python\n"
-    "  script on generated file. \n"
+    "  script on generated file.\n"
     "  See comments at the beginning of json_project_writer.cc and\n"
     "  desc_builder.cc for overview of JSON file format.\n"
     "\n"

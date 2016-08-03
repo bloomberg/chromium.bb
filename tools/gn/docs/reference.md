@@ -446,7 +446,7 @@
 
 
 ```
-## **gn desc <out_dir> <label or pattern> [<what to show>] [\--blame]**
+## **gn desc <out_dir> <label or pattern> [<what to show>] [\--blame] [\--format=json]**
 
 ```
   Displays information about a given target or config. The build
@@ -511,6 +511,9 @@
       once in the default toolchain and once in a secondary one. Without
       this flag, only the default toolchain one will be matched by
       wildcards. With this flag, both will be matched.
+
+  --format=json
+      Format the output as JSON instead of text.
 
 ```
 
@@ -702,12 +705,13 @@
       "vs2015" - Visual Studio 2015 project/solution files.
       "xcode" - Xcode workspace/solution files.
       "qtcreator" - QtCreator project files.
+      "json" - JSON file containing target information
 
   --filters=<path_prefixes>
       Semicolon-separated list of label patterns used to limit the set
       of generated projects (see "gn help label_pattern"). Only
       matching targets and their dependencies will be included in the
-      solution. Only used for Visual Studio and Xcode.
+      solution. Only used for Visual Studio, Xcode and JSON.
 
 ```
 
@@ -717,6 +721,11 @@
   --sln=<file_name>
       Override default sln file name ("all"). Solution file is written
       to the root build directory.
+
+  --no-deps
+      Don't include targets dependencies to the solution. Changes the
+      way how --filters option works. Only directly matching targets are
+      included.
 
 ```
 
@@ -761,6 +770,29 @@
   Instead, one set of includes/defines is generated for the entire
   project. This works fairly well but may still result in a few indexer
   issues here and there.
+
+```
+
+### **Generic JSON Output**
+
+```
+  Dumps target information to JSON file and optionally invokes python
+  script on generated file.
+  See comments at the beginning of json_project_writer.cc and
+  desc_builder.cc for overview of JSON file format.
+
+  --json-file-name=<json_file_name>
+      Overrides default file name (project.json) of generated JSON file.
+
+  --json-ide-script=<path_to_python_script>
+      Executes python script after the JSON file is generated.
+      Path can be project absolute (//), system absolute (/) or
+      relative, in which case the output directory will be base.
+      Path to generated JSON file will be first argument when invoking
+      script.
+
+  --json-ide-script-args=<argument>
+      Optional second argument that will passed to executed script.
 
 
 ```
@@ -3031,9 +3063,7 @@
 
         If you specify more than one output for shared library links,
         you should consider setting link_output, depend_output, and
-        runtime_link_output. Otherwise, the first entry in the
-        outputs list should always be the main output which will be
-        linked to.
+        runtime_outputs.
 
         Example for a compiler tool that produces .obj files:
           outputs = [
@@ -3058,16 +3088,14 @@
 
     link_output  [string with substitutions]
     depend_output  [string with substitutions]
-    runtime_link_output  [string with substitutions]
         Valid for: "solink" only (optional)
 
-        These three files specify which of the outputs from the solink
+        These two files specify which of the outputs from the solink
         tool should be used for linking and dependency tracking. These
         should match entries in the "outputs". If unspecified, the
         first item in the "outputs" array will be used for all. See
         "Separate linking and dependencies for shared libraries"
-        below for more. If link_output is set but runtime_link_output
-        is not set, runtime_link_output defaults to link_output.
+        below for more.
 
         On Windows, where the tools produce a .dll shared library and
         a .lib import library, you will want the first two to be the
@@ -3143,6 +3171,14 @@
             rspfile = "{{output}}.rsp"
             rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
           }
+
+    runtime_outputs  [string list with substitutions]
+        Valid for: linker tools
+
+        If specified, this list is the subset of the outputs that should
+        be added to runtime deps (see "gn help runtime_deps"). By
+        default (if runtime_outputs is empty or unspecified), it will be
+        the link_output.
 
 ```
 
@@ -6157,11 +6193,9 @@
 ### **Multiple outputs**
 
 ```
-  When a tool produces more than one output, only the first output
-  is considered. For example, a shared library target may produce a
-  .dll and a .lib file on Windows. Only the .dll file will be considered
-  a runtime dependency. This applies only to linker tools. Scripts and
-  copy steps with multiple outputs will get all outputs listed.
+  Linker tools can specify which of their outputs should be considered
+  when computing the runtime deps by setting runtime_outputs. If this
+  is unset on the tool, the default will be the first output only.
 
 
 ```

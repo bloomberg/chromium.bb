@@ -32,15 +32,17 @@ class VisualStudioWriter {
   };
 
   // Writes Visual Studio project and solution files. |sln_name| is the optional
-  // solution file name ("all" is used if not specified). |dir_filters| is
-  // optional semicolon-separated list of label patterns used to limit the set
-  // of generated projects. Only matching targets will be included to the
-  // solution. On failure will populate |err| and will return false.
+  // solution file name ("all" is used if not specified). |filters| is optional
+  // semicolon-separated list of label patterns used to limit the set of
+  // generated projects. Only matching targets and their dependencies (unless
+  // |no_deps| is true) will be included to the solution. On failure will
+  // populate |err| and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings,
                                const Builder& builder,
                                Version version,
                                const std::string& sln_name,
-                               const std::string& dir_filters,
+                               const std::string& filters,
+                               bool no_deps,
                                Err* err);
 
  private:

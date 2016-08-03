@@ -167,21 +167,25 @@ base::StringPiece FindParentDir(const std::string* path) {
 
 bool FilterTargets(const BuildSettings* build_settings,
                    const Builder& builder,
-                   const std::string& dir_filters,
+                   const std::string& filters,
+                   bool no_deps,
                    std::vector<const Target*>* targets,
                    Err* err) {
-  if (dir_filters.empty()) {
+  if (filters.empty()) {
     *targets = builder.GetAllResolvedTargets();
     return true;
   }
 
-  std::vector<LabelPattern> filters;
-  if (!commands::FilterPatternsFromString(build_settings, dir_filters, &filters,
+  std::vector<LabelPattern> patterns;
+  if (!commands::FilterPatternsFromString(build_settings, filters, &patterns,
                                           err))
     return false;
 
-  commands::FilterTargetsByPatterns(builder.GetAllResolvedTargets(), filters,
+  commands::FilterTargetsByPatterns(builder.GetAllResolvedTargets(), patterns,
                                     targets);
+
+  if (no_deps)
+    return true;
 
   std::set<Label> labels;
   std::queue<const Target*> to_process;
@@ -272,10 +276,11 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           const Builder& builder,
                                           Version version,
                                           const std::string& sln_name,
-                                          const std::string& dir_filters,
+                                          const std::string& filters,
+                                          bool no_deps,
                                           Err* err) {
   std::vector<const Target*> targets;
-  if (!FilterTargets(build_settings, builder, dir_filters, &targets, err))
+  if (!FilterTargets(build_settings, builder, filters, no_deps, &targets, err))
     return false;
 
   const char* config_platform = "Win32";
