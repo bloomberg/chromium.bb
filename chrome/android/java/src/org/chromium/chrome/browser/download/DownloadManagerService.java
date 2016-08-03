@@ -59,6 +59,13 @@ public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService,
         NetworkChangeNotifierAutoDetect.Observer,
         DownloadManagerDelegate.DownloadQueryCallback {
+    // Download status.
+    public static final int DOWNLOAD_STATUS_IN_PROGRESS = 0;
+    public static final int DOWNLOAD_STATUS_COMPLETE = 1;
+    public static final int DOWNLOAD_STATUS_FAILED = 2;
+    public static final int DOWNLOAD_STATUS_CANCELLED = 3;
+    public static final int DOWNLOAD_STATUS_INTERRUPTED = 4;
+
     private static final String TAG = "DownloadService";
     // Deprecated shared preference entry. Keep this for a while so that it will be removed when
     // user updates Chrome.
@@ -80,13 +87,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private static final int UMA_DOWNLOAD_RESUMPTION_FAILED = 3;
     private static final int UMA_DOWNLOAD_RESUMPTION_AUTO_STARTED = 4;
     private static final int UMA_DOWNLOAD_RESUMPTION_COUNT = 5;
-
-    // Download status.
-    static final int DOWNLOAD_STATUS_IN_PROGRESS = 0;
-    static final int DOWNLOAD_STATUS_COMPLETE = 1;
-    static final int DOWNLOAD_STATUS_FAILED = 2;
-    static final int DOWNLOAD_STATUS_CANCELLED = 3;
-    static final int DOWNLOAD_STATUS_INTERRUPTED = 4;
 
     // Set will be more expensive to initialize, so use an ArrayList here.
     private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
@@ -120,7 +120,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
             new ArrayList<String>();
     private final List<DownloadUmaStatsEntry> mUmaEntries = new ArrayList<DownloadUmaStatsEntry>();
-    private final DownloadHistoryAdapter mDownloadHistoryAdapter;
+    private final List<DownloadHistoryAdapter> mHistoryAdapters = new ArrayList<>();
 
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
@@ -245,7 +245,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mOMADownloadHandler = new OMADownloadHandler(context);
         mDownloadSnackbarController = new DownloadSnackbarController(context);
         mDownloadManagerDelegate = new DownloadManagerDelegate(mContext);
-        mDownloadHistoryAdapter = new DownloadHistoryAdapter();
         if (mSharedPrefs.contains(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS)) {
             mSharedPrefs.edit().remove(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS).apply();
         }
@@ -294,8 +293,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (downloadInfo.getContentLength() == 0) {
             status = DOWNLOAD_STATUS_FAILED;
         }
-        updateDownloadProgress(new DownloadItem(false, downloadInfo), status);
+
+        DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
+        updateDownloadProgress(downloadItem, status);
         scheduleUpdateIfNeeded();
+
+        if (!mHistoryAdapters.isEmpty()) {
+            nativeGetDownloadInfoFor(getNativeDownloadManagerService(), downloadItem.getId(),
+                    downloadItem.getDownloadInfo().isOffTheRecord());
+        }
     }
 
     @Override
@@ -1450,11 +1456,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
         }
     }
 
-    /**
-     * Returns the Adapter that provides a view into the download history.
-     */
-    public DownloadHistoryAdapter getDownloadHistoryAdapter() {
-        return mDownloadHistoryAdapter;
+    /** Adds a new DownloadHistoryAdapter to the list. */
+    public void addDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
+        mHistoryAdapters.add(adapter);
+    }
+
+    /** Removes a DownloadHistoryAdapter from the list. */
+    public void removeDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
+        mHistoryAdapters.remove(adapter);
     }
 
     /**
@@ -1465,7 +1474,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * This call will be delayed if the native side has not yet been initialized.
      */
     public void getAllDownloads() {
-        mDownloadHistoryAdapter.clear();
         nativeGetAllDownloads(getNativeDownloadManagerService());
     }
 
@@ -1475,22 +1483,27 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
-    private void addDownloadItemToList(List<DownloadItem> list, String guid, String filename,
-            String url, String mimeType, long startTimestamp, long totalBytes) {
-        DownloadInfo.Builder builder = new DownloadInfo.Builder()
-                .setDownloadGuid(guid)
-                .setFileName(filename)
-                .setUrl(url)
-                .setMimeType(mimeType)
-                .setContentLength(totalBytes);
-        DownloadItem downloadItem = new DownloadItem(false, builder.build());
-        downloadItem.setStartTime(startTimestamp);
-        list.add(downloadItem);
+    private void addDownloadItemToList(List<DownloadItem> list, String guid, String displayName,
+            String filepath, String url, String mimeType, long startTimestamp, long totalBytes) {
+        list.add(createDownloadItem(
+                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes));
     }
 
     @CalledByNative
     private void onAllDownloadsRetrieved(final List<DownloadItem> list) {
-        mDownloadHistoryAdapter.onAllDownloadsRetrieved(list);
+        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+            adapter.onAllDownloadsRetrieved(list);
+        }
+    }
+
+    @CalledByNative
+    private void onDownloadItemUpdated(String guid, String displayName, String filepath, String url,
+            String mimeType, long startTimestamp, long totalBytes) {
+        DownloadItem item = createDownloadItem(
+                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes);
+        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+            adapter.updateDownloadItem(item);
+        }
     }
 
     /**
@@ -1558,6 +1571,20 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
+    private static DownloadItem createDownloadItem(String guid, String displayName,
+            String filepath, String url, String mimeType, long startTimestamp, long totalBytes) {
+        DownloadInfo.Builder builder = new DownloadInfo.Builder()
+                .setDownloadGuid(guid)
+                .setFileName(displayName)
+                .setFilePath(filepath)
+                .setUrl(url)
+                .setMimeType(mimeType)
+                .setContentLength(totalBytes);
+        DownloadItem downloadItem = new DownloadItem(false, builder.build());
+        downloadItem.setStartTime(startTimestamp);
+        return downloadItem;
+    }
+
     private native long nativeInit();
     private native void nativeResumeDownload(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
@@ -1567,4 +1594,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
     private native void nativeGetAllDownloads(long nativeDownloadManagerService);
+    private native void nativeGetDownloadInfoFor(
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
 }

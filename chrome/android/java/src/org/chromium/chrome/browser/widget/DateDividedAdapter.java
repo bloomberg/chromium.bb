@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -86,17 +87,20 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * A bucket of items with the same date.
      */
     private static class ItemGroup {
-        private Date mDate;
-        private List<TimedItem> mItems;
+        private final Date mDate;
+        private final List<TimedItem> mItems = new ArrayList<>();
+
+        private boolean mIsSorted;
 
         public ItemGroup(TimedItem item) {
-            mItems = new ArrayList<>();
-            mItems.add(item);
             mDate = new Date(item.getStartTime());
+            mItems.add(item);
+            mIsSorted = true;
         }
 
         public void addItem(TimedItem item) {
             mItems.add(item);
+            mIsSorted = false;
         }
 
         /**
@@ -117,7 +121,34 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         public TimedItem getItemAt(int index) {
             // 0 is allocated to the date header.
             if (index == 0) return null;
+
+            sortIfNeeded();
             return mItems.get(index - 1);
+        }
+
+        /**
+         * Rather than sorting the list each time a new item is added, the list is sorted when
+         * something requires a correct ordering of the items.
+         */
+        private void sortIfNeeded() {
+            if (mIsSorted) return;
+            mIsSorted = true;
+
+            Collections.sort(mItems, new Comparator<TimedItem>() {
+                @Override
+                public int compare(TimedItem lhs, TimedItem rhs) {
+                    // More recent items are listed first.  Ideally we'd use Long.compare, but that
+                    // is an API level 19 call for some inexplicable reason.
+                    long timeDelta = lhs.getStartTime() - rhs.getStartTime();
+                    if (timeDelta > 0) {
+                        return -1;
+                    } else if (timeDelta == 0) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                }
+            });
         }
     }
 

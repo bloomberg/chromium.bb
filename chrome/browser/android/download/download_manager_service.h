@@ -59,6 +59,12 @@ class DownloadManagerService : public DownloadHistory::Observer {
                      const JavaParamRef<jstring>& jdownload_guid,
                      bool is_off_the_record);
 
+  // Returns information about the item that has GUID equal to |jdownload_guid|.
+  void GetDownloadInfoFor(JNIEnv* env,
+                          jobject obj,
+                          const JavaParamRef<jstring>& jdownload_guid,
+                          bool is_off_the_record);
+
   // Called to request that the DownloadManagerService return data about all
   // downloads in the user's history.
   void GetAllDownloads(JNIEnv* env, const JavaParamRef<jobject>& obj);

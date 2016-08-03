@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter {
@@ -58,6 +59,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
     private final List<DownloadItem> mAllItems = new ArrayList<>();
     private final List<DownloadItem> mFilteredItems = new ArrayList<>();
 
+    private int mFilter = FILTER_ALL;
+
     /** Called when the user's download history has been gathered into a List of DownloadItems. */
     public void onAllDownloadsRetrieved(List<DownloadItem> list) {
         mAllItems.clear();
@@ -67,6 +70,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
 
     /** Filters the list of downloads to show only files of a specific type. */
     public void filter(int filterType) {
+        mFilter = filterType;
         mFilteredItems.clear();
         if (filterType == FILTER_ALL) {
             mFilteredItems.addAll(mAllItems);
@@ -138,11 +142,30 @@ public class DownloadHistoryAdapter extends DateDividedAdapter {
         holder.mIconView.setImageResource(iconResource);
     }
 
+    /**
+     * Updates the list when new information about a download comes in.
+     */
+    public void updateDownloadItem(DownloadItem item) {
+        boolean isFound = false;
+
+        // Search for an existing entry representing the DownloadItem.
+        for (int i = 0; i < mAllItems.size() && !isFound; i++) {
+            if (TextUtils.equals(mAllItems.get(i).getId(), item.getId())) {
+                mAllItems.set(i, item);
+                isFound = true;
+            }
+        }
+
+        // Add a new entry if one doesn't already exist.
+        if (!isFound) mAllItems.add(item);
+        filter(mFilter);
+    }
+
     /** Identifies the type of file represented by the given MIME type string. */
     private static int convertMimeTypeToFileType(String mimeType) {
         if (TextUtils.isEmpty(mimeType)) return FILTER_OTHER;
 
-        String[] pieces = mimeType.toLowerCase().split("/");
+        String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
         if (pieces.length != 2) return FILTER_OTHER;
 
         if (MIMETYPE_VIDEO.equals(pieces[0])) {

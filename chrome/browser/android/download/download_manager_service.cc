@@ -28,7 +28,8 @@ namespace {
 bool ShouldShowDownloadItem(content::DownloadItem* item) {
   return !item->IsTemporary() &&
       !item->GetFileNameToReportUser().empty() &&
-      !item->GetTargetFilePath().empty();
+      !item->GetTargetFilePath().empty() &&
+      item->GetState() == content::DownloadItem::COMPLETE;
 }
 
 }  // namespace
@@ -108,6 +109,43 @@ void DownloadManagerService::GetAllDownloads(JNIEnv* env,
     EnqueueDownloadAction(std::string(), INITIALIZE_UI);
 }
 
+void DownloadManagerService::GetDownloadInfoFor(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
+  // The UI shouldn't be able to request any info about a specific item until it
+  // has been initialized with the list of existing downloads.
+  DCHECK(is_history_query_complete_ || is_off_the_record);
+
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (java_ref_.is_null() || !manager)
+    return;
+
+  // Search through the downloads for the entry with the given GUID.
+  content::DownloadManager::DownloadVector all_items;
+  manager->GetAllDownloads(&all_items);
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  for (auto item : all_items) {
+    if (item->GetGuid() != download_guid)
+      continue;
+
+    Java_DownloadManagerService_onDownloadItemUpdated(
+        env,
+        java_ref_.obj(),
+        ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
+        ConvertUTF8ToJavaString(
+            env, item->GetFileNameToReportUser().value()).obj(),
+        ConvertUTF8ToJavaString(
+            env, item->GetTargetFilePath().value()).obj(),
+        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
+        ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
+        item->GetStartTime().ToJavaTime(),
+        item->GetTotalBytes());
+    break;
+  }
+}
+
 void DownloadManagerService::GetAllDownloadsInternal() {
   content::DownloadManager* manager = GetDownloadManager(false);
   if (java_ref_.is_null() || !manager)
@@ -132,7 +170,9 @@ void DownloadManagerService::GetAllDownloadsInternal() {
         j_download_item_list.obj(),
         ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
         ConvertUTF8ToJavaString(
-            env, item->GetFileNameToReportUser().BaseName().value()).obj(),
+            env, item->GetFileNameToReportUser().value()).obj(),
+        ConvertUTF8ToJavaString(
+            env, item->GetTargetFilePath().value()).obj(),
         ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
         ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
         item->GetStartTime().ToJavaTime(),

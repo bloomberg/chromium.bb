@@ -48,6 +48,22 @@ import java.io.File;
 public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickListener {
     private static final String TAG = "download_ui";
 
+    /**
+     * Icons and labels for each filter in the menu.
+     *
+     * Changing the ordering of these items requires changing the FILTER_* values in
+     * {@link DownloadHistoryAdapter}.
+     */
+    private static final int[][] FILTER_LIST = new int[][] {
+        {R.drawable.ic_get_app_white_24dp, R.string.download_manager_ui_all_downloads},
+        {R.drawable.ic_drive_site_white_24dp, R.string.download_manager_ui_pages},
+        {R.drawable.ic_play_arrow_white_24dp, R.string.download_manager_ui_video},
+        {R.drawable.ic_music_note_white_24dp, R.string.download_manager_ui_audio},
+        {R.drawable.ic_image_white_24dp, R.string.download_manager_ui_images},
+        {R.drawable.ic_drive_text_white_24dp, R.string.download_manager_ui_documents},
+        {R.drawable.ic_drive_file_white_24dp, R.string.download_manager_ui_other}
+    };
+
     /** Responds to events occurring in the DownloadManagerUi. */
     public interface DownloadManagerUiDelegate {
         /** Called when the close button is clicked. */
@@ -55,7 +71,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
     }
 
     /** Manages the display of space used by the downloads. */
-    private static final class SpaceDisplay extends RecyclerView.AdapterDataObserver {
+    private final class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         private final AsyncTask<Void, Void, Long> mFileSystemBytesTask;
 
         private TextView mSpaceUsedTextView;
@@ -70,7 +86,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             mFileSystemBytesTask = createStorageSizeTask().execute();
         }
 
-        private static AsyncTask<Void, Void, Long> createStorageSizeTask() {
+        private AsyncTask<Void, Void, Long> createStorageSizeTask() {
             return new AsyncTask<Void, Void, Long>() {
                 @Override
                 protected Long doInBackground(Void... params) {
@@ -123,7 +139,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             }
 
             // Indicate how much space has been used by downloads.
-            long usedBytes = getDownloadHistoryAdapter().getTotalDownloadSize();
+            long usedBytes = mHistoryAdapter.getTotalDownloadSize();
             int percentage =
                     mFileSystemBytes == 0 ? 0 : (int) (100.0 * usedBytes / mFileSystemBytes);
             mSpaceBar.setProgress(percentage);
@@ -132,24 +148,8 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
     }
 
     /** Allows selecting an item from a list displayed in the drawer. */
-    private static final class FilterAdapter
+    private final class FilterAdapter
             extends BaseAdapter implements AdapterView.OnItemClickListener {
-
-        /**
-         * Icons and labels for each filter in the menu.
-         *
-         * Changing the ordering of these items requires changing the FILTER_* values in
-         * {@link DownloadHistoryAdapter}.
-         */
-        private static final int[][] FILTER_LIST = new int[][] {
-            {R.drawable.ic_get_app_white_24dp, R.string.download_manager_ui_all_downloads},
-            {R.drawable.ic_drive_site_white_24dp, R.string.download_manager_ui_pages},
-            {R.drawable.ic_play_arrow_white_24dp, R.string.download_manager_ui_video},
-            {R.drawable.ic_music_note_white_24dp, R.string.download_manager_ui_audio},
-            {R.drawable.ic_image_white_24dp, R.string.download_manager_ui_images},
-            {R.drawable.ic_drive_text_white_24dp, R.string.download_manager_ui_documents},
-            {R.drawable.ic_drive_file_white_24dp, R.string.download_manager_ui_other}
-        };
 
         private final DownloadManagerUi mRootLayout;
         private final int mSelectedBackgroundColor;
@@ -217,7 +217,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // Update the dataset based on the filter.
             int filter = position;
-            getDownloadHistoryAdapter().filter(filter);
+            mHistoryAdapter.filter(filter);
             mRootLayout.onFilterChanged(filter);
 
             // Update the sidebar itself.
@@ -227,7 +227,9 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
         }
     }
 
+    private final DownloadHistoryAdapter mHistoryAdapter;
     private final FilterAdapter mFilterAdapter;
+
     private DownloadManagerUiDelegate mDelegate;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private DownloadManagerToolbar mToolbar;
@@ -235,8 +237,11 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
     private ListView mFilterView;
     private RecyclerView mRecyclerView;
 
+    private boolean mIsDownloadHistoryInitialized;
+
     public DownloadManagerUi(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mHistoryAdapter = new DownloadHistoryAdapter();
         mFilterAdapter = new FilterAdapter(this);
     }
 
@@ -253,20 +258,28 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
         mFilterView.setOnItemClickListener(mFilterAdapter);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setAdapter(getDownloadHistoryAdapter());
+        mRecyclerView.setAdapter(mHistoryAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        getDownloadManagerService().getAllDownloads();
     }
 
     @Override
     public void onAttachedToWindow() {
-        getDownloadHistoryAdapter().registerAdapterDataObserver(mSpaceDisplay);
+        super.onAttachedToWindow();
+        getDownloadManagerService().addDownloadHistoryAdapter(mHistoryAdapter);
+        mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
+
+        // Get information about all the downloads if it hasn't already been done.
+        if (!mIsDownloadHistoryInitialized) {
+            mIsDownloadHistoryInitialized = true;
+            getDownloadManagerService().getAllDownloads();
+        }
     }
 
     @Override
     public void onDetachedFromWindow() {
-        getDownloadHistoryAdapter().unregisterAdapterDataObserver(mSpaceDisplay);
+        getDownloadManagerService().removeDownloadHistoryAdapter(mHistoryAdapter);
+        mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
+        super.onDetachedFromWindow();
     }
 
     /**
@@ -323,17 +336,13 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
         if (filetype == 0) {
             mToolbar.setTitle(R.string.menu_downloads);
         } else {
-            mToolbar.setTitle(FilterAdapter.FILTER_LIST[filetype][1]);
+            mToolbar.setTitle(FILTER_LIST[filetype][1]);
         }
     }
 
     private static DownloadManagerService getDownloadManagerService() {
         return DownloadManagerService.getDownloadManagerService(
                 ContextUtils.getApplicationContext());
-    }
-
-    private static DownloadHistoryAdapter getDownloadHistoryAdapter() {
-        return getDownloadManagerService().getDownloadHistoryAdapter();
     }
 
 }
