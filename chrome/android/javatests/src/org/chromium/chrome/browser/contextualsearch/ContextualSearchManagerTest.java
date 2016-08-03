@@ -31,7 +31,6 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
@@ -77,13 +76,13 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
-@CommandLineFlags.Add(ChromeSwitches.ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING)
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextualsearch/tap_test.html";
     private static final int TEST_TIMEOUT = 15000;
     private static final int TEST_EXPECTED_FAILURE_TIMEOUT = 1000;
+    private static final int PLENTY_OF_TAPS = 1000;
 
     // TODO(donnd): get these from TemplateURL once the low-priority or Contextual Search API
     // is fully supported.
@@ -1975,9 +1974,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.SUPPRESSION_TAPS + "=" + PLENTY_OF_TAPS)
     public void testTapALot() throws InterruptedException, TimeoutException {
-        mPolicy.setTapLimitForDecidedForTesting(200);
-        mPolicy.setTapLimitForUndecidedForTesting(200);
+        mPolicy.setTapLimitForDecidedForTesting(PLENTY_OF_TAPS);
+        mPolicy.setTapLimitForUndecidedForTesting(PLENTY_OF_TAPS);
         for (int i = 0; i < 50; i++) {
             clickToTriggerPrefetch();
             waitForSelectionDissolved();

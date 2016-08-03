@@ -54,10 +54,6 @@ public abstract class ChromeSwitches {
     /** Enable Contextual Search. */
     public static final String ENABLE_CONTEXTUAL_SEARCH = "enable-contextual-search";
 
-    /** Enable Contextual Search for instrumentation testing. Not exposed to user. */
-    public static final String ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING =
-            "enable-contextual-search-for-testing";
-
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";
 

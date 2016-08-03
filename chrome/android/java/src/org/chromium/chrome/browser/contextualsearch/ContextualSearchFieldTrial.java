@@ -64,7 +64,7 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
 
     // Tap triggering suppression.
-    private static final String SUPPRESSION_TAPS = "suppression_taps";
+    static final String SUPPRESSION_TAPS = "suppression_taps";
     // Enables collection of recent scroll seen/unseen histograms.
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
     private static final String ENABLE_RECENT_SCROLL_COLLECTION = "enable_recent_scroll_collection";
@@ -119,15 +119,6 @@ public class ContextualSearchFieldTrial {
     private static boolean detectEnabled() {
         if (SysUtils.isLowEndDevice()) {
             return false;
-        }
-
-        // This is used for instrumentation tests (i.e. it is not a user-flippable flag). We cannot
-        // use Variations params because in the test harness, the initialization comes before any
-        // native methods are available. And the ContextualSearchManager is initialized very early
-        // in the Chrome initialization.
-        if (CommandLine.getInstance().hasSwitch(
-                    ChromeSwitches.ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING)) {
-            return true;
         }
 
         // Allow this user-flippable flag to disable the feature.
