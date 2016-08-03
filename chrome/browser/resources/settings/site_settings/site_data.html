@@ -26,10 +26,10 @@
     <div>$i18n{siteSettingsCookieHeader}</div>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" items="[[sites]]">
-        <div class="list-item underscore">
+        <div class="list-item" on-tap="onSiteTap_" actionable>
           <div class="favicon-image" style$="[[computeSiteIcon(item.site)]]"
               on-tap="onOriginTap_"></div>
-          <div class="middle layout horizontal" on-tap="onSiteTap_">
+          <div class="middle layout horizontal">
             <div class="site flex">[[item.site]]</div>
             <div class="secondary">[[item.localData]]</div>
           </div>
