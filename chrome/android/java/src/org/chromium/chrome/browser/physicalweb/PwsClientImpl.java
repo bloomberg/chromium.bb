@@ -102,8 +102,10 @@ class PwsClientImpl implements PwsClient {
                 String resolvedUrl = obj.getString("resolvedUrl");
                 String iconUrl = pageInfo.optString("icon", null);
                 String title = pageInfo.optString("title", "");
-                String description = pageInfo.optString("description", "");
-                pwsResults.add(new PwsResult(scannedUrl, resolvedUrl, iconUrl, title, description));
+                String description = pageInfo.optString("description", null);
+                String groupId = pageInfo.optString("groupId", null);
+                pwsResults.add(new PwsResult(
+                        scannedUrl, resolvedUrl, iconUrl, title, description, groupId));
             } catch (JSONException e) {
                 Log.e(TAG, "PWS returned invalid data", e);
                 continue;

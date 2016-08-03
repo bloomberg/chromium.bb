@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.physicalweb;
 
+import org.chromium.base.Log;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * A result from the Physical Web Server.
  *
@@ -11,6 +16,8 @@ package org.chromium.chrome.browser.physicalweb;
  * URLs.
  */
 class PwsResult {
+    private static final String TAG = "PhysicalWeb";
+
     /**
      * The URL that was set in the request to the PWS.
      */
@@ -37,14 +44,32 @@ class PwsResult {
     public final String description;
 
     /**
-     * Construct a PwsResult.
-     * @param requestUrl The URL that was sent in the request to the PWS.
+     * The group id as determined by the PWS.
+     * This value is useful for associating multiple URLs that refer to similar content in the same
+     * bucket.
      */
-    PwsResult(String requestUrl, String siteUrl, String iconUrl, String title, String description) {
+    public final String groupId;
+
+    /**
+     * Construct a PwsResult.
+     */
+    PwsResult(String requestUrl, String siteUrl, String iconUrl, String title, String description,
+                String groupId) {
         this.requestUrl = requestUrl;
         this.siteUrl = siteUrl;
         this.iconUrl = iconUrl;
         this.title = title;
         this.description = description;
+
+        String groupIdToSet = groupId;
+        if (groupId == null) {
+            try {
+                groupIdToSet = new URL(siteUrl).getHost() + title;
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "PwsResult created with a malformed URL", e);
+                groupIdToSet = siteUrl + title;
+            }
+        }
+        this.groupId = groupIdToSet;
     }
 }

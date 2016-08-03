@@ -153,7 +153,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
 
     public void addUrl(String url, String title, String desc) {
         ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(url, url, null, title, desc));
+        results.add(new PwsResult(url, url, null, title, desc, null));
         mMockPwsClient.addPwsResults(results);
         mMockPwsClient.addPwsResults(results);
         UrlManager.getInstance().addUrl(url);

@@ -56,13 +56,13 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     private void addPwsResult1() {
         ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
+        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1, null));
         mMockPwsClient.addPwsResults(results);
     }
 
     private void addPwsResult2() {
         ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL2, URL2, null, TITLE2, DESC2));
+        results.add(new PwsResult(URL2, URL2, null, TITLE2, DESC2, null));
         mMockPwsClient.addPwsResults(results);
     }
 
