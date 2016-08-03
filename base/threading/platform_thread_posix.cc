@@ -187,16 +187,24 @@ const char* PlatformThread::GetName() {
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
                                         PlatformThreadHandle* thread_handle,
                                         ThreadPriority priority) {
-  return CreateThread(stack_size, true,  // joinable thread
-                      delegate, thread_handle, priority);
+  return CreateThread(stack_size, true /* joinable thread */, delegate,
+                      thread_handle, priority);
 }
 
 // static
 bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
+  return CreateNonJoinableWithPriority(stack_size, delegate,
+                                       ThreadPriority::NORMAL);
+}
+
+// static
+bool PlatformThread::CreateNonJoinableWithPriority(size_t stack_size,
+                                                   Delegate* delegate,
+                                                   ThreadPriority priority) {
   PlatformThreadHandle unused;
 
   bool result = CreateThread(stack_size, false /* non-joinable thread */,
-                             delegate, &unused, ThreadPriority::NORMAL);
+                             delegate, &unused, priority);
   return result;
 }
 

@@ -152,7 +152,7 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier)
 BrowserThreadImpl::BrowserThreadImpl(ID identifier,
                                      base::MessageLoop* message_loop)
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
-  set_message_loop(message_loop);
+  SetMessageLoop(message_loop);
   Initialize();
 
   // If constructed with an explicit message loop, this is a fake BrowserThread

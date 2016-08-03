@@ -17,6 +17,7 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -74,6 +75,14 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     // Specifies the initial thread priority.
     ThreadPriority priority = ThreadPriority::NORMAL;
+
+    // If false, the thread will not be joined on destruction. This is intended
+    // for threads that want TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN
+    // semantics. Non-joinable threads can't be joined (must be leaked and
+    // can't be destroyed or Stop()'ed).
+    // TODO(gab): allow non-joinable instances to be deleted without causing
+    // user-after-frees (proposal @ https://crbug.com/629139#c14)
+    bool joinable = true;
   };
 
   // Constructor.
@@ -131,12 +140,13 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // carefully for production code.
   bool WaitUntilThreadStarted() const;
 
-  // Signals the thread to exit and returns once the thread has exited.  After
-  // this method returns, the Thread object is completely reset and may be used
-  // as if it were newly constructed (i.e., Start may be called again).
+  // Signals the thread to exit and returns once the thread has exited. The
+  // Thread object is completely reset and may be used as if it were newly
+  // constructed (i.e., Start may be called again). Can only be called if
+  // |joinable_|.
   //
   // Stop may be called multiple times and is simply ignored if the thread is
-  // already stopped.
+  // already stopped or currently stopping.
   //
   // NOTE: If you are a consumer of Thread, it is not necessary to call this
   // before deleting your Thread objects, as the destructor will do it.
@@ -228,10 +238,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   static void SetThreadWasQuitProperly(bool flag);
   static bool GetThreadWasQuitProperly();
 
-  void set_message_loop(MessageLoop* message_loop) {
-    DCHECK(owning_sequence_checker_.CalledOnValidSequence());
-    message_loop_ = message_loop;
-  }
+  // Bind this Thread to an existing MessageLoop instead of starting a new one.
+  void SetMessageLoop(MessageLoop* message_loop);
 
  private:
 #if defined(OS_WIN)
@@ -251,6 +259,10 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Whether this thread needs to initialize COM, and if so, in what mode.
   ComStatus com_status_ = NONE;
 #endif
+
+  // Mirrors the Options::joinable field used to start this thread. Verified
+  // on Stop() -- non-joinable threads can't be joined (must be leaked).
+  bool joinable_ = true;
 
   // If true, we're in the middle of stopping, and shouldn't access
   // |message_loop_|. It may non-nullptr and invalid.
@@ -274,6 +286,11 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Set by the created thread.
   MessageLoop* message_loop_ = nullptr;
   RunLoop* run_loop_ = nullptr;
+
+  // True only if |message_loop_| was externally provided by |SetMessageLoop()|
+  // in which case this Thread has no underlying |thread_| and should merely
+  // drop |message_loop_| on Stop().
+  bool using_external_message_loop_ = false;
 
   // Stores Options::timer_slack_ until the message loop has been bound to
   // a thread.

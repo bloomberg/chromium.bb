@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -28,7 +29,7 @@ namespace {
 // because its Stop method was called.  This allows us to catch cases where
 // MessageLoop::QuitWhenIdle() is called directly, which is unexpected when
 // using a Thread to setup and run a MessageLoop.
-base::LazyInstance<base::ThreadLocalBoolean> lazy_tls_bool =
+base::LazyInstance<base::ThreadLocalBoolean>::Leaky lazy_tls_bool =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -74,6 +75,8 @@ bool Thread::StartWithOptions(const Options& options) {
   DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   DCHECK(!message_loop_);
   DCHECK(!IsRunning());
+  DCHECK(!stopping_) << "Starting a non-joinable thread a second time? That's "
+                     << "not allowed!";
 #if defined(OS_WIN)
   DCHECK((com_status_ != STA) ||
       (options.message_loop_type == MessageLoop::TYPE_UI));
@@ -100,13 +103,20 @@ bool Thread::StartWithOptions(const Options& options) {
   // fixed).
   {
     AutoLock lock(thread_lock_);
-    if (!PlatformThread::CreateWithPriority(options.stack_size, this, &thread_,
-                                            options.priority)) {
+    bool success =
+        options.joinable
+            ? PlatformThread::CreateWithPriority(options.stack_size, this,
+                                                 &thread_, options.priority)
+            : PlatformThread::CreateNonJoinableWithPriority(
+                  options.stack_size, this, options.priority);
+    if (!success) {
       DLOG(ERROR) << "failed to create thread";
       message_loop_ = nullptr;
       return false;
     }
   }
+
+  joinable_ = options.joinable;
 
   // The ownership of |message_loop_| is managed by the newly created thread
   // within the ThreadMain.
@@ -135,16 +145,19 @@ bool Thread::WaitUntilThreadStarted() const {
 }
 
 void Thread::Stop() {
+  DCHECK(joinable_);
+
   // TODO(gab): Fix improper usage of this API (http://crbug.com/629139) and
   // enable this check, until then synchronization with Start() via
   // |thread_lock_| is required...
   // DCHECK(owning_sequence_checker_.CalledOnValidSequence());
   AutoLock lock(thread_lock_);
 
+  StopSoon();
+
+  // Can't join if the |thread_| is either already gone or is non-joinable.
   if (thread_.is_null())
     return;
-
-  StopSoon();
 
   // Wait for the thread to exit.
   //
@@ -170,6 +183,16 @@ void Thread::StopSoon() {
     return;
 
   stopping_ = true;
+
+  if (using_external_message_loop_) {
+    // Setting |stopping_| to true above should have been sufficient for this
+    // thread to be considered "stopped" per it having never set its |running_|
+    // bit by lack of its own ThreadMain.
+    DCHECK(!IsRunning());
+    message_loop_ = nullptr;
+    return;
+  }
+
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&Thread::ThreadQuitHelper, Unretained(this)));
 }
@@ -217,6 +240,24 @@ bool Thread::GetThreadWasQuitProperly() {
   quit_properly = lazy_tls_bool.Pointer()->Get();
 #endif
   return quit_properly;
+}
+
+void Thread::SetMessageLoop(MessageLoop* message_loop) {
+  DCHECK(owning_sequence_checker_.CalledOnValidSequence());
+
+  // TODO(gab): Figure out why some callers pass in a null |message_loop|...
+  // https://crbug.com/629139#c15
+  // DCHECK(message_loop);
+  if (!message_loop)
+    return;
+
+  // Setting |message_loop_| should suffice for this thread to be considered
+  // as "running", until Stop() is invoked.
+  DCHECK(!IsRunning());
+  message_loop_ = message_loop;
+  DCHECK(IsRunning());
+
+  using_external_message_loop_ = true;
 }
 
 void Thread::ThreadMain() {

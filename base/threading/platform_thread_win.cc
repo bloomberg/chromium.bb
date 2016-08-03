@@ -196,8 +196,16 @@ bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
 
 // static
 bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
-  return CreateThreadInternal(stack_size, delegate, nullptr,
-                              ThreadPriority::NORMAL);
+  return CreateNonJoinableWithPriority(stack_size, delegate,
+                                       ThreadPriority::NORMAL);
+}
+
+// static
+bool PlatformThread::CreateNonJoinableWithPriority(size_t stack_size,
+                                                   Delegate* delegate,
+                                                   ThreadPriority priority) {
+  return CreateThreadInternal(stack_size, delegate, nullptr /* non-joinable */,
+                              priority);
 }
 
 // static

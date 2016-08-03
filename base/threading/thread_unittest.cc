@@ -9,10 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/location.h"
+#include "base/debug/leak_annotations.h"
+#include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/gtest_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -43,8 +48,11 @@ class SleepInsideInitThread : public Thread {
     init_called_ = true;
   }
   bool InitCalled() { return init_called_; }
+
  private:
   bool init_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(SleepInsideInitThread);
 };
 
 enum ThreadEvent {
@@ -81,6 +89,8 @@ class CaptureToEventList : public Thread {
 
  private:
   EventList* event_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureToEventList);
 };
 
 // Observer that writes a value into |event_list| when a message loop has been
@@ -101,6 +111,8 @@ class CapturingDestructionObserver
 
  private:
   EventList* event_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CapturingDestructionObserver);
 };
 
 // Task that adds a destruction observer to the current message loop.
@@ -142,10 +154,50 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   event.Wait();
 }
 
-TEST_F(ThreadTest, TwoTasks) {
+TEST_F(ThreadTest, StartWithOptions_NonJoinable) {
+  Thread* a = new Thread("StartNonJoinable");
+  // Non-joinable threads have to be leaked for now (see
+  // Thread::Options::joinable for details).
+  ANNOTATE_LEAKING_OBJECT_PTR(a);
+
+  Thread::Options options;
+  options.joinable = false;
+  EXPECT_TRUE(a->StartWithOptions(options));
+  EXPECT_TRUE(a->message_loop());
+  EXPECT_TRUE(a->IsRunning());
+
+  // Without this call this test is racy. The above IsRunning() succeeds because
+  // of an early-return condition while between Start() and StopSoon(), after
+  // invoking StopSoon() below this early-return condition is no longer
+  // satisfied and the real |is_running_| bit has to be checked. It could still
+  // be false if the message loop hasn't started for real in practice. This is
+  // only a requirement for this test because the non-joinable property forces
+  // it to use StopSoon() and not wait for a complete Stop().
+  EXPECT_TRUE(a->WaitUntilThreadStarted());
+
+  // Make the thread block until |block_event| is signaled.
+  base::WaitableEvent block_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  a->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&base::WaitableEvent::Wait, base::Unretained(&block_event)));
+
+  a->StopSoon();
+  EXPECT_TRUE(a->IsRunning());
+
+  // Unblock the task and give a bit of extra time to unwind QuitWhenIdle().
+  block_event.Signal();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
+
+  // The thread should now have stopped on its own.
+  EXPECT_FALSE(a->IsRunning());
+}
+
+TEST_F(ThreadTest, TwoTasksOnJoinableThread) {
   bool was_invoked = false;
   {
-    Thread a("TwoTasks");
+    Thread a("TwoTasksOnJoinableThread");
     EXPECT_TRUE(a.Start());
     EXPECT_TRUE(a.message_loop());
 
@@ -161,6 +213,28 @@ TEST_F(ThreadTest, TwoTasks) {
   }
   EXPECT_TRUE(was_invoked);
 }
+
+TEST_F(ThreadTest, DestroyWhileRunningIsSafe) {
+  Thread a("DestroyWhileRunningIsSafe");
+  EXPECT_TRUE(a.Start());
+  EXPECT_TRUE(a.WaitUntilThreadStarted());
+}
+
+// TODO(gab): Enable this test when destroying a non-joinable Thread instance
+// is supported (proposal @ https://crbug.com/629139#c14).
+// TEST_F(ThreadTest, DestroyWhileRunningNonJoinableIsSafe) {
+//   {
+//     Thread a("DestroyWhileRunningNonJoinableIsSafe");
+//     Thread::Options options;
+//     options.joinable = false;
+//     EXPECT_TRUE(a.StartWithOptions(options));
+//     EXPECT_TRUE(a.WaitUntilThreadStarted());
+//   }
+//
+//   // Attempt to catch use-after-frees from the non-joinable thread in the
+//   // scope of this test if any.
+//   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
+// }
 
 TEST_F(ThreadTest, StopSoon) {
   Thread a("StopSoon");
@@ -212,6 +286,42 @@ TEST_F(ThreadTest, StartTwice) {
   a.Stop();
   EXPECT_FALSE(a.message_loop());
   EXPECT_FALSE(a.IsRunning());
+}
+
+TEST_F(ThreadTest, StartTwiceNonJoinableNotAllowed) {
+  Thread* a = new Thread("StartTwiceNonJoinable");
+  // Non-joinable threads have to be leaked for now (see
+  // Thread::Options::joinable for details).
+  ANNOTATE_LEAKING_OBJECT_PTR(a);
+
+  Thread::Options options;
+  options.joinable = false;
+  EXPECT_TRUE(a->StartWithOptions(options));
+  EXPECT_TRUE(a->message_loop());
+  EXPECT_TRUE(a->IsRunning());
+
+  // Signaled when last task on |a| is processed.
+  base::WaitableEvent last_task_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  a->task_runner()->PostTask(FROM_HERE,
+                            base::Bind(&base::WaitableEvent::Signal,
+                                       base::Unretained(&last_task_event)));
+
+  // StopSoon() is non-blocking, Yield() to |a|, wait for last task to be
+  // processed and a little more for QuitWhenIdle() to unwind before considering
+  // the thread "stopped".
+  a->StopSoon();
+  base::PlatformThread::YieldCurrentThread();
+  last_task_event.Wait();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
+
+  // This test assumes that the above was sufficient to let the thread fully
+  // stop.
+  ASSERT_FALSE(a->IsRunning());
+
+  // Restarting it should not be allowed.
+  EXPECT_DCHECK_DEATH(a->Start(), "");
 }
 
 TEST_F(ThreadTest, ThreadName) {
@@ -314,4 +424,50 @@ TEST_F(ThreadTest, MultipleWaitUntilThreadStarted) {
   // It's OK to call WaitUntilThreadStarted() multiple times.
   EXPECT_TRUE(a.WaitUntilThreadStarted());
   EXPECT_TRUE(a.WaitUntilThreadStarted());
+}
+
+namespace {
+
+// A Thread which uses a MessageLoop on the stack. It won't start a real
+// underlying thread (instead its messages can be processed by a RunLoop on the
+// stack).
+class ExternalMessageLoopThread : public Thread {
+ public:
+  ExternalMessageLoopThread() : Thread("ExternalMessageLoopThread") {}
+
+  ~ExternalMessageLoopThread() override { Stop(); }
+
+  void InstallMessageLoop() { SetMessageLoop(&external_message_loop_); }
+
+ private:
+  base::MessageLoop external_message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalMessageLoopThread);
+};
+
+}  // namespace
+
+TEST_F(ThreadTest, ExternalMessageLoop) {
+  ExternalMessageLoopThread a;
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+
+  a.InstallMessageLoop();
+  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.IsRunning());
+
+  bool ran = false;
+  a.task_runner()->PostTask(
+      FROM_HERE, base::Bind([](bool* toggled) { *toggled = true; }, &ran));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(ran);
+
+  a.Stop();
+  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.IsRunning());
+
+  // Confirm that running any remaining tasks posted from Stop() goes smoothly
+  // (e.g. https://codereview.chromium.org/2135413003/#ps300001 crashed if
+  // StopSoon() posted Thread::ThreadQuitHelper() while |run_loop_| was null).
+  base::RunLoop().RunUntilIdle();
 }

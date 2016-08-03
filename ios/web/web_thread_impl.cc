@@ -126,7 +126,7 @@ WebThreadImpl::WebThreadImpl(ID identifier)
 
 WebThreadImpl::WebThreadImpl(ID identifier, base::MessageLoop* message_loop)
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
-  set_message_loop(message_loop);
+  SetMessageLoop(message_loop);
   Initialize();
 }
 

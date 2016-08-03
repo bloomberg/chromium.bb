@@ -175,6 +175,12 @@ class BASE_EXPORT PlatformThread {
   // PlatformThreadHandle.
   static bool CreateNonJoinable(size_t stack_size, Delegate* delegate);
 
+  // CreateNonJoinableWithPriority() does the same thing as CreateNonJoinable()
+  // except the priority of the thread is set based on |priority|.
+  static bool CreateNonJoinableWithPriority(size_t stack_size,
+                                            Delegate* delegate,
+                                            ThreadPriority priority);
+
   // Joins with a thread created via the Create function.  This function blocks
   // the caller until the designated thread exits.  This will invalidate
   // |thread_handle|.
