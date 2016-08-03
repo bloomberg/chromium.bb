@@ -543,7 +543,7 @@ void LayoutTable::layout()
             section->setLogicalTop(logicalOffset);
             section->layoutRows();
             logicalOffset += section->logicalHeight();
-            if (isPaginated && m_head && m_head == section) {
+            if (isPaginated && m_head && m_head == section && section->logicalHeight() < section->pageLogicalHeightForOffset(logicalOffset)) {
                 LayoutUnit offsetForTableHeaders = state.heightOffsetForTableHeaders();
                 offsetForTableHeaders += section->logicalHeight();
                 state.setHeightOffsetForTableHeaders(offsetForTableHeaders);

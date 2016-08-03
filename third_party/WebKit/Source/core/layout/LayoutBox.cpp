@@ -4890,7 +4890,7 @@ LayoutUnit LayoutBox::pageRemainingLogicalHeightForOffset(LayoutUnit offset, Pag
 
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread) {
-        LayoutUnit pageLogicalHeight = layoutView->layoutState()->pageLogicalHeight();
+        LayoutUnit pageLogicalHeight = layoutView->pageLogicalHeight();
         LayoutUnit remainingHeight = pageLogicalHeight - intMod(offset, pageLogicalHeight);
         if (pageBoundaryRule == AssociateWithFormerPage) {
             // An offset exactly at a page boundary will act as being part of the former page in

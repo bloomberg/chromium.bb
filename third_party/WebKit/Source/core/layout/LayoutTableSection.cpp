@@ -1001,6 +1001,10 @@ void LayoutTableSection::layoutRows()
             if (isPaginated) {
                 paginationStrutOnRow = paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
                 if (paginationStrutOnRow) {
+                    // If there isn't room for at least one content row on a page with a header group, then
+                    // we won't repeat the header on each page.
+                    if (r == 0 && table()->sectionAbove(this) == table()->header())
+                        state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() - table()->header()->logicalHeight());
                     // If we have a header group we will paint it at the top of each page, move the rows
                     // down to accomodate it.
                     paginationStrutOnRow += state.heightOffsetForTableHeaders().toInt();
@@ -1721,6 +1725,16 @@ bool LayoutTableSection::hasRepeatingHeaderGroup() const
     LayoutUnit pageHeight = table()->pageLogicalHeightForOffset(LayoutUnit());
     if (!pageHeight)
         return false;
+
+    if (logicalHeight() > pageHeight)
+        return false;
+
+    // If the first row of the section after the header group doesn't fit on the page, then
+    // don't repeat the header on each page. See https://drafts.csswg.org/css-tables-3/#repeated-headers
+    LayoutTableSection* sectionBelow = table()->sectionBelow(this);
+    if (sectionBelow && sectionBelow->paginationStrutForRow(sectionBelow->firstRow(), sectionBelow->logicalTop()))
+        return false;
+
     return true;
 }
 
