@@ -468,7 +468,8 @@ class SSLUITest
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
 
-    ui_test_utils::NavigateToURL(browser, https_server_expired_.GetURL("/"));
+    ui_test_utils::NavigateToURL(browser,
+                                 https_server_expired_.GetURL("/title1.html"));
 
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab != nullptr);
@@ -502,7 +503,7 @@ class SSLUITest
         certificate_reporting_test_utils::CERT_REPORT_EXPECTED) {
       // Check that the mock reporter received a request to send a report.
       run_loop.Run();
-      EXPECT_EQ(https_server_expired_.GetURL("/").host(),
+      EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
                 GetLatestHostnameReported());
     } else {
       base::RunLoop().RunUntilIdle();
@@ -531,7 +532,8 @@ class SSLUITest
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
 
-    ui_test_utils::NavigateToURL(browser, https_server_expired_.GetURL("/"));
+    ui_test_utils::NavigateToURL(browser,
+                                 https_server_expired_.GetURL("/title1.html"));
 
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
     CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
@@ -556,7 +558,7 @@ class SSLUITest
         certificate_reporting_test_utils::CERT_REPORT_EXPECTED) {
       // Check that the mock reporter received a request to send a report.
       run_loop.Run();
-      EXPECT_EQ(https_server_expired_.GetURL("/").host(),
+      EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
                 GetLatestHostnameReported());
     } else {
       base::RunLoop().RunUntilIdle();
@@ -709,7 +711,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
   histograms.ExpectTotalCount(interaction_histogram, 0);
 
   // After navigating to the page, the totals should be set.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   content::WaitForInterstitialAttach(
       browser()->tab_strip_model()->GetActiveWebContents());
   histograms.ExpectTotalCount(decision_histogram, 1);
@@ -746,7 +749,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
   histograms.ExpectTotalCount(interaction_histogram, 0);
 
   // After navigating to the page, the totals should be set.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   content::WaitForInterstitialAttach(
       browser()->tab_strip_model()->GetActiveWebContents());
   histograms.ExpectTotalCount(decision_histogram, 1);
@@ -896,7 +900,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingBuildTime) {
   SSLErrorHandler::SetClockForTest(mock_clock.get());
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForInterstitialAttach(clock_tab);
   InterstitialPage* clock_interstitial = clock_tab->GetInterstitialPage();
@@ -916,7 +921,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingNetwork) {
       base::TimeDelta::FromMilliseconds(500), /* latency */
       base::TimeTicks::Now() /* posting time of this update */);
 
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForInterstitialAttach(clock_tab);
   InterstitialPage* clock_interstitial = clock_tab->GetInterstitialPage();
@@ -1317,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
-  GURL url_non_dangerous = embedded_test_server()->GetURL("/");
+  GURL url_non_dangerous = embedded_test_server()->GetURL("/title1.html");
   GURL url_dangerous =
       https_server_expired_.GetURL("/downloads/dangerous/dangerous.exe");
   base::ScopedTempDir downloads_directory_;
@@ -1612,7 +1618,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(https_server_.Start());
 
   host_resolver()->AddRule("example.test",
-                           https_server_.GetURL("/").host());
+                           https_server_.GetURL("/title1.html").host());
 
   net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
   replacement_pair.set_host("example.test");
@@ -2592,7 +2598,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   SSLErrorHandler::SetClockForTest(&mock_clock);
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   content::WaitForInterstitialAttach(tab);
   InterstitialPage* clock_interstitial = tab->GetInterstitialPage();
   ASSERT_TRUE(clock_interstitial);
@@ -2607,7 +2614,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // Put the clock back to normal, trigger a normal SSL interstitial,
   // and proceed through it.
   mock_clock.SetNow(base::Time::NowFromSystemTime());
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_expired_.GetURL("/title1.html"));
   content::WaitForInterstitialAttach(tab);
   InterstitialPage* ssl_interstitial = tab->GetInterstitialPage();
   ASSERT_TRUE(ssl_interstitial);

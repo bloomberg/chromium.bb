@@ -104,13 +104,6 @@ void ToggleHelpBox(Browser* browser) {
       "document.getElementById('details-button').click();"));
 }
 
-// Returns true if |browser| is displaying the text representation of
-// |error_code| on the current page.
-bool WARN_UNUSED_RESULT IsDisplayingNetError(Browser* browser,
-                                             net::Error error_code) {
-  return IsDisplayingText(browser, net::ErrorToShortString(error_code));
-}
-
 // Returns true if the diagnostics link suggestion is displayed.
 bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsLink(Browser* browser) {
   std::string command = base::StringPrintf(
@@ -123,9 +116,10 @@ bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsLink(Browser* browser) {
 }
 
 // Checks that the local error page is being displayed, without remotely
-// retrieved navigation corrections, and with the specified error code.
-void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
-  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
+// retrieved navigation corrections, and with the specified error string.
+void ExpectDisplayingLocalErrorPage(Browser* browser,
+                                    const std::string& error_string) {
+  EXPECT_TRUE(IsDisplayingText(browser, error_string));
 
   // Locally generated error pages should not have navigation corrections.
   EXPECT_FALSE(IsDisplayingText(browser, "http://mock.http/title2.html"));
@@ -134,12 +128,18 @@ void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
   EXPECT_FALSE(IsDisplayingText(browser, "search query"));
 }
 
+// Checks that the local error page is being displayed, without remotely
+// retrieved navigation corrections, and with the specified error code.
+void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
+  ExpectDisplayingLocalErrorPage(browser, net::ErrorToShortString(error_code));
+}
+
 // Checks that an error page with information retrieved from the navigation
 // correction service is being displayed, with the specified specified error
-// code.
+// string.
 void ExpectDisplayingNavigationCorrections(Browser* browser,
-                                           net::Error error_code) {
-  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
+                                           const std::string& error_string) {
+  EXPECT_TRUE(IsDisplayingText(browser, error_string));
 
   // Check that the mock navigation corrections are displayed.
   EXPECT_TRUE(IsDisplayingText(browser, "http://mock.http/title2.html"));
@@ -150,6 +150,15 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
   // The diagnostics button isn't displayed when corrections were
   // retrieved from a remote server.
   EXPECT_FALSE(IsDisplayingDiagnosticsLink(browser));
+}
+
+// Checks that an error page with information retrieved from the navigation
+// correction service is being displayed, with the specified specified error
+// code.
+void ExpectDisplayingNavigationCorrections(Browser* browser,
+                                           net::Error error_code) {
+  ExpectDisplayingNavigationCorrections(browser,
+                                        net::ErrorToShortString(error_code));
 }
 
 std::string GetShowSavedButtonLabel() {
@@ -924,6 +933,30 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
   NavigateToURLAndWaitForTitle(
       net::URLRequestMockHTTPJob::GetMockUrl("page404.html"), "SUCCESS", 1);
+  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+}
+
+// Checks that navigation corrections are loaded in response to a 404 page with
+// no body.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty404) {
+  // The first navigation should fail and load a blank page, while it fetches
+  // the Link Doctor response.  The second navigation is the Link Doctor.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      net::URLRequestMockHTTPJob::GetMockUrl("errorpage/empty404.html"), 2);
+  // This depends on the non-internationalized error ID string in
+  // localized_error.cc.
+  ExpectDisplayingNavigationCorrections(browser(), "HTTP ERROR 404");
+  EXPECT_EQ(1, link_doctor_interceptor()->num_requests());
+}
+
+// Checks that a local error page is shown in response to a 500 error page
+// without a body.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty500) {
+  NavigateToFileURL("errorpage/empty500.html");
+  // This depends on the non-internationalized error ID string in
+  // localized_error.cc.
+  ExpectDisplayingLocalErrorPage(browser(), "HTTP ERROR 500");
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
 

@@ -50,6 +50,8 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -330,11 +332,28 @@ class TestResourceDispatcherHostDelegate
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
 };
 
+// Handles requests for URLs with paths of "/test*" sent to the test server, so
+// tests request a URL that receives a non-error response.
+std::unique_ptr<net::test_server::HttpResponse> HandleTestRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!base::StartsWith(request.relative_url, "/test",
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
+  std::unique_ptr<net::test_server::BasicHttpResponse> response(
+      new net::test_server::BasicHttpResponse());
+  response->set_content("This space intentionally left blank.");
+  return std::move(response);
+}
+
 }  // namespace
 
 class WebNavigationApiTest : public ExtensionApiTest {
  public:
-  WebNavigationApiTest() {}
+  WebNavigationApiTest() {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&HandleTestRequest));
+  }
   ~WebNavigationApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -423,17 +442,16 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
-  GURL url(base::StringPrintf(
-      "http://www.a.com:%u/"
-      "extensions/api_test/webnavigation/serverRedirectSingleProcess/a.html",
-      embedded_test_server()->port()));
+  GURL url(
+      base::StringPrintf("http://www.a.com:%u/extensions/api_test/"
+                         "webnavigation/serverRedirectSingleProcess/a.html",
+                         embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
   url = GURL(base::StringPrintf(
-      "http://www.b.com:%u/server-redirect?http://www.b.com:%u/",
-      embedded_test_server()->port(),
-      embedded_test_server()->port()));
+      "http://www.b.com:%u/server-redirect?http://www.b.com:%u/test",
+      embedded_test_server()->port(), embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 

@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
   host_resolver()->AddRule("example.test",
-                           https_server_.GetURL("/").host());
+                           https_server_.GetURL("/title1.html").host());
 
   net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
   replacement_pair.set_host("example.test");
@@ -415,12 +415,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
 
   // Navigate to an HTTPS page that runs mixed content in an iframe.
   net::HostPortPair host_port_pair =
-      net::HostPortPair::FromURL(https_server_.GetURL("/"));
+      net::HostPortPair::FromURL(https_server_.GetURL("/title1.html"));
   host_port_pair.set_host("different-host.test");
   host_resolver()->AddRule("different-host.test",
-                           https_server_.GetURL("/").host());
-  host_resolver()->AddRule("different-http-host.test",
-                           embedded_test_server()->GetURL("/").host());
+                           https_server_.GetURL("/title1.html").host());
+  host_resolver()->AddRule(
+      "different-http-host.test",
+      embedded_test_server()->GetURL("/title1.html").host());
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_insecure_content_in_iframe.html", host_port_pair,
       &replacement_path);
@@ -446,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                       net::OK);
 
   host_resolver()->AddRule("example.test",
-                           https_server_.GetURL("/").host());
+                           https_server_.GetURL("/title1.html").host());
 
   net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
   replacement_pair.set_host("example.test");
@@ -528,10 +529,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   // iframe, with strict mixed content blocking.
   std::string replacement_path;
   net::HostPortPair host_port_pair =
-      net::HostPortPair::FromURL(https_server_.GetURL("/"));
+      net::HostPortPair::FromURL(https_server_.GetURL("/title1.html"));
   host_port_pair.set_host("different-host.test");
   host_resolver()->AddRule("different-host.test",
-                           https_server_.GetURL("/").host());
+                           https_server_.GetURL("/title1.html").host());
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_runs_insecure_content_in_iframe_with_strict_blocking.html",
       host_port_pair, &replacement_path);
@@ -710,7 +711,7 @@ class SecurityStateModelLoadingTest
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&InstallLoadingInterceptor,
-                   embedded_test_server()->GetURL("/").host()));
+                   embedded_test_server()->GetURL("/title1.html").host()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModelLoadingTest);
@@ -733,9 +734,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
 
   // Navigate to a page that doesn't finish loading. Test that the
   // security state is neutral while the page is loading.
-  browser()->OpenURL(content::OpenURLParams(embedded_test_server()->GetURL("/"),
-                                            content::Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
+      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   CheckSecurityInfoForNonSecure(
       browser()->tab_strip_model()->GetActiveWebContents());
 }
@@ -755,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
   content::NavigationController& controller = new_contents->GetController();
   ChromeSecurityStateModelClient::CreateForWebContents(new_contents);
   CheckSecurityInfoForNonSecure(new_contents);
-  controller.LoadURL(https_server_.GetURL("/"), content::Referrer(),
+  controller.LoadURL(https_server_.GetURL("/title1.html"), content::Referrer(),
                      ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(content::WaitForLoadStop(new_contents));
   CheckSecurityInfoForSecure(new_contents, SecurityStateModel::SECURE,
@@ -789,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
   SecurityStyleTestObserver observer(web_contents);
 
   // Visit an HTTP url.
-  GURL http_url(embedded_test_server()->GetURL("/"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
             observer.latest_security_style());
@@ -831,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
             mixed_content_explanation.ran_insecure_content_style);
 
   // Visit a broken HTTPS url.
-  GURL expired_url(https_test_server_expired.GetURL(std::string("/")));
+  GURL expired_url(https_test_server_expired.GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), expired_url);
 
   // An interstitial should show, and an event for the lock icon on the
@@ -849,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
 
   // Before clicking through, navigate to a different page, and then go
   // back to the interstitial.
-  GURL valid_https_url(https_server_.GetURL(std::string("/")));
+  GURL valid_https_url(https_server_.GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
@@ -915,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
   SecurityStyleTestObserver observer(web_contents);
 
   // Visit a valid HTTPS url.
-  GURL valid_https_url(https_server_.GetURL(std::string("/")));
+  GURL valid_https_url(https_server_.GetURL("/title1.html"));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
@@ -932,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
 
   // Navigate to a bad HTTPS page on a different host, and then click
   // Back to verify that the previous good security style is seen again.
-  GURL expired_https_url(https_test_server_expired.GetURL(std::string("/")));
+  GURL expired_https_url(https_test_server_expired.GetURL("/title1.html"));
   host_resolver()->AddRule("www.example_broken.test", "127.0.0.1");
   GURL::Replacements replace_host;
   replace_host.SetHostStr("www.example_broken.test");

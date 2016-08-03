@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 
 /** Tests for {@link ExternalPrerenderHandler}. */
 public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
-    private static final String TEST_PAGE = "/chrome/test/data/android/google.htnl";
+    private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE2 = "/chrome/test/data/android/about.html";
     private static final int PRERENDER_DELAY_MS = 500;
 

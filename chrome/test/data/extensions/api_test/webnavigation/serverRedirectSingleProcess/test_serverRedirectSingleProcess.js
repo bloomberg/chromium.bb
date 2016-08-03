@@ -10,7 +10,7 @@ onload = function() {
       "http://www.a.com:PORT/extensions/api_test/webnavigation/" +
       "serverRedirectSingleProcess/a.html";
   var URL_REDIRECT = "http://www.b.com:PORT/server-redirect";
-  var URL_TARGET = "http://www.b.com:PORT/";
+  var URL_TARGET = "http://www.b.com:PORT/test";
   chrome.tabs.create({"url": "about:blank"}, function(tab) {
     var tabId = tab.id;
     chrome.test.getConfig(function(config) {

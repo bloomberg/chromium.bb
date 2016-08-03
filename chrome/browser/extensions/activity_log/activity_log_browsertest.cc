@@ -55,11 +55,10 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     ASSERT_EQ("[\"/google_cs.js\"]",
               ActivityLogPolicy::Util::Serialize(last->args()));
     ASSERT_EQ(
-        base::StringPrintf("http://www.google.com.bo:%u/test.html", port),
+        base::StringPrintf("http://www.google.com.bo:%u/title1.html", port),
         last->SerializePageUrl());
-    ASSERT_EQ(
-        base::StringPrintf("www.google.com.bo:%u/test.html", port),
-        last->page_title());
+    ASSERT_EQ(base::StringPrintf("www.google.com.bo:%u/title1.html", port),
+              last->page_title());
     ASSERT_EQ("{\"prerender\":true}",
               ActivityLogPolicy::Util::Serialize(last->other()));
     ASSERT_EQ("", last->api_name());
@@ -102,9 +101,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
 
-  GURL url(base::StringPrintf(
-      "http://www.google.com.bo:%u/test.html",
-      port));
+  GURL url(base::StringPrintf("http://www.google.com.bo:%u/title1.html", port));
 
   const gfx::Size kSize(640, 480);
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle(

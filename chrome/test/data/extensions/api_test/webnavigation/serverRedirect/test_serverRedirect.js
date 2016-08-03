@@ -4,7 +4,7 @@
 
 onload = function() {
   var URL_LOAD =
-      "http://www.a.com:PORT/extensions/api_test/webnavigation/a.html";
+      "http://www.a.com:PORT/extensions/api_test/webnavigation/serverRedirect/a.html";
   var URL_LOAD_REDIRECT = "http://www.a.com:PORT/server-redirect";
   chrome.tabs.create({"url": "about:blank"}, function(tab) {
     var tabId = tab.id;
