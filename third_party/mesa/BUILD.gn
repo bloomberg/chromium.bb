@@ -13,6 +13,8 @@ config("mesa_headers_config") {
   }
 }
 
+assert(!is_ios, "mesa is not used on iOS, don't pull it in accidentally")
+
 # This directory contains checked-in files generated from the Mesa build.
 generated_src_dir = "src/chromium_gensrc"
 

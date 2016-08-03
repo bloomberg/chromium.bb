@@ -404,9 +404,11 @@ test("events_unittests") {
     ]
   }
 
-  data_deps = [
-    "//third_party/mesa:osmesa",
-  ]
+  if (!is_android && !is_ios) {
+    data_deps = [
+      "//third_party/mesa:osmesa",
+    ]
+  }
 
   if (use_x11) {
     sources += [
