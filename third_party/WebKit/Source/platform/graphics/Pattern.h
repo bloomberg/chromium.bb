@@ -59,7 +59,7 @@ public:
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();
 
-    void applyToPaint(SkPaint&, const SkMatrix&) const;
+    void applyToPaint(SkPaint&, const SkMatrix&);
 
     bool isRepeatX() const { return m_repeatMode & RepeatModeX; }
     bool isRepeatY() const { return m_repeatMode & RepeatModeY; }
@@ -68,16 +68,17 @@ public:
     virtual bool isTextureBacked() const { return false; }
 
 protected:
-    virtual sk_sp<SkShader> createShader(const SkMatrix&) const = 0;
+    virtual sk_sp<SkShader> createShader(const SkMatrix&) = 0;
+    virtual bool isLocalMatrixChanged(const SkMatrix&) const;
 
     void adjustExternalMemoryAllocated(int64_t delta);
 
     RepeatMode m_repeatMode;
 
     Pattern(RepeatMode, int64_t externalMemoryAllocated = 0);
+    mutable sk_sp<SkShader> m_cachedShader;
 
 private:
-    mutable sk_sp<SkShader> m_cachedShader;
     int64_t m_externalMemoryAllocated;
 };
 

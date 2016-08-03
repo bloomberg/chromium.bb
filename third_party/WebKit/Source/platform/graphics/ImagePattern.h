@@ -20,10 +20,12 @@ public:
     bool isTextureBacked() const override;
 
 protected:
-    sk_sp<SkShader> createShader(const SkMatrix&) const override;
+    sk_sp<SkShader> createShader(const SkMatrix&) override;
+    bool isLocalMatrixChanged(const SkMatrix&) const override;
 
 private:
     ImagePattern(PassRefPtr<Image>, RepeatMode);
+    SkMatrix m_previousLocalMatrix;
 
     sk_sp<SkImage> m_tileImage;
 };

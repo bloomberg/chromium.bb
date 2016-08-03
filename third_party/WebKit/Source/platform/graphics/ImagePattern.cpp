@@ -24,13 +24,21 @@ ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
 {
     if (m_tileImage) {
         // TODO(fmalita): mechanism to extract the actual SkImageInfo from an SkImage?
-        const SkImageInfo info =
-            SkImageInfo::MakeN32Premul(m_tileImage->width(), m_tileImage->height());
+        const SkImageInfo info = SkImageInfo::MakeN32Premul(
+            m_tileImage->width() + (isRepeatX() ? 0 : 2),
+            m_tileImage->height() + (isRepeatY() ? 0 : 2));
         adjustExternalMemoryAllocated(info.getSafeSize(info.minRowBytes()));
     }
 }
 
-sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) const
+bool ImagePattern::isLocalMatrixChanged(const SkMatrix& localMatrix) const
+{
+    if (isRepeatXY())
+        return Pattern::isLocalMatrixChanged(localMatrix);
+    return localMatrix != m_previousLocalMatrix;
+}
+
+sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix)
 {
     if (!m_tileImage)
         return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
@@ -64,10 +72,11 @@ sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) const
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     surface->getCanvas()->drawImage(m_tileImage, borderPixelX, borderPixelY, &paint);
 
-    SkMatrix newLocalMatrix(localMatrix);
-    newLocalMatrix.postTranslate(-borderPixelX, -borderPixelY);
+    m_previousLocalMatrix = localMatrix;
+    SkMatrix adjustedMatrix(localMatrix);
+    adjustedMatrix.postTranslate(-borderPixelX, -borderPixelY);
 
-    return surface->makeImageSnapshot()->makeShader(tileModeX, tileModeY, &newLocalMatrix);
+    return surface->makeImageSnapshot()->makeShader(tileModeX, tileModeY, &adjustedMatrix);
 }
 
 bool ImagePattern::isTextureBacked() const

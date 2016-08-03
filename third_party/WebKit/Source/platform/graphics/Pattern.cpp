@@ -60,12 +60,17 @@ Pattern::~Pattern()
     adjustExternalMemoryAllocated(-m_externalMemoryAllocated);
 }
 
-void Pattern::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix) const
+void Pattern::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix)
 {
-    if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
+    if (!m_cachedShader || isLocalMatrixChanged(localMatrix))
         m_cachedShader = createShader(localMatrix);
 
     paint.setShader(m_cachedShader);
+}
+
+bool Pattern::isLocalMatrixChanged(const SkMatrix& localMatrix) const
+{
+    return localMatrix != m_cachedShader->getLocalMatrix();
 }
 
 void Pattern::adjustExternalMemoryAllocated(int64_t delta)

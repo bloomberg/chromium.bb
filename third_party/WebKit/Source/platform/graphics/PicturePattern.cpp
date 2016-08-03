@@ -30,7 +30,7 @@ PicturePattern::~PicturePattern()
 {
 }
 
-sk_sp<SkShader> PicturePattern::createShader(const SkMatrix& localMatrix) const
+sk_sp<SkShader> PicturePattern::createShader(const SkMatrix& localMatrix)
 {
     SkRect tileBounds = m_tilePicture->cullRect();
 
