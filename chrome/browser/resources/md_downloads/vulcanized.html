@@ -639,21 +639,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 
-<dom-module id="paper-material" assetpath="chrome://resources/polymer/v1_0/paper-material/">
-  <template>
-    <style include="paper-material-shared-styles"></style>
-    <style>
-      :host([animated]) {
-        @apply(--shadow-transition);
-      }
-    </style>
-
-    <content></content>
-  </template>
-</dom-module>
 <dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/">
   <template strip-whitespace="">
-    <style include="paper-material">
+    <style include="paper-material-shared-styles">
       :host {
         @apply(--layout-inline);
         @apply(--layout-center-center);
@@ -680,6 +668,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply(--paper-button);
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       :host([raised].keyboard-focus) {
         font-weight: bold;
         @apply(--paper-button-raised-keyboard-focus);
@@ -697,6 +689,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         pointer-events: none;
 
         @apply(--paper-button-disabled);
+      }
+
+      :host([animated]) {
+        @apply(--shadow-transition);
       }
 
       paper-ripple {

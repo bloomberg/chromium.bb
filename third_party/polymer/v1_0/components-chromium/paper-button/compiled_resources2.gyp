@@ -9,7 +9,6 @@
       'target_name': 'paper-button-extracted',
       'dependencies': [
         '../paper-behaviors/compiled_resources2.gyp:paper-button-behavior-extracted',
-        '../paper-material/compiled_resources2.gyp:paper-material-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

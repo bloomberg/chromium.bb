@@ -132,11 +132,11 @@ Revision: 4713a5dc86da222167e3467531a187b239885547
 Tree link: https://github.com/PolymerElements/iron-list/tree/v1.3.5
 
 Name: iron-location
-Version: 0.8.5
+Version: 0.8.6
 Repository: git://github.com/PolymerElements/iron-location.git
-Tag: v0.8.5
-Revision: d7c5a9c991bf5e94094c16e94eb34e2eb30db4b0
-Tree link: https://github.com/PolymerElements/iron-location/tree/v0.8.5
+Tag: 0.8.6
+Revision: 8f628b3477fcba70da47d75e521a8afe8f12e4f7
+Tree link: https://github.com/PolymerElements/iron-location/tree/0.8.6
 
 Name: iron-media-query
 Version: 1.0.8
@@ -237,11 +237,11 @@ Revision: 424919089ce3a68dfac1de17e6a56f4e09048e95
 Tree link: https://github.com/PolymerElements/paper-behaviors/tree/v1.0.12
 
 Name: paper-button
-Version: 1.0.12
+Version: 1.0.13
 Repository: git://github.com/PolymerElements/paper-button.git
-Tag: v1.0.12
-Revision: 96c3a2661c355223d0b41e1d34126f9c62d544dc
-Tree link: https://github.com/PolymerElements/paper-button/tree/v1.0.12
+Tag: v1.0.13
+Revision: 649ac0c09fa74b5af258cb6debebba811024f7cc
+Tree link: https://github.com/PolymerElements/paper-button/tree/v1.0.13
 
 Name: paper-checkbox
 Version: 1.3.0
@@ -300,11 +300,11 @@ Revision: 0a6c65f73765d6f6ae6cfe90ddc9905a2cf45f20
 Tree link: https://github.com/PolymerElements/paper-icon-button/tree/v1.1.2
 
 Name: paper-input
-Version: 1.1.15
+Version: 1.1.17
 Repository: git://github.com/PolymerElements/paper-input.git
-Tag: v1.1.15
-Revision: cb868e5f6468f2d6b98be9ee7d30d6fcb9bf9698
-Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.15
+Tag: v1.1.17
+Revision: 61d482886c58324b682cea3c605695c31154e084
+Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.17
 
 Name: paper-item
 Version: 1.2.1
@@ -419,9 +419,9 @@ Revision: 6be894127678900f6e506b56fc9622ab768c03aa
 Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.2
 
 Name: polymer
-Version: 1.6.0
+Version: 1.6.1
 Repository: git://github.com/Polymer/polymer.git
-Tag: v1.6.0
-Revision: 8715c83bf04a228de00ec662ed43eb6141e61b91
-Tree link: https://github.com/Polymer/polymer/tree/v1.6.0
+Tag: v1.6.1
+Revision: 1f197d9d7874b1e5808b2a5c26f34446a7d912fc
+Tree link: https://github.com/Polymer/polymer/tree/v1.6.1
 

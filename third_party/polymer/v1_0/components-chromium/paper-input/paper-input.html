@@ -72,6 +72,10 @@ style this element.
         display: block;
       }
 
+      :host([focused]) {
+        outline: none;
+      }
+
       :host([hidden]) {
         display: none !important;
       }
@@ -90,6 +94,10 @@ style this element.
 
       input:-ms-input-placeholder {
         color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      label {
+        pointer-events: none;
       }
     </style>
 
