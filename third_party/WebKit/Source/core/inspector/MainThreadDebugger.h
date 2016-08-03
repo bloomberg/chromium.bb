@@ -86,8 +86,8 @@ private:
     // V8InspectorClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
-    void muteWarningsAndDeprecations(int contextGroupId) override;
-    void unmuteWarningsAndDeprecations(int contextGroupId) override;
+    void muteMetrics(int contextGroupId) override;
+    void unmuteMetrics(int contextGroupId) override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
     void beginEnsureAllContextsInGroup(int contextGroupId) override;
     void endEnsureAllContextsInGroup(int contextGroupId) override;

@@ -100,12 +100,16 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
     }
 
     int contextGroupId = V8Debugger::getGroupId(m_context);
-    if (contextGroupId)
-        m_inspector->client()->muteWarningsAndDeprecations(contextGroupId);
+    if (contextGroupId) {
+        m_inspector->client()->muteMetrics(contextGroupId);
+        m_inspector->muteExceptions(contextGroupId);
+    }
     v8::MicrotasksScope microtasksScope(m_context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::MaybeLocal<v8::Value> maybeResult = function->Call(m_context, thisObject, m_arguments.size(), info.get());
-    if (contextGroupId)
-        m_inspector->client()->unmuteWarningsAndDeprecations(contextGroupId);
+    if (contextGroupId) {
+        m_inspector->client()->unmuteMetrics(contextGroupId);
+        m_inspector->unmuteExceptions(contextGroupId);
+    }
 
     v8::Local<v8::Value> result;
     if (!maybeResult.ToLocal(&result))

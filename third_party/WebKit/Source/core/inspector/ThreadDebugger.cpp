@@ -304,10 +304,10 @@ void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8
     V8EventListenerInfoList listenerInfo;
     // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
     if (groupId)
-        debugger->muteWarningsAndDeprecations(groupId);
+        debugger->muteMetrics(groupId);
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0], listenerInfo);
     if (groupId)
-        debugger->unmuteWarningsAndDeprecations(groupId);
+        debugger->unmuteMetrics(groupId);
 
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     AtomicString currentEventType;

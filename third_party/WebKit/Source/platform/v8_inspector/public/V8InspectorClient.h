@@ -21,8 +21,8 @@ public:
     virtual ~V8InspectorClient() { }
     virtual void runMessageLoopOnPause(int contextGroupId) = 0;
     virtual void quitMessageLoopOnPause() = 0;
-    virtual void muteWarningsAndDeprecations(int contextGroupId) = 0;
-    virtual void unmuteWarningsAndDeprecations(int contextGroupId) = 0;
+    virtual void muteMetrics(int contextGroupId) = 0;
+    virtual void unmuteMetrics(int contextGroupId) = 0;
     virtual void beginUserGesture() = 0;
     virtual void endUserGesture() = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;

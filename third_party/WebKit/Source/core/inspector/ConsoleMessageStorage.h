@@ -19,20 +19,16 @@ class CORE_EXPORT ConsoleMessageStorage : public GarbageCollected<ConsoleMessage
 public:
     ConsoleMessageStorage();
 
-    bool addConsoleMessage(ExecutionContext*, ConsoleMessage*);
+    void addConsoleMessage(ExecutionContext*, ConsoleMessage*);
     void clear();
-    void mute();
-    void unmute();
     size_t size() const;
     ConsoleMessage* at(size_t index) const;
     int expiredCount() const;
-    bool isMuted() const;
 
     DECLARE_TRACE();
 
 private:
     int m_expiredCount;
-    int m_mutedCount;
     HeapDeque<Member<ConsoleMessage>> m_messages;
 };
 

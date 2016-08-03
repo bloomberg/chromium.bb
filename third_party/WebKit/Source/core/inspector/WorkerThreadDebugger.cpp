@@ -96,9 +96,6 @@ void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context
 
 void WorkerThreadDebugger::exceptionThrown(ErrorEvent* event)
 {
-    if (m_workerThread->consoleMessageStorage()->isMuted())
-        return;
-
     const String16 defaultMessage = "Uncaught";
     ScriptState* scriptState = m_workerThread->globalScope()->scriptController()->getScriptState();
     if (scriptState && scriptState->contextIsValid()) {
@@ -128,16 +125,14 @@ void WorkerThreadDebugger::quitMessageLoopOnPause()
     m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
-void WorkerThreadDebugger::muteWarningsAndDeprecations(int contextGroupId)
+void WorkerThreadDebugger::muteMetrics(int contextGroupId)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    m_workerThread->consoleMessageStorage()->mute();
 }
 
-void WorkerThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
+void WorkerThreadDebugger::unmuteMetrics(int contextGroupId)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    m_workerThread->consoleMessageStorage()->unmute();
 }
 
 v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(int contextGroupId)

@@ -151,6 +151,16 @@ void V8InspectorImpl::disableStackCapturingIfNeeded()
         V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(m_isolate, false);
 }
 
+void V8InspectorImpl::muteExceptions(int contextGroupId)
+{
+    m_muteExceptionsMap[contextGroupId]++;
+}
+
+void V8InspectorImpl::unmuteExceptions(int contextGroupId)
+{
+    m_muteExceptionsMap[contextGroupId]--;
+}
+
 V8ConsoleMessageStorage* V8InspectorImpl::ensureConsoleMessageStorage(int contextGroupId)
 {
     ConsoleStorageMap::iterator storageIt = m_consoleStorageMap.find(contextGroupId);
@@ -231,6 +241,7 @@ void V8InspectorImpl::contextDestroyed(v8::Local<v8::Context> context)
 void V8InspectorImpl::resetContextGroup(int contextGroupId)
 {
     m_consoleStorageMap.erase(contextGroupId);
+    m_muteExceptionsMap.erase(contextGroupId);
     SessionMap::iterator session = m_sessions.find(contextGroupId);
     if (session != m_sessions.end())
         session->second->reset();
@@ -262,7 +273,7 @@ void V8InspectorImpl::idleFinished()
 unsigned V8InspectorImpl::exceptionThrown(v8::Local<v8::Context> context, const String16& message, v8::Local<v8::Value> exception, const String16& detailedMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     int contextGroupId = V8Debugger::getGroupId(context);
-    if (!contextGroupId)
+    if (!contextGroupId || m_muteExceptionsMap[contextGroupId])
         return 0;
     std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
     unsigned exceptionId = ++m_lastExceptionId;

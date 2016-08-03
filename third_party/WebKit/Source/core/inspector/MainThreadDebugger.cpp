@@ -167,9 +167,6 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* 
         scriptState = toMainThreadWorkletGlobalScope(context)->scriptController()->getScriptState();
     }
 
-    if (frame->host() && frame->host()->consoleMessageStorage().isMuted())
-        return;
-
     const String16 defaultMessage = "Uncaught";
     if (scriptState && scriptState->contextIsValid()) {
         ScriptState::Scope scope(scriptState);
@@ -228,21 +225,19 @@ void MainThreadDebugger::quitMessageLoopOnPause()
         m_clientMessageLoop->quitNow();
 }
 
-void MainThreadDebugger::muteWarningsAndDeprecations(int contextGroupId)
+void MainThreadDebugger::muteMetrics(int contextGroupId)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (frame && frame->host()) {
-        frame->host()->consoleMessageStorage().mute();
         frame->host()->useCounter().muteForInspector();
         frame->host()->deprecation().muteForInspector();
     }
 }
 
-void MainThreadDebugger::unmuteWarningsAndDeprecations(int contextGroupId)
+void MainThreadDebugger::unmuteMetrics(int contextGroupId)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (frame && frame->host()) {
-        frame->host()->consoleMessageStorage().unmute();
         frame->host()->useCounter().unmuteForInspector();
         frame->host()->deprecation().unmuteForInspector();
     }
