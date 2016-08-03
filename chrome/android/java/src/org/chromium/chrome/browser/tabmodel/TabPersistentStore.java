@@ -1405,12 +1405,17 @@ public class TabPersistentStore extends TabPersister {
                 protected Void doInBackground(Void... params) {
                     if (!hasRunLegacyMigration) {
                         performLegacyMigration();
-                        // If a legacy migration was performed, a multi-instance migration is not
-                        // necessary.
-                        setMultiInstanceFileMigrationPref();
-                    } else {
+                    }
+
+                    // It's possible that the legacy migration ran in the past but the preference
+                    // wasn't set, because the legacy migration hasn't always set a preference upon
+                    // completion. If the legacy migration has already been performed,
+                    // performLecacyMigration() will exit early without renaming the metadata file,
+                    // so the multi-instance migration is still necessary.
+                    if (!hasRunMultiInstanceMigration) {
                         performMultiInstanceMigration();
                     }
+
                     return null;
                 }
             }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
