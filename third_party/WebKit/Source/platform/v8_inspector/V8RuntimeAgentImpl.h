@@ -105,17 +105,19 @@ public:
         const String16& expression,
         const String16& sourceURL,
         bool persistScript,
-        int executionContextId,
+        const Maybe<int>& executionContextId,
         Maybe<String16>*,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
-    void runScript(ErrorString*,
+    void runScript(
         const String16&,
-        int executionContextId,
+        const Maybe<int>& executionContextId,
         const Maybe<String16>& objectGroup,
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& includeCommandLineAPI,
-        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
-        Maybe<protocol::Runtime::ExceptionDetails>*) override;
+        const Maybe<bool>& returnByValue,
+        const Maybe<bool>& generatePreview,
+        const Maybe<bool>& awaitPromise,
+        std::unique_ptr<RunScriptCallback>) override;
 
     void reset();
     void reportExecutionContextCreated(InspectedContext*);

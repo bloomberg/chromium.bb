@@ -3,14 +3,6 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
-function createPromiseAndScheduleResolve()
-{
-    var resolveCallback;
-    var promise = new Promise((resolve) => resolveCallback = resolve);
-    setTimeout(resolveCallback.bind(null, { a : 239 }), 0);
-    return promise;
-}
-
 function test()
 {
     InspectorTest.runTestSuite([

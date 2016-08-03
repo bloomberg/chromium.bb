@@ -49,7 +49,7 @@ Running test: testExceptionInFunctionExpression
 Running test: testFunctionReturnNotPromise
 {
     code : -32000
-    message : Result of the function call is not a promise.
+    message : Result of the function call is not a promise
 }
 
 Running test: testFunctionReturnResolvedPromiseReturnByValue
