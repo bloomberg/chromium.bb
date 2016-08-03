@@ -31,6 +31,9 @@ declare_args() {
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
+
+  # Enables vr shell.
+  enable_vr_shell = false
 }
 
 chrome_grit_defines = [
