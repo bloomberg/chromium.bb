@@ -228,7 +228,28 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  TryNextRequest();
+  // Determine whether we might try another request in this
+  // processing window based on how the previous request completed.
+  //
+  // TODO(dougarnett): Need to split PRERENDERING_FAILED into separate
+  // codes as to whether we should try another request or not.
+  switch (status) {
+    case Offliner::RequestStatus::SAVED:
+    case Offliner::RequestStatus::SAVE_FAILED:
+    case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:  // timeout
+    case Offliner::RequestStatus::PRERENDERING_CANCELED:
+      // Consider processing another request in this service window.
+      TryNextRequest();
+      break;
+    case Offliner::RequestStatus::FOREGROUND_CANCELED:
+    case Offliner::RequestStatus::PRERENDERING_FAILED:
+      // No further processing in this service window.
+      break;
+    default:
+      // Make explicit choice about new status codes that actually reach here.
+      // Their default is no further processing in this service window.
+      DCHECK(false);
+  }
 }
 
 const Scheduler::TriggerConditions

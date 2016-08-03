@@ -31,6 +31,9 @@ namespace {
 // put test constants here
 const GURL kUrl("http://universe.com/everything");
 const ClientId kClientId("bookmark", "42");
+const int kRequestId2(2);
+const GURL kUrl2("http://universe.com/toinfinityandbeyond");
+const ClientId kClientId2("bookmark", "43");
 const int kRequestId(1);
 const long kTestTimeoutSeconds = 1;
 const long kTestTimeBudgetSeconds = 200;
@@ -358,6 +361,15 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
                  base::Unretained(this)));
   PumpLoop();
 
+  // Add second request to the queue to check handling when first fails.
+  offline_pages::SavePageRequest request2(
+      kRequestId2, kUrl2, kClientId2, base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request2,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
   // We need to give a callback to the request.
   base::Callback<void(bool)> callback =
       base::Bind(
@@ -375,23 +387,21 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_FAILED);
-  // There will be one request left in the queue after the prerender fails, stop
-  // processing now so that it will remain in the queue for us to check.  This
-  // won't affect the offliner done callback other than preventing
-  // TryNextRequest from doing anything.
-  coordinator()->StopProcessing();
-
   PumpLoop();
 
-  // Verify the request is not removed from the queue, and wait for callbacks.
+  // TODO(dougarnett): Consider injecting mock RequestPicker for this test
+  // and verifying that there is no attempt to pick another request following
+  // this failure code.
+
+  // Verify neither request is removed from the queue; wait for callbacks.
   coordinator()->queue()->GetRequests(
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
                  base::Unretained(this)));
   PumpLoop();
 
-  // Still one request in the queue.
-  EXPECT_EQ(1UL, last_requests().size());
-  // Verify retry count was incremented.
+  // Still two requests in the queue.
+  EXPECT_EQ(2UL, last_requests().size());
+  // Verify retry count was incremented for first request.
   const SavePageRequest& found_request = last_requests().front();
   EXPECT_EQ(1L, found_request.attempt_count());
 }
@@ -515,7 +525,6 @@ TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
   EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
             last_offlining_status());
 }
-
 
 TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   // Build a request to use with the pre-renderer, and put it on the queue.
