@@ -15,6 +15,7 @@ in the file LICENSE.
 Documentation for ICC profile can be found at: http://www.color.org
 
 Local Modifications:
+* Added Copyright in same form as libjpeg with dates from LICENSE file.
 * On BSD platforms we might need to include to correct header file from
   the system, so a USE_SYSTEM_LIBJPEG ifdef is added to iccjpeg.h in order
   to be able to decide which jpeglib.h header to include.
