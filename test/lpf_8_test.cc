@@ -98,7 +98,7 @@ TEST_P(Loop8Test6Param, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = number_of_iterations;
 #if CONFIG_HIGHBITDEPTH
-  int32_t bd = bit_depth_;
+  const int32_t bd = bit_depth_;
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, ref_s[kNumCoeffs]);
 #else
@@ -122,7 +122,6 @@ TEST_P(Loop8Test6Param, OperationCheck) {
                     thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
     int32_t p = kNumCoeffs / 32;
-
     uint16_t tmp_s[kNumCoeffs];
     int j = 0;
     while (j < kNumCoeffs) {
@@ -130,20 +129,42 @@ TEST_P(Loop8Test6Param, OperationCheck) {
       if (val & 0x80) {  // 50% chance to choose a new value.
         tmp_s[j] = rnd.Rand16();
         j++;
-      } else {  // 50% chance to repeat previous value in row X times
+      } else {  // 50% chance to repeat previous value in row X times.
         int k = 0;
         while (k++ < ((val & 0x1f) + 1) && j < kNumCoeffs) {
           if (j < 1) {
             tmp_s[j] = rnd.Rand16();
-          } else if (val & 0x20) {  // Increment by an value within the limit
-            tmp_s[j] = (tmp_s[j - 1] + (*limit - 1));
-          } else {  // Decrement by an value within the limit
-            tmp_s[j] = (tmp_s[j - 1] - (*limit - 1));
+          } else if (val & 0x20) {  // Increment by a value within the limit.
+            tmp_s[j] = tmp_s[j - 1] + (*limit - 1);
+          } else {  // Decrement by a value within the limit.
+            tmp_s[j] = tmp_s[j - 1] - (*limit - 1);
           }
           j++;
         }
       }
     }
+
+    for (j = 0; j < kNumCoeffs;) {
+      const uint8_t val = rnd.Rand8();
+      if (val & 0x80) {
+        j++;
+      } else {  // 50% chance to repeat previous value in column X times.
+        int k = 0;
+        while (k++ < ((val & 0x1f) + 1) && j < kNumCoeffs) {
+          if (j < 1) {
+            tmp_s[j] = rnd.Rand16();
+          } else if (val & 0x20) {  // Increment by a value within the limit.
+            tmp_s[(j % 32) * 32 + j / 32] =
+                tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] + (*limit - 1);
+          } else {  // Decrement by a value within the limit.
+            tmp_s[(j % 32) * 32 + j / 32] =
+                tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] - (*limit - 1);
+          }
+          j++;
+        }
+      }
+    }
+
     for (j = 0; j < kNumCoeffs; j++) {
       if (i % 2) {
         s[j] = tmp_s[j] & mask_;
@@ -230,6 +251,7 @@ TEST_P(Loop8Test6Param, ValueCheck) {
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh));
 #endif  // CONFIG_HIGHBITDEPTH
+
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
@@ -335,14 +357,36 @@ TEST_P(Loop8Test9Param, OperationCheck) {
           if (j < 1) {
             tmp_s[j] = rnd.Rand16();
           } else if (val & 0x20) {  // Increment by a value within the limit.
-            tmp_s[j] = (tmp_s[j - 1] + (limit - 1));
-          } else {  // Decrement by an value within the limit.
-            tmp_s[j] = (tmp_s[j - 1] - (limit - 1));
+            tmp_s[j] = tmp_s[j - 1] + (limit - 1);
+          } else {  // Decrement by a value within the limit.
+            tmp_s[j] = tmp_s[j - 1] - (limit - 1);
           }
           j++;
         }
       }
     }
+
+    for (j = 0; j < kNumCoeffs;) {
+      const uint8_t val = rnd.Rand8();
+      if (val & 0x80) {
+        j++;
+      } else {  // 50% chance to repeat previous value in column X times.
+        int k = 0;
+        while (k++ < ((val & 0x1f) + 1) && j < kNumCoeffs) {
+          if (j < 1) {
+            tmp_s[j] = rnd.Rand16();
+          } else if (val & 0x20) {  // Increment by a value within the limit.
+            tmp_s[(j % 32) * 32 + j / 32] =
+                tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] + (limit - 1);
+          } else {  // Decrement by a value within the limit.
+            tmp_s[(j % 32) * 32 + j / 32] =
+                tmp_s[((j - 1) % 32) * 32 + (j - 1) / 32] - (limit - 1);
+          }
+          j++;
+        }
+      }
+    }
+
     for (j = 0; j < kNumCoeffs; j++) {
       if (i % 2) {
         s[j] = tmp_s[j] & mask_;
