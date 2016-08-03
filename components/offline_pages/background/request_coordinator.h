@@ -50,6 +50,11 @@ class RequestCoordinator : public KeyedService {
   bool SavePageLater(
       const GURL& url, const ClientId& client_id, bool user_reqeusted);
 
+  // Remove a list of requests by |client_id|.  This removes requests from the
+  // request queue, but does not cancel an in-progress pre-render.
+  // TODO(petewil): Add code to cancel an in-progress pre-render.
+  void RemoveRequests(const std::vector<ClientId>& client_ids);
+
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
   // a callback. If processing was already active, returns false.

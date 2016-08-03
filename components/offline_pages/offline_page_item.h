@@ -26,6 +26,8 @@ struct ClientId {
   ClientId(std::string name_space, std::string id);
 
   bool operator==(const ClientId& client_id) const;
+
+  bool operator<(const ClientId& client_id) const;
 };
 
 // Metadata of the offline page.

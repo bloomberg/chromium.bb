@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
 
@@ -75,6 +76,11 @@ class RequestQueue {
   // Removes the request matching the |request_id|. Result is returned through
   // |callback|.
   void RemoveRequest(int64_t request_id, const UpdateRequestCallback& callback);
+
+  // Removes the requests matching the |client_ids|. Results are returned
+  // through |callback|.
+  void RemoveRequestsByClientId(const std::vector<ClientId>& client_id,
+                                const UpdateRequestCallback& callback);
 
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,

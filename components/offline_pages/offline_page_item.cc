@@ -21,6 +21,13 @@ bool ClientId::operator==(const ClientId& client_id) const {
   return name_space == client_id.name_space && id == client_id.id;
 }
 
+bool ClientId::operator<(const ClientId& client_id) const {
+  if (name_space == client_id.name_space)
+    return (id < client_id.id);
+
+  return name_space < client_id.name_space;
+}
+
 OfflinePageItem::OfflinePageItem()
     : version(kCurrentVersion),
       file_size(0),

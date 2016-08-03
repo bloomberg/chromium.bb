@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,8 +40,6 @@ void RequestQueueInMemoryStore::AddOrUpdateRequest(
 void RequestQueueInMemoryStore::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const RemoveCallback& callback) {
-  // In case the |request_ids| is empty, the result will be true, but the count
-  // of deleted pages will be empty.
   int count = 0;
   RequestsMap::iterator iter;
   for (auto request_id : request_ids) {
@@ -47,6 +47,25 @@ void RequestQueueInMemoryStore::RemoveRequests(
     if (iter != requests_.end()) {
       requests_.erase(iter);
       ++count;
+    }
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, true, count));
+}
+
+void RequestQueueInMemoryStore::RemoveRequestsByClientId(
+    const std::vector<ClientId>& client_ids,
+    const RemoveCallback& callback) {
+  int count = 0;
+
+  std::set<ClientId> client_id_set(client_ids.begin(), client_ids.end());
+  for (auto iter = requests_.begin(); iter != requests_.end(); ) {
+    if (client_id_set.find(iter->second.client_id()) != client_id_set.end()) {
+      requests_.erase(iter++);
+      ++count;
+    } else {
+      ++iter;
     }
   }
 

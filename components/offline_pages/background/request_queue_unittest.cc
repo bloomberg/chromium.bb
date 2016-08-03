@@ -175,6 +175,43 @@ TEST_F(RequestQueueTest, RemoveRequest) {
   ASSERT_EQ(0ul, last_requests().size());
 }
 
+TEST_F(RequestQueueTest, RemoveRequestByClientId) {
+  base::Time creation_time = base::Time::Now();
+  // Put two requests on the queue with different client IDs.
+  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+                          kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  queue()->AddRequest(request2, base::Bind(&RequestQueueTest::AddRequestDone,
+                                           base::Unretained(this)));
+  PumpLoop();
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(2ul, last_requests().size());
+
+  std::vector<ClientId> client_ids;
+  client_ids.push_back(kClientId);
+
+  // Removing the first client ID should leave only the second on the queue.
+  queue()->RemoveRequestsByClientId(
+      client_ids,
+      base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_result());
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+  ASSERT_EQ(kClientId2, last_requests().front().client_id());
+}
+
 // A longer test populating the request queue with more than one item, properly
 // listing multiple items and removing the right item.
 TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {

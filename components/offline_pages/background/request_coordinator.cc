@@ -70,6 +70,13 @@ bool RequestCoordinator::SavePageLater(
   return true;
 }
 
+void RequestCoordinator::RemoveRequests(
+    const std::vector<ClientId>& client_ids) {
+  queue_->RemoveRequestsByClientId(
+      client_ids, base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                             weak_ptr_factory_.GetWeakPtr()));
+}
+
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {

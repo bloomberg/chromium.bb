@@ -135,6 +135,13 @@ void RequestQueue::RemoveRequest(int64_t request_id,
   store_->RemoveRequests(request_ids, base::Bind(RemoveRequestDone, callback));
 }
 
+void RequestQueue::RemoveRequestsByClientId(
+    const std::vector<ClientId>& client_ids,
+    const UpdateRequestCallback& callback) {
+  store_->RemoveRequestsByClientId(client_ids,
+                                   base::Bind(RemoveRequestDone, callback));
+}
+
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
 
 }  // namespace offline_pages

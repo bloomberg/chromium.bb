@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -55,6 +56,17 @@ bool DeleteRequestById(sql::Connection* db, int64_t request_id) {
   return statement.Run();
 }
 
+bool DeleteRequestByClientId(sql::Connection* db, const ClientId& client_id) {
+  const char kSql[] = "DELETE FROM " REQUEST_QUEUE_TABLE_NAME
+                      " WHERE client_namespace=? AND client_id=?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindString(0, client_id.name_space);
+  statement.BindString(1, client_id.id);
+  DVLOG(2) << kSql << " client_namespace " << client_id.name_space
+           << " client_id " << client_id.id;
+  return statement.Run();
+}
+
 bool DeleteRequestsByIds(sql::Connection* db,
                          const std::vector<int64_t>& request_ids,
                          int* count) {
@@ -68,6 +80,29 @@ bool DeleteRequestsByIds(sql::Connection* db,
   *count = 0;
   for (auto request_id : request_ids) {
     if (!DeleteRequestById(db, request_id))
+      return false;
+    *count += db->GetLastChangeCount();
+  }
+
+  if (!transaction.Commit())
+    return false;
+
+  return true;
+}
+
+bool DeleteRequestsByClientIds(sql::Connection* db,
+                               const std::vector<ClientId>& client_ids,
+                               int* count) {
+  DCHECK(count);
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  *count = 0;
+  for (const auto& client_id : client_ids) {
+    if (!DeleteRequestByClientId(db, client_id))
       return false;
     *count += db->GetLastChangeCount();
   }
@@ -93,6 +128,11 @@ SavePageRequest MakeSavePageRequest(const sql::Statement& statement) {
   const GURL url(statement.ColumnString(5));
   const ClientId client_id(statement.ColumnString(6),
                            statement.ColumnString(7));
+
+  DVLOG(2) << "making save page request - id " << id << " url " << url
+           << " client_id " << client_id.name_space << "-" << client_id.id
+           << " creation time " << creation_time << " user requested "
+           << kUserRequested;
 
   SavePageRequest request(
       id, url, client_id, creation_time, activation_time, kUserRequested);
@@ -217,6 +257,20 @@ void RequestQueueStoreSQL::RemoveRequestsSync(
 }
 
 // static
+void RequestQueueStoreSQL::RemoveRequestsByClientIdSync(
+    sql::Connection* db,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const std::vector<ClientId>& client_ids,
+    const RemoveCallback& callback) {
+  // TODO(fgorski): add UMA metrics here.
+  int count = 0;
+  if (DeleteRequestsByClientIds(db, client_ids, &count))
+    runner->PostTask(FROM_HERE, base::Bind(callback, true, count));
+  else
+    runner->PostTask(FROM_HERE, base::Bind(callback, false, 0));
+}
+
+// static
 void RequestQueueStoreSQL::ResetSync(
     sql::Connection* db,
     const base::FilePath& db_file_path,
@@ -262,6 +316,10 @@ void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
                  base::ThreadTaskRunnerHandle::Get(), request, callback));
 }
 
+// TODO(petewil): This is unused, since request_coordinator doesn't keep
+// request_ids, and neither do clients.  Plan is to remove this API in a future
+// changelist.  If we do discover a need to keep it, name it
+// RemoveRequestsByRequestId to be more parallell with RemoveRequestsByClientId.
 void RequestQueueStoreSQL::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const RemoveCallback& callback) {
@@ -278,6 +336,24 @@ void RequestQueueStoreSQL::RemoveRequests(
       FROM_HERE,
       base::Bind(&RequestQueueStoreSQL::RemoveRequestsSync, db_.get(),
                  base::ThreadTaskRunnerHandle::Get(), request_ids, callback));
+}
+
+void RequestQueueStoreSQL::RemoveRequestsByClientId(
+    const std::vector<ClientId>& client_ids,
+    const RemoveCallback& callback) {
+  DCHECK(db_.get());
+  if (!db_.get()) {
+    // Nothing to do, but post a callback instead of calling directly
+    // to preserve the async style behavior to prevent bugs.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, false, 0));
+    return;
+  }
+
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RequestQueueStoreSQL::RemoveRequestsByClientIdSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), client_ids, callback));
 }
 
 void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {

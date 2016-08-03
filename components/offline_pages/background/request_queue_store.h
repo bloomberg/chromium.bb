@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
 
@@ -50,6 +51,15 @@ class RequestQueueStore {
   // be deleted, e.g. because it was missing.
   virtual void RemoveRequests(const std::vector<int64_t>& request_ids,
                               const RemoveCallback& callback) = 0;
+
+  // Asynchronously removes requests from the store using their ClientIds.
+  // Result of the update, and a number of removed pages is passed in the
+  // callback.  Result of remove should be false, when one of the provided items
+  // couldn't be deleted, e.g. because it was missing. In case client_ids is
+  // empty, though this will return true, but the count of deleted pages will be
+  // 0.
+  virtual void RemoveRequestsByClientId(const std::vector<ClientId>& client_ids,
+                                        const RemoveCallback& callback) = 0;
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;
