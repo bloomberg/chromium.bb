@@ -25,13 +25,13 @@ namespace content {
 #define MAYBE_WebRtcDataChannelTest WebRtcDataChannelTest
 #endif
 
-class MAYBE_WebRtcDataChannelTest : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcDataChannelTest : public WebRtcContentBrowserTestBase {
  public:
   MAYBE_WebRtcDataChannelTest() {}
   ~MAYBE_WebRtcDataChannelTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     AppendUseFakeUIForMediaStreamFlag();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kJavaScriptFlags, kJavaScriptFeaturesNeeded);

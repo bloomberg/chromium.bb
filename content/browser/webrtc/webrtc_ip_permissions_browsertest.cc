@@ -26,39 +26,34 @@ const char kPeerConnectionHtml[] = "/media/peerconnection-call.html";
 // Disable these test cases for Android since in some bots, there exists only
 // the loopback interface.
 #if defined(OS_ANDROID)
-#define MAYBE_WebRtcBrowserIPPermissionGrantedTest \
-    DISABLED_WebRtcBrowserIPPermissionGrantedTest
-#define MAYBE_WebRtcBrowserIPPermissionDeniedTest \
-    DISABLED_WebRtcBrowserIPPermissionDeniedTest
-#define MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest \
-    DISABLED_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest
-#define MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest \
-    DISABLED_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest
-#define MAYBE_WebRtcBrowserIPPolicyDisableUdpTest \
-    DISABLED_WebRtcBrowserIPPolicyDisableUdpTest
+#define MAYBE_WebRtcIPPermissionGrantedTest \
+  DISABLED_WebRtcIPPermissionGrantedTest
+#define MAYBE_WebRtcIPPermissionDeniedTest DISABLED_WebRtcIPPermissionDeniedTest
+#define MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest \
+  DISABLED_WebRtcIPPolicyPublicAndPrivateInterfacesTest
+#define MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest \
+  DISABLED_WebRtcIPPolicyPublicInterfaceOnlyTest
+#define MAYBE_WebRtcIPPolicyDisableUdpTest DISABLED_WebRtcIPPolicyDisableUdpTest
 #else
-#define MAYBE_WebRtcBrowserIPPermissionGrantedTest \
-    WebRtcBrowserIPPermissionGrantedTest
-#define MAYBE_WebRtcBrowserIPPermissionDeniedTest \
-    WebRtcBrowserIPPermissionDeniedTest
-#define MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest \
-    WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest
-#define MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest \
-    WebRtcBrowserIPPolicyPublicInterfaceOnlyTest
-#define MAYBE_WebRtcBrowserIPPolicyDisableUdpTest \
-    WebRtcBrowserIPPolicyDisableUdpTest
+#define MAYBE_WebRtcIPPermissionGrantedTest WebRtcIPPermissionGrantedTest
+#define MAYBE_WebRtcIPPermissionDeniedTest WebRtcIPPermissionDeniedTest
+#define MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest \
+  WebRtcIPPolicyPublicAndPrivateInterfacesTest
+#define MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest \
+  WebRtcIPPolicyPublicInterfaceOnlyTest
+#define MAYBE_WebRtcIPPolicyDisableUdpTest WebRtcIPPolicyDisableUdpTest
 #endif
 
 // This class tests the scenario when permission to access mic or camera is
 // denied.
-class MAYBE_WebRtcBrowserIPPermissionGrantedTest
-    : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcIPPermissionGrantedTest
+    : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcBrowserIPPermissionGrantedTest() {}
-  ~MAYBE_WebRtcBrowserIPPermissionGrantedTest() override {}
+  MAYBE_WebRtcIPPermissionGrantedTest() {}
+  ~MAYBE_WebRtcIPPermissionGrantedTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     AppendUseFakeUIForMediaStreamFlag();
     command_line->AppendSwitchASCII(switches::kForceWebRtcIPHandlingPolicy,
                                     kWebRTCIPHandlingDefault);
@@ -67,21 +62,20 @@ class MAYBE_WebRtcBrowserIPPermissionGrantedTest
 
 // Loopback interface is the non-default private interface. Test that when
 // device permission is granted, we should have loopback candidates.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPermissionGrantedTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcIPPermissionGrantedTest,
                        GatherLocalCandidates) {
   MakeTypicalCall("callWithDevicePermissionGranted();", kPeerConnectionHtml);
 }
 
 // This class tests the scenario when permission to access mic or camera is
 // denied.
-class MAYBE_WebRtcBrowserIPPermissionDeniedTest
-    : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcIPPermissionDeniedTest : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcBrowserIPPermissionDeniedTest() {}
-  ~MAYBE_WebRtcBrowserIPPermissionDeniedTest() override {}
+  MAYBE_WebRtcIPPermissionDeniedTest() {}
+  ~MAYBE_WebRtcIPPermissionDeniedTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kForceWebRtcIPHandlingPolicy,
                                     kWebRTCIPHandlingDefault);
   }
@@ -89,21 +83,21 @@ class MAYBE_WebRtcBrowserIPPermissionDeniedTest
 
 // Test that when device permission is denied, only non-default interfaces are
 // gathered even if the policy is "default".
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPermissionDeniedTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcIPPermissionDeniedTest,
                        GatherLocalCandidates) {
   MakeTypicalCall("callAndExpectNonLoopbackCandidates();", kPeerConnectionHtml);
 }
 
 // This class tests the scenario when ip handling policy is set to "public and
 // private interfaces", the non-default private candidate is not gathered.
-class MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest
-    : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest
+    : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest() {}
-  ~MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest() override {}
+  MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest() {}
+  ~MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     AppendUseFakeUIForMediaStreamFlag();
     command_line->AppendSwitchASCII(
         switches::kForceWebRtcIPHandlingPolicy,
@@ -111,23 +105,22 @@ class MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
-    MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest,
-    GatherLocalCandidates) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcIPPolicyPublicAndPrivateInterfacesTest,
+                       GatherLocalCandidates) {
   MakeTypicalCall("callAndExpectNonLoopbackCandidates();", kPeerConnectionHtml);
 }
 
 // This class tests the scenario when ip handling policy is set to "public
 // interface only", there is no candidate gathered as there is no stun server
 // specified.
-class MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest
-    : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest
+    : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest() {}
-  ~MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest() override {}
+  MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest() {}
+  ~MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     AppendUseFakeUIForMediaStreamFlag();
     command_line->AppendSwitchASCII(
         switches::kForceWebRtcIPHandlingPolicy,
@@ -135,7 +128,7 @@ class MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcIPPolicyPublicInterfaceOnlyTest,
                        GatherLocalCandidates) {
   MakeTypicalCall("callWithNoCandidateExpected();", kPeerConnectionHtml);
 }
@@ -143,21 +136,20 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest,
 // This class tests the scenario when ip handling policy is set to "disable
 // non-proxied udp", there is no candidate gathered as there is no stun server
 // specified.
-class MAYBE_WebRtcBrowserIPPolicyDisableUdpTest
-    : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcIPPolicyDisableUdpTest : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcBrowserIPPolicyDisableUdpTest() {}
-  ~MAYBE_WebRtcBrowserIPPolicyDisableUdpTest() override {}
+  MAYBE_WebRtcIPPolicyDisableUdpTest() {}
+  ~MAYBE_WebRtcIPPolicyDisableUdpTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     AppendUseFakeUIForMediaStreamFlag();
     command_line->AppendSwitchASCII(switches::kForceWebRtcIPHandlingPolicy,
                                     kWebRTCIPHandlingDisableNonProxiedUdp);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPolicyDisableUdpTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcIPPolicyDisableUdpTest,
                        GatherLocalCandidates) {
   MakeTypicalCall("callWithNoCandidateExpected();", kPeerConnectionHtml);
 }

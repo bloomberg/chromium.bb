@@ -14,7 +14,7 @@ class CommandLine;
 namespace content {
 
 // Contains stuff WebRTC browsertests have in common.
-class WebRtcContentBrowserTest: public ContentBrowserTest {
+class WebRtcContentBrowserTestBase : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUp() override;

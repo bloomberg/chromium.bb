@@ -22,7 +22,7 @@
 
 namespace content {
 
-void WebRtcContentBrowserTest::SetUpCommandLine(
+void WebRtcContentBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeDeviceForMediaStream));
@@ -37,7 +37,7 @@ void WebRtcContentBrowserTest::SetUpCommandLine(
       switches::kAllowLoopbackInPeerConnection);
 }
 
-void WebRtcContentBrowserTest::SetUp() {
+void WebRtcContentBrowserTestBase::SetUp() {
   // We need pixel output when we dig pixels out of video tags for verification.
   EnablePixelOutput();
 #if defined(OS_CHROMEOS)
@@ -46,21 +46,21 @@ void WebRtcContentBrowserTest::SetUp() {
   ContentBrowserTest::SetUp();
 }
 
-void WebRtcContentBrowserTest::TearDown() {
+void WebRtcContentBrowserTestBase::TearDown() {
   ContentBrowserTest::TearDown();
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::Shutdown();
 #endif
 }
 
-void WebRtcContentBrowserTest::AppendUseFakeUIForMediaStreamFlag() {
+void WebRtcContentBrowserTestBase::AppendUseFakeUIForMediaStreamFlag() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kUseFakeUIForMediaStream);
 }
 
 // Executes |javascript|. The script is required to use
 // window.domAutomationController.send to send a string value back to here.
-std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
+std::string WebRtcContentBrowserTestBase::ExecuteJavascriptAndReturnResult(
     const std::string& javascript) {
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), javascript, &result))
@@ -68,8 +68,9 @@ std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
   return result;
 }
 
-void WebRtcContentBrowserTest::MakeTypicalCall(const std::string& javascript,
-                                               const std::string& html_file) {
+void WebRtcContentBrowserTestBase::MakeTypicalCall(
+    const std::string& javascript,
+    const std::string& html_file) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL(html_file));
@@ -78,37 +79,32 @@ void WebRtcContentBrowserTest::MakeTypicalCall(const std::string& javascript,
   ExecuteJavascriptAndWaitForOk(javascript);
 }
 
-void WebRtcContentBrowserTest::ExecuteJavascriptAndWaitForOk(
+void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
     const std::string& javascript) {
-   std::string result = ExecuteJavascriptAndReturnResult(javascript);
-   if (result != "OK") {
-     if (result.empty())
-       result = "(nothing)";
-     printf("From javascript: %s\nWhen executing '%s'\n", result.c_str(),
-            javascript.c_str());
-     FAIL();
-   }
+  std::string result = ExecuteJavascriptAndReturnResult(javascript);
+  if (result != "OK") {
+    if (result.empty())
+      result = "(nothing)";
+    printf("From javascript: %s\nWhen executing '%s'\n", result.c_str(),
+           javascript.c_str());
+    FAIL();
+  }
  }
 
-std::string WebRtcContentBrowserTest::GenerateGetUserMediaCall(
-    const char* function_name,
-    int min_width,
-    int max_width,
-    int min_height,
-    int max_height,
-    int min_frame_rate,
-    int max_frame_rate) const {
-  return base::StringPrintf(
-      "%s({video: {mandatory: {minWidth: %d, maxWidth: %d, "
-      "minHeight: %d, maxHeight: %d, minFrameRate: %d, maxFrameRate: %d}, "
-      "optional: []}});",
-      function_name,
-      min_width,
-      max_width,
-      min_height,
-      max_height,
-      min_frame_rate,
-      max_frame_rate);
+ std::string WebRtcContentBrowserTestBase::GenerateGetUserMediaCall(
+     const char* function_name,
+     int min_width,
+     int max_width,
+     int min_height,
+     int max_height,
+     int min_frame_rate,
+     int max_frame_rate) const {
+   return base::StringPrintf(
+       "%s({video: {mandatory: {minWidth: %d, maxWidth: %d, "
+       "minHeight: %d, maxHeight: %d, minFrameRate: %d, maxFrameRate: %d}, "
+       "optional: []}});",
+       function_name, min_width, max_width, min_height, max_height,
+       min_frame_rate, max_frame_rate);
 }
 
 }  // namespace content

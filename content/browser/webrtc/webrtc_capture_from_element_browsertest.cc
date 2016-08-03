@@ -35,14 +35,14 @@ namespace content {
 // which allows for creation of a MediaStream out of a <canvas>, <video> or
 // <audio> element.
 class WebRtcCaptureFromElementBrowserTest
-    : public WebRtcContentBrowserTest,
+    : public WebRtcContentBrowserTestBase,
       public testing::WithParamInterface<struct FileAndTypeParameters> {
  public:
   WebRtcCaptureFromElementBrowserTest() {}
   ~WebRtcCaptureFromElementBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "MediaCaptureFromVideo");
 

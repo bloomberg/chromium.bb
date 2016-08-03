@@ -80,7 +80,7 @@ std::string GenerateGetUserMediaWithOptionalSourceID(
 
 namespace content {
 
-class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
+class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
  public:
   WebRtcGetUserMediaBrowserTest() : trace_log_(NULL) {
     // Automatically grant device permission.
@@ -732,7 +732,7 @@ struct UserMediaSizes {
 }  // namespace
 
 class WebRtcConstraintsBrowserTest
-    : public WebRtcContentBrowserTest,
+    : public WebRtcContentBrowserTestBase,
       public testing::WithParamInterface<UserMediaSizes> {
  public:
   WebRtcConstraintsBrowserTest() : user_media_(GetParam()) {

@@ -28,13 +28,13 @@ namespace content {
 
 // This class tests the scenario when permission to access mic or camera is
 // granted.
-class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
+class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTestBase {
  public:
   MAYBE_WebRtcBrowserTest() {}
   ~MAYBE_WebRtcBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
     // Automatically grant device permission.
     AppendUseFakeUIForMediaStreamFlag();
   }

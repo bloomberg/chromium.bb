@@ -30,14 +30,14 @@ namespace content {
 
 // This class tests the recording of a media stream.
 class WebRtcMediaRecorderTest
-    : public WebRtcContentBrowserTest,
+    : public WebRtcContentBrowserTestBase,
       public testing::WithParamInterface<struct EncodingParameters> {
  public:
   WebRtcMediaRecorderTest() {}
   ~WebRtcMediaRecorderTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
+    WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
 
     AppendUseFakeUIForMediaStreamFlag();
 

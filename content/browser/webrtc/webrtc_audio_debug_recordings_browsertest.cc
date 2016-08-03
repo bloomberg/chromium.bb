@@ -66,7 +66,8 @@ base::FilePath GetExpectedInputAudioFileName(const base::FilePath& base_file,
 
 namespace content {
 
-class WebRtcAudioDebugRecordingsBrowserTest : public WebRtcContentBrowserTest {
+class WebRtcAudioDebugRecordingsBrowserTest
+    : public WebRtcContentBrowserTestBase {
  public:
   WebRtcAudioDebugRecordingsBrowserTest() {
     // Automatically grant device permission.
