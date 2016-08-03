@@ -213,6 +213,9 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
   return widget;
 }
 
+content::RenderWidget::CreateRenderWidgetFunction g_create_render_widget =
+    nullptr;
+
 }  // namespace
 
 namespace content {
@@ -288,6 +291,13 @@ RenderWidget::~RenderWidget() {
 }
 
 // static
+void RenderWidget::InstallCreateHook(
+    CreateRenderWidgetFunction create_render_widget) {
+  CHECK(!g_create_render_widget);
+  g_create_render_widget = create_render_widget;
+}
+
+// static
 RenderWidget* RenderWidget::Create(int32_t opener_id,
                                    CompositorDependencies* compositor_deps,
                                    blink::WebPopupType popup_type,
@@ -319,8 +329,11 @@ RenderWidget* RenderWidget::CreateForFrame(
     return view->GetWidget();
   }
   scoped_refptr<RenderWidget> widget(
-      new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
-                       false, hidden, false));
+      g_create_render_widget
+          ? g_create_render_widget(compositor_deps, blink::WebPopupTypeNone,
+                                   screen_info, false, hidden, false)
+          : new RenderWidget(compositor_deps, blink::WebPopupTypeNone,
+                             screen_info, false, hidden, false));
   widget->SetRoutingID(routing_id);
   widget->for_oopif_ = true;
   // DoInit increments the reference count on |widget|, keeping it alive after

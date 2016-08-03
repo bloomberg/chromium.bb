@@ -25,6 +25,7 @@ class WebGamepads;
 class WebLayer;
 struct WebSize;
 class WebView;
+class WebWidget;
 class WebURLResponse;
 }
 
@@ -35,6 +36,7 @@ class BluetoothAdapter;
 namespace test_runner {
 class WebFrameTestProxyBase;
 class WebViewTestProxyBase;
+class WebWidgetTestProxyBase;
 }
 
 namespace content {
@@ -65,16 +67,23 @@ test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
 test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
     RenderFrame* render_frame);
 
-// Enable injecting of a WebViewTestProxy between WebViews and RenderViews
-// and WebFrameTestProxy between WebFrames and RenderFrames.
+// Enable injecting of a WebViewTestProxy between WebViews and RenderViews,
+// WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
+// between WebFrames and RenderFrames.
 // |view_proxy_creation_callback| is invoked after creating WebViewTestProxy.
+// |widget_proxy_creation_callback| is invoked after creating
+// WebWidgetTestProxy.
 // |frame_proxy_creation_callback| is called after creating WebFrameTestProxy.
 using ViewProxyCreationCallback =
     base::Callback<void(RenderView*, test_runner::WebViewTestProxyBase*)>;
+using WidgetProxyCreationCallback =
+    base::Callback<void(blink::WebWidget*,
+                        test_runner::WebWidgetTestProxyBase*)>;
 using FrameProxyCreationCallback =
     base::Callback<void(RenderFrame*, test_runner::WebFrameTestProxyBase*)>;
 void EnableWebTestProxyCreation(
     const ViewProxyCreationCallback& view_proxy_creation_callback,
+    const WidgetProxyCreationCallback& widget_proxy_creation_callback,
     const FrameProxyCreationCallback& frame_proxy_creation_callback);
 
 typedef base::Callback<void(const blink::WebURLResponse& response,

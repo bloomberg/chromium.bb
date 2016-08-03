@@ -16,6 +16,7 @@
 #include "components/test_runner/text_input_controller.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_interfaces.h"
+#include "components/test_runner/web_widget_test_proxy.h"
 
 namespace test_runner {
 
@@ -23,7 +24,6 @@ WebViewTestProxyBase::WebViewTestProxyBase()
     : test_interfaces_(nullptr),
       delegate_(nullptr),
       web_view_(nullptr),
-      web_widget_(nullptr),
       accessibility_controller_(new AccessibilityController(this)),
       event_sender_(new EventSender(this)),
       text_input_controller_(new TextInputController(this)),

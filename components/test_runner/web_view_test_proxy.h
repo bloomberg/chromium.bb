@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_
-#define COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_
+#ifndef COMPONENTS_TEST_RUNNER_WEB_VIEW_TEST_PROXY_H_
+#define COMPONENTS_TEST_RUNNER_WEB_VIEW_TEST_PROXY_H_
 
 #include <memory>
 #include <string>
@@ -15,6 +15,7 @@
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_view_test_client.h"
 #include "components/test_runner/web_widget_test_client.h"
+#include "components/test_runner/web_widget_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -55,15 +56,8 @@ class WebTestInterfaces;
 // WebViewTestProxyBase and when it requires a behavior to be different from the
 // usual, it will call WebViewTestProxyBase that implements the expected
 // behavior. See WebViewTestProxy class comments for more information.
-class TEST_RUNNER_EXPORT WebViewTestProxyBase {
+class TEST_RUNNER_EXPORT WebViewTestProxyBase : public WebWidgetTestProxyBase {
  public:
-  blink::WebWidget* web_widget() { return web_widget_; }
-  void set_web_widget(blink::WebWidget* widget) {
-    DCHECK(widget);
-    DCHECK(!web_widget_);
-    web_widget_ = widget;
-  }
-
   blink::WebView* web_view() { return web_view_; }
   void set_web_view(blink::WebView* view) {
     DCHECK(view);
@@ -76,13 +70,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase {
     DCHECK(view_test_client);
     DCHECK(!view_test_client_);
     view_test_client_ = std::move(view_test_client);
-  }
-
-  void set_widget_test_client(
-      std::unique_ptr<WebWidgetTestClient> widget_test_client) {
-    DCHECK(widget_test_client);
-    DCHECK(!widget_test_client_);
-    widget_test_client_ = std::move(widget_test_client);
   }
 
   WebTestDelegate* delegate() { return delegate_; }
@@ -115,9 +102,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase {
   ~WebViewTestProxyBase();
 
   blink::WebViewClient* view_test_client() { return view_test_client_.get(); }
-  blink::WebWidgetClient* widget_test_client() {
-    return widget_test_client_.get();
-  }
 
  private:
   TestInterfaces* test_interfaces_;
@@ -125,7 +109,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase {
   blink::WebView* web_view_;
   blink::WebWidget* web_widget_;
   std::unique_ptr<WebViewTestClient> view_test_client_;
-  std::unique_ptr<WebWidgetTestClient> widget_test_client_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<EventSender> event_sender_;
   std::unique_ptr<TextInputController> text_input_controller_;
@@ -253,4 +236,4 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
 
 }  // namespace test_runner
 
-#endif  // COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_
+#endif  // COMPONENTS_TEST_RUNNER_WEB_VIEW_TEST_PROXY_H_
